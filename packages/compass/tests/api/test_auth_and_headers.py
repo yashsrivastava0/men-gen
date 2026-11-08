@@ -1,3 +1,4 @@
+# ruff: noqa: S104
 """Dev auth (one identical 401), CSP and security headers, body limit, bind guard."""
 
 from __future__ import annotations
