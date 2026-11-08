@@ -9,6 +9,20 @@ The catalog is a set of data files next to this module:
 * ``no_ask.yaml``       topics Compass never asks about
 * ``strings/{en,hi}.json``  flat ``key -> text`` dictionaries with identical key sets
 
+Conventions the engine can rely on:
+
+* Slots in group ``org`` are Company-mode only (org profile, approvers, design guidelines, API
+  catalog); every other slot applies in both modes.
+* ``order`` is the dependency stage 1..8 (1 idea, category, geo; 2 audience and locales; 3 apps
+  and roles; 4 features and scope; 5 access; 6 experience; 7 integrations and data; 8 limits,
+  words, unknowns). ``locales`` is stage 2 because even the shortest interview asks for languages.
+* Every slot is covered by exactly one frame (a test enforces it); frame ``option_count`` of
+  ``None`` means a checklist or free form instead of exactly three options.
+* In ``families.yaml`` and ``capabilities.yaml`` ``keywords`` is written as ``{en, hi, hinglish}``
+  lists (Hindi in Devanagari, Hinglish in Latin letters) and flattened to one list here. Keywords
+  are lower-case match hints for guards, not user-facing text; matching must be word-aware.
+* ``Catalog.t`` placeholders use ``str.format_map`` over a plain dict, never attribute access.
+
 ``load_catalog()`` validates the whole set and raises :class:`CatalogError` with a precise
 message. It is cached; call ``load_catalog.cache_clear()`` in tests that need a fresh read.
 
@@ -392,6 +406,10 @@ def _index[T: BaseModel](items: Iterable[T], what: str) -> dict[str, T]:
     return out
 
 
+def _rid(raw: Any) -> str:
+    return str(raw.get("id", "?")) if isinstance(raw, dict) else "?"
+
+
 def _list_of(raw: Any, key: str, filename: str) -> list[Any]:
     if not isinstance(raw, dict) or not isinstance(raw.get(key), list):
         raise CatalogError(f"{filename}: top level must be a mapping with a list under '{key}'")
@@ -422,7 +440,7 @@ def _validate_strings(strings: dict[str, dict[str, str]]) -> None:
     for lang, table in strings.items():
         for key, text in table.items():
             if not text.strip() or "TODO" in text:
-                raise CatalogError(f"strings/{lang}.json: bad text for {key!r}")
+                raise CatalogError(f"strings/{lang}.json: empty text or TODO for {key!r}")
     for key in en:
         if set(_PLACEHOLDER.findall(en[key])) != set(_PLACEHOLDER.findall(hi[key])):
             raise CatalogError(f"strings: placeholder mismatch between en and hi for {key!r}")
@@ -496,6 +514,47 @@ def _validate_capabilities(caps: dict[str, CapabilityRule]) -> None:
             raise CatalogError(f"capability {cap.id!r}: declined needs reason and alternative")
 
 
+KEYWORD_STYLES = ("en", "hi", "hinglish")
+_DEVANAGARI = re.compile(r"[\u0900-\u097F]")
+
+
+def _flatten_keywords(raw: Any, where: str) -> Any:
+    """Turn ``keywords: {en: [..], hi: [..], hinglish: [..]}`` into one flat, de-duplicated list.
+
+    The data files keep the three styles apart so each can be checked: Hindi keywords are in
+    Devanagari, English and Hinglish (Hindi in Latin letters) keywords are not.
+    """
+    kw = raw.get("keywords") if isinstance(raw, dict) else None
+    if not isinstance(kw, dict) or set(kw) != set(KEYWORD_STYLES):
+        raise CatalogError(f"{where}: keywords must be a mapping with en, hi and hinglish lists")
+    flat: list[str] = []
+    for style in KEYWORD_STYLES:
+        items = kw[style]
+        if not isinstance(items, list) or not items:
+            raise CatalogError(f"{where}: keywords.{style} must be a non-empty list")
+        for item in items:
+            if not isinstance(item, str) or not item.strip():
+                raise CatalogError(f"{where}: keywords.{style} has a blank entry")
+            if bool(_DEVANAGARI.search(item)) != (style == "hi"):
+                raise CatalogError(f"{where}: keyword {item!r} is in the wrong script for {style}")
+            if item not in flat:
+                flat.append(item)
+    return {**raw, "keywords": flat}
+
+
+def _scan_text(obj: Any, where: str) -> None:
+    """Reject empty strings and ``TODO`` markers anywhere in the loaded data."""
+    if isinstance(obj, str):
+        if not obj.strip() or "TODO" in obj:
+            raise CatalogError(f"{where}: empty text or TODO")
+    elif isinstance(obj, dict):
+        for key, value in obj.items():
+            _scan_text(value, f"{where}.{key}")
+    elif isinstance(obj, list):
+        for i, value in enumerate(obj):
+            _scan_text(value, f"{where}[{i}]")
+
+
 def _read_frames() -> list[Any]:
     paths = sorted((CATALOG_DIR / "frames").glob("*.yaml"))
     return [_read_yaml(p) for p in paths]
@@ -510,12 +569,28 @@ def load_catalog() -> Catalog:
     frames = _index((_build(FrameDef, r, "frames/") for r in _read_frames()), "frame")
 
     fam_raw = _list_of(_read_yaml(CATALOG_DIR / "families.yaml"), "families", "families.yaml")
-    families = _index((_build(Family, r, "families.yaml") for r in fam_raw), "family")
+    families = _index(
+        (
+            _build(Family, _flatten_keywords(r, f"families.yaml {_rid(r)}"), "families.yaml")
+            for r in fam_raw
+        ),
+        "family",
+    )
 
     cap_raw = _list_of(
         _read_yaml(CATALOG_DIR / "capabilities.yaml"), "capabilities", "capabilities.yaml"
     )
-    capabilities = _index((_build(CapabilityRule, r, "capabilities.yaml") for r in cap_raw), "cap")
+    capabilities = _index(
+        (
+            _build(
+                CapabilityRule,
+                _flatten_keywords(r, f"capabilities.yaml {_rid(r)}"),
+                "capabilities.yaml",
+            )
+            for r in cap_raw
+        ),
+        "capability",
+    )
 
     no_ask = _list_of(_read_yaml(CATALOG_DIR / "no_ask.yaml"), "no_ask", "no_ask.yaml")
     if not all(isinstance(x, str) and x.strip() for x in no_ask):
@@ -527,6 +602,15 @@ def load_catalog() -> Catalog:
     _validate_frames(frames, slots)
     _validate_families(families)
     _validate_capabilities(capabilities)
+
+    for name, group in (
+        ("slots", slots),
+        ("frames", frames),
+        ("families", families),
+        ("capabilities", capabilities),
+    ):
+        _scan_text({k: v.model_dump() for k, v in group.items()}, name)
+    _scan_text(no_ask, "no_ask")
 
     return Catalog(
         slots=slots,

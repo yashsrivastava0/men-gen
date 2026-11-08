@@ -1,11 +1,373 @@
 capabilities:
-  - id: push_notifications
-    label: {en: Real push notifications, hi: असली पुश नोटिफ़िकेशन}
-    kind: tier_b
-    keywords: [push notification, पुश नोटिफ़िकेशन]
-  - id: games
-    label: {en: Games, hi: गेम}
-    kind: declined
-    keywords: [game, गेम]
-    reason: {en: Games need a different kind of engine than this builder uses., hi: गेम के लिए ऐसा इंजन चाहिए जो यह बिल्डर इस्तेमाल नहीं करता।}
-    alternative: {en: We can build a companion app for your game., hi: हम आपके गेम के लिए साथी ऐप बना सकते हैं।}
+- id: real_push
+  label:
+    en: Real push notifications
+    hi: असली पुश सूचनाएँ
+  kind: tier_b
+  keywords:
+    en:
+    - push notification
+    - push alert
+    - notify the user
+    hi:
+    - पुश सूचना
+    - पुश नोटिफ़िकेशन
+    hinglish:
+    - push notification bhejna
+    - notification aana chahiye
+- id: live_location
+  label:
+    en: Live location
+    hi: लाइव लोकेशन
+  kind: tier_b
+  keywords:
+    en:
+    - live location
+    - real-time tracking
+    - gps tracking
+    hi:
+    - लाइव लोकेशन
+    - जीपीएस ट्रैकिंग
+    hinglish:
+    - live location dikhana
+    - gps se track karna
+- id: biometrics
+  label:
+    en: Fingerprint or face unlock
+    hi: फ़िंगरप्रिंट या चेहरे से खोलना
+  kind: tier_b
+  keywords:
+    en:
+    - fingerprint
+    - face unlock
+    - biometric
+    hi:
+    - फ़िंगरप्रिंट
+    - फेस अनलॉक
+    - बायोमेट्रिक
+    hinglish:
+    - fingerprint se login
+    - face id lagana
+- id: payment_sdks
+  label:
+    en: Payment provider connection
+    hi: भुगतान कंपनी से जुड़ाव
+  kind: tier_b
+  keywords:
+    en:
+    - payment gateway
+    - card payment
+    - upi payment
+    hi:
+    - पेमेंट गेटवे
+    - कार्ड भुगतान
+    - यूपीआई भुगतान
+    hinglish:
+    - payment gateway lagana
+    - upi se paise lena
+    - card se payment
+- id: camera
+  label:
+    en: Camera and photo capture
+    hi: कैमरा और फ़ोटो लेना
+  kind: tier_b
+  keywords:
+    en:
+    - camera
+    - scan barcode
+    - take a photo
+    - qr code scan
+    hi:
+    - कैमरा
+    - बारकोड स्कैन
+    - क्यूआर स्कैन
+    hinglish:
+    - camera se photo
+    - qr scan karna
+    - barcode scan
+- id: offline_sync
+  label:
+    en: Working offline and syncing later
+    hi: बिना इंटरनेट काम और बाद में सिंक
+  kind: tier_b
+  keywords:
+    en:
+    - offline mode
+    - work offline
+    - sync later
+    hi:
+    - ऑफ़लाइन मोड
+    - बिना इंटरनेट
+    - बाद में सिंक
+    hinglish:
+    - offline chalna chahiye
+    - bina internet ke kaam
+    - baad me sync
+- id: in_app_purchases
+  label:
+    en: In-app purchases
+    hi: ऐप के अंदर खरीदारी
+  kind: tier_b
+  keywords:
+    en:
+    - in-app purchase
+    - app store purchase
+    - buy inside the app
+    hi:
+    - ऐप के अंदर खरीदारी
+    - इन-ऐप खरीद
+    hinglish:
+    - in app purchase
+    - app ke andar kharidna
+- id: bluetooth
+  label:
+    en: Bluetooth devices
+    hi: ब्लूटूथ डिवाइस
+  kind: tier_b
+  keywords:
+    en:
+    - bluetooth
+    - connect to a device
+    - nearby devices
+    hi:
+    - ब्लूटूथ
+    - डिवाइस से जुड़ना
+    hinglish:
+    - bluetooth se connect
+    - device connect karna
+- id: video_calls
+  label:
+    en: Video calls
+    hi: वीडियो कॉल
+  kind: tier_b
+  keywords:
+    en:
+    - video call
+    - live video
+    - video consultation
+    hi:
+    - वीडियो कॉल
+    - लाइव वीडियो
+    hinglish:
+    - video call karna
+    - live video chat
+- id: games
+  label:
+    en: Games of any kind
+    hi: किसी भी तरह के गेम
+  kind: declined
+  keywords:
+    en:
+    - game
+    - multiplayer
+    - arcade
+    - puzzle game
+    - gaming app
+    hi:
+    - गेम
+    - खेल
+    - गेमिंग
+    hinglish:
+    - game banana
+    - game wala app
+    - mobile game banana
+  reason:
+    en: Games need a game engine and a different way of building than this builder uses.
+    hi: गेम के लिए गेम इंजन और बनाने का अलग तरीका चाहिए, जो यह बिल्डर इस्तेमाल नहीं करता।
+  alternative:
+    en: 'We can build a companion app for your game: accounts, scores, news and store.'
+    hi: 'हम आपके गेम के लिए साथी ऐप बना सकते हैं: खाते, स्कोर, खबरें और स्टोर।'
+- id: ar_vr_3d
+  label:
+    en: AR, VR and 3D
+    hi: एआर, वीआर और 3डी
+  kind: declined
+  keywords:
+    en:
+    - augmented reality
+    - virtual reality
+    - 3d model viewer
+    - ar app
+    - vr app
+    hi:
+    - ऑगमेंटेड रियलिटी
+    - वर्चुअल रियलिटी
+    - 3डी
+    hinglish:
+    - ar vr app
+    - 3d dikhana
+    - virtual try on
+  reason:
+    en: Augmented reality, virtual reality and 3D need special tools that this builder does not use.
+    hi: ऑगमेंटेड रियलिटी, वर्चुअल रियलिटी और 3डी के लिए खास टूल चाहिए, जो यह बिल्डर इस्तेमाल नहीं करता।
+  alternative:
+    en: We can build the catalog, booking and account parts, and show normal photos of your items.
+    hi: हम कैटलॉग, बुकिंग और खाते वाले हिस्से बना सकते हैं, और आपकी चीज़ों की सामान्य फ़ोटो दिखा सकते
+      हैं।
+- id: media_editors
+  label:
+    en: Photo or video editors
+    hi: फ़ोटो या वीडियो एडिटर
+  kind: declined
+  keywords:
+    en:
+    - photo editor
+    - video editor
+    - image editing
+    - filter camera
+    - video editing
+    hi:
+    - फ़ोटो एडिटर
+    - वीडियो एडिटर
+    - फ़ोटो एडिटिंग
+    hinglish:
+    - photo edit karne wala app
+    - video editor banana
+    - filter wala camera
+  reason:
+    en: Editing pictures or video needs heavy media processing that this builder does not cover.
+    hi: फ़ोटो या वीडियो एडिट करने के लिए भारी मीडिया प्रोसेसिंग चाहिए, जो यह बिल्डर नहीं सँभालता।
+  alternative:
+    en: We can build an app to upload, organise and share media, with simple cropping only.
+    hi: हम मीडिया अपलोड करने, सजाने और साझा करने वाला ऐप बना सकते हैं, जिसमें सिर्फ़ सरल कटाई हो।
+- id: drm_streaming
+  label:
+    en: Protected video and music streaming
+    hi: सुरक्षित वीडियो और संगीत स्ट्रीमिंग
+  kind: declined
+  keywords:
+    en:
+    - drm
+    - video streaming platform
+    - music streaming
+    - ott app
+    - protected streaming
+    hi:
+    - डीआरएम
+    - वीडियो स्ट्रीमिंग
+    - संगीत स्ट्रीमिंग
+    - ओटीटी
+    hinglish:
+    - ott app banana
+    - gaana sunne ka app
+  reason:
+    en: Copy-protected streaming needs special player technology that this builder does not include.
+    hi: कॉपी से सुरक्षित स्ट्रीमिंग के लिए खास प्लेयर तकनीक चाहिए, जो इस बिल्डर में नहीं है।
+  alternative:
+    en: We can build the catalog, accounts and plans, and link out to your existing player.
+    hi: हम कैटलॉग, खाते और प्लान बना सकते हैं, और आपके मौजूदा प्लेयर से जोड़ सकते हैं।
+- id: trading_terminals
+  label:
+    en: Trading terminals
+    hi: ट्रेडिंग टर्मिनल
+  kind: declined
+  keywords:
+    en:
+    - trading terminal
+    - stock trading app
+    - crypto exchange
+    - order book
+    - high-frequency trading
+    hi:
+    - ट्रेडिंग टर्मिनल
+    - शेयर ट्रेडिंग
+    - क्रिप्टो एक्सचेंज
+    hinglish:
+    - share trading app
+    - stock market app banana
+    - crypto exchange
+  reason:
+    en: Live trading needs licences and very fast, exact systems that this builder is not made for.
+    hi: लाइव ट्रेडिंग के लिए लाइसेंस और बहुत तेज़, सटीक सिस्टम चाहिए, जिसके लिए यह बिल्डर नहीं बना।
+  alternative:
+    en: We can build a learning, news, watchlist or portfolio-tracking app without placing trades.
+    hi: हम सीखने, खबरों, वॉचलिस्ट या पोर्टफ़ोलियो देखने वाला ऐप बना सकते हैं, जिसमें ट्रेड नहीं होगा।
+- id: os_utilities
+  label:
+    en: Phone system utilities
+    hi: फ़ोन सिस्टम यूटिलिटी
+  kind: declined
+  keywords:
+    en:
+    - keyboard app
+    - launcher
+    - antivirus
+    - battery saver
+    - phone cleaner
+    - system utility
+    hi:
+    - कीबोर्ड ऐप
+    - लॉन्चर
+    - एंटीवायरस
+    - फ़ोन क्लीनर
+    hinglish:
+    - phone cleaner app
+    - launcher banana
+    - antivirus app
+    - keyboard app
+  reason:
+    en: Apps that change how the phone itself works need deep system access that normal apps do not get.
+    hi: जो ऐप फ़ोन के काम करने का तरीका बदलते हैं, उन्हें गहरी सिस्टम पहुँच चाहिए, जो सामान्य ऐप को नहीं
+      मिलती।
+  alternative:
+    en: We can build a regular app that gives tips, guides or support for the phone.
+    hi: हम एक सामान्य ऐप बना सकते हैं जो फ़ोन के लिए सुझाव, गाइड या सहायता दे।
+- id: safety_critical_medical
+  label:
+    en: Medical-device or safety-critical software
+    hi: मेडिकल उपकरण या जान-जोखिम वाला सॉफ़्टवेयर
+  kind: declined
+  keywords:
+    en:
+    - medical device
+    - diagnosis software
+    - life support
+    - safety critical
+    - dosage calculator
+    - insulin pump
+    hi:
+    - मेडिकल डिवाइस
+    - बीमारी की जाँच सॉफ़्टवेयर
+    - जीवन रक्षक
+    - खुराक कैलकुलेटर
+    hinglish:
+    - medical device ka app
+    - bimari ki jaanch ka software
+    - dose calculator
+  reason:
+    en: Software that can affect someone's life or safety needs formal approval and testing that we cannot
+      offer here.
+    hi: जो सॉफ़्टवेयर किसी की जान या सुरक्षा पर असर डाल सकता है, उसके लिए औपचारिक मंज़ूरी और परीक्षण चाहिए,
+      जो हम यहाँ नहीं दे सकते।
+  alternative:
+    en: We can build booking, reminders, records and information screens around the care you provide.
+    hi: हम आपकी देखभाल सेवा के आसपास बुकिंग, याद दिलाने, रिकॉर्ड और जानकारी वाली स्क्रीन बना सकते हैं।
+- id: proprietary_hardware
+  label:
+    en: Apps for special hardware
+    hi: खास हार्डवेयर के ऐप
+  kind: declined
+  keywords:
+    en:
+    - proprietary hardware
+    - firmware
+    - embedded device
+    - iot device control
+    - custom sensor
+    hi:
+    - खास हार्डवेयर
+    - फ़र्मवेयर
+    - एम्बेडेड डिवाइस
+    - आईओटी डिवाइस
+    hinglish:
+    - hardware wala app
+    - firmware update app
+    - iot device control
+  reason:
+    en: Apps that talk directly to special hardware need the maker's own tools that this builder cannot
+      use.
+    hi: खास हार्डवेयर से सीधे बात करने वाले ऐप के लिए निर्माता के अपने टूल चाहिए, जो यह बिल्डर इस्तेमाल
+      नहीं कर सकता।
+  alternative:
+    en: We can build the account, dashboard and support parts of the app around your device.
+    hi: हम आपके उपकरण के आसपास खाते, डैशबोर्ड और सहायता वाले हिस्से बना सकते हैं।

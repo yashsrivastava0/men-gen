@@ -1,5 +1,8 @@
 no_ask:
-  - stack_and_framework
-  - hex_colors
-  - hosting_and_database
-  - legal_wording
+- stack_and_framework
+- hex_colors
+- hosting_and_database
+- legal_wording
+- database_tables_and_api_design
+- anything_not_tied_to_a_consumer_decision
+- anything_inferable_with_high_confidence_and_low_impact

@@ -1,0 +1,12 @@
+id: words_we_use
+purpose: Confirm the user's own vocabulary so the app speaks their language.
+slots:
+- glossary.terms
+card_type: confirm
+option_source: document
+order: 15
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: Show the terms found in the user's words and documents with their synonyms as editable rows.
+  Never invent terms. Merge duplicates and show the merge.

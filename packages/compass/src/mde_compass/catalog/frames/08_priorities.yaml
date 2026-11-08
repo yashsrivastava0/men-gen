@@ -1,0 +1,12 @@
+id: priorities
+purpose: Force a real first-version boundary when everything is a must.
+slots:
+- scope.priority
+card_type: priority
+option_source: fixed
+order: 8
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: 'Show the user''s own features as chips to place into Must, Nice to have and Later. If everything
+  is a must, ask: ''If you launched with only five features, which ones?''. Never add features.'
