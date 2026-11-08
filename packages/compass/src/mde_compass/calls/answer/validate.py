@@ -59,10 +59,10 @@ def check_answer(inp: AnswerInput, out: AnswerOutput) -> list[str]:
     promises = [p for p in tx.hits(text, rules()["promise"]) if not tx.has_phrase(allowed, (p,))]
     if promises:
         errors.append(f"promises a capability: {promises[:3]}")
-    has_deva = bool(_DEVANAGARI.search(text))
-    if inp.language == "hi" and not has_deva:
+    deva = len(_DEVANAGARI.findall(text))
+    if inp.language == "hi" and deva == 0:
         errors.append("language mismatch: expected Hindi script")
-    if inp.language != "hi" and has_deva:
+    if inp.language != "hi" and deva * 2 > sum(ch.isalpha() for ch in text):
         errors.append("language mismatch: unexpected Devanagari")
     known = {s.slot_id for s in inp.slots}
     unknown = [g for g in out.grounded_in if g not in known and not g.startswith(_FACT_KEYS)]

@@ -11,10 +11,11 @@ price_time:
    "कितने दिन", "कब तक", "कितना समय", "कितना वक़्त", "कितना वक्त", "समय सीमा", "बजट"]
 
 tech_choice:
-  ["tech stack", "technology", "technologies", framework, "programming language", "which language",
+  ["tech stack", "technology stack", "which technology", "what technology", "which technologies",
+   "which framework", "what framework", "any framework", "programming language", "which language",
    "which database", "native or hybrid", "native or cross platform", "react native", flutter,
-   "which platform should", "kaunsi technology", "kaun si technology", "kaunsa framework",
-   "kaun sa framework", "kaunsi language", "तकनीक", "टेक्नोलॉजी", "फ्रेमवर्क", "कौन सी भाषा में बनेगा"]
+   "kaunsi technology", "kaun si technology", "kaunsa framework", "kaun sa framework", "kaunsi language",
+   "कौन सी तकनीक", "कौन सा फ्रेमवर्क", "कौन सी भाषा में बनेगा"]
 
 unsafe:
   ["sell drugs", "buy drugs", cocaine, heroin, "money laundering", "launder money", phishing,

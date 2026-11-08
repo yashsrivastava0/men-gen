@@ -475,3 +475,12 @@ def test_prompt_renders_with_untrusted_data_wrapped(path: Path) -> None:
     assert "never apply" in rendered.system.casefold()
     assert rendered.user.count("<untrusted_content") >= 2 and "{{" not in rendered.user
     assert set(rendered.untrusted_fields) == {"text", "history", "items"}
+
+
+@pytest.mark.parametrize(
+    "text",
+    ["I want video calls", "I want it simpler", "don't add reviews", "do not include a cart"],
+)
+def test_loose_wants_are_not_turned_into_added_features(text: str) -> None:
+    out = fallback(_inp(text, [], target_kind="unknown", target_id=""))
+    assert not out.understood and out.ops == []

@@ -5,12 +5,12 @@
 remove:
   [remove, delete, drop, exclude, "get rid of", "take out", "take away", "i dont want", "dont want",
    "do not want", "no need for", "dont need", "do not need", "hata", hatao, "hata do", "hatado",
-   "nikal do", "nikalo", "nahi chahiye", "nahin chahiye", "mat rakho", "हटाओ", "हटा दो", "हटा दीजिए",
+   "dont add", "do not add", "no need to add", "dont include", "do not include", "nikal do", "nikalo", "nahi chahiye", "nahin chahiye", "mat rakho", "हटाओ", "हटा दो", "हटा दीजिए",
    "निकाल दो", "नहीं चाहिए", "मत रखो"]
 
 add:
-  [add, include, "also add", "i also want", "i want", "i need", "we need", "jod", jodo, "jod do",
-   "add karo", "aur chahiye", "bhi chahiye", "जोड़ो", "जोड़ दो", "जोड़िए", "भी चाहिए", "और चाहिए"]
+  [add, include, "also add", "can you add", "please add", "jod", jodo, "jod do", "add karo", "aur chahiye",
+   "bhi chahiye", "जोड़ो", "जोड़ दो", "जोड़िए", "भी चाहिए", "और चाहिए"]
 
 move:
   [move, mark, make, set, change, put, shift, push, "turn into", "kar do", karo, rakho, "कर दो", करो, रखो]

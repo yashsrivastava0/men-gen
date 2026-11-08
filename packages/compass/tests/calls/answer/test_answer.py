@@ -241,3 +241,19 @@ def test_prompt_renders_with_untrusted_data_wrapped(path: Path) -> None:
     assert "<untrusted_content" in rendered.user and "{{" not in rendered.user
     assert set(rendered.untrusted_fields) == {"question", "slots"}
     assert "price" in rendered.system
+
+
+def test_classify_is_not_fooled_by_everyday_words() -> None:
+    assert classify("can the app work for a technology marketplace?") == "question"
+    assert classify("which framework should we use") == "tech_choice"
+    assert classify("why do you ask this") == "help"
+
+
+def test_a_quoted_hindi_word_in_an_english_reply_is_fine() -> None:
+    out = AnswerOutput(
+        text="You called it दर्ज़ी earlier. Shall we continue?",
+        language="en",
+        grounded_in=[],
+        declined=False,
+    )
+    assert check_answer(_inp(), out) == []
