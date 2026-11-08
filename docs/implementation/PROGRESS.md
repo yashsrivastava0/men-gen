@@ -112,14 +112,21 @@ Offline vertical slice, time-boxed (D-085). If this section is the last thing yo
 - [x] Package skeleton, root wiring, import-linter layer + isolation contract (fc68145)
 - [x] Shared contracts commit: config, domain, store ports, engine ports (12 call ports + `CompassService` + `HandoffPort`), `CompassCallSpec`/`CallRunner`, `CompassBudget`, `BriefViewModel`, API schemas, ADR 0012 to 0014 (this checkpoint)
 - [x] Catalog data + loader: 44 slots, 17 frames, 16 families, 9 tier B + 8 declined, 135 en/hi strings (abe227f)
-- [ ] Store: fake + PostgreSQL + Alembic + contract suite (agent S)
-- [ ] Calls A: understand_turn, write_card, situate (agent C1)
-- [ ] Calls B: compile_text, seed_research, probe_handoff (agent C2)
-- [ ] Engine core: state machine, slot and tier rules, VoI queue, card validators, assumptions, gate rules, patch engine + undo, safety (agent E1)
+- [x] Store: fake + PostgreSQL + Alembic + contract suite, merged at its last commit (52fb689); agent was cut off by the usage limit, so re-run `uv run pytest packages/compass -m integration` to confirm
+- [x] Calls A merged at its last commit (9105c54; agent cut off, check its uncommitted leftovers in `../wt-compass-callsa`)
+- [x] Calls B: compile_text, seed_research, probe_handoff (686be6e)
+- [x] Engine core: state machine, slots, tiers, VoI queue, card validators, assumptions, gate, patch + undo, safety (f222169, b365a24)
 - [x] Views: BriefViewModel builder, consumer views (no transcript), readiness, diffs, provenance (08a1b1f)
-- [ ] API + static UI (agent A)
+- [x] API + SSE + static test UI merged (50bec94); not yet smoke-tested in a browser by the lead
 - [~] Engine service (turn loop) written (7ccd58a); end-to-end scenario tests are held back until the engine, calls and store branches merge (then `tests/scenarios` lands)
-- [ ] Other six calls: read_chunk, merge_claims, answer, scan_ambiguity, interpret_change, make_variants (wave 2; until then their ports run on deterministic fallbacks)
+- [~] Other six calls: answer, interpret_change, make_variants merged (c836103); read_chunk partly done in `../wt-compass-callsd` (1 commit, uncommitted rest); merge_claims and scan_ambiguity not started (placeholders in engine/fallback_ports.py)
 - [ ] Live batch A smoke (only if the API key and `ALLOW_LIVE_LLM=1` are already in the environment)
 - [ ] Deferred (exact next steps are written here at wrap-up): intake (parsers, URL reader, SSRF guard), batches B to D, eval harness and metrics, the full IN/IV/DC scenario list and ten personas, prefetch, enterprise extras, `ChainedRegistry` gateway hook
 
+
+### Next steps (written at the 04:40 cutoff; none of this was verified end to end)
+1. Run `uv run pytest packages/compass -q` and `-m integration`; the full run takes longer than 200 s, find the slow test (suspect `tests/api` or `tests/ui_smoke`).
+2. The end-to-end scenario tests (`tests/scenarios`, held aside in the session scratchpad: conftest + `test_service_flow.py`) were never run against the merged main; copy them in, fix `Service` integration breaks (the lead-written `engine/service.py` is untested).
+3. The scenarios agent (`feat/compass-scen`), the store agent and calls-A/D worktrees (`../wt-compass-*`) have uncommitted leftovers: inspect with `git status`, commit what is green, merge, then remove the worktrees (D-072).
+4. Smoke `uv run python -m mde_compass --port 8110` and open http://127.0.0.1:8110/ui/ in mock mode.
+5. Deferred: intake, live batches A to D (no key and no `ALLOW_LIVE_LLM=1` in this environment), eval harness, full scenario/persona lists, docs/packages/compass.md, `ChainedRegistry` hook.
