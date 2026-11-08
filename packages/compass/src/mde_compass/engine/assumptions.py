@@ -148,13 +148,12 @@ def sync_assumptions(
                     }
                 )
             )
-        elif existing is not None and (
-            _user_given(record) or record.status in ("empty", "disputed")
-        ):
+        elif existing is not None:
+            # the slot is user-given, empty, disputed or has no value any more
             if existing.decision == "proposed":
                 out.ids.tombstone(existing.id)
             else:
-                kept.append(existing)
+                kept.append(existing)  # a decided assumption stays as the audit trail
     for slot_id, existing in by_slot.items():
         if slot_id not in seen and existing not in kept and slot_id not in store_records:
             kept.append(existing)  # a slot not in the store snapshot: leave its assumption alone

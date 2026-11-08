@@ -238,3 +238,18 @@ def test_silence_never_approves_and_sync_never_decides(slot_ids: list[str]) -> N
     assert all(a.tier != "Locked" for a in brief.assumptions)
     again = sync_assumptions(brief, store, CATALOG)
     assert [a.id for a in again.assumptions] == [a.id for a in brief.assumptions]
+
+
+def test_an_assumption_whose_slot_lost_its_value_is_tombstoned_not_left_behind() -> None:
+    store = {"context.scale_launch": assumed("context.scale_launch", "pilot_small")}
+    brief = sync_assumptions(Brief(), store, CATALOG)
+    store["context.scale_launch"] = assumed("context.scale_launch", None)
+    after = sync_assumptions(brief, store, CATALOG)
+    assert after.assumptions == []
+    assert "ASM-001" in after.ids.tombstones
+
+
+def test_assumptions_of_slots_outside_the_store_snapshot_are_left_alone() -> None:
+    store = {"context.scale_launch": assumed("context.scale_launch", "pilot_small")}
+    brief = sync_assumptions(Brief(), store, CATALOG)
+    assert len(sync_assumptions(brief, {}, CATALOG).assumptions) == 1
