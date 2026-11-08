@@ -7,6 +7,8 @@ import time
 from pathlib import Path
 
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from mde_compass.calls.base import CallRunner
 from mde_compass.calls.seed_research import mock
@@ -376,3 +378,52 @@ def test_linear_time_on_hostile_input(hostile: str) -> None:
     normalize(inp, _out(_req(entity=hostile, topic=hostile, question=hostile, terms=[hostile])))
     assert time.monotonic() - started < 5.0
     assert len(out.requests) >= 3
+
+
+# --- properties: whatever the model says, what survives is valid and loyal to the user -----------------
+
+_text = st.one_of(st.just(""), st.just("  "), st.text(max_size=20))
+_wire = st.builds(
+    WireRequest,
+    topic=_text,
+    question=_text,
+    decision_unlocked=_text,
+    entity=_text,
+    geography=_text,
+    source_languages=st.lists(_text, max_size=3),
+    terms=st.lists(_text, max_size=4),
+    references=st.lists(
+        st.sampled_from(["Zomato", "zomato", "Swiggy", "", "Uber Eats"]), max_size=3
+    ),
+    prefer_sources=st.lists(_text, max_size=2),
+    avoid=st.lists(_text, max_size=2),
+    depth=st.sampled_from(["quick", "standard", "deep"]),
+    priority=st.sampled_from(["high", "medium", "low"]),
+    shown_to_user_as=_text,
+)
+
+
+@settings(max_examples=80, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(
+    requests=st.lists(_wire, max_size=15),
+    competitors=st.lists(st.sampled_from(["Zomato", "Swiggy", "Uber Eats", " "]), max_size=4),
+)
+def test_normalized_output_is_always_valid_and_loyal(
+    requests: list[WireRequest], competitors: list[str]
+) -> None:
+    inp = _inp()
+    hints = WireHints(
+        disambiguated_names=[], synonyms=[], local_competitors=competitors, languages=[]
+    )
+    out = normalize(inp, _out(*requests, hints=hints))
+    assert len(out.requests) <= 12
+    seen: set[str] = set()
+    for r in out.requests:
+        assert r.geography.strip() and r.entity.strip() and [t for t in r.terms if t.strip()]
+        ResearchRequest(id="RR-001", **r.model_dump())  # the domain validator agrees
+        assert r.avoid[: len(inp.exclusions)] == inp.exclusions
+        assert set(r.references) <= {"Zomato"}
+        key = r.topic.casefold() + "|" + r.entity.casefold() + "|" + r.geography.casefold()
+        assert key not in seen
+        seen.add(key)
+    assert set(out.hints.local_competitors) <= {"Zomato"}

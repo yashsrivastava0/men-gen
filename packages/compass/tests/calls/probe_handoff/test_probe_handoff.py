@@ -7,6 +7,8 @@ import time
 from pathlib import Path
 
 import pytest
+from hypothesis import HealthCheck, given, settings
+from hypothesis import strategies as st
 
 from mde_compass.calls.base import CallRunner
 from mde_compass.calls.probe_handoff import mock
@@ -419,3 +421,41 @@ def test_linear_time_on_hostile_input(hostile: str) -> None:
         )
         evaluate(inp, _out(blocking_questions=[q] * 20), SLOTS)
     assert time.monotonic() - started < 5.0
+
+
+# --- property: the verdict is a function of the plan and the digest, never of the model's claim --------
+
+_blank_or_text = st.sampled_from(["", " ", "x", "food ordering"])
+_query = st.builds(
+    PlanQuery,
+    query=_blank_or_text,
+    region=_blank_or_text,
+    entity=_blank_or_text,
+    terms=st.lists(_blank_or_text, max_size=2),
+)
+
+
+@settings(max_examples=80, deadline=None, suppress_health_check=[HealthCheck.too_slow])
+@given(
+    queries=st.lists(_query, max_size=12),
+    claim=st.booleans(),
+    geography=st.sampled_from(["", "Pune"]),
+)
+def test_research_verdict_ignores_the_claim(
+    queries: list[PlanQuery], claim: bool, geography: str
+) -> None:
+    inp = _inp("research", geography=geography)
+    expected = (
+        bool(geography)
+        and len(queries) >= 8
+        and all(
+            q.query.strip()
+            and q.region.strip()
+            and q.entity.strip()
+            and any(t.strip() for t in q.terms)
+            for q in queries
+        )
+    )
+    out = _out(can_start=claim, plan_queries=queries)
+    assert evaluate(inp, out, SLOTS).passed is expected
+    assert evaluate(inp, out.model_copy(update={"can_start": not claim}), SLOTS).passed is expected
