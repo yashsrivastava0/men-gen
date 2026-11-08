@@ -1,0 +1,195 @@
+{
+  "name": "en_research_food_pune",
+  "input": {
+    "kind": "research",
+    "language": "en",
+    "digest": {
+      "idea": "a way for my restaurant in Pune to take orders",
+      "category": "food ordering",
+      "business_model": "a small fee on each order",
+      "geography": "Pune, Maharashtra, India",
+      "audience": [
+        "regular customers"
+      ],
+      "apps": [
+        {
+          "name": "Customer app",
+          "purpose": "order food"
+        }
+      ],
+      "roles": [
+        {
+          "name": "customer",
+          "goal": "order a meal"
+        },
+        {
+          "name": "restaurant owner",
+          "goal": "manage orders"
+        }
+      ],
+      "features": [
+        {
+          "name": "Menu",
+          "intent": "see what is on offer",
+          "priority": "must",
+          "status": "in"
+        },
+        {
+          "name": "Order tracking",
+          "intent": "see where my order is",
+          "priority": "must",
+          "status": "in"
+        },
+        {
+          "name": "Loyalty points",
+          "intent": "",
+          "priority": "nice",
+          "status": "later"
+        }
+      ],
+      "glossary": [
+        "thali"
+      ],
+      "references": [
+        "Zomato"
+      ],
+      "tone_words": [
+        "warm",
+        "friendly"
+      ],
+      "brand_signals": [
+        "logo uploaded"
+      ],
+      "locales": [
+        "en",
+        "hi"
+      ],
+      "constraints": [
+        "works on slow networks"
+      ]
+    }
+  },
+  "output": {
+    "can_start": true,
+    "plan_queries": [
+      {
+        "query": "food ordering apps in Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "food ordering apps",
+        "terms": [
+          "food ordering",
+          "apps",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "popular food ordering apps Pune, Maharashtra, India reviews",
+        "region": "Pune, Maharashtra, India",
+        "entity": "food ordering apps",
+        "terms": [
+          "food ordering",
+          "reviews",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "food ordering local competitors Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "local food ordering apps",
+        "terms": [
+          "food ordering",
+          "competitors",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "payment methods for food ordering in Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "payment methods",
+        "terms": [
+          "payment",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "SMS and sign in providers Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "sign-in and messaging",
+        "terms": [
+          "SMS",
+          "sign in",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "rules and licences for food ordering in Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "regulation",
+        "terms": [
+          "rules",
+          "licence",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "food ordering pricing models Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "pricing",
+        "terms": [
+          "pricing",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "food ordering app user complaints Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "food ordering apps",
+        "terms": [
+          "complaints",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "what regular customers expect from food ordering apps in Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "food ordering apps",
+        "terms": [
+          "regular customers",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "a small fee on each order for food ordering in Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "food ordering business model",
+        "terms": [
+          "a small fee on each order",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      },
+      {
+        "query": "Zomato features and flows in Pune, Maharashtra, India",
+        "region": "Pune, Maharashtra, India",
+        "entity": "Zomato",
+        "terms": [
+          "Zomato",
+          "food ordering",
+          "Pune, Maharashtra, India"
+        ]
+      }
+    ],
+    "journeys": [],
+    "screens": [],
+    "tone": "",
+    "direction": "",
+    "blocking_questions": []
+  },
+  "expected_passed": true,
+  "expected_gap_slots": []
+}

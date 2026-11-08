@@ -1,0 +1,33 @@
+# Wording of the deterministic fallback of cmp.compile_text, per language (data, not logic; hard rule 8).
+# Sentences are filled ONLY from slot values and item names the user gave; nothing is invented.
+# Placeholders: {category} {audience} {geo} {features} {business_model} {name} {intent} {summary}.
+en:
+  stopwords: [a, an, the, this, that, it, its, they, their, people, users, user, your, you, we, our, for, with,
+    and, or, of, in, "on", to, by, from, one, each, first, version, app, apps, lets, helps, shows, yeh, ye, ek, ke, ki, ka, hai, hain, mein, aur, ko, se, par, liye, iske, isme,
+    gives, includes, plans, there, these, those, is, are, be, as, at, who, what, how, can, will]
+  summary_category: "{category} app"
+  summary_audience: " for {audience}"
+  summary_geo: " in {geo}"
+  summary_empty: "Your app idea, with details still to come"
+  pitch_audience: "It is for {audience}."
+  pitch_geo: "It starts in {geo}."
+  pitch_features: "The first version includes {features}."
+  pitch_model: "It earns through {business_model}."
+  description_with_intent: "{name}: {intent}"
+  description_plain: "{name}"
+  list_sep: ", "
+  list_last: " and "
+hi:
+  stopwords: [यह, ये, वह, वे, और, के, की, का, में, से, को, पर, है, हैं, ऐप]
+  summary_category: "{category} ऐप"
+  summary_audience: ", {audience} के लिए"
+  summary_geo: ", {geo} में"
+  summary_empty: "आपके ऐप का आइडिया, बाकी जानकारी आगे जुड़ेगी"
+  pitch_audience: "यह {audience} के लिए है।"
+  pitch_geo: "यह {geo} में शुरू होता है।"
+  pitch_features: "पहले वर्शन में {features} शामिल हैं।"
+  pitch_model: "इससे कमाई का तरीका: {business_model}।"
+  description_with_intent: "{name}: {intent}"
+  description_plain: "{name}"
+  list_sep: ", "
+  list_last: " और "

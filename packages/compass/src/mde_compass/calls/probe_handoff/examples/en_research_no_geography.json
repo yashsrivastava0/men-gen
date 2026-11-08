@@ -1,0 +1,92 @@
+{
+  "name": "en_research_no_geography",
+  "input": {
+    "kind": "research",
+    "language": "en",
+    "digest": {
+      "idea": "a way for my restaurant in Pune to take orders",
+      "category": "food ordering",
+      "business_model": "a small fee on each order",
+      "geography": "",
+      "audience": [
+        "regular customers"
+      ],
+      "apps": [
+        {
+          "name": "Customer app",
+          "purpose": "order food"
+        }
+      ],
+      "roles": [
+        {
+          "name": "customer",
+          "goal": "order a meal"
+        },
+        {
+          "name": "restaurant owner",
+          "goal": "manage orders"
+        }
+      ],
+      "features": [
+        {
+          "name": "Menu",
+          "intent": "see what is on offer",
+          "priority": "must",
+          "status": "in"
+        },
+        {
+          "name": "Order tracking",
+          "intent": "see where my order is",
+          "priority": "must",
+          "status": "in"
+        },
+        {
+          "name": "Loyalty points",
+          "intent": "",
+          "priority": "nice",
+          "status": "later"
+        }
+      ],
+      "glossary": [
+        "thali"
+      ],
+      "references": [
+        "Zomato"
+      ],
+      "tone_words": [
+        "warm",
+        "friendly"
+      ],
+      "brand_signals": [
+        "logo uploaded"
+      ],
+      "locales": [
+        "en",
+        "hi"
+      ],
+      "constraints": [
+        "works on slow networks"
+      ]
+    }
+  },
+  "output": {
+    "can_start": false,
+    "plan_queries": [],
+    "journeys": [],
+    "screens": [],
+    "tone": "",
+    "direction": "",
+    "blocking_questions": [
+      {
+        "question": "Which country, city or region will the app be used in?",
+        "slot_id": "context.geo",
+        "fix": "ask",
+        "suggested_value_json": null
+      }
+    ]
+  },
+  "expected_passed": false,
+  "expected_gap_slots": [
+    "context.geo"
+  ]
+}

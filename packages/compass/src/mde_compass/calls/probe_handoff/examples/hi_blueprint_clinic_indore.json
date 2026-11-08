@@ -1,0 +1,98 @@
+{
+  "name": "hi_blueprint_clinic_indore",
+  "input": {
+    "kind": "blueprint",
+    "language": "hi",
+    "digest": {
+      "idea": "क्लिनिक के लिए अपॉइंटमेंट बुकिंग",
+      "category": "क्लिनिक बुकिंग",
+      "business_model": "",
+      "geography": "इंदौर",
+      "audience": [
+        "मरीज़"
+      ],
+      "apps": [
+        {
+          "name": "मरीज़ ऐप",
+          "purpose": "अपॉइंटमेंट बुक करना"
+        }
+      ],
+      "roles": [
+        {
+          "name": "मरीज़",
+          "goal": "डॉक्टर से मिलने का समय लेना"
+        },
+        {
+          "name": "रिसेप्शनिस्ट",
+          "goal": "बुकिंग सँभालना"
+        }
+      ],
+      "features": [
+        {
+          "name": "बुकिंग",
+          "intent": "मरीज़ अपना समय चुनते हैं",
+          "priority": "must",
+          "status": "in"
+        },
+        {
+          "name": "रिमाइंडर",
+          "intent": "अपॉइंटमेंट से पहले याद दिलाना",
+          "priority": "must",
+          "status": "in"
+        }
+      ],
+      "glossary": [],
+      "references": [],
+      "tone_words": [],
+      "brand_signals": [],
+      "locales": [
+        "hi"
+      ],
+      "constraints": []
+    }
+  },
+  "output": {
+    "can_start": true,
+    "plan_queries": [],
+    "journeys": [
+      {
+        "name": "मरीज़: डॉक्टर से मिलने का समय लेना",
+        "role": "मरीज़",
+        "steps": [
+          "बुकिंग",
+          "रिमाइंडर"
+        ]
+      },
+      {
+        "name": "रिसेप्शनिस्ट: बुकिंग सँभालना",
+        "role": "रिसेप्शनिस्ट",
+        "steps": [
+          "बुकिंग",
+          "रिमाइंडर"
+        ]
+      }
+    ],
+    "screens": [
+      {
+        "name": "होम: मरीज़ ऐप",
+        "journey": "मरीज़: डॉक्टर से मिलने का समय लेना",
+        "first_release": true
+      },
+      {
+        "name": "बुकिंग",
+        "journey": "मरीज़: डॉक्टर से मिलने का समय लेना",
+        "first_release": true
+      },
+      {
+        "name": "रिमाइंडर",
+        "journey": "मरीज़: डॉक्टर से मिलने का समय लेना",
+        "first_release": true
+      }
+    ],
+    "tone": "",
+    "direction": "",
+    "blocking_questions": []
+  },
+  "expected_passed": true,
+  "expected_gap_slots": []
+}
