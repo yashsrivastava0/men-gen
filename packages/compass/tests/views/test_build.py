@@ -249,3 +249,36 @@ def test_empty_brief_renders_empty_text_not_a_crash() -> None:
 
 def test_view_model_is_deterministic() -> None:
     assert _build().model_dump() == _build().model_dump()
+
+
+def test_no_raw_string_keys_or_placeholders_leak_into_the_output() -> None:
+    for brief in (rich_brief(), empty_brief()):
+        for lang in ("en", "hi"):
+            vm = _build(brief, language=lang, blockers=["hash_mismatch"])
+            text = vm.model_dump_json()
+            for leak in (
+                "view.",
+                "badge.",
+                "section.",
+                "readiness.",
+                "scope.in",
+                "priority.",
+                "{value}",
+                "{count}",
+                "{consumer}",
+            ):
+                assert leak not in text.replace("scope.FTR", "").replace("scope.", "scope_"), (
+                    lang,
+                    leak,
+                )
+
+
+def test_hindi_output_has_no_english_labels_for_catalog_driven_text() -> None:
+    vm = _build(language="hi")
+    english = {CATALOG.t(f"section.{s}", "en") for s in SECTION_IDS}
+    assert not english & {s.title for s in vm.sections}
+    chips = [c.label for c in vm.header.readiness]
+    assert all("Ready" not in c and "gaps" not in c for c in chips)
+    rows = _rows(vm)
+    assert rows["assumptions.ASM-002"].status_chip == "अहम"
+    assert rows["assumptions.ASM-002"].group == "उपयोगकर्ता"
