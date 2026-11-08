@@ -394,6 +394,53 @@ async def check_events_outbound_concurrent(factory: StoreFactory) -> None:
 
 
 @check
+async def check_events_outbound_batches_do_not_interleave(factory: StoreFactory) -> None:
+    """A unit of work holds the session's sequence until it ends: its events get consecutive numbers."""
+    store = await factory()
+    rec = await _new_session(store)
+    per_writer = 3
+
+    async def writer(n: int) -> list[int]:
+        async with store.begin(A) as uow:
+            return [
+                await uow.events.append_outbound(rec.id, "assistant_message", _payload(f"w{n}-{i}"))
+                for i in range(per_writer)
+            ]
+
+    batches = await asyncio.gather(*(writer(n) for n in range(4)))
+    flat = sorted(seq for batch in batches for seq in batch)
+    assert flat == list(range(1, 4 * per_writer + 1))
+    for batch in batches:
+        assert batch == list(range(batch[0], batch[0] + per_writer))  # consecutive, in order
+    async with store.begin(A) as uow:
+        stored = await uow.events.list_outbound(rec.id)
+        assert [e.seq for e in stored] == flat
+        assert [e.idx for e in stored] == sorted(e.idx for e in stored)
+
+
+@check
+async def check_turn_and_event_writers_do_not_deadlock(factory: StoreFactory) -> None:
+    """Writers that touch events and the turn flag in opposite orders still finish (one lock order)."""
+    store = await factory()
+    rec = await _new_session(store)
+
+    async def events_then_turn() -> None:
+        async with store.begin(A) as uow:
+            await uow.events.append_outbound(rec.id, "notice", {"code": "a"})
+            await uow.sessions.try_begin_turn(rec.id)
+
+    async def turn_then_events() -> None:
+        async with store.begin(A) as uow:
+            await uow.sessions.try_begin_turn(rec.id)
+            await uow.events.append_outbound(rec.id, "notice", {"code": "b"})
+
+    jobs = [events_then_turn(), turn_then_events(), events_then_turn(), turn_then_events()]
+    await asyncio.wait_for(asyncio.gather(*jobs), timeout=20)
+    async with store.begin(A) as uow:
+        assert [e.seq for e in await uow.events.list_outbound(rec.id)] == [1, 2, 3, 4]
+
+
+@check
 async def check_events_history_paging(factory: StoreFactory) -> None:
     store = await factory()
     rec = await _new_session(store)
@@ -697,6 +744,23 @@ async def check_call_log(factory: StoreFactory) -> None:
         assert entries[1].tokens_in == 100 and entries[1].cost_micros == 1200
         assert [e.call_id for e in await uow.call_log.list(rec.id, limit=2)] == ["call_x", "call_3"]
         await _raises(NotFound, uow.call_log.list("ses_missing"))
+
+
+@check
+async def check_call_log_does_not_wait_for_session_writers(factory: StoreFactory) -> None:
+    """Logging a model call is never queued behind a unit that is busy writing the same session."""
+    store = await factory()
+    rec = await _new_session(store)
+    async with store.begin(A) as writer:
+        await writer.events.append_outbound(rec.id, "notice", {"code": "holding the sequence"})
+
+        async def log_call() -> None:
+            async with store.begin(A) as logger:
+                await logger.call_log.record(rec.id, f.make_call("call_during_write"))
+
+        await asyncio.wait_for(log_call(), timeout=10)
+    async with store.begin(A) as uow:
+        assert [e.call_id for e in await uow.call_log.list(rec.id)] == ["call_during_write"]
 
 
 # --------------------------------------------------------------------------- sources, contributors

@@ -17,6 +17,7 @@ import os
 import time
 from collections.abc import Iterator
 from datetime import UTC, datetime
+from typing import Any
 
 import psycopg
 from psycopg import sql
@@ -142,7 +143,7 @@ def make_session(
     tenant_id: str = TENANT_A,
     user_id: str = USER_A,
     session_id: str | None = None,
-    **fields: object,
+    **fields: Any,
 ) -> SessionRecord:
     """A fresh ``WELCOME`` session record (``ses_<ulid>`` id)."""
     base: dict[str, object] = {

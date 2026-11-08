@@ -118,12 +118,13 @@ class _Repo:
             raise NotFound(f"session {session_id!r} not found")
 
     async def lock_session(self, session_id: str) -> Any:
-        """``SELECT ... FOR UPDATE`` of the session row: writers of one session queue up here until
-        their transaction ends. ``NotFound`` for unknown or foreign ids."""
+        """``SELECT ... FOR NO KEY UPDATE`` of the session row: writers of one session queue up here
+        until their transaction ends. ``NotFound`` for unknown or foreign ids. (NO KEY UPDATE, like the
+        plain ``UPDATE`` of the counters, does not block child-row inserts, which only take KEY SHARE.)"""
         stmt = (
             select(*SESSION.c)
             .where(SESSION.c.id == session_id, SESSION.c.tenant_id == self.tenant)
-            .with_for_update()
+            .with_for_update(key_share=True)
         )
         row = (await self._s.execute(stmt)).one_or_none()
         if row is None:
@@ -237,6 +238,9 @@ class PgSessionRepo(_Repo):
         return _session_record(row)
 
     async def try_begin_turn(self, session_id: str) -> bool:
+        # Lock order everywhere is: session row first, advisory lock second (no deadlock between a
+        # unit that wrote events and one that claims a turn).
+        await self.lock_session(session_id)  # NotFound for unknown or foreign ids
         await self._s.execute(
             select(func.pg_advisory_xact_lock(func.hashtextextended(turn_lock_key(session_id), 0)))
         )
@@ -255,10 +259,7 @@ class PgSessionRepo(_Repo):
             .values(active_turn=True, turn_started_at=now)
             .returning(SESSION.c.id)
         )
-        if (await self._s.execute(stmt)).first() is not None:
-            return True
-        await self.require_session(session_id)  # NotFound, or a turn is genuinely running
-        return False
+        return (await self._s.execute(stmt)).first() is not None
 
     async def end_turn(self, session_id: str) -> None:
         stmt = (

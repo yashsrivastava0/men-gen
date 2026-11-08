@@ -639,7 +639,9 @@ class _CallLog:
         self._u = uow
 
     async def record(self, session_id: str, entry: CallLogEntry) -> None:
-        await self._u.locked_session(session_id)
+        # No row lock (as in Postgres, where the insert only takes a KEY SHARE lock on the session):
+        # logging a model call never waits behind a unit that is writing the session.
+        self._u.require_session(session_id)
         stored = entry.model_copy(update={"at": entry.at or self._u.now()})
         self._u.data.call_log.setdefault(session_id, [])
         self._u.append(self._u.data.call_log[session_id], stored.model_dump_json())
