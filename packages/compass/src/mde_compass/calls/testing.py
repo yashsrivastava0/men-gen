@@ -1,0 +1,57 @@
+"""Test helpers for calls: a REAL in-process mock gateway and a scripted one for failure paths.
+
+``make_client`` runs the real gateway pipeline in mock mode (template rendering with untrusted data wrapped,
+strict-schema conversion, budget guard on an in-memory ledger, output validation, mock handler resolved from
+``spec.mock_handler``), so call tests exercise what production runs, minus the provider.
+``ScriptedGateway`` returns queued outputs or raises queued errors, for fallback and validator tests.
+"""
+
+from __future__ import annotations
+
+from collections.abc import Sequence
+from types import SimpleNamespace
+from typing import Any
+
+from pydantic import BaseModel
+
+from mde_compass.calls.base import CompassCallSpec
+from mde_contracts.gateway import CallContext, CallResult, Usage
+from mde_core.clock import Clock
+from mde_core.settings import load_settings
+from mde_llm_gateway import InProcessGatewayClient, StaticRegistry, create_gateway
+
+
+def make_client(
+    specs: Sequence[CompassCallSpec[Any, Any]], *, clock: Clock | None = None
+) -> InProcessGatewayClient:
+    """A gateway client over the real pipeline in mock mode, serving exactly these specs."""
+    settings = load_settings(llm_mode="mock")
+    registry = StaticRegistry([cs.spec for cs in specs])
+    return InProcessGatewayClient(create_gateway(settings, registry, clock=clock))
+
+
+class ScriptedGateway:
+    """Duck-typed ``GatewayClient``: each ``run`` pops the next queued item (a model or an exception)."""
+
+    def __init__(self, *script: BaseModel | Exception, cost_micros: int = 0) -> None:
+        self.script: list[BaseModel | Exception] = list(script)
+        self.cost_micros = cost_micros
+        self.calls: list[tuple[str, BaseModel]] = []
+
+    async def run(self, spec: Any, inp: BaseModel, ctx: CallContext) -> CallResult[Any]:
+        self.calls.append((spec.id, inp))
+        item = self.script.pop(0)
+        if isinstance(item, Exception):
+            raise item
+        return CallResult(
+            call_id=ctx.request_id,
+            spec_id=spec.id,
+            spec_version=int(spec.version),
+            model="scripted",
+            mode="mock",
+            output=item,
+            usage=Usage(cost_micros=self.cost_micros),
+        )
+
+    async def budget_status(self) -> Any:  # pragma: no cover - unused in tests
+        return SimpleNamespace()
