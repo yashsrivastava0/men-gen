@@ -1,0 +1,16 @@
+Language so far: {{ language }}. Mode: {{ mode }}. Input mode: {{ input_mode }}.
+
+Capability families (ids you may use):
+{% for f in families %}
+- {{ f.id }} ({{ f.label }}): keywords {{ f.keywords | join(", ") }}; typical features: {{ f.typical_features | join(", ") }}
+{% endfor %}
+{% if statements %}
+
+Statements already read from the user's documents (type: text):
+{% for s in statements %}
+{{ s }}
+{% endfor %}
+{% endif %}
+
+The user's message:
+{{ user_text }}

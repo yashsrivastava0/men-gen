@@ -1,0 +1,455 @@
+{
+  "name": "vague_hinglish",
+  "input": {
+    "user_text": "app banana hai",
+    "statements": [],
+    "language": "hi-Latn",
+    "mode": "guided",
+    "input_mode": "text",
+    "families": [
+      {
+        "id": "identity_access",
+        "label": "Identity and access",
+        "keywords": [
+          "sign in",
+          "login",
+          "account",
+          "profile",
+          "one-time code",
+          "password",
+          "साइन इन",
+          "लॉगिन",
+          "खाता",
+          "प्रोफ़ाइल",
+          "पासवर्ड",
+          "login karna"
+        ],
+        "typical_features": [
+          "Sign up and sign in",
+          "One-time code by phone",
+          "Profile page",
+          "Reset a forgotten password",
+          "Roles and permissions",
+          "Invite people"
+        ]
+      },
+      {
+        "id": "catalog_commerce",
+        "label": "Catalog and commerce",
+        "keywords": [
+          "shop",
+          "store",
+          "catalog",
+          "cart",
+          "products",
+          "order online",
+          "दुकान",
+          "खरीदारी",
+          "ऑर्डर",
+          "सामान",
+          "कैटलॉग",
+          "dukaan"
+        ],
+        "typical_features": [
+          "Browse the catalog",
+          "Search and filter",
+          "Item details",
+          "Cart",
+          "Checkout",
+          "Order history"
+        ]
+      },
+      {
+        "id": "booking_scheduling",
+        "label": "Booking and scheduling",
+        "keywords": [
+          "book",
+          "appointment",
+          "slot",
+          "schedule",
+          "reservation",
+          "reminder",
+          "बुकिंग",
+          "अपॉइंटमेंट",
+          "समय तय करना",
+          "आरक्षण",
+          "स्लॉट",
+          "booking karna"
+        ],
+        "typical_features": [
+          "Browse providers or places",
+          "Available times",
+          "Book a time",
+          "Reschedule or cancel",
+          "Reminders",
+          "Calendar view"
+        ]
+      },
+      {
+        "id": "delivery_logistics",
+        "label": "Delivery and logistics",
+        "keywords": [
+          "delivery",
+          "courier",
+          "rider",
+          "tracking",
+          "dispatch",
+          "parcel",
+          "डिलीवरी",
+          "कूरियर",
+          "ट्रैकिंग",
+          "पार्सल",
+          "सवारी",
+          "delivery wala"
+        ],
+        "typical_features": [
+          "Request a delivery",
+          "Assign a rider",
+          "Track on a map",
+          "Delivery status updates",
+          "Proof of delivery",
+          "Today's route list"
+        ]
+      },
+      {
+        "id": "payments_wallet",
+        "label": "Payments and wallet",
+        "keywords": [
+          "payment",
+          "wallet",
+          "upi",
+          "refund",
+          "receipt",
+          "pay",
+          "भुगतान",
+          "वॉलेट",
+          "रिफ़ंड",
+          "रसीद",
+          "पैसे",
+          "paise bhejna"
+        ],
+        "typical_features": [
+          "Pay online",
+          "Wallet balance",
+          "Add money",
+          "Transaction history",
+          "Refunds",
+          "Payment receipts"
+        ]
+      },
+      {
+        "id": "communication",
+        "label": "Communication",
+        "keywords": [
+          "chat",
+          "message",
+          "notification",
+          "inbox",
+          "announcement",
+          "call",
+          "चैट",
+          "संदेश",
+          "सूचना",
+          "इनबॉक्स",
+          "घोषणा",
+          "message bhejna"
+        ],
+        "typical_features": [
+          "One-to-one chat",
+          "Group chat",
+          "Notifications",
+          "Inbox",
+          "Share photos and files",
+          "Announcements"
+        ]
+      },
+      {
+        "id": "content_community",
+        "label": "Content and community",
+        "keywords": [
+          "feed",
+          "post",
+          "community",
+          "forum",
+          "blog",
+          "news",
+          "फ़ीड",
+          "पोस्ट",
+          "समुदाय",
+          "फ़ोरम",
+          "समाचार",
+          "post karna"
+        ],
+        "typical_features": [
+          "Feed",
+          "Create a post",
+          "Comments",
+          "Likes and reactions",
+          "Follow people",
+          "Report a post"
+        ]
+      },
+      {
+        "id": "workflows",
+        "label": "Workflows: forms, approvals, tasks",
+        "keywords": [
+          "form",
+          "approval",
+          "task",
+          "request",
+          "checklist",
+          "workflow",
+          "फ़ॉर्म",
+          "मंज़ूरी",
+          "कार्य",
+          "अनुरोध",
+          "चेकलिस्ट",
+          "form bharna"
+        ],
+        "typical_features": [
+          "Submit a request",
+          "Approval steps",
+          "Task list",
+          "Assign a task",
+          "Status tracking",
+          "Deadline reminders"
+        ]
+      },
+      {
+        "id": "dashboards_admin",
+        "label": "Dashboards and admin",
+        "keywords": [
+          "dashboard",
+          "admin",
+          "report",
+          "analytics",
+          "manage",
+          "settings",
+          "डैशबोर्ड",
+          "एडमिन",
+          "रिपोर्ट",
+          "विश्लेषण",
+          "प्रबंधन",
+          "dashboard dekhna"
+        ],
+        "typical_features": [
+          "Summary dashboard",
+          "Reports with filters",
+          "Manage users",
+          "Manage content",
+          "Activity log",
+          "Export data"
+        ]
+      },
+      {
+        "id": "finance",
+        "label": "Finance",
+        "keywords": [
+          "loan",
+          "savings",
+          "expenses",
+          "budget",
+          "invoice",
+          "bank",
+          "लोन",
+          "बचत",
+          "खर्च",
+          "बजट",
+          "बैंक",
+          "hisab kitab"
+        ],
+        "typical_features": [
+          "Account overview",
+          "Track expenses",
+          "Budgets",
+          "Invoices",
+          "Bill reminders",
+          "Statements"
+        ]
+      },
+      {
+        "id": "health_wellness",
+        "label": "Health and wellness",
+        "keywords": [
+          "clinic",
+          "doctor",
+          "patient",
+          "health",
+          "fitness",
+          "wellness",
+          "क्लिनिक",
+          "डॉक्टर",
+          "मरीज़",
+          "स्वास्थ्य",
+          "सेहत",
+          "doctor se milna"
+        ],
+        "typical_features": [
+          "Find a doctor or trainer",
+          "Book a visit",
+          "Personal records",
+          "Reminders to take medicine",
+          "Track activity",
+          "Goals and plans"
+        ]
+      },
+      {
+        "id": "learning",
+        "label": "Learning",
+        "keywords": [
+          "course",
+          "class",
+          "lesson",
+          "quiz",
+          "student",
+          "teacher",
+          "कोर्स",
+          "कक्षा",
+          "पाठ",
+          "क्विज़",
+          "छात्र",
+          "padhai ka app"
+        ],
+        "typical_features": [
+          "Course list",
+          "Lessons",
+          "Quizzes",
+          "Progress tracking",
+          "Assignments",
+          "Certificates"
+        ]
+      },
+      {
+        "id": "travel_hospitality",
+        "label": "Travel and hospitality",
+        "keywords": [
+          "hotel",
+          "trip",
+          "travel",
+          "stay",
+          "tour",
+          "restaurant",
+          "होटल",
+          "यात्रा",
+          "ठहरना",
+          "पर्यटन",
+          "रेस्तरां",
+          "trip plan"
+        ],
+        "typical_features": [
+          "Search places to stay or trips",
+          "Trip plan",
+          "Booking confirmation",
+          "Guest requests",
+          "Local guides",
+          "Reviews"
+        ]
+      },
+      {
+        "id": "marketplaces",
+        "label": "Marketplaces",
+        "keywords": [
+          "marketplace",
+          "buyers and sellers",
+          "vendor",
+          "listing",
+          "seller",
+          "classifieds",
+          "मार्केटप्लेस",
+          "खरीदार और विक्रेता",
+          "विक्रेता",
+          "लिस्टिंग",
+          "बाज़ार",
+          "buyer seller app"
+        ],
+        "typical_features": [
+          "Seller sign-up",
+          "Create a listing",
+          "Search and filter",
+          "Chat between buyer and seller",
+          "Order management",
+          "Seller payouts"
+        ]
+      },
+      {
+        "id": "civic_utilities",
+        "label": "Civic and utilities",
+        "keywords": [
+          "complaint",
+          "municipal",
+          "utility",
+          "bill",
+          "citizen",
+          "service request",
+          "शिकायत",
+          "नगर निगम",
+          "बिजली",
+          "पानी",
+          "नागरिक",
+          "shikayat darj"
+        ],
+        "typical_features": [
+          "File a complaint",
+          "Track a complaint",
+          "Pay bills",
+          "Service directory",
+          "Notices and alerts",
+          "Nearby offices"
+        ]
+      },
+      {
+        "id": "enterprise_workforce",
+        "label": "Enterprise workforce",
+        "keywords": [
+          "employee",
+          "staff",
+          "hr",
+          "attendance",
+          "shift",
+          "leave",
+          "कर्मचारी",
+          "हाज़िरी",
+          "छुट्टी",
+          "शिफ़्ट",
+          "स्टाफ़",
+          "staff attendance"
+        ],
+        "typical_features": [
+          "Attendance check-in",
+          "Leave requests",
+          "Shift schedule",
+          "Employee directory",
+          "Payslips",
+          "Company announcements"
+        ]
+      }
+    ]
+  },
+  "output": {
+    "profile": {
+      "input_richness": "one_sentence",
+      "clarity": "vague",
+      "expertise": "non_technical",
+      "size_stakes": "startup",
+      "reference_driven": false,
+      "collaboration": "one",
+      "language": "hi-Latn",
+      "input_mode": "text",
+      "urgency": "thorough",
+      "formality": "casual"
+    },
+    "hypothesis": {
+      "label": "hypothesis",
+      "category": "",
+      "subcategory": "",
+      "business_model_candidates": [],
+      "likely_families": [],
+      "likely_roles": [],
+      "likely_features": [],
+      "hard_parts": [],
+      "glossary_candidates": [],
+      "confidence": 0.0
+    },
+    "one_line_idea": "app banana hai"
+  }
+}

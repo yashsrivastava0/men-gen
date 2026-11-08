@@ -1,0 +1,82 @@
+{
+  "name": "features_hi_checklist",
+  "input": {
+    "frame": {
+      "id": "features",
+      "purpose": "Propose the features as a checklist the user adjusts, each with the job it does.",
+      "guidance": "A conservative checklist: tick only features the user or documents mentioned, or that are strongly typical for this family; leave extras unticked. Group by app. Label each by its job in plain words. Flag anything outside the families as custom.",
+      "card_type": "pick_many",
+      "option_count": null,
+      "max_question_words": 20,
+      "max_option_words": 8
+    },
+    "slots": [
+      {
+        "slot_id": "scope.features",
+        "label": "Features",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "intent",
+          "status",
+          "priority",
+          "tier"
+        ]
+      }
+    ],
+    "option_source": "family",
+    "hints": [
+      "ऑर्डर ट्रैक करना",
+      "कार्ट",
+      "सहेजी हुई सूची"
+    ],
+    "evidence": [
+      "मुझे ऑर्डर ट्रैक करना है"
+    ],
+    "must_confirm": false,
+    "language": "hi",
+    "avoid_labels": [],
+    "profile": {
+      "expertise": "non_technical",
+      "formality": "casual",
+      "language": "hi"
+    },
+    "known_slots": [],
+    "question_number": 3
+  },
+  "output": {
+    "question": "ऐप में इनमें से क्या-क्या होना चाहिए?",
+    "why_we_ask": "यही सूची पहले संस्करण की योजना बनती है।",
+    "options": [
+      {
+        "id": "A",
+        "label": "ऑर्डर ट्रैक करना",
+        "basis": "your_words",
+        "recommended": true,
+        "reason": "शुरू करने के लिए एक सरल विकल्प; बाद में बदल सकते हैं।",
+        "sets_json": "{\"scope.features\": [{\"name\": \"ऑर्डर ट्रैक करना\"}]}",
+        "ticked": true
+      },
+      {
+        "id": "B",
+        "label": "कार्ट",
+        "basis": "typical",
+        "recommended": false,
+        "reason": "",
+        "sets_json": "{\"scope.features\": [{\"name\": \"कार्ट\"}]}",
+        "ticked": false
+      },
+      {
+        "id": "C",
+        "label": "सहेजी हुई सूची",
+        "basis": "typical",
+        "recommended": false,
+        "reason": "",
+        "sets_json": "{\"scope.features\": [{\"name\": \"सहेजी हुई सूची\"}]}",
+        "ticked": false
+      }
+    ],
+    "placeholder": "अपने शब्दों में कोई सुविधा जोड़ें"
+  }
+}

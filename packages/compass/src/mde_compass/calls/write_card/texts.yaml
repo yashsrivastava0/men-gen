@@ -1,0 +1,13 @@
+# Fixed wording used by the deterministic card writer (data, not logic). en / hi; hi-Latn uses en.
+recommended_reason:
+  en: A simple place to start; you can change it later.
+  hi: शुरू करने के लिए एक सरल विकल्प; बाद में बदल सकते हैं।
+checklist_question:
+  en: Which of these do you want?
+  hi: इनमें से आपको कौन सा चाहिए?
+checklist_why:
+  en: We only add what you tick.
+  hi: हम वही जोड़ते हैं जो आप चुनते हैं।
+open_placeholder:
+  en: Type it in your own words
+  hi: अपने शब्दों में लिखिए

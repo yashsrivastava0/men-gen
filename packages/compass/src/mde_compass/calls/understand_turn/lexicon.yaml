@@ -1,0 +1,113 @@
+# Phrase tables for the rule-based understander (mock handler and deterministic fallback) of cmp.understand_turn.
+# English, Hindi (Devanagari) and Hinglish. DATA, not logic: nothing here is tied to one company or app type.
+# Phrases are matched as whole words after casefold / punctuation folding (see lexicon.py).
+# Adapted from the Discover lexicon (packages/prompts c1_understand/lexicon.yaml); copied, not imported.
+
+version: 1
+
+fillers:
+  leading: [please, pls, plz, kindly, "i want to", "i would like to", "ok so", so, chalo, "कृपया", "चलो"]
+  trailing: [please, pls, plz, now, "for now", yaar, bhai, ji, na, "जी", "अब", "कृपया", "भाई"]
+
+# Whole-message (exact after filler trimming) or contained phrases that decide an intent.
+intents:
+  greeting: [hi, hii, hiii, hello, hey, heya, hola, "good morning", "good afternoon", "good evening", namaste, namaskar, pranam, salaam, "नमस्ते", "नमस्कार", "हेलो", "हाय", "प्रणाम"]
+  confirm: ["yes", yeah, yep, ok, okay, sure, "go ahead", "looks good", "looks right", "that works", "sounds good", perfect, correct, "thats right", haan, han, "ji haan", "haan ji", "haan kar do", "theek hai", "thik hai", bilkul, "kar do", "sahi hai", "हाँ", "हां", "जी हाँ", "जी हां", "ठीक है", "बिल्कुल", "कर दो", "सही है"]
+  negate: ["no", nope, nah, "not quite", "not really", "no thanks", nahi, nahin, "nahi yeh nahi", "नहीं", "नही", "ना"]
+  you_decide: ["you decide", "you choose", "you pick", "choose for me", "pick for me", "your choice", "up to you", "i dont care", "dont care", whatever, "surprise me", "any is fine", "anything works", "decide for me", "tum decide karo", "aap decide kar lo", "aap decide karo", "aap hi chun lo", "tum chun lo", "decide kar lo", "decide kar do", "jo theek lage", "jo aapko sahi lage", "kuch bhi chalega", "आप तय कर लीजिए", "आप ही चुन लीजिए", "तुम तय कर लो", "जो ठीक लगे", "कुछ भी चलेगा"]
+  finish_with_defaults: ["finish with smart defaults", "finish with defaults", "use smart defaults", "use defaults", "use default", "just build it", "build it now", "skip the questions", "skip questions", "fill in the rest", "bas bana do", "bas bana de", "bana do bas", "default se bana do", "defaults ke saath", "baaki sab default", "baaki default rakho", "बस बना दो", "डिफ़ॉल्ट के साथ", "बाकी सब डिफ़ॉल्ट"]
+  stop: [stop, cancel, halt, abort, "stop it", "stop karo", "cancel karo", "band karo", "band kar do", "ruk jao", rukiye, "bas karo", "रुकिए", "बंद करो", "रोक दो", "रोको", "बस करो"]
+  change_request: [change, switch, replace, rename, instead, "get rid of", "take out", "no more", "dont want", "i meant", "actually", "not what i meant", badal, badlo, "badal do", hata, hatao, "hata do", "nikal do", "mera matlab", "बदलो", "बदल दो", "हटाओ", "हटा दो", "निकाल दो", "मेरा मतलब"]
+  question_words: [how, what, whats, why, when, where, who, which, can, could, will, would, do, does, did, is, are, kya, kaise, kyun, kyon, kab, kahan, kaun, kon, "क्या", "कैसे", "क्यों", "कब", "कहाँ", "कहां", "कौन"]
+  price_or_time: ["how much", "how long", "how many days", "how many weeks", "how many months", "what will it cost", "what does it cost", price, pricing, cost, costs, quote, timeline, "how soon", "when will it be ready", "kitna lagega", "kitne paise", "kitne din", "kitna time", "kab tak", "kab tak ban", "कितना लगेगा", "कितने पैसे", "कितने दिन", "कितना समय", "कब तक", "कितनी कीमत", "कीमत"]
+  tech_choice: ["react native", flutter, kotlin, swift, expo, firebase, supabase, "which database", "which framework", "which language", "tech stack", "which stack", "what stack", "which backend", "which cloud", aws, azure, "use react", "use flutter", "kaunsa database", "kaunsa framework", "kaun sa framework", "कौन सा डेटाबेस", "कौन सा फ्रेमवर्क"]
+  off_topic: [weather, joke, "tell me a joke", "capital of", "who won", "football score", "cricket score", recipe, horoscope, "movie recommendation", "stock price", "bitcoin price", "mausam", "chutkula", "मौसम", "चुटकुला", "राशिफल"]
+  idea_verbs: ["i want", "i need", "i would like", "id like", "i am building", "im building", "build me", "make me", "create an app", "build an app", "make an app", "an app for", "app for my", "i have a", "i run", "i own", "mujhe", "app chahiye", "banana hai", "banani hai", "app banana", "chahiye", "मुझे", "ऐप चाहिए", "बनाना है", "बनानी है", "चाहिए"]
+
+safety:
+  unsafe: ["sell drugs", "buy drugs", "drug dealing", cocaine, heroin, "money laundering", "launder money", scam, phishing, "fake id", "fake passport", counterfeit, "credit card fraud", "steal credit cards", bomb, explosive, "make a weapon", "sell weapons", "buy guns", stalking, "track my ex", "spy on my wife", "spy on my husband", spyware, keylogger, malware, ransomware, ddos, "self harm", "child abuse", "child porn", "revenge porn", "ghar se drugs"]
+  injection:
+    - "ignore (all |any |the )?(previous|prior|above|earlier|system) (instructions|prompts?|rules|messages)"
+    - "disregard (the |all |any )?(previous|prior|above|system) "
+    - "(reveal|show|print|repeat|tell me|output) (me )?(your|the) (system |hidden |initial |secret )?(prompt|instructions)"
+    - "you are now (in )?(developer|dan|admin|root) "
+
+negation:
+  before: ["no", not, without, dont, doesnt, isnt, never, remove, skip, bina, nahi, nahin, mat, hata, hatao, "बिना", "नहीं", "नही", "मत", "हटाओ"]
+  after: [nahi, nahin, "नहीं", "नही", hata, "हटा", mat, "मत"]
+
+# Languages a user may name (code -> names in any script); used for the `locales` slot.
+languages:
+  en: [english, angrezi, "अंग्रेज़ी", "अंग्रेजी", "इंग्लिश"]
+  hi: [hindi, "हिंदी", "हिन्दी"]
+  mr: [marathi, "मराठी"]
+  ta: [tamil, "तमिल"]
+  te: [telugu, "तेलुगु"]
+  bn: [bengali, bangla, "बंगाली"]
+  gu: [gujarati, "गुजराती"]
+  kn: [kannada, "कन्नड़"]
+  ml: [malayalam, "मलयालम"]
+  pa: [punjabi, "पंजाबी"]
+  ur: [urdu, "उर्दू"]
+  es: [spanish, espanol]
+  fr: [french]
+  de: [german]
+  ar: [arabic]
+
+# Countries are data, so a place is filed under `country` or `city` without code knowing any name.
+countries: [india, bharat, "भारत", "इंडिया", usa, uk, uae, nepal, "नेपाल", bangladesh, "बांग्लादेश", pakistan, "पाकिस्तान", "sri lanka", "श्रीलंका", singapore, canada, australia, germany, france, spain, indonesia, nigeria, kenya, brazil, mexico]
+
+# Words that are never a place even when capitalised or followed by a locative marker.
+geo_stop: [i, we, the, my, our, it, this, that, these, those, app, apps, ऐप, एप, यह, ये, वह, वो, इसमें, उसमें, मेरे, मेरी, मेरा, हमारे, हमारी, हमारा, आप, तुम, सब, कुछ, लोग, और, या, कि, जो, जब, कब, यहाँ, वहाँ, यहां, वहां, ऑर्डर, दुकान, ग्राहक, kuch, sab, app, yeh, woh, mera, meri, mere, humara, hamara, hamare, log, aur, ya, ki, jo, jab, kab, wahan, yahan, order, bahut, thoda, ek, do, teen, har, koi]
+
+geo_markers:
+  latin_before: [in, at, near, "based in", from, around, across]
+  latin_after: [mein, me, se, ke, ki, ka]
+  devanagari_after: ["में", "से", "के", "की", "का"]
+
+reference_cues: [like, "similar to", "inspired by", "clone of", "same as", "just like", "on the lines of"]
+reference_after: [jaisa, jaise, jaisi, "ki tarah", "की तरह", "जैसा", "जैसे", "जैसी"]
+reference_stop: [and, where, for, that, which, with, so, but, aur, jo, ke, a, an, the, this, my, our, it]
+
+# Generic role/app nouns: the surface part of "customer app", "admin panel". Roles themselves come from families.
+surface_words:
+  mobile: [app, apps, "ऐप", "एप", application]
+  web: [panel, dashboard, portal, website, "पैनल", "डैशबोर्ड", "पोर्टल"]
+
+# Generic roles every domain has; family `typical_roles` are added at load time.
+generic_roles: [customer, user, admin, administrator, staff, manager, owner, vendor, seller, buyer, member, "ग्राहक", "एडमिन", "मालिक", "विक्रेता", "सदस्य"]
+
+# slot -> option -> trigger phrases. The option must exist in the slot's catalog options (otherwise ignored).
+enum_phrases:
+  look.tone_words:
+    calm_simple: [calm, simple, minimal, clean, minimalist, peaceful, "शांत", "सरल", "सादा"]
+    friendly_playful: [friendly, playful, fun, colourful, colorful, cheerful, "मज़ेदार", "रंगीन"]
+    professional: [professional, formal, corporate, serious, "प्रोफेशनल", "औपचारिक"]
+  look.density_mode:
+    roomy: [roomy, spacious, airy, "lots of space"]
+    compact: [compact, dense, "lots of information"]
+  auth.methods:
+    no_sign_in: ["no login", "no sign in", "no signin", "no sign up", "without login", "without sign in", "no accounts", "no registration", "bina login", "login nahi", "sign in nahi", "बिना लॉगिन", "लॉगिन नहीं"]
+    phone_otp: [otp, "phone otp", "phone code", "mobile number login", "ओटीपी", "फ़ोन कोड"]
+    email_password: ["email and password", "password login", "username and password", "password se login"]
+  constraints.offline:
+    full_offline: ["works offline", "work offline", "fully offline", "offline mode", "without internet", "no internet", "bina internet", "बिना इंटरनेट"]
+  constraints.accessibility:
+    large_text: ["large text", "big text", "big fonts", "large font", "bade akshar", "बड़े अक्षर"]
+    screen_reader: ["screen reader", "blind users", "visually impaired"]
+    voice_input: ["voice input", "talk to the app", "speak to the app", "bolkar"]
+  integrations.wanted:
+    payments: [payment, payments, upi, "pay online", "online payment", "भुगतान", "पेमेंट"]
+    maps: [map, maps, "google maps", "मैप", "नक्शा"]
+    messaging: [whatsapp, sms, "text message", "messaging", "एसएमएस", "व्हाट्सएप"]
+    email: ["email notifications", "send emails", "email updates"]
+  devices.profile:
+    phones: ["only phones", "phones only", "mobile only", "sirf phone"]
+    phones_tablets: [tablet, tablets, ipad, "टैबलेट"]
+    low_end: ["low end phones", "cheap phones", "old phones", "sasta phone", "पुराने फ़ोन"]
+  idea.business_model:
+    subscription: [subscription, "monthly plan", "yearly plan", "monthly fee", "membership", "मासिक प्लान", "सब्सक्रिप्शन"]
+    commission: [commission, "per order fee", "fee on each", "कमीशन"]
+    advertising: [ads, advertising, advertisements, "विज्ञापन"]
+    free: ["free for everyone", "completely free", "free to use", "मुफ़्त"]
+    one_time: ["one time payment", "pay once", "one-time fee"]
