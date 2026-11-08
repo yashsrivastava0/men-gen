@@ -1,0 +1,14 @@
+id: scale_and_launch
+purpose: Learn how big the first launch is and what success looks like.
+slots:
+- context.scale_launch
+- goals.primary
+- goals.success_measures
+card_type: choose_one
+option_source: fixed
+order: 13
+option_count: 3
+max_question_words: 20
+max_option_words: 8
+guidance: Offer three launch sizes in plain words without invented numbers. Ask about the main goal and
+  how success will be measured as separate short follow-ups, never in the same card.

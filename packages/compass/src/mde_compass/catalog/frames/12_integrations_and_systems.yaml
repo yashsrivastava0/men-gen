@@ -1,0 +1,15 @@
+id: integrations_and_systems
+purpose: Find the outside services and existing systems the app must connect to, and any sensitive data.
+slots:
+- integrations.wanted
+- integrations.mode
+- data.existing_systems
+- data.sensitive
+card_type: pick_many
+option_source: family
+order: 12
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: A checklist of services typical for the family, pre-ticking only those the user mentioned. Ask
+  whether connections should be real or sample data first. Ask about sensitive information plainly.

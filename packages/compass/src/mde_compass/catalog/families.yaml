@@ -1,9 +1,1150 @@
 families:
-  - id: catalog_commerce
-    label: {en: Catalog and commerce, hi: कैटलॉग और खरीदारी}
-    keywords: [shop, store, catalog, दुकान, khareedari]
-    typical_features:
-      - {id: browse_items, name: {en: Browse items, hi: सामान देखना}, intent: Let people look through what is on offer.}
-    typical_roles: [customer, seller]
-    typical_integrations: [payments]
-    typical_business_models: [commission on each sale]
+- id: identity_access
+  label:
+    en: Identity and access
+    hi: पहचान और पहुँच
+  keywords:
+    en:
+    - sign in
+    - login
+    - account
+    - profile
+    - one-time code
+    - password
+    hi:
+    - साइन इन
+    - लॉगिन
+    - खाता
+    - प्रोफ़ाइल
+    - पासवर्ड
+    hinglish:
+    - login karna
+    - khata banana
+    - otp se login
+    - password bhool gaya
+  typical_features:
+  - id: sign_up_login
+    name:
+      en: Sign up and sign in
+      hi: साइन-अप और साइन-इन
+    intent: Let a person create an account and come back to it later.
+  - id: phone_otp
+    name:
+      en: One-time code by phone
+      hi: फ़ोन पर एक बार वाला कोड
+    intent: Check that a person owns a phone number without needing a password.
+  - id: profile_page
+    name:
+      en: Profile page
+      hi: प्रोफ़ाइल पेज
+    intent: Let a person see and update their own details.
+  - id: password_reset
+    name:
+      en: Reset a forgotten password
+      hi: भूला हुआ पासवर्ड बदलना
+    intent: Let a person regain access when they cannot sign in.
+  - id: roles_permissions
+    name:
+      en: Roles and permissions
+      hi: भूमिकाएँ और अनुमतियाँ
+    intent: Control what each kind of person can see and do.
+  - id: invite_people
+    name:
+      en: Invite people
+      hi: लोगों को आमंत्रित करना
+    intent: Let an owner or admin bring new people into the app.
+  - id: delete_account
+    name:
+      en: Delete my account
+      hi: मेरा खाता हटाना
+    intent: Let a person remove their account and data when they ask.
+  typical_roles:
+  - visitor
+  - member
+  - admin
+  typical_integrations:
+  - sms_one_time_code
+  - email
+  typical_business_models:
+  - free
+  - subscription
+- id: catalog_commerce
+  label:
+    en: Catalog and commerce
+    hi: कैटलॉग और खरीदारी
+  keywords:
+    en:
+    - shop
+    - store
+    - catalog
+    - cart
+    - products
+    - order online
+    hi:
+    - दुकान
+    - खरीदारी
+    - ऑर्डर
+    - सामान
+    - कैटलॉग
+    hinglish:
+    - dukaan
+    - saman kharidna
+    - online order
+    - shopping ka app
+  typical_features:
+  - id: browse_catalog
+    name:
+      en: Browse the catalog
+      hi: कैटलॉग देखना
+    intent: Let people look through everything that is on offer.
+  - id: search_filter
+    name:
+      en: Search and filter
+      hi: खोजना और छाँटना
+    intent: Help people find the right item quickly.
+  - id: item_details
+    name:
+      en: Item details
+      hi: सामान की जानकारी
+    intent: Show what a person needs to know before choosing an item.
+  - id: cart
+    name:
+      en: Cart
+      hi: कार्ट
+    intent: Let people collect items before they decide to order.
+  - id: checkout
+    name:
+      en: Checkout
+      hi: चेकआउट
+    intent: Let a person confirm an order and choose how to pay.
+  - id: order_history
+    name:
+      en: Order history
+      hi: पुराने ऑर्डर
+    intent: Let a person look back at what they ordered and reorder.
+  - id: reviews_ratings
+    name:
+      en: Reviews and ratings
+      hi: समीक्षा और रेटिंग
+    intent: Let people share how an item was so others can choose better.
+  typical_roles:
+  - customer
+  - seller
+  - admin
+  typical_integrations:
+  - payments
+  - sms
+  - maps
+  typical_business_models:
+  - commission on each sale
+  - monthly plan for sellers
+  - margin on items sold
+- id: booking_scheduling
+  label:
+    en: Booking and scheduling
+    hi: बुकिंग और समय तय करना
+  keywords:
+    en:
+    - book
+    - appointment
+    - slot
+    - schedule
+    - reservation
+    - reminder
+    hi:
+    - बुकिंग
+    - अपॉइंटमेंट
+    - समय तय करना
+    - आरक्षण
+    - स्लॉट
+    hinglish:
+    - booking karna
+    - appointment lena
+    - time slot
+    - samay book
+  typical_features:
+  - id: browse_providers
+    name:
+      en: Browse providers or places
+      hi: सेवा देने वाले या जगहें देखना
+    intent: Let people see who or what they can book.
+  - id: available_slots
+    name:
+      en: Available times
+      hi: उपलब्ध समय
+    intent: Show which times are free so a person can pick one.
+  - id: book_appointment
+    name:
+      en: Book a time
+      hi: समय बुक करना
+    intent: Let a person reserve a time with one clear confirmation.
+  - id: reschedule_cancel
+    name:
+      en: Reschedule or cancel
+      hi: समय बदलना या रद्द करना
+    intent: Let a person change plans without calling anyone.
+  - id: reminders
+    name:
+      en: Reminders
+      hi: याद दिलाना
+    intent: Remind people before a booking so fewer are missed.
+  - id: calendar_view
+    name:
+      en: Calendar view
+      hi: कैलेंडर दृश्य
+    intent: Show a provider their day and week at a glance.
+  - id: booking_history
+    name:
+      en: Booking history
+      hi: पुरानी बुकिंग
+    intent: Let people see what they booked before.
+  typical_roles:
+  - customer
+  - provider
+  - admin
+  typical_integrations:
+  - calendar
+  - sms
+  - payments
+  typical_business_models:
+  - fee on each booking
+  - monthly listing fee for providers
+  - free for customers
+- id: delivery_logistics
+  label:
+    en: Delivery and logistics
+    hi: डिलीवरी और लॉजिस्टिक्स
+  keywords:
+    en:
+    - delivery
+    - courier
+    - rider
+    - tracking
+    - dispatch
+    - parcel
+    hi:
+    - डिलीवरी
+    - कूरियर
+    - ट्रैकिंग
+    - पार्सल
+    - सवारी
+    hinglish:
+    - delivery wala
+    - parcel bhejna
+    - order track karna
+    - rider assign
+  typical_features:
+  - id: delivery_request
+    name:
+      en: Request a delivery
+      hi: डिलीवरी का अनुरोध
+    intent: Let a person ask for something to be picked up and delivered.
+  - id: assign_rider
+    name:
+      en: Assign a rider
+      hi: राइडर तय करना
+    intent: Match each delivery with a person who can carry it out.
+  - id: live_tracking
+    name:
+      en: Track on a map
+      hi: नक्शे पर ट्रैक करना
+    intent: Let a person see where their delivery is right now.
+  - id: delivery_status
+    name:
+      en: Delivery status updates
+      hi: डिलीवरी की स्थिति
+    intent: 'Tell people each step: picked up, on the way, delivered.'
+  - id: proof_of_delivery
+    name:
+      en: Proof of delivery
+      hi: डिलीवरी का प्रमाण
+    intent: Record that the delivery reached the right person.
+  - id: route_list
+    name:
+      en: Today's route list
+      hi: आज की रूट सूची
+    intent: Give a rider an ordered list of stops for the day.
+  - id: delivery_history
+    name:
+      en: Delivery history
+      hi: पुरानी डिलीवरी
+    intent: Let people and riders look back at past deliveries.
+  typical_roles:
+  - customer
+  - rider
+  - dispatcher
+  - admin
+  typical_integrations:
+  - maps
+  - sms
+  - payments
+  typical_business_models:
+  - fee on each delivery
+  - monthly plan for businesses
+  - commission from partners
+- id: payments_wallet
+  label:
+    en: Payments and wallet
+    hi: भुगतान और वॉलेट
+  keywords:
+    en:
+    - payment
+    - wallet
+    - upi
+    - refund
+    - receipt
+    - pay
+    hi:
+    - भुगतान
+    - वॉलेट
+    - रिफ़ंड
+    - रसीद
+    - पैसे
+    hinglish:
+    - paise bhejna
+    - payment karna
+    - wallet balance
+    - refund milna
+  typical_features:
+  - id: pay_online
+    name:
+      en: Pay online
+      hi: ऑनलाइन भुगतान
+    intent: Let a person pay for something without cash.
+  - id: wallet_balance
+    name:
+      en: Wallet balance
+      hi: वॉलेट बैलेंस
+    intent: Show how much money a person has stored in the app.
+  - id: add_money
+    name:
+      en: Add money
+      hi: पैसे जोड़ना
+    intent: Let a person top up their balance.
+  - id: transaction_history
+    name:
+      en: Transaction history
+      hi: लेन-देन का इतिहास
+    intent: Let a person see every payment made and received.
+  - id: refunds
+    name:
+      en: Refunds
+      hi: रिफ़ंड
+    intent: Let a person ask for money back and see its progress.
+  - id: payment_receipts
+    name:
+      en: Payment receipts
+      hi: भुगतान की रसीदें
+    intent: Give a person proof of each payment.
+  - id: payment_requests
+    name:
+      en: Ask someone to pay
+      hi: किसी से भुगतान माँगना
+    intent: Let a person send a request for money to someone else.
+  typical_roles:
+  - payer
+  - payee
+  - admin
+  typical_integrations:
+  - payment_provider
+  - sms
+  - identity_check
+  typical_business_models:
+  - fee on each transaction
+  - monthly plan
+- id: communication
+  label:
+    en: Communication
+    hi: संवाद
+  keywords:
+    en:
+    - chat
+    - message
+    - notification
+    - inbox
+    - announcement
+    - call
+    hi:
+    - चैट
+    - संदेश
+    - सूचना
+    - इनबॉक्स
+    - घोषणा
+    hinglish:
+    - message bhejna
+    - chat karna
+    - notification aana
+    - group banana
+  typical_features:
+  - id: one_to_one_chat
+    name:
+      en: One-to-one chat
+      hi: आमने-सामने चैट
+    intent: Let two people talk privately inside the app.
+  - id: group_chat
+    name:
+      en: Group chat
+      hi: ग्रुप चैट
+    intent: Let several people talk in one place.
+  - id: push_notifications
+    name:
+      en: Notifications
+      hi: सूचनाएँ
+    intent: Tell people about something new even when the app is closed.
+  - id: in_app_inbox
+    name:
+      en: Inbox
+      hi: इनबॉक्स
+    intent: Keep all messages and updates for a person in one list.
+  - id: share_photos
+    name:
+      en: Share photos and files
+      hi: फ़ोटो और फ़ाइल भेजना
+    intent: Let people send pictures or documents in a conversation.
+  - id: announcements
+    name:
+      en: Announcements
+      hi: घोषणाएँ
+    intent: Let an admin send one message to many people.
+  - id: support_chat
+    name:
+      en: Help chat
+      hi: मदद चैट
+    intent: Let a person ask the team for help without leaving the app.
+  typical_roles:
+  - member
+  - moderator
+  - admin
+  typical_integrations:
+  - push
+  - email
+  - sms
+  typical_business_models:
+  - free
+  - paid extra features
+  - subscription
+- id: content_community
+  label:
+    en: Content and community
+    hi: सामग्री और समुदाय
+  keywords:
+    en:
+    - feed
+    - post
+    - community
+    - forum
+    - blog
+    - news
+    hi:
+    - फ़ीड
+    - पोस्ट
+    - समुदाय
+    - फ़ोरम
+    - समाचार
+    hinglish:
+    - post karna
+    - community group
+    - news feed
+    - comment karna
+  typical_features:
+  - id: content_feed
+    name:
+      en: Feed
+      hi: फ़ीड
+    intent: Show people the latest things shared in the community.
+  - id: create_post
+    name:
+      en: Create a post
+      hi: पोस्ट बनाना
+    intent: Let a person share text or pictures with others.
+  - id: comments
+    name:
+      en: Comments
+      hi: टिप्पणियाँ
+    intent: Let people reply to a post and talk about it.
+  - id: reactions
+    name:
+      en: Likes and reactions
+      hi: पसंद और प्रतिक्रियाएँ
+    intent: Let people show quickly what they think of a post.
+  - id: follow_people
+    name:
+      en: Follow people
+      hi: लोगों को फ़ॉलो करना
+    intent: Let a person choose whose posts they want to see.
+  - id: report_content
+    name:
+      en: Report a post
+      hi: पोस्ट की शिकायत
+    intent: Let people flag content that should not be there.
+  - id: saved_items
+    name:
+      en: Saved items
+      hi: सहेजी हुई चीज़ें
+    intent: Let a person keep posts to read again later.
+  typical_roles:
+  - member
+  - creator
+  - moderator
+  - admin
+  typical_integrations:
+  - push
+  - email
+  - file_storage
+  typical_business_models:
+  - free
+  - subscription
+  - sponsorship
+- id: workflows
+  label:
+    en: 'Workflows: forms, approvals, tasks'
+    hi: 'काम का प्रवाह: फ़ॉर्म, मंज़ूरी, कार्य'
+  keywords:
+    en:
+    - form
+    - approval
+    - task
+    - request
+    - checklist
+    - workflow
+    hi:
+    - फ़ॉर्म
+    - मंज़ूरी
+    - कार्य
+    - अनुरोध
+    - चेकलिस्ट
+    hinglish:
+    - form bharna
+    - approval chahiye
+    - task assign
+    - request bhejna
+  typical_features:
+  - id: request_form
+    name:
+      en: Submit a request
+      hi: अनुरोध जमा करना
+    intent: Let a person ask for something using a simple form.
+  - id: approval_steps
+    name:
+      en: Approval steps
+      hi: मंज़ूरी के चरण
+    intent: Send a request to the right person to approve or reject.
+  - id: task_list
+    name:
+      en: Task list
+      hi: कार्य सूची
+    intent: Show each person what they need to do next.
+  - id: assign_task
+    name:
+      en: Assign a task
+      hi: कार्य सौंपना
+    intent: Let a manager give a piece of work to someone.
+  - id: status_tracking
+    name:
+      en: Status tracking
+      hi: स्थिति देखना
+    intent: Let people see where a request or task stands.
+  - id: deadline_reminders
+    name:
+      en: Deadline reminders
+      hi: समय-सीमा की याद
+    intent: Remind people before something is due.
+  - id: attachments
+    name:
+      en: Attach files
+      hi: फ़ाइल जोड़ना
+    intent: Let people add documents or pictures to a request.
+  typical_roles:
+  - requester
+  - approver
+  - assignee
+  - admin
+  typical_integrations:
+  - email
+  - calendar
+  - file_storage
+  typical_business_models:
+  - monthly plan per team
+  - per user licence
+  - internal tool
+- id: dashboards_admin
+  label:
+    en: Dashboards and admin
+    hi: डैशबोर्ड और एडमिन
+  keywords:
+    en:
+    - dashboard
+    - admin
+    - report
+    - analytics
+    - manage
+    - settings
+    hi:
+    - डैशबोर्ड
+    - एडमिन
+    - रिपोर्ट
+    - विश्लेषण
+    - प्रबंधन
+    hinglish:
+    - dashboard dekhna
+    - report nikalna
+    - admin panel
+    - users manage
+  typical_features:
+  - id: summary_dashboard
+    name:
+      en: Summary dashboard
+      hi: सारांश डैशबोर्ड
+    intent: Show the most important numbers on one screen.
+  - id: reports_filters
+    name:
+      en: Reports with filters
+      hi: फ़िल्टर वाली रिपोर्ट
+    intent: Let a manager look at the data by date, place or type.
+  - id: manage_users
+    name:
+      en: Manage users
+      hi: उपयोगकर्ता प्रबंधन
+    intent: Let an admin add, change or remove people.
+  - id: manage_content
+    name:
+      en: Manage content
+      hi: सामग्री प्रबंधन
+    intent: Let an admin update what the app shows.
+  - id: activity_log
+    name:
+      en: Activity log
+      hi: गतिविधि का रिकॉर्ड
+    intent: Record who did what and when for later checking.
+  - id: export_data
+    name:
+      en: Export data
+      hi: डेटा निकालना
+    intent: Let a manager download data to use elsewhere.
+  - id: alerts
+    name:
+      en: Alerts
+      hi: चेतावनियाँ
+    intent: Tell a manager when something needs attention.
+  typical_roles:
+  - admin
+  - manager
+  - viewer
+  typical_integrations:
+  - email
+  - existing_database
+  - data_export
+  typical_business_models:
+  - internal tool
+  - monthly plan per organisation
+- id: finance
+  label:
+    en: Finance
+    hi: वित्त
+  keywords:
+    en:
+    - loan
+    - savings
+    - expenses
+    - budget
+    - invoice
+    - bank
+    hi:
+    - लोन
+    - बचत
+    - खर्च
+    - बजट
+    - बैंक
+    hinglish:
+    - hisab kitab
+    - kharcha track
+    - loan lena
+    - bachat
+  typical_features:
+  - id: account_overview
+    name:
+      en: Account overview
+      hi: खाते का सार
+    intent: Show a person where their money stands today.
+  - id: expense_tracking
+    name:
+      en: Track expenses
+      hi: खर्च का हिसाब
+    intent: Let a person record and group what they spend.
+  - id: budgets
+    name:
+      en: Budgets
+      hi: बजट
+    intent: Let a person set a limit and see how much is left.
+  - id: invoices
+    name:
+      en: Invoices
+      hi: इनवॉइस
+    intent: Let a business make and send bills to customers.
+  - id: bill_reminders
+    name:
+      en: Bill reminders
+      hi: बिल की याद
+    intent: Remind people before a bill or payment is due.
+  - id: statements
+    name:
+      en: Statements
+      hi: विवरण
+    intent: Give a person a clear record for a period of time.
+  - id: loan_application
+    name:
+      en: Apply for a loan
+      hi: लोन के लिए आवेदन
+    intent: Let a person ask for a loan and follow the decision.
+  typical_roles:
+  - account_holder
+  - advisor
+  - admin
+  typical_integrations:
+  - bank_connection
+  - identity_check
+  - payments
+  - sms
+  typical_business_models:
+  - subscription
+  - fee on each transaction
+  - interest or service fees
+- id: health_wellness
+  label:
+    en: Health and wellness
+    hi: स्वास्थ्य और सेहत
+  keywords:
+    en:
+    - clinic
+    - doctor
+    - patient
+    - health
+    - fitness
+    - wellness
+    hi:
+    - क्लिनिक
+    - डॉक्टर
+    - मरीज़
+    - स्वास्थ्य
+    - सेहत
+    hinglish:
+    - doctor se milna
+    - clinic booking
+    - sehat ka app
+    - medicine yaad
+  typical_features:
+  - id: find_provider
+    name:
+      en: Find a doctor or trainer
+      hi: डॉक्टर या ट्रेनर खोजना
+    intent: Help a person find someone who suits their need.
+  - id: book_consultation
+    name:
+      en: Book a visit
+      hi: मुलाक़ात बुक करना
+    intent: Let a person reserve a time with a practitioner.
+  - id: health_records
+    name:
+      en: Personal records
+      hi: निजी रिकॉर्ड
+    intent: Keep a person's own reports and notes in one place.
+  - id: medicine_reminders
+    name:
+      en: Reminders to take medicine
+      hi: दवा की याद
+    intent: Remind a person when to take medicine or do an activity.
+  - id: activity_tracking
+    name:
+      en: Track activity
+      hi: गतिविधि दर्ज करना
+    intent: Let a person log exercise, food or sleep.
+  - id: goals_plans
+    name:
+      en: Goals and plans
+      hi: लक्ष्य और योजनाएँ
+    intent: Let a person follow a plan towards a health goal.
+  - id: practitioner_chat
+    name:
+      en: Chat with a practitioner
+      hi: विशेषज्ञ से चैट
+    intent: Let a person ask a question without visiting.
+  typical_roles:
+  - patient
+  - practitioner
+  - front_desk
+  - admin
+  typical_integrations:
+  - calendar
+  - sms
+  - payments
+  - video_calls
+  typical_business_models:
+  - fee per appointment
+  - monthly listing fee for clinics
+  - free for patients
+- id: learning
+  label:
+    en: Learning
+    hi: शिक्षा
+  keywords:
+    en:
+    - course
+    - class
+    - lesson
+    - quiz
+    - student
+    - teacher
+    hi:
+    - कोर्स
+    - कक्षा
+    - पाठ
+    - क्विज़
+    - छात्र
+    hinglish:
+    - padhai ka app
+    - class lena
+    - quiz dena
+    - course dekhna
+  typical_features:
+  - id: course_catalog
+    name:
+      en: Course list
+      hi: कोर्स की सूची
+    intent: Let learners see what they can study.
+  - id: lessons
+    name:
+      en: Lessons
+      hi: पाठ
+    intent: Give learners material to read or watch step by step.
+  - id: quizzes
+    name:
+      en: Quizzes
+      hi: क्विज़
+    intent: Let learners check what they have understood.
+  - id: progress_tracking
+    name:
+      en: Progress tracking
+      hi: प्रगति देखना
+    intent: Show a learner how far they have come.
+  - id: assignments
+    name:
+      en: Assignments
+      hi: गृहकार्य
+    intent: Let teachers give work and learners hand it in.
+  - id: certificates
+    name:
+      en: Certificates
+      hi: प्रमाणपत्र
+    intent: Give a learner proof of finishing a course.
+  - id: class_schedule
+    name:
+      en: Class schedule
+      hi: कक्षा का समय
+    intent: Show learners when each class takes place.
+  typical_roles:
+  - learner
+  - teacher
+  - parent
+  - admin
+  typical_integrations:
+  - video
+  - email
+  - payments
+  typical_business_models:
+  - fee per course
+  - subscription
+  - paid by the institution
+- id: travel_hospitality
+  label:
+    en: Travel and hospitality
+    hi: यात्रा और आतिथ्य
+  keywords:
+    en:
+    - hotel
+    - trip
+    - travel
+    - stay
+    - tour
+    - restaurant
+    hi:
+    - होटल
+    - यात्रा
+    - ठहरना
+    - पर्यटन
+    - रेस्तरां
+    hinglish:
+    - trip plan
+    - hotel book karna
+    - ghumne jana
+    - safar ka app
+  typical_features:
+  - id: search_stays
+    name:
+      en: Search places to stay or trips
+      hi: ठहरने की जगह या यात्राएँ खोजना
+    intent: Help a person find something that fits their dates and budget.
+  - id: itinerary
+    name:
+      en: Trip plan
+      hi: यात्रा की योजना
+    intent: Let a person see everything about a trip in order.
+  - id: booking_confirmation
+    name:
+      en: Booking confirmation
+      hi: बुकिंग की पुष्टि
+    intent: Give a person clear proof and details of what they booked.
+  - id: guest_requests
+    name:
+      en: Guest requests
+      hi: मेहमान के अनुरोध
+    intent: Let a guest ask for something during a stay.
+  - id: local_guides
+    name:
+      en: Local guides
+      hi: स्थानीय जानकारी
+    intent: Show useful places and tips near the guest.
+  - id: reviews
+    name:
+      en: Reviews
+      hi: समीक्षाएँ
+    intent: Let travellers share how a place or trip was.
+  - id: loyalty_points
+    name:
+      en: Reward points
+      hi: इनाम के अंक
+    intent: Reward people who come back.
+  typical_roles:
+  - traveller
+  - host
+  - front_desk
+  - admin
+  typical_integrations:
+  - maps
+  - payments
+  - calendar
+  - sms
+  typical_business_models:
+  - commission on each booking
+  - monthly listing fee
+  - subscription
+- id: marketplaces
+  label:
+    en: Marketplaces
+    hi: मार्केटप्लेस
+  keywords:
+    en:
+    - marketplace
+    - buyers and sellers
+    - vendor
+    - listing
+    - seller
+    - classifieds
+    hi:
+    - मार्केटप्लेस
+    - खरीदार और विक्रेता
+    - विक्रेता
+    - लिस्टिंग
+    - बाज़ार
+    hinglish:
+    - buyer seller app
+    - saman bechna
+    - listing dalna
+    - vendor onboard
+  typical_features:
+  - id: seller_onboarding
+    name:
+      en: Seller sign-up
+      hi: विक्रेता का पंजीकरण
+    intent: Let a seller join and show they can be trusted.
+  - id: create_listing
+    name:
+      en: Create a listing
+      hi: लिस्टिंग बनाना
+    intent: Let a seller describe and price what they offer.
+  - id: search_and_filter
+    name:
+      en: Search and filter
+      hi: खोजना और छाँटना
+    intent: Help buyers find the right listing.
+  - id: buyer_seller_chat
+    name:
+      en: Chat between buyer and seller
+      hi: खरीदार-विक्रेता चैट
+    intent: Let both sides ask questions before an order.
+  - id: order_management
+    name:
+      en: Order management
+      hi: ऑर्डर प्रबंधन
+    intent: Let sellers see and handle the orders they receive.
+  - id: seller_payouts
+    name:
+      en: Seller payouts
+      hi: विक्रेता को भुगतान
+    intent: Pay sellers for what they sold and show the record.
+  - id: ratings_reviews
+    name:
+      en: Ratings and reviews
+      hi: रेटिंग और समीक्षा
+    intent: Let buyers rate sellers so trust can grow.
+  - id: dispute_handling
+    name:
+      en: Dispute handling
+      hi: विवाद सुलझाना
+    intent: Give buyers and sellers a way to settle a problem.
+  typical_roles:
+  - buyer
+  - seller
+  - admin
+  - support
+  typical_integrations:
+  - payments
+  - identity_check
+  - maps
+  - sms
+  typical_business_models:
+  - commission on each sale
+  - fee to list an item
+  - monthly plan for sellers
+- id: civic_utilities
+  label:
+    en: Civic and utilities
+    hi: नागरिक सेवाएँ और उपयोगिताएँ
+  keywords:
+    en:
+    - complaint
+    - municipal
+    - utility
+    - bill
+    - citizen
+    - service request
+    hi:
+    - शिकायत
+    - नगर निगम
+    - बिजली
+    - पानी
+    - नागरिक
+    hinglish:
+    - shikayat darj
+    - bijli bill
+    - pani ki shikayat
+    - sarkari seva
+  typical_features:
+  - id: file_complaint
+    name:
+      en: File a complaint
+      hi: शिकायत दर्ज करना
+    intent: Let a citizen report a problem with details and a photo.
+  - id: track_complaint
+    name:
+      en: Track a complaint
+      hi: शिकायत की स्थिति
+    intent: Let a citizen follow what happened to their report.
+  - id: pay_bills
+    name:
+      en: Pay bills
+      hi: बिल भरना
+    intent: Let a person pay for a service such as water or power.
+  - id: service_directory
+    name:
+      en: Service directory
+      hi: सेवा सूची
+    intent: Show which services exist and how to use them.
+  - id: notices
+    name:
+      en: Notices and alerts
+      hi: सूचनाएँ और चेतावनियाँ
+    intent: Tell citizens about outages, dates and rules that affect them.
+  - id: nearby_offices
+    name:
+      en: Nearby offices
+      hi: पास के कार्यालय
+    intent: Help a person find the right office and its hours.
+  - id: apply_for_service
+    name:
+      en: Apply for a service
+      hi: सेवा के लिए आवेदन
+    intent: Let a person ask for a service and see the decision.
+  typical_roles:
+  - citizen
+  - officer
+  - admin
+  typical_integrations:
+  - maps
+  - sms
+  - payments
+  - existing_records_system
+  typical_business_models:
+  - free public service
+  - funded by the authority
+- id: enterprise_workforce
+  label:
+    en: Enterprise workforce
+    hi: कंपनी का कार्यबल
+  keywords:
+    en:
+    - employee
+    - staff
+    - hr
+    - attendance
+    - shift
+    - leave
+    hi:
+    - कर्मचारी
+    - हाज़िरी
+    - छुट्टी
+    - शिफ़्ट
+    - स्टाफ़
+    hinglish:
+    - staff attendance
+    - chhutti ki request
+    - employee app
+    - shift lagana
+  typical_features:
+  - id: attendance_check_in
+    name:
+      en: Attendance check-in
+      hi: हाज़िरी लगाना
+    intent: Let employees record when they start and finish work.
+  - id: leave_requests
+    name:
+      en: Leave requests
+      hi: छुट्टी का आवेदन
+    intent: Let an employee ask for leave and a manager decide.
+  - id: shift_schedule
+    name:
+      en: Shift schedule
+      hi: शिफ़्ट का कार्यक्रम
+    intent: Show each person when and where they work.
+  - id: employee_directory
+    name:
+      en: Employee directory
+      hi: कर्मचारी सूची
+    intent: Help people find and contact colleagues.
+  - id: payslips
+    name:
+      en: Payslips
+      hi: वेतन पर्ची
+    intent: Let employees see their pay details.
+  - id: company_announcements
+    name:
+      en: Company announcements
+      hi: कंपनी की घोषणाएँ
+    intent: Let the company share news with everyone at once.
+  - id: helpdesk_tickets
+    name:
+      en: Helpdesk requests
+      hi: हेल्पडेस्क अनुरोध
+    intent: Let an employee raise a problem and follow it until solved.
+  typical_roles:
+  - employee
+  - manager
+  - hr
+  - admin
+  typical_integrations:
+  - company_sign_in
+  - email
+  - hr_system
+  - calendar
+  typical_business_models:
+  - internal tool
+  - per user licence

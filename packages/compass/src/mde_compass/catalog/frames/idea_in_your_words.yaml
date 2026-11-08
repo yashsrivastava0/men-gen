@@ -1,8 +1,0 @@
-id: idea_in_your_words
-purpose: Let the user describe the app in their own words.
-slots: [idea.summary]
-card_type: open_prompt
-option_source: fixed
-order: 1
-option_count: null
-guidance: Ask one open question. Use the user's own words and language. Do not suggest features.

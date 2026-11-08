@@ -1,0 +1,16 @@
+id: who_and_where
+purpose: Learn who uses the app, where, and in which languages, with a few related fields on one card.
+slots:
+- audience.segments
+- context.geo
+- locales
+- audience.traits
+- audience.usage_context
+card_type: quick_form
+option_source: fixed
+order: 4
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: 'A short form: who the users are in plain words, country and city, chat and app languages. Pre-fill
+  whatever is already known and ask only for what is missing. Ask chat and app languages separately.'

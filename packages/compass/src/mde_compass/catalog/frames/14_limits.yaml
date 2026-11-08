@@ -1,0 +1,18 @@
+id: limits
+purpose: Cover offline use, speed, devices, accessibility and anything that must or must not be used.
+slots:
+- constraints.offline
+- constraints.performance
+- constraints.accessibility
+- constraints.must_use
+- constraints.must_not
+- devices.profile
+- scope.must_not
+card_type: pick_many
+option_source: fixed
+order: 14
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: Mostly assumed from the audience and kept out of the interview. Ask only when the audience or
+  usage context makes a limit important. One short checklist, plain words.
