@@ -64,7 +64,7 @@ from mde_compass.domain.common import (
 from mde_compass.domain.hashing import changed_sections, section_hashes
 from mde_compass.domain.ids import ITEM_ID_RE, parse_id
 from mde_compass.domain.research import ResearchRequest
-from mde_compass.engine.brief_builder import META_FIELDS, dict_targets
+from mde_compass.engine.brief_builder import META_FIELDS, dict_targets, locales_of
 from mde_compass.engine.validate import validate_brief
 
 RECORD_MODELS: dict[str, type[BaseModel]] = {
@@ -267,7 +267,7 @@ def _find(ctx: _Ctx, section: str, rest: str) -> tuple[int, Any, str | None]:
         if ctx.work.ids.is_deleted(rid):
             raise PatchError(f"{section}.{head}: was removed (ids are never reused)")
         raise PatchError(f"{section}.{head}: no such record")
-    candidates = [(rest, None)]
+    candidates: list[tuple[str, str | None]] = [(rest, None)]
     if "." in rest:
         head, _, fld = rest.rpartition(".")
         candidates.append((head, fld))
@@ -491,6 +491,9 @@ def apply_ops(
         errors = [e for e in validate_brief(work, catalog) if e not in before]
     if errors or not applied:
         return PatchResult(brief=brief, errors=errors)
+    locales = work.experience.get("locales")
+    if locales is not None and locales.has_value() and locales_of(locales.value):
+        work.meta.locales = locales_of(locales.value)  # meta.locales follows the locales item
     work.version = brief.version + 1
     voided = changed_sections(section_hashes(brief), section_hashes(work))
     return PatchResult(

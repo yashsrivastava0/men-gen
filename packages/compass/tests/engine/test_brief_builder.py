@@ -300,7 +300,8 @@ def test_property_ids_stable_unique_never_reused(rounds: list[list[str]]) -> Non
     brief = empty_brief("ses_1", "guided", "en")
     ever: dict[str, str] = {}  # id -> casefolded name
     for names_ in rounds:
-        s.write("scope.features", names_, state="volunteered", provenance=TAP)
+        write: Any = s.write
+        write("scope.features", names_, state="volunteered", provenance=TAP)
         brief = apply_slots(brief, s, CAT)
         again = apply_slots(brief, s, CAT)
         assert again == brief

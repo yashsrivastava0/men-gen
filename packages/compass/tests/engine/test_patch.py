@@ -356,3 +356,41 @@ def test_property_one_invalid_op_changes_nothing(data: st.DataObject, pos: int) 
     ops.insert(min(pos, len(ops)), set_("scope.FTR-999.priority", "must"))
     r = run(b, *ops)
     assert not r.ok and r.brief == b and r.ops == []
+
+
+def test_locales_item_edit_updates_meta_locales() -> None:
+    s = SlotStore(CAT, clock=FakeClock())
+    w: Any = s.write
+    w(
+        "locales",
+        {"chat": "en", "app": ["en"], "right_to_left": False},
+        state="confirmed",
+        provenance=TAP,
+    )
+    b = apply_slots(empty_brief("ses_1", "guided", "en"), s, CAT)
+    assert b.meta.locales == ["en"]
+    r = run(
+        b, set_("experience.locales", {"chat": "hi", "app": ["hi", "en"], "right_to_left": False})
+    )
+    assert r.ok and r.brief.meta.locales == ["hi", "en"]
+    back = apply_ops(r.brief, r.inverse_ops, CAT, now=NOW)
+    assert back.brief.meta.locales == ["en"] and brief_hash(back.brief) == brief_hash(b)
+
+
+def test_slots_follow_the_brief_after_a_patch() -> None:
+    from mde_compass.engine.brief_builder import slots_from_brief
+
+    b = base_brief()
+    r = run(
+        b,
+        set_(f"scope.{b.scope[1].id}.priority", "must"),
+        set_("idea.summary", "a better sweets shop"),
+    )
+    assert r.ok
+    store = SlotStore(CAT, clock=FakeClock())
+    store.load(slots_from_brief(r.brief, CAT, FakeClock()))
+    assert store.get("idea.summary").value == "a better sweets shop"  # type: ignore[union-attr]
+    again = apply_slots(r.brief, store, CAT)
+    assert brief_hash(again) == brief_hash(r.brief)
+    assert again.scope[1].status == "confirmed" and again.scope[0].status == "volunteered"
+    assert [f.id for f in again.scope] == [f.id for f in r.brief.scope]

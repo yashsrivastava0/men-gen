@@ -40,6 +40,7 @@ from mde_compass.domain.brief import (
 from mde_compass.domain.common import BriefItem, ItemMeta, Provenance, max_tier
 from mde_compass.domain.ids import IdLedger
 from mde_compass.domain.slots import SlotRecord
+from mde_compass.engine.slots import SlotStore
 from mde_core.clock import Clock
 
 META_FIELDS: frozenset[str] = frozenset(ItemMeta.model_fields)
@@ -267,7 +268,7 @@ def _filled(rec: SlotRecord | None) -> bool:
     return rec is not None and rec.status != "empty" and not _blank(rec.value)
 
 
-def _locales_of(value: JsonValue) -> list[str]:
+def locales_of(value: JsonValue) -> list[str]:
     """``meta.locales`` from the locales slot: chat language first, then app languages."""
     found: list[str] = []
 
@@ -310,11 +311,11 @@ def _resolve_refs(brief: Brief) -> None:
 # ----------------------------------------------------------------------------------- slots -> Brief
 
 
-def apply_slots(brief: Brief, store: Any, catalog: Catalog) -> Brief:
+def apply_slots(brief: Brief, store: SlotStore, catalog: Catalog) -> Brief:
     """A NEW Brief with every slot in ``store`` mapped to its ``brief_path`` (input untouched).
 
     Slots the store has never seen leave their section as it is; a slot that was cleared removes its
-    item or records (tombstoning list ids). ``store`` is a ``SlotStore`` (anything with ``get``).
+    item or records (tombstoning list ids).
     """
     out = brief.model_copy(deep=True)
     ledger = out.ids
@@ -334,7 +335,7 @@ def apply_slots(brief: Brief, store: Any, catalog: Catalog) -> Brief:
             else:
                 section.pop(target.key, None)
             if slot.id == LOCALES_SLOT and _filled(rec):
-                out.meta.locales = _locales_of(rec.value)
+                out.meta.locales = locales_of(rec.value)
         elif target.kind == "list":
             spec = LIST_SPECS[target.section]
             pref = mode_pref if spec.section == "integrations" else None

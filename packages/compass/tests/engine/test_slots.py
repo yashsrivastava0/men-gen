@@ -71,11 +71,12 @@ def test_assumed_can_be_replaced_by_user_and_upgrades() -> None:
     s = store()
     s.write("idea.category", "commerce", state="assumed", provenance=assumed())
     res = s.write("idea.category", "commerce", state="confirmed", provenance=tap())
+    assert res.record is not None
     assert (
         res.reason == "state_upgraded"
         and res.record.status == "confirmed"
         and res.record.tier == "Locked"
-    )  # type: ignore[union-attr]
+    )
     again = s.write("idea.category", "commerce", state="assumed", provenance=assumed())
     assert not again.applied
 
