@@ -1,0 +1,71 @@
+"""Composition root: build the real ``Service`` (store, gateway, call runner, ports, budget, hand-off).
+
+Mock mode is the default (``LLM_MODE=mock``): the real gateway pipeline runs with every call's mock handler, no
+network, no key. Live mode needs the repo's two keys (``LLM_MODE=live`` and ``ALLOW_LIVE_LLM=1`` in the process
+environment) plus ``OPENAI_API_KEY``; the Compass cap (``COMPASS_LIVE_BUDGET_USD``, at most 2.00) is enforced by
+``CompassBudget`` before every call.
+"""
+
+from __future__ import annotations
+
+from mde_compass import AGENT_NAME
+from mde_compass.budget import CompassBudget
+from mde_compass.calls.base import CallRunner
+from mde_compass.calls.registry import all_specs, build_ports
+from mde_compass.catalog import load_catalog
+from mde_compass.config import DEFAULT_CONFIG, load_budget_policy
+from mde_compass.engine.handoff import LoggingHandoff
+from mde_compass.engine.service import Service
+from mde_core.clock import Clock, SystemClock
+from mde_core.settings import Settings, load_settings
+from mde_llm_gateway import InProcessGatewayClient, StaticRegistry, create_gateway
+
+
+def build_service(
+    *,
+    memory: bool = False,
+    database_url: str | None = None,
+    settings: Settings | None = None,
+    clock: Clock | None = None,
+    migrate: bool = True,
+) -> Service:
+    """``memory=True`` uses the in-memory store (no database); otherwise PostgreSQL (migrated on start)."""
+    the_clock = clock or SystemClock()
+    the_settings = settings or load_settings()
+    catalog = load_catalog()
+    mode = "live" if the_settings.llm_mode == "live" else "mock"
+    budget = CompassBudget(load_budget_policy(), mode=mode)  # type: ignore[arg-type]
+
+    if memory:
+        from mde_compass.store import InMemoryStore
+
+        store = InMemoryStore(clock=the_clock)
+    else:
+        from mde_compass.store import PostgresStore, create_store_engine
+        from mde_compass.store import migrate as store_migrate
+
+        url = database_url or the_settings.database_url
+        if migrate:
+            store_migrate.upgrade(url)
+        store = PostgresStore(create_store_engine(url), clock=the_clock)
+
+    gateway = InProcessGatewayClient(
+        create_gateway(
+            the_settings, StaticRegistry([cs.spec for cs in all_specs()]), clock=the_clock
+        )
+    )
+    service = Service(
+        store=store,
+        catalog=catalog,
+        budget=budget,
+        handoff=LoggingHandoff(),
+        clock=the_clock,
+        config=DEFAULT_CONFIG,
+        mode_label=mode,
+    )
+    runner = CallRunner(gateway, clock=the_clock, guard=budget, sink=service.log_call)
+    service.bind_ports(build_ports(runner, catalog))
+    return service
+
+
+__all__ = ["AGENT_NAME", "build_service"]

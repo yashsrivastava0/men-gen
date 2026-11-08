@@ -134,5 +134,6 @@
   "notice.started_over": "Started over. Your earlier draft is kept; nothing was deleted.",
   "change.variants_question": "What would you prefer instead of: {current}?",
   "change.nothing_changed": "I did not change anything.",
-  "change.target_unknown": "Which part do you mean?"
+  "change.target_unknown": "Which part do you mean?",
+  "brief.ready": "Your Brief is ready. Look it over on the right: tap 'Looks right' if it is correct, or tell me what to change."
 }
