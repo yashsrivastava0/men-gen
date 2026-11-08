@@ -3,6 +3,9 @@ Postgres-only guarantees: no leaked connections, the derived projections, the da
 
 from __future__ import annotations
 
+import asyncio
+from typing import LiteralString
+
 import psycopg
 import pytest
 from sqlalchemy import text
@@ -14,6 +17,8 @@ from mde_compass.store import testing as f
 from mde_compass.store.contract import CHECKS
 from mde_compass.store.ports import Store
 from mde_compass.store.postgres import PostgresStore
+from mde_compass.store.testing import truncate_all
+from mde_core.clock import FakeClock
 from mde_core.errors import Conflict, NotFound
 
 pytestmark = pytest.mark.integration
@@ -62,7 +67,7 @@ async def test_projections_are_rewritten_from_the_saved_brief(
     dsn = compass_database.set(drivername="postgresql").render_as_string(hide_password=False)
     with psycopg.connect(dsn) as conn:
 
-        def rows(sql: str) -> list[tuple[object, ...]]:
+        def rows(sql: LiteralString) -> list[tuple[object, ...]]:
             return conn.execute(sql, (rec.id,)).fetchall()
 
         # v2 replaced everything v1 projected: no glossary, assumptions or requests any more
@@ -223,3 +228,40 @@ async def test_a_conflict_does_not_abort_the_transaction(postgres_store: Postgre
         await uow.sessions.add_spend(rec.id, 5)  # still a healthy transaction
     async with postgres_store.begin(f.TENANT_A) as uow:
         assert (await uow.sessions.get(rec.id)).spent_micros == 5
+
+
+async def test_turn_claim_is_exclusive_across_independent_engines(
+    compass_database: URL, fake_clock: FakeClock
+) -> None:
+    """Two pools stand in for two worker processes: still exactly one winner."""
+    from mde_compass.store.postgres import create_store_engine
+
+    truncate_all(compass_database)
+    first, second = create_store_engine(compass_database), create_store_engine(compass_database)
+    try:
+        stores = [PostgresStore(first, clock=fake_clock), PostgresStore(second, clock=fake_clock)]
+        rec = f.make_session()
+        async with stores[0].begin(f.TENANT_A) as uow:
+            await uow.sessions.create(rec)
+
+        async def claim(store: PostgresStore) -> bool:
+            async with store.begin(f.TENANT_A) as uow:
+                return await uow.sessions.try_begin_turn(rec.id)
+
+        results = await asyncio.gather(*(claim(stores[i % 2]) for i in range(8)))
+        assert results.count(True) == 1 and results.count(False) == 7
+    finally:
+        await first.dispose()
+        await second.dispose()
+    assert first.pool.checkedout() == 0 and second.pool.checkedout() == 0  # type: ignore[attr-defined]
+
+
+async def test_postgres_store_exposes_its_clock_and_engine(
+    postgres_store: PostgresStore, compass_engine: AsyncEngine, fake_clock: FakeClock
+) -> None:
+    assert postgres_store.engine is compass_engine and postgres_store.clock is fake_clock
+    rec = f.make_session()
+    async with postgres_store.begin(f.TENANT_A) as uow:
+        created = await uow.sessions.create(rec)
+    assert created.created_at == fake_clock.now()  # every timestamp comes from the injected clock
+    assert created.created_at is not None and created.created_at.utcoffset() is not None

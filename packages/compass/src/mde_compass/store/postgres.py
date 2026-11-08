@@ -45,11 +45,19 @@ from mde_compass.store.common import (
     turn_lock_key,
 )
 from mde_compass.store.ports import (
+    BriefRepo,
     BriefVersionRecord,
     BriefVersionSummary,
     CallLogEntry,
+    CallLogRepo,
+    ChangeSetRepo,
+    ContributorRepo,
+    EventRepo,
     HistoryPage,
     QuestionRecord,
+    QuestionRepo,
+    SessionRepo,
+    SourceRepo,
 )
 from mde_core.clock import Clock, SystemClock
 from mde_core.errors import Conflict, NotFound, TenantViolation, ValidationFailed
@@ -1022,6 +1030,15 @@ class PgContributorRepo(_Repo):
 
 class PgUnitOfWork:
     """Repositories sharing one transaction, all bound to ``tenant_id``."""
+
+    sessions: SessionRepo
+    events: EventRepo
+    briefs: BriefRepo
+    questions: QuestionRepo
+    change_sets: ChangeSetRepo
+    call_log: CallLogRepo
+    sources: SourceRepo
+    contributors: ContributorRepo
 
     def __init__(self, session: AsyncSession, tenant_id: str, clock: Clock) -> None:
         self._session = session

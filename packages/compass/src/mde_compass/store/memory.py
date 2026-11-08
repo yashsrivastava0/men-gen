@@ -49,11 +49,19 @@ from mde_compass.store.common import (
     payload_text,
 )
 from mde_compass.store.ports import (
+    BriefRepo,
     BriefVersionRecord,
     BriefVersionSummary,
     CallLogEntry,
+    CallLogRepo,
+    ChangeSetRepo,
+    ContributorRepo,
+    EventRepo,
     HistoryPage,
     QuestionRecord,
+    QuestionRepo,
+    SessionRepo,
+    SourceRepo,
     UnitOfWork,
 )
 from mde_core.clock import Clock, FakeClock
@@ -103,7 +111,7 @@ class InMemoryStore:
         self.open_units += 1
         self.peak_open_units = max(self.peak_open_units, self.open_units)
         try:
-            yield cast("UnitOfWork", uow)
+            yield uow
         except BaseException:
             uow.abort()
             raise
@@ -125,6 +133,15 @@ class InMemoryStore:
 
 class _Uow:
     """One transaction bound to a tenant."""
+
+    sessions: SessionRepo
+    events: EventRepo
+    briefs: BriefRepo
+    questions: QuestionRepo
+    change_sets: ChangeSetRepo
+    call_log: CallLogRepo
+    sources: SourceRepo
+    contributors: ContributorRepo
 
     def __init__(self, store: InMemoryStore, tenant_id: str) -> None:
         self.store = store

@@ -19,7 +19,7 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Coroutine
-from typing import TypeVar, cast
+from typing import Any, TypeVar, cast
 
 from pydantic import JsonValue
 
@@ -61,7 +61,7 @@ async def _raises(
 
 
 async def _new_session(
-    store: Store, tenant: str = A, *, user_id: str = f.USER_A, **fields: object
+    store: Store, tenant: str = A, *, user_id: str = f.USER_A, **fields: Any
 ) -> SessionRecord:
     async with store.begin(tenant) as uow:
         return await uow.sessions.create(
