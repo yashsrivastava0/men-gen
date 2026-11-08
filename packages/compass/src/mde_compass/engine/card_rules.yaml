@@ -1,7 +1,7 @@
 # Data for the card validators (cards.py). Neutral wording, honest basis, brand heuristic allowlist.
 # Phrases are matched after normalisation (casefold, punctuation to spaces) as whole words.
 leading_words:
-  en: [best, ultimate, amazing, perfect, awesome, incredible, "must have", "must-have", "game changing", revolutionary, "most people", "most users", "most apps", everyone, "everybody", "you will love", "youll love", obviously, clearly, "of course", guaranteed, "no brainer", "number one", "top choice", "recommended by", "industry standard", "the smart choice", "smartest"]
+  en: [best, ultimate, amazing, perfect, awesome, incredible, "must have", "must-have", "game changing", revolutionary, "most people", "most users", "most apps", "you will love", "youll love", obviously, clearly, "of course", guaranteed, "no brainer", "number one", "top choice", "recommended by", "industry standard", "the smart choice", "smartest"]
   hi: ["सबसे अच्छा", "बेहतरीन", "ज़बरदस्त", "ज़रूर चाहिए", "ज्यादातर लोग", "ज़्यादातर लोग", "सब लोग", "हर कोई", "निश्चित रूप से", "गारंटी"]
 statistic_patterns:
   - "\\d{1,3}\\s{0,2}%"
