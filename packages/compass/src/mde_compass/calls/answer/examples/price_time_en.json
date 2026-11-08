@@ -1,0 +1,20 @@
+{
+  "name": "price and time question (English)",
+  "input": {
+    "question": "How much will this cost and how long will it take?",
+    "language": "en",
+    "topic": "price_or_time",
+    "slots": [{"slot_id": "idea.summary", "label": "Your idea in one line", "value": "an app for my tailoring shop"}],
+    "expertise": "non_technical",
+    "formality": "casual",
+    "pending_question": "Who will use the app?",
+    "pending_why": "It decides which screens and words we plan.",
+    "pending_options": [],
+    "facts": ["We do not quote price or time here. I can keep working on what the app should do."]
+  },
+  "expect": {
+    "declined": true,
+    "grounded_in": ["fallback.out_of_scope_price_time"],
+    "text_contains": ["Who will use the app?"]
+  }
+}

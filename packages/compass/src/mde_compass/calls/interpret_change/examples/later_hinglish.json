@@ -1,0 +1,21 @@
+{
+  "name": "Hinglish move to later with two candidate features",
+  "input": {
+    "text": "group ordering ko baad mein rakho",
+    "language": "hi-Latn",
+    "target_kind": "section",
+    "target_id": "scope",
+    "reason": "too_much",
+    "history": [],
+    "items": [
+      {"path": "scope.FTR-004", "label": "Group ordering", "value_json": "{\"apps\": [], \"intent\": \"\", \"name\": \"Group ordering\", \"priority\": \"nice\", \"scope_status\": \"in\"}", "tier": "Default", "status": "assumed", "value_kind": "record", "options": []},
+      {"path": "scope.FTR-005", "label": "Order tracking", "value_json": "{\"apps\": [], \"intent\": \"\", \"name\": \"Order tracking\", \"priority\": \"must\", \"scope_status\": \"in\"}", "tier": "Default", "status": "assumed", "value_kind": "record", "options": []}
+    ],
+    "add_sections": ["scope"]
+  },
+  "expect": {
+    "understood": true,
+    "ops": [["set", "scope.FTR-004.priority", "later"], ["set", "scope.FTR-004.scope_status", "later"]],
+    "touches_locked": []
+  }
+}

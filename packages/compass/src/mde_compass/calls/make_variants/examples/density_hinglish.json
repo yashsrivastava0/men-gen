@@ -1,0 +1,44 @@
+{
+  "name": "density_hinglish",
+  "input": {
+    "path": "experience.density_mode",
+    "current_value_json": "\"compact\"",
+    "reason": "bahut bhara hua lagta hai",
+    "language": "hi-Latn",
+    "slot_label": "How full the screens are",
+    "value_kind": "enum",
+    "options": [
+      "roomy",
+      "balanced",
+      "compact"
+    ],
+    "name_field": "",
+    "choices": [
+      {
+        "label": "Roomy, few things at a time",
+        "value_json": "\"roomy\""
+      },
+      {
+        "label": "Balanced",
+        "value_json": "\"balanced\""
+      },
+      {
+        "label": "Compact, more on each screen",
+        "value_json": "\"compact\""
+      }
+    ],
+    "context": [],
+    "families": []
+  },
+  "expect": {
+    "count": 2,
+    "labels": [
+      "Roomy, few things at a time",
+      "Balanced"
+    ],
+    "bases": [
+      "suggestion",
+      "suggestion"
+    ]
+  }
+}
