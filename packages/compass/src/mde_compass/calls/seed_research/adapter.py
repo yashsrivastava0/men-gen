@@ -156,9 +156,7 @@ class SeedResearchAdapter:
 
     async def seed(self, ctx: TurnContext, brief: Brief) -> SeedResult:
         inp = build_input(ctx, brief, self._catalog)
-        res = await self._runner.run(
-            SPEC, inp, session_id=ctx.session_id, tenant_id=ctx.tenant_id
-        )
+        res = await self._runner.run(SPEC, inp, session_id=ctx.session_id, tenant_id=ctx.tenant_id)
         clean = normalize(inp, res.output)
         if len(clean.requests) < MIN_REQUESTS:
             clean = normalize(inp, fallback(inp))

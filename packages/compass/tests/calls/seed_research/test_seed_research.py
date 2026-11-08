@@ -32,7 +32,9 @@ from mde_compass.engine.ports import SlotView, TurnContext
 from mde_core.errors import ProviderError
 from mde_llm_gateway import to_strict_schema
 
-EXAMPLES = sorted((Path(__file__).parents[3] / "src/mde_compass/calls/seed_research/examples").glob("*.json"))
+EXAMPLES = sorted(
+    (Path(__file__).parents[3] / "src/mde_compass/calls/seed_research/examples").glob("*.json")
+)
 
 
 def _load(name: str) -> tuple[SeedResearchInput, SeedResearchOutput]:
@@ -68,7 +70,8 @@ def _req(**changes: object) -> WireRequest:
 def _out(*requests: WireRequest, hints: WireHints | None = None) -> SeedResearchOutput:
     return SeedResearchOutput(
         requests=list(requests),
-        hints=hints or WireHints(disambiguated_names=[], synonyms=[], local_competitors=[], languages=["en"]),
+        hints=hints
+        or WireHints(disambiguated_names=[], synonyms=[], local_competitors=[], languages=["en"]),
     )
 
 
@@ -77,7 +80,11 @@ def _ctx(language: str = "en") -> TurnContext:
 
 
 def test_three_examples() -> None:
-    assert [p.stem for p in EXAMPLES] == ["en_food_pune", "hi_clinic_indore", "hinglish_kirana_jaipur"]
+    assert [p.stem for p in EXAMPLES] == [
+        "en_food_pune",
+        "hi_clinic_indore",
+        "hinglish_kirana_jaipur",
+    ]
 
 
 def test_schemas_are_strict_safe() -> None:
@@ -110,7 +117,7 @@ def test_fallback_requests_are_specific_and_carry_exclusions(name: str) -> None:
     for r in out.requests:
         assert r.geography.strip() and r.entity.strip() and [t for t in r.terms if t.strip()]
         assert all(e in r.avoid for e in inp.exclusions)
-        ResearchRequest(id="RR-001", **{k: v for k, v in r.model_dump().items()})
+        ResearchRequest(id="RR-001", **dict(r.model_dump().items()))
 
 
 def test_fallback_without_geography_uses_global_and_low_priority() -> None:
@@ -128,9 +135,20 @@ def test_fallback_uses_locale_country_when_the_brief_has_no_geography() -> None:
 
 def test_fallback_minimum_and_maximum_counts() -> None:
     bare = SeedResearchInput(
-        language="en", category="", subcategory="", geography=GeoIn(country="", city="", region=""),
-        locale_country="", audience=[], business_model="", references=[], glossary=[],
-        exclusions=[], unknowns=[], features=[], families=[], languages=[],
+        language="en",
+        category="",
+        subcategory="",
+        geography=GeoIn(country="", city="", region=""),
+        locale_country="",
+        audience=[],
+        business_model="",
+        references=[],
+        glossary=[],
+        exclusions=[],
+        unknowns=[],
+        features=[],
+        families=[],
+        languages=[],
     )
     out = fallback(bare)
     assert len(out.requests) >= 3 and validate(bare, out) == []
@@ -154,7 +172,9 @@ def test_requests_lacking_geography_entity_or_terms_are_repaired_or_dropped() ->
         inp,
         _out(
             _req(geography=""),  # repaired from the Brief
-            _req(topic="Rules", question="Which rules apply?", entity="", terms=["rules"]),  # entity from category
+            _req(
+                topic="Rules", question="Which rules apply?", entity="", terms=["rules"]
+            ),  # entity from category
             _req(topic="Payments", question="How do people pay?", terms=[]),  # terms from the Brief
             _req(topic="", question="No topic"),  # dropped
         ),
@@ -168,9 +188,20 @@ def test_requests_lacking_geography_entity_or_terms_are_repaired_or_dropped() ->
 
 def test_unrepairable_request_is_dropped() -> None:
     bare = SeedResearchInput(
-        language="en", category="", subcategory="", geography=GeoIn(country="", city="", region=""),
-        locale_country="", audience=[], business_model="", references=[], glossary=[],
-        exclusions=[], unknowns=[], features=[], families=[], languages=[],
+        language="en",
+        category="",
+        subcategory="",
+        geography=GeoIn(country="", city="", region=""),
+        locale_country="",
+        audience=[],
+        business_model="",
+        references=[],
+        glossary=[],
+        exclusions=[],
+        unknowns=[],
+        features=[],
+        families=[],
+        languages=[],
     )
     out = normalize(bare, _out(_req(entity="", terms=[]), _req(geography="")))
     # the first has no category to repair entity or terms from; the second only needs a geography
@@ -190,12 +221,19 @@ def test_invented_competitors_are_dropped_everywhere() -> None:
         inp,
         _out(
             _req(entity="Swiggy", references=["Swiggy", "Zomato"]),
-            _req(topic="Other", question="Another?", entity="food ordering apps", references=["Uber Eats"]),
+            _req(
+                topic="Other",
+                question="Another?",
+                entity="food ordering apps",
+                references=["Uber Eats"],
+            ),
             hints=hints,
         ),
     )
     assert out.hints.local_competitors == ["Zomato"]
-    assert out.requests[0].entity == "restaurant ordering"  # invented name replaced by the user's category
+    assert (
+        out.requests[0].entity == "restaurant ordering"
+    )  # invented name replaced by the user's category
     assert out.requests[0].references == ["Zomato"]
     assert out.requests[1].references == []
     flat = json.dumps(out.model_dump(), ensure_ascii=False)
@@ -203,14 +241,18 @@ def test_invented_competitors_are_dropped_everywhere() -> None:
 
 
 def test_exclusions_are_always_in_avoid() -> None:
-    out = normalize(_inp(), _out(_req(avoid=[]), _req(topic="B", question="Q?", avoid=["no gambling"])))
+    out = normalize(
+        _inp(), _out(_req(avoid=[]), _req(topic="B", question="Q?", avoid=["no gambling"]))
+    )
     for r in out.requests:
         assert r.avoid[0] == "no alcohol"
     assert out.requests[1].avoid == ["no alcohol", "no gambling"]
 
 
 def test_duplicates_are_dropped_and_count_is_capped() -> None:
-    out = normalize(_inp(), _out(_req(), _req(), _req(topic="Same topic", question=_req().question)))
+    out = normalize(
+        _inp(), _out(_req(), _req(), _req(topic="Same topic", question=_req().question))
+    )
     assert len(out.requests) == 1
     many = [_req(topic=f"Topic {i}", question=f"Question {i}?") for i in range(30)]
     assert len(normalize(_inp(), _out(*many)).requests) == 12
@@ -231,7 +273,9 @@ def _brief() -> Brief:
     brief.context["geo"] = BriefItem(
         value={"country": "India", "city": "Pune", "region": "Maharashtra"}, status="confirmed"
     )
-    brief.audience["segments"] = BriefItem(value="regular customers, office workers", status="confirmed")
+    brief.audience["segments"] = BriefItem(
+        value="regular customers, office workers", status="confirmed"
+    )
     brief.references.append(ReferenceRecord(label="Zomato"))
     brief.glossary.append(GlossaryRecord(term="thali", synonyms=["meal plate"]))
     brief.scope.append(FeatureRecord(id="FTR-001", name="Order tracking", intent="see my order"))
@@ -241,7 +285,9 @@ def _brief() -> Brief:
 
 def _ctx_with_exclusion() -> TurnContext:
     ctx = _ctx()
-    ctx.slots.append(SlotView(slot_id="scope.must_not", value=["no alcohol", "no gambling"], state="confirmed"))
+    ctx.slots.append(
+        SlotView(slot_id="scope.must_not", value=["no alcohol", "no gambling"], state="confirmed")
+    )
     return ctx
 
 
@@ -288,7 +334,9 @@ async def test_adapter_falls_back_when_the_model_gives_too_few_valid_requests() 
 
 
 async def test_adapter_falls_back_on_gateway_error() -> None:
-    adapter = SeedResearchAdapter(CallRunner(ScriptedGateway(ProviderError("boom"))), load_catalog())
+    adapter = SeedResearchAdapter(
+        CallRunner(ScriptedGateway(ProviderError("boom"))), load_catalog()
+    )
     res = await adapter.seed(_ctx_with_exclusion(), _brief())
     assert len(res.requests) >= 3
 

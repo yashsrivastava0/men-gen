@@ -97,7 +97,7 @@ async def test_real_mock_pipeline(path: Path) -> None:
 
 
 def test_fallback_hindi_uses_hindi_templates() -> None:
-    inp, _ = _load([p for p in EXAMPLES if p.stem == "hi_clinic"][0])
+    inp, _ = _load(next(p for p in EXAMPLES if p.stem == "hi_clinic"))
     out = fallback(inp)
     assert out.summary == "क्लिनिक के लिए अपॉइंटमेंट बुकिंग"
     assert "इंदौर में" in out.pitch and "मरीज़ के लिए है" in out.pitch
@@ -116,11 +116,11 @@ def test_fallback_without_slots_never_invents() -> None:
 
 
 def _inp() -> CompileTextInput:
-    return _load([p for p in EXAMPLES if p.stem == "en_restaurant"][0])[0]
+    return _load(next(p for p in EXAMPLES if p.stem == "en_restaurant"))[0]
 
 
 @pytest.mark.parametrize(
-    "summary,pitch",
+    ("summary", "pitch"),
     [
         ("An ordering app like Zomato for Pune.", "This app lets customers order."),
         ("An ordering app for Pune.", "This app already has 5000 customers."),

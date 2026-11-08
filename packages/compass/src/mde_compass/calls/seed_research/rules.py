@@ -34,7 +34,7 @@ def _clean(items: list[str]) -> list[str]:
 
 
 def geography_text(inp: SeedResearchInput) -> str:
-    """"city, region, country" from the Brief, else the locale country, else the word ``global``."""
+    """ "city, region, country" from the Brief, else the locale country, else the word ``global``."""
     g = inp.geography
     parts = _clean([g.city, g.region, g.country])
     if parts:

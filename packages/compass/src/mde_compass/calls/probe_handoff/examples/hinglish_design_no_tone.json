@@ -1,0 +1,62 @@
+{
+  "name": "hinglish_design_no_tone",
+  "input": {
+    "kind": "design",
+    "language": "hi-Latn",
+    "digest": {
+      "idea": "mere kirana store ke liye app",
+      "category": "kirana delivery",
+      "business_model": "",
+      "geography": "Jaipur, Rajasthan",
+      "audience": [
+        "aas-paas ke parivar"
+      ],
+      "apps": [],
+      "roles": [
+        {
+          "name": "grahak",
+          "goal": "saman mangwana"
+        }
+      ],
+      "features": [
+        {
+          "name": "Saman ki list",
+          "intent": "ghar ka saman chunna",
+          "priority": "must",
+          "status": "in"
+        }
+      ],
+      "glossary": [
+        "saman"
+      ],
+      "references": [],
+      "tone_words": [],
+      "brand_signals": [],
+      "locales": [
+        "hi",
+        "en"
+      ],
+      "constraints": []
+    }
+  },
+  "output": {
+    "can_start": false,
+    "plan_queries": [],
+    "journeys": [],
+    "screens": [],
+    "tone": "",
+    "direction": "",
+    "blocking_questions": [
+      {
+        "question": "Which words describe the look and feel you want?",
+        "slot_id": "look.tone_words",
+        "fix": "ask",
+        "suggested_value_json": null
+      }
+    ]
+  },
+  "expected_passed": false,
+  "expected_gap_slots": [
+    "look.tone_words"
+  ]
+}

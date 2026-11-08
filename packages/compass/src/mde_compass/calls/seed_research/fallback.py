@@ -52,7 +52,11 @@ def _fill(template: str, values: dict[str, str]) -> str:
 
 def _short(text: str) -> str:
     text = " ".join(text.split())
-    return text if len(text) <= PART_CHARS else text[:PART_CHARS].rsplit(" ", 1)[0] or text[:PART_CHARS]
+    return (
+        text
+        if len(text) <= PART_CHARS
+        else text[:PART_CHARS].rsplit(" ", 1)[0] or text[:PART_CHARS]
+    )
 
 
 def _values(inp: SeedResearchInput, table: dict[str, Any]) -> dict[str, str]:
@@ -71,7 +75,9 @@ def _values(inp: SeedResearchInput, table: dict[str, Any]) -> dict[str, str]:
     }
 
 
-def _terms(templates: list[str], values: dict[str, str], inp: SeedResearchInput, table: Any) -> list[str]:
+def _terms(
+    templates: list[str], values: dict[str, str], inp: SeedResearchInput, table: Any
+) -> list[str]:
     terms: list[str] = []
     for tpl in templates:
         wanted = _PLACEHOLDER.findall(tpl)
