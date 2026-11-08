@@ -40,7 +40,9 @@ from mde_compass.store.common import (
     DEFAULT_BASELINE_LABEL,
     STALE_TURN,
     clean_json,
+    clean_text,
     dump_model,
+    normalize,
     payload_text,
     turn_lock_key,
 )
@@ -441,13 +443,15 @@ class PgEventRepo(_Repo):
             EVENT.c.tenant_id == self.tenant,
             EVENT.c.idx > after_idx,
         ]
-        if q:
-            conditions.append(func.strpos(EVENT.c.search_text, q.casefold()) > 0)
+        needle = clean_text(q).casefold() if q else ""
+        if needle:
+            conditions.append(func.strpos(EVENT.c.search_text, needle) > 0)
         if turn_ids is not None:
+            wanted = [clean_text(t) for t in turn_ids]
             conditions.append(
                 or_(
-                    and_(EVENT.c.direction == "in", EVENT.c.event_id.in_(turn_ids)),
-                    and_(EVENT.c.direction == "out", EVENT.c.turn_id.in_(turn_ids)),
+                    and_(EVENT.c.direction == "in", EVENT.c.event_id.in_(wanted)),
+                    and_(EVENT.c.direction == "out", EVENT.c.turn_id.in_(wanted)),
                 )
             )
         size = _page_limit(limit)
@@ -490,6 +494,7 @@ class PgBriefRepo(_Repo):
         self, session_id: str, brief: Brief, *, change_set_id: str | None = None
     ) -> BriefVersionRecord:
         await self.lock_session(session_id)  # serialises writers: the second sees the first's row
+        brief = normalize(brief)
         latest_stmt = select(func.max(BRIEF.c.version)).where(BRIEF.c.session_id == session_id)
         latest = (await self._s.execute(latest_stmt)).scalar_one() or 0
         if brief.version != latest + 1:

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from collections.abc import Iterator
 from datetime import timedelta
-from typing import cast
+from typing import TypeVar, cast
 
 from pydantic import BaseModel
 
@@ -28,6 +28,16 @@ MAX_SEARCH_TEXT_CHARS = 200_000
 def clean_json(value: object) -> object:
     """A JSON-compatible value without NUL characters (PostgreSQL rejects them in ``jsonb``)."""
     return strip_nul(value)
+
+
+M = TypeVar("M", bound=BaseModel)
+
+
+def normalize(model: M) -> M:
+    """The model exactly as it comes back from storage: a JSON round trip with NUL characters removed.
+    The in-memory store applies it on write so it behaves like PostgreSQL; the Brief is normalised
+    before hashing so a stored hash always equals the hash of the stored content."""
+    return type(model).model_validate(clean_json(model.model_dump(mode="json")))
 
 
 def dump_model(model: BaseModel) -> dict[str, object]:
@@ -58,3 +68,8 @@ def payload_text(payload: object) -> str:
 
 def turn_lock_key(session_id: str) -> str:
     return f"{TURN_LOCK_KEY_PREFIX}{session_id}"
+
+
+def clean_text(value: str) -> str:
+    """Text without NUL characters (PostgreSQL ``text`` rejects them); used for search input."""
+    return value.replace("\x00", "")

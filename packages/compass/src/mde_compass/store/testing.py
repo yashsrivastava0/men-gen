@@ -6,6 +6,7 @@ test-to-test imports).
   ``WITH (FORCE)``; stale ones (older than six hours, by the time inside the ULID) are dropped on the
   way in. Tests never touch the dev database. Unreachable PostgreSQL raises ``PostgresUnavailable``;
   the pytest fixtures turn it into a FAILURE, never a skip.
+* ``temporary_postgres_store``: a ready ``PostgresStore`` over a throw-away database.
 * ``truncate_all``: empties the ``compass_*`` tables only.
 * Factories for test data (``TENANT_A``, ``make_session``, ``make_brief``, ...).
 """
@@ -15,7 +16,7 @@ from __future__ import annotations
 import contextlib
 import os
 import time
-from collections.abc import Iterator
+from collections.abc import AsyncIterator, Iterator
 from datetime import UTC, datetime
 from typing import Any
 
@@ -32,6 +33,8 @@ from mde_compass.domain.session import Contributor, SessionRecord
 from mde_compass.store.migrate import upgrade
 from mde_compass.store.models import Base
 from mde_compass.store.ports import CallLogEntry
+from mde_compass.store.postgres import PostgresStore, create_store_engine
+from mde_core.clock import Clock
 from mde_core.ids import new_id, new_ulid
 from mde_persistence.db import ensure_selector_loop_policy, redact_url
 
@@ -133,6 +136,20 @@ def truncate_all(url: str | URL) -> None:
     tables = sql.SQL(", ").join(sql.Identifier(t.name) for t in Base.metadata.sorted_tables)
     with psycopg.connect(dsn, autocommit=True) as conn:
         conn.execute(sql.SQL("TRUNCATE TABLE {} RESTART IDENTITY CASCADE").format(tables))
+
+
+@contextlib.asynccontextmanager
+async def temporary_postgres_store(clock: Clock | None = None) -> AsyncIterator[PostgresStore]:
+    """A ``PostgresStore`` over its own throw-away migrated database (for API and flow tests that want
+    the real store). Fails with ``PostgresUnavailable`` when the server is down; drops the database and
+    disposes the pool on exit."""
+    ensure_reachable(admin_dsn())
+    with ephemeral_database() as url:
+        engine = create_store_engine(url)
+        try:
+            yield PostgresStore(engine, clock=clock)
+        finally:
+            await engine.dispose()
 
 
 # --------------------------------------------------------------------------- factories

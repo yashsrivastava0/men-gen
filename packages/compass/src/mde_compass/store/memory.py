@@ -46,6 +46,8 @@ from mde_compass.store.common import (
     DEFAULT_BASELINE_LABEL,
     STALE_TURN,
     clean_json,
+    clean_text,
+    normalize,
     payload_text,
 )
 from mde_compass.store.ports import (
@@ -271,6 +273,7 @@ class _Sessions:
 
     async def create(self, record: SessionRecord) -> SessionRecord:
         self._u.own(record.tenant_id)
+        record = normalize(record)
         await self._u.lock(record.id)
         if record.id in self._u.data.sessions:
             raise Conflict(f"session {record.id!r} already exists")
@@ -310,6 +313,7 @@ class _Sessions:
 
     async def save(self, record: SessionRecord) -> SessionRecord:
         self._u.own(record.tenant_id)
+        record = normalize(record)
         current = await self._u.locked_session(record.id)
         if record.row_version != current.row_version:
             raise Conflict(
@@ -458,8 +462,8 @@ class _Events:
         q: str | None = None,
         turn_ids: list[str] | None = None,
     ) -> HistoryPage:
-        needle = q.casefold() if q else None
-        wanted = set(turn_ids) if turn_ids is not None else None
+        needle = clean_text(q).casefold() if q else None
+        wanted = {clean_text(t) for t in turn_ids} if turn_ids is not None else None
         matches: list[StoredEvent] = []
         for e in self._all(session_id):
             if e.idx <= after_idx:
@@ -501,6 +505,7 @@ class _Briefs:
         self, session_id: str, brief: Brief, *, change_set_id: str | None = None
     ) -> BriefVersionRecord:
         await self._u.locked_session(session_id)
+        brief = normalize(brief)
         versions = self._versions(session_id)
         latest = versions[-1].version if versions else 0
         if brief.version != latest + 1:
@@ -582,6 +587,7 @@ class _Questions:
 
     async def record_asked(self, session_id: str, card: Card, why: dict[str, JsonValue]) -> None:
         await self._u.locked_session(session_id)
+        card = normalize(card)
         record = QuestionRecord(
             card_id=card.id,
             card=card,
@@ -628,6 +634,7 @@ class _ChangeSets:
 
     async def save(self, session_id: str, change_set: ChangeSet) -> None:
         await self._u.locked_session(session_id)
+        change_set = normalize(change_set)
         key = (session_id, change_set.id)
         if key in self._u.data.change_sets:
             raise Conflict(f"change set {change_set.id} already exists (change sets are immutable)")
@@ -659,7 +666,7 @@ class _CallLog:
         # No row lock (as in Postgres, where the insert only takes a KEY SHARE lock on the session):
         # logging a model call never waits behind a unit that is writing the session.
         self._u.require_session(session_id)
-        stored = entry.model_copy(update={"at": entry.at or self._u.now()})
+        stored = normalize(entry).model_copy(update={"at": entry.at or self._u.now()})
         self._u.data.call_log.setdefault(session_id, [])
         self._u.append(self._u.data.call_log[session_id], stored.model_dump_json())
 
@@ -679,6 +686,8 @@ class _Sources:
     ) -> bool:
         await self._u.locked_session(session_id)
         d = self._u.data
+        source = normalize(source)
+        chunks = [normalize(c) for c in chunks]
         if (session_id, source.sha256) in d.source_sha:
             return False
         if (session_id, source.id) in d.sources:
@@ -720,6 +729,7 @@ class _Sources:
     async def save_claims(self, session_id: str, claims: list[Claim]) -> None:
         await self._u.locked_session(session_id)
         for claim in claims:
+            claim = normalize(claim)
             self._u.put(self._u.data.claims, (session_id, claim.id), claim.model_dump_json())
 
     async def list_claims(self, session_id: str) -> list[Claim]:
@@ -737,6 +747,7 @@ class _Contributors:
 
     async def upsert(self, session_id: str, contributor: Contributor) -> None:
         await self._u.locked_session(session_id)
+        contributor = normalize(contributor)
         self._u.put(
             self._u.data.contributors, (session_id, contributor.id), contributor.model_dump_json()
         )

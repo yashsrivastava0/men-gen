@@ -39,6 +39,7 @@ async def test_projections_are_rewritten_from_the_saved_brief(
     postgres_store: PostgresStore, compass_database: URL
 ) -> None:
     from mde_compass.domain.brief import AssumptionRecord, GlossaryRecord
+    from mde_compass.domain.common import BriefItem
     from mde_compass.domain.research import ResearchRequest
 
     rec = f.make_session()
@@ -62,6 +63,8 @@ async def test_projections_are_rewritten_from_the_saved_brief(
         )
         await uow.briefs.save_version(rec.id, v1)
         v2 = f.make_brief(2, summary="changed")
+        v2.audience["segments"] = BriefItem(value=["diners", "restaurants"], tier="Default")
+        v2.constraints["offline"] = BriefItem()  # no value: projected as SQL NULL
         await uow.briefs.save_version(rec.id, v2)
 
     dsn = compass_database.set(drivername="postgresql").render_as_string(hide_password=False)
@@ -75,9 +78,14 @@ async def test_projections_are_rewritten_from_the_saved_brief(
         assert rows("SELECT 1 FROM compass_assumptions WHERE session_id = %s") == []
         assert rows("SELECT 1 FROM compass_research_requests WHERE session_id = %s") == []
         slots = rows(
-            "SELECT slot_id, tier, status, value, brief_version FROM compass_slots WHERE session_id = %s"
+            "SELECT slot_id, tier, status, value, brief_version FROM compass_slots "
+            "WHERE session_id = %s ORDER BY slot_id"
         )
-        assert slots == [("idea.summary", "Locked", "confirmed", "changed", 2)]
+        assert slots == [
+            ("audience.segments", "Default", "empty", ["diners", "restaurants"], 2),
+            ("constraints.offline", "Open", "empty", None, 2),
+            ("idea.summary", "Locked", "confirmed", "changed", 2),
+        ]
         features = rows(
             "SELECT feature_id, scope_status, brief_version FROM compass_features WHERE session_id = %s"
         )
@@ -265,3 +273,15 @@ async def test_postgres_store_exposes_its_clock_and_engine(
         created = await uow.sessions.create(rec)
     assert created.created_at == fake_clock.now()  # every timestamp comes from the injected clock
     assert created.created_at is not None and created.created_at.utcoffset() is not None
+
+
+async def test_temporary_postgres_store_helper() -> None:
+    from mde_compass.store.testing import temporary_postgres_store
+
+    async with temporary_postgres_store() as store:
+        async with store.begin(f.TENANT_A) as uow:
+            rec = await uow.sessions.create(f.make_session())
+        async with store.begin(f.TENANT_A) as uow:
+            assert (await uow.sessions.get(rec.id)).id == rec.id
+        engine = store.engine
+    assert engine.pool.checkedout() == 0  # type: ignore[attr-defined]

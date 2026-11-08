@@ -104,6 +104,54 @@ async def check_session_create_get_list_save(factory: StoreFactory) -> None:
 
 
 @check
+async def check_session_save_roundtrips_mutable_fields(factory: StoreFactory) -> None:
+    store = await factory()
+    clock = cast("FakeClock", getattr(store, "clock"))  # noqa: B009
+    rec = await _new_session(store, title="t0", locale="en")
+    clock.advance(30)
+    async with store.begin(A) as uow:
+        cur = await uow.sessions.get(rec.id)
+        cur.mode = "enterprise"
+        cur.locale = "hi"
+        cur.user_label = "Asha"
+        cur.title = "Pune thali app"
+        cur.state = "PAUSED"
+        cur.resume_state = "INTERVIEWING"
+        cur.brief_version = 4
+        cur.approved_version = 3
+        cur.approved_hash = "h" * 64
+        cur.contributors = [
+            f.make_contributor("con_1"),
+            f.make_contributor("con_2", role="approver"),
+        ]
+        cur.user_id = "usr_someone_else"  # the owner never changes
+        saved = await uow.sessions.save(cur)
+        assert saved.user_id == f.USER_A and saved.tenant_id == A
+    async with store.begin(A) as uow:
+        got = await uow.sessions.get(rec.id)
+        assert (got.mode, got.locale, got.user_label, got.title) == (
+            "enterprise",
+            "hi",
+            "Asha",
+            "Pune thali app",
+        )
+        assert (got.state, got.resume_state) == ("PAUSED", "INTERVIEWING")
+        assert (got.brief_version, got.approved_version, got.approved_hash) == (4, 3, "h" * 64)
+        assert [(c.id, c.role) for c in got.contributors] == [
+            ("con_1", "requester"),
+            ("con_2", "approver"),
+        ]
+        assert got.user_id == f.USER_A and got.created_at == rec.created_at
+        assert (
+            got.updated_at is not None
+            and rec.updated_at is not None
+            and got.updated_at > rec.updated_at
+        )
+        assert [s.id for s in await uow.sessions.list_for_user(f.USER_A)] == [rec.id]
+        assert await uow.sessions.list_for_user("usr_someone_else") == []
+
+
+@check
 async def check_session_create_duplicate_and_tenant(factory: StoreFactory) -> None:
     store = await factory()
     rec = await _new_session(store)
@@ -508,8 +556,10 @@ async def check_events_history_filters(factory: StoreFactory) -> None:
         assert (await uow.events.list_history(rec.id, turn_ids=[])).items == []
         mixed = await uow.events.list_history(rec.id, q="pune", turn_ids=["u2"])
         assert [e.type for e in mixed.items] == ["card"]
-        # LIKE wildcards in the query are plain text
+        # LIKE wildcards in the query are plain text, and a NUL in the query is just dropped
         assert (await uow.events.list_history(rec.id, q="%")).items == []
+        assert len((await uow.events.list_history(rec.id, q="pu\x00ne")).items) == 2
+        assert (await uow.events.list_history(rec.id, turn_ids=["u\x002"])).items != []
 
 
 @check
@@ -761,6 +811,39 @@ async def check_call_log_does_not_wait_for_session_writers(factory: StoreFactory
         await asyncio.wait_for(log_call(), timeout=10)
     async with store.begin(A) as uow:
         assert [e.call_id for e in await uow.call_log.list(rec.id)] == ["call_during_write"]
+
+
+@check
+async def check_nul_characters_never_break_a_write(factory: StoreFactory) -> None:
+    """User text can contain NUL; PostgreSQL ``jsonb`` and ``text`` reject it, so both stores drop it."""
+    store = await factory()
+    rec = await _new_session(store, title="t\x00itle")
+    sid = rec.id
+    brief = f.make_brief(1, summary="sum\x00mary")
+    async with store.begin(A) as uow:
+        assert (await uow.sessions.get(sid)).title == "title"
+        saved = await uow.briefs.save_version(sid, brief)
+        assert saved.brief.idea["summary"].value == "summary"
+        assert saved.hash == brief_hash(saved.brief)  # the hash is of the content as stored
+        await uow.questions.record_asked(sid, f.make_card(question="why\x00?"), {"why": "a\x00b"})
+        await uow.call_log.record(sid, f.make_call().model_copy(update={"reason": "r\x00s"}))
+        await uow.contributors.upsert(
+            sid, f.make_contributor().model_copy(update={"name": "A\x00sha"})
+        )
+        source = f.make_source().model_copy(update={"name": "na\x00me.txt"})
+        chunks = [c.model_copy(update={"text": "te\x00xt"}) for c in f.make_chunks()]
+        assert await uow.sources.save_source(sid, source, chunks=chunks)
+        change = f.make_change_set().model_copy(update={"summary": "su\x00m"})
+        await uow.change_sets.save(sid, change)
+    async with store.begin(A) as uow:
+        assert (await uow.briefs.get(sid)).hash == saved.hash
+        assert (await uow.questions.get(sid, "Q-001")).card.question == "why?"
+        assert (await uow.questions.get(sid, "Q-001")).why == {"why": "ab"}
+        assert (await uow.call_log.list(sid))[0].reason == "rs"
+        assert (await uow.contributors.list(sid))[0].name == "Asha"
+        assert (await uow.sources.get_source(sid, "SRC-001")).name == "name.txt"
+        assert (await uow.sources.list_chunks(sid, "SRC-001"))[0].text == "text"
+        assert (await uow.change_sets.get(sid, "CHG-001")).summary == "sum"
 
 
 # --------------------------------------------------------------------------- sources, contributors
