@@ -1,0 +1,5 @@
+no_ask:
+  - stack_and_framework
+  - hex_colors
+  - hosting_and_database
+  - legal_wording

@@ -1,0 +1,9 @@
+families:
+  - id: catalog_commerce
+    label: {en: Catalog and commerce, hi: कैटलॉग और खरीदारी}
+    keywords: [shop, store, catalog, दुकान, khareedari]
+    typical_features:
+      - {id: browse_items, name: {en: Browse items, hi: सामान देखना}, intent: Let people look through what is on offer.}
+    typical_roles: [customer, seller]
+    typical_integrations: [payments]
+    typical_business_models: [commission on each sale]
