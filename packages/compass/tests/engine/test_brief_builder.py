@@ -313,3 +313,58 @@ def test_property_ids_stable_unique_never_reused(rounds: list[list[str]]) -> Non
             )  # an id is one name forever
             assert f.id not in brief.ids.tombstones
         assert validate_brief(brief, CAT) == []
+
+
+# ------------------------------------------------------------------ whole-catalog properties
+WORDS = st.sampled_from(["alpha", "Beta", "gamma", "ALPHA", "delta", "Customer app", "Owner"])
+SLOT_IDS = [s for s in CAT.slots if target_of(CAT.slots[s]).kind != "skip"]
+
+
+def _value_for(slot_id: str, draw: st.DrawFn) -> Any:
+    kind = CAT.slots[slot_id].value_schema.kind
+    fields = CAT.slots[slot_id].value_schema.fields
+    if kind in ("text", "enum"):
+        return draw(WORDS)
+    if kind in ("text_list", "enum_list"):
+        return draw(st.lists(WORDS, min_size=1, max_size=3))
+    if kind == "object_list":
+        keys = [f for f in fields if f in ("name", "term", "label")] or ["name"]
+        return [
+            {keys[0]: draw(WORDS), "purpose": draw(WORDS)} for _ in range(draw(st.integers(1, 3)))
+        ]
+    if kind == "object":
+        return {"k": draw(WORDS)}
+    if kind == "geo":
+        return {"country": draw(WORDS)}
+    return {"chat": "en", "app": ["en", "hi"], "right_to_left": False}
+
+
+@st.composite
+def slot_writes(draw: st.DrawFn) -> list[tuple[str, Any, str, bool]]:
+    out = []
+    for _ in range(draw(st.integers(1, 12))):
+        sid = draw(st.sampled_from(SLOT_IDS))
+        state = draw(st.sampled_from(["assumed", "volunteered", "confirmed"]))
+        out.append((sid, _value_for(sid, draw), state, draw(st.booleans()) and state != "assumed"))
+    return out
+
+
+@settings(max_examples=80, deadline=None)
+@given(slot_writes())
+def test_property_whole_catalog_idempotent_roundtrip_and_tiers(writes: list[Any]) -> None:
+    s = new_store()
+    brief = empty_brief("ses_1", "enterprise", "en")
+    for sid, value, state, remove in writes:
+        prov = PAT if state == "assumed" else TAP
+        w: Any = s.write
+        w(sid, None if remove else value, state=state, provenance=prov, remove=remove)
+        brief = apply_slots(brief, s, CAT)
+    assert apply_slots(brief, s, CAT) == brief
+    errors = [e for e in validate_brief(brief, CAT) if "does not exist" not in e]
+    assert errors == []
+    # slots rebuilt from the Brief reproduce the same Brief content
+    restored = new_store()
+    restored.load(slots_from_brief(brief, CAT, CLOCK))
+    again = apply_slots(brief, restored, CAT)
+    assert brief_hash(again) == brief_hash(brief)
+    assert again.ids == brief.ids
