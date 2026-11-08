@@ -1,0 +1,11 @@
+capabilities:
+  - id: push_notifications
+    label: {en: Real push notifications, hi: असली पुश नोटिफ़िकेशन}
+    kind: tier_b
+    keywords: [push notification, पुश नोटिफ़िकेशन]
+  - id: games
+    label: {en: Games, hi: गेम}
+    kind: declined
+    keywords: [game, गेम]
+    reason: {en: Games need a different kind of engine than this builder uses., hi: गेम के लिए ऐसा इंजन चाहिए जो यह बिल्डर इस्तेमाल नहीं करता।}
+    alternative: {en: We can build a companion app for your game., hi: हम आपके गेम के लिए साथी ऐप बना सकते हैं।}

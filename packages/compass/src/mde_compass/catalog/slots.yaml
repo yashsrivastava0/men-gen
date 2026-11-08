@@ -1,0 +1,58 @@
+slots:
+  - id: idea.summary
+    group: idea
+    label: {en: Your idea in one line, hi: आपका आइडिया एक पंक्ति में}
+    level: must
+    consumers: [all]
+    filled_by: [U, D]
+    impact: 5
+    risk: low
+    effort: text
+    value_schema: {kind: text}
+    brief_path: idea.summary
+    order: 1
+    fallback_card:
+      type: open_prompt
+      question: {en: "What would you like your app to do?", hi: "आप चाहते हैं कि आपका ऐप क्या करे?"}
+      why_we_ask: {en: "Everything else we plan starts from this.", hi: "बाकी सारी योजना इसी से शुरू होती है।"}
+      placeholder: {en: Describe it in a few words, hi: कुछ शब्दों में बताइए}
+      options: []
+  - id: idea.category
+    group: idea
+    label: {en: Kind of app, hi: ऐप का प्रकार}
+    level: must
+    consumers: [research, blueprint]
+    filled_by: [I, U]
+    impact: 5
+    risk: low
+    effort: tap
+    value_schema: {kind: text}
+    brief_path: idea.category
+    order: 1
+    fallback_card:
+      type: choose_one
+      question: {en: "Which of these is closest to your app?", hi: "इनमें से कौन सा आपके ऐप के सबसे करीब है?"}
+      why_we_ask: {en: "It tells us what similar apps to study.", hi: "इससे पता चलता है कि कौन से मिलते-जुलते ऐप देखने हैं।"}
+      options:
+        - {id: A, label: {en: Something people use to buy or order, hi: खरीदने या ऑर्डर करने के लिए}, value: commerce}
+        - {id: B, label: {en: Something people use to book or schedule, hi: बुक करने या समय तय करने के लिए}, value: booking}
+        - {id: C, label: {en: A tool for my team to manage work, hi: मेरी टीम के काम सँभालने का टूल}, value: internal_tool}
+  - id: context.geo
+    group: context
+    label: {en: Country and city, hi: देश और शहर}
+    level: must
+    consumers: [research, blueprint, design]
+    filled_by: [U, D]
+    impact: 5
+    risk: low
+    effort: text
+    value_schema: {kind: geo, fields: [country, city, region]}
+    brief_path: context.geo
+    order: 1
+    ask_if: "filled('idea.summary')"
+    fallback_card:
+      type: quick_form
+      question: {en: "Where will people use it?", hi: "लोग इसे कहाँ इस्तेमाल करेंगे?"}
+      why_we_ask: {en: "Places change which services and habits matter.", hi: "जगह के हिसाब से सेवाएँ और आदतें बदल जाती हैं।"}
+      placeholder: {en: Country and city, hi: देश और शहर}
+      options: []
