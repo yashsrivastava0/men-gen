@@ -103,3 +103,23 @@ Live spend total (update after every live batch with `just budget`): USD 0.1984 
 - [ ] 8. Documentation complete: README, CLAUDE.md files, `docs/` tree, ADRs, prompt catalog, exported OpenAPI and JSON Schemas, runbooks (local dev, live budget, troubleshooting), `frontend-consumption.md`
 - [ ] 9. Evals report committed with honest notes on where Luna was weak and what changed
 - [ ] 10. `PROGRESS.md` fully ticked, `DECISIONS.md` current, `REPORT.md` written
+
+## Compass (build prompt 01; started 2026-11-09 03:10, hard stop 04:40)
+
+Offline vertical slice, time-boxed (D-085). If this section is the last thing you read: the last green commit on `main` is the deliverable; everything unticked below is not started or not merged.
+
+- [x] Toolchain on macOS without Homebrew (uv, just, Python 3.13, PostgreSQL 16.2 private cluster on 54329), architecture docs copied to `docs/architecture-v3/` (d5bc0f3, D-084)
+- [x] Package skeleton, root wiring, import-linter layer + isolation contract (fc68145)
+- [x] Shared contracts commit: config, domain, store ports, engine ports (12 call ports + `CompassService` + `HandoffPort`), `CompassCallSpec`/`CallRunner`, `CompassBudget`, `BriefViewModel`, API schemas, ADR 0012 to 0014 (this checkpoint)
+- [ ] Catalog data + loader (agent K, branch `feat/compass-catalog`)
+- [ ] Store: fake + PostgreSQL + Alembic + contract suite (agent S)
+- [ ] Calls A: understand_turn, write_card, situate (agent C1)
+- [ ] Calls B: compile_text, seed_research, probe_handoff (agent C2)
+- [ ] Engine core: state machine, slot and tier rules, VoI queue, card validators, assumptions, gate rules, patch engine + undo, safety (agent E1)
+- [ ] Views: BriefViewModel builder, consumer views, readiness, diffs (agent V)
+- [ ] API + static UI (agent A)
+- [ ] Engine service (turn loop) wired to ports, store and API (lead)
+- [ ] Other six calls: read_chunk, merge_claims, answer, scan_ambiguity, interpret_change, make_variants (wave 2; until then their ports run on deterministic fallbacks)
+- [ ] Live batch A smoke (only if the API key and `ALLOW_LIVE_LLM=1` are already in the environment)
+- [ ] Deferred (exact next steps are written here at wrap-up): intake (parsers, URL reader, SSRF guard), batches B to D, eval harness and metrics, the full IN/IV/DC scenario list and ten personas, prefetch, enterprise extras, `ChainedRegistry` gateway hook
+

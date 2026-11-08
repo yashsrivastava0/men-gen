@@ -51,6 +51,9 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [0009 An independent security review and how its findings are routed](adr/0009-security-review-and-routing.md)
 - [0010 Research after Gate 1, as a bounded pipeline](adr/0010-research-after-gate-one-and-bounded-pipeline.md)
 - [0011 Contracts evolve additively](adr/0011-contract-evolution-additive-only.md)
+- [0012 Compass package, boundaries and layering](adr/0012-compass-package-boundaries-and-layering.md)
+- [0013 Brief schema v1, hashing and versioning](adr/0013-brief-schema-v1-hashing-and-versioning.md)
+- [0014 Call specs live in the agent package](adr/0014-call-spec-registration-from-agent-packages.md)
 
 ## Evals
 
