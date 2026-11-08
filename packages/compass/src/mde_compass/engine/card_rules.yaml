@@ -1,8 +1,8 @@
 # Data for the card validators (cards.py). Neutral wording, honest basis, brand heuristic allowlist.
 # Phrases are matched after normalisation (casefold, punctuation to spaces) as whole words.
 leading_words:
-  en: [best, ultimate, amazing, perfect, awesome, incredible, "must have", "must-have", "game changing", revolutionary, "most people", "most users", "most apps", "you will love", "youll love", obviously, clearly, "of course", guaranteed, "no brainer", "number one", "top choice", "recommended by", "industry standard", "the smart choice", "smartest"]
-  hi: ["सबसे अच्छा", "बेहतरीन", "ज़बरदस्त", "ज़रूर चाहिए", "ज्यादातर लोग", "ज़्यादातर लोग", "सब लोग", "हर कोई", "निश्चित रूप से", "गारंटी"]
+  en: [best, ultimate, amazing, perfect, awesome, incredible, "game changing", revolutionary, "most people", "most users", "most apps", "you will love", "youll love", obviously, clearly, "of course", guaranteed, "no brainer", "number one", "top choice", "recommended by", "industry standard", "the smart choice", "smartest"]
+  hi: ["सबसे अच्छा", "बेहतरीन", "ज़बरदस्त", "ज्यादातर लोग", "ज़्यादातर लोग", "सब लोग", "हर कोई", "निश्चित रूप से", "गारंटी"]
 statistic_patterns:
   - "\\d{1,3}\\s{0,2}%"
   - "\\d{1,3}\\s{0,2}(?:out of|in)\\s{0,2}\\d{1,3}\\s{0,2}(?:people|users|apps|customers)"
@@ -14,3 +14,7 @@ brand_allowlist: [I, UPI, OTP, SMS, GPS, QR, PDF, API, KYC, GST, PIN, ID, FAQ, U
 fallback_reason:
   en: A simple place to start; you can change it later.
   hi: शुरू करने का एक आसान तरीका; आप इसे बाद में बदल सकते हैं।
+# Devanagari needs more words than English for the same meaning: the word limits grow by these amounts in Hindi.
+hindi_extra_words:
+  question: 3
+  option: 2

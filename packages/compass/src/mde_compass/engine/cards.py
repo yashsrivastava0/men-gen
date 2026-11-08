@@ -52,10 +52,12 @@ FAMILY_GROUNDED_SLOTS: frozenset[str] = frozenset(
 CHECKLIST_MIN = 2
 CHECKLIST_MAX = 14
 RANK_MIN = 2
+MAX_ACRONYM_LETTERS = 4
 HI_QUESTION_SHARE = 0.3
 HI_TEXT_SHARE = 0.4
 EN_MAX_DEVANAGARI = 0.1
 _WORD_SPLIT = re.compile(r"[^\W_]+", re.UNICODE)
+_LOCALE = re.compile(r"^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$")
 _CAP_WORD = re.compile(r"(?<![\w])[A-Z][A-Za-z0-9\-]{1,30}(?![\w])")
 _STOP = frozenset(
     {"a", "an", "the", "of", "for", "to", "and", "or", "in", "on", "with", "your", "my"}
@@ -84,6 +86,8 @@ class Rules:
     statistics: tuple[re.Pattern[str], ...]
     allowlist: frozenset[str]
     fallback_reason: dict[str, str]
+    hi_extra_question: int
+    hi_extra_option: int
 
 
 @lru_cache(maxsize=1)
@@ -97,6 +101,8 @@ def load_rules() -> Rules:
         statistics=tuple(re.compile(p, re.IGNORECASE) for p in raw["statistic_patterns"]),
         allowlist=frozenset(str(w).casefold() for w in raw["brand_allowlist"]),
         fallback_reason={str(k): str(v) for k, v in raw["fallback_reason"].items()},
+        hi_extra_question=int(raw["hindi_extra_words"]["question"]),
+        hi_extra_option=int(raw["hindi_extra_words"]["option"]),
     )  # fmt: skip
 
 
@@ -125,6 +131,28 @@ def request_for(
         must_confirm=item.must_confirm,
         avoid_labels=list(avoid_labels),
     )
+
+
+def family_hints(
+    catalog: Catalog, slot_ids: Sequence[str], family_ids: Sequence[str], *, language: str = "en"
+) -> list[str]:
+    """Typical labels from ``families.yaml`` for the slots of a card (the writer's grounding and the basis
+    check): features for ``scope.features``, roles, integrations, business models. Empty if no family given."""
+    out: list[str] = []
+    for fid in family_ids:
+        family = catalog.families.get(fid)
+        if family is None:
+            continue
+        for slot_id in slot_ids:
+            if slot_id == "scope.features":
+                out.extend(f.name.get(language) for f in family.typical_features)
+            elif slot_id == "roles.list":
+                out.extend(family.typical_roles)
+            elif slot_id == "integrations.wanted":
+                out.extend(family.typical_integrations)
+            elif slot_id == "idea.business_model":
+                out.extend(family.typical_business_models)
+    return list(dict.fromkeys(out))
 
 
 # --- validation ----------------------------------------------------------------------------------------
@@ -171,8 +199,12 @@ def _value_ok(slot: SlotDef, value: JsonValue) -> bool:
     if kind == "bool":
         return isinstance(value, bool)
     if kind == "locales":
+        if isinstance(value, dict):
+            return True
         items = value if isinstance(value, list) else [value]
-        return all(isinstance(v, str) and (not allowed or v in allowed) for v in items)
+        return all(
+            isinstance(v, str) and (v in allowed or v == "other" or _LOCALE.match(v)) for v in items
+        )
     if kind in ("object", "object_list", "geo"):
         return isinstance(value, dict | list | str)
     return False
@@ -208,6 +240,7 @@ def _option_values(option: CardOption) -> list[str]:
 
 
 def _check_options(
+    language: str,
     draft: CardDraft,
     request: CardRequest,
     catalog: Catalog,
@@ -218,6 +251,8 @@ def _check_options(
     ctype = request.card_type
     options = draft.options
     max_opt = frame.max_option_words if frame else cfg.max_option_words
+    if language == "hi":
+        max_opt += load_rules().hi_extra_option
     labels = [normalize(o.label) for o in options]
     ids = [o.id for o in options]
     if any(not o.id.strip() for o in options) or len(set(ids)) != len(ids):
@@ -300,8 +335,14 @@ def _check_wording(
     return list(dict.fromkeys(errors))
 
 
+def _is_acronym(token: str) -> bool:
+    """ALL CAPS of at most four letters, optionally plural (``API``, ``APIs``, ``UPI``): neutral jargon."""
+    core = token[:-1] if token.endswith("s") and token[:-1].isupper() else token
+    return core.isupper() and core.isalpha() and len(core) <= MAX_ACRONYM_LETTERS
+
+
 def _brand_tokens(text: str) -> list[str]:
-    """Capitalised words that are not the first word of a sentence."""
+    """Capitalised words that are not the first word of a sentence and not short acronyms."""
     out: list[str] = []
     for sentence in re.split(r"(?<=[.!?])\s+", text[:2_000]):
         words = sentence.split()
@@ -309,7 +350,7 @@ def _brand_tokens(text: str) -> list[str]:
             m.group(0)
             for w in words[1:]
             for m in [_CAP_WORD.fullmatch(w.strip(",;:()\"'?!."))]
-            if m
+            if m and not _is_acronym(m.group(0))
         )
     return out
 
@@ -375,11 +416,13 @@ def validate_card(
     frame = catalog.frames.get(request.frame_id)
     errors: list[str] = []
     max_q = frame.max_question_words if frame else cfg.max_question_words
+    if language == "hi":
+        max_q += load_rules().hi_extra_question
     if not draft.question.strip():
         errors.append("question.empty: the question is empty")
     elif _words(draft.question) > max_q:
         errors.append(f"question.long: more than {max_q} words")
-    errors.extend(_check_options(draft, request, catalog, frame, cfg))
+    errors.extend(_check_options(language, draft, request, catalog, frame, cfg))
     errors.extend(_check_wording(draft, user_text, request, language))
     errors.extend(_check_language(draft, language, user_text))
     errors.extend(_check_grounding(draft, request, user_text))

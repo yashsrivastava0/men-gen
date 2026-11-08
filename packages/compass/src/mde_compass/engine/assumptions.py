@@ -16,7 +16,7 @@ from collections.abc import Mapping
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
-from typing import Literal
+from typing import Any, Literal
 
 import yaml
 from pydantic import JsonValue
@@ -32,12 +32,12 @@ TEXT_PATH = Path(__file__).resolve().parent / "assumption_text.yaml"
 
 
 @lru_cache(maxsize=1)
-def _text() -> dict[str, object]:
+def _text() -> dict[str, Any]:
     return yaml.safe_load(TEXT_PATH.read_text(encoding="utf-8"))  # type: ignore[no-any-return]
 
 
-THEME_BY_GROUP: dict[str, Theme] = dict(_text()["themes"])  # type: ignore[arg-type]
-THEME_ORDER: tuple[Theme, ...] = tuple(_text()["theme_order"])  # type: ignore[arg-type]
+THEME_BY_GROUP: dict[str, Theme] = dict(_text()["themes"])
+THEME_ORDER: tuple[Theme, ...] = tuple(_text()["theme_order"])
 HIGH_IMPACT_AT = 4
 
 
@@ -61,9 +61,9 @@ def _value_text(value: JsonValue) -> str:
     return "" if value is None else str(value)
 
 
-def _basis_of(record: SlotRecord) -> str:
+def _basis_of(record: SlotRecord) -> Literal["pattern", "model_knowledge", "assumed"]:
     for prov in record.provenance:
-        if prov.type in ("pattern", "model_knowledge", "assumed"):
+        if prov.type == "pattern" or prov.type == "model_knowledge":
             return prov.type
     return "assumed"
 
@@ -82,22 +82,22 @@ def assumption_from_slot(
     basis = _basis_of(record)
     consumers = text["consumers"]
     names = ", ".join(
-        dict.fromkeys(consumers[c][lang] for c in slot_def.consumers if c in consumers)  # type: ignore[index]
+        dict.fromkeys(consumers[c][lang] for c in slot_def.consumers if c in consumers)
     )
     return AssumptionRecord(
         id=ids.allocate("ASM"),
         claim=text["claim"][lang].format(
             label=slot_def.label.get(lang), value=_value_text(record.value)
-        ),  # type: ignore[index]
-        reason=text["reason"][basis][lang],  # type: ignore[index]
+        ),
+        reason=text["reason"][basis][lang],
         basis=basis,
         impact="high" if is_high_impact(slot_def) else "low",
         theme=THEME_BY_GROUP.get(slot_def.group, "Business"),
         slot_id=slot_def.id,
         decision="proposed",
-        what_changes=text["what_changes"][lang].format(consumers=names or consumers["all"][lang]),  # type: ignore[index]
+        what_changes=text["what_changes"][lang].format(consumers=names or consumers["all"][lang]),
         tier="Default" if record.value not in (None, "", [], {}) else "Open",
-        provenance=[Provenance(type=basis, ref="")],  # type: ignore[arg-type]
+        provenance=[Provenance(type=basis, ref="")],
         confidence=record.confidence,
         status="assumed",
     )

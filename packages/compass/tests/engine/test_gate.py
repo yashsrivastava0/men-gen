@@ -266,3 +266,12 @@ def test_low_confidence_is_not_a_yes() -> None:
 @given(st.text(max_size=100))
 def test_only_exact_approvals_ever_classify_as_yes_and_never_when_closed(text: str) -> None:
     assert classify_yes(text, gate_open=False, language="en") != "yes"
+
+
+def test_classify_yes_is_linear_on_hostile_input() -> None:
+    import time
+
+    for text in ("yes " * 50_000, "ok but " * 50_000, "a" * 200_000):
+        start = time.perf_counter()
+        classify_yes(text, gate_open=True, language="en")
+        assert time.perf_counter() - start < 1.0

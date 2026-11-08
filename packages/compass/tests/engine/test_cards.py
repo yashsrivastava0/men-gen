@@ -470,3 +470,67 @@ def test_you_decide_uses_the_recommended_option_as_assumed() -> None:
 def test_you_decide_on_a_form_assumes_nothing_here() -> None:
     form = fallback_card("idea.summary", CATALOG, language="en", card_id="Q-013", n=1, of_about=5)
     assert you_decide_writes(form) == []
+
+
+def test_family_hints_ground_the_writer() -> None:
+    from mde_compass.engine.cards import family_hints
+
+    hints = family_hints(CATALOG, ["scope.features", "roles.list"], ["identity_access"])
+    assert "Sign up and sign in" in hints
+    assert "member" in hints
+    assert family_hints(CATALOG, ["scope.features"], ["no_such_family"]) == []
+    assert "subscription" in family_hints(CATALOG, ["idea.business_model"], ["identity_access"])
+
+
+def test_acronyms_and_plurals_are_not_brand_names() -> None:
+    d = good_draft(question="Which APIs or UPI options matter?")
+    assert not has(check(d), "brand.name")
+
+
+def test_locales_accept_other_languages_and_forms() -> None:
+    req = CardRequest(
+        frame_id="who_and_where", slots=["locales"], card_type="pick_many", option_source="fixed"
+    )
+    draft = CardDraft(
+        question="Which languages should the app speak?",
+        options=[
+            CardOption(id="a", label="English", sets={"locales": "en"}),
+            CardOption(id="b", label="Marathi", sets={"locales": ["mr"]}),
+            CardOption(id="c", label="Another language", sets={"locales": "other"}),
+        ],
+    )
+    assert check(draft, req) == []
+
+
+def test_the_catalog_fallback_cards_obey_the_card_rules_except_known_copy_issues() -> None:
+    known = {
+        "scope.references"
+    }  # catalog copy asks two questions in one card (reported to the lead)
+    for slot_id in CATALOG.slots:
+        if slot_id in known:
+            continue
+        for lang in ("en", "hi"):
+            card = fallback_card(slot_id, CATALOG, language=lang, card_id="Q-001", n=1, of_about=5)
+            req = CardRequest(
+                frame_id=card.frame, slots=card.slots, card_type=card.type, option_source="fixed"
+            )
+            draft = CardDraft(
+                question=card.question,
+                why_we_ask=card.why_we_ask,
+                options=card.options,
+                language=lang,
+            )
+            assert validate_card(draft, req, CATALOG, language=lang) == [], (slot_id, lang)
+
+
+def test_hostile_card_text_validates_in_linear_time() -> None:
+    import time
+
+    huge = "word " * 40_000
+    start = time.perf_counter()
+    errors = check(good_draft(question=huge, why_we_ask=huge))
+    assert time.perf_counter() - start < 2.0
+    assert has(errors, "question.long")
+    start = time.perf_counter()
+    answer_to_writes(choose_card(), None, huge, CATALOG)
+    assert time.perf_counter() - start < 1.0
