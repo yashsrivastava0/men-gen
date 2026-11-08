@@ -75,6 +75,11 @@ class BriefMeta(Strict):
     schema_version: int = SCHEMA_VERSION
     depth_profile: str = "standard"
     degraded: bool = False  # handoff probes did not pass after the repair rounds
+    probes: dict[str, bool] = Field(default_factory=dict)  # research|blueprint|design -> passed
+    probe_rounds: int = 0  # repair rounds used so far (max config.gate.probe_repair_rounds)
+    approvals: dict[str, str] = Field(
+        default_factory=dict
+    )  # contributor id -> brief hash approved (enterprise)
 
 
 class AppRecord(ItemMeta):
