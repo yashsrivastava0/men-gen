@@ -37,6 +37,19 @@ worker:
 gateway-dev:
     uv run uvicorn mde_llm_gateway_api.main:app --port 8101
 
+# Compass (the first agent): standalone app and test UI at http://127.0.0.1:8110/ui/
+compass-dev:
+    uv run python -m mde_compass --port 8110
+
+compass-migrate:
+    uv run python -m mde_compass.store.migrate
+
+compass-test:
+    uv run pytest packages/compass -m "not integration and not live" -q
+
+compass-test-int: db-up
+    uv run pytest packages/compass -m integration -q
+
 # --- quality --------------------------------------------------------------
 lint:
     uv run ruff check .

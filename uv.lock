@@ -1,10 +1,11 @@
 version = 1
-revision = 3
+revision = 5
 requires-python = ">=3.12, <3.14"
 
 [manifest]
 members = [
     "mde-cli",
+    "mde-compass",
     "mde-content",
     "mde-context-api",
     "mde-contracts",
@@ -591,6 +592,41 @@ requires-dist = [
 ]
 
 [[package]]
+name = "mde-compass"
+version = "0.1.0"
+source = { editable = "packages/compass" }
+dependencies = [
+    { name = "alembic" },
+    { name = "fastapi" },
+    { name = "httpx" },
+    { name = "mde-contracts" },
+    { name = "mde-core" },
+    { name = "mde-llm-gateway" },
+    { name = "mde-persistence" },
+    { name = "psycopg", extra = ["binary", "pool"] },
+    { name = "pydantic" },
+    { name = "pyyaml" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "uvicorn" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "alembic", specifier = ">=1.13" },
+    { name = "fastapi", specifier = ">=0.115" },
+    { name = "httpx", specifier = ">=0.27" },
+    { name = "mde-contracts", editable = "packages/contracts" },
+    { name = "mde-core", editable = "packages/core" },
+    { name = "mde-llm-gateway", editable = "packages/llm-gateway" },
+    { name = "mde-persistence", editable = "packages/persistence" },
+    { name = "psycopg", extras = ["binary", "pool"], specifier = ">=3.2" },
+    { name = "pydantic", specifier = ">=2.9" },
+    { name = "pyyaml", specifier = ">=6.0" },
+    { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.35" },
+    { name = "uvicorn", specifier = ">=0.30" },
+]
+
+[[package]]
 name = "mde-content"
 version = "0.1.0"
 source = { editable = "packages/content" }
@@ -898,6 +934,7 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "mde-cli" },
+    { name = "mde-compass" },
     { name = "mde-content" },
     { name = "mde-context-api" },
     { name = "mde-contracts" },
@@ -929,6 +966,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mde-cli", editable = "apps/cli" },
+    { name = "mde-compass", editable = "packages/compass" },
     { name = "mde-content", editable = "packages/content" },
     { name = "mde-context-api", editable = "apps/context-api" },
     { name = "mde-contracts", editable = "packages/contracts" },

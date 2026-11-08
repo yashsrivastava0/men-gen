@@ -11,6 +11,7 @@ root_packages =
     mde_research
     mde_spec_builder
     mde_flow
+    mde_compass
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -21,7 +22,7 @@ name = Package layering (brief 5.2)
 type = layers
 layers =
     mde_cli
-    mde_context_api | mde_llm_gateway_api
+    mde_context_api | mde_llm_gateway_api | mde_compass
     mde_flow
     mde_discovery | mde_research | mde_spec_builder
     mde_prompts
@@ -60,6 +61,7 @@ source_modules =
     mde_research
     mde_spec_builder
     mde_flow
+    mde_compass
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -82,6 +84,7 @@ source_modules =
     mde_research
     mde_spec_builder
     mde_flow
+    mde_compass
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -112,4 +115,22 @@ forbidden_modules =
     psycopg
     fastapi
     uvicorn
+allow_indirect_imports = True
+
+[importlinter:contract:compass-isolated]
+name = Compass imports only core, contracts, llm_gateway and persistence (ADR 0012)
+type = forbidden
+source_modules =
+    mde_compass
+forbidden_modules =
+    mde_discovery
+    mde_research
+    mde_spec_builder
+    mde_flow
+    mde_prompts
+    mde_content
+    mde_spec_loader
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
 allow_indirect_imports = True

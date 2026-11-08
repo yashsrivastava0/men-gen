@@ -16,6 +16,7 @@ dependencies = [
   "mde-research",
   "mde-spec-builder",
   "mde-flow",
+  "mde-compass",
   "mde-context-api",
   "mde-llm-gateway-api",
   "mde-cli",
@@ -39,6 +40,7 @@ mde-discovery = { workspace = true }
 mde-research = { workspace = true }
 mde-spec-builder = { workspace = true }
 mde-flow = { workspace = true }
+mde-compass = { workspace = true }
 mde-context-api = { workspace = true }
 mde-llm-gateway-api = { workspace = true }
 mde-cli = { workspace = true }
@@ -85,6 +87,7 @@ ignore = [
 ".claude/hooks/**" = ["T20", "S603", "S607"]
 "packages/llm-gateway/**" = ["TID251"]   # the only package allowed to import openai
 "packages/persistence/**/migrations/**" = ["E402"]
+"packages/compass/**/migrations/**" = ["E402"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "openai".msg = "Only mde_llm_gateway may import openai (brief section 2)."
@@ -104,7 +107,7 @@ ignore = [
 known-first-party = [
   "mde_core", "mde_contracts", "mde_llm_gateway", "mde_prompts", "mde_content",
   "mde_persistence", "mde_spec_loader", "mde_discovery", "mde_research",
-  "mde_spec_builder", "mde_flow", "mde_context_api", "mde_llm_gateway_api", "mde_cli",
+  "mde_spec_builder", "mde_flow", "mde_compass", "mde_context_api", "mde_llm_gateway_api", "mde_cli",
 ]
 
 [tool.ruff.format]
@@ -144,5 +147,5 @@ filterwarnings = ["error::DeprecationWarning:mde_*"]
 branch = true
 source = [
   "packages/flow/src", "packages/llm-gateway/src", "packages/spec-loader/src",
-  "packages/spec-builder/src", "packages/discovery/src",
+  "packages/spec-builder/src", "packages/discovery/src", "packages/compass/src",
 ]
