@@ -1,0 +1,20 @@
+{
+  "name": "what do you know so far (Hindi)",
+  "input": {
+    "question": "अब तक क्या समझा?",
+    "language": "hi",
+    "topic": "question",
+    "slots": [{"slot_id": "idea.summary", "label": "आपका आइडिया एक पंक्ति में", "value": "दर्ज़ी की दुकान के लिए ऑर्डर ऐप"}],
+    "expertise": "non_technical",
+    "formality": "casual",
+    "pending_question": null,
+    "pending_why": null,
+    "pending_options": [],
+    "facts": []
+  },
+  "expect": {
+    "declined": false,
+    "grounded_in": ["idea.summary"],
+    "text_contains": ["दर्ज़ी की दुकान के लिए ऑर्डर ऐप", "क्या हम आगे बढ़ें?"]
+  }
+}
