@@ -1,0 +1,44 @@
+# Safety phrase tables (data, not logic). Matched after normalisation (casefold, punctuation to spaces) as
+# whole words. Copy-adapted from the Discover lexicon; intent phrases, not bare nouns, so "scam awareness
+# app" or "suicide prevention line" are not declined by accident.
+unsafe:
+  illegal: ["sell drugs", "buy drugs", "drug dealing", "sell cocaine", "sell heroin", "money laundering", "launder money", "run a scam", "scam people", "scam customers", "scam my customers", "phishing page", "phishing site", "phishing kit", "make a phishing", "fake id", "fake ids", "fake passport", "fake passports", counterfeit, "credit card fraud", "steal credit cards", "steal cards", "pirated movies", "sell stolen", "ghar se drugs"]
+  harmful: ["make a bomb", "build a bomb", "make explosives", "make a weapon", "sell weapons", "buy guns", "sell guns", "stalk someone", "stalking app", "track my ex", "spy on my wife", "spy on my husband", spyware, keylogger, "write malware", "build malware", ransomware, "ddos attack", "how to kill myself", "commit suicide", "self harm methods", "terrorist attack", "child abuse", "child porn", "revenge porn"]
+  abuse: ["you are an idiot", "you are stupid", "you idiot", "stupid bot", "useless bot", "shut up", "you are useless", "tu bekaar hai", "tum bekaar ho", "bakwaas bot", "pagal bot"]
+# Regexes run on every message and upload: bounded gaps only ({0,8}), the text is whitespace-folded first.
+injection:
+  - "ignore (all |any |the )?(previous|prior|above|earlier|system) (instructions|prompts?|rules|messages)"
+  - "disregard (the |all |any )?(previous|prior|above|system) "
+  - "(reveal|show|print|repeat|tell me|output) (me )?(your|the) (system |hidden |initial |secret )?(prompt|instructions)"
+  - "you are now (a|an|in|the) "
+  - "new instructions?:"
+  - "system prompt"
+  - "developer mode"
+  - "jailbreak"
+  - "do anything now"
+  - "<\\s{0,8}/?\\s{0,8}system\\s{0,8}>"
+  - "override (your|the) (rules|instructions|safety|policy)"
+  - "forget (all|everything|your) (previous|prior|earlier|instructions)"
+  - "(send|give|tell|reveal) (me )?(the |your )?(api )?(key|password|secret|token)"
+  - "mark (this|the) (idea|app|request) as"
+  - "act as (a|an|the) (different|new|unrestricted)"
+  - "(पिछले|ऊपर के) (निर्देश|निर्देशों) (को )?(अनदेखा|भूल)"
+  - "pichhle instructions (ko )?(ignore|bhool)"
+# Benign contexts that contain a declined keyword: the declined match is cancelled when one is present.
+declined_context_allow:
+  - "game plan"
+  - "game changer"
+  - "game changing"
+  - "game day"
+  - "end game"
+  - "खेल का मैदान"
+  - "खेल के मैदान"
+  - "खेल मैदान"
+  - "खेल कूद"
+  - "sports ground"
+# A companion app for a declined thing IS buildable (the alternative offered): any of these cancels the whole match.
+declined_companion:
+  - "companion app"
+  - "companion for"
+  - "साथी ऐप"
+  - "companion app for"

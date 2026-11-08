@@ -1,0 +1,39 @@
+# Data for assumptions.py: which review theme a catalog slot group belongs to, and the one-line texts.
+themes:
+  idea: Business
+  context: Business
+  goals: Business
+  unknowns: Business
+  audience: Users
+  apps: Users
+  roles: Users
+  scope: Features
+  brand: Look
+  look: Look
+  experience: Look
+  glossary: Look
+  auth: Access
+  org: Access
+  integrations: Integrations
+  data: Integrations
+  constraints: Integrations
+theme_order: [Business, Users, Features, Look, Access, Integrations]
+claim: {en: "{label}: {value}", hi: "{label}: {value}"}
+what_changes:
+  en: "Changing this updates what {consumers} plan for."
+  hi: "इसे बदलने से {consumers} की योजना बदल जाएगी।"
+reason:
+  pattern: {en: "A typical choice for this kind of app.", hi: "इस तरह के ऐप के लिए एक आम विकल्प।"}
+  model_knowledge: {en: "Our suggestion from what you described.", hi: "आपके बताए अनुसार हमारा सुझाव।"}
+  assumed: {en: "You did not say, so we assumed it.", hi: "आपने नहीं बताया, इसलिए हमने मान लिया।"}
+consumers:
+  research: {en: research, hi: रिसर्च}
+  blueprint: {en: the blueprint, hi: ब्लूप्रिंट}
+  design: {en: the design, hi: डिज़ाइन}
+  screens: {en: the screens, hi: स्क्रीन}
+  verify: {en: the checks, hi: जाँच}
+  change_control: {en: change control, hi: बदलाव नियंत्रण}
+  frontend: {en: the app build, hi: ऐप निर्माण}
+  backend: {en: the backend, hi: बैकएंड}
+  qa: {en: testing, hi: टेस्टिंग}
+  all: {en: everything else, hi: बाकी सब कुछ}
