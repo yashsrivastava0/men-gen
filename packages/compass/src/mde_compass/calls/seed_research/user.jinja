@@ -1,0 +1,34 @@
+Language: {{ language }}
+Category: {{ category }}
+Subcategory: {{ subcategory }}
+Geography (data): {{ geography }}
+Locale country (only if the geography above is empty): {{ locale_country }}
+Audience (data):
+{% for a in audience %}
+- {{ a }}
+{% endfor %}
+Business model: {{ business_model }}
+Apps the user named (data):
+{% for r in references %}
+- {{ r }}
+{% endfor %}
+Glossary (data):
+{% for g in glossary %}
+- {{ g }}
+{% endfor %}
+Exclusions, must go into every "avoid" (data):
+{% for e in exclusions %}
+- {{ e }}
+{% endfor %}
+Unknowns, research wanted:
+{% for u in unknowns %}
+- {{ u }}
+{% endfor %}
+Features (data):
+{% for f in features %}
+- {{ f }}
+{% endfor %}
+Likely families: {{ families | join(", ") }}
+Languages of the app: {{ languages | join(", ") }}
+
+Return the requests and the hints.

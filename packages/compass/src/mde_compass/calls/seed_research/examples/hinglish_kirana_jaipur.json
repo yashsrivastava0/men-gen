@@ -1,0 +1,171 @@
+{
+  "name": "hinglish_kirana_jaipur",
+  "input": {
+    "language": "hi-Latn",
+    "category": "kirana delivery",
+    "subcategory": "",
+    "geography": {
+      "country": "",
+      "city": "Jaipur",
+      "region": "Rajasthan"
+    },
+    "locale_country": "",
+    "audience": [
+      "aas-paas ke parivar"
+    ],
+    "business_model": "",
+    "references": [],
+    "glossary": [
+      {
+        "term": "saman",
+        "synonyms": [
+          "ration"
+        ]
+      }
+    ],
+    "exclusions": [
+      "no cash on delivery"
+    ],
+    "unknowns": [],
+    "features": [],
+    "families": [],
+    "languages": [
+      "hi",
+      "en"
+    ]
+  },
+  "output": {
+    "requests": [
+      {
+        "topic": "Features of comparable kirana delivery apps",
+        "question": "Which features do kirana delivery apps for aas-paas ke parivar in Jaipur, Rajasthan usually offer?",
+        "decision_unlocked": "Which features belong in the first release",
+        "entity": "kirana delivery apps",
+        "geography": "Jaipur, Rajasthan",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "kirana delivery",
+          "aas-paas ke parivar",
+          "features",
+          "saman",
+          "ration"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "app store listings",
+          "official websites"
+        ],
+        "avoid": [
+          "no cash on delivery"
+        ],
+        "depth": "standard",
+        "priority": "high",
+        "shown_to_user_as": "What similar kirana delivery apps offer in Jaipur, Rajasthan"
+      },
+      {
+        "topic": "Local kirana delivery apps and services in Jaipur, Rajasthan",
+        "question": "Which kirana delivery apps and services are used by aas-paas ke parivar in Jaipur, Rajasthan?",
+        "decision_unlocked": "Which local habits and alternatives the app must fit",
+        "entity": "local kirana delivery apps",
+        "geography": "Jaipur, Rajasthan",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "kirana delivery",
+          "local apps",
+          "Jaipur, Rajasthan",
+          "saman",
+          "ration"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "app store listings",
+          "local news",
+          "official websites"
+        ],
+        "avoid": [
+          "no cash on delivery"
+        ],
+        "depth": "standard",
+        "priority": "high",
+        "shown_to_user_as": "Who else serves aas-paas ke parivar in Jaipur, Rajasthan"
+      },
+      {
+        "topic": "Sign-in and messaging habits in Jaipur, Rajasthan",
+        "question": "How do aas-paas ke parivar in Jaipur, Rajasthan usually sign in and receive messages from kirana delivery apps?",
+        "decision_unlocked": "Which sign-in and notification methods to offer",
+        "entity": "sign-in and messaging",
+        "geography": "Jaipur, Rajasthan",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "sign in",
+          "SMS",
+          "notifications",
+          "kirana delivery",
+          "saman",
+          "ration"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "official websites",
+          "provider documentation"
+        ],
+        "avoid": [
+          "no cash on delivery"
+        ],
+        "depth": "quick",
+        "priority": "medium",
+        "shown_to_user_as": "How people sign in and get messages in Jaipur, Rajasthan"
+      },
+      {
+        "topic": "Rules for kirana delivery apps in Jaipur, Rajasthan",
+        "question": "Which rules, licences or privacy requirements apply to kirana delivery apps in Jaipur, Rajasthan?",
+        "decision_unlocked": "Which compliance needs to plan for",
+        "entity": "regulation",
+        "geography": "Jaipur, Rajasthan",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "rules",
+          "privacy",
+          "kirana delivery",
+          "Jaipur, Rajasthan",
+          "saman",
+          "ration"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "government websites",
+          "official websites"
+        ],
+        "avoid": [
+          "no cash on delivery"
+        ],
+        "depth": "standard",
+        "priority": "medium",
+        "shown_to_user_as": "Rules to know about in Jaipur, Rajasthan"
+      }
+    ],
+    "hints": {
+      "disambiguated_names": [],
+      "synonyms": [
+        "ration"
+      ],
+      "local_competitors": [],
+      "languages": [
+        "hi",
+        "en"
+      ]
+    }
+  }
+}

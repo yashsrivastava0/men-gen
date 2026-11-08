@@ -17,7 +17,7 @@ from mde_compass.calls.compile_text.schema import (
     CompileTextOutput,
 )
 from mde_compass.calls.compile_text.text_utils import (
-    MIN_STEM,
+    Vocabulary,
     base_form,
     is_number,
     load_templates,
@@ -40,40 +40,14 @@ def allowed_words(lang: str) -> frozenset[str]:
     return frozenset(words)
 
 
-class Vocabulary:
-    """Everything the input says: numbers, words and word prefixes (for plural and inflection matches)."""
-
-    def __init__(self, inp: CompileTextInput) -> None:
-        texts: list[str] = []
-        for s in inp.slots:
-            texts += [s.label, s.value]
-        for i in inp.items:
-            texts += [i.name, i.intent]
-        self.words: set[str] = set()
-        self.numbers: set[str] = {
-            str(n) for n in (inp.app_count, inp.role_count, inp.feature_count)
-        }
-        for text in texts:
-            for tok in tokens(text):
-                if is_number(tok):
-                    self.numbers.add(normalize_number(tok))
-                else:
-                    self.words.add(base_form(tok))
-        self.prefixes: set[str] = {
-            w[:k] for w in self.words for k in range(MIN_STEM, min(len(w), 40) + 1)
-        }
-
-    def knows(self, word: str) -> bool:
-        if word in self.words or word in self.prefixes:
-            return True
-        # the input word is a prefix of the output word (plural, inflection): "restaurants" ~ "restaurant"
-        limit = min(len(word), 40)
-        return any(word[:k] in self.words for k in range(MIN_STEM, limit))
-
-
 def ungrounded_terms(inp: CompileTextInput, out: CompileTextOutput) -> list[str]:
     """Numbers and proper-noun tokens of the output that the input never mentioned (sorted, unique)."""
-    vocab = Vocabulary(inp)
+    texts: list[str] = []
+    for s in inp.slots:
+        texts += [s.label, s.value]
+    for i in inp.items:
+        texts += [i.name, i.intent]
+    vocab = Vocabulary(texts, [inp.app_count, inp.role_count, inp.feature_count])
     allowed = allowed_words("hi" if _is_hi(inp.language) else "en") | allowed_words("en")
     texts = [out.summary, out.pitch, *[d.text for d in out.descriptions]]
     bad: set[str] = set()

@@ -9,6 +9,7 @@ from __future__ import annotations
 import functools
 import re
 import unicodedata
+from collections.abc import Iterable
 from pathlib import Path
 from typing import Any
 
@@ -89,3 +90,37 @@ def clip(text: str, limit: int) -> str:
     if space >= limit // 2:
         cut = cut[:space]
     return cut.rstrip(" ,;:-")
+
+
+class Vocabulary:
+    """Everything a text says: numbers, words and word prefixes (for plural and inflection matches)."""
+
+    def __init__(self, texts: Iterable[str], numbers: Iterable[int | str] = ()) -> None:
+        self.words: set[str] = set()
+        self.numbers: set[str] = {str(n) for n in numbers}
+        for text in texts:
+            for tok in tokens(text):
+                if is_number(tok):
+                    self.numbers.add(normalize_number(tok))
+                else:
+                    self.words.add(base_form(tok))
+        self.prefixes: set[str] = {
+            w[:k] for w in self.words for k in range(MIN_STEM, min(len(w), MAX_TOKEN) + 1)
+        }
+
+    def knows(self, word: str) -> bool:
+        """``word`` is an input word, a prefix of one, or extends one (plural, inflection)."""
+        if word in self.words or word in self.prefixes:
+            return True
+        return any(word[:k] in self.words for k in range(MIN_STEM, min(len(word), MAX_TOKEN)))
+
+    def unknown_proper_nouns(self, text: str, allowed: frozenset[str] = frozenset()) -> list[str]:
+        """Capitalized tokens of ``text`` that the input never used (``allowed`` words excepted)."""
+        out: list[str] = []
+        for tok in tokens(text):
+            if is_number(tok) or not tok[:1].isupper():
+                continue
+            word = base_form(tok)
+            if word not in allowed and not self.knows(word):
+                out.append(tok)
+        return out

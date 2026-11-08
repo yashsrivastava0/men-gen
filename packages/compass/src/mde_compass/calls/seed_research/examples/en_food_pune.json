@@ -1,0 +1,251 @@
+{
+  "name": "en_food_pune",
+  "input": {
+    "language": "en",
+    "category": "food ordering",
+    "subcategory": "restaurant ordering",
+    "geography": {
+      "country": "India",
+      "city": "Pune",
+      "region": "Maharashtra"
+    },
+    "locale_country": "IN",
+    "audience": [
+      "regular customers"
+    ],
+    "business_model": "a small fee on each order",
+    "references": [
+      "Zomato"
+    ],
+    "glossary": [
+      {
+        "term": "thali",
+        "synonyms": [
+          "meal plate"
+        ]
+      }
+    ],
+    "exclusions": [
+      "no alcohol"
+    ],
+    "unknowns": [
+      "Brand name"
+    ],
+    "features": [
+      {
+        "name": "Order tracking",
+        "intent": "see where my order is"
+      }
+    ],
+    "families": [
+      "catalog_commerce",
+      "delivery_logistics"
+    ],
+    "languages": [
+      "en",
+      "hi"
+    ]
+  },
+  "output": {
+    "requests": [
+      {
+        "topic": "Features of comparable food ordering apps",
+        "question": "Which features do food ordering apps for regular customers in Pune, Maharashtra, India usually offer?",
+        "decision_unlocked": "Which features belong in the first release",
+        "entity": "food ordering apps",
+        "geography": "Pune, Maharashtra, India",
+        "source_languages": [
+          "en",
+          "hi"
+        ],
+        "terms": [
+          "food ordering",
+          "restaurant ordering",
+          "regular customers",
+          "features",
+          "thali",
+          "meal plate"
+        ],
+        "references": [
+          "Zomato"
+        ],
+        "prefer_sources": [
+          "app store listings",
+          "official websites"
+        ],
+        "avoid": [
+          "no alcohol"
+        ],
+        "depth": "standard",
+        "priority": "high",
+        "shown_to_user_as": "What similar food ordering apps offer in Pune, Maharashtra, India"
+      },
+      {
+        "topic": "Local food ordering apps and services in Pune, Maharashtra, India",
+        "question": "Which food ordering apps and services are used by regular customers in Pune, Maharashtra, India?",
+        "decision_unlocked": "Which local habits and alternatives the app must fit",
+        "entity": "local food ordering apps",
+        "geography": "Pune, Maharashtra, India",
+        "source_languages": [
+          "en",
+          "hi"
+        ],
+        "terms": [
+          "food ordering",
+          "restaurant ordering",
+          "local apps",
+          "Pune, Maharashtra, India",
+          "thali",
+          "meal plate"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "app store listings",
+          "local news",
+          "official websites"
+        ],
+        "avoid": [
+          "no alcohol"
+        ],
+        "depth": "standard",
+        "priority": "high",
+        "shown_to_user_as": "Who else serves regular customers in Pune, Maharashtra, India"
+      },
+      {
+        "topic": "Payment options for food ordering apps in Pune, Maharashtra, India",
+        "question": "Which payment methods and providers do food ordering apps in Pune, Maharashtra, India use for a small fee on each order?",
+        "decision_unlocked": "Which payment methods to plan for",
+        "entity": "payment methods",
+        "geography": "Pune, Maharashtra, India",
+        "source_languages": [
+          "en",
+          "hi"
+        ],
+        "terms": [
+          "payment",
+          "a small fee on each order",
+          "food ordering",
+          "thali",
+          "meal plate"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "official websites",
+          "provider documentation"
+        ],
+        "avoid": [
+          "no alcohol"
+        ],
+        "depth": "standard",
+        "priority": "medium",
+        "shown_to_user_as": "How people pay in Pune, Maharashtra, India"
+      },
+      {
+        "topic": "Sign-in and messaging habits in Pune, Maharashtra, India",
+        "question": "How do regular customers in Pune, Maharashtra, India usually sign in and receive messages from food ordering apps?",
+        "decision_unlocked": "Which sign-in and notification methods to offer",
+        "entity": "sign-in and messaging",
+        "geography": "Pune, Maharashtra, India",
+        "source_languages": [
+          "en",
+          "hi"
+        ],
+        "terms": [
+          "sign in",
+          "SMS",
+          "notifications",
+          "food ordering",
+          "thali",
+          "meal plate"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "official websites",
+          "provider documentation"
+        ],
+        "avoid": [
+          "no alcohol"
+        ],
+        "depth": "quick",
+        "priority": "medium",
+        "shown_to_user_as": "How people sign in and get messages in Pune, Maharashtra, India"
+      },
+      {
+        "topic": "Rules for food ordering apps in Pune, Maharashtra, India",
+        "question": "Which rules, licences or privacy requirements apply to food ordering apps in Pune, Maharashtra, India?",
+        "decision_unlocked": "Which compliance needs to plan for",
+        "entity": "regulation",
+        "geography": "Pune, Maharashtra, India",
+        "source_languages": [
+          "en",
+          "hi"
+        ],
+        "terms": [
+          "rules",
+          "privacy",
+          "food ordering",
+          "Pune, Maharashtra, India",
+          "thali",
+          "meal plate"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "government websites",
+          "official websites"
+        ],
+        "avoid": [
+          "no alcohol"
+        ],
+        "depth": "standard",
+        "priority": "medium",
+        "shown_to_user_as": "Rules to know about in Pune, Maharashtra, India"
+      },
+      {
+        "topic": "How Zomato handles Order tracking",
+        "question": "How does Zomato handle Order tracking for regular customers in Pune, Maharashtra, India?",
+        "decision_unlocked": "What to borrow from Zomato and what to avoid",
+        "entity": "Zomato",
+        "geography": "Pune, Maharashtra, India",
+        "source_languages": [
+          "en",
+          "hi"
+        ],
+        "terms": [
+          "Zomato",
+          "Order tracking",
+          "food ordering",
+          "thali",
+          "meal plate"
+        ],
+        "references": [
+          "Zomato"
+        ],
+        "prefer_sources": [
+          "app store listings",
+          "official websites"
+        ],
+        "avoid": [
+          "no alcohol"
+        ],
+        "depth": "standard",
+        "priority": "medium",
+        "shown_to_user_as": "How Zomato works"
+      }
+    ],
+    "hints": {
+      "disambiguated_names": [
+        "Zomato"
+      ],
+      "synonyms": [
+        "meal plate"
+      ],
+      "local_competitors": [
+        "Zomato"
+      ],
+      "languages": [
+        "en",
+        "hi"
+      ]
+    }
+  }
+}
