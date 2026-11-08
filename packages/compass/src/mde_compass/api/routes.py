@@ -49,9 +49,16 @@ async def get_service(request: Request) -> CompassService:
         builder = getattr(holder, "service_factory", None)
         if builder is None:
             raise ApiError(503, "not_ready", "The service is not available.")
-        service = builder()
-        if inspect.isawaitable(service):
-            service = await service
+        try:
+            service = builder()
+            if inspect.isawaitable(service):
+                service = await service
+        except ModuleNotFoundError as exc:  # the engine composition module is not there yet
+            if exc.name != "mde_compass.compose":
+                raise
+            raise ApiError(
+                503, "not_ready", "The Compass engine is not composed yet (mde_compass.compose)."
+            ) from exc
         holder.service = service
     return service  # type: ignore[no-any-return]
 

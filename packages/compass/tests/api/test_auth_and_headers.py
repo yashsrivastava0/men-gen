@@ -200,3 +200,15 @@ async def test_core_errors_map_to_statuses() -> None:
         ) as c:
             r = await c.get(f"{P}/sessions")
         assert (r.status_code, r.json()["code"]) == (status, code), exc
+
+
+async def test_missing_compose_module_is_a_clear_503(monkeypatch: pytest.MonkeyPatch) -> None:
+    import sys
+
+    monkeypatch.setitem(sys.modules, "mde_compass.compose", None)  # makes the import fail
+    app = create_app()
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://t", headers=GOOD
+    ) as c:
+        r = await c.get(f"{P}/sessions")
+    assert r.status_code == 503 and r.json()["code"] == "not_ready"

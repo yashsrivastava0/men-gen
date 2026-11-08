@@ -1234,9 +1234,20 @@ CONTRACT*/
   }
 
   /** Rebuild the chat from the stored log (both directions) so a reopened project shows its conversation. */
+  function loadAllHistory() {
+    var all = [];
+    function page(after) {
+      return loadHistory(after ? { after: after } : {}).then(function (d) {
+        all = all.concat(d.items || []);
+        if (d.next_after_idx && all.length < 2000) { return page(d.next_after_idx); }
+        return all;
+      });
+    }
+    return page(0);
+  }
+
   function replayHistory() {
-    return loadHistory({}).then(function (d) {
-      var items = d.items || [];
+    return loadAllHistory().then(function (items) {
       var lastCard = null;
       var answered = {};
       items.forEach(function (ev) {
