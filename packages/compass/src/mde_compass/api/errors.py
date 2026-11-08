@@ -12,6 +12,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from starlette.exceptions import HTTPException as StarletteHTTPException
 
+from mde_compass.api.headers import SECURITY_HEADERS
 from mde_compass.api.schemas import ErrorBody
 from mde_core import errors as core_errors
 from mde_core.logging import get_logger
@@ -62,7 +63,7 @@ def describe(exc: Exception) -> tuple[int, str, str]:
 
 
 def error_response(status: int, code: str, message: str, request: Request | None = None):
-    headers = {}
+    headers = dict(SECURITY_HEADERS)  # also on 500s, which are built outside the user middleware
     rid = getattr(getattr(request, "state", None), "request_id", None) if request else None
     if rid:
         headers[REQUEST_ID_HEADER] = rid

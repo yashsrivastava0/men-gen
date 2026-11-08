@@ -247,7 +247,9 @@ CONTRACT*/
     }
     if (Array.isArray(value)) { return value.map(label).join(", "); }
     if (value && typeof value === "object") {
-      return Object.keys(value).map(function (k) { return label(k) + ": " + value[k]; }).join("; ");
+      var keys = Object.keys(value).filter(function (k) { return String(value[k]).trim() !== ""; });
+      if (card.type === "confirm") { return keys.map(function (k) { return value[k]; }).join("; "); }
+      return keys.map(function (k) { return label(k) + ": " + value[k]; }).join("; ");
     }
     if (typeof value === "string") {
       for (var i = 0; i < opts.length; i++) { if (opts[i].id === value) { return opts[i].label; } }
@@ -259,7 +261,7 @@ CONTRACT*/
   function answer(card, value, custom) {
     var summary = cardSummary(card, value, custom);
     addMsg("user", summary || t("ui.continue"));
-    collapseActive(card.question + " — " + summary);
+    collapseActive(summary ? card.question + " — " + summary : card.question);
     var body = { type: "card_answer", card_id: card.id, value: value === undefined ? null : value };
     if (custom) { body.custom_text = custom; }
     sendEvent(body);
@@ -886,7 +888,8 @@ CONTRACT*/
     var host = $("tab-brief");
     clear(host);
     var vm = state.view;
-    if (!vm || !vm.header || !vm.header.version) {
+    var anyRows = !!vm && vm.sections.some(function (s) { return s.rows.length > 0; });
+    if (!vm || !anyRows) {
       host.appendChild(h("div", { class: "empty", text: t("x.brief_empty") }));
       if (!vm) { return; }
     }

@@ -128,3 +128,75 @@ def test_loopback_detection_and_bind_guard(capsys: pytest.CaptureFixture[str]) -
     assert bind_refusal("127.0.0.1", ApiSettings()) is None
     assert main(["--host", "0.0.0.0", "--port", "8110"]) == 2
     assert "Refusing to listen" in capsys.readouterr().err
+
+
+async def test_create_app_without_service_composes_lazily(monkeypatch: pytest.MonkeyPatch) -> None:
+    """No service given: nothing is composed at creation; ``compose.build_service`` runs on first use."""
+    import sys
+    import types
+
+    calls: list[bool] = []
+    scripted = ScriptedService()
+
+    async def build_service(memory: bool = False) -> ScriptedService:
+        calls.append(memory)
+        return scripted
+
+    fake = types.ModuleType("mde_compass.compose")
+    fake.build_service = build_service  # type: ignore[attr-defined]
+    monkeypatch.setitem(sys.modules, "mde_compass.compose", fake)
+    app = create_app(memory=True)
+    assert calls == []
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://t", headers=GOOD
+    ) as c:
+        assert (await c.get("/healthz")).status_code == 200
+        assert (await c.get("/readyz")).status_code == 200
+        assert calls == []  # health checks never compose
+        r = await c.post(f"{P}/sessions", json={})
+        assert r.status_code == 201
+        assert (await c.get(f"{P}/sessions")).status_code == 200
+    assert calls == [True]  # composed once, with the memory switch
+
+
+async def test_unexpected_error_is_a_500_error_body_without_details() -> None:
+    class Broken(ScriptedService):
+        async def list_sessions(self, caller):  # type: ignore[no-untyped-def]
+            raise RuntimeError("secret detail sk-12345")
+
+    app = create_app(Broken(), settings=ApiSettings())
+    transport = httpx.ASGITransport(app=app, raise_app_exceptions=False)
+    async with httpx.AsyncClient(transport=transport, base_url="http://t", headers=GOOD) as c:
+        r = await c.get(f"{P}/sessions")
+    assert r.status_code == 500 and r.json()["code"] == "internal_error"
+    assert "sk-12345" not in r.text
+    assert r.headers["content-security-policy"] == CSP
+
+
+async def test_core_errors_map_to_statuses() -> None:
+    from mde_core import errors as e
+
+    class Raising(ScriptedService):
+        def __init__(self, exc: Exception) -> None:
+            super().__init__()
+            self.exc = exc
+
+        async def list_sessions(self, caller):  # type: ignore[no-untyped-def]
+            raise self.exc
+
+    cases = [
+        (e.NotFound("x"), 404, "not_found"),
+        (e.Conflict("x"), 409, "conflict"),
+        (e.HashMismatch("x"), 409, "hash_mismatch"),
+        (e.GateError("x"), 409, "gate_error"),
+        (e.ValidationFailed("x"), 422, "validation_failed"),
+        (e.BudgetExceeded("x"), 429, "budget_exceeded"),
+        (e.TenantViolation("x"), 404, "tenant_violation"),
+    ]
+    for exc, status, code in cases:
+        app = create_app(Raising(exc), settings=ApiSettings())
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://t", headers=GOOD
+        ) as c:
+            r = await c.get(f"{P}/sessions")
+        assert (r.status_code, r.json()["code"]) == (status, code), exc

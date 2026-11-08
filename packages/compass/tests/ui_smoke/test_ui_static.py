@@ -49,7 +49,7 @@ async def test_every_asset_referenced_by_index_exists_and_is_served(
     anon: httpx.AsyncClient,
 ) -> None:
     refs = re.findall(r"""(?:src|href)=["']([^"'#]+)["']""", INDEX)
-    assets = [r for r in refs if not r.startswith("#")]
+    assets = [r for r in refs if not r.startswith(("#", "data:"))]
     assert "app.js" in assets and "styles.css" in assets
     for ref in assets:
         assert not re.match(r"^(https?:)?//", ref), f"external asset {ref}"

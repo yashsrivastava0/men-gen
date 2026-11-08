@@ -17,7 +17,7 @@ import json
 from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from decimal import Decimal
-from typing import Any
+from typing import Any, cast
 
 from pydantic import JsonValue
 
@@ -932,12 +932,15 @@ class ScriptedService:
                     continue
                 if sid not in sections:
                     sections.append(sid)
-        return {
-            "from_version": from_version,
-            "to_version": to_version,
-            "sections_changed": sections,
-            "entries": entries,
-        }
+        return cast(
+            dict[str, JsonValue],
+            {
+                "from_version": from_version,
+                "to_version": to_version,
+                "sections_changed": sections,
+                "entries": entries,
+            },
+        )
 
     async def history(
         self,
@@ -959,11 +962,14 @@ class ScriptedService:
             highlighted = [e.event_id for e in s.events if e.direction == "in" and e.event_id][:2]
         page = items[:limit]
         nxt = page[-1].idx if len(items) > limit and page else None
-        return {
-            "items": [e.model_dump(mode="json") for e in page],
-            "next_after_idx": nxt,
-            "highlighted_turn_ids": highlighted,
-        }
+        return cast(
+            dict[str, JsonValue],
+            {
+                "items": [e.model_dump(mode="json") for e in page],
+                "next_after_idx": nxt,
+                "highlighted_turn_ids": highlighted,
+            },
+        )
 
     async def provenance(
         self, caller: Caller, session_id: str, item_id: str
@@ -973,23 +979,26 @@ class ScriptedService:
             for r in rows:
                 if r["id"] == item_id:
                     inbound = [e.event_id for e in s.events if e.direction == "in" and e.event_id]
-                    return {
-                        "item_id": item_id,
-                        "value": r.get("text") or r.get("items"),
-                        "tier": "Locked" if r["badge"] == "you_said" else "Default",
-                        "status": "confirmed" if r["badge"] == "you_said" else "assumed",
-                        "provenance": [
-                            {
-                                "type": "user_text" if r["badge"] == "you_said" else "assumed",
-                                "ref": inbound[0] if inbound else "",
-                                "quote": "a food delivery app in Pune",
-                                "date": _T0.isoformat(),
-                                "who": "you",
-                            }
-                        ],
-                        "value_history": [],
-                        "turn_ids": inbound[:1],
-                    }
+                    return cast(
+                        dict[str, JsonValue],
+                        {
+                            "item_id": item_id,
+                            "value": r.get("text") or r.get("items"),
+                            "tier": "Locked" if r["badge"] == "you_said" else "Default",
+                            "status": "confirmed" if r["badge"] == "you_said" else "assumed",
+                            "provenance": [
+                                {
+                                    "type": "user_text" if r["badge"] == "you_said" else "assumed",
+                                    "ref": inbound[0] if inbound else "",
+                                    "quote": "a food delivery app in Pune",
+                                    "date": _T0.isoformat(),
+                                    "who": "you",
+                                }
+                            ],
+                            "value_history": [],
+                            "turn_ids": inbound[:1],
+                        },
+                    )
         raise NotFound("No such item.")
 
     async def handoff(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
@@ -1000,7 +1009,10 @@ class ScriptedService:
             name: {"idea": s.rows["idea"][0]["text"], "geography": "Pune, India"}
             for name in ("research", "blueprint", "design", "verify")
         }
-        return {"version": s.version, "brief_hash": s.approved_hash, "views": views}
+        return cast(
+            dict[str, JsonValue],
+            {"version": s.version, "brief_hash": s.approved_hash, "views": views},
+        )
 
     async def budget(self) -> dict[str, JsonValue]:
         cap = Decimal("2.00")

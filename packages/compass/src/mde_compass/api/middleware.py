@@ -15,6 +15,7 @@ from typing import Any, Final
 from starlette.datastructures import Headers, MutableHeaders
 
 from mde_compass.api.errors import REQUEST_ID_HEADER, error_response
+from mde_compass.api.headers import CSP, SECURITY_HEADERS
 from mde_core.ids import new_id
 
 Scope = MutableMapping[str, Any]
@@ -23,15 +24,6 @@ Receive = Callable[[], Awaitable[Message]]
 Send = Callable[[Message], Awaitable[None]]
 ASGIApp = Callable[[Scope, Receive, Send], Awaitable[None]]
 
-CSP: Final = (
-    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
-    "connect-src 'self'; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
-)
-SECURITY_HEADERS: Final = {
-    "Content-Security-Policy": CSP,
-    "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "no-referrer",
-}
 _CLIENT_REQUEST_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.:-]{7,63}$")
 _BODY_METHODS: Final = frozenset({"POST", "PUT", "PATCH"})
 
@@ -108,3 +100,6 @@ def _replay(body: bytes, receive: Receive) -> Receive:
         return await receive()
 
     return replay
+
+
+__all__ = ["CSP", "SECURITY_HEADERS", "SecurityAndLimitsMiddleware"]
