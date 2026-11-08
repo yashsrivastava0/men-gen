@@ -15,7 +15,7 @@ from alembic import context
 from sqlalchemy import create_engine, pool
 from sqlalchemy.engine import Connection
 
-from mde_compass.store.models import VERSION_TABLE, Base
+from mde_compass.store.models import VERSION_TABLE, Base, include_object
 from mde_core.settings import load_settings
 from mde_persistence.db import normalize_url
 
@@ -24,19 +24,6 @@ if config.config_file_name is not None and config.attributes.get("configure_logg
     fileConfig(config.config_file_name, disable_existing_loggers=False)
 
 target_metadata = Base.metadata
-
-
-def include_object(
-    obj: object, name: str | None, type_: str, reflected: bool, compare_to: object
-) -> bool:
-    """Manage ``compass_*`` tables and their indexes only (never the version table itself)."""
-    if type_ == "table":
-        return bool(name) and str(name).startswith("compass_") and name != VERSION_TABLE
-    if type_ == "index":
-        table = getattr(obj, "table", None)
-        table_name = getattr(table, "name", "") or ""
-        return table_name.startswith("compass_") and table_name != VERSION_TABLE
-    return True
 
 
 def _url() -> str:

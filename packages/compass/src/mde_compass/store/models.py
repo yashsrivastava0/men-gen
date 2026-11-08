@@ -411,3 +411,16 @@ class CallLogRow(Base):
     outcome: Mapped[str] = mapped_column(Text, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     at: Mapped[datetime] = mapped_column(TS, nullable=False)
+
+
+def include_object(
+    obj: object, name: str | None, type_: str, reflected: bool, compare_to: object
+) -> bool:
+    """Manage ``compass_*`` tables and their indexes only (never the version table itself)."""
+    if type_ == "table":
+        return bool(name) and str(name).startswith("compass_") and name != VERSION_TABLE
+    if type_ == "index":
+        table = getattr(obj, "table", None)
+        table_name = getattr(table, "name", "") or ""
+        return table_name.startswith("compass_") and table_name != VERSION_TABLE
+    return True
