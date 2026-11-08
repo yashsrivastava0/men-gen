@@ -1,0 +1,49 @@
+{
+  "name": "feature_hi",
+  "input": {
+    "path": "scope.FTR-009",
+    "current_value_json": "{\"name\": \"रिव्यू\"}",
+    "reason": "कुछ और चाहिए",
+    "language": "hi",
+    "slot_label": "",
+    "value_kind": "record",
+    "options": [],
+    "name_field": "name",
+    "choices": [],
+    "context": [
+      {
+        "slot_id": "idea.summary",
+        "label": "आपका आइडिया एक पंक्ति में",
+        "value": "ऑनलाइन दुकान, कैटलॉग और कार्ट के साथ"
+      }
+    ],
+    "families": [
+      {
+        "family": "catalog_commerce",
+        "kind": "features",
+        "items": [
+          "कैटलॉग देखना",
+          "खोजना और छाँटना",
+          "सामान की जानकारी",
+          "कार्ट",
+          "चेकआउट",
+          "पुराने ऑर्डर",
+          "समीक्षा और रेटिंग"
+        ]
+      }
+    ]
+  },
+  "expect": {
+    "count": 3,
+    "labels": [
+      "कैटलॉग देखना",
+      "खोजना और छाँटना",
+      "सामान की जानकारी"
+    ],
+    "bases": [
+      "typical",
+      "typical",
+      "typical"
+    ]
+  }
+}

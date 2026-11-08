@@ -1,0 +1,36 @@
+Language: {{ language }}. Item: {{ path }}{% if slot_label %} ({{ slot_label }}){% endif %}. Kind: {{ value_kind if value_kind else "not a slot" }}.
+{% if options %}
+Valid values: {{ options | join(", ") }}.
+{% endif %}
+{% if name_field %}
+This is a list record; its name field is {{ name_field }}.
+{% endif %}
+
+Current value (data):
+{{ current_value_json }}
+
+Why the person does not like it (data, may be a chip name or their own words):
+{{ reason }}
+
+{% if choices %}
+Neutral catalog choices for this slot:
+{% for c in choices %}
+- {{ c.label }} -> {{ c.value_json }}
+{% endfor %}
+{% endif %}
+
+{% if families %}
+Typical items from the capability family data (the only source for basis typical):
+{% for f in families %}
+- {{ f.family }} ({{ f.kind }}): {{ f["items"] | join("; ") }}
+{% endfor %}
+{% endif %}
+
+{% if context %}
+Plan so far (data):
+{% for c in context %}
+{{ c }}
+{% endfor %}
+{% endif %}
+
+Return exactly three alternatives.

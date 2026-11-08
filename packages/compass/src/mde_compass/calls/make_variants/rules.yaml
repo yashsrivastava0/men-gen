@@ -1,0 +1,17 @@
+# Strings and patterns of the rule-based variant maker (fallback and mock). Data, not logic: nothing here
+# is specific to one company, place or app type. Strings are keyed en / hi / hi-Latn.
+
+strings:
+  reason_choice:
+    en: "A neutral alternative to this question."
+    hi: "इस सवाल का एक तटस्थ विकल्प।"
+    hi-Latn: "Is sawaal ka ek neutral vikalp."
+  reason_typical:
+    en: "A common choice for apps of this kind."
+    hi: "इस तरह के ऐप में आम तौर पर यह होता है।"
+    hi-Latn: "Is tarah ke apps mein aam taur par yeh hota hai."
+
+# claims that sound like statistics; a variant text matching one is rejected (no invented numbers)
+stats_words:
+  ["most people", "most users", "most apps", "most customers", "majority of", "studies show", "survey",
+   surveys, statistics, "on average", "9 out of 10"]

@@ -1,0 +1,63 @@
+{
+  "name": "business_model_en",
+  "input": {
+    "path": "idea.business_model",
+    "current_value_json": "\"per_transaction_fee\"",
+    "reason": "dont_want_assumption",
+    "language": "en",
+    "slot_label": "How it earns money",
+    "value_kind": "text",
+    "options": [],
+    "name_field": "",
+    "choices": [
+      {
+        "label": "A small fee on each sale or booking",
+        "value_json": "\"per_transaction_fee\""
+      },
+      {
+        "label": "A monthly or yearly plan",
+        "value_json": "\"subscription\""
+      },
+      {
+        "label": "Free to use; the business pays for it",
+        "value_json": "\"business_funded\""
+      }
+    ],
+    "context": [
+      {
+        "slot_id": "idea.summary",
+        "label": "Your idea in one line",
+        "value": "an online shop with a catalog and cart for sarees"
+      },
+      {
+        "slot_id": "context.geo",
+        "label": "Country and city",
+        "value": "Pune"
+      }
+    ],
+    "families": [
+      {
+        "family": "catalog_commerce",
+        "kind": "business_models",
+        "items": [
+          "commission on each sale",
+          "monthly plan for sellers",
+          "margin on items sold"
+        ]
+      }
+    ]
+  },
+  "expect": {
+    "count": 3,
+    "labels": [
+      "A monthly or yearly plan",
+      "Free to use; the business pays for it",
+      "commission on each sale"
+    ],
+    "bases": [
+      "suggestion",
+      "suggestion",
+      "typical"
+    ]
+  }
+}

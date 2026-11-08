@@ -230,3 +230,14 @@ def test_regex_functions_are_linear_on_hostile_input() -> None:
             _inp(), AnswerOutput(text=text[:400], language="en", grounded_in=[], declined=False)
         )
     assert time.perf_counter() - start < 5.0
+
+
+@pytest.mark.parametrize("path", EXAMPLES, ids=lambda p: p.stem)
+def test_prompt_renders_with_untrusted_data_wrapped(path: Path) -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = AnswerInput.model_validate(json.loads(path.read_text(encoding="utf-8"))["input"])
+    rendered = PromptRenderer().render(SPEC.spec, inp)
+    assert "<untrusted_content" in rendered.user and "{{" not in rendered.user
+    assert set(rendered.untrusted_fields) == {"question", "slots"}
+    assert "price" in rendered.system
