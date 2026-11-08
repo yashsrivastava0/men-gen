@@ -1,0 +1,28 @@
+{
+  "name": "en_restaurant",
+  "input": {
+    "language": "en",
+    "slots": [
+      {"slot_id": "idea.summary", "label": "Your idea in one line", "value": "a way for my restaurant in Pune to take orders from regular customers", "state": "confirmed"},
+      {"slot_id": "idea.category", "label": "Kind of app", "value": "food ordering", "state": "assumed"},
+      {"slot_id": "context.geo", "label": "Where it will be used", "value": "Pune", "state": "confirmed"},
+      {"slot_id": "audience.segments", "label": "Who it is for", "value": "regular customers", "state": "confirmed"},
+      {"slot_id": "idea.business_model", "label": "How it earns", "value": "a small fee on each order", "state": "assumed"}
+    ],
+    "app_count": 1,
+    "role_count": 2,
+    "feature_count": 2,
+    "items": [
+      {"path": "scope.FTR-001", "name": "Order tracking", "intent": "see where my order is"},
+      {"path": "scope.FTR-002", "name": "Repeat order", "intent": "order a past meal again in one tap"}
+    ]
+  },
+  "output": {
+    "summary": "An ordering app for my restaurant in Pune, for regular customers.",
+    "pitch": "This app lets regular customers in Pune order from my restaurant. The first version includes order tracking and repeat order. It earns through a small fee on each order.",
+    "descriptions": [
+      {"item_id": "scope.FTR-001", "text": "Order tracking: customers can see where their order is."},
+      {"item_id": "scope.FTR-002", "text": "Repeat order: customers can order a past meal again in one tap."}
+    ]
+  }
+}

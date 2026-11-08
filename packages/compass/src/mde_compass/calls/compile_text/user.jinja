@@ -1,0 +1,14 @@
+Language: {{ language }}
+Counts: {{ app_count }} app(s), {{ role_count }} role(s), {{ feature_count }} feature(s).
+
+Slots (data):
+{% for s in slots %}
+- {{ s }}
+{% endfor %}
+
+Items to describe (data):
+{% for i in items %}
+- {{ i }}
+{% endfor %}
+
+Return the summary, the pitch and the descriptions.
