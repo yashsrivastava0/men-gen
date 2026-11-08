@@ -278,7 +278,7 @@ def test_untouched_slot_never_reset(writes: list[Any], untouched: str) -> None:
     s = store()
     s.write(untouched, "keep", state="confirmed", provenance=tap())
     snapshot = s.get(untouched)
-    for slot_id, value, state, ptype, ref, remove, contributor in writes:
+    for slot_id, value, state, ptype, ref, remove, _contributor in writes:
         if slot_id == untouched:
             continue
         s.write(
