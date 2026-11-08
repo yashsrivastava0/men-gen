@@ -1,0 +1,129 @@
+{
+  "additionalProperties": false,
+  "description": "One slot value with provenance (rules in spec 3.3 are enforced by ``mde_discovery``).",
+  "properties": {
+    "evidence": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Evidence"
+    },
+    "slot_id": {
+      "enum": [
+        "idea.summary",
+        "idea.archetype",
+        "scope.apps",
+        "scope.features",
+        "users.roles",
+        "auth.method",
+        "design.direction",
+        "brand.name",
+        "brand.assets",
+        "design.accent",
+        "design.mode",
+        "design.nav_style",
+        "pay.model",
+        "pay.provider",
+        "data.source",
+        "behavior.offline",
+        "behavior.notifications",
+        "behavior.analytics",
+        "locale",
+        "a11y",
+        "compliance.flags",
+        "auth.sso",
+        "integrations.list",
+        "data.classification",
+        "regions",
+        "release.channel",
+        "approvers"
+      ],
+      "title": "Slot Id",
+      "type": "string"
+    },
+    "source": {
+      "anyOf": [
+        {
+          "enum": [
+            "tap",
+            "text",
+            "upload",
+            "research",
+            "org_profile",
+            "memory",
+            "default"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Source"
+    },
+    "state": {
+      "default": "empty",
+      "enum": [
+        "empty",
+        "assumed",
+        "volunteered",
+        "confirmed",
+        "disputed"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "updated_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Updated At"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value"
+    }
+  },
+  "required": [
+    "slot_id"
+  ],
+  "title": "SlotRecord",
+  "type": "object"
+}

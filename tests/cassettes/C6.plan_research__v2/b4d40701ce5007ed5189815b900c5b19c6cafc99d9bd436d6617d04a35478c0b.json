@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "b4d40701ce5007ed5189815b900c5b19c6cafc99d9bd436d6617d04a35478c0b",
+  "recorded_at": "2026-11-08T10:59:40.480466Z",
+  "request": {
+    "spec_id": "C6.plan_research",
+    "spec_version": 2,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "6b99de23b263f40733a32927357d5cf8a197bd93c11be087b838babb2d670be0",
+    "tools": [],
+    "kind": "main",
+    "system": "You plan the web research for a mobile-app planning tool. You get a short summary of the approved app brief and must decide which research jobs to run and which search queries to use. Return only the requested schema.\n\nJobs (use only the ids listed as available):\n- R1 market scan: common features and design patterns of similar apps. Always useful.\n- R2 reference apps: public feature lists of the apps the brief names. Only if references are given.\n- R3 brand: colors, fonts, tone of voice and logo of the brief's own website. Only if a brand website is given.\n- R4 compliance pointers: rules that apply to the sensitive areas flagged in the brief. Only if compliance flags are given.\n- R5 integration notes: SDK availability, Expo compatibility and caveats of a service the app needs (payments, push notifications, maps, sign-in, messaging). Only if the features or login imply one.\n- R6 internal sources: company documents. Only if available. It never uses the web.\n\nRules:\n- At most 2 queries per job, and at most max_search_calls queries in total across R1 to R5. Every query of a job must ask something different: another feature of the brief, another reference app, another sensitive area, another service, or another angle (for example pricing and limits, consent, data retention, SDK and Expo setup, known issues). Never reword the same question. Write the most important query of each job first, because a plan that is too long loses its last queries. Fewer is better when the brief offers no further distinct angle: one precise query beats two vague ones.\n- Stay inside the remaining budget: a web search costs about 12000 micro-dollars including extraction. If the budget fits fewer searches than max_search_calls, plan fewer.\n- Queries are short keyword phrases of at most 12 words, built from generic terms: the kind of app, feature names, the region, the sensitive area, the service type. Add \"mobile app\" where it helps.\n- Never put private data in a query: no personal names, emails, phone numbers, keys or internal project details.\n- If policy.allow_company_name_in_queries is false, never write the company, app, brand or reference names or the website address in any query, and plan neither R2 nor R3.\n- Each job gets a one-sentence plain rationale for the person waiting.",
+    "user": "Depth: light\nmax_search_calls: 6\nmax_queries_per_job: 2\nremaining_budget_micros: 300000\nJobs available: R1, R5\npolicy.allow_company_name_in_queries: true\n\nBrief\n- App: Blue Basket is a clean, bright booking app for hair salon clients to book appointments in available time slots.\n- Type: booking_services\n- Language: en\n- Features: Services, Booking with time slots\n- Login: email_phone_code\n- Look: clean-bright\n"
+  },
+  "response": {
+    "text": "{\"jobs\":[{\"job\":\"R1\",\"rationale\":\"Review common salon-booking features and slot-selection patterns to inform the app’s core flow.\",\"queries\":[\"hair salon booking app common service and available time slot features\",\"salon appointment booking mobile app rescheduling cancellation patterns\"]},{\"job\":\"R5\",\"rationale\":\"Check integration options and practical caveats for email-and-phone-code sign-in.\",\"queries\":[\"email phone one-time code sign-in SDK Expo compatibility mobile app\",\"SMS verification pricing limits consent mobile app authentication\"]}]}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 710,
+      "cached_input_tokens": 0,
+      "output_tokens": 268,
+      "reasoning_tokens": 150,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

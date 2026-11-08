@@ -1,0 +1,55 @@
+{
+  "proposals": [
+    {
+      "kind": "set_design_token",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "The brand tone (playful, warm) suits rounder corners.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "radius.md",
+          "value": "18"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "set_design_token",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "The brand colour becomes the accent (kept readable with white text).",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "colors_light.accent",
+          "value": "#C24A27"
+        }
+      ],
+      "items": null
+    }
+  ],
+  "notes": "mock: radius and accent nudges"
+}

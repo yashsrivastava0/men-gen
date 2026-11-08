@@ -1,0 +1,58 @@
+# SIT-014: User ignores a card
+# Detection: Idle or off-topic
+# Behavior:  One nudge, then assume the recommended option and mark it
+id: SIT-014-ignored-card
+situation: "User ignores a card"
+mode: guided
+variants:
+  client_reports_silence:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - ui: {action: idle}
+        expect:
+          text_contains: ["Take your time"]
+          pending_card: Q-apps-01
+          slots:
+            scope.apps: {empty: true}
+      - ui: {action: idle}
+        expect:
+          text_contains: ["No problem, I will go with"]
+          slots:
+            scope.apps: {state: assumed, source: default}
+          pending_card: Q-feat-01
+  off_topic_chatter:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "lol"
+      - user: "haha nice"
+        expect:
+          text_contains: ["Take your time"]
+          pending_card: Q-apps-01
+      - user: "wow"
+        expect:
+          text_contains: ["No problem, I will go with"]
+          slots:
+            scope.apps: {value: [customer], state: assumed, source: default}
+          pending_card: Q-feat-01
+  three_skips_offer_defaults:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - tap: {card: Q-apps-01, skip: true}
+      - tap: {card: Q-feat-01, skip: true}
+      - tap: {card: Q-auth-01, skip: true}
+        expect:
+          pending_card: Q-nudge-02
+          text_contains: ["smart defaults"]
+      - tap: {card: Q-nudge-02, option: finish}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief}

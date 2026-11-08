@@ -1,0 +1,205 @@
+# Question bank: internal_workforce (team or staff app). Cards here apply to this archetype only.
+# Feature ids are the pack feature ids (docs/packages/content.md). Pre-ticked = recommended.
+
+archetype: internal_workforce
+
+cards:
+  - id: Q-type-04
+    slot: idea.archetype
+    type: confirm
+    text: "It sounds like an app for your own team or staff. Is that right?"
+    options:
+      - {id: A, label: "Yes, a team app", recommended: true, sets: {idea.archetype: internal_workforce}}
+      - {id: B, label: "Not quite, start with basic building blocks", sets: {idea.archetype: custom}}
+    other: {enabled: true, placeholder: "Tell me what kind of app it is"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'internal_workforce'"
+    i18n:
+      hi:
+        text: "लगता है आप अपनी टीम या स्टाफ के लिए ऐप चाहते हैं। क्या यह सही है?"
+        options: {A: "हाँ, टीम ऐप", B: "बिल्कुल नहीं, बुनियादी हिस्सों से शुरू करें"}
+        other_placeholder: "बताइए यह किस तरह का ऐप है"
+      hi-Latn:
+        text: "Lagta hai aap apni team ya staff ke liye app chahte hain. Kya yeh sahi hai?"
+        options: {A: "Haan, team app", B: "Bilkul nahi, basic hisson se shuru karein"}
+        other_placeholder: "Bataiye yeh kis tarah ka app hai"
+
+  - id: Q-roles-01
+    slot: users.roles
+    type: choice3
+    text: "Who will use the app?"
+    help: "This decides who sees what. You can add more kinds of users later."
+    options:
+      - {id: A, label: "Employees and their managers", description: "Managers can see and approve things; employees do their work.", recommended: true, sets: {users.roles: [employee, manager]}}
+      - {id: B, label: "Employees only", description: "Everyone uses the app in the same way.", sets: {users.roles: [employee]}}
+      - {id: C, label: "Employees, managers and admins", description: "Admins also manage people and settings.", sets: {users.roles: [employee, manager, admin]}}
+    other: {enabled: true, placeholder: "Describe who will use it"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'internal_workforce'"
+    i18n:
+      hi:
+        text: "ऐप का इस्तेमाल कौन करेगा?"
+        options: {A: "कर्मचारी और उनके मैनेजर", B: "सिर्फ़ कर्मचारी", C: "कर्मचारी, मैनेजर और एडमिन"}
+        other_placeholder: "बताइए कौन इस्तेमाल करेगा"
+        help: "इससे तय होता है कि कौन क्या देखेगा। बाद में और तरह के उपयोगकर्ता जोड़ सकते हैं।"
+      hi-Latn:
+        text: "App ka istemal kaun karega?"
+        options: {A: "Karamchari aur unke managers", B: "Sirf karamchari", C: "Karamchari, managers aur admins"}
+        other_placeholder: "Bataiye kaun istemal karega"
+        help: "Isse tay hota hai ki kaun kya dekhega. Baad mein aur tarah ke users jod sakte hain."
+
+  - id: Q-feat-04
+    slot: scope.features
+    type: multi
+    text: "Which of these should your team app have? I have ticked the usual ones."
+    help: "You can change this any time. Anything you leave out can be added later."
+    options:
+      - {id: task_lists, label: "Task lists", description: "Staff see what to do today and tick it off.", recommended: true, sets: {scope.features: [task_lists]}}
+      - {id: forms_checklists, label: "Forms and checklists", description: "Staff fill in forms, inspections or checklists.", recommended: true, sets: {scope.features: [forms_checklists]}}
+      - {id: approvals, label: "Approvals", description: "Managers approve or reject requests.", recommended: true, sets: {scope.features: [approvals]}}
+      - {id: timesheets, label: "Timesheets and attendance", description: "Staff log hours or check in and out.", sets: {scope.features: [timesheets]}}
+      - {id: directory, label: "Staff directory", description: "Find a colleague and their details.", sets: {scope.features: [directory]}}
+      - {id: announcements, label: "Announcements", description: "Share news and notices with everyone.", recommended: true, sets: {scope.features: [announcements]}}
+      - {id: offline_sync, label: "Works offline", description: "Keep working without signal and sync later.", sets: {scope.features: [offline_sync]}}
+      - {id: push_notifications, label: "Notifications", description: "Alerts for new tasks and approvals.", recommended: true, sets: {scope.features: [push_notifications]}}
+      - {id: kiosk_mode, label: "Shared device mode", description: "One shared tablet or phone used by many staff.", sets: {scope.features: [kiosk_mode]}}
+      - {id: reports, label: "Reports", description: "Managers see summaries and totals.", sets: {scope.features: [reports]}}
+    other: {enabled: true, placeholder: "Add my own"}
+    skip: {enabled: true}
+    ask_if: "idea.archetype == 'internal_workforce'"
+    i18n:
+      hi:
+        text: "आपके टीम ऐप में इनमें से क्या-क्या होना चाहिए? मैंने आम चीज़ों पर निशान लगा दिए हैं।"
+        options: {task_lists: "काम की सूची", forms_checklists: "फ़ॉर्म और चेकलिस्ट", approvals: "मंज़ूरियाँ", timesheets: "टाइमशीट और हाज़िरी", directory: "स्टाफ डायरेक्टरी", announcements: "घोषणाएँ", offline_sync: "ऑफ़लाइन भी चले", push_notifications: "नोटिफिकेशन", kiosk_mode: "साझा डिवाइस मोड", reports: "रिपोर्ट"}
+        other_placeholder: "अपना जोड़िए"
+        help: "आप इसे कभी भी बदल सकते हैं। जो अभी छोड़ेंगे उसे बाद में जोड़ सकते हैं।"
+      hi-Latn:
+        text: "Aapke team app mein inmein se kya-kya hona chahiye? Maine aam cheezon par nishaan laga diye hain."
+        options: {task_lists: "Kaam ki list", forms_checklists: "Form aur checklist", approvals: "Approvals", timesheets: "Timesheet aur attendance", directory: "Staff directory", announcements: "Announcements", offline_sync: "Offline bhi chale", push_notifications: "Notifications", kiosk_mode: "Shared device mode", reports: "Reports"}
+        other_placeholder: "Apna jodiye"
+        help: "Aap ise kabhi bhi badal sakte hain. Jo abhi chhodenge use baad mein jod sakte hain."
+
+  - id: Q-auth-02
+    slot: auth.method
+    type: choice3
+    text: "How should your team sign in?"
+    help: "Most teams start with a short code sent to a work email or phone. You can change this later."
+    options:
+      - {id: A, label: "Work email or phone code", description: "A short code. No password to remember.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Company sign-in", description: "Staff use the account they already have at work (single sign-on).", sets: {auth.method: sso}}
+      - {id: C, label: "Username and password", description: "Staff pick a password.", sets: {auth.method: password}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "आपकी टीम साइन इन कैसे करे?"
+        options: {A: "काम का ईमेल या फ़ोन कोड", B: "कंपनी साइन-इन", C: "यूज़रनेम और पासवर्ड"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "ज़्यादातर टीमें काम के ईमेल या फ़ोन पर आए छोटे कोड से शुरू करती हैं। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Aapki team sign in kaise kare?"
+        options: {A: "Kaam ka email ya phone code", B: "Company sign-in", C: "Username aur password"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Zyadatar teams kaam ke email ya phone par aaye chhote code se shuru karti hain. Baad mein badal sakte hain."
+
+  - id: Q-look-04
+    slot: design.direction
+    type: visual3
+    text: "Which look feels closest to your team app?"
+    help: "This sets colors, shapes and feel. You can change it later."
+    options:
+      - {id: A, label: "Calm and professional", description: "Steady blues and a tidy, business-like feel.", preview: "theme:corporate-calm", recommended: true, sets: {design.direction: corporate-calm}}
+      - {id: B, label: "Clean and bright", description: "Light, fresh and easy to read.", preview: "theme:clean-bright", sets: {design.direction: clean-bright}}
+      - {id: C, label: "Simple and minimal", description: "Black, white and grey with lots of space.", preview: "theme:minimal-mono", sets: {design.direction: minimal-mono}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "कौन सा लुक आपके टीम ऐप के सबसे करीब है?"
+        options: {A: "शांत और प्रोफ़ेशनल", B: "साफ़ और चमकीला", C: "सादा और मिनिमल"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+        help: "इससे रंग, आकार और अंदाज़ तय होता है। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Kaun sa look aapke team app ke sabse kareeb hai?"
+        options: {A: "Shaant aur professional", B: "Saaf aur chamakdaar", C: "Saada aur minimal"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+        help: "Isse rang, aakaar aur andaaz tay hota hai. Baad mein badal sakte hain."
+
+  - id: Q-look-14
+    slot: design.direction
+    type: visual3
+    text: "Here are three more looks. Which one is closest?"
+    options:
+      - {id: A, label: "Warm and friendly", description: "Soft, welcoming colors and rounded shapes.", preview: "theme:warm-friendly", recommended: true, sets: {design.direction: warm-friendly}}
+      - {id: B, label: "Bold and dark", description: "Dark screens with strong contrast.", preview: "theme:bold-dark", sets: {design.direction: bold-dark}}
+      - {id: C, label: "Vibrant and playful", description: "Bright colors and a lively feel.", preview: "theme:vibrant-playful", sets: {design.direction: vibrant-playful}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "ये रहे तीन और लुक। कौन सा सबसे करीब है?"
+        options: {A: "गर्म और दोस्ताना", B: "गहरा और दमदार", C: "रंगीन और मज़ेदार"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+      hi-Latn:
+        text: "Ye rahe teen aur look. Kaun sa sabse kareeb hai?"
+        options: {A: "Garam aur dostana", B: "Gehra aur damdaar", C: "Rangeen aur mazedaar"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+
+  - id: Q-fix-04
+    slot: auth.method
+    type: choice3
+    kind: resolution
+    text: "You said people do not need to sign in, but most team features need to know who is using the app. What should we do?"
+    help: "Tasks, approvals and timesheets belong to a person, so they need a sign-in."
+    options:
+      - {id: A, label: "Add a work sign-in", description: "A short code sent to a work email or phone.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Company sign-in", description: "Staff use the account they already have at work.", sets: {auth.method: sso}}
+      - {id: C, label: "One shared device, no personal sign-in", description: "For a shared tablet at a site. We keep the features that suit it.", sets: {auth.method: none, scope.features: [forms_checklists, announcements, kiosk_mode]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "auth.method == 'none' and scope.features in [task_lists, approvals, timesheets, directory, offline_sync, reports]"
+    i18n:
+      hi:
+        text: "आपने कहा कि लोगों को साइन इन करने की ज़रूरत नहीं, लेकिन टीम के ज़्यादातर फ़ीचर को पता होना चाहिए कि ऐप कौन इस्तेमाल कर रहा है। हम क्या करें?"
+        options: {A: "काम का साइन-इन जोड़ें", B: "कंपनी साइन-इन", C: "एक साझा डिवाइस, निजी साइन-इन नहीं"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "काम, मंज़ूरियाँ और टाइमशीट किसी व्यक्ति के होते हैं, इसलिए उनके लिए साइन-इन चाहिए।"
+      hi-Latn:
+        text: "Aapne kaha ki logon ko sign in karne ki zaroorat nahi, lekin team ke zyadatar features ko pata hona chahiye ki app kaun istemal kar raha hai. Hum kya karein?"
+        options: {A: "Kaam ka sign-in jodein", B: "Company sign-in", C: "Ek shared device, personal sign-in nahi"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Kaam, approvals aur timesheet kisi vyakti ke hote hain, isliye unke liye sign-in chahiye."
+
+inspiration_cards:
+  - id: Q-insp-04
+    slot: idea.summary
+    type: choice3
+    kind: inspiration
+    text: "Here are a few ideas for team apps. Pick the closest one, or describe your own."
+    options:
+      - {id: A, label: "Field team tasks", description: "Daily task lists and checklists for staff on the move.", recommended: true, sets: {idea.summary: "A field team app with daily task lists and checklists", idea.archetype: internal_workforce}}
+      - {id: B, label: "Shifts and attendance", description: "Check in, check out and timesheets.", sets: {idea.summary: "A staff app for shifts, check-in and timesheets", idea.archetype: internal_workforce}}
+      - {id: C, label: "Leave and approvals", description: "Requests that managers approve.", sets: {idea.summary: "A staff app for leave requests and manager approvals", idea.archetype: internal_workforce}}
+    other: {enabled: true, placeholder: "Describe your own team app"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "टीम ऐप के लिए कुछ आइडिया ये रहे। सबसे करीब वाला चुनिए, या अपना बताइए।"
+        options: {A: "फ़ील्ड टीम के काम", B: "शिफ़्ट और हाज़िरी", C: "छुट्टी और मंज़ूरियाँ"}
+        other_placeholder: "अपने टीम ऐप के बारे में बताइए"
+      hi-Latn:
+        text: "Team app ke liye kuch ideas ye rahe. Sabse kareeb wala chuniye, ya apna bataiye."
+        options: {A: "Field team ke kaam", B: "Shift aur attendance", C: "Chhutti aur approvals"}
+        other_placeholder: "Apne team app ke baare mein bataiye"
+
+starter_chips:
+  - {id: chip-team-01, label: "Daily tasks for field staff", prefill: "I want an app with daily task lists for my field staff", archetype: internal_workforce, sets: {idea.archetype: internal_workforce}, i18n: {hi: "फ़ील्ड स्टाफ के रोज़ के काम", hi-Latn: "Field staff ke roz ke kaam"}}
+  - {id: chip-team-02, label: "Shifts and timesheets", prefill: "I want an app for staff shifts and timesheets", archetype: internal_workforce, sets: {idea.archetype: internal_workforce}, i18n: {hi: "शिफ़्ट और टाइमशीट", hi-Latn: "Shift aur timesheet"}}
+  - {id: chip-team-03, label: "Site inspection checklists", prefill: "I want an app for site inspection checklists", archetype: internal_workforce, sets: {idea.archetype: internal_workforce}, i18n: {hi: "साइट निरीक्षण चेकलिस्ट", hi-Latn: "Site inspection checklist"}}
+  - {id: chip-team-04, label: "Staff directory and news", prefill: "I want an app with a staff directory and company announcements", archetype: internal_workforce, sets: {idea.archetype: internal_workforce}, i18n: {hi: "स्टाफ डायरेक्टरी और ख़बरें", hi-Latn: "Staff directory aur khabrein"}}
+  - {id: chip-team-05, label: "Leave and expense approvals", prefill: "I want an app for leave and expense approvals", archetype: internal_workforce, sets: {idea.archetype: internal_workforce}, i18n: {hi: "छुट्टी और खर्च की मंज़ूरी", hi-Latn: "Chhutti aur kharch ki approval"}}
+  - {id: chip-team-06, label: "Store audit forms", prefill: "I want an app for store managers to fill in audit forms", archetype: internal_workforce, sets: {idea.archetype: internal_workforce}, i18n: {hi: "स्टोर ऑडिट फ़ॉर्म", hi-Latn: "Store audit form"}}

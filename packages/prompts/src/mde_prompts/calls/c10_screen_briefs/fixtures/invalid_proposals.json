@@ -1,0 +1,127 @@
+{
+  "proposals": [
+    {
+      "kind": "set_screen_copy",
+      "target": "SCR-006",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Copy too long",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "cta",
+          "value": "Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy Buy "
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "set_screen_copy",
+      "target": "SCR-006",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Secret",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "password",
+          "value": "hunter2hunter2"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "set_screen_copy",
+      "target": "SCR-006",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Key is not snake_case",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "Call To Action",
+          "value": "Buy"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "add_screen_check",
+      "target": "SCR-099",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Unknown screen",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "It works"
+      ]
+    },
+    {
+      "kind": "add_screen_action",
+      "target": "SCR-011",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Unknown operation",
+      "name": "gift_wrap",
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "calls",
+          "value": "API-wrapGift"
+        }
+      ],
+      "items": null
+    }
+  ],
+  "notes": null
+}

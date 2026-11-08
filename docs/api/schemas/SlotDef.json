@@ -1,0 +1,186 @@
+{
+  "additionalProperties": false,
+  "description": "Static definition of a slot (content: ``slots.yaml``).",
+  "properties": {
+    "ask_if": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ask If"
+    },
+    "default": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "integer"
+        },
+        {
+          "type": "number"
+        },
+        {
+          "type": "boolean"
+        },
+        {
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Default"
+    },
+    "default_reason": {
+      "default": "",
+      "title": "Default Reason",
+      "type": "string"
+    },
+    "depends_on": {
+      "default": [],
+      "items": {
+        "enum": [
+          "idea.summary",
+          "idea.archetype",
+          "scope.apps",
+          "scope.features",
+          "users.roles",
+          "auth.method",
+          "design.direction",
+          "brand.name",
+          "brand.assets",
+          "design.accent",
+          "design.mode",
+          "design.nav_style",
+          "pay.model",
+          "pay.provider",
+          "data.source",
+          "behavior.offline",
+          "behavior.notifications",
+          "behavior.analytics",
+          "locale",
+          "a11y",
+          "compliance.flags",
+          "auth.sso",
+          "integrations.list",
+          "data.classification",
+          "regions",
+          "release.channel",
+          "approvers"
+        ],
+        "type": "string"
+      },
+      "title": "Depends On",
+      "type": "array"
+    },
+    "group": {
+      "enum": [
+        "idea",
+        "users",
+        "look",
+        "money",
+        "behavior",
+        "compliance",
+        "enterprise"
+      ],
+      "title": "Group",
+      "type": "string"
+    },
+    "level": {
+      "additionalProperties": {
+        "enum": [
+          "must",
+          "should",
+          "may"
+        ],
+        "type": "string"
+      },
+      "propertyNames": {
+        "enum": [
+          "guided",
+          "enterprise"
+        ]
+      },
+      "title": "Level",
+      "type": "object"
+    },
+    "must_confirm_in": {
+      "default": [],
+      "items": {
+        "enum": [
+          "guided",
+          "enterprise"
+        ],
+        "type": "string"
+      },
+      "title": "Must Confirm In",
+      "type": "array"
+    },
+    "order": {
+      "default": 100,
+      "title": "Order",
+      "type": "integer"
+    },
+    "slot_id": {
+      "enum": [
+        "idea.summary",
+        "idea.archetype",
+        "scope.apps",
+        "scope.features",
+        "users.roles",
+        "auth.method",
+        "design.direction",
+        "brand.name",
+        "brand.assets",
+        "design.accent",
+        "design.mode",
+        "design.nav_style",
+        "pay.model",
+        "pay.provider",
+        "data.source",
+        "behavior.offline",
+        "behavior.notifications",
+        "behavior.analytics",
+        "locale",
+        "a11y",
+        "compliance.flags",
+        "auth.sso",
+        "integrations.list",
+        "data.classification",
+        "regions",
+        "release.channel",
+        "approvers"
+      ],
+      "title": "Slot Id",
+      "type": "string"
+    },
+    "value_kind": {
+      "default": "text",
+      "enum": [
+        "text",
+        "bool",
+        "choice",
+        "list"
+      ],
+      "title": "Value Kind",
+      "type": "string"
+    }
+  },
+  "required": [
+    "slot_id",
+    "group",
+    "level"
+  ],
+  "title": "SlotDef",
+  "type": "object"
+}

@@ -1,0 +1,45 @@
+[project]
+name = "mde-context-api"
+version = "0.1.0"
+description = "FastAPI service: sessions, events, gates, SSE"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "mde-core",
+  "mde-contracts",
+  "mde-llm-gateway",
+  "mde-prompts",
+  "mde-content",
+  "mde-persistence",
+  "mde-spec-loader",
+  "mde-discovery",
+  "mde-research",
+  "mde-spec-builder",
+  "mde-flow",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "httpx>=0.27",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.5",
+  "structlog>=24.4",
+  "sqlalchemy[asyncio]>=2.0.35"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mde_context_api"]
+
+[tool.uv.sources]
+mde-core = { workspace = true }
+mde-contracts = { workspace = true }
+mde-llm-gateway = { workspace = true }
+mde-prompts = { workspace = true }
+mde-content = { workspace = true }
+mde-persistence = { workspace = true }
+mde-spec-loader = { workspace = true }
+mde-discovery = { workspace = true }
+mde-research = { workspace = true }
+mde-spec-builder = { workspace = true }
+mde-flow = { workspace = true }

@@ -1,0 +1,55 @@
+# SIT-038: Enterprise: budget cap reached
+# Detection: Metering
+# Behavior:  Pause before the Plan phase; explain; ask an approver
+id: SIT-038-enterprise-budget-cap-reached
+situation: "Enterprise: budget cap reached"
+mode: enterprise
+policy: enterprise-it-services-firm
+integration: true
+variants:
+  cap_hit_during_planning_never_shows_a_raw_error:
+    # the research scope runs out while the plan is being made (the session as a whole is fine): the
+    # run goes on without research, says so, and never shows a raw error
+    gateway: {research_cap_usd: "0.00005"}
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - decide: {gate: brief}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          research: {status: unavailable, reason: budget}
+          notices: [research_unavailable]
+          plan: {research_status: unavailable}
+          spec: {screens_min: 8}
+  pause_before_the_plan_phase:
+    # the session's own cap is used up before planning starts: nothing is started, the session is
+    # paused and an approver is asked (no number is ever shown)
+    gateway: {session_cap_usd: "0.00005"}
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - decide: {gate: brief}
+        expect:
+          state: PAUSED
+          job: none
+          notices: [budget_cap_reached]
+          text_contains: ["Someone who can approve it needs to raise the limit"]
+          text_regex_absent: ['\d']
+          spec_ready: 0
+      - wait_for_plan: true
+        expect:
+          state: PAUSED
+          llm_calls: {total: 0}
+          spec_ready: 0
+      - ui: {action: resume}
+        expect:
+          state: PAUSED
+          notices: [budget_cap_reached]
+          job: none

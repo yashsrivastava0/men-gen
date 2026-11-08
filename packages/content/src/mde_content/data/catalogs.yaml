@@ -1,0 +1,434 @@
+# Catalogs: archetypes, sensitive domains and the slot table (spec 3.3).
+# Validated by mde_contracts.content.Catalogs. Content is data: nothing here is code.
+#
+# Slot value vocabulary (what cards write and the spec builder reads):
+#   idea.archetype     one of the archetype ids below
+#   scope.apps         list of app ids: "main" (default: the primary app of the archetype), or
+#                      customer | business | courier | admin | employee (set by Q-apps-* cards)
+#   scope.features     list of pack feature ids (snake_case, see docs/packages/content.md)
+#   users.roles        list of role ids (user | admin | employee | manager | ...)
+#   auth.method        email_phone_code | social | password | guest_first | sso | none
+#   design.direction   a theme id (clean-bright | bold-dark | warm-friendly | minimal-mono |
+#                      vibrant-playful | corporate-calm)
+#   pay.model          online | on_delivery | both | none
+#   pay.provider       mock | <provider id>
+#   data.source        generated | existing_api | sample
+#   behavior.offline   basic | full | none
+#   locale             BCP-47-ish language code (en, hi, hi-Latn)
+#   a11y               standard | enhanced
+#   compliance.flags   list of flag ids from the sensitive domains below
+#   auth.sso           required | not_needed | ask_it
+#   data.classification public | internal | confidential
+#   regions            list of region ids (in | eu | us | other)
+#   release.channel    internal | testers | public
+#   approvers          list of approver role ids (requester | product_owner | ...)
+
+archetypes:
+  - id: commerce
+    label: Online shop
+    description: Sell products to customers, with browsing, a cart, checkout and order tracking.
+    multi_sided: true
+    keywords: [shop, store, online store, ecommerce, e-commerce, sell products, catalog, cart, boutique, retail, marketplace, grocery, clothes, fashion, gifts, dukaan, dukan, online dukaan, saman, bechna, kharidari, दुकान, ऑनलाइन दुकान, स्टोर, खरीदारी, सामान बेचना]
+    i18n:
+      hi:
+        label: ऑनलाइन दुकान
+        description: ग्राहकों को सामान बेचिए, ब्राउज़िंग, कार्ट, चेकआउट और ऑर्डर ट्रैकिंग के साथ।
+      hi-Latn:
+        label: Online dukaan
+        description: Customers ko saman bechiye, browsing, cart, checkout aur order tracking ke saath.
+
+  - id: food_delivery
+    label: Food ordering
+    description: Let people browse a menu, order food, pay and follow the delivery.
+    multi_sided: true
+    keywords: [restaurant, food, menu, order food, food delivery, cloud kitchen, cafe, bakery, tiffin, canteen, takeaway, dhaba, meal, khana, khaana, restaurant ka app, order karna, खाना, रेस्टोरेंट, भोजन, टिफिन, डिलीवरी, खाना ऑर्डर]
+    i18n:
+      hi:
+        label: खाना ऑर्डर करना
+        description: लोग मेन्यू देखें, खाना ऑर्डर करें, भुगतान करें और डिलीवरी को ट्रैक करें।
+      hi-Latn:
+        label: Khana order karna
+        description: Log menu dekhein, khana order karein, payment karein aur delivery track karein.
+
+  - id: booking_services
+    label: Bookings and appointments
+    description: Let customers pick a service, choose a time slot and book it.
+    multi_sided: true
+    keywords: [appointment, appointments, booking, book, slot, slots, salon, spa, clinic, trainer, classes, consultation, repair, cleaning, plumber, tutor, turf, court, reservation, schedule, appointment lena, booking karna, अपॉइंटमेंट, बुकिंग, सैलून, क्लास, समय बुक]
+    i18n:
+      hi:
+        label: बुकिंग और अपॉइंटमेंट
+        description: ग्राहक सेवा चुनें, समय चुनें और बुक करें।
+      hi-Latn:
+        label: Booking aur appointment
+        description: Customer service chunein, time slot chunein aur book karein.
+
+  - id: internal_workforce
+    label: Team or staff app
+    description: A tool for your own employees or field staff, such as tasks, checklists and approvals.
+    multi_sided: false
+    keywords: [employees, employee, staff, team, field staff, workers, internal, shift, attendance, timesheet, checklist, inspection, approvals, company app, back office, workforce, karamchari, staff ka app, team ka app, attendance, कर्मचारी, स्टाफ, टीम, शिफ्ट, उपस्थिति]
+    i18n:
+      hi:
+        label: टीम या स्टाफ ऐप
+        description: आपके अपने कर्मचारियों या फील्ड स्टाफ के लिए, जैसे काम, चेकलिस्ट और मंज़ूरियाँ।
+      hi-Latn:
+        label: Team ya staff app
+        description: Aapke apne karamchariyon ya field staff ke liye, jaise kaam, checklist aur approvals.
+
+  - id: custom
+    label: Something else
+    description: Anything that does not fit the other types. We start from basic building blocks such as lists, details, forms and settings.
+    multi_sided: false
+    keywords: [tracker, community, events, directory, gallery, notes, something else, kuch aur, कुछ और]
+    i18n:
+      hi:
+        label: कुछ और
+        description: जो बाकी प्रकारों में फिट नहीं होता। हम सूची, विवरण, फ़ॉर्म और सेटिंग जैसे बुनियादी हिस्सों से शुरू करते हैं।
+      hi-Latn:
+        label: Kuch aur
+        description: Jo baaki types mein fit nahi hota. Hum list, detail, form aur settings jaise basic hisson se shuru karte hain.
+
+sensitive_domains:
+  - id: health
+    label: Health information
+    keywords: [health, medical, patient, patients, doctor, clinic, hospital, medicine, pharmacy, diagnosis, prescription, therapy, symptoms, swasthya, dawai, davai, aspatal, mareez, स्वास्थ्य, डॉक्टर, दवा, अस्पताल, मरीज]
+    compliance_flags: [health_data_privacy]
+    conservative_defaults:
+      behavior.analytics: false
+      behavior.offline: none
+
+  - id: finance
+    label: Money and financial services
+    keywords: [bank, banking, loan, loans, credit, lending, wallet, insurance, investment, mutual fund, trading, upi, fintech, karz, bima, udhaar, बैंक, ऋण, कर्ज, बीमा, निवेश]
+    compliance_flags: [financial_data]
+    conservative_defaults:
+      behavior.analytics: false
+      behavior.offline: none
+
+  - id: children
+    label: Children
+    keywords: [kids, children, child, toddlers, teenagers, school students, under 13, minors, parents and kids, bachche, bacche, bachcho, बच्चे, बच्चों, स्कूल के बच्चे]
+    compliance_flags: [child_safety]
+    conservative_defaults:
+      behavior.analytics: false
+      behavior.notifications: false
+
+  - id: identity_documents
+    label: Identity documents
+    keywords: [aadhaar, aadhar, passport, pan card, driving licence, driving license, kyc, id card, identity proof, identity document, pehchaan patra, आधार, पासपोर्ट, पहचान पत्र, केवाईसी]
+    compliance_flags: [identity_documents]
+    conservative_defaults:
+      behavior.analytics: false
+      behavior.offline: none
+
+  - id: precise_location
+    label: Exact location
+    keywords: [live location, gps, real-time tracking, track location, track my, nearby, ride, rides, rider tracking, delivery tracking, location sharing, live tracking, लोकेशन, लाइव लोकेशन, ट्रैक करना]
+    compliance_flags: [precise_location]
+    conservative_defaults:
+      behavior.analytics: false
+
+slots:
+  # ---------------------------------------------------------------- idea
+  - slot_id: idea.summary
+    group: idea
+    level: {guided: must, enterprise: must}
+    value_kind: text
+    default: null
+    default_reason: "Nothing to assume here: we need your idea to start."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 0
+
+  - slot_id: idea.archetype
+    group: idea
+    level: {guided: must, enterprise: must}
+    value_kind: choice
+    default: custom
+    default_reason: "We start from general building blocks when we cannot tell what type of app this is."
+    depends_on: [idea.summary]
+    ask_if: null
+    must_confirm_in: []
+    order: 10
+
+  - slot_id: compliance.flags
+    group: compliance
+    level: {guided: must, enterprise: must}
+    value_kind: list
+    default: null
+    default_reason: "Nothing is flagged unless your idea touches a sensitive area; then we pick the careful option and flag it."
+    depends_on: [idea.archetype]
+    ask_if: "sensitive.domains != null"
+    must_confirm_in: [enterprise]
+    order: 15
+
+  - slot_id: scope.apps
+    group: idea
+    level: {guided: must, enterprise: must}
+    value_kind: list
+    default: [main]
+    default_reason: "We build the main app first; the other apps can become their own projects."
+    depends_on: [idea.archetype]
+    ask_if: "idea.archetype in [commerce, food_delivery, booking_services]"
+    must_confirm_in: []
+    order: 20
+
+  - slot_id: scope.features
+    group: idea
+    level: {guided: must, enterprise: must}
+    value_kind: list
+    default: null
+    default_reason: "We start from the features most apps of this type include; you can change them any time."
+    depends_on: [idea.archetype, scope.apps]
+    ask_if: null
+    must_confirm_in: []
+    order: 30
+
+  # ---------------------------------------------------------------- users
+  - slot_id: users.roles
+    group: users
+    level: {guided: must, enterprise: must}
+    value_kind: list
+    default: [user]
+    default_reason: "We start with one kind of user."
+    depends_on: [idea.archetype, scope.apps]
+    ask_if: "idea.archetype in [internal_workforce, custom]"
+    must_confirm_in: []
+    order: 40
+
+  - slot_id: auth.method
+    group: users
+    level: {guided: must, enterprise: must}
+    value_kind: choice
+    default: email_phone_code
+    default_reason: "Signing in with a code sent to email or phone is simple for most people."
+    depends_on: [scope.features, users.roles]
+    ask_if: null
+    must_confirm_in: []
+    order: 50
+
+  # ---------------------------------------------------------------- look
+  - slot_id: design.direction
+    group: look
+    level: {guided: must, enterprise: must}
+    value_kind: choice
+    default: null
+    default_reason: "We use the look we recommend for this type of app."
+    depends_on: [idea.archetype]
+    ask_if: null
+    must_confirm_in: []
+    order: 60
+
+  - slot_id: brand.name
+    group: look
+    level: {guided: must, enterprise: must}
+    value_kind: text
+    default: My App
+    default_reason: "We use a placeholder name until you pick one."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 70
+
+  - slot_id: brand.assets
+    group: look
+    level: {guided: should, enterprise: should}
+    value_kind: text
+    default: null
+    default_reason: "No logo for now; you can add one any time."
+    depends_on: [brand.name]
+    ask_if: null
+    must_confirm_in: []
+    order: 75
+
+  - slot_id: design.accent
+    group: look
+    level: {guided: may, enterprise: may}
+    value_kind: text
+    default: null
+    default_reason: "Colors come from the look you chose."
+    depends_on: [design.direction]
+    ask_if: null
+    must_confirm_in: []
+    order: 80
+
+  - slot_id: design.mode
+    group: look
+    level: {guided: may, enterprise: may}
+    value_kind: choice
+    default: system
+    default_reason: "The app follows the phone's light or dark setting."
+    depends_on: [design.direction]
+    ask_if: null
+    must_confirm_in: []
+    order: 81
+
+  - slot_id: design.nav_style
+    group: look
+    level: {guided: may, enterprise: may}
+    value_kind: choice
+    default: null
+    default_reason: "Navigation follows the look you chose."
+    depends_on: [design.direction]
+    ask_if: null
+    must_confirm_in: []
+    order: 82
+
+  # ---------------------------------------------------------------- money
+  - slot_id: pay.model
+    group: money
+    level: {guided: must, enterprise: must}
+    value_kind: choice
+    default: online
+    default_reason: "We start with a practice checkout so you can try the whole flow."
+    depends_on: [scope.features]
+    ask_if: "'payments' in scope.features"
+    must_confirm_in: [enterprise]
+    order: 90
+
+  - slot_id: pay.provider
+    group: money
+    level: {guided: may, enterprise: should}
+    value_kind: choice
+    default: mock
+    default_reason: "A practice payment provider is used until you connect a real one."
+    depends_on: [pay.model]
+    ask_if: "pay.model in [online, both]"
+    must_confirm_in: []
+    order: 95
+
+  - slot_id: data.source
+    group: money
+    level: {guided: may, enterprise: should}
+    value_kind: choice
+    default: generated
+    default_reason: "We create a new backend for your app."
+    depends_on: [scope.features]
+    ask_if: null
+    must_confirm_in: []
+    order: 100
+
+  # ---------------------------------------------------------------- behavior
+  - slot_id: behavior.offline
+    group: behavior
+    level: {guided: may, enterprise: should}
+    value_kind: choice
+    default: basic
+    default_reason: "The app remembers what it last showed when the signal drops."
+    depends_on: [scope.features]
+    ask_if: null
+    must_confirm_in: []
+    order: 130
+
+  - slot_id: behavior.notifications
+    group: behavior
+    level: {guided: may, enterprise: may}
+    value_kind: bool
+    default: true
+    default_reason: "Notifications are on where they help, like order updates."
+    depends_on: [scope.features]
+    ask_if: null
+    must_confirm_in: []
+    order: 131
+
+  - slot_id: behavior.analytics
+    group: behavior
+    level: {guided: may, enterprise: may}
+    value_kind: bool
+    default: false
+    default_reason: "No usage tracking unless you ask for it."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 132
+
+  - slot_id: locale
+    group: behavior
+    level: {guided: may, enterprise: may}
+    value_kind: choice
+    default: en
+    default_reason: "English, unless you write to us in another language."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 133
+
+  - slot_id: a11y
+    group: behavior
+    level: {guided: may, enterprise: may}
+    value_kind: choice
+    default: standard
+    default_reason: "Standard accessibility: readable text, good contrast and labels for screen readers."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 134
+
+  # ---------------------------------------------------------------- enterprise
+  - slot_id: auth.sso
+    group: enterprise
+    level: {guided: may, enterprise: must}
+    value_kind: choice
+    default: not_needed
+    default_reason: "Single sign-on is only added when your company asks for it."
+    depends_on: [auth.method]
+    ask_if: null
+    must_confirm_in: [enterprise]
+    order: 55
+
+  - slot_id: integrations.list
+    group: enterprise
+    level: {guided: may, enterprise: should}
+    value_kind: list
+    default: null
+    default_reason: "Taken from your company profile; none are added by default."
+    depends_on: [scope.features]
+    ask_if: null
+    must_confirm_in: []
+    order: 105
+
+  - slot_id: data.classification
+    group: enterprise
+    level: {guided: may, enterprise: must}
+    value_kind: choice
+    default: internal
+    default_reason: "Treated as internal company data until you say otherwise."
+    depends_on: [idea.archetype]
+    ask_if: null
+    must_confirm_in: []
+    order: 110
+
+  - slot_id: regions
+    group: enterprise
+    level: {guided: may, enterprise: should}
+    value_kind: list
+    default: null
+    default_reason: "Taken from your company profile."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 115
+
+  - slot_id: release.channel
+    group: enterprise
+    level: {guided: may, enterprise: should}
+    value_kind: choice
+    default: internal
+    default_reason: "Your own team tries the app first."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 120
+
+  - slot_id: approvers
+    group: enterprise
+    level: {guided: may, enterprise: must}
+    value_kind: list
+    default: [requester]
+    default_reason: "The person who asked for the app approves, unless your company profile names others."
+    depends_on: []
+    ask_if: null
+    must_confirm_in: []
+    order: 125

@@ -1,0 +1,65 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "hash": {
+      "title": "Hash",
+      "type": "string"
+    },
+    "in_reply_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "In Reply To"
+    },
+    "seq": {
+      "default": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "type": {
+      "const": "plan_ready",
+      "default": "plan_ready",
+      "title": "Type",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "version",
+    "hash"
+  ],
+  "title": "PlanReady",
+  "type": "object"
+}

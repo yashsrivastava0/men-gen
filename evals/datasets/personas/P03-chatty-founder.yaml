@@ -1,0 +1,20 @@
+id: P03-chatty-founder
+title: Chatty founder who volunteers everything and asks questions
+who: Tells a story, jokes, asks about cost and time, volunteers the look and the login, then agrees.
+language: en
+mode: guided
+script:
+  - user: "Hey! So my cousin runs this bakery and I keep telling her she needs an app"
+  - user: "lol she never listens. anyway it is an online store for her cakes, warm and friendly look please"
+  - user: "how much will this cost?"
+  - user: "and how long does it take?"
+  - user: "no login please, people just order"
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  text_contains: ["plan"]

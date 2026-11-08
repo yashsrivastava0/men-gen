@@ -1,0 +1,140 @@
+{
+  "$defs": {
+    "DesignTokens": {
+      "additionalProperties": false,
+      "properties": {
+        "colors_dark": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Colors Dark",
+          "type": "object"
+        },
+        "colors_light": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Colors Light",
+          "type": "object"
+        },
+        "elevation": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Elevation",
+          "type": "object"
+        },
+        "motion": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Motion",
+          "type": "object"
+        },
+        "radius": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Radius",
+          "type": "object"
+        },
+        "spacing": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Spacing",
+          "type": "array"
+        },
+        "type_scale": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TypeStyle"
+          },
+          "title": "Type Scale",
+          "type": "object"
+        }
+      },
+      "required": [
+        "colors_light",
+        "colors_dark",
+        "type_scale",
+        "spacing",
+        "radius",
+        "elevation",
+        "motion"
+      ],
+      "title": "DesignTokens",
+      "type": "object"
+    },
+    "TypeStyle": {
+      "additionalProperties": false,
+      "properties": {
+        "line_height": {
+          "default": 1.3,
+          "title": "Line Height",
+          "type": "number"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        },
+        "weight": {
+          "default": 400,
+          "title": "Weight",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "size"
+      ],
+      "title": "TypeStyle",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "component_variants": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "default": {},
+      "title": "Component Variants",
+      "type": "object"
+    },
+    "direction": {
+      "title": "Direction",
+      "type": "string"
+    },
+    "imagery_rules": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Imagery Rules",
+      "type": "array"
+    },
+    "nav_style": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Nav Style"
+    },
+    "tokens": {
+      "$ref": "#/$defs/DesignTokens"
+    }
+  },
+  "required": [
+    "direction",
+    "tokens"
+  ],
+  "title": "DesignBlock",
+  "type": "object"
+}

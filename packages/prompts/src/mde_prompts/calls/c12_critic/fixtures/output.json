@@ -1,0 +1,14 @@
+{
+  "verdict": "fix",
+  "findings": [
+    {
+      "kind": "other",
+      "severity": "error",
+      "message": "Action 'broken' on SCR-006 goes to SCR-099, which is not a screen, sheet or route",
+      "target_ids": [
+        "SCR-006"
+      ],
+      "suggested_fix": "Fix the broken reference or remove the item that causes it."
+    }
+  ]
+}

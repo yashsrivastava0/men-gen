@@ -1,0 +1,25 @@
+# Budget guard configuration (brief 7.9). The global cap itself comes from LLM_BUDGET_USD.
+version: 1
+
+# Effective cap = this fraction of LLM_BUDGET_USD (USD 5.70 of 6.00). Never plan to reach the cap.
+effective_cap_fraction: "0.95"
+
+# Scoped caps inside the global one, keyed by the scope kind (the part before ":").
+scope_caps_usd:
+  session: "0.50"
+  research: "0.30"
+  eval: "1.50"
+  test: "0.30"
+
+# Exact-scope overrides (for example one eval run with its own allowance).
+scope_overrides_usd: {}
+
+# Tripwires as a fraction of LLM_BUDGET_USD (spent + reserved).
+tripwires:
+  warn: "0.50"          # log a warning
+  must_run_only: "0.80" # only calls whose purpose starts with "must-run"
+  refuse: "0.95"        # refuse everything
+
+# Reservations never closed within this many seconds count as SPENT at their worst case, never as
+# released: a crashed process burns its reservation (deliberately conservative, D-056).
+reservation_ttl_seconds: 600

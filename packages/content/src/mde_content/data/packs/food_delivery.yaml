@@ -1,0 +1,1081 @@
+# Domain Pack: food_delivery (restaurant discovery, ordering and delivery for one city or area).
+# Three surfaces: the customer app (main), a restaurant partner side and a courier side. The
+# customer app is the default; the other two are separate apps in one project when chosen.
+# See commerce.yaml for the file conventions and docs/specs/domain-pack-format.md.
+id: food_delivery
+archetype: food_delivery
+label: Food delivery
+description: Order food from nearby restaurants. Browse restaurants and menus, customize dishes, check out, pay, follow the courier live and rate the meal. A restaurant side (incoming orders, menu) and a courier side (deliveries) are included as optional surfaces.
+theme_candidates: [warm-friendly, vibrant-playful, clean-bright]
+default_theme: warm-friendly
+
+features:
+  - {id: restaurant_browse, label: Browse restaurants, tier: core, description: "Nearby restaurants, cuisines, search, map and restaurant pages with their menus.", i18n: {hi: रेस्तरां देखें}}
+  - {id: menu_item_options, label: Dish options and add-ons, tier: core, description: "Sizes, extras and special requests on a dish.", i18n: {hi: डिश के विकल्प}}
+  - {id: cart_checkout, label: Cart and checkout, tier: core, description: "One cart per restaurant, a delivery address and placing the order.", i18n: {hi: कार्ट और चेकआउट}}
+  - {id: payments, label: Online payments, tier: standard, description: "Pay by card or wallet. Mock provider until a real one is chosen.", i18n: {hi: ऑनलाइन भुगतान}}
+  - {id: live_order_tracking, label: Order history and live tracking, tier: standard, description: "Past orders, a status timeline and the courier on a map.", i18n: {hi: लाइव ऑर्डर ट्रैकिंग}}
+  - {id: ratings, label: Ratings, tier: extra, default_on: false, description: "Rate the food and the delivery and read restaurant ratings.", i18n: {hi: रेटिंग}}
+  - {id: saved_addresses, label: Saved addresses, tier: standard, description: "Home, work and other addresses to pick from at checkout.", i18n: {hi: सेव किए गए पते}}
+  - {id: push_notifications, label: Push notifications, tier: standard, description: "Order status and offers on the phone.", i18n: {hi: पुश सूचनाएं}}
+  - {id: promo_codes, label: Promo codes, tier: extra, default_on: false, description: "Discount codes and a list of current offers.", i18n: {hi: प्रोमो कोड}}
+  - {id: support, label: Help and support chat, tier: extra, default_on: false, description: "Common questions and a chat with the support team.", i18n: {hi: सहायता}}
+
+roles:
+  - {id: ROLE-customer, name: Customer, description: "Orders food and follows the delivery.", surface: customer}
+  - {id: ROLE-restaurant_owner, name: Restaurant owner, description: "Accepts incoming orders and keeps the menu and opening status up to date.", surface: business}
+  - {id: ROLE-courier, name: Courier, description: "Picks up and delivers orders.", surface: courier}
+
+enums:
+  - {name: OrderStatus, values: [placed, accepted, preparing, ready, picked_up, delivered, cancelled]}
+  - {name: PaymentMethodType, values: [card, wallet, cash_on_delivery]}
+  - {name: PaymentStatus, values: [pending, paid, failed, refunded]}
+  - {name: OptionKind, values: [single, multiple]}
+  - {name: NotificationKind, values: [order_update, offer, account]}
+  - {name: MessageSender, values: [customer, agent]}
+  - {name: CourierStatus, values: [offline, available, on_delivery]}
+
+entities:
+  - id: ENT-User
+    name: User
+    plain_name: Customers
+    fields:
+      - {name: name, type: string}
+      - {name: phone, type: string}
+      - {name: email, type: string, required: false}
+      - {name: avatar, type: image, required: false}
+      - {name: created_at, type: datetime}
+    seed_guidance: Two sample customers, one restaurant owner and one courier with names that match the app locale.
+  - id: ENT-Address
+    name: Address
+    plain_name: Delivery addresses
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: label, type: string, description: "Home, Work, ..."}
+      - {name: recipient_name, type: string}
+      - {name: phone, type: string}
+      - {name: line1, type: string}
+      - {name: line2, type: string, required: false}
+      - {name: landmark, type: string, required: false}
+      - {name: city, type: string}
+      - {name: postal_code, type: string}
+      - {name: latitude, type: number, required: false, description: "From the map pin"}
+      - {name: longitude, type: number, required: false, description: "From the map pin"}
+      - {name: delivery_instructions, type: string, required: false}
+      - {name: is_default, type: bool}
+  - id: ENT-Cuisine
+    name: Cuisine
+    plain_name: Cuisines
+    fields:
+      - {name: name, type: string}
+      - {name: image, type: image, required: false}
+    seed_guidance: Eight cuisines such as pizza, burgers, noodles, salads, desserts, regional dishes, breakfast and healthy.
+  - id: ENT-Restaurant
+    name: Restaurant
+    plain_name: Restaurants
+    fields:
+      - {name: name, type: string}
+      - {name: description, type: text}
+      - {name: image, type: image}
+      - {name: cover_image, type: image, required: false}
+      - {name: cuisine, type: ref, ref: ENT-Cuisine}
+      - {name: rating, type: number, required: false}
+      - {name: rating_count, type: int, required: false}
+      - {name: delivery_fee, type: money}
+      - {name: min_order, type: money}
+      - {name: eta_minutes, type: int}
+      - {name: is_open, type: bool}
+      - {name: address, type: text}
+      - {name: latitude, type: number}
+      - {name: longitude, type: number}
+      - {name: opening_hours, type: json, required: false}
+    seed_guidance: 12 to 20 restaurants spread over a fictional city centre with coordinates, two of them closed right now.
+  - id: ENT-MenuCategory
+    name: Menu category
+    plain_name: Menu sections
+    fields:
+      - {name: restaurant, type: ref, ref: ENT-Restaurant}
+      - {name: name, type: string}
+      - {name: position, type: int}
+  - id: ENT-MenuItem
+    name: Menu item
+    plain_name: Dishes
+    fields:
+      - {name: restaurant, type: ref, ref: ENT-Restaurant}
+      - {name: category, type: ref, ref: ENT-MenuCategory}
+      - {name: name, type: string}
+      - {name: description, type: text}
+      - {name: price, type: money}
+      - {name: image, type: image, required: false}
+      - {name: dietary_tags, type: json, required: false, description: "List such as veg, vegan, gluten_free, halal, spicy"}
+      - {name: is_available, type: bool}
+      - {name: is_popular, type: bool}
+    seed_guidance: 8 to 25 dishes per restaurant in three or four menu sections, with a few marked popular and one sold out.
+  - id: ENT-OptionGroup
+    name: Option group
+    plain_name: Dish option groups
+    fields:
+      - {name: item, type: ref, ref: ENT-MenuItem}
+      - {name: name, type: string, description: "Size, Toppings, Spice level"}
+      - {name: kind, type: enum, enum: OptionKind}
+      - {name: required, type: bool}
+      - {name: max_choices, type: int, required: false}
+  - id: ENT-OptionChoice
+    name: Option choice
+    plain_name: Dish option choices
+    fields:
+      - {name: group, type: ref, ref: ENT-OptionGroup}
+      - {name: name, type: string}
+      - {name: extra_price, type: money}
+      - {name: is_default, type: bool}
+  - id: ENT-Cart
+    name: Cart
+    plain_name: Cart
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: restaurant, type: ref, ref: ENT-Restaurant}
+      - {name: delivery_address, type: ref, ref: ENT-Address, required: false}
+      - {name: item_count, type: int}
+      - {name: subtotal, type: money}
+      - {name: delivery_fee, type: money}
+      - {name: discount, type: money, required: false}
+      - {name: total, type: money}
+  - id: ENT-CartItem
+    name: Cart item
+    plain_name: Cart items
+    fields:
+      - {name: cart, type: ref, ref: ENT-Cart}
+      - {name: item, type: ref, ref: ENT-MenuItem}
+      - {name: quantity, type: int}
+      - {name: selected_options, type: json, required: false, description: "Chosen option names with their extra prices"}
+      - {name: special_note, type: string, required: false}
+      - {name: unit_price, type: money, description: "Dish price plus options"}
+  - id: ENT-Order
+    name: Order
+    plain_name: Orders
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: restaurant, type: ref, ref: ENT-Restaurant}
+      - {name: status, type: enum, enum: OrderStatus}
+      - {name: delivery_address, type: text, description: "Address as it was at checkout"}
+      - {name: delivery_instructions, type: string, required: false}
+      - {name: items_total, type: money}
+      - {name: delivery_fee, type: money}
+      - {name: discount, type: money, required: false}
+      - {name: total, type: money}
+      - {name: payment_method, type: enum, enum: PaymentMethodType, required: false}
+      - {name: placed_at, type: datetime}
+      - {name: eta_minutes, type: int, required: false}
+      - {name: courier_name, type: string, required: false}
+      - {name: courier_phone, type: string, required: false}
+      - {name: cancel_reason, type: string, required: false}
+    state_machine:
+      field: status
+      states: [placed, accepted, preparing, ready, picked_up, delivered, cancelled]
+      transitions:
+        - {source: placed, target: accepted, "on": accept}
+        - {source: accepted, target: preparing, "on": prepare}
+        - {source: preparing, target: ready, "on": mark_ready}
+        - {source: ready, target: picked_up, "on": pick_up}
+        - {source: picked_up, target: delivered, "on": deliver}
+        - {source: placed, target: cancelled, "on": cancel}
+        - {source: accepted, target: cancelled, "on": cancel}
+    seed_guidance: Three sample orders for the main customer in preparing, picked_up and delivered, so tracking can be shown at every step.
+  - id: ENT-OrderItem
+    name: Order item
+    plain_name: Dishes in an order
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: item, type: ref, ref: ENT-MenuItem}
+      - {name: name, type: string, description: "Dish name at the time of the order"}
+      - {name: quantity, type: int}
+      - {name: selected_options, type: json, required: false}
+      - {name: unit_price, type: money}
+  - id: ENT-OrderEvent
+    name: Order event
+    plain_name: Order progress steps
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: status, type: enum, enum: OrderStatus}
+      - {name: note, type: string, required: false}
+      - {name: at, type: datetime}
+  - id: ENT-CourierLocation
+    name: Courier location
+    plain_name: Courier position
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: latitude, type: number}
+      - {name: longitude, type: number}
+      - {name: updated_at, type: datetime}
+    seed_guidance: A short route of eight to ten points between the restaurant and the sample address, replayed as the courier moves.
+  - id: ENT-Courier
+    name: Courier
+    plain_name: Couriers
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: status, type: enum, enum: CourierStatus}
+      - {name: vehicle, type: string, required: false}
+  - id: ENT-PaymentMethod
+    name: Payment method
+    plain_name: Saved payment methods
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: PaymentMethodType}
+      - {name: label, type: string, description: "Display text only, for example Card ending 4242. Never a full number."}
+      - {name: is_default, type: bool}
+  - id: ENT-Payment
+    name: Payment
+    plain_name: Payments
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: method, type: enum, enum: PaymentMethodType}
+      - {name: status, type: enum, enum: PaymentStatus}
+      - {name: amount, type: money}
+      - {name: provider_reference, type: string, required: false}
+  - id: ENT-Rating
+    name: Rating
+    plain_name: Ratings
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: restaurant, type: ref, ref: ENT-Restaurant}
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: food_rating, type: int, description: "1 to 5"}
+      - {name: delivery_rating, type: int, description: "1 to 5"}
+      - {name: comment, type: text, required: false}
+      - {name: created_at, type: datetime}
+  - id: ENT-PromoCode
+    name: Promo code
+    plain_name: Promo codes
+    fields:
+      - {name: code, type: string}
+      - {name: description, type: string}
+      - {name: percent_off, type: int, required: false}
+      - {name: amount_off, type: money, required: false}
+      - {name: min_order, type: money, required: false}
+      - {name: expires_at, type: datetime, required: false}
+  - id: ENT-Notification
+    name: Notification
+    plain_name: Notifications
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: NotificationKind}
+      - {name: title, type: string}
+      - {name: body, type: text}
+      - {name: is_read, type: bool}
+      - {name: created_at, type: datetime}
+  - id: ENT-SupportMessage
+    name: Support message
+    plain_name: Support chat messages
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: sender, type: enum, enum: MessageSender}
+      - {name: body, type: text}
+      - {name: created_at, type: datetime}
+
+api_operations:
+  # ---- account and addresses
+  - {id: API-requestOtp, name: Request sign-in code, method: POST, path: /auth/otp, request_entity: ENT-User, notes: "Sends a one-time code to the phone number. Mock sender in the preview."}
+  - {id: API-verifyOtp, name: Verify sign-in code, method: POST, path: /auth/otp/verify, request_entity: ENT-User, response_entity: ENT-User, notes: "Returns the session. New phone numbers create a user."}
+  - {id: API-getMe, name: Get my profile, method: GET, path: /me, response_entity: ENT-User, auth: authenticated}
+  - {id: API-updateMe, name: Update my profile, method: PATCH, path: /me, request_entity: ENT-User, response_entity: ENT-User, auth: authenticated}
+  - {id: API-createAddress, name: Add an address, method: POST, path: /addresses, request_entity: ENT-Address, response_entity: ENT-Address, auth: authenticated}
+  - {id: API-listAddresses, name: List my addresses, method: GET, path: /addresses, response_entity: ENT-Address, response_many: true, auth: authenticated}
+  - {id: API-updateAddress, name: Change an address, method: PUT, path: "/addresses/{id}", request_entity: ENT-Address, response_entity: ENT-Address, auth: authenticated}
+  - {id: API-deleteAddress, name: Delete an address, method: DELETE, path: "/addresses/{id}", auth: authenticated}
+  # ---- restaurants and menus
+  - {id: API-listCuisines, name: List cuisines, method: GET, path: /cuisines, response_entity: ENT-Cuisine, response_many: true}
+  - {id: API-listRestaurants, name: List restaurants near me, method: GET, path: /restaurants, response_entity: ENT-Restaurant, response_many: true, notes: "Query: near (latitude and longitude), cuisine, sort, filters, page."}
+  - {id: API-getRestaurant, name: Get a restaurant, method: GET, path: "/restaurants/{id}", response_entity: ENT-Restaurant}
+  - {id: API-searchRestaurants, name: Search restaurants and dishes, method: GET, path: /search, response_entity: ENT-Restaurant, response_many: true, notes: "Query: q. Matches restaurant names, cuisines and dish names."}
+  - {id: API-getMenu, name: Get a restaurant menu, method: GET, path: "/restaurants/{id}/menu", response_entity: ENT-MenuItem, response_many: true, notes: "Grouped by menu section (ENT-MenuCategory)."}
+  - {id: API-getMenuItem, name: Get a dish with its options, method: GET, path: "/menu-items/{id}", response_entity: ENT-MenuItem, notes: "Includes option groups and choices (ENT-OptionGroup, ENT-OptionChoice)."}
+  # ---- cart and orders
+  - {id: API-getCart, name: Get my cart, method: GET, path: /cart, response_entity: ENT-Cart, auth: authenticated, notes: "Includes its items (ENT-CartItem). One cart, one restaurant."}
+  - {id: API-addCartItem, name: Add a dish to the cart, method: POST, path: /cart/items, request_entity: ENT-CartItem, response_entity: ENT-Cart, auth: authenticated, notes: "Adding from a different restaurant is refused until the cart is cleared."}
+  - {id: API-updateCartItem, name: Change a cart quantity, method: PATCH, path: "/cart/items/{id}", request_entity: ENT-CartItem, response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-removeCartItem, name: Remove a dish from the cart, method: DELETE, path: "/cart/items/{id}", response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-clearCart, name: Empty the cart, method: DELETE, path: /cart, auth: authenticated}
+  - {id: API-createOrder, name: Place an order, method: POST, path: /orders, request_entity: ENT-Order, response_entity: ENT-Order, auth: authenticated, notes: "Turns the cart into an order and sends it to the restaurant."}
+  - {id: API-listOrders, name: List my orders, method: GET, path: /orders, response_entity: ENT-Order, response_many: true, auth: authenticated}
+  - {id: API-getOrder, name: Get an order, method: GET, path: "/orders/{id}", response_entity: ENT-Order, auth: authenticated, notes: "Includes its dishes (ENT-OrderItem)."}
+  - {id: API-cancelOrder, name: Cancel an order, method: POST, path: "/orders/{id}/cancel", response_entity: ENT-Order, auth: authenticated}
+  - {id: API-getOrderTracking, name: Get order progress, method: GET, path: "/orders/{id}/tracking", response_entity: ENT-OrderEvent, response_many: true, auth: authenticated}
+  - {id: API-getCourierLocation, name: Get the courier position, method: GET, path: "/orders/{id}/courier-location", response_entity: ENT-CourierLocation, auth: authenticated, notes: "Polled every few seconds while the order is on its way. Mock route in the preview."}
+  # ---- promos, payments, ratings
+  - {id: API-listPromos, name: List current offers, method: GET, path: /promos, response_entity: ENT-PromoCode, response_many: true, auth: authenticated}
+  - {id: API-validatePromo, name: Apply a promo code, method: POST, path: /cart/promo, request_entity: ENT-PromoCode, response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-listPaymentMethods, name: List saved payment methods, method: GET, path: /payment-methods, response_entity: ENT-PaymentMethod, response_many: true, auth: authenticated}
+  - {id: API-addPaymentMethod, name: Save a payment method, method: POST, path: /payment-methods, request_entity: ENT-PaymentMethod, response_entity: ENT-PaymentMethod, auth: authenticated, notes: "The provider tokenizes the card; only the display label is stored."}
+  - {id: API-removePaymentMethod, name: Remove a payment method, method: DELETE, path: "/payment-methods/{id}", auth: authenticated}
+  - {id: API-createPayment, name: Pay for an order, method: POST, path: /payments, request_entity: ENT-Payment, response_entity: ENT-Payment, auth: authenticated, notes: "Mock provider by default."}
+  - {id: API-createRating, name: Rate an order, method: POST, path: "/orders/{id}/rating", request_entity: ENT-Rating, response_entity: ENT-Rating, auth: authenticated}
+  - {id: API-listRestaurantRatings, name: List restaurant ratings, method: GET, path: "/restaurants/{id}/ratings", response_entity: ENT-Rating, response_many: true}
+  # ---- notifications and support
+  - {id: API-listNotifications, name: List my notifications, method: GET, path: /notifications, response_entity: ENT-Notification, response_many: true, auth: authenticated}
+  - {id: API-markNotificationRead, name: Mark a notification read, method: POST, path: "/notifications/{id}/read", response_entity: ENT-Notification, auth: authenticated}
+  - {id: API-registerPushToken, name: Register this phone for push, method: POST, path: /devices/push-token, auth: authenticated, notes: "Body carries the device token. Mock in the preview."}
+  - {id: API-listSupportMessages, name: List support messages, method: GET, path: /support/messages, response_entity: ENT-SupportMessage, response_many: true, auth: authenticated}
+  - {id: API-sendSupportMessage, name: Send a support message, method: POST, path: /support/messages, request_entity: ENT-SupportMessage, response_entity: ENT-SupportMessage, auth: authenticated}
+  # ---- restaurant partner
+  - {id: API-listPartnerOrders, name: List incoming and active orders, method: GET, path: /partner/orders, response_entity: ENT-Order, response_many: true, auth: ROLE-restaurant_owner, roles: [ROLE-restaurant_owner], notes: "Query: status."}
+  - {id: API-getPartnerOrder, name: Get an order as the restaurant, method: GET, path: "/partner/orders/{id}", response_entity: ENT-Order, auth: ROLE-restaurant_owner, roles: [ROLE-restaurant_owner]}
+  - {id: API-updatePartnerOrderStatus, name: Accept or move an order forward, method: PATCH, path: "/partner/orders/{id}", request_entity: ENT-Order, response_entity: ENT-Order, auth: ROLE-restaurant_owner, roles: [ROLE-restaurant_owner]}
+  - {id: API-saveMenuItem, name: Save a dish, method: PUT, path: "/partner/menu-items/{id}", request_entity: ENT-MenuItem, response_entity: ENT-MenuItem, auth: ROLE-restaurant_owner, roles: [ROLE-restaurant_owner]}
+  - {id: API-setItemAvailability, name: Mark a dish available or sold out, method: PATCH, path: "/partner/menu-items/{id}/availability", request_entity: ENT-MenuItem, response_entity: ENT-MenuItem, auth: ROLE-restaurant_owner, roles: [ROLE-restaurant_owner]}
+  - {id: API-setRestaurantOpen, name: Open or close the restaurant, method: PUT, path: /partner/restaurant/open, request_entity: ENT-Restaurant, response_entity: ENT-Restaurant, auth: ROLE-restaurant_owner, roles: [ROLE-restaurant_owner]}
+  # ---- courier
+  - {id: API-listCourierTasks, name: List my deliveries, method: GET, path: /courier/tasks, response_entity: ENT-Order, response_many: true, auth: ROLE-courier, roles: [ROLE-courier]}
+  - {id: API-getCourierTask, name: Get a delivery, method: GET, path: "/courier/tasks/{id}", response_entity: ENT-Order, auth: ROLE-courier, roles: [ROLE-courier]}
+  - {id: API-updateDeliveryStatus, name: Mark picked up or delivered, method: PATCH, path: "/courier/tasks/{id}", request_entity: ENT-Order, response_entity: ENT-Order, auth: ROLE-courier, roles: [ROLE-courier]}
+  - {id: API-setCourierStatus, name: Go online or offline, method: PUT, path: /courier/status, request_entity: ENT-Courier, response_entity: ENT-Courier, auth: ROLE-courier, roles: [ROLE-courier]}
+
+integrations:
+  - {id: INT-sms_otp, name: Sign-in codes by SMS, purpose: Send one-time codes so people can sign in with a phone number., mode: mock, notes: "Mock sender prints the code in the preview. A real SMS provider is chosen at release."}
+  - {id: INT-maps, name: Maps and geocoding, purpose: Show restaurants and the courier on a map and turn a map pin into an address., mode: mock, notes: "Static sample map in the preview. A real map provider key is needed at release."}
+  - {id: INT-payments, name: Payments, purpose: Take card and wallet payments through a payment provider., mode: mock, notes: "Mock provider by default. A real provider SDK needs a development build and keeps card data off our servers."}
+  - {id: INT-push_notifications, name: Push notifications, purpose: Send order status and offers to the phone., mode: mock, notes: "Shown as in-app banners in the preview."}
+  - {id: INT-support, name: Support chat, purpose: Connect the chat screen to the support team's inbox., mode: mock}
+
+compliance_triggers:
+  - id: live_location_tracking
+    label: Uses precise location
+    sensitive_domain: precise_location
+    cards: [Q-comp-05]
+    keywords: [gps, "live location", "live tracking", "track the courier", "delivery tracking", "share location", "current location", "near me", "map pin"]
+    conservative_defaults: {compliance.flags: [precise_location]}
+    research_hint: consent, purpose limits and retention for precise location in delivery apps
+  - id: payments_finance
+    label: Takes payments
+    sensitive_domain: finance
+    cards: [Q-comp-02]
+    keywords: [payment, payments, "pay online", card, wallet, upi, checkout]
+    conservative_defaults: {compliance.flags: [financial_data]}
+    research_hint: payment card data handling and which responsibilities stay with the payment provider for a mobile ordering app
+  - id: age_restricted_items
+    label: Age-restricted items
+    sensitive_domain: identity_documents
+    cards: [Q-comp-04]
+    keywords: [alcohol, liquor, beer, wine, tobacco, "age verification", "id proof"]
+    conservative_defaults: {compliance.flags: [identity_documents]}
+    research_hint: age verification rules for delivering age-restricted items
+
+screens:
+  # ------------------------------------------------------------------ sign in
+  - key: welcome
+    route: /welcome
+    recipe: welcome
+    purpose: Introduce the app to a signed-out visitor and offer to sign in, create an account or look around
+    actions:
+      - {name: sign_in, go: "@login"}
+      - {name: create_account, go: "@signup"}
+      - {name: browse_as_guest, go: "@home"}
+    texts: {title: "Hungry? We deliver", cta_primary: "Sign in", cta_secondary: "Create account", cta_guest: "Browse restaurants"}
+    checks:
+      - Browse restaurants opens the home screen without asking for an account
+      - Sign in and Create account open the matching screens
+  - key: login
+    route: /login
+    recipe: login-otp
+    purpose: Sign in with a phone number and a one-time code
+    actions:
+      - {name: send_code, calls: API-requestOtp, on_success: "show the code field and start the resend timer"}
+      - {name: verify_code, calls: API-verifyOtp, go: "@home", on_success: "save the session and open the home screen"}
+      - {name: new_user_setup, go: "@signup", on_success: "opened instead of home when the number is new"}
+    states:
+      wrong_code: {show: "inline error under the code field", allow: "retry, and resend after 30 seconds"}
+    texts: {title: "Sign in", cta: "Send code", hint: "We will text you a 6-digit code"}
+    checks:
+      - A wrong code shows an error and allows another try
+      - The resend link stays disabled for 30 seconds after a send
+  - key: signup
+    route: /signup
+    recipe: signup
+    purpose: Finish a new account with a name and an optional email after the phone number is verified
+    actions:
+      - {name: finish_profile, calls: API-updateMe, go: "@home", on_success: "open the home screen"}
+    texts: {title: "Almost there", cta: "Start ordering"}
+    checks:
+      - The name is required and the email is optional
+  # ------------------------------------------------------------------ discover
+  - key: home
+    route: /home
+    recipe: dashboard
+    purpose: Show what is available nearby and lead into restaurants and cuisines
+    feature: restaurant_browse
+    data:
+      - {bind: "API-listCuisines", show: [name, image]}
+      - {bind: "API-listRestaurants(near, sort)", show: [name, image, cuisine, rating, eta_minutes, delivery_fee, is_open]}
+    sections: [location_header, search_entry, promo_banner, rate_last_order, cuisines_row, nearby_restaurants]
+    actions:
+      - {name: open_search, go: "@search"}
+      - {name: see_all, go: "@restaurants"}
+      - {name: open_restaurant, go: "@restaurant_detail"}
+      - {name: open_promos, go: "@promo_codes"}
+      - {name: rate_last_order, go: "@rate_order"}
+    states:
+      no_location: {show: "Choose your area to see restaurants", action: "Set location"}
+    texts: {title: "Home", search_hint: "Search restaurants or dishes"}
+    checks:
+      - Restaurants that are closed are shown last with a Closed label
+      - Changing the area reloads the nearby list
+  - key: restaurants
+    route: /restaurants
+    recipe: list-with-filters
+    purpose: List restaurants with cuisine filters and sorting
+    feature: restaurant_browse
+    data:
+      - {bind: "API-listRestaurants(cuisine, sort, filters)", show: [name, image, cuisine, rating, rating_count, eta_minutes, delivery_fee, min_order, is_open]}
+    sections: [search_bar, filter_chips, sort_control, restaurant_cards, load_more]
+    actions:
+      - {name: open_restaurant, go: "@restaurant_detail"}
+      - {name: open_map, go: "@restaurant_map"}
+    states:
+      empty: {message: "No restaurants match these filters", action: "Clear filters"}
+    checks:
+      - Sorting by delivery time orders the list from fastest to slowest
+  - key: restaurant_map
+    route: /restaurants/map
+    recipe: map-view
+    purpose: Show nearby restaurants on a map with a list sheet
+    feature: restaurant_browse
+    data:
+      - {bind: "API-listRestaurants(near)", show: [name, latitude, longitude, rating, eta_minutes]}
+    actions:
+      - {name: open_restaurant, go: "@restaurant_detail"}
+    states:
+      location_denied: {show: "Showing the city centre", action: "Allow location"}
+    checks:
+      - Tapping a marker highlights the same restaurant in the list sheet
+  - key: search
+    route: /search
+    recipe: search
+    purpose: Find restaurants and dishes by name with recent searches
+    feature: restaurant_browse
+    data:
+      - {bind: "API-searchRestaurants(q)", show: [name, image, cuisine, rating, eta_minutes]}
+    actions:
+      - {name: open_restaurant, go: "@restaurant_detail"}
+    texts: {hint: "Search restaurants or dishes"}
+    checks:
+      - A dish name finds the restaurants that serve it
+  - key: restaurant_detail
+    route: /restaurant/[id]
+    recipe: detail
+    purpose: Show a restaurant and its menu, with the cart bar once something is added
+    feature: restaurant_browse
+    data:
+      - {bind: "API-getRestaurant(id)", show: [name, cover_image, cuisine, rating, rating_count, eta_minutes, delivery_fee, min_order, is_open, address]}
+      - {bind: "API-getMenu(restaurantId)", show: [name, description, price, image, dietary_tags, is_popular, is_available]}
+    sections: [cover, name_rating_eta, info_chips, ratings_preview, menu_tabs, menu_items, cart_bar]
+    actions:
+      - {name: open_item, go: "@menu_item"}
+      - {name: view_cart, go: "@cart"}
+      - {name: see_ratings, go: "@restaurant_ratings"}
+    states:
+      closed: {disable: open_item, show: "Closed right now"}
+    checks:
+      - A sold-out dish is shown but cannot be added
+      - The cart bar shows the item count and total once something is added
+  - key: menu_item
+    route: /menu-item/[id]
+    recipe: detail-with-sticky-cta
+    purpose: Show one dish, let the customer choose options and add it to the cart
+    feature: menu_item_options
+    data:
+      - {bind: "API-getMenuItem(id)", show: [name, description, price, image, dietary_tags]}
+      - {bind: "ENT-OptionGroup.name", show: [name, kind, required, max_choices]}
+      - {bind: "ENT-OptionChoice.name", show: [name, extra_price, is_default]}
+    sections: [photo, name_price, dietary_tags, option_groups, special_note, quantity_stepper, sticky_cta]
+    actions:
+      - {name: add_to_cart, calls: API-addCartItem, go: "@restaurant_detail", on_success: "back to the menu with the cart bar updated"}
+      - {name: view_cart, go: "@cart"}
+    states:
+      sold_out: {disable: add_to_cart, show: "Sold out today"}
+      required_option_missing: {disable: add_to_cart, show: "Choose a required option"}
+    texts: {cta: "Add to cart"}
+    checks:
+      - The button price updates as options and quantity change
+      - Required option groups block adding until one choice is picked
+      - Adding from another restaurant asks before clearing the current cart
+  # ------------------------------------------------------------------ cart and checkout
+  - key: cart
+    route: /cart
+    recipe: list
+    purpose: Review the dishes, change quantities, apply a promo code and continue to checkout
+    auth: authenticated
+    feature: cart_checkout
+    data:
+      - {bind: "API-getCart", show: [restaurant, items, item_count, subtotal, delivery_fee, discount, total]}
+    sections: [restaurant_header, cart_items, promo_entry, order_totals, checkout_cta]
+    actions:
+      - {name: change_quantity, calls: API-updateCartItem}
+      - {name: remove_item, calls: API-removeCartItem}
+      - {name: clear_cart, calls: API-clearCart}
+      - {name: apply_promo, calls: API-validatePromo, on_success: "totals update with the discount"}
+      - {name: open_promos, go: "@promo_codes"}
+      - {name: add_more_items, go: "@restaurant_detail"}
+      - {name: checkout, go: "@checkout"}
+    states:
+      empty: {message: "Your cart is empty", action: "Find a restaurant"}
+      below_minimum: {disable: checkout, show: "Add more to reach the minimum order"}
+    texts: {title: "Your cart", cta: "Go to checkout"}
+    checks:
+      - Removing the last dish shows the empty cart
+      - Checkout is disabled below the restaurant minimum order
+  - key: checkout
+    route: /checkout
+    recipe: checkout-review
+    purpose: Confirm the delivery address and payment and place the order
+    auth: authenticated
+    feature: cart_checkout
+    data:
+      - {bind: "API-getCart", show: [delivery_address, subtotal, delivery_fee, discount, total]}
+    sections: [delivery_address, delivery_time, delivery_instructions, payment_method, price_breakdown, place_cta]
+    actions:
+      - {name: choose_address, go: "@addresses"}
+      - {name: add_address, go: "@address_form"}
+      - {name: choose_payment, go: "@payment_methods"}
+      - {name: pay_now, calls: API-createPayment, on_success: "payment captured, then place_order runs"}
+      - {name: payment_declined, go: "@payment_failed", on_success: "opened when the provider declines the payment"}
+      - {name: place_order, calls: API-createOrder, go: "@order_placed", on_success: "empty the cart and open the confirmation"}
+    states:
+      no_address: {disable: place_order, show: "Add a delivery address"}
+      restaurant_closed: {disable: place_order, show: "The restaurant has just closed"}
+    texts: {title: "Review and place order", cta: "Place order"}
+    checks:
+      - Place order is disabled until a delivery address is chosen
+      - The total equals the cart total including the delivery fee and discount
+  - key: address_form
+    route: /address/edit
+    recipe: form
+    purpose: Add or change a delivery address, with a map pin to place it exactly
+    auth: authenticated
+    feature: cart_checkout
+    sections: [map_pin, label_picker, address_fields, landmark, delivery_instructions, default_switch, save]
+    actions:
+      - {name: save_address, calls: API-createAddress, go: "@checkout"}
+      - {name: save_changes, calls: API-updateAddress, go: "@addresses"}
+    states:
+      location_denied: {show: "Type the address instead", action: "Allow location"}
+    checks:
+      - Dragging the map pin fills the address fields
+      - The address can be saved without the location permission
+  - key: order_placed
+    route: /order-placed
+    recipe: confirmation
+    purpose: Tell the customer the order was sent and how long it should take
+    auth: authenticated
+    feature: cart_checkout
+    data:
+      - {bind: "ENT-Order.eta_minutes", show: [eta_minutes]}
+      - {bind: "ENT-Order.total", show: [total]}
+    actions:
+      - {name: track_order, go: "@order_tracking"}
+      - {name: back_home, go: "@home"}
+    texts: {title: "Order placed", message: "The restaurant has your order."}
+    checks:
+      - The back button returns to home, not to checkout
+  - key: payment_failed
+    route: /payment-failed
+    recipe: empty-state-only
+    purpose: Explain that the payment did not go through and offer a way forward
+    auth: authenticated
+    feature: payments
+    actions:
+      - {name: retry_payment, go: "@checkout"}
+      - {name: change_method, go: "@payment_methods"}
+      - {name: back_to_cart, go: "@cart"}
+    texts: {title: "Payment did not go through", message: "You have not been charged. Try again or use another method."}
+    checks:
+      - The cart still holds the same dishes after a failed payment
+  - key: payment_methods
+    route: /payment-methods
+    recipe: list
+    purpose: Show saved payment methods and let the customer add or remove one
+    auth: authenticated
+    feature: payments
+    data:
+      - {bind: "API-listPaymentMethods", show: [label, kind, is_default]}
+    actions:
+      - {name: add_method, go: "@add_payment_method"}
+      - {name: remove_method, calls: API-removePaymentMethod}
+    states:
+      empty: {message: "No saved payment methods", action: "Add one"}
+    checks:
+      - Only a display label such as Card ending 4242 is ever shown
+  - key: add_payment_method
+    route: /payment-methods/new
+    recipe: form
+    purpose: Add a card or wallet through the payment provider's secure fields
+    auth: authenticated
+    feature: payments
+    sections: [method_type, provider_card_fields, set_default, save_cta]
+    actions:
+      - {name: save_method, calls: API-addPaymentMethod, go: "@payment_methods"}
+    texts: {title: "Add payment method", note: "Card details go straight to the payment provider. This app never stores them."}
+    checks:
+      - Card number fields come from the provider, not from our own text inputs
+  # ------------------------------------------------------------------ orders
+  - key: orders
+    route: /orders
+    recipe: list
+    purpose: List the customer's orders with the active ones on top
+    auth: authenticated
+    feature: live_order_tracking
+    data:
+      - {bind: "API-listOrders", show: [restaurant, status, placed_at, total]}
+    actions:
+      - {name: open_order, go: "@order_detail"}
+      - {name: order_food, go: "@home"}
+    states:
+      empty: {message: "No orders yet", action: "Find something to eat"}
+    texts: {title: "Your orders"}
+    checks:
+      - Active orders appear above past ones with their live status
+  - key: order_detail
+    route: /orders/[id]
+    recipe: detail
+    purpose: Show the dishes, address, payment and status of one order
+    auth: authenticated
+    feature: live_order_tracking
+    data:
+      - {bind: "API-getOrder(id)", show: [restaurant, status, delivery_address, items_total, delivery_fee, discount, total, payment_method, placed_at]}
+      - {bind: "ENT-OrderItem.name", show: [name, quantity, selected_options, unit_price]}
+    sections: [status_header, items, delivery_address, payment_summary, secondary_actions]
+    actions:
+      - {name: track_order, go: "@order_tracking"}
+      - {name: cancel_order, calls: API-cancelOrder, on_success: "status becomes cancelled"}
+      - {name: reorder, calls: API-addCartItem, go: "@cart", on_success: "dishes are added to the cart"}
+      - {name: rate_order, go: "@rate_order"}
+      - {name: get_help, go: "@support_chat"}
+    states:
+      not_cancellable: {disable: cancel_order, show: "The restaurant has started preparing it"}
+    checks:
+      - Cancel is offered only before the restaurant starts preparing
+      - Rate order appears only after the order is delivered
+  - key: order_tracking
+    route: /orders/[id]/tracking
+    recipe: tracking
+    purpose: Show where the order is, with a timeline, the courier on a map and the arrival time
+    auth: authenticated
+    feature: live_order_tracking
+    data:
+      - {bind: "API-getOrderTracking(orderId)", show: [status, note, at]}
+      - {bind: "API-getCourierLocation(orderId)", show: [latitude, longitude, updated_at]}
+    sections: [eta_header, progress_timeline, live_map, courier_card, order_summary]
+    actions:
+      - {name: contact_support, go: "@support_chat"}
+      - {name: view_order, go: "@order_detail"}
+    states:
+      before_pickup: {hide: live_map, show: "The courier appears on the map once the order is picked up"}
+    checks:
+      - The courier marker moves as new positions arrive
+      - The call-courier button opens the phone dialer once a courier is assigned
+  - key: rate_order
+    route: /orders/[id]/rate
+    recipe: form
+    purpose: Let the customer rate the food and the delivery separately
+    auth: authenticated
+    feature: ratings
+    sections: [food_rating, delivery_rating, comment, submit]
+    actions:
+      - {name: submit_rating, calls: API-createRating, go: "@home", on_success: "thank-you toast"}
+    texts: {title: "How was your meal?", cta: "Send rating"}
+    checks:
+      - Both star ratings are required and the comment is optional
+  - key: restaurant_ratings
+    route: /restaurant/[id]/ratings
+    recipe: list
+    purpose: Read what other customers said about a restaurant
+    feature: ratings
+    data:
+      - {bind: "API-listRestaurantRatings(restaurantId)", show: [food_rating, delivery_rating, comment, created_at]}
+    sections: [rating_summary, rating_cards, load_more]
+    actions:
+      - {name: back_to_restaurant, go: "@restaurant_detail"}
+    states:
+      empty: {message: "No ratings yet", action: "Order and be the first"}
+    checks:
+      - The average food and delivery ratings are shown above the list
+  # ------------------------------------------------------------------ addresses, offers, alerts, help
+  - key: addresses
+    route: /addresses
+    recipe: list
+    purpose: List saved addresses and pick one for delivery
+    auth: authenticated
+    feature: saved_addresses
+    data:
+      - {bind: "API-listAddresses", show: [label, recipient_name, line1, city, is_default]}
+    actions:
+      - {name: add_address, go: "@address_form"}
+      - {name: edit_address, go: "@address_form"}
+      - {name: delete_address, calls: API-deleteAddress}
+      - {name: use_address, go: "@checkout"}
+    states:
+      empty: {message: "No saved addresses", action: "Add an address"}
+    checks:
+      - Exactly one address is marked as default
+  - key: promo_codes
+    route: /offers
+    recipe: list
+    purpose: List current offers and let the customer apply one to the cart
+    auth: authenticated
+    feature: promo_codes
+    data:
+      - {bind: "API-listPromos", show: [code, description, percent_off, amount_off, min_order, expires_at]}
+    actions:
+      - {name: apply_offer, calls: API-validatePromo, go: "@cart", on_success: "the discount shows in the cart"}
+    states:
+      empty: {message: "No offers right now", action: "Back to the app"}
+    checks:
+      - An expired or ineligible code explains why it cannot be used
+  - key: notifications
+    route: /notifications
+    recipe: notifications
+    purpose: Show order updates and offers the customer received
+    auth: authenticated
+    feature: push_notifications
+    data:
+      - {bind: "API-listNotifications", show: [kind, title, body, is_read, created_at]}
+    actions:
+      - {name: open_order, go: "@order_tracking"}
+      - {name: open_offer, go: "@promo_codes"}
+      - {name: mark_read, calls: API-markNotificationRead}
+    checks:
+      - Unread items are marked and become read when opened
+  - key: support
+    route: /help
+    recipe: list
+    purpose: Answer common questions about orders, refunds and payments, and offer a chat with support
+    feature: support
+    sections: [faq_groups, contact_options]
+    actions:
+      - {name: start_chat, go: "@support_chat"}
+    texts: {title: "Help"}
+    checks:
+      - Each question expands in place to show its answer
+  - key: support_chat
+    route: /help/chat
+    recipe: chat
+    purpose: Chat with support about an order
+    auth: authenticated
+    feature: support
+    data:
+      - {bind: "API-listSupportMessages", show: [sender, body, created_at]}
+    actions:
+      - {name: send_message, calls: API-sendSupportMessage}
+    texts: {title: "Chat with us", hint: "Type your message"}
+    checks:
+      - A message that cannot be sent shows a failed state with retry
+  # ------------------------------------------------------------------ account
+  - key: profile
+    route: /account
+    recipe: profile
+    purpose: Show who is signed in and lead to account areas
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, phone, avatar]}
+    sections: [identity_header, menu_groups, sign_out]
+    actions:
+      - {name: edit_profile, go: "@edit_profile"}
+      - {name: open_addresses, go: "@addresses"}
+      - {name: open_payment_methods, go: "@payment_methods"}
+      - {name: open_promos, go: "@promo_codes"}
+      - {name: open_notifications, go: "@notifications"}
+      - {name: open_settings, go: "@settings"}
+      - {name: open_help, go: "@support"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Sign out returns to the welcome screen and clears the session
+  - key: edit_profile
+    route: /account/edit
+    recipe: form
+    purpose: Change the name, email and photo
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, phone, email, avatar]}
+    sections: [photo, name_input, email_input, save]
+    actions:
+      - {name: save_profile, calls: API-updateMe, go: "@profile"}
+    checks:
+      - The phone number is shown but cannot be edited here
+  - key: settings
+    route: /settings
+    recipe: settings
+    purpose: Notifications, language, appearance and privacy choices, including location permission
+    auth: authenticated
+    sections: [notifications_group, location_group, appearance_group, language_group, privacy_group, about_group, sign_out]
+    actions:
+      - {name: enable_push, calls: API-registerPushToken, on_success: "ask the system for permission, then save the token"}
+      - {name: open_help, go: "@support"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Changes apply immediately without a save button
+      - The location row explains what location is used for and links to system settings
+  # ------------------------------------------------------------------ restaurant partner
+  - key: partner_orders
+    route: /partner/orders
+    recipe: approvals-queue
+    surface: business
+    auth: ROLE-restaurant_owner
+    purpose: Show new and active orders so the restaurant can accept, reject or open them
+    data:
+      - {bind: "API-listPartnerOrders(status)", show: [status, items_total, placed_at, delivery_instructions]}
+    sections: [summary_counts, new_orders, preparing_orders]
+    actions:
+      - {name: open_order, go: "@partner_order_detail"}
+      - {name: accept_order, calls: API-updatePartnerOrderStatus, on_success: "order moves to accepted"}
+      - {name: reject_order, calls: API-updatePartnerOrderStatus, on_success: "order is cancelled with a reason"}
+      - {name: open_menu, go: "@partner_menu"}
+    states:
+      empty: {message: "No new orders", action: "Open the menu"}
+    checks:
+      - A new order makes a sound and shows at the top
+      - Rejecting an order asks for a reason
+  - key: partner_order_detail
+    route: /partner/orders/[id]
+    recipe: detail
+    surface: business
+    auth: ROLE-restaurant_owner
+    purpose: Show the dishes and notes of one order and move it through preparation
+    data:
+      - {bind: "API-getPartnerOrder(id)", show: [status, items_total, placed_at, delivery_instructions]}
+    actions:
+      - {name: start_preparing, calls: API-updatePartnerOrderStatus, on_success: "status becomes preparing"}
+      - {name: mark_ready, calls: API-updatePartnerOrderStatus, on_success: "status becomes ready and the courier is told"}
+      - {name: back_to_orders, go: "@partner_orders"}
+    checks:
+      - Only the next valid status is offered
+  - key: partner_menu
+    route: /partner/menu
+    recipe: list
+    surface: business
+    auth: ROLE-restaurant_owner
+    purpose: List the menu with quick switches for availability and a switch to open or close the restaurant
+    data:
+      - {bind: "API-getMenu(restaurantId)", show: [name, price, is_available, category]}
+    sections: [open_switch, menu_sections, add_item]
+    actions:
+      - {name: toggle_availability, calls: API-setItemAvailability, on_success: "dish shows as sold out or available"}
+      - {name: set_open, calls: API-setRestaurantOpen, on_success: "customers see the new opening status"}
+      - {name: edit_item, go: "@partner_item_editor"}
+      - {name: add_item, go: "@partner_item_editor"}
+    checks:
+      - Closing the restaurant asks for confirmation
+  - key: partner_item_editor
+    route: /partner/menu/edit
+    recipe: form
+    surface: business
+    auth: ROLE-restaurant_owner
+    purpose: Add or change a dish with photo, price, description and option groups
+    data:
+      - {bind: "API-getMenuItem(id)", show: [name, description, price, image, dietary_tags]}
+    sections: [photo, name_input, description_input, price_input, dietary_tags, option_groups, save]
+    actions:
+      - {name: save_item, calls: API-saveMenuItem, go: "@partner_menu"}
+    checks:
+      - Price must be a positive amount
+  # ------------------------------------------------------------------ courier
+  - key: courier_tasks
+    route: /courier/tasks
+    recipe: list
+    surface: courier
+    auth: ROLE-courier
+    purpose: List assigned and available deliveries and switch between online and offline
+    data:
+      - {bind: "API-listCourierTasks", show: [restaurant, delivery_address, status, items_total]}
+    sections: [online_switch, active_delivery, task_list]
+    actions:
+      - {name: open_task, go: "@courier_delivery"}
+      - {name: go_online, calls: API-setCourierStatus, on_success: "status becomes available"}
+    states:
+      offline: {show: "You are offline. Go online to receive deliveries", disable: open_task}
+    checks:
+      - Going offline is blocked while a delivery is in progress
+  - key: courier_delivery
+    route: /courier/tasks/[id]
+    recipe: tracking
+    surface: courier
+    auth: ROLE-courier
+    purpose: Guide the courier from pickup to drop-off and record the hand-over
+    data:
+      - {bind: "API-getCourierTask(id)", show: [restaurant, delivery_address, delivery_instructions, status, courier_phone]}
+    sections: [status_header, progress_timeline, live_map, contact_actions, details]
+    actions:
+      - {name: mark_picked_up, calls: API-updateDeliveryStatus, on_success: "status becomes picked_up and the customer is told"}
+      - {name: mark_delivered, calls: API-updateDeliveryStatus, go: "@courier_tasks", on_success: "status becomes delivered"}
+    checks:
+      - Mark delivered is available only after Mark picked up
+      - The customer's phone number is shown only while the delivery is active
+
+flows:
+  - key: order_food
+    name: Find a dish and place an order
+    primary: true
+    screens: [home, restaurant_detail, menu_item, cart, checkout, order_placed]
+    purpose: The main journey, from the home screen to a placed order.
+  - key: sign_in
+    name: Sign in
+    screens: [welcome, login, home]
+  - key: browse_on_the_map
+    name: Pick a restaurant on the map
+    screens: [restaurants, restaurant_map, restaurant_detail]
+  - key: pay_online
+    name: Add a payment method at checkout
+    feature: payments
+    screens: [checkout, payment_methods, add_payment_method]
+  - key: save_an_address
+    name: Pick or add a saved address
+    feature: saved_addresses
+    screens: [checkout, addresses, address_form]
+  - key: use_an_offer
+    name: Use a promo code
+    feature: promo_codes
+    screens: [cart, promo_codes]
+  - key: follow_delivery
+    name: Follow the delivery
+    feature: live_order_tracking
+    screens: [orders, order_detail, order_tracking]
+  - key: rate_a_meal
+    name: Rate a meal
+    feature: ratings
+    screens: [orders, order_detail, rate_order]
+  - key: get_help
+    name: Get help
+    feature: support
+    screens: [support, support_chat]
+  - key: handle_incoming_order
+    name: Accept and prepare an order
+    screens: [partner_orders, partner_order_detail]
+  - key: update_the_menu
+    name: Update the menu
+    screens: [partner_menu, partner_item_editor]
+  - key: deliver_an_order
+    name: Deliver an order
+    screens: [courier_tasks, courier_delivery]
+
+navigation:
+  id: NAV-001
+  route: /
+  kind: auth_gate
+  label: App
+  auth: public
+  children:
+    - id: NAV-002
+      route: /welcome
+      kind: stack
+      label: Welcome
+      screen: "@welcome"
+      children:
+        - {id: NAV-003, route: /login, kind: screen, screen: "@login"}
+        - {id: NAV-004, route: /signup, kind: screen, screen: "@signup"}
+    - id: NAV-010
+      route: /(tabs)
+      kind: tabs
+      children:
+        - id: NAV-011
+          route: /home
+          kind: stack
+          label: Home
+          screen: "@home"
+          children:
+            - {id: NAV-012, route: /restaurants, kind: screen, screen: "@restaurants"}
+            - {id: NAV-013, route: /restaurants/map, kind: screen, screen: "@restaurant_map"}
+            - {id: NAV-014, route: "/restaurant/[id]", kind: screen, screen: "@restaurant_detail"}
+            - {id: NAV-015, route: "/menu-item/[id]", kind: screen, screen: "@menu_item"}
+            - {id: NAV-016, route: "/restaurant/[id]/ratings", kind: screen, screen: "@restaurant_ratings"}
+            - {id: NAV-017, route: "/orders/[id]/rate", kind: screen, screen: "@rate_order", auth: authenticated}
+            - {id: NAV-018, route: /offers, kind: screen, screen: "@promo_codes", auth: authenticated}
+        - id: NAV-020
+          route: /search
+          kind: stack
+          label: Search
+          screen: "@search"
+        - id: NAV-030
+          route: /cart
+          kind: stack
+          label: Cart
+          screen: "@cart"
+          auth: authenticated
+          children:
+            - {id: NAV-031, route: /checkout, kind: screen, screen: "@checkout", auth: authenticated}
+            - {id: NAV-032, route: /address/edit, kind: screen, screen: "@address_form", auth: authenticated}
+            - {id: NAV-033, route: /order-placed, kind: screen, screen: "@order_placed", auth: authenticated}
+            - {id: NAV-034, route: /payment-failed, kind: screen, screen: "@payment_failed", auth: authenticated}
+        - id: NAV-040
+          route: /orders
+          kind: stack
+          label: Orders
+          screen: "@orders"
+          auth: authenticated
+          children:
+            - {id: NAV-041, route: "/orders/[id]", kind: screen, screen: "@order_detail", auth: authenticated}
+            - {id: NAV-042, route: "/orders/[id]/tracking", kind: screen, screen: "@order_tracking", auth: authenticated}
+        - id: NAV-050
+          route: /account
+          kind: stack
+          label: Account
+          screen: "@profile"
+          auth: authenticated
+          children:
+            - {id: NAV-051, route: /account/edit, kind: screen, screen: "@edit_profile", auth: authenticated}
+            - {id: NAV-052, route: /addresses, kind: screen, screen: "@addresses", auth: authenticated}
+            - {id: NAV-053, route: /payment-methods, kind: screen, screen: "@payment_methods", auth: authenticated}
+            - {id: NAV-054, route: /payment-methods/new, kind: screen, screen: "@add_payment_method", auth: authenticated}
+            - {id: NAV-055, route: /notifications, kind: screen, screen: "@notifications", auth: authenticated}
+            - {id: NAV-056, route: /settings, kind: screen, screen: "@settings", auth: authenticated}
+            - {id: NAV-057, route: /help, kind: screen, screen: "@support"}
+            - {id: NAV-058, route: /help/chat, kind: screen, screen: "@support_chat", auth: authenticated}
+    - id: NAV-070
+      route: /partner/orders
+      kind: stack
+      label: Restaurant
+      screen: "@partner_orders"
+      auth: ROLE-restaurant_owner
+      children:
+        - {id: NAV-071, route: "/partner/orders/[id]", kind: screen, screen: "@partner_order_detail", auth: ROLE-restaurant_owner}
+        - {id: NAV-072, route: /partner/menu, kind: screen, screen: "@partner_menu", auth: ROLE-restaurant_owner}
+        - {id: NAV-073, route: /partner/menu/edit, kind: screen, screen: "@partner_item_editor", auth: ROLE-restaurant_owner}
+    - id: NAV-080
+      route: /courier/tasks
+      kind: stack
+      label: Courier
+      screen: "@courier_tasks"
+      auth: ROLE-courier
+      children:
+        - {id: NAV-081, route: "/courier/tasks/[id]", kind: screen, screen: "@courier_delivery", auth: ROLE-courier}
+
+feature_parts:
+  payments:
+    operations: [API-listPaymentMethods, API-addPaymentMethod, API-removePaymentMethod, API-createPayment]
+    entities: [ENT-PaymentMethod, ENT-Payment]
+    integrations: [INT-payments]
+    screens:
+      checkout: {sections: [payment_method], actions: [pay_now]}
+  live_order_tracking:
+    operations: [API-listOrders, API-getOrder, API-cancelOrder, API-getOrderTracking, API-getCourierLocation]
+    entities: [ENT-OrderEvent, ENT-OrderItem, ENT-CourierLocation]
+  ratings:
+    operations: [API-createRating, API-listRestaurantRatings]
+    entities: [ENT-Rating]
+    screens:
+      home: {sections: [rate_last_order]}
+      restaurant_detail: {sections: [ratings_preview]}
+  saved_addresses:
+    operations: [API-listAddresses, API-updateAddress, API-deleteAddress]
+  push_notifications:
+    operations: [API-listNotifications, API-markNotificationRead, API-registerPushToken]
+    entities: [ENT-Notification]
+    integrations: [INT-push_notifications]
+    screens:
+      settings: {sections: [notifications_group], actions: [enable_push]}
+  promo_codes:
+    operations: [API-listPromos, API-validatePromo]
+    entities: [ENT-PromoCode]
+    screens:
+      home: {sections: [promo_banner]}
+      cart: {sections: [promo_entry], actions: [apply_promo]}
+  support:
+    operations: [API-listSupportMessages, API-sendSupportMessage]
+    entities: [ENT-SupportMessage]
+    integrations: [INT-support]

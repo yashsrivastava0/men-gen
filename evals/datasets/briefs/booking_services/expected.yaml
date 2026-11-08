@@ -1,0 +1,250 @@
+slots:
+  a11y:
+    value: standard
+    state: assumed
+  approvers:
+    value:
+    - requester
+    state: assumed
+  auth.method:
+    value: email_phone_code
+    state: confirmed
+  auth.sso:
+    value: not_needed
+    state: assumed
+  behavior.analytics:
+    value: false
+    state: assumed
+  behavior.notifications:
+    value: true
+    state: assumed
+  behavior.offline:
+    value: basic
+    state: assumed
+  brand.name:
+    value: Blue Basket
+    state: confirmed
+  data.classification:
+    value: internal
+    state: assumed
+  data.source:
+    value: generated
+    state: assumed
+  design.direction:
+    value: clean-bright
+    state: confirmed
+  design.mode:
+    value: system
+    state: assumed
+  idea.archetype:
+    value: booking_services
+    state: confirmed
+  idea.summary:
+    value: A booking app for my hair salon so clients can book appointments
+    state: volunteered
+  locale:
+    value: en
+    state: assumed
+  release.channel:
+    value: internal
+    state: assumed
+  scope.apps:
+    value:
+    - customer
+    state: confirmed
+  scope.features:
+    value:
+    - slot_booking
+    state: confirmed
+screens:
+- id: SCR-001
+  route: /welcome
+  recipe: welcome
+  surface: customer
+  auth: public
+- id: SCR-002
+  route: /login
+  recipe: login-otp
+  surface: customer
+  auth: public
+- id: SCR-003
+  route: /signup
+  recipe: signup
+  surface: customer
+  auth: public
+- id: SCR-004
+  route: /home
+  recipe: dashboard
+  surface: customer
+  auth: public
+- id: SCR-005
+  route: /services
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-006
+  route: /services/[id]
+  recipe: detail-with-sticky-cta
+  surface: customer
+  auth: public
+- id: SCR-007
+  route: /providers
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-008
+  route: /providers/[id]
+  recipe: detail
+  surface: customer
+  auth: public
+- id: SCR-009
+  route: /book/time
+  recipe: calendar-slot-picker
+  surface: customer
+  auth: public
+- id: SCR-010
+  route: /book/review
+  recipe: checkout-review
+  surface: customer
+  auth: authenticated
+- id: SCR-011
+  route: /book/confirmed
+  recipe: confirmation
+  surface: customer
+  auth: authenticated
+- id: SCR-012
+  route: /bookings
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-013
+  route: /bookings/[id]
+  recipe: detail
+  surface: customer
+  auth: authenticated
+- id: SCR-014
+  route: /bookings/[id]/reschedule
+  recipe: calendar-slot-picker
+  surface: customer
+  auth: authenticated
+- id: SCR-015
+  route: /bookings/[id]/cancel
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-016
+  route: /account
+  recipe: profile
+  surface: customer
+  auth: authenticated
+- id: SCR-017
+  route: /account/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-018
+  route: /account/addresses
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-019
+  route: /account/addresses/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-020
+  route: /reminders
+  recipe: settings
+  surface: customer
+  auth: authenticated
+- id: SCR-021
+  route: /settings
+  recipe: settings
+  surface: customer
+  auth: authenticated
+flows:
+- id: FLW-001
+  name: Find a service and book it
+  screens:
+  - SCR-004
+  - SCR-005
+  - SCR-006
+  - SCR-009
+  - SCR-010
+  - SCR-011
+- id: FLW-002
+  name: Sign in
+  screens:
+  - SCR-001
+  - SCR-002
+  - SCR-004
+- id: FLW-003
+  name: Book with a specific provider
+  screens:
+  - SCR-005
+  - SCR-006
+  - SCR-007
+  - SCR-008
+  - SCR-009
+- id: FLW-004
+  name: Set a reminder after booking
+  screens:
+  - SCR-011
+  - SCR-020
+- id: FLW-005
+  name: Move a booking
+  screens:
+  - SCR-012
+  - SCR-013
+  - SCR-014
+- id: FLW-006
+  name: Cancel a booking
+  screens:
+  - SCR-012
+  - SCR-013
+  - SCR-015
+- id: FLW-007
+  name: Manage saved addresses
+  screens:
+  - SCR-016
+  - SCR-018
+  - SCR-019
+entities:
+- ENT-User
+- ENT-Address
+- ENT-ServiceCategory
+- ENT-Service
+- ENT-Provider
+- ENT-ProviderService
+- ENT-Slot
+- ENT-Booking
+- ENT-ReminderPreference
+operations:
+- API-requestOtp
+- API-verifyOtp
+- API-getMe
+- API-updateMe
+- API-listAddresses
+- API-createAddress
+- API-updateAddress
+- API-deleteAddress
+- API-listCategories
+- API-listServices
+- API-getService
+- API-listProviders
+- API-getProvider
+- API-listSlots
+- API-createBooking
+- API-listBookings
+- API-getBooking
+- API-rescheduleBooking
+- API-cancelBooking
+- API-getReminderPreference
+- API-updateReminderPreference
+roles:
+- ROLE-customer
+counts:
+  screens: 21
+  flows: 7
+  entities: 9
+  operations: 21

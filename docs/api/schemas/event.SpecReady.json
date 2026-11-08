@@ -1,0 +1,86 @@
+{
+  "additionalProperties": false,
+  "description": "Emitted ONLY after Gate 2 approval of the current hash and a successful git commit.",
+  "properties": {
+    "app_id": {
+      "title": "App Id",
+      "type": "string"
+    },
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "git_sha": {
+      "title": "Git Sha",
+      "type": "string"
+    },
+    "hash": {
+      "title": "Hash",
+      "type": "string"
+    },
+    "in_reply_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "In Reply To"
+    },
+    "path": {
+      "title": "Path",
+      "type": "string"
+    },
+    "repo_dir": {
+      "title": "Repo Dir",
+      "type": "string"
+    },
+    "seq": {
+      "default": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "type": {
+      "const": "spec_ready",
+      "default": "spec_ready",
+      "title": "Type",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "app_id",
+    "version",
+    "hash",
+    "git_sha",
+    "path",
+    "repo_dir"
+  ],
+  "title": "SpecReady",
+  "type": "object"
+}

@@ -1,0 +1,76 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "card_instance_id": {
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+      "title": "Card Instance Id",
+      "type": "string"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "option_ids": {
+      "default": [],
+      "items": {
+        "maxLength": 200,
+        "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+        "type": "string"
+      },
+      "maxItems": 100,
+      "title": "Option Ids",
+      "type": "array"
+    },
+    "other_text": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Other Text"
+    },
+    "skipped": {
+      "default": false,
+      "title": "Skipped",
+      "type": "boolean"
+    },
+    "type": {
+      "const": "option_selected",
+      "default": "option_selected",
+      "title": "Type",
+      "type": "string"
+    },
+    "you_decide": {
+      "default": false,
+      "title": "You Decide",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "event_id",
+    "card_instance_id"
+  ],
+  "title": "OptionSelected",
+  "type": "object"
+}

@@ -1,0 +1,782 @@
+# Canned web-search answers for the offline mock of S1.web_search.
+#
+# Every source uses a reserved example domain (example.com / .org / .net) and a "mock-source" path,
+# so no claim is ever attributed to a real site. Texts are generic, hedged industry knowledge.
+# Placeholders [[1]], [[2]] are replaced by the handler with a markdown link to the n-th source of
+# the entry, the way a hosted search answer carries inline links; the research engine turns those
+# links back into numbered markers before extraction (C7).
+#
+# Selection: among the entries of the call's job, the one whose `keywords` appear most often in the
+# query wins (ties: file order). If nothing matches, the entry flagged `default: true` is used.
+# The C6 mock plan builds its queries from the same phrases (see c6_plan_research/fixtures).
+#
+# Optional `subject_pattern` (a regular expression with one group) and `subject_default`: the text
+# says `{subject}` where the part of the query the group captures goes (a feature, a reference app,
+# a sensitive area or a service), so queries that differ only in that part get different facts back
+# (the planner asks the same angle for several subjects). Keep the sentence with `{subject}` short:
+# the research engine merges near-identical statements of one job (word overlap of 0.75 or more).
+#
+# The planner's later queries (Standard and Deep) need two keyword hits to beat the topic entries,
+# and the entries avoid the words the C8 mock turns into suggestions (reviews, ratings, return,
+# onboarding, offline, reminders ...), so they add facts without adding unrelated suggestions.
+version: 1
+
+entries:
+  # ----------------------------------------------------------------------------------- R1 commerce
+  - id: commerce_features
+    job: R1
+    keywords: ["online shopping", "features"]
+    sources:
+      - {url: "https://example.com/mock-source/online-shopping-app-features", title: "Online shopping app features (example)"}
+      - {url: "https://example.org/mock-source/shop-app-checklist", title: "Shop app checklist (example)"}
+    text: >-
+      Most online shopping apps let people search the catalog and narrow results by category, price
+      and rating [[1]]. Saved favorites, often called a wish list, are common and help shoppers come
+      back to products later [[2]]. Ratings and reviews on product pages are widely used to build
+      trust, and many shops limit reviews to verified buyers [[1]][[2]]. Loyalty points or
+      repeat-purchase rewards appear in a minority of shop apps and need extra backend work [[1]].
+
+  - id: commerce_patterns
+    job: R1
+    keywords: ["online shopping", "ux patterns"]
+    sources:
+      - {url: "https://example.com/mock-source/online-shopping-ux-patterns", title: "Online shopping UX patterns (example)"}
+      - {url: "https://example.net/mock-source/checkout-patterns", title: "Checkout patterns (example)"}
+    text: >-
+      Guest checkout, where a shopper can pay without creating an account first, is a common way to
+      reduce drop-off [[1]]. Order tracking with a clear status timeline from placed to delivered is
+      a standard expectation after checkout [[1]][[2]]. A persistent cart badge and a cart that is
+      saved across sessions are widely used [[2]]. Many shops offer a help or chat entry on the order
+      screen for delivery questions [[2]].
+
+  # ------------------------------------------------------------------------------ R1 food delivery
+  - id: food_delivery_features
+    job: R1
+    keywords: ["food ordering", "features"]
+    sources:
+      - {url: "https://example.com/mock-source/food-ordering-app-features", title: "Food ordering app features (example)"}
+      - {url: "https://example.org/mock-source/delivery-app-checklist", title: "Delivery app checklist (example)"}
+    text: >-
+      Food ordering apps usually start with a restaurant list that can be filtered by cuisine, rating
+      and delivery time [[1]]. Ratings for restaurants and dishes are common and are collected after
+      the order is delivered [[1]][[2]]. Saved delivery addresses and quick reorder of past orders
+      are widely offered [[2]]. Promo codes and discounts are frequent but need rules for stacking
+      and expiry [[1]].
+
+  - id: food_delivery_patterns
+    job: R1
+    keywords: ["food ordering", "ux patterns"]
+    sources:
+      - {url: "https://example.com/mock-source/food-ordering-ux-patterns", title: "Food ordering UX patterns (example)"}
+      - {url: "https://example.net/mock-source/live-tracking-patterns", title: "Live tracking patterns (example)"}
+    text: >-
+      Live order tracking with a map and an estimated arrival time is a standard feature in delivery
+      apps [[1]][[2]]. Item options such as size, extras and notes are shown in a sheet before the
+      item is added to the cart [[1]]. Order status updates are often sent as push notifications
+      [[2]].
+
+  # --------------------------------------------------------------------------- R1 booking services
+  - id: booking_features
+    job: R1
+    keywords: ["appointment", "features"]
+    sources:
+      - {url: "https://example.com/mock-source/booking-app-features", title: "Booking app features (example)"}
+      - {url: "https://example.org/mock-source/appointment-app-checklist", title: "Appointment app checklist (example)"}
+    text: >-
+      Booking apps typically show a service list with duration and price, then the available time
+      slots for the chosen day [[1]]. Reminders before an appointment by push or text message reduce
+      no-shows [[1]][[2]]. Rescheduling and cancelling from the app, with a clear cutoff time, is
+      widely expected [[2]]. Memberships or packages of sessions are offered by some providers but
+      add billing complexity [[1]]. Reviews of providers help new customers choose [[2]].
+
+  - id: booking_patterns
+    job: R1
+    keywords: ["appointment", "ux patterns"]
+    sources:
+      - {url: "https://example.com/mock-source/booking-ux-patterns", title: "Booking UX patterns (example)"}
+      - {url: "https://example.net/mock-source/appointment-flow-patterns", title: "Appointment flow patterns (example)"}
+    text: >-
+      A three-step flow of choosing the service, picking a time and confirming is the most common
+      booking pattern [[1]][[2]]. Provider profiles with photo, specialties and ratings help
+      customers choose [[1]]. A calendar view of upcoming bookings with quick actions is widely used
+      [[2]].
+
+  # ------------------------------------------------------------------------- R1 internal workforce
+  - id: internal_workforce_features
+    job: R1
+    keywords: ["field staff", "features"]
+    sources:
+      - {url: "https://example.com/mock-source/workforce-app-features", title: "Workforce app features (example)"}
+      - {url: "https://example.org/mock-source/field-app-checklist", title: "Field app checklist (example)"}
+    text: >-
+      Internal workforce apps usually center on task lists with status, due date and assignee [[1]].
+      Forms and checklists that staff complete on site, sometimes with photos, are widespread
+      [[1]][[2]]. Approvals, such as leave or expense requests, are routed to a manager inside the
+      app [[2]]. Offline use matters for field staff because signal is often poor, so changes are
+      synced when a connection returns [[1]][[2]]. Timesheets and staff directories appear less
+      often [[2]].
+
+  - id: internal_workforce_patterns
+    job: R1
+    keywords: ["field staff", "ux patterns"]
+    sources:
+      - {url: "https://example.com/mock-source/workforce-ux-patterns", title: "Workforce UX patterns (example)"}
+      - {url: "https://example.net/mock-source/employee-app-patterns", title: "Employee app patterns (example)"}
+    text: >-
+      Sign-in through the company's single sign-on is the norm for employee apps [[1]][[2]].
+      Role-based views let managers see team items that other staff cannot [[1]]. Announcements or
+      notices from the company are commonly shown on the home screen [[2]].
+
+  # ------------------------------------------------------------------------------------ R1 custom
+  - id: custom_features
+    job: R1
+    keywords: ["everyday app", "features"]
+    sources:
+      - {url: "https://example.com/mock-source/general-app-features", title: "General mobile app features (example)"}
+      - {url: "https://example.org/mock-source/app-building-blocks", title: "App building blocks (example)"}
+    text: >-
+      General-purpose mobile apps most often combine a list of items, a detail page, a search box and
+      a simple profile [[1]]. Forms for collecting information from users are a common building block
+      [[1]][[2]]. Notifications keep users informed about changes and are usually optional in
+      settings [[2]]. Photo galleries and map views are used when the content is visual or based on
+      location [[1]][[2]].
+
+  - id: custom_patterns
+    job: R1
+    keywords: ["everyday app", "ux patterns"]
+    sources:
+      - {url: "https://example.com/mock-source/general-app-ux-patterns", title: "General app UX patterns (example)"}
+      - {url: "https://example.net/mock-source/mobile-navigation-patterns", title: "Mobile navigation patterns (example)"}
+    text: >-
+      Bottom tab navigation with three to five tabs is the most common layout for mobile apps
+      [[1]][[2]]. A short, skippable onboarding of two or three screens is widely used before
+      sign-in [[1]]. Empty, loading and error states are expected on every list screen [[2]].
+
+  # ------------------------------------------------------- R1 gap-fill answers (Deep depth only)
+  # The C8 mock reports one gap per archetype (its `gap_phrase`); the follow-up query contains the
+  # topic phrase plus that gap phrase, so these entries (two keyword hits) beat the regular ones.
+  - id: commerce_gap
+    job: R1
+    keywords: ["online shopping", "returns and refunds"]
+    sources:
+      - {url: "https://example.com/mock-source/shop-returns-and-refunds", title: "Returns and refunds in shops (example)"}
+      - {url: "https://example.org/mock-source/refund-status-patterns", title: "Refund status patterns (example)"}
+    text: >-
+      Online shops usually let buyers request a return from the order screen within a set number of
+      days [[1]]. Refunds go back to the original payment method and the order shows a clear refund
+      status [[1]][[2]]. A short reason picker for the return request is a common pattern [[2]].
+
+  - id: food_delivery_gap
+    job: R1
+    keywords: ["food ordering", "delivery fees and minimum order"]
+    sources:
+      - {url: "https://example.com/mock-source/delivery-fee-display", title: "Delivery fee display (example)"}
+      - {url: "https://example.net/mock-source/minimum-order-patterns", title: "Minimum order patterns (example)"}
+    text: >-
+      Delivery apps show the delivery fee and any minimum order value before checkout [[1]][[2]].
+      Fees are often shown as a breakdown of items, delivery, taxes and tip [[1]]. A free-delivery
+      progress hint on the cart encourages larger orders [[2]].
+
+  - id: booking_gap
+    job: R1
+    keywords: ["appointment", "cancellation fees and no-show"]
+    sources:
+      - {url: "https://example.com/mock-source/cancellation-windows", title: "Cancellation windows (example)"}
+      - {url: "https://example.org/mock-source/no-show-handling", title: "No-show handling (example)"}
+    text: >-
+      Booking apps usually state the cancellation window and any fee before the customer confirms
+      [[1]][[2]]. Late cancellations and no-shows are often handled with a fee or a lost deposit
+      [[1]]. Automatic reminders reduce no-shows [[2]].
+
+  - id: internal_workforce_gap
+    job: R1
+    keywords: ["field staff", "leave and expense approvals"]
+    sources:
+      - {url: "https://example.com/mock-source/approval-flow-status", title: "Approval flow status (example)"}
+      - {url: "https://example.net/mock-source/manager-approval-patterns", title: "Manager approval patterns (example)"}
+    text: >-
+      Approval flows for leave and expenses show a clear status such as pending, approved or
+      rejected [[1]][[2]]. Managers are notified of pending requests and can approve in one tap
+      [[1]]. A history of past requests helps staff track their balances [[2]].
+
+  - id: custom_gap
+    job: R1
+    keywords: ["everyday app", "settings screens"]
+    sources:
+      - {url: "https://example.com/mock-source/settings-screen-layout", title: "Settings screen layout (example)"}
+      - {url: "https://example.org/mock-source/account-section-basics", title: "Account section basics (example)"}
+    text: >-
+      Settings screens in mobile apps usually group account, notifications, privacy and about
+      sections [[1]][[2]]. Sign out and delete account actions are expected in the account section
+      [[1]]. A language or theme choice is common where the app supports it [[2]].
+
+  # ----------------------------------------------- R1 wider angles (Standard and Deep plans)
+  # The planner's later R1 queries (see c6_plan_research/fixtures/query_templates.yaml) ask about one
+  # feature of the Brief or one wider angle. Each entry needs two keyword hits so that it beats the
+  # topic entries above (one hit on the topic phrase). Texts avoid the words the C8 mock turns into
+  # suggestions, so these answers add facts, not new suggestions.
+  - id: r1_feature
+    job: R1
+    keywords: ["is designed in", "mobile apps"]
+    subject_pattern: '^how (.+?) is designed in '
+    sources:
+      - {url: "https://example.com/mock-source/feature-design-notes", title: "Feature design notes (example)"}
+      - {url: "https://example.org/mock-source/feature-placement-notes", title: "Feature placement notes (example)"}
+    text: >-
+      {subject} is usually one tap from the home screen [[1]][[2]]. {subject} often has a short
+      help text nearby [[1]]. People can switch {subject} off in settings [[2]].
+
+  - id: r1_monetization
+    job: R1
+    keywords: ["monetization", "pricing models"]
+    sources:
+      - {url: "https://example.com/mock-source/app-monetization-models", title: "App monetization models (example)"}
+      - {url: "https://example.net/mock-source/pricing-model-comparison", title: "Pricing model comparison (example)"}
+    text: >-
+      Mobile apps are usually paid for through one-time purchases, subscriptions, in-app purchases
+      or advertising [[1]][[2]]. A free tier with a paid upgrade is a widely used way to let people
+      try an app first [[1]]. App stores take a share of in-app sales and require their own billing
+      for digital goods [[2]].
+
+  - id: r1_retention
+    job: R1
+    keywords: ["retention", "engagement ideas"]
+    sources:
+      - {url: "https://example.org/mock-source/app-retention-basics", title: "App retention basics (example)"}
+      - {url: "https://example.net/mock-source/engagement-patterns", title: "Engagement patterns (example)"}
+    text: >-
+      People tend to stay with apps that show clear progress and useful news after the first visit
+      [[1]][[2]]. Messages sent too often lead many people to switch alerts off [[1]]. A simple way
+      to give feedback inside the app helps teams see what to fix first [[2]].
+
+  - id: r1_accessibility
+    job: R1
+    keywords: ["accessibility", "localization"]
+    sources:
+      - {url: "https://example.com/mock-source/mobile-accessibility-basics", title: "Mobile accessibility basics (example)"}
+      - {url: "https://example.org/mock-source/app-localization-basics", title: "App localization basics (example)"}
+    text: >-
+      Readable text sizes and strong color contrast are basic accessibility expectations for mobile
+      apps [[1]][[2]]. Buttons and links need a large enough touch area and a clear label for screen
+      readers [[1]]. Apps for several regions usually let people pick a language and format dates and
+      numbers locally [[2]].
+
+  - id: r1_permissions
+    job: R1
+    keywords: ["permission prompts", "notifications and"]
+    sources:
+      - {url: "https://example.net/mock-source/permission-timing", title: "Permission timing (example)"}
+      - {url: "https://example.com/mock-source/alert-frequency-guidelines", title: "Alert frequency guidelines (example)"}
+    text: >-
+      Apps usually ask for a permission at the moment it is needed and explain why in plain words
+      [[1]][[2]]. A person who says no should still be able to use the rest of the app [[1]].
+      Permission prompts shown all at once on first launch are often declined [[2]].
+
+  - id: r1_performance
+    job: R1
+    keywords: ["slow networks", "performance"]
+    sources:
+      - {url: "https://example.org/mock-source/mobile-loading-patterns", title: "Mobile loading patterns (example)"}
+      - {url: "https://example.com/mock-source/weak-connection-handling", title: "Weak connection handling (example)"}
+    text: >-
+      Lists and images that load in steps keep an app feeling fast on weak connections [[1]][[2]].
+      Showing saved content first and refreshing it in the background is a common approach [[1]].
+      Clear messages for slow or failed loads reduce frustration [[2]].
+
+  - id: r1_feedback
+    job: R1
+    keywords: ["user feedback", "common complaints"]
+    sources:
+      - {url: "https://example.net/mock-source/app-complaint-themes", title: "App complaint themes (example)"}
+      - {url: "https://example.org/mock-source/support-access-in-apps", title: "Support access in apps (example)"}
+    text: >-
+      Users most often complain about slow screens, confusing sign-in and unexpected charges
+      [[1]][[2]]. Apps that explain errors in plain words get fewer complaints [[1]]. Quick support
+      access from inside the app is valued when something goes wrong [[2]].
+
+  - id: r1_default
+    job: R1
+    default: true
+    keywords: []
+    sources:
+      - {url: "https://example.com/mock-source/mobile-app-basics", title: "Mobile app basics (example)"}
+      - {url: "https://example.org/mock-source/common-app-screens", title: "Common app screens (example)"}
+    text: >-
+      Most mobile apps of this kind offer sign-in, a main list or feed, a detail view and a settings
+      screen [[1]]. Search and notifications are common additions [[1]][[2]]. Clear loading and
+      error messages are an expected part of the experience [[2]].
+
+  # ------------------------------------------------------------------------------------------ R2
+  - id: r2_default
+    job: R2
+    default: true
+    keywords: []
+    subject_pattern: '^(.+) mobile app features overview'
+    subject_default: "the app"
+    sources:
+      - {url: "https://example.com/mock-source/reference-app-overview", title: "Reference app overview (example)"}
+      - {url: "https://example.net/mock-source/reference-app-screens", title: "Reference app screens (example)"}
+    text: >-
+      For {subject}, the public pages list the main features first [[1]][[2]]. The app's public pages describe its main features as browsing, searching, saving items and an
+      account area [[1]]. Its help pages mention history of orders or bookings and notifications
+      [[1]][[2]]. Design patterns such as a bottom tab bar and a prominent search box are visible in
+      store screenshots [[2]].
+
+  - id: r2_feedback
+    job: R2
+    keywords: ["user reviews", "complaints"]
+    subject_pattern: '^(.+) app user reviews'
+    subject_default: "the app"
+    sources:
+      - {url: "https://example.com/mock-source/reference-app-feedback", title: "Reference app feedback (example)"}
+      - {url: "https://example.net/mock-source/reference-app-release-notes", title: "Reference app release notes (example)"}
+    text: >-
+      For {subject}, people rate the app after a few days of use [[1]][[2]].
+      Public feedback about the app often praises speed and simple screens [[1]]. Complaints most
+      often mention sign-in problems and unclear charges [[1]][[2]]. Updates that fix reported
+      problems are usually noted in the release notes [[2]].
+
+  - id: r2_pricing
+    job: R2
+    keywords: ["pricing", "subscription plans"]
+    subject_pattern: '^(.+) app pricing'
+    subject_default: "the app"
+    sources:
+      - {url: "https://example.org/mock-source/reference-app-plans", title: "Reference app plans (example)"}
+      - {url: "https://example.net/mock-source/reference-app-trials", title: "Reference app trials (example)"}
+    text: >-
+      For {subject}, the plans are listed on one screen [[1]][[2]].
+      The app is free to download, and some features sit behind a paid plan [[1]]. Plans are usually
+      offered monthly or yearly, with a discount for yearly billing [[1]][[2]]. Trial periods are
+      common and are described on the plan screen [[2]].
+
+  - id: r2_signup
+    job: R2
+    keywords: ["onboarding", "sign-up flow"]
+    subject_pattern: '^(.+) app onboarding'
+    subject_default: "the app"
+    sources:
+      - {url: "https://example.com/mock-source/reference-app-welcome-screens", title: "Reference app welcome screens (example)"}
+      - {url: "https://example.org/mock-source/reference-app-signup-options", title: "Reference app sign-up options (example)"}
+    text: >-
+      For {subject}, sign-up takes under a minute [[1]][[2]].
+      New people see two or three welcome screens before sign-up [[1]]. Sign-up can be done with an
+      email, a phone number or a social account [[1]][[2]]. Profile details are asked for later,
+      after the first useful screen [[2]].
+
+  # ------------------------------------------------------------------------------------------ R3
+  # R3 is dynamic: the source is the user's own site (taken from allowed_domains by the handler).
+  - id: r3_default
+    job: R3
+    default: true
+    keywords: []
+    brand_site: true
+    sources:
+      - {url: "https://example.com/", title: "Home page (example)"}
+    text: >-
+      Brand colors observed: #1A4FD6 and #FFFFFF; fonts observed: Inter and Poppins [[1]]. Tone of
+      voice is friendly and direct, and a logo file is available on the site [[1]].
+
+  - id: r3_about
+    job: R3
+    keywords: ["about us", "mission"]
+    brand_site: true
+    sources:
+      - {url: "https://example.com/", title: "Home page (example)"}
+    text: >-
+      The about page describes the mission in short, plain sentences [[1]]. Headlines are written in
+      a direct and friendly way [[1]]. Photos on the site show real people rather than stock
+      illustrations [[1]].
+
+  - id: r3_logo
+    job: R3
+    keywords: ["logo usage", "guidelines"]
+    brand_site: true
+    sources:
+      - {url: "https://example.com/", title: "Home page (example)"}
+    text: >-
+      The logo appears in the header on a plain background [[1]]. Space around the logo is kept free
+      of other items [[1]]. A dark and a light version of the logo are both in use [[1]].
+
+  - id: r3_store
+    job: R3
+    keywords: ["app store listing", "screenshots"]
+    brand_site: true
+    sources:
+      - {url: "https://example.com/", title: "Home page (example)"}
+    text: >-
+      The site links to the mobile app in the major app stores [[1]]. Store screenshots reuse the
+      brand colors and the same headline style [[1]]. The app icon is a simplified version of the
+      logo [[1]].
+
+  # ------------------------------------------------------------------------------------------ R4
+  - id: r4_health
+    job: R4
+    keywords: ["health data"]
+    sources:
+      - {url: "https://example.com/mock-source/health-data-privacy", title: "Health data privacy basics (example)"}
+      - {url: "https://example.org/mock-source/health-app-consent", title: "Consent for health apps (example)"}
+    text: >-
+      Apps that collect health information are generally expected to explain what is collected, ask
+      for clear consent and let people delete their data [[1]][[2]]. Health details are treated as
+      sensitive personal data in many countries, so data should be encrypted in transit and at rest
+      [[1]]. App stores ask developers to describe health data use in their privacy disclosures
+      [[2]].
+
+  - id: r4_payments
+    job: R4
+    keywords: ["payment card"]
+    sources:
+      - {url: "https://example.com/mock-source/card-data-handling", title: "Card data handling basics (example)"}
+      - {url: "https://example.net/mock-source/payment-provider-responsibilities", title: "Payment provider responsibilities (example)"}
+    text: >-
+      Apps that take card payments usually hand card entry to a payment provider so the app never
+      stores full card numbers [[1]][[2]]. Providers that follow the card industry security standard
+      take most of the card-data responsibility [[1]]. Recurring billing requires clear disclosure
+      and an easy way to cancel [[2]].
+
+  - id: r4_children
+    job: R4
+    keywords: ["children"]
+    sources:
+      - {url: "https://example.org/mock-source/children-data-protection", title: "Children's data protection basics (example)"}
+      - {url: "https://example.net/mock-source/parental-consent", title: "Parental consent basics (example)"}
+    text: >-
+      Apps used by children are expected to limit data collection and to get parental consent before
+      collecting personal information [[1]][[2]]. Targeted advertising to children is restricted in
+      many countries [[1]]. App stores ask for an age rating and extra privacy disclosures for apps
+      aimed at children [[2]].
+
+  - id: r4_identity
+    job: R4
+    keywords: ["identity document"]
+    sources:
+      - {url: "https://example.com/mock-source/identity-document-handling", title: "Identity document handling (example)"}
+      - {url: "https://example.org/mock-source/age-verification-basics", title: "Age verification basics (example)"}
+    text: >-
+      Apps that capture identity documents should collect only what is needed, store images
+      encrypted and delete them after verification [[1]][[2]]. Age verification for restricted goods
+      is usually done by a specialist provider rather than by the shop app itself [[1]]. Retention
+      periods for identity data are often set by national rules [[2]].
+
+  - id: r4_location
+    job: R4
+    keywords: ["precise location"]
+    sources:
+      - {url: "https://example.com/mock-source/location-consent", title: "Location consent basics (example)"}
+      - {url: "https://example.net/mock-source/background-location-review", title: "Background location review (example)"}
+    text: >-
+      Apps that use precise location should ask permission only when it is needed, explain why and
+      stop collecting once the purpose is met [[1]][[2]]. Background location needs a clear written
+      reason during app store review [[1]]. People expect to see and turn off location sharing in
+      settings [[2]].
+
+  # R4 wider angles: one entry per planner angle (two keyword hits beat the topic entries above).
+  # Texts name no sensitive area, so they fit any flagged topic.
+  - id: r4_store_disclosure
+    job: R4
+    keywords: ["app store", "privacy disclosure"]
+    subject_pattern: '^(.+) app store privacy disclosure$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.com/mock-source/store-privacy-section", title: "Store privacy section (example)"}
+      - {url: "https://example.org/mock-source/store-review-accuracy", title: "Store review accuracy (example)"}
+    text: >-
+      For {subject}, app stores ask for a privacy section [[1]][[2]].
+      App stores ask developers to fill in a privacy section that lists the data the app collects
+      [[1]][[2]]. The answers must match what the app really does, and stores may reject an app that
+      differs [[1]]. The section needs updating whenever a new data type or a new service is added
+      [[2]].
+
+  - id: r4_permission_screens
+    job: R4
+    keywords: ["permission screen", "wording"]
+    subject_pattern: '^(.+) permission screen wording$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.net/mock-source/permission-screen-wording", title: "Permission screen wording (example)"}
+      - {url: "https://example.com/mock-source/choice-wording-notes", title: "Choice wording notes (example)"}
+    text: >-
+      For {subject}, show the choices on a permission screen [[1]][[2]].
+      A permission screen explains in plain words what is collected and why [[1]][[2]]. Choices are
+      shown as clear options, and refusing is as easy as accepting [[1]]. People can change their
+      choice later from a settings page [[2]].
+
+  - id: r4_deletion
+    job: R4
+    keywords: ["deletion requests", "handling"]
+    subject_pattern: '^(.+) deletion requests handling$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.org/mock-source/deletion-request-handling", title: "Deletion request handling (example)"}
+      - {url: "https://example.net/mock-source/account-removal-flow", title: "Account removal flow (example)"}
+    text: >-
+      For {subject}, people can ask for deletion [[1]][[2]].
+      People can ask for their data to be deleted, and the app should confirm when it is done
+      [[1]][[2]]. Deletion usually covers backups and copies held by service providers after a set
+      period [[1]]. A contact address or an in-app form is the usual way to send the request [[2]].
+
+  - id: r4_encryption
+    job: R4
+    keywords: ["encryption", "secure storage"]
+    subject_pattern: '^(.+) encryption and secure storage$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.com/mock-source/mobile-data-encryption", title: "Mobile data encryption (example)"}
+      - {url: "https://example.org/mock-source/device-secure-storage", title: "Device secure storage (example)"}
+    text: >-
+      For {subject}, store the data encrypted [[1]][[2]].
+      Sensitive data is expected to be encrypted when it is sent and when it is stored [[1]][[2]].
+      Secrets such as access tokens belong in the device's secure storage, not in plain files [[1]].
+      Access to stored data is limited to the staff who need it [[2]].
+
+  - id: r4_sharing
+    job: R4
+    keywords: ["third party", "data sharing"]
+    subject_pattern: '^(.+) third party data sharing$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.net/mock-source/outside-service-data-flows", title: "Outside service data flows (example)"}
+      - {url: "https://example.com/mock-source/provider-data-terms", title: "Provider data terms (example)"}
+    text: >-
+      For {subject}, list every outside service [[1]][[2]].
+      Every outside service added to an app can receive data, so each one should be listed and
+      reviewed [[1]][[2]]. Contracts with these providers should state what they may do with the
+      data [[1]]. Analytics tools are often set to collect less data by default [[2]].
+
+  - id: r4_checklist
+    job: R4
+    keywords: ["checklist", "app developers"]
+    subject_pattern: '^(.+) checklist for app developers$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.org/mock-source/pre-release-data-checklist", title: "Pre-release data checklist (example)"}
+      - {url: "https://example.com/mock-source/specialist-review-advice", title: "Specialist review advice (example)"}
+    text: >-
+      For {subject}, review the checklist before release [[1]][[2]].
+      A short checklist helps teams cover the rules before release: what is collected, why, where it
+      is kept and who can see it [[1]][[2]]. Reviewing the checklist again before each major update
+      is common practice [[1]]. Advice from a qualified specialist is the safe way to confirm what
+      applies [[2]].
+
+  - id: r4_enforcement
+    job: R4
+    keywords: ["enforcement", "penalties"]
+    subject_pattern: '^(.+) enforcement and penalties$'
+    subject_default: "this topic"
+    sources:
+      - {url: "https://example.net/mock-source/data-rules-enforcement", title: "Data rules enforcement (example)"}
+      - {url: "https://example.org/mock-source/breach-notice-expectations", title: "Breach notice expectations (example)"}
+    text: >-
+      For {subject}, carelessness can lead to fines [[1]][[2]].
+      Authorities can fine organizations that handle personal data carelessly [[1]][[2]]. Fines are
+      usually higher when people were not told what was collected [[1]]. Prompt notice to affected
+      people after a data leak is expected in many places [[2]].
+
+  - id: r4_default
+    job: R4
+    default: true
+    keywords: []
+    sources:
+      - {url: "https://example.com/mock-source/privacy-policy-basics", title: "Privacy policy basics (example)"}
+      - {url: "https://example.org/mock-source/app-store-privacy-disclosures", title: "App store privacy disclosures (example)"}
+    text: >-
+      Apps that handle personal data are expected to publish a privacy policy and explain what is
+      collected [[1]][[2]]. App stores ask developers to describe data use in privacy disclosures
+      [[1]]. Advice from a qualified specialist is the safe way to confirm the rules that apply in
+      your region [[2]].
+
+  # ------------------------------------------------------------------------------------------ R5
+  - id: r5_payments
+    job: R5
+    keywords: ["payment provider"]
+    sources:
+      - {url: "https://example.com/mock-source/payment-sdk-overview", title: "Payment SDK overview (example)"}
+      - {url: "https://example.org/mock-source/payments-in-expo", title: "Payments in Expo apps (example)"}
+    text: >-
+      Most payment providers publish a React Native SDK and a server API, and some also offer hosted
+      checkout pages [[1]][[2]]. Expo managed apps need a development build for SDKs that include
+      native code [[1]]. Card data should go straight from the app to the provider and never through
+      our own servers [[2]].
+
+  - id: r5_push
+    job: R5
+    keywords: ["push notification"]
+    sources:
+      - {url: "https://example.com/mock-source/push-notifications-expo", title: "Push notifications in Expo (example)"}
+      - {url: "https://example.net/mock-source/push-permissions", title: "Push permissions (example)"}
+    text: >-
+      Push notifications in Expo apps use the Expo notifications library together with the Apple and
+      Google push services [[1]][[2]]. Remote push cannot be fully tested in the stock preview client
+      and needs a development build on a real device [[1]]. People must grant permission before
+      notifications can be shown [[2]].
+
+  - id: r5_maps
+    job: R5
+    keywords: ["maps"]
+    sources:
+      - {url: "https://example.com/mock-source/maps-in-expo", title: "Maps in Expo apps (example)"}
+      - {url: "https://example.org/mock-source/map-provider-keys", title: "Map provider keys and billing (example)"}
+    text: >-
+      Map views in Expo apps come from native map libraries that need a development build [[1]][[2]].
+      The stock preview client may show a static map or a list instead [[1]]. Map providers require
+      an API key and bill by usage [[2]].
+
+  - id: r5_sso
+    job: R5
+    keywords: ["single sign-on"]
+    sources:
+      - {url: "https://example.com/mock-source/sso-for-mobile", title: "Single sign-on for mobile apps (example)"}
+      - {url: "https://example.net/mock-source/oidc-in-expo", title: "OpenID Connect in Expo apps (example)"}
+    text: >-
+      Single sign-on for mobile apps normally uses the OpenID Connect or SAML standards through an
+      identity provider [[1]][[2]]. Expo apps can use browser-based sign-in sessions without custom
+      native code [[1]]. Company identity providers often need an approved redirect address
+      registered in advance [[2]].
+
+  - id: r5_sms
+    job: R5
+    keywords: ["sms"]
+    sources:
+      - {url: "https://example.com/mock-source/sms-provider-basics", title: "SMS provider basics (example)"}
+      - {url: "https://example.org/mock-source/sms-delivery-rules", title: "SMS delivery rules (example)"}
+    text: >-
+      Sign-in codes and reminders by text message are sent through a messaging provider API from a
+      server, not from the app [[1]][[2]]. Delivery rules and sender registration differ by country
+      [[1]]. Email and push are common alternatives where text messages are costly [[2]].
+
+  - id: r5_chat
+    job: R5
+    keywords: ["support chat"]
+    sources:
+      - {url: "https://example.com/mock-source/support-chat-sdks", title: "Support chat SDKs (example)"}
+      - {url: "https://example.net/mock-source/chat-privacy", title: "Chat data and privacy (example)"}
+    text: >-
+      Support chat widgets are offered as hosted SDKs by several providers, and some work in Expo
+      through a web view [[1]][[2]]. A fully native chat SDK needs a development build [[1]]. Chat
+      history is stored by the provider, which should be reflected in the privacy policy [[2]].
+
+  - id: r5_offline
+    job: R5
+    keywords: ["offline"]
+    sources:
+      - {url: "https://example.com/mock-source/offline-sync-patterns", title: "Offline sync patterns (example)"}
+      - {url: "https://example.org/mock-source/local-data-encryption", title: "Local data encryption (example)"}
+    text: >-
+      Offline sync is handled with a local database and a queue of changes that are sent when the
+      connection returns [[1]][[2]]. Conflicts when two edits meet need a clear rule, such as last
+      write wins or ask the user [[1]]. Local storage of company data should be encrypted [[2]].
+
+  # R5 wider angles: one entry per planner angle (two keyword hits beat the service entries above).
+  # Texts name no particular service, so they fit any service type.
+  - id: r5_pricing
+    job: R5
+    keywords: ["pricing", "usage limits"]
+    subject_pattern: '^(.+) pricing and usage limits$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.com/mock-source/service-pricing-pages", title: "Service pricing pages (example)"}
+      - {url: "https://example.org/mock-source/estimating-usage-costs", title: "Estimating usage costs (example)"}
+    text: >-
+      For {subject}, check the pricing page first [[1]][[2]].
+      Providers list their prices and free allowances on a public pricing page [[1]][[2]]. Usage
+      limits such as requests per minute or monthly volume can change the final cost [[1]]. Costs
+      are worth estimating for a busy month before a provider is chosen [[2]].
+
+  - id: r5_setup
+    job: R5
+    keywords: ["config plugin", "setup"]
+    subject_pattern: '^(.+) Expo config plugin setup$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.net/mock-source/expo-config-plugins", title: "Expo config plugins (example)"}
+      - {url: "https://example.com/mock-source/native-settings-in-expo", title: "Native settings in Expo (example)"}
+    text: >-
+      For {subject}, add its config plugin to the app config [[1]][[2]].
+      Many Expo libraries ship a config plugin that applies native settings during the build
+      [[1]][[2]]. The setup steps are usually a package install, a plugin entry in the app config
+      and a rebuild [[1]]. Settings added by hand to native folders are lost when the project is
+      regenerated [[2]].
+
+  - id: r5_privacy
+    job: R5
+    keywords: ["privacy", "data retention"]
+    subject_pattern: '^(.+) privacy and data retention$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.org/mock-source/provider-data-processing", title: "Provider data processing (example)"}
+      - {url: "https://example.net/mock-source/storage-region-choices", title: "Storage region choices (example)"}
+    text: >-
+      For {subject}, name it in the privacy policy [[1]][[2]].
+      Providers describe what data they keep and for how long in a data processing document
+      [[1]][[2]]. The privacy policy of the app should name each service that receives personal data
+      [[1]]. Some providers let a company choose a storage region [[2]].
+
+  - id: r5_caveats
+    job: R5
+    keywords: ["known issues", "caveats"]
+    subject_pattern: '^(.+) known issues and caveats$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.com/mock-source/library-release-notes", title: "Library release notes (example)"}
+      - {url: "https://example.org/mock-source/expo-upgrade-notes", title: "Expo upgrade notes (example)"}
+    text: >-
+      For {subject}, read the release notes before upgrading [[1]][[2]].
+      Release notes and issue trackers show known problems with each library version [[1]][[2]].
+      Upgrading the Expo version can break a library until it publishes an update [[1]]. Pinning
+      exact versions avoids surprises between builds [[2]].
+
+  - id: r5_alternatives
+    job: R5
+    keywords: ["alternatives", "comparison"]
+    subject_pattern: '^(.+) alternatives comparison$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.net/mock-source/service-alternatives", title: "Service alternatives (example)"}
+      - {url: "https://example.com/mock-source/swapping-providers", title: "Swapping providers (example)"}
+    text: >-
+      For {subject}, compare two or three options [[1]][[2]].
+      Most services have several alternatives with similar features but different prices and limits
+      [[1]][[2]]. A short comparison of two or three options helps before committing [[1]].
+      Switching later is easier when the app talks to the service through one small module [[2]].
+
+  - id: r5_testing
+    job: R5
+    keywords: ["development build", "testing"]
+    subject_pattern: '^(.+) development build testing$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.org/mock-source/testing-native-libraries", title: "Testing native libraries (example)"}
+      - {url: "https://example.com/mock-source/sandbox-modes", title: "Sandbox modes (example)"}
+    text: >-
+      For {subject}, test it on a real device [[1]][[2]].
+      Libraries with native code are tested on a real device with a development build [[1]][[2]].
+      The stock preview client runs only libraries that are already inside it [[1]]. A test or
+      sandbox mode lets teams try the service without real charges [[2]].
+
+  - id: r5_keys
+    job: R5
+    keywords: ["api keys", "authentication"]
+    subject_pattern: '^(.+) API keys and authentication$'
+    subject_default: "this service"
+    sources:
+      - {url: "https://example.com/mock-source/keeping-secrets-off-devices", title: "Keeping secrets off devices (example)"}
+      - {url: "https://example.net/mock-source/short-lived-tokens", title: "Short-lived tokens (example)"}
+    text: >-
+      For {subject}, keep its secret keys on a server [[1]][[2]].
+      Secret keys must stay on a server and never ship inside the app [[1]][[2]]. The app signs in
+      to the service through a short-lived token issued by your own backend [[1]]. Keys that were
+      exposed by mistake should be replaced right away [[2]].
+
+  - id: r5_default
+    job: R5
+    default: true
+    keywords: []
+    sources:
+      - {url: "https://example.com/mock-source/sdk-documentation-basics", title: "SDK documentation basics (example)"}
+      - {url: "https://example.org/mock-source/expo-development-builds", title: "Expo development builds (example)"}
+    text: >-
+      Official documentation for a service usually states whether a mobile SDK exists and which
+      platforms it supports [[1]][[2]]. Libraries with native code need an Expo development build
+      instead of the stock preview client [[1]]. Pricing and usage limits are worth checking before a
+      provider is chosen [[2]].

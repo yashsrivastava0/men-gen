@@ -1,0 +1,57 @@
+# Golden cases for C14. Slots default to a confirmed commerce app with three features.
+cases:
+  - name: look_change
+    input: {message: "change the look to bold dark", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {understood: true, is_approval: false, ops: [{kind: set_slot, slot_id: design.direction, value_text: bold-dark}]}
+
+  - name: remove_a_feature
+    input: {message: "remove reviews", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {ops: [{kind: toggle_feature, target_id: reviews, value_bool: false}]}
+
+  - name: remove_a_feature_in_hindi
+    input: {message: "रिव्यू वाला फ़ीचर हटा दो", language: hi, state: BRIEF_REVIEW, gate_open: brief}
+    expect: {ops: [{kind: toggle_feature, target_id: reviews, value_bool: false}]}
+
+  - name: add_a_feature
+    input: {message: "also add a wishlist", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {ops: [{kind: toggle_feature, target_id: favorites, value_bool: true}]}
+
+  - name: payments_in_hinglish
+    input: {message: "payments nahi chahiye, sirf cash on delivery", language: hi-Latn, state: BRIEF_REVIEW, gate_open: brief}
+    expect: {ops: [{kind: set_slot, slot_id: pay.model, value_text: on_delivery}]}
+
+  - name: buttons_rounder_from_a_selected_screen
+    input: {message: "make the buttons rounder", state: PLAN_REVIEW, gate_open: plan, selected_screen_id: SCR-004}
+    expect: {ops: [{kind: patch_screen, target_id: SCR-004, instruction: "make the buttons rounder"}]}
+
+  - name: buttons_rounder_without_a_screen
+    input: {message: "make the buttons rounder", state: PLAN_REVIEW, gate_open: plan}
+    expect: {ops: [{kind: other, instruction: "make the buttons rounder"}]}
+
+  - name: no_login
+    input: {message: "no login", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {ops: [{kind: set_slot, slot_id: auth.method, value_text: none}]}
+
+  - name: rename_the_app
+    input: {message: "name it Blue Basket", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {ops: [{kind: set_slot, slot_id: brand.name, value_text: Blue Basket}]}
+
+  - name: approval_is_not_a_change
+    input: {message: "yes", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {understood: true, is_approval: true, ops: []}
+
+  - name: approval_with_a_change_is_a_change
+    input: {message: "looks good but make it dark", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {is_approval: false, ops: [{kind: set_slot, slot_id: design.direction, value_text: bold-dark}]}
+
+  - name: exclude_a_research_addition
+    input: {message: "exclude RA-003", state: PLAN_REVIEW, gate_open: plan}
+    expect: {ops: [{kind: toggle_research_item, target_id: RA-003, value_bool: false}]}
+
+  - name: not_understood_asks_one_question
+    input: {message: "what is going on", state: BRIEF_REVIEW, gate_open: brief}
+    expect: {understood: false, ops: []}
+
+  - name: not_understood_in_hinglish_asks_in_hinglish
+    input: {message: "kya ho raha hai", language: hi-Latn, state: BRIEF_REVIEW, gate_open: brief}
+    expect: {understood: false, clarify_question: "Main samajh nahi paya ki kya badalna hai. Aap buttons istemal kar sakte hain, ya seedhe us row ko badal sakte hain."}

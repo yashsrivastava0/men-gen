@@ -1,0 +1,136 @@
+{
+  "$defs": {
+    "ApiOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "default": "public",
+          "title": "Auth",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^API-[A-Za-z][A-Za-z0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "request_entity": {
+          "anyOf": [
+            {
+              "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Entity"
+        },
+        "response_entity": {
+          "anyOf": [
+            {
+              "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Response Entity"
+        },
+        "response_many": {
+          "default": false,
+          "title": "Response Many",
+          "type": "boolean"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "pattern": "^ROLE-[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "method",
+        "path"
+      ],
+      "title": "ApiOperation",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "mock_guidance": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mock Guidance"
+    },
+    "operations": {
+      "items": {
+        "$ref": "#/$defs/ApiOperation"
+      },
+      "title": "Operations",
+      "type": "array"
+    }
+  },
+  "required": [
+    "operations"
+  ],
+  "title": "ApiBlock",
+  "type": "object"
+}

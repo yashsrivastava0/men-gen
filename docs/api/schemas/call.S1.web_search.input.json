@@ -1,0 +1,40 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "allowed_domains": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Domains",
+      "type": "array"
+    },
+    "job": {
+      "enum": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5",
+        "R6"
+      ],
+      "title": "Job",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "query": {
+      "title": "Query",
+      "type": "string"
+    }
+  },
+  "required": [
+    "query",
+    "job"
+  ],
+  "title": "S1Input",
+  "type": "object"
+}

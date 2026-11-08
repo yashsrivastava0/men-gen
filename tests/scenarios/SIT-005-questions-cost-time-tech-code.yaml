@@ -1,0 +1,31 @@
+# SIT-005: Asks about cost, time, tech, code ownership
+# Detection: Question intent
+# Behavior:  Answer from the knowledge base only; if unknown, say how they will see it (for example "you will see the plan before anything is built")
+id: SIT-005-questions-cost-time-tech-code
+situation: "Asks about cost, time, tech, code ownership"
+mode: guided
+steps:
+  - user: "An online shop"
+    expect: {pending_card: Q-type-01}
+  - user: "how much will this cost?"
+    expect:
+      llm_calls: {C1.understand: 1, C3.respond: 1}
+      text_regex_absent: ['\d']
+      card_ids: [Q-type-01]
+      inputs_contain: {C3.respond: ["kb-cost"]}
+  - user: "how long does it take?"
+    expect:
+      text_regex_absent: ['\d']
+      card_ids: [Q-type-01]
+      inputs_contain: {C3.respond: ["kb-time"]}
+  - user: "do I get the code?"
+    expect:
+      text_regex_absent: ['\d']
+      inputs_contain: {C3.respond: ["kb-code-download"]}
+  - user: "which database will you use?"
+    expect:
+      text_contains: ["plan"]
+      card_ids: [Q-type-01]
+final:
+  slots:
+    idea.archetype: {value: commerce}

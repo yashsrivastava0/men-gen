@@ -1,0 +1,666 @@
+{
+  "$defs": {
+    "ApproverStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "decision": {
+          "anyOf": [
+            {
+              "enum": [
+                "approve",
+                "change",
+                "reject"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Decision"
+        },
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "user_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "User Id"
+        }
+      },
+      "required": [
+        "role"
+      ],
+      "title": "ApproverStatus",
+      "type": "object"
+    },
+    "AssumedItem": {
+      "additionalProperties": false,
+      "description": "Something we assumed instead of asking. The user can toggle or edit each one.",
+      "properties": {
+        "included": {
+          "default": true,
+          "title": "Included",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "value_text": {
+          "title": "Value Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "label",
+        "value_text",
+        "reason"
+      ],
+      "title": "AssumedItem",
+      "type": "object"
+    },
+    "BacklogItem": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "default": "phase 2",
+          "title": "Reason",
+          "type": "string"
+        },
+        "screens_hint": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Screens Hint",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "BacklogItem",
+      "type": "object"
+    },
+    "CompliancePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "flag": {
+          "title": "Flag",
+          "type": "string"
+        },
+        "note": {
+          "default": "Pointer only; not legal advice.",
+          "title": "Note",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "flag",
+        "title",
+        "url"
+      ],
+      "title": "CompliancePointer",
+      "type": "object"
+    },
+    "EnterpriseExtras": {
+      "additionalProperties": false,
+      "properties": {
+        "approvers": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ApproverStatus"
+          },
+          "title": "Approvers",
+          "type": "array"
+        },
+        "comments": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Comments",
+          "type": "array"
+        },
+        "full_file_view": {
+          "default": false,
+          "title": "Full File View",
+          "type": "boolean"
+        }
+      },
+      "title": "EnterpriseExtras",
+      "type": "object"
+    },
+    "IntegrationStatus": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "mode": {
+          "enum": [
+            "mock",
+            "adapter",
+            "real"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "needs_dev_build": {
+          "default": false,
+          "title": "Needs Dev Build",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "mode"
+      ],
+      "title": "IntegrationStatus",
+      "type": "object"
+    },
+    "LookPreview": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "title": "Direction",
+          "type": "string"
+        },
+        "font_sample": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font Sample"
+        },
+        "radius": {
+          "title": "Radius",
+          "type": "integer"
+        },
+        "swatches_dark": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Swatches Dark",
+          "type": "object"
+        },
+        "swatches_light": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Swatches Light",
+          "type": "object"
+        }
+      },
+      "required": [
+        "direction",
+        "swatches_light",
+        "swatches_dark",
+        "radius"
+      ],
+      "title": "LookPreview",
+      "type": "object"
+    },
+    "PlainEntity": {
+      "additionalProperties": false,
+      "properties": {
+        "fields_plain": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields Plain",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "plain_name": {
+          "title": "Plain Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "plain_name",
+        "fields_plain"
+      ],
+      "title": "PlainEntity",
+      "type": "object"
+    },
+    "PlanDiff": {
+      "additionalProperties": false,
+      "properties": {
+        "added_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Added Ids",
+          "type": "array"
+        },
+        "changed_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Ids",
+          "type": "array"
+        },
+        "lines": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Lines",
+          "type": "array"
+        },
+        "removed_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Removed Ids",
+          "type": "array"
+        },
+        "since": {
+          "enum": [
+            "gate1",
+            "previous_version"
+          ],
+          "title": "Since",
+          "type": "string"
+        }
+      },
+      "required": [
+        "since"
+      ],
+      "title": "PlanDiff",
+      "type": "object"
+    },
+    "ResearchAdditionView": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^RA-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "included": {
+          "default": true,
+          "title": "Included",
+          "type": "boolean"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        },
+        "why": {
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind",
+        "why"
+      ],
+      "title": "ResearchAdditionView",
+      "type": "object"
+    },
+    "RoleView": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "sees": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Sees",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "sees"
+      ],
+      "title": "RoleView",
+      "type": "object"
+    },
+    "ScreenMapGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "count": {
+          "title": "Count",
+          "type": "integer"
+        },
+        "flow_id": {
+          "anyOf": [
+            {
+              "pattern": "^FLW-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Flow Id"
+        },
+        "flow_name": {
+          "title": "Flow Name",
+          "type": "string"
+        },
+        "screen_ids": {
+          "items": {
+            "pattern": "^SCR-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Screen Ids",
+          "type": "array"
+        },
+        "screen_titles": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Screen Titles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "flow_id",
+        "flow_name",
+        "screen_ids",
+        "screen_titles",
+        "count"
+      ],
+      "title": "ScreenMapGroup",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "retrieved_at": {
+          "format": "date",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "retrieved_at"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AssumedItem"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "backlog": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/BacklogItem"
+      },
+      "title": "Backlog",
+      "type": "array"
+    },
+    "compliance": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/CompliancePointer"
+      },
+      "title": "Compliance",
+      "type": "array"
+    },
+    "data": {
+      "items": {
+        "$ref": "#/$defs/PlainEntity"
+      },
+      "title": "Data",
+      "type": "array"
+    },
+    "diff_since_gate1": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PlanDiff"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "enterprise": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/EnterpriseExtras"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "integrations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IntegrationStatus"
+      },
+      "title": "Integrations",
+      "type": "array"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "look": {
+      "$ref": "#/$defs/LookPreview"
+    },
+    "research_added": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResearchAdditionView"
+      },
+      "title": "Research Added",
+      "type": "array"
+    },
+    "research_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Research Note"
+    },
+    "research_status": {
+      "default": "skipped",
+      "enum": [
+        "ok",
+        "partial",
+        "unavailable",
+        "skipped"
+      ],
+      "title": "Research Status",
+      "type": "string"
+    },
+    "roles": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RoleView"
+      },
+      "title": "Roles",
+      "type": "array"
+    },
+    "screen_count": {
+      "title": "Screen Count",
+      "type": "integer"
+    },
+    "screen_map": {
+      "items": {
+        "$ref": "#/$defs/ScreenMapGroup"
+      },
+      "title": "Screen Map",
+      "type": "array"
+    },
+    "spec_hash": {
+      "title": "Spec Hash",
+      "type": "string"
+    },
+    "spec_version": {
+      "title": "Spec Version",
+      "type": "integer"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "spec_version",
+    "spec_hash",
+    "summary",
+    "screen_count",
+    "screen_map",
+    "look",
+    "data"
+  ],
+  "title": "PlanView",
+  "type": "object"
+}

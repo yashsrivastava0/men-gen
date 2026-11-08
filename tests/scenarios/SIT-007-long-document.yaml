@@ -1,0 +1,23 @@
+# SIT-007: Pastes a long document
+# Detection: Upload or long text
+# Behavior:  Extract in chunks, show "Here is what I understood", ask only missing must slots
+id: SIT-007-long-document
+situation: "Pastes a long document"
+mode: guided
+steps:
+  - user: "Product notes. We run a restaurant and want customers to order food and track the delivery. We want search and reviews and a warm and friendly look."
+    repeat_tail: {text: " More detail about the menu and the kitchen.", times: 40}
+    expect:
+      state: DISCOVERING
+      text_contains: ["Here is what I understood"]
+      llm_calls: {C1.understand: 1, C2.interpret_brief: 1}
+      slots:
+        idea.archetype: {value: food_delivery}
+        design.direction: {value: warm-friendly}
+      inputs_contain: {C2.interpret_brief: ["Product notes"]}
+  - tap: {option: A}
+    expect:
+      llm_calls: {total: 0}
+final:
+  slots:
+    design.direction: {value: warm-friendly}

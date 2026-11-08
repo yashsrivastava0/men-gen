@@ -1,0 +1,47 @@
+# SIT-039: Post-handoff light change
+# Detection: Change in HANDED_OFF, light
+# Behavior:  Patch, new version, incremental frontend run; no gate
+id: SIT-039-post-handoff-light-change
+situation: "Post-handoff light change"
+mode: guided
+integration: true
+steps:
+  - user: "Build me a shop app with defaults"
+    expect:
+      state: DISCOVERING
+      text_contains: ["only need your idea and the look"]
+      pending_card: Q-look-01
+  - tap: {card: Q-look-01, option: A}
+    expect:
+      state: BRIEF_REVIEW
+      gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+  - decide: {gate: brief}
+    expect:
+      state: PLANNING
+      plan_phase: research
+      job: queued
+  - wait_for_plan: true
+    expect:
+      state: PLAN_REVIEW
+      gate: {gate: plan, version: 1}
+  - decide: {gate: plan}
+    expect:
+      state: HANDED_OFF
+      spec_ready: 1
+  - user: "change the look to bold dark"
+    expect:
+      state: PLANNING
+      origin: HANDED_OFF
+      job: queued
+  - wait_for_plan: true
+    expect:
+      state: HANDED_OFF
+      spec_version: 2
+      handed_off_version: 2
+      spec_ready: 2
+      frontend_notified: 2
+      handoff_commits: 2
+      gate: none
+      text_contains: ["I applied your change"]
+      notices_absent: [change_needs_review]
+      approvals_count: 3

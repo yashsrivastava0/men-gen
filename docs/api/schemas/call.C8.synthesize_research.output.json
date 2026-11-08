@@ -1,0 +1,248 @@
+{
+  "$defs": {
+    "BrandDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "colors": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Colors",
+          "type": "array"
+        },
+        "fonts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fonts",
+          "type": "array"
+        },
+        "logo_available": {
+          "default": false,
+          "title": "Logo Available",
+          "type": "boolean"
+        },
+        "nearest_direction": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nearest Direction"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        },
+        "tone_words": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tone Words",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_url"
+      ],
+      "title": "BrandDraft",
+      "type": "object"
+    },
+    "IntegrationDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "caveats": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Caveats",
+          "type": "array"
+        },
+        "expo_compatible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expo Compatible"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "sdk_available": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sdk Available"
+        },
+        "source_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Url"
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "IntegrationDraft",
+      "type": "object"
+    },
+    "PointerDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "flag": {
+          "title": "Flag",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "flag",
+        "title",
+        "url"
+      ],
+      "title": "PointerDraft",
+      "type": "object"
+    },
+    "SuggestionDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applies To"
+        },
+        "default_included": {
+          "default": true,
+          "title": "Default Included",
+          "type": "boolean"
+        },
+        "fact_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fact Ids",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "feature",
+            "pattern",
+            "compliance",
+            "integration",
+            "brand"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "title",
+        "rationale"
+      ],
+      "title": "SuggestionDraft",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "brand": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BrandDraft"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "compliance": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/PointerDraft"
+      },
+      "title": "Compliance",
+      "type": "array"
+    },
+    "gaps": {
+      "default": [],
+      "description": "Open questions a gap-fill round could answer",
+      "items": {
+        "type": "string"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "integrations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IntegrationDraft"
+      },
+      "title": "Integrations",
+      "type": "array"
+    },
+    "suggestions": {
+      "items": {
+        "$ref": "#/$defs/SuggestionDraft"
+      },
+      "title": "Suggestions",
+      "type": "array"
+    }
+  },
+  "required": [
+    "suggestions"
+  ],
+  "title": "C8Output",
+  "type": "object"
+}

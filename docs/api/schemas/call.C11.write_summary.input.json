@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "app_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "App Name"
+    },
+    "facts": {
+      "description": "Plain facts to summarise (slots, screens, flows)",
+      "items": {
+        "type": "string"
+      },
+      "title": "Facts",
+      "type": "array"
+    },
+    "kind": {
+      "enum": [
+        "brief_sentence",
+        "plan_summary"
+      ],
+      "title": "Kind",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "max_words": {
+      "default": 40,
+      "title": "Max Words",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "kind",
+    "facts"
+  ],
+  "title": "C11Input",
+  "type": "object"
+}

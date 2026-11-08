@@ -1,0 +1,40 @@
+# SIT-033: User dislikes a research-added item
+# Detection: Toggle at Gate 2
+# Behavior:  Exclude it; only the affected writers re-run
+id: SIT-033-dislikes-a-research-added-item
+situation: "User dislikes a research-added item"
+mode: guided
+steps:
+  - user: "Build me a shop app with defaults"
+    expect:
+      state: DISCOVERING
+      text_contains: ["only need your idea and the look"]
+      pending_card: Q-look-01
+  - tap: {card: Q-look-01, option: A}
+    expect:
+      state: BRIEF_REVIEW
+      gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+  - decide: {gate: brief}
+    expect:
+      state: PLANNING
+      plan_phase: research
+      job: queued
+  - wait_for_plan: true
+    expect:
+      state: PLAN_REVIEW
+      gate: {gate: plan, version: 1}
+  - ui: {action: toggle_research_item, target: "RA-001", value: false}
+    expect:
+      state: PLANNING
+      plan_phase: build
+      job: queued
+  - wait_for_plan: true
+    expect:
+      state: PLAN_REVIEW
+      gate: {gate: plan, version: 2, single_button: true}
+      plan: {excluded: [RA-001]}
+      llm_calls:
+        C6.plan_research: 0
+        S1.web_search: 0
+        C7.extract: 0
+        C8.synthesize_research: 0

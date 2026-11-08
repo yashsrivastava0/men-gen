@@ -1,0 +1,27 @@
+Mode: {{ mode }}. Language: {{ language }}. Intent: {{ intent }}. Stuck: {{ stuck }}. Off-topic turns in a row: {{ off_topic_streak }}.
+{% if summary %}
+Summary so far: {{ summary }}
+{% endif %}
+{% if slots %}
+Known slots:
+{% for s in slots %}
+- {{ s.slot_id }} = {{ s.value }} [{{ s.state }}]
+{% endfor %}
+{% endif %}
+{% if pending_card %}
+Pending question: {{ pending_card.text }}
+{% endif %}
+{% if recent_turns %}
+Recent turns:
+{% for t in recent_turns %}
+- {{ t.role }}: {{ t.text }}
+{% endfor %}
+{% endif %}
+{% if knowledge %}
+Knowledge snippets:
+{% for k in knowledge %}
+- {{ k.id }}: {{ k.text }}
+{% endfor %}
+{% endif %}
+
+Message: {{ message }}

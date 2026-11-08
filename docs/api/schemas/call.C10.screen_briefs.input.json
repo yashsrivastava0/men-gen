@@ -1,0 +1,428 @@
+{
+  "$defs": {
+    "BriefContext": {
+      "additionalProperties": false,
+      "description": "Compact approved-Brief view passed to research and spec-building calls.",
+      "properties": {
+        "app_summary": {
+          "title": "App Summary",
+          "type": "string"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "brand_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Name"
+        },
+        "brand_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Url"
+        },
+        "compliance_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Compliance Flags",
+          "type": "array"
+        },
+        "features": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "login": {
+          "default": "",
+          "title": "Login",
+          "type": "string"
+        },
+        "look": {
+          "default": "",
+          "title": "Look",
+          "type": "string"
+        },
+        "mode": {
+          "default": "guided",
+          "enum": [
+            "guided",
+            "enterprise"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "regions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "app_summary",
+        "archetype"
+      ],
+      "title": "BriefContext",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    },
+    "OutlineEntity": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineEntity",
+      "type": "object"
+    },
+    "OutlineOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "method",
+        "path"
+      ],
+      "title": "OutlineOperation",
+      "type": "object"
+    },
+    "OutlineScreen": {
+      "additionalProperties": false,
+      "properties": {
+        "flow": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "recipe": {
+          "title": "Recipe",
+          "type": "string"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "source": {
+          "default": "default",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "recipe"
+      ],
+      "title": "OutlineScreen",
+      "type": "object"
+    },
+    "RecipeLite": {
+      "additionalProperties": false,
+      "properties": {
+        "default_sections": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Default Sections",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind"
+      ],
+      "title": "RecipeLite",
+      "type": "object"
+    },
+    "ResearchAdditionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applies To"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "feature",
+            "pattern",
+            "compliance",
+            "integration",
+            "brand"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "rationale"
+      ],
+      "title": "ResearchAdditionLite",
+      "type": "object"
+    },
+    "ScreenDraftLite": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "copy_keys": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Copy Keys",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "recipe": {
+          "title": "Recipe",
+          "type": "string"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "sections": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Sections",
+          "type": "array"
+        },
+        "surface": {
+          "default": "customer",
+          "title": "Surface",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "recipe"
+      ],
+      "title": "ScreenDraftLite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "brief": {
+      "$ref": "#/$defs/BriefContext"
+    },
+    "entities": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OutlineEntity"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "neighbors": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OutlineScreen"
+      },
+      "title": "Neighbors",
+      "type": "array"
+    },
+    "operations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OutlineOperation"
+      },
+      "title": "Operations",
+      "type": "array"
+    },
+    "recipes": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/RecipeLite"
+      },
+      "title": "Recipes",
+      "type": "array"
+    },
+    "research": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResearchAdditionLite"
+      },
+      "title": "Research",
+      "type": "array"
+    },
+    "screens": {
+      "items": {
+        "$ref": "#/$defs/ScreenDraftLite"
+      },
+      "title": "Screens",
+      "type": "array"
+    }
+  },
+  "required": [
+    "brief",
+    "screens"
+  ],
+  "title": "C10Input",
+  "type": "object"
+}

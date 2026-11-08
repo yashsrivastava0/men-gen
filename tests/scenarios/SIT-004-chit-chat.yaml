@@ -1,0 +1,27 @@
+# SIT-004: Casual chat or brainstorming
+# Detection: Chit-chat intent
+# Behavior:  Reply briefly, offer idea chips, mine the chat for slots, steer back softly after two turns
+id: SIT-004-chit-chat
+situation: "Casual chat or brainstorming"
+mode: guided
+steps:
+  - user: "An online shop"
+    expect: {pending_card: Q-type-01}
+  - tap: {card: Q-type-01, option: A}
+    expect: {pending_card: Q-apps-01}
+  - user: "lol you are funny"
+    expect:
+      llm_calls: {C1.understand: 1, C3.respond: 1}
+      events:
+        - {type: assistant_message}
+        - {type: card, card_id: Q-apps-01}
+      pending_card: Q-apps-01
+  - user: "haha nice"
+    expect:
+      llm_calls: {C1.understand: 1, C3.respond: 1}
+      text_contains: ["get back to your app"]
+      pending_card: Q-apps-01
+  - user: "thanks! by the way I want no login"
+    expect:
+      slots:
+        auth.method: {value: none}

@@ -1,0 +1,182 @@
+{
+  "$defs": {
+    "ApprovalRecord": {
+      "additionalProperties": false,
+      "properties": {
+        "approver_id": {
+          "title": "Approver Id",
+          "type": "string"
+        },
+        "at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "At"
+        },
+        "comment": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Comment"
+        },
+        "decision": {
+          "enum": [
+            "approve",
+            "change",
+            "reject"
+          ],
+          "title": "Decision",
+          "type": "string"
+        },
+        "gate": {
+          "enum": [
+            "brief",
+            "plan"
+          ],
+          "title": "Gate",
+          "type": "string"
+        },
+        "hash": {
+          "title": "Hash",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "session_id": {
+          "title": "Session Id",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        },
+        "via": {
+          "default": "tap",
+          "enum": [
+            "tap",
+            "typed"
+          ],
+          "title": "Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "session_id",
+        "gate",
+        "version",
+        "hash",
+        "approver_id",
+        "decision"
+      ],
+      "title": "ApprovalRecord",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Derived view of one open gate (never stored independently of its approvals).",
+  "properties": {
+    "approvals": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ApprovalRecord"
+      },
+      "title": "Approvals",
+      "type": "array"
+    },
+    "gate": {
+      "enum": [
+        "brief",
+        "plan"
+      ],
+      "title": "Gate",
+      "type": "string"
+    },
+    "hash": {
+      "title": "Hash",
+      "type": "string"
+    },
+    "opened_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Opened At"
+    },
+    "required_roles": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Required Roles",
+      "type": "array"
+    },
+    "status": {
+      "default": "open",
+      "enum": [
+        "open",
+        "approved",
+        "void",
+        "changed"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "void_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Void Reason"
+    }
+  },
+  "required": [
+    "gate",
+    "version",
+    "hash"
+  ],
+  "title": "GateStatus",
+  "type": "object"
+}

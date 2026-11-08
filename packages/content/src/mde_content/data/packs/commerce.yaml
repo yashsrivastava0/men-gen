@@ -1,0 +1,970 @@
+# Domain Pack: commerce (online stores and shopping apps, one shop or a catalog).
+# Reference convention: screens are referenced as "@key"; entities, operations, roles and
+# integrations carry final ids. Every entity has an implicit string `id` that is not listed.
+# `feature_parts` is the sidecar that says what each feature owns beyond the screens and flows
+# that name it (see docs/specs/domain-pack-format.md).
+id: commerce
+archetype: commerce
+label: Online store
+description: A shopping app for one shop or a small catalog. Browse and search products, add to cart, check out, pay, track orders and come back for more. The customer app comes with a small store-manager side for orders and products.
+theme_candidates: [clean-bright, bold-dark, warm-friendly]
+default_theme: clean-bright
+
+features:
+  - {id: catalog_browse, label: Browse products, tier: core, description: "Categories, product lists and product pages.", i18n: {hi: उत्पाद देखें}}
+  - {id: search, label: Search and filters, tier: standard, description: "Find products by name with filters and sorting.", i18n: {hi: खोज और फ़िल्टर}}
+  - {id: cart_checkout, label: Cart and checkout, tier: core, description: "Add products to a cart and place an order with a delivery address.", i18n: {hi: कार्ट और चेकआउट}}
+  - {id: payments, label: Online payments, tier: standard, description: "Pay by card or wallet and manage saved payment methods. Mock provider until a real one is chosen.", i18n: {hi: ऑनलाइन भुगतान}}
+  - {id: order_tracking, label: Orders and tracking, tier: standard, description: "Order history, order details and a status timeline.", i18n: {hi: ऑर्डर और ट्रैकिंग}}
+  - {id: reviews, label: Ratings and reviews, tier: extra, default_on: false, description: "Read and write product reviews.", i18n: {hi: रेटिंग और समीक्षा}}
+  - {id: favorites, label: Favorites, tier: extra, default_on: false, description: "Save products to a wish list.", i18n: {hi: पसंदीदा}}
+  - {id: push_notifications, label: Push notifications, tier: standard, description: "Order updates and offers on the phone.", i18n: {hi: पुश सूचनाएं}}
+  - {id: loyalty, label: Loyalty points, tier: extra, default_on: false, description: "Points for purchases and a rewards tier.", i18n: {hi: लॉयल्टी पॉइंट्स}}
+  - {id: support_chat, label: Support chat, tier: extra, default_on: false, description: "Chat with the shop team from the app.", i18n: {hi: सपोर्ट चैट}}
+
+roles:
+  - {id: ROLE-customer, name: Customer, description: "Shops, pays and tracks orders.", surface: customer}
+  - {id: ROLE-store_manager, name: Store manager, description: "Handles incoming orders and keeps the product list up to date.", surface: business}
+
+enums:
+  - {name: OrderStatus, values: [placed, confirmed, shipped, delivered, cancelled]}
+  - {name: PaymentMethodType, values: [card, wallet, bank_transfer, cash_on_delivery]}
+  - {name: PaymentStatus, values: [pending, paid, failed, refunded]}
+  - {name: NotificationKind, values: [order_update, offer, account]}
+  - {name: LoyaltyReason, values: [purchase, review, referral, redeemed, adjustment]}
+  - {name: MessageSender, values: [customer, agent]}
+
+entities:
+  - id: ENT-User
+    name: User
+    plain_name: Customers
+    fields:
+      - {name: name, type: string}
+      - {name: phone, type: string}
+      - {name: email, type: string, required: false}
+      - {name: avatar, type: image, required: false}
+      - {name: created_at, type: datetime}
+    seed_guidance: Two sample customers and one store manager with realistic Indian-or-international names matching the app locale.
+  - id: ENT-Address
+    name: Address
+    plain_name: Delivery addresses
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: label, type: string, description: "Home, Work, ..."}
+      - {name: recipient_name, type: string}
+      - {name: phone, type: string}
+      - {name: line1, type: string}
+      - {name: line2, type: string, required: false}
+      - {name: city, type: string}
+      - {name: region, type: string, required: false}
+      - {name: postal_code, type: string}
+      - {name: is_default, type: bool}
+  - id: ENT-Category
+    name: Category
+    plain_name: Categories
+    fields:
+      - {name: name, type: string}
+      - {name: image, type: image, required: false}
+      - {name: parent, type: ref, ref: ENT-Category, required: false}
+    seed_guidance: Four to six top-level categories that fit the shop (for example clothing, home, electronics).
+  - id: ENT-Product
+    name: Product
+    plain_name: Products
+    fields:
+      - {name: name, type: string}
+      - {name: description, type: text}
+      - {name: price, type: money}
+      - {name: compare_at_price, type: money, required: false, description: "Original price when on sale"}
+      - {name: image, type: image}
+      - {name: gallery, type: json, required: false, description: "List of extra image URLs"}
+      - {name: category, type: ref, ref: ENT-Category}
+      - {name: brand, type: string, required: false}
+      - {name: rating, type: number, required: false}
+      - {name: rating_count, type: int, required: false}
+      - {name: in_stock, type: bool}
+    seed_guidance: 20 to 40 products across the categories with believable names, prices, photos and a mix of in-stock and out-of-stock items.
+  - id: ENT-ProductVariant
+    name: Product variant
+    plain_name: Sizes and colors
+    fields:
+      - {name: product, type: ref, ref: ENT-Product}
+      - {name: label, type: string, description: "For example M / Blue"}
+      - {name: sku, type: string}
+      - {name: price, type: money, required: false, description: "Only when it differs from the product price"}
+      - {name: in_stock, type: bool}
+  - id: ENT-Cart
+    name: Cart
+    plain_name: Cart
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: item_count, type: int}
+      - {name: subtotal, type: money}
+      - {name: shipping_fee, type: money}
+      - {name: total, type: money}
+  - id: ENT-CartItem
+    name: Cart item
+    plain_name: Cart items
+    fields:
+      - {name: cart, type: ref, ref: ENT-Cart}
+      - {name: product, type: ref, ref: ENT-Product}
+      - {name: variant, type: ref, ref: ENT-ProductVariant, required: false}
+      - {name: quantity, type: int}
+      - {name: unit_price, type: money}
+  - id: ENT-Order
+    name: Order
+    plain_name: Orders
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: status, type: enum, enum: OrderStatus}
+      - {name: shipping_address, type: text, description: "Address as it was at checkout"}
+      - {name: items_total, type: money}
+      - {name: shipping_fee, type: money}
+      - {name: total, type: money}
+      - {name: payment_method, type: enum, enum: PaymentMethodType, required: false}
+      - {name: placed_at, type: datetime}
+      - {name: estimated_delivery, type: date, required: false}
+      - {name: tracking_code, type: string, required: false}
+      - {name: cancel_reason, type: string, required: false}
+    state_machine:
+      field: status
+      states: [placed, confirmed, shipped, delivered, cancelled]
+      transitions:
+        - {source: placed, target: confirmed, "on": confirm}
+        - {source: confirmed, target: shipped, "on": ship}
+        - {source: shipped, target: delivered, "on": deliver}
+        - {source: placed, target: cancelled, "on": cancel}
+        - {source: confirmed, target: cancelled, "on": cancel}
+    seed_guidance: Three sample orders for the main customer, one in each of placed, shipped and delivered.
+  - id: ENT-OrderItem
+    name: Order item
+    plain_name: Items in an order
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: product, type: ref, ref: ENT-Product}
+      - {name: variant, type: ref, ref: ENT-ProductVariant, required: false}
+      - {name: name, type: string, description: "Product name at the time of purchase"}
+      - {name: quantity, type: int}
+      - {name: unit_price, type: money}
+  - id: ENT-OrderEvent
+    name: Order event
+    plain_name: Order progress steps
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: status, type: enum, enum: OrderStatus}
+      - {name: note, type: string, required: false}
+      - {name: at, type: datetime}
+  - id: ENT-PaymentMethod
+    name: Payment method
+    plain_name: Saved payment methods
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: PaymentMethodType}
+      - {name: label, type: string, description: "Display text only, for example Card ending 4242. Never a full number."}
+      - {name: is_default, type: bool}
+  - id: ENT-Payment
+    name: Payment
+    plain_name: Payments
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: method, type: enum, enum: PaymentMethodType}
+      - {name: status, type: enum, enum: PaymentStatus}
+      - {name: amount, type: money}
+      - {name: provider_reference, type: string, required: false}
+    state_machine:
+      field: status
+      states: [pending, paid, failed, refunded]
+      transitions:
+        - {source: pending, target: paid, "on": capture}
+        - {source: pending, target: failed, "on": decline}
+        - {source: paid, target: refunded, "on": refund}
+  - id: ENT-Review
+    name: Review
+    plain_name: Reviews
+    fields:
+      - {name: product, type: ref, ref: ENT-Product}
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: rating, type: int, description: "1 to 5"}
+      - {name: title, type: string, required: false}
+      - {name: body, type: text, required: false}
+      - {name: created_at, type: datetime}
+  - id: ENT-Favorite
+    name: Favorite
+    plain_name: Favorites
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: product, type: ref, ref: ENT-Product}
+      - {name: created_at, type: datetime}
+  - id: ENT-Notification
+    name: Notification
+    plain_name: Notifications
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: NotificationKind}
+      - {name: title, type: string}
+      - {name: body, type: text}
+      - {name: is_read, type: bool}
+      - {name: created_at, type: datetime}
+  - id: ENT-LoyaltyAccount
+    name: Loyalty account
+    plain_name: Loyalty points
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: points_balance, type: int}
+      - {name: tier, type: string, description: "For example Silver, Gold"}
+  - id: ENT-LoyaltyEntry
+    name: Loyalty entry
+    plain_name: Points history
+    fields:
+      - {name: account, type: ref, ref: ENT-LoyaltyAccount}
+      - {name: points, type: int, description: "Positive when earned, negative when used"}
+      - {name: reason, type: enum, enum: LoyaltyReason}
+      - {name: created_at, type: datetime}
+  - id: ENT-SupportMessage
+    name: Support message
+    plain_name: Support chat messages
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: sender, type: enum, enum: MessageSender}
+      - {name: body, type: text}
+      - {name: created_at, type: datetime}
+
+api_operations:
+  # ---- account
+  - {id: API-requestOtp, name: Request sign-in code, method: POST, path: /auth/otp, request_entity: ENT-User, notes: "Sends a one-time code to the phone number. Mock sender in the preview."}
+  - {id: API-verifyOtp, name: Verify sign-in code, method: POST, path: /auth/otp/verify, request_entity: ENT-User, response_entity: ENT-User, notes: "Returns the session. New phone numbers create a user."}
+  - {id: API-getMe, name: Get my profile, method: GET, path: /me, response_entity: ENT-User, auth: authenticated}
+  - {id: API-updateMe, name: Update my profile, method: PATCH, path: /me, request_entity: ENT-User, response_entity: ENT-User, auth: authenticated}
+  - {id: API-listAddresses, name: List my addresses, method: GET, path: /addresses, response_entity: ENT-Address, response_many: true, auth: authenticated}
+  - {id: API-createAddress, name: Add an address, method: POST, path: /addresses, request_entity: ENT-Address, response_entity: ENT-Address, auth: authenticated}
+  - {id: API-updateAddress, name: Change an address, method: PUT, path: "/addresses/{id}", request_entity: ENT-Address, response_entity: ENT-Address, auth: authenticated}
+  - {id: API-deleteAddress, name: Delete an address, method: DELETE, path: "/addresses/{id}", auth: authenticated}
+  # ---- catalog
+  - {id: API-listCategories, name: List categories, method: GET, path: /categories, response_entity: ENT-Category, response_many: true}
+  - {id: API-listProducts, name: List products, method: GET, path: /products, response_entity: ENT-Product, response_many: true, notes: "Query: category, sort, filters, page."}
+  - {id: API-getProduct, name: Get a product, method: GET, path: "/products/{id}", response_entity: ENT-Product, notes: "Includes its variants (ENT-ProductVariant)."}
+  - {id: API-searchProducts, name: Search products, method: GET, path: /search, response_entity: ENT-Product, response_many: true, notes: "Query: q, filters, sort, page."}
+  # ---- cart and orders
+  - {id: API-getCart, name: Get my cart, method: GET, path: /cart, response_entity: ENT-Cart, auth: authenticated, notes: "Includes its items (ENT-CartItem)."}
+  - {id: API-addCartItem, name: Add to cart, method: POST, path: /cart/items, request_entity: ENT-CartItem, response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-updateCartItem, name: Change cart quantity, method: PATCH, path: "/cart/items/{id}", request_entity: ENT-CartItem, response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-removeCartItem, name: Remove from cart, method: DELETE, path: "/cart/items/{id}", response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-createOrder, name: Place an order, method: POST, path: /orders, request_entity: ENT-Order, response_entity: ENT-Order, auth: authenticated, notes: "Turns the cart into an order and empties the cart."}
+  - {id: API-listOrders, name: List my orders, method: GET, path: /orders, response_entity: ENT-Order, response_many: true, auth: authenticated}
+  - {id: API-getOrder, name: Get an order, method: GET, path: "/orders/{id}", response_entity: ENT-Order, auth: authenticated, notes: "Includes its items (ENT-OrderItem)."}
+  - {id: API-getOrderTracking, name: Get order progress, method: GET, path: "/orders/{id}/tracking", response_entity: ENT-OrderEvent, response_many: true, auth: authenticated}
+  - {id: API-cancelOrder, name: Cancel an order, method: POST, path: "/orders/{id}/cancel", response_entity: ENT-Order, auth: authenticated}
+  # ---- payments
+  - {id: API-listPaymentMethods, name: List saved payment methods, method: GET, path: /payment-methods, response_entity: ENT-PaymentMethod, response_many: true, auth: authenticated}
+  - {id: API-addPaymentMethod, name: Save a payment method, method: POST, path: /payment-methods, request_entity: ENT-PaymentMethod, response_entity: ENT-PaymentMethod, auth: authenticated, notes: "The provider tokenizes the card; only the display label is stored."}
+  - {id: API-removePaymentMethod, name: Remove a payment method, method: DELETE, path: "/payment-methods/{id}", auth: authenticated}
+  - {id: API-createPayment, name: Pay for an order, method: POST, path: /payments, request_entity: ENT-Payment, response_entity: ENT-Payment, auth: authenticated, notes: "Mock provider by default: approves unless the test card for decline is used."}
+  # ---- reviews, favorites, notifications, loyalty, support
+  - {id: API-listReviews, name: List product reviews, method: GET, path: "/products/{id}/reviews", response_entity: ENT-Review, response_many: true}
+  - {id: API-createReview, name: Write a review, method: POST, path: "/products/{id}/reviews", request_entity: ENT-Review, response_entity: ENT-Review, auth: authenticated}
+  - {id: API-listFavorites, name: List my favorites, method: GET, path: /favorites, response_entity: ENT-Favorite, response_many: true, auth: authenticated}
+  - {id: API-addFavorite, name: Save a favorite, method: POST, path: /favorites, request_entity: ENT-Favorite, response_entity: ENT-Favorite, auth: authenticated}
+  - {id: API-removeFavorite, name: Remove a favorite, method: DELETE, path: "/favorites/{id}", auth: authenticated}
+  - {id: API-listNotifications, name: List my notifications, method: GET, path: /notifications, response_entity: ENT-Notification, response_many: true, auth: authenticated}
+  - {id: API-markNotificationRead, name: Mark a notification read, method: POST, path: "/notifications/{id}/read", response_entity: ENT-Notification, auth: authenticated}
+  - {id: API-registerPushToken, name: Register this phone for push, method: POST, path: /devices/push-token, auth: authenticated, notes: "Body carries the device token. Mock in the preview."}
+  - {id: API-getLoyaltyAccount, name: Get my loyalty account, method: GET, path: /loyalty, response_entity: ENT-LoyaltyAccount, auth: authenticated}
+  - {id: API-listLoyaltyEntries, name: List my points history, method: GET, path: /loyalty/entries, response_entity: ENT-LoyaltyEntry, response_many: true, auth: authenticated}
+  - {id: API-listSupportMessages, name: List support messages, method: GET, path: /support/messages, response_entity: ENT-SupportMessage, response_many: true, auth: authenticated}
+  - {id: API-sendSupportMessage, name: Send a support message, method: POST, path: /support/messages, request_entity: ENT-SupportMessage, response_entity: ENT-SupportMessage, auth: authenticated}
+  # ---- store manager
+  - {id: API-getSalesSummary, name: Get today's sales summary, method: GET, path: /admin/summary, auth: ROLE-store_manager, roles: [ROLE-store_manager], notes: "Counts and totals for orders today, pending orders and low-stock products."}
+  - {id: API-listAllOrders, name: List all orders, method: GET, path: /admin/orders, response_entity: ENT-Order, response_many: true, auth: ROLE-store_manager, roles: [ROLE-store_manager]}
+  - {id: API-getAdminOrder, name: Get any order, method: GET, path: "/admin/orders/{id}", response_entity: ENT-Order, auth: ROLE-store_manager, roles: [ROLE-store_manager]}
+  - {id: API-updateOrderStatus, name: Move an order forward, method: PATCH, path: "/admin/orders/{id}", request_entity: ENT-Order, response_entity: ENT-Order, auth: ROLE-store_manager, roles: [ROLE-store_manager]}
+  - {id: API-saveProduct, name: Save a product, method: PUT, path: "/admin/products/{id}", request_entity: ENT-Product, response_entity: ENT-Product, auth: ROLE-store_manager, roles: [ROLE-store_manager]}
+
+integrations:
+  - {id: INT-sms_otp, name: Sign-in codes by SMS, purpose: Send one-time codes so people can sign in with a phone number., mode: mock, notes: "Mock sender prints the code in the preview. A real SMS provider is chosen at release."}
+  - {id: INT-order_emails, name: Order emails, purpose: Email an order confirmation and shipping updates., mode: mock}
+  - {id: INT-payments, name: Payments, purpose: Take card and wallet payments through a payment provider., mode: mock, notes: "Mock provider by default. A real provider SDK needs a development build and keeps card data off our servers."}
+  - {id: INT-push_notifications, name: Push notifications, purpose: Send order updates and offers to the phone., mode: mock, notes: "Shown as in-app banners in the preview."}
+  - {id: INT-support_chat, name: Support chat, purpose: Connect the chat screen to the shop team's inbox., mode: mock}
+
+compliance_triggers:
+  - id: payments_finance
+    label: Takes payments
+    sensitive_domain: finance
+    cards: [Q-comp-02]
+    keywords: [payment, payments, "pay online", card, wallet, upi, "bank transfer", checkout]
+    conservative_defaults: {compliance.flags: [financial_data]}
+    research_hint: payment card data handling and which responsibilities stay with the payment provider for a mobile shop
+  - id: age_restricted_goods
+    label: Age-restricted goods
+    sensitive_domain: identity_documents
+    cards: [Q-comp-04]
+    keywords: [alcohol, tobacco, vape, "age verification", "id proof", "age check"]
+    conservative_defaults: {compliance.flags: [identity_documents]}
+    research_hint: age verification rules for selling age-restricted goods through a mobile app
+
+screens:
+  # ------------------------------------------------------------------ sign in
+  - key: welcome
+    route: /welcome
+    recipe: welcome
+    purpose: Introduce the app to a signed-out visitor and offer to sign in, create an account or just look around
+    actions:
+      - {name: sign_in, go: "@login"}
+      - {name: create_account, go: "@signup"}
+      - {name: browse_as_guest, go: "@home"}
+    texts: {title: "Shop what you love", cta_primary: "Sign in", cta_secondary: "Create account", cta_guest: "Just looking"}
+    checks:
+      - Just looking opens the home screen without asking for an account
+      - Sign in and Create account open the matching screens
+  - key: login
+    route: /login
+    recipe: login-otp
+    purpose: Sign in with a phone number and a one-time code
+    actions:
+      - {name: send_code, calls: API-requestOtp, on_success: "show the code field and start the resend timer"}
+      - {name: verify_code, calls: API-verifyOtp, go: "@home", on_success: "save the session and open the home screen"}
+      - {name: new_user_setup, go: "@signup", on_success: "opened instead of home when the number is new"}
+    states:
+      wrong_code: {show: "inline error under the code field", allow: "retry, and resend after 30 seconds"}
+    texts: {title: "Sign in", cta: "Send code", hint: "We will text you a 6-digit code"}
+    checks:
+      - A wrong code shows an error and allows another try
+      - The resend link stays disabled for 30 seconds after a send
+  - key: signup
+    route: /signup
+    recipe: signup
+    purpose: Finish a new account with a name and an optional email after the phone number is verified
+    actions:
+      - {name: finish_profile, calls: API-updateMe, go: "@home", on_success: "open the home screen"}
+    texts: {title: "Almost there", cta: "Create account"}
+    checks:
+      - The name is required and the email is optional
+  # ------------------------------------------------------------------ browse
+  - key: home
+    route: /home
+    recipe: dashboard
+    feature: catalog_browse
+    purpose: Show categories and featured products and lead people into browsing
+    data:
+      - {bind: "API-listCategories", show: [name, image]}
+      - {bind: "API-listProducts(featured)", show: [name, image, price, compare_at_price, rating]}
+    sections: [search_entry, banners, categories, featured_products, new_arrivals]
+    actions:
+      - {name: open_search, go: "@search"}
+      - {name: open_category, go: "@category"}
+      - {name: open_product, go: "@product_detail"}
+    texts: {title: "Home", search_hint: "Search products"}
+    checks:
+      - Tapping a category opens its product list
+      - Tapping a product opens its page
+  - key: category
+    route: /category/[id]
+    recipe: list-with-filters
+    feature: catalog_browse
+    purpose: List the products of one category with sorting and filters
+    data:
+      - {bind: "API-listProducts(category, sort, filters)", show: [name, image, price, compare_at_price, rating, in_stock]}
+    sections: [filter_chips, sort_control, result_count, product_grid, load_more]
+    actions:
+      - {name: open_product, go: "@product_detail"}
+    states:
+      empty: {message: "Nothing in this category yet", action: "Browse other categories"}
+    checks:
+      - Changing the sort order reloads the list from the first page
+      - An out-of-stock product shows a label on its card
+  - key: product_detail
+    route: /product/[id]
+    recipe: detail-with-sticky-cta
+    feature: catalog_browse
+    purpose: Show one product and let the shopper add it to the cart
+    data:
+      - {bind: "API-getProduct(id)", show: [name, gallery, price, compare_at_price, rating, rating_count, description, variants, in_stock]}
+    sections: [gallery, title_price, favorite_button, variant_picker, description, delivery_info, reviews_preview, sticky_cta]
+    actions:
+      - {name: add_to_cart, calls: API-addCartItem, on_success: "toast and the cart badge count goes up"}
+      - {name: view_cart, go: "@cart"}
+      - {name: toggle_favorite, calls: API-addFavorite, on_success: "the heart fills in"}
+      - {name: see_all_reviews, go: "@reviews_list"}
+    states:
+      out_of_stock: {disable: add_to_cart, show: notify_me}
+    texts: {cta: "Add to cart"}
+    checks:
+      - Add to cart increases the cart badge by the chosen quantity
+      - An out-of-stock variant disables the button
+      - A variant must be chosen before adding when the product has variants
+  # ------------------------------------------------------------------ cart and checkout
+  - key: cart
+    route: /cart
+    recipe: list
+    purpose: Review the items, change quantities and continue to checkout
+    auth: authenticated
+    feature: cart_checkout
+    data:
+      - {bind: "API-getCart", show: [items, item_count, subtotal, shipping_fee, total]}
+    sections: [cart_items, order_totals, checkout_cta]
+    actions:
+      - {name: change_quantity, calls: API-updateCartItem}
+      - {name: remove_item, calls: API-removeCartItem}
+      - {name: checkout, go: "@checkout"}
+      - {name: keep_shopping, go: "@home"}
+    states:
+      empty: {message: "Your cart is empty", action: "Start shopping"}
+    texts: {title: "Your cart", cta: "Checkout"}
+    checks:
+      - Changing a quantity updates the totals without leaving the screen
+      - An empty cart shows the empty message and no checkout button
+  - key: checkout
+    route: /checkout
+    recipe: checkout-review
+    purpose: Confirm the address and payment and place the order
+    auth: authenticated
+    feature: cart_checkout
+    data:
+      - {bind: "API-getCart", show: [items, subtotal, shipping_fee, total]}
+      - {bind: "API-listAddresses", show: [label, line1, city, is_default]}
+    sections: [order_summary, delivery_address, payment_method, price_breakdown, place_cta]
+    actions:
+      - {name: change_address, go: "@addresses"}
+      - {name: choose_payment, go: "@payment_methods"}
+      - {name: pay_now, calls: API-createPayment, on_success: "payment captured, then place_order runs"}
+      - {name: payment_declined, go: "@payment_failed", on_success: "opened when the provider declines the payment"}
+      - {name: place_order, calls: API-createOrder, go: "@order_confirmation", on_success: "empty the cart and open the confirmation"}
+    states:
+      no_address: {disable: place_order, show: "Add a delivery address"}
+    texts: {title: "Review and place order", cta: "Place order"}
+    checks:
+      - Place order is disabled until a delivery address is chosen
+      - The total on this screen equals the cart total
+  - key: order_confirmation
+    route: /order-confirmation
+    recipe: confirmation
+    purpose: Tell the shopper the order is placed and what happens next
+    auth: authenticated
+    feature: cart_checkout
+    data:
+      - {bind: "ENT-Order.total", show: [total]}
+      - {bind: "ENT-Order.estimated_delivery", show: [estimated_delivery]}
+    actions:
+      - {name: track_order, go: "@order_tracking"}
+      - {name: continue_shopping, go: "@home"}
+    texts: {title: "Order placed", message: "Thanks. We will let you know when it ships."}
+    checks:
+      - The back button returns to home, not to checkout
+  - key: payment_failed
+    route: /payment-failed
+    recipe: empty-state-only
+    purpose: Explain that the payment did not go through and offer a way forward
+    auth: authenticated
+    feature: payments
+    actions:
+      - {name: retry_payment, go: "@checkout"}
+      - {name: change_method, go: "@payment_methods"}
+      - {name: back_to_cart, go: "@cart"}
+    texts: {title: "Payment did not go through", message: "You have not been charged. Try again or use another method."}
+    checks:
+      - The cart still holds the same items after a failed payment
+  - key: payment_methods
+    route: /payment-methods
+    recipe: list
+    purpose: Show saved payment methods and let the shopper add or remove one
+    auth: authenticated
+    feature: payments
+    data:
+      - {bind: "API-listPaymentMethods", show: [label, kind, is_default]}
+    actions:
+      - {name: add_method, go: "@add_payment_method"}
+      - {name: remove_method, calls: API-removePaymentMethod}
+    states:
+      empty: {message: "No saved payment methods", action: "Add one"}
+    checks:
+      - Only a display label such as Card ending 4242 is ever shown
+  - key: add_payment_method
+    route: /payment-methods/new
+    recipe: form
+    purpose: Add a card or wallet through the payment provider's secure fields
+    auth: authenticated
+    feature: payments
+    sections: [method_type, provider_card_fields, set_default, save_cta]
+    actions:
+      - {name: save_method, calls: API-addPaymentMethod, go: "@payment_methods"}
+    texts: {title: "Add payment method", note: "Card details go straight to the payment provider. This app never stores them."}
+    checks:
+      - Card number fields come from the provider, not from our own text inputs
+  # ------------------------------------------------------------------ orders
+  - key: orders
+    route: /orders
+    recipe: list
+    purpose: List the shopper's orders, newest first
+    auth: authenticated
+    feature: order_tracking
+    data:
+      - {bind: "API-listOrders", show: [status, placed_at, total, items_total]}
+    actions:
+      - {name: open_order, go: "@order_detail"}
+      - {name: start_shopping, go: "@home"}
+    states:
+      empty: {message: "No orders yet", action: "Start shopping"}
+    texts: {title: "Your orders"}
+    checks:
+      - Each row shows the status with a color and a label, not color alone
+  - key: order_detail
+    route: /orders/[id]
+    recipe: detail
+    purpose: Show the items, address, payment and status of one order
+    auth: authenticated
+    feature: order_tracking
+    data:
+      - {bind: "API-getOrder(id)", show: [status, items, shipping_address, items_total, shipping_fee, total, payment_method, placed_at, estimated_delivery]}
+      - {bind: "ENT-OrderItem.name", show: [name, quantity, unit_price]}
+    sections: [status_header, items, delivery_address, payment_summary, secondary_actions]
+    actions:
+      - {name: track, go: "@order_tracking"}
+      - {name: cancel_order, calls: API-cancelOrder, on_success: "status becomes cancelled"}
+      - {name: reorder, calls: API-addCartItem, go: "@cart", on_success: "items are added to the cart"}
+      - {name: write_review, go: "@write_review"}
+    states:
+      not_cancellable: {disable: cancel_order, show: "Already shipped"}
+    checks:
+      - Cancel is offered only while the order is placed or confirmed
+      - Reorder puts the same items in the cart
+  - key: order_tracking
+    route: /orders/[id]/tracking
+    recipe: tracking
+    purpose: Show where the order is with a step-by-step timeline
+    auth: authenticated
+    feature: order_tracking
+    data:
+      - {bind: "API-getOrderTracking(orderId)", show: [status, note, at]}
+    sections: [status_header, progress_timeline, contact_actions]
+    actions:
+      - {name: contact_support, go: "@support_chat"}
+      - {name: back_to_order, go: "@order_detail"}
+    checks:
+      - Completed steps show a time and the current step is highlighted
+  # ------------------------------------------------------------------ reviews and favorites
+  - key: reviews_list
+    route: /product/[id]/reviews
+    recipe: list
+    purpose: Read all reviews of a product with an average rating
+    feature: reviews
+    data:
+      - {bind: "API-listReviews(productId)", show: [rating, title, body, user, created_at]}
+    sections: [rating_summary, review_cards, load_more]
+    actions:
+      - {name: write_review, go: "@write_review"}
+    states:
+      empty: {message: "No reviews yet", action: "Be the first to review"}
+    checks:
+      - The average rating and the number of reviews are shown above the list
+  - key: write_review
+    route: /product/[id]/review/new
+    recipe: form
+    purpose: Let a customer rate a product and add a short review
+    auth: authenticated
+    feature: reviews
+    sections: [star_picker, title_input, body_input, submit]
+    actions:
+      - {name: submit_review, calls: API-createReview, go: "@reviews_list", on_success: "show the new review at the top"}
+    texts: {title: "Write a review", cta: "Post review"}
+    checks:
+      - A star rating is required and the text is optional
+  - key: favorites
+    route: /favorites
+    recipe: list
+    purpose: Show the products the shopper has saved
+    auth: authenticated
+    feature: favorites
+    data:
+      - {bind: "API-listFavorites", show: [product, created_at]}
+    actions:
+      - {name: open_product, go: "@product_detail"}
+      - {name: remove_favorite, calls: API-removeFavorite}
+    states:
+      empty: {message: "Nothing saved yet", action: "Browse products"}
+    checks:
+      - Removing a favorite removes the row immediately with an undo toast
+  # ------------------------------------------------------------------ search
+  - key: search
+    route: /search
+    recipe: search
+    purpose: Search the catalog by name with recent searches and suggestions
+    feature: search
+    data:
+      - {bind: "API-searchProducts(q)", show: [name, image, price]}
+    actions:
+      - {name: open_results, go: "@search_results"}
+      - {name: open_product, go: "@product_detail"}
+    texts: {hint: "Search products"}
+    checks:
+      - Recent searches appear before typing and can be cleared
+  - key: search_results
+    route: /search/results
+    recipe: list-with-filters
+    purpose: Show matching products with filters and sorting
+    feature: search
+    data:
+      - {bind: "API-searchProducts(q, filters, sort)", show: [name, image, price, compare_at_price, rating, in_stock]}
+    sections: [search_bar, filter_chips, sort_control, result_count, product_grid, load_more]
+    actions:
+      - {name: open_product, go: "@product_detail"}
+    states:
+      empty: {message: "No products match your search", action: "Clear filters"}
+    checks:
+      - The result count matches the number of rows after filtering
+  # ------------------------------------------------------------------ notifications, loyalty, support
+  - key: notifications
+    route: /notifications
+    recipe: notifications
+    purpose: Show order updates and offers the shopper received
+    auth: authenticated
+    feature: push_notifications
+    data:
+      - {bind: "API-listNotifications", show: [kind, title, body, is_read, created_at]}
+    actions:
+      - {name: open_order, go: "@order_detail"}
+      - {name: open_offer, go: "@home"}
+      - {name: mark_read, calls: API-markNotificationRead}
+    checks:
+      - Unread items are marked and become read when opened
+  - key: loyalty
+    route: /loyalty
+    recipe: dashboard
+    purpose: Show the points balance, the tier and ways to earn more
+    auth: authenticated
+    feature: loyalty
+    data:
+      - {bind: "API-getLoyaltyAccount", show: [points_balance, tier]}
+    sections: [points_balance, tier_progress, ways_to_earn]
+    actions:
+      - {name: see_history, go: "@loyalty_history"}
+      - {name: shop_to_earn, go: "@home"}
+    checks:
+      - The balance equals the sum of the points history
+  - key: loyalty_history
+    route: /loyalty/history
+    recipe: list
+    purpose: List points earned and used
+    auth: authenticated
+    feature: loyalty
+    data:
+      - {bind: "API-listLoyaltyEntries", show: [points, reason, created_at]}
+    states:
+      empty: {message: "No points yet", action: "Start shopping"}
+    checks:
+      - Earned points show a plus sign and used points a minus sign
+  - key: support_chat
+    route: /support/chat
+    recipe: chat
+    purpose: Chat with the shop team about an order or a product
+    auth: authenticated
+    feature: support_chat
+    data:
+      - {bind: "API-listSupportMessages", show: [sender, body, created_at]}
+    actions:
+      - {name: send_message, calls: API-sendSupportMessage}
+    texts: {title: "Chat with us", hint: "Type your message"}
+    checks:
+      - A sent message appears immediately and shows a failed state with retry if it cannot be sent
+  - key: help_center
+    route: /help
+    recipe: list
+    purpose: Answer common questions about orders, payments and returns, and say how to reach the shop
+    sections: [faq_groups, contact_options]
+    actions:
+      - {name: contact_support, go: "@support_chat"}
+    texts: {title: "Help"}
+    checks:
+      - Each question expands in place to show its answer
+  # ------------------------------------------------------------------ account
+  - key: profile
+    route: /account
+    recipe: profile
+    purpose: Show who is signed in and lead to account areas
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, phone, avatar]}
+    sections: [identity_header, menu_groups, sign_out]
+    actions:
+      - {name: edit_profile, go: "@edit_profile"}
+      - {name: open_addresses, go: "@addresses"}
+      - {name: open_payment_methods, go: "@payment_methods"}
+      - {name: open_favorites, go: "@favorites"}
+      - {name: open_loyalty, go: "@loyalty"}
+      - {name: open_notifications, go: "@notifications"}
+      - {name: open_settings, go: "@settings"}
+      - {name: open_help, go: "@help_center"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session and saved cart view"}
+    checks:
+      - Sign out returns to the welcome screen and clears the session
+  - key: edit_profile
+    route: /account/edit
+    recipe: form
+    purpose: Change the name, email and photo
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, phone, email, avatar]}
+    sections: [photo, name_input, email_input, save]
+    actions:
+      - {name: save_profile, calls: API-updateMe, go: "@profile"}
+    checks:
+      - The phone number is shown but cannot be edited here
+  - key: addresses
+    route: /account/addresses
+    recipe: list
+    purpose: List saved delivery addresses
+    auth: authenticated
+    data:
+      - {bind: "API-listAddresses", show: [label, recipient_name, line1, city, postal_code, is_default]}
+    actions:
+      - {name: add_address, go: "@address_form"}
+      - {name: edit_address, go: "@address_form"}
+      - {name: delete_address, calls: API-deleteAddress}
+      - {name: make_default, calls: API-updateAddress}
+    states:
+      empty: {message: "No saved addresses", action: "Add an address"}
+    checks:
+      - Exactly one address is marked as default
+  - key: address_form
+    route: /account/addresses/edit
+    recipe: form
+    purpose: Add or change a delivery address
+    auth: authenticated
+    sections: [label_picker, recipient_fields, address_fields, default_switch, save]
+    actions:
+      - {name: save_new, calls: API-createAddress, go: "@addresses"}
+      - {name: save_changes, calls: API-updateAddress, go: "@addresses"}
+    checks:
+      - The postal code field rejects obviously wrong input before saving
+  - key: settings
+    route: /settings
+    recipe: settings
+    purpose: Notifications, language, appearance and privacy choices
+    auth: authenticated
+    sections: [notifications_group, appearance_group, language_group, privacy_group, about_group, sign_out]
+    actions:
+      - {name: enable_push, calls: API-registerPushToken, on_success: "ask the system for permission, then save the token"}
+      - {name: open_help, go: "@help_center"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Changes apply immediately without a save button
+  # ------------------------------------------------------------------ store manager
+  - key: admin_dashboard
+    route: /admin
+    recipe: dashboard
+    surface: business
+    auth: ROLE-store_manager
+    purpose: Show today's orders and revenue and what needs attention
+    data:
+      - {bind: "API-getSalesSummary", show: [orders_today, revenue_today, pending_orders, low_stock]}
+    sections: [today_stats, pending_orders, low_stock_products]
+    actions:
+      - {name: open_orders, go: "@admin_orders"}
+      - {name: add_product, go: "@admin_product_editor"}
+    checks:
+      - Pending orders link to the orders list filtered to pending
+  - key: admin_orders
+    route: /admin/orders
+    recipe: list-with-filters
+    surface: business
+    auth: ROLE-store_manager
+    purpose: List every order with filters by status
+    data:
+      - {bind: "API-listAllOrders(status, page)", show: [status, placed_at, total, shipping_address]}
+    sections: [status_filter, order_rows, load_more]
+    actions:
+      - {name: open_order, go: "@admin_order_detail"}
+    checks:
+      - The status filter lists orders of that status only
+  - key: admin_order_detail
+    route: /admin/orders/[id]
+    recipe: detail
+    surface: business
+    auth: ROLE-store_manager
+    purpose: Show one order and move it to the next status
+    data:
+      - {bind: "API-getAdminOrder(id)", show: [status, items, shipping_address, total, payment_method, placed_at]}
+    actions:
+      - {name: confirm_order, calls: API-updateOrderStatus, on_success: "status becomes confirmed"}
+      - {name: ship_order, calls: API-updateOrderStatus, on_success: "status becomes shipped and a tracking code is saved"}
+      - {name: back_to_orders, go: "@admin_orders"}
+    checks:
+      - Only the next valid status is offered for the current status
+  - key: admin_product_editor
+    route: /admin/products/edit
+    recipe: form
+    surface: business
+    auth: ROLE-store_manager
+    purpose: Add or edit a product with photos, price and stock
+    data:
+      - {bind: "API-getProduct(id)", show: [name, description, price, compare_at_price, image, category, in_stock]}
+    sections: [photos, name_input, description_input, price_inputs, category_picker, stock_switch, save]
+    actions:
+      - {name: save_product, calls: API-saveProduct, go: "@admin_dashboard"}
+    checks:
+      - Price must be a positive amount
+
+flows:
+  - key: shop_to_order
+    name: Find a product and place an order
+    primary: true
+    screens: [home, product_detail, cart, checkout, order_confirmation]
+    purpose: The main journey, from the home screen to a placed order.
+  - key: sign_in
+    name: Sign in
+    screens: [welcome, login, home]
+  - key: search_and_find
+    name: Search for a product
+    feature: search
+    screens: [search, search_results, product_detail]
+  - key: pay_online
+    name: Add a payment method at checkout
+    feature: payments
+    screens: [checkout, payment_methods, add_payment_method]
+  - key: track_order
+    name: Follow an order
+    feature: order_tracking
+    screens: [orders, order_detail, order_tracking]
+  - key: review_product
+    name: Review a product
+    feature: reviews
+    screens: [product_detail, reviews_list, write_review]
+  - key: revisit_favorites
+    name: Come back to a saved product
+    feature: favorites
+    screens: [favorites, product_detail, cart]
+  - key: manage_addresses
+    name: Manage delivery addresses
+    screens: [profile, addresses, address_form]
+  - key: earn_rewards
+    name: Check loyalty points
+    feature: loyalty
+    screens: [loyalty, loyalty_history]
+  - key: get_help
+    name: Get help from the shop
+    feature: support_chat
+    screens: [help_center, support_chat]
+  - key: run_the_store
+    name: Handle an incoming order
+    screens: [admin_dashboard, admin_orders, admin_order_detail]
+
+navigation:
+  id: NAV-001
+  route: /
+  kind: auth_gate
+  label: App
+  auth: public
+  children:
+    - id: NAV-002
+      route: /welcome
+      kind: stack
+      label: Welcome
+      screen: "@welcome"
+      children:
+        - {id: NAV-003, route: /login, kind: screen, screen: "@login"}
+        - {id: NAV-004, route: /signup, kind: screen, screen: "@signup"}
+    - id: NAV-010
+      route: /(tabs)
+      kind: tabs
+      children:
+        - id: NAV-011
+          route: /home
+          kind: stack
+          label: Home
+          screen: "@home"
+          children:
+            - {id: NAV-012, route: "/category/[id]", kind: screen, screen: "@category"}
+            - {id: NAV-013, route: "/product/[id]", kind: screen, screen: "@product_detail"}
+            - {id: NAV-014, route: "/product/[id]/reviews", kind: screen, screen: "@reviews_list"}
+            - {id: NAV-015, route: "/product/[id]/review/new", kind: screen, screen: "@write_review", auth: authenticated}
+        - id: NAV-020
+          route: /search
+          kind: stack
+          label: Search
+          screen: "@search"
+          children:
+            - {id: NAV-021, route: /search/results, kind: screen, screen: "@search_results"}
+        - id: NAV-030
+          route: /cart
+          kind: stack
+          label: Cart
+          screen: "@cart"
+          auth: authenticated
+          children:
+            - {id: NAV-031, route: /checkout, kind: screen, screen: "@checkout", auth: authenticated}
+            - {id: NAV-032, route: /order-confirmation, kind: screen, screen: "@order_confirmation", auth: authenticated}
+            - {id: NAV-033, route: /payment-failed, kind: screen, screen: "@payment_failed", auth: authenticated}
+        - id: NAV-040
+          route: /orders
+          kind: stack
+          label: Orders
+          screen: "@orders"
+          auth: authenticated
+          children:
+            - {id: NAV-041, route: "/orders/[id]", kind: screen, screen: "@order_detail", auth: authenticated}
+            - {id: NAV-042, route: "/orders/[id]/tracking", kind: screen, screen: "@order_tracking", auth: authenticated}
+        - id: NAV-050
+          route: /account
+          kind: stack
+          label: Account
+          screen: "@profile"
+          auth: authenticated
+          children:
+            - {id: NAV-051, route: /account/edit, kind: screen, screen: "@edit_profile", auth: authenticated}
+            - {id: NAV-052, route: /account/addresses, kind: screen, screen: "@addresses", auth: authenticated}
+            - {id: NAV-053, route: /account/addresses/edit, kind: screen, screen: "@address_form", auth: authenticated}
+            - {id: NAV-054, route: /payment-methods, kind: screen, screen: "@payment_methods", auth: authenticated}
+            - {id: NAV-055, route: /payment-methods/new, kind: screen, screen: "@add_payment_method", auth: authenticated}
+            - {id: NAV-056, route: /favorites, kind: screen, screen: "@favorites", auth: authenticated}
+            - {id: NAV-057, route: /notifications, kind: screen, screen: "@notifications", auth: authenticated}
+            - {id: NAV-058, route: /loyalty, kind: screen, screen: "@loyalty", auth: authenticated}
+            - {id: NAV-059, route: /loyalty/history, kind: screen, screen: "@loyalty_history", auth: authenticated}
+            - {id: NAV-060, route: /settings, kind: screen, screen: "@settings", auth: authenticated}
+            - {id: NAV-061, route: /help, kind: screen, screen: "@help_center"}
+            - {id: NAV-062, route: /support/chat, kind: screen, screen: "@support_chat", auth: authenticated}
+    - id: NAV-070
+      route: /admin
+      kind: stack
+      label: Store manager
+      screen: "@admin_dashboard"
+      auth: ROLE-store_manager
+      children:
+        - {id: NAV-071, route: /admin/orders, kind: screen, screen: "@admin_orders", auth: ROLE-store_manager}
+        - {id: NAV-072, route: "/admin/orders/[id]", kind: screen, screen: "@admin_order_detail", auth: ROLE-store_manager}
+        - {id: NAV-073, route: /admin/products/edit, kind: screen, screen: "@admin_product_editor", auth: ROLE-store_manager}
+
+feature_parts:
+  search:
+    operations: [API-searchProducts]
+    screens:
+      home: {sections: [search_entry]}
+  payments:
+    operations: [API-listPaymentMethods, API-addPaymentMethod, API-removePaymentMethod, API-createPayment]
+    entities: [ENT-PaymentMethod, ENT-Payment]
+    integrations: [INT-payments]
+    screens:
+      checkout: {sections: [payment_method], actions: [pay_now]}
+  order_tracking:
+    operations: [API-listOrders, API-getOrder, API-getOrderTracking, API-cancelOrder]
+    entities: [ENT-OrderEvent, ENT-OrderItem]
+  reviews:
+    operations: [API-listReviews, API-createReview]
+    entities: [ENT-Review]
+    screens:
+      product_detail: {sections: [reviews_preview]}
+  favorites:
+    operations: [API-listFavorites, API-addFavorite, API-removeFavorite]
+    entities: [ENT-Favorite]
+    screens:
+      product_detail: {sections: [favorite_button]}
+  push_notifications:
+    operations: [API-listNotifications, API-markNotificationRead, API-registerPushToken]
+    entities: [ENT-Notification]
+    integrations: [INT-push_notifications]
+    screens:
+      settings: {sections: [notifications_group], actions: [enable_push]}
+  loyalty:
+    operations: [API-getLoyaltyAccount, API-listLoyaltyEntries]
+    entities: [ENT-LoyaltyAccount, ENT-LoyaltyEntry]
+  support_chat:
+    operations: [API-listSupportMessages, API-sendSupportMessage]
+    entities: [ENT-SupportMessage]
+    integrations: [INT-support_chat]

@@ -1,0 +1,14 @@
+# Cues for the offline change interpreter (English, Hindi, Hinglish). Normalised on load.
+remove_cues: [remove, delete, exclude, untick, "turn off", disable, "switch off", "get rid of", "take out", "take away", "i dont want", "dont want", "do not want", "no more", "without", drop, skip, hata, hatao, "hata do", "nikal do", "nahi chahiye", "हटाओ", "हटा दो", "निकाल दो", "नहीं चाहिए", "हटा दीजिए"]
+add_cues: [add, include, "turn on", enable, tick, "switch on", "also add", "i want", "i need", "put in", "need", jod, jodo, "jod do", daalo, "add karo", "chahiye", "जोड़ो", "जोड़ दो", "जोड़िए", "चाहिए", "भी चाहिए"]
+tweak_cues: [rounder, "more rounded", rounded, "less rounded", bigger, larger, smaller, bolder, "more spacing", "less spacing", padding, spacing, font, fonts, "font size", shadow, shadows, "bigger buttons", "smaller buttons", "bada karo", "chhota karo", "गोल", "बड़ा करो", "छोटा करो"]
+copy_cues: [title, heading, headline, caption, wording, "button text", "button label", "text on", "say", "rename the button", "tagline", "शीर्षक", "टेक्स्ट"]
+screen_words: [screen, page, tab, section, "स्क्रीन", "पेज"]
+rename_cues: ["name it", "call it", "call the app", "rename the app", "rename it", "app name", "app ka naam", "naam rakho", "नाम रखो", "नाम बदलो"]
+look_verbs: ["make it", "make the app", "change", "switch", "use", "set", "i want it", "should be", "banao", "karo", "chahiye", "बनाओ", "करो", "चाहिए"]
+research_cues: ["suggestion", "addition", "research", "ra-"]
+
+clarify:
+  en: "I did not catch what to change. You can use the buttons, or edit the row directly."
+  hi: "मैं समझ नहीं पाया कि क्या बदलना है। आप बटन इस्तेमाल कर सकते हैं, या सीधे उस पंक्ति को बदल सकते हैं।"
+  hi-Latn: "Main samajh nahi paya ki kya badalna hai. Aap buttons istemal kar sakte hain, ya seedhe us row ko badal sakte hain."

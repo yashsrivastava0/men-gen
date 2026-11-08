@@ -1,0 +1,4799 @@
+{
+  "components": {
+    "schemas": {
+      "ApprovalRecord": {
+        "additionalProperties": false,
+        "properties": {
+          "approver_id": {
+            "title": "Approver Id",
+            "type": "string"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "decision": {
+            "enum": [
+              "approve",
+              "change",
+              "reject"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "gate": {
+            "enum": [
+              "brief",
+              "plan"
+            ],
+            "title": "Gate",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "via": {
+            "default": "tap",
+            "enum": [
+              "tap",
+              "typed"
+            ],
+            "title": "Via",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "session_id",
+          "gate",
+          "version",
+          "hash",
+          "approver_id",
+          "decision"
+        ],
+        "title": "ApprovalRecord",
+        "type": "object"
+      },
+      "ApproverStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "decision": {
+            "anyOf": [
+              {
+                "enum": [
+                  "approve",
+                  "change",
+                  "reject"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "role": {
+            "title": "Role",
+            "type": "string"
+          },
+          "user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "User Id"
+          }
+        },
+        "required": [
+          "role"
+        ],
+        "title": "ApproverStatus",
+        "type": "object"
+      },
+      "AssistantMessage": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "canned": {
+            "default": false,
+            "title": "Canned",
+            "type": "boolean"
+          },
+          "chips": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Chips",
+            "type": "array"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "const": "assistant_message",
+            "default": "assistant_message",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "text"
+        ],
+        "title": "AssistantMessage",
+        "type": "object"
+      },
+      "AssumedItem": {
+        "additionalProperties": false,
+        "description": "Something we assumed instead of asking. The user can toggle or edit each one.",
+        "properties": {
+          "included": {
+            "default": true,
+            "title": "Included",
+            "type": "boolean"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "reason": {
+            "title": "Reason",
+            "type": "string"
+          },
+          "slot_id": {
+            "enum": [
+              "idea.summary",
+              "idea.archetype",
+              "scope.apps",
+              "scope.features",
+              "users.roles",
+              "auth.method",
+              "design.direction",
+              "brand.name",
+              "brand.assets",
+              "design.accent",
+              "design.mode",
+              "design.nav_style",
+              "pay.model",
+              "pay.provider",
+              "data.source",
+              "behavior.offline",
+              "behavior.notifications",
+              "behavior.analytics",
+              "locale",
+              "a11y",
+              "compliance.flags",
+              "auth.sso",
+              "integrations.list",
+              "data.classification",
+              "regions",
+              "release.channel",
+              "approvers"
+            ],
+            "title": "Slot Id",
+            "type": "string"
+          },
+          "value_text": {
+            "title": "Value Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slot_id",
+          "label",
+          "value_text",
+          "reason"
+        ],
+        "title": "AssumedItem",
+        "type": "object"
+      },
+      "BacklogItem": {
+        "additionalProperties": false,
+        "properties": {
+          "reason": {
+            "default": "phase 2",
+            "title": "Reason",
+            "type": "string"
+          },
+          "screens_hint": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Screens Hint",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "title"
+        ],
+        "title": "BacklogItem",
+        "type": "object"
+      },
+      "Brief": {
+        "additionalProperties": false,
+        "properties": {
+          "app_summary": {
+            "title": "App Summary",
+            "type": "string"
+          },
+          "assumptions": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AssumedItem"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "hash": {
+            "default": "",
+            "title": "Hash",
+            "type": "string"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "mode": {
+            "default": "guided",
+            "enum": [
+              "guided",
+              "enterprise"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/BriefRow"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "status": {
+            "default": "draft",
+            "enum": [
+              "draft",
+              "approved",
+              "superseded"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "version",
+          "app_summary",
+          "rows"
+        ],
+        "title": "Brief",
+        "type": "object"
+      },
+      "BriefFeature": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "on": {
+            "default": true,
+            "title": "On",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "BriefFeature",
+        "type": "object"
+      },
+      "BriefPage": {
+        "additionalProperties": false,
+        "properties": {
+          "brief": {
+            "$ref": "#/components/schemas/Brief"
+          },
+          "kind": {
+            "const": "brief",
+            "default": "brief",
+            "title": "Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "brief"
+        ],
+        "title": "BriefPage",
+        "type": "object"
+      },
+      "BriefRow": {
+        "additionalProperties": false,
+        "properties": {
+          "features": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/BriefFeature"
+            },
+            "title": "Features",
+            "type": "array"
+          },
+          "key": {
+            "enum": [
+              "building",
+              "users",
+              "features",
+              "look",
+              "login",
+              "name_logo"
+            ],
+            "title": "Key",
+            "type": "string"
+          },
+          "slot_ids": {
+            "items": {
+              "enum": [
+                "idea.summary",
+                "idea.archetype",
+                "scope.apps",
+                "scope.features",
+                "users.roles",
+                "auth.method",
+                "design.direction",
+                "brand.name",
+                "brand.assets",
+                "design.accent",
+                "design.mode",
+                "design.nav_style",
+                "pay.model",
+                "pay.provider",
+                "data.source",
+                "behavior.offline",
+                "behavior.notifications",
+                "behavior.analytics",
+                "locale",
+                "a11y",
+                "compliance.flags",
+                "auth.sso",
+                "integrations.list",
+                "data.classification",
+                "regions",
+                "release.channel",
+                "approvers"
+              ],
+              "type": "string"
+            },
+            "title": "Slot Ids",
+            "type": "array"
+          },
+          "swatch": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Swatch",
+            "type": "array"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          }
+        },
+        "required": [
+          "key",
+          "title",
+          "text",
+          "slot_ids"
+        ],
+        "title": "BriefRow",
+        "type": "object"
+      },
+      "BudgetSummary": {
+        "additionalProperties": false,
+        "description": "The LLM budget as the context API shows it: totals only (micro-dollars).\n\nNo per-scope breakdown (the gateway's own ledger lists every tenant's `session:<id>` spend, so\nit never leaves the service-to-service API) and no tripwire state.",
+        "properties": {
+          "cap_micros": {
+            "title": "Cap Micros",
+            "type": "integer"
+          },
+          "effective_cap_micros": {
+            "title": "Effective Cap Micros",
+            "type": "integer"
+          },
+          "live_calls": {
+            "default": 0,
+            "title": "Live Calls",
+            "type": "integer"
+          },
+          "reserved_micros": {
+            "title": "Reserved Micros",
+            "type": "integer"
+          },
+          "spent_micros": {
+            "title": "Spent Micros",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "cap_micros",
+          "effective_cap_micros",
+          "spent_micros",
+          "reserved_micros"
+        ],
+        "title": "BudgetSummary",
+        "type": "object"
+      },
+      "Card": {
+        "additionalProperties": false,
+        "properties": {
+          "archetypes": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Archetypes",
+            "type": "array"
+          },
+          "ask_if": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ask If"
+          },
+          "help": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Help"
+          },
+          "i18n": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/CardI18n"
+            },
+            "title": "I18N",
+            "type": "object"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "kind": {
+            "default": "standard",
+            "enum": [
+              "standard",
+              "help",
+              "compliance",
+              "resolution",
+              "inspiration",
+              "nudge"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "modes": {
+            "default": [],
+            "items": {
+              "enum": [
+                "guided",
+                "enterprise"
+              ],
+              "type": "string"
+            },
+            "title": "Modes",
+            "type": "array"
+          },
+          "options": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/CardOption"
+            },
+            "title": "Options",
+            "type": "array"
+          },
+          "other": {
+            "$ref": "#/components/schemas/OtherInput"
+          },
+          "skip": {
+            "$ref": "#/components/schemas/SkipSpec"
+          },
+          "slot": {
+            "enum": [
+              "idea.summary",
+              "idea.archetype",
+              "scope.apps",
+              "scope.features",
+              "users.roles",
+              "auth.method",
+              "design.direction",
+              "brand.name",
+              "brand.assets",
+              "design.accent",
+              "design.mode",
+              "design.nav_style",
+              "pay.model",
+              "pay.provider",
+              "data.source",
+              "behavior.offline",
+              "behavior.notifications",
+              "behavior.analytics",
+              "locale",
+              "a11y",
+              "compliance.flags",
+              "auth.sso",
+              "integrations.list",
+              "data.classification",
+              "regions",
+              "release.channel",
+              "approvers"
+            ],
+            "title": "Slot",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "enum": [
+              "choice3",
+              "multi",
+              "visual3",
+              "text",
+              "upload",
+              "confirm"
+            ],
+            "title": "Type",
+            "type": "string"
+          },
+          "version": {
+            "default": 1,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slot",
+          "type",
+          "text"
+        ],
+        "title": "Card",
+        "type": "object"
+      },
+      "CardEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "card": {
+            "$ref": "#/components/schemas/CardInstance"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "card",
+            "default": "card",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "card"
+        ],
+        "title": "CardEvent",
+        "type": "object"
+      },
+      "CardI18n": {
+        "additionalProperties": false,
+        "description": "Localised copy for one language (``hi`` Hindi, ``hi-Latn`` Hinglish, ...).",
+        "properties": {
+          "help": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Help"
+          },
+          "options": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "object"
+          },
+          "other_placeholder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Placeholder"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          }
+        },
+        "required": [
+          "text"
+        ],
+        "title": "CardI18n",
+        "type": "object"
+      },
+      "CardInstance": {
+        "additionalProperties": false,
+        "description": "A card as shown to the user in one session.",
+        "properties": {
+          "card": {
+            "$ref": "#/components/schemas/Card"
+          },
+          "generated": {
+            "default": false,
+            "title": "Generated",
+            "type": "boolean"
+          },
+          "instance_id": {
+            "title": "Instance Id",
+            "type": "string"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "progress": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardProgress"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "shown_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Shown At"
+          }
+        },
+        "required": [
+          "instance_id",
+          "card"
+        ],
+        "title": "CardInstance",
+        "type": "object"
+      },
+      "CardOption": {
+        "additionalProperties": false,
+        "properties": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview"
+          },
+          "recommended": {
+            "default": false,
+            "title": "Recommended",
+            "type": "boolean"
+          },
+          "sets": {
+            "additionalProperties": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "items": {
+                    "type": "string"
+                  },
+                  "type": "array"
+                },
+                {
+                  "type": "null"
+                }
+              ]
+            },
+            "title": "Sets",
+            "type": "object"
+          }
+        },
+        "required": [
+          "id",
+          "label"
+        ],
+        "title": "CardOption",
+        "type": "object"
+      },
+      "CardProgress": {
+        "additionalProperties": false,
+        "properties": {
+          "asked": {
+            "title": "Asked",
+            "type": "integer"
+          },
+          "cap": {
+            "title": "Cap",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "asked",
+          "cap"
+        ],
+        "title": "CardProgress",
+        "type": "object"
+      },
+      "CompliancePointer": {
+        "additionalProperties": false,
+        "properties": {
+          "flag": {
+            "title": "Flag",
+            "type": "string"
+          },
+          "note": {
+            "default": "Pointer only; not legal advice.",
+            "title": "Note",
+            "type": "string"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "flag",
+          "title",
+          "url"
+        ],
+        "title": "CompliancePointer",
+        "type": "object"
+      },
+      "CreateSessionRequest": {
+        "additionalProperties": false,
+        "description": "Start a new app conversation.",
+        "properties": {
+          "mode": {
+            "default": "guided",
+            "description": "`guided` (the default) or `enterprise`. A tenant whose organisation restricts what it may start (`TENANT_POLICIES`, or the caller's token entry) gets its own default when this is omitted, and a mode outside what it may start is refused with `403`.",
+            "enum": [
+              "guided",
+              "enterprise"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "org_profile": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "$ref": "#/components/schemas/JsonValue"
+                },
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Enterprise only: the organisation's standing answers (brand, identity, compliance, approvers). Stored for the tenant; JSON object, size limited.",
+            "title": "Org Profile"
+          },
+          "policy_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "pattern": "^[a-z][a-z0-9_@.-]*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "Override the mode's default policy (`guided-default`; Enterprise: the configured default). It must exist and be a policy of the same mode, and (when the tenant is bound to a set of policies) one of those, otherwise `403`.",
+            "title": "Policy Id"
+          }
+        },
+        "title": "CreateSessionRequest",
+        "type": "object"
+      },
+      "CreateSessionResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "events": {
+            "description": "The greeting events (a canned message).",
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "assistant_message": "#/components/schemas/AssistantMessage",
+                  "card": "#/components/schemas/CardEvent",
+                  "gate": "#/components/schemas/GateEvent",
+                  "notice": "#/components/schemas/Notice",
+                  "plan_ready": "#/components/schemas/PlanReady",
+                  "progress": "#/components/schemas/ProgressEvent",
+                  "spec_ready": "#/components/schemas/SpecReady",
+                  "state_changed": "#/components/schemas/StateChanged"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssistantMessage"
+                },
+                {
+                  "$ref": "#/components/schemas/CardEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/ProgressEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/GateEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanReady"
+                },
+                {
+                  "$ref": "#/components/schemas/SpecReady"
+                },
+                {
+                  "$ref": "#/components/schemas/StateChanged"
+                },
+                {
+                  "$ref": "#/components/schemas/Notice"
+                }
+              ]
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "org_profile_saved": {
+            "default": false,
+            "title": "Org Profile Saved",
+            "type": "boolean"
+          },
+          "session": {
+            "$ref": "#/components/schemas/SessionSnapshot"
+          }
+        },
+        "required": [
+          "session",
+          "events"
+        ],
+        "title": "CreateSessionResponse",
+        "type": "object"
+      },
+      "EnterpriseExtras": {
+        "additionalProperties": false,
+        "properties": {
+          "approvers": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ApproverStatus"
+            },
+            "title": "Approvers",
+            "type": "array"
+          },
+          "comments": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Comments",
+            "type": "array"
+          },
+          "full_file_view": {
+            "default": false,
+            "title": "Full File View",
+            "type": "boolean"
+          }
+        },
+        "title": "EnterpriseExtras",
+        "type": "object"
+      },
+      "ErrorBody": {
+        "description": "The body of every non-2xx response.",
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "details": {
+            "anyOf": [
+              {
+                "items": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Details"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "request_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Request Id"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "ErrorBody",
+        "type": "object"
+      },
+      "EventResponse": {
+        "additionalProperties": false,
+        "description": "What one inbound event produced, plus where the session and its run stand now.",
+        "properties": {
+          "events": {
+            "description": "The immediate outbound events. A repeated event id returns the same list.",
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "assistant_message": "#/components/schemas/AssistantMessage",
+                  "card": "#/components/schemas/CardEvent",
+                  "gate": "#/components/schemas/GateEvent",
+                  "notice": "#/components/schemas/Notice",
+                  "plan_ready": "#/components/schemas/PlanReady",
+                  "progress": "#/components/schemas/ProgressEvent",
+                  "spec_ready": "#/components/schemas/SpecReady",
+                  "state_changed": "#/components/schemas/StateChanged"
+                },
+                "propertyName": "type"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/AssistantMessage"
+                },
+                {
+                  "$ref": "#/components/schemas/CardEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/ProgressEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/GateEvent"
+                },
+                {
+                  "$ref": "#/components/schemas/PlanReady"
+                },
+                {
+                  "$ref": "#/components/schemas/SpecReady"
+                },
+                {
+                  "$ref": "#/components/schemas/StateChanged"
+                },
+                {
+                  "$ref": "#/components/schemas/Notice"
+                }
+              ]
+            },
+            "title": "Events",
+            "type": "array"
+          },
+          "job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSummary"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "description": "The plan job, when one is queued or running."
+          },
+          "last_seq": {
+            "description": "Highest outbound seq now stored (the SSE cursor).",
+            "title": "Last Seq",
+            "type": "integer"
+          },
+          "plan_phase": {
+            "anyOf": [
+              {
+                "enum": [
+                  "research",
+                  "build"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Phase"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "state": {
+            "enum": [
+              "DISCOVERING",
+              "BRIEF_REVIEW",
+              "PLANNING",
+              "PLAN_REVIEW",
+              "HANDED_OFF",
+              "PAUSED",
+              "STOPPED",
+              "ARCHIVED"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "events",
+          "state",
+          "last_seq"
+        ],
+        "title": "EventResponse",
+        "type": "object"
+      },
+      "GateDecision": {
+        "additionalProperties": false,
+        "properties": {
+          "approver_id": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:@+-]{0,127}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approver Id"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "comment": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comment"
+          },
+          "decision": {
+            "enum": [
+              "approve",
+              "change",
+              "reject"
+            ],
+            "title": "Decision",
+            "type": "string"
+          },
+          "event_id": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "gate": {
+            "enum": [
+              "brief",
+              "plan"
+            ],
+            "title": "Gate",
+            "type": "string"
+          },
+          "hash": {
+            "maxLength": 64,
+            "pattern": "^[0-9a-f]{64}$",
+            "title": "Hash",
+            "type": "string"
+          },
+          "role": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Role"
+          },
+          "type": {
+            "const": "gate_decision",
+            "default": "gate_decision",
+            "title": "Type",
+            "type": "string"
+          },
+          "version": {
+            "maximum": 2147483647.0,
+            "minimum": 0.0,
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "gate",
+          "decision",
+          "version",
+          "hash"
+        ],
+        "title": "GateDecision",
+        "type": "object"
+      },
+      "GateEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "approved_roles": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Approved Roles",
+            "type": "array"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "buttons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Buttons",
+            "type": "array"
+          },
+          "diff_lines": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Diff Lines",
+            "type": "array"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "gate": {
+            "enum": [
+              "brief",
+              "plan"
+            ],
+            "title": "Gate",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "page": {
+            "discriminator": {
+              "mapping": {
+                "brief": "#/components/schemas/BriefPage",
+                "plan": "#/components/schemas/PlanPage"
+              },
+              "propertyName": "kind"
+            },
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/BriefPage"
+              },
+              {
+                "$ref": "#/components/schemas/PlanPage"
+              }
+            ],
+            "title": "Page"
+          },
+          "required_roles": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Roles",
+            "type": "array"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "single_button": {
+            "default": false,
+            "title": "Single Button",
+            "type": "boolean"
+          },
+          "type": {
+            "const": "gate",
+            "default": "gate",
+            "title": "Type",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "gate",
+          "version",
+          "hash",
+          "page",
+          "buttons"
+        ],
+        "title": "GateEvent",
+        "type": "object"
+      },
+      "GateSnapshot": {
+        "additionalProperties": false,
+        "description": "The gate that is open right now (derived from the state, never stored on its own).",
+        "properties": {
+          "buttons": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Buttons",
+            "type": "array"
+          },
+          "gate": {
+            "enum": [
+              "brief",
+              "plan"
+            ],
+            "title": "Gate",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "page": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BriefPage"
+              },
+              {
+                "$ref": "#/components/schemas/PlanPage"
+              }
+            ],
+            "title": "Page"
+          },
+          "status": {
+            "$ref": "#/components/schemas/GateStatus"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "gate",
+          "version",
+          "hash",
+          "status",
+          "buttons",
+          "page"
+        ],
+        "title": "GateSnapshot",
+        "type": "object"
+      },
+      "GateStatus": {
+        "additionalProperties": false,
+        "description": "Derived view of one open gate (never stored independently of its approvals).",
+        "properties": {
+          "approvals": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ApprovalRecord"
+            },
+            "title": "Approvals",
+            "type": "array"
+          },
+          "gate": {
+            "enum": [
+              "brief",
+              "plan"
+            ],
+            "title": "Gate",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "opened_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Opened At"
+          },
+          "required_roles": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Required Roles",
+            "type": "array"
+          },
+          "status": {
+            "default": "open",
+            "enum": [
+              "open",
+              "approved",
+              "void",
+              "changed"
+            ],
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          },
+          "void_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Void Reason"
+          }
+        },
+        "required": [
+          "gate",
+          "version",
+          "hash"
+        ],
+        "title": "GateStatus",
+        "type": "object"
+      },
+      "HealthResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "status": {
+            "const": "ok",
+            "default": "ok",
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "version"
+        ],
+        "title": "HealthResponse",
+        "type": "object"
+      },
+      "IntegrationStatus": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "mode": {
+            "enum": [
+              "mock",
+              "adapter",
+              "real"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "needs_dev_build": {
+            "default": false,
+            "title": "Needs Dev Build",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "mode"
+        ],
+        "title": "IntegrationStatus",
+        "type": "object"
+      },
+      "JobSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "cancel_requested": {
+            "default": false,
+            "title": "Cancel Requested",
+            "type": "boolean"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "phase": {
+            "anyOf": [
+              {
+                "enum": [
+                  "research",
+                  "build"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Phase"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "state"
+        ],
+        "title": "JobSummary",
+        "type": "object"
+      },
+      "JsonValue": {},
+      "LookPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "title": "Direction",
+            "type": "string"
+          },
+          "font_sample": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Font Sample"
+          },
+          "radius": {
+            "title": "Radius",
+            "type": "integer"
+          },
+          "swatches_dark": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Swatches Dark",
+            "type": "object"
+          },
+          "swatches_light": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Swatches Light",
+            "type": "object"
+          }
+        },
+        "required": [
+          "direction",
+          "swatches_light",
+          "swatches_dark",
+          "radius"
+        ],
+        "title": "LookPreview",
+        "type": "object"
+      },
+      "Notice": {
+        "additionalProperties": false,
+        "description": "Friendly, non-fatal message ('taking longer than usual'); never a raw error.",
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "level": {
+            "default": "info",
+            "enum": [
+              "info",
+              "warn"
+            ],
+            "title": "Level",
+            "type": "string"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "text": {
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "const": "notice",
+            "default": "notice",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "code",
+          "text"
+        ],
+        "title": "Notice",
+        "type": "object"
+      },
+      "OptionSelected": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "card_instance_id": {
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+            "title": "Card Instance Id",
+            "type": "string"
+          },
+          "event_id": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "option_ids": {
+            "default": [],
+            "items": {
+              "maxLength": 200,
+              "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+              "type": "string"
+            },
+            "maxItems": 100,
+            "title": "Option Ids",
+            "type": "array"
+          },
+          "other_text": {
+            "anyOf": [
+              {
+                "maxLength": 5000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Other Text"
+          },
+          "skipped": {
+            "default": false,
+            "title": "Skipped",
+            "type": "boolean"
+          },
+          "type": {
+            "const": "option_selected",
+            "default": "option_selected",
+            "title": "Type",
+            "type": "string"
+          },
+          "you_decide": {
+            "default": false,
+            "title": "You Decide",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "event_id",
+          "card_instance_id"
+        ],
+        "title": "OptionSelected",
+        "type": "object"
+      },
+      "OtherInput": {
+        "additionalProperties": false,
+        "properties": {
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          },
+          "placeholder": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Placeholder"
+          }
+        },
+        "title": "OtherInput",
+        "type": "object"
+      },
+      "PlainEntity": {
+        "additionalProperties": false,
+        "properties": {
+          "fields_plain": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Fields Plain",
+            "type": "array"
+          },
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "plain_name": {
+            "title": "Plain Name",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "plain_name",
+          "fields_plain"
+        ],
+        "title": "PlainEntity",
+        "type": "object"
+      },
+      "PlanDiff": {
+        "additionalProperties": false,
+        "properties": {
+          "added_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Added Ids",
+            "type": "array"
+          },
+          "changed_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Changed Ids",
+            "type": "array"
+          },
+          "lines": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Lines",
+            "type": "array"
+          },
+          "removed_ids": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Removed Ids",
+            "type": "array"
+          },
+          "since": {
+            "enum": [
+              "gate1",
+              "previous_version"
+            ],
+            "title": "Since",
+            "type": "string"
+          }
+        },
+        "required": [
+          "since"
+        ],
+        "title": "PlanDiff",
+        "type": "object"
+      },
+      "PlanPage": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "const": "plan",
+            "default": "plan",
+            "title": "Kind",
+            "type": "string"
+          },
+          "plan": {
+            "$ref": "#/components/schemas/PlanView"
+          }
+        },
+        "required": [
+          "plan"
+        ],
+        "title": "PlanPage",
+        "type": "object"
+      },
+      "PlanReady": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "plan_ready",
+            "default": "plan_ready",
+            "title": "Type",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "version",
+          "hash"
+        ],
+        "title": "PlanReady",
+        "type": "object"
+      },
+      "PlanView": {
+        "additionalProperties": false,
+        "properties": {
+          "assumptions": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/AssumedItem"
+            },
+            "title": "Assumptions",
+            "type": "array"
+          },
+          "backlog": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/BacklogItem"
+            },
+            "title": "Backlog",
+            "type": "array"
+          },
+          "compliance": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/CompliancePointer"
+            },
+            "title": "Compliance",
+            "type": "array"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/PlainEntity"
+            },
+            "title": "Data",
+            "type": "array"
+          },
+          "diff_since_gate1": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PlanDiff"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "enterprise": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/EnterpriseExtras"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "integrations": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/IntegrationStatus"
+            },
+            "title": "Integrations",
+            "type": "array"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "look": {
+            "$ref": "#/components/schemas/LookPreview"
+          },
+          "research_added": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/ResearchAdditionView"
+            },
+            "title": "Research Added",
+            "type": "array"
+          },
+          "research_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Note"
+          },
+          "research_status": {
+            "default": "skipped",
+            "enum": [
+              "ok",
+              "partial",
+              "unavailable",
+              "skipped"
+            ],
+            "title": "Research Status",
+            "type": "string"
+          },
+          "roles": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/RoleView"
+            },
+            "title": "Roles",
+            "type": "array"
+          },
+          "screen_count": {
+            "title": "Screen Count",
+            "type": "integer"
+          },
+          "screen_map": {
+            "items": {
+              "$ref": "#/components/schemas/ScreenMapGroup"
+            },
+            "title": "Screen Map",
+            "type": "array"
+          },
+          "spec_hash": {
+            "title": "Spec Hash",
+            "type": "string"
+          },
+          "spec_version": {
+            "title": "Spec Version",
+            "type": "integer"
+          },
+          "summary": {
+            "title": "Summary",
+            "type": "string"
+          }
+        },
+        "required": [
+          "spec_version",
+          "spec_hash",
+          "summary",
+          "screen_count",
+          "screen_map",
+          "look",
+          "data"
+        ],
+        "title": "PlanView",
+        "type": "object"
+      },
+      "ProgressEvent": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "done": {
+            "default": 0,
+            "title": "Done",
+            "type": "integer"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "label": {
+            "title": "Label",
+            "type": "string"
+          },
+          "phase": {
+            "enum": [
+              "research",
+              "build"
+            ],
+            "title": "Phase",
+            "type": "string"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "step": {
+            "title": "Step",
+            "type": "string"
+          },
+          "total": {
+            "default": 0,
+            "title": "Total",
+            "type": "integer"
+          },
+          "type": {
+            "const": "progress",
+            "default": "progress",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "phase",
+          "step",
+          "label"
+        ],
+        "title": "ProgressEvent",
+        "type": "object"
+      },
+      "ReadyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "checks": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Checks",
+            "type": "object"
+          },
+          "status": {
+            "enum": [
+              "ready",
+              "not_ready"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "checks"
+        ],
+        "title": "ReadyResponse",
+        "type": "object"
+      },
+      "ResearchAdditionView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "pattern": "^RA-\\d{3}$",
+            "title": "Id",
+            "type": "string"
+          },
+          "included": {
+            "default": true,
+            "title": "Included",
+            "type": "boolean"
+          },
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "sources": {
+            "default": [],
+            "items": {
+              "$ref": "#/components/schemas/SourceRef"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "title": {
+            "title": "Title",
+            "type": "string"
+          },
+          "verified": {
+            "default": false,
+            "title": "Verified",
+            "type": "boolean"
+          },
+          "why": {
+            "title": "Why",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "title",
+          "kind",
+          "why"
+        ],
+        "title": "ResearchAdditionView",
+        "type": "object"
+      },
+      "RoleView": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "sees": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Sees",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "sees"
+        ],
+        "title": "RoleView",
+        "type": "object"
+      },
+      "ScreenMapGroup": {
+        "additionalProperties": false,
+        "properties": {
+          "count": {
+            "title": "Count",
+            "type": "integer"
+          },
+          "flow_id": {
+            "anyOf": [
+              {
+                "pattern": "^FLW-\\d{3}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flow Id"
+          },
+          "flow_name": {
+            "title": "Flow Name",
+            "type": "string"
+          },
+          "screen_ids": {
+            "items": {
+              "pattern": "^SCR-\\d{3}$",
+              "type": "string"
+            },
+            "title": "Screen Ids",
+            "type": "array"
+          },
+          "screen_titles": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Screen Titles",
+            "type": "array"
+          }
+        },
+        "required": [
+          "flow_id",
+          "flow_name",
+          "screen_ids",
+          "screen_titles",
+          "count"
+        ],
+        "title": "ScreenMapGroup",
+        "type": "object"
+      },
+      "SessionSnapshot": {
+        "additionalProperties": false,
+        "description": "Where the user left off: state, pending card or open gate, slot summary (spec 2.5, resume).",
+        "properties": {
+          "active_job": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/JobSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "allowed_transitions": {
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "title": "Allowed Transitions",
+            "type": "array"
+          },
+          "app_id": {
+            "title": "App Id",
+            "type": "string"
+          },
+          "approved_brief_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved Brief Version"
+          },
+          "brief_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Brief Version"
+          },
+          "gate": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/GateSnapshot"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "handed_off_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Handed Off Version"
+          },
+          "language": {
+            "default": "en",
+            "title": "Language",
+            "type": "string"
+          },
+          "last_seq": {
+            "default": 0,
+            "title": "Last Seq",
+            "type": "integer"
+          },
+          "mode": {
+            "enum": [
+              "guided",
+              "enterprise"
+            ],
+            "title": "Mode",
+            "type": "string"
+          },
+          "origin": {
+            "anyOf": [
+              {
+                "enum": [
+                  "BRIEF_REVIEW",
+                  "PLAN_REVIEW",
+                  "HANDED_OFF"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Origin"
+          },
+          "paused_for": {
+            "anyOf": [
+              {
+                "const": "budget",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused For"
+          },
+          "paused_from": {
+            "anyOf": [
+              {
+                "enum": [
+                  "DISCOVERING",
+                  "BRIEF_REVIEW",
+                  "PLANNING",
+                  "PLAN_REVIEW",
+                  "HANDED_OFF",
+                  "PAUSED",
+                  "STOPPED",
+                  "ARCHIVED"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Paused From"
+          },
+          "pending_card": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CardInstance"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "plan_phase": {
+            "anyOf": [
+              {
+                "enum": [
+                  "research",
+                  "build"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Phase"
+          },
+          "policy_id": {
+            "title": "Policy Id",
+            "type": "string"
+          },
+          "queued_messages": {
+            "default": 0,
+            "title": "Queued Messages",
+            "type": "integer"
+          },
+          "research_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Research Version"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "slots": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SlotSummary"
+            },
+            "title": "Slots",
+            "type": "object"
+          },
+          "spec_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Spec Version"
+          },
+          "state": {
+            "enum": [
+              "DISCOVERING",
+              "BRIEF_REVIEW",
+              "PLANNING",
+              "PLAN_REVIEW",
+              "HANDED_OFF",
+              "PAUSED",
+              "STOPPED",
+              "ARCHIVED"
+            ],
+            "title": "State",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "app_id",
+          "mode",
+          "policy_id",
+          "state"
+        ],
+        "title": "SessionSnapshot",
+        "type": "object"
+      },
+      "SkipSpec": {
+        "additionalProperties": false,
+        "properties": {
+          "assumes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Assumes"
+          },
+          "enabled": {
+            "default": true,
+            "title": "Enabled",
+            "type": "boolean"
+          }
+        },
+        "title": "SkipSpec",
+        "type": "object"
+      },
+      "SlotSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "state": {
+            "title": "State",
+            "type": "string"
+          },
+          "value": {
+            "title": "Value",
+            "type": "string"
+          }
+        },
+        "required": [
+          "value",
+          "state"
+        ],
+        "title": "SlotSummary",
+        "type": "object"
+      },
+      "SourceRef": {
+        "additionalProperties": false,
+        "properties": {
+          "domain": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Domain"
+          },
+          "retrieved_at": {
+            "format": "date",
+            "title": "Retrieved At",
+            "type": "string"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "url": {
+            "title": "Url",
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "retrieved_at"
+        ],
+        "title": "SourceRef",
+        "type": "object"
+      },
+      "SpecReady": {
+        "additionalProperties": false,
+        "description": "Emitted ONLY after Gate 2 approval of the current hash and a successful git commit.",
+        "properties": {
+          "app_id": {
+            "title": "App Id",
+            "type": "string"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "git_sha": {
+            "title": "Git Sha",
+            "type": "string"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "repo_dir": {
+            "title": "Repo Dir",
+            "type": "string"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "type": {
+            "const": "spec_ready",
+            "default": "spec_ready",
+            "title": "Type",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "app_id",
+          "version",
+          "hash",
+          "git_sha",
+          "path",
+          "repo_dir"
+        ],
+        "title": "SpecReady",
+        "type": "object"
+      },
+      "StateChanged": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "event_id": {
+            "title": "Event Id",
+            "type": "string"
+          },
+          "from_state": {
+            "enum": [
+              "DISCOVERING",
+              "BRIEF_REVIEW",
+              "PLANNING",
+              "PLAN_REVIEW",
+              "HANDED_OFF",
+              "PAUSED",
+              "STOPPED",
+              "ARCHIVED"
+            ],
+            "title": "From State",
+            "type": "string"
+          },
+          "in_reply_to": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "In Reply To"
+          },
+          "plan_phase": {
+            "anyOf": [
+              {
+                "enum": [
+                  "research",
+                  "build"
+                ],
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Phase"
+          },
+          "seq": {
+            "default": 0,
+            "title": "Seq",
+            "type": "integer"
+          },
+          "session_id": {
+            "title": "Session Id",
+            "type": "string"
+          },
+          "to_state": {
+            "enum": [
+              "DISCOVERING",
+              "BRIEF_REVIEW",
+              "PLANNING",
+              "PLAN_REVIEW",
+              "HANDED_OFF",
+              "PAUSED",
+              "STOPPED",
+              "ARCHIVED"
+            ],
+            "title": "To State",
+            "type": "string"
+          },
+          "type": {
+            "const": "state_changed",
+            "default": "state_changed",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "session_id",
+          "from_state",
+          "to_state"
+        ],
+        "title": "StateChanged",
+        "type": "object"
+      },
+      "UiAction": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "stop",
+              "undo",
+              "restart",
+              "pause",
+              "resume",
+              "finish_with_defaults",
+              "toggle_assumption",
+              "toggle_research_item",
+              "toggle_feature",
+              "edit_row",
+              "archive",
+              "idle"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "event_id": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "selected_screen_id": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Selected Screen Id"
+          },
+          "target": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target"
+          },
+          "type": {
+            "const": "ui_action",
+            "default": "ui_action",
+            "title": "Type",
+            "type": "string"
+          },
+          "value": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value"
+          }
+        },
+        "required": [
+          "event_id",
+          "action"
+        ],
+        "title": "UiAction",
+        "type": "object"
+      },
+      "UploadAdded": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "data_ref": {
+            "anyOf": [
+              {
+                "maxLength": 512,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Ref"
+          },
+          "event_id": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "filename": {
+            "maxLength": 255,
+            "title": "Filename",
+            "type": "string"
+          },
+          "media_type": {
+            "maxLength": 200,
+            "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9.+_-]{0,62}/[A-Za-z0-9][A-Za-z0-9.+_-]{0,95}(?: ?; ?[A-Za-z0-9_-]{1,32}=(?:[A-Za-z0-9._+-]{1,64}|\\\"[A-Za-z0-9 ._+-]{0,64}\\\")){0,4})?$",
+            "title": "Media Type",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          },
+          "text": {
+            "anyOf": [
+              {
+                "maxLength": 200000,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Text"
+          },
+          "type": {
+            "const": "upload_added",
+            "default": "upload_added",
+            "title": "Type",
+            "type": "string"
+          },
+          "upload_id": {
+            "maxLength": 200,
+            "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+            "title": "Upload Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "upload_id",
+          "filename",
+          "media_type",
+          "size_bytes"
+        ],
+        "title": "UploadAdded",
+        "type": "object"
+      },
+      "UserMessage": {
+        "additionalProperties": false,
+        "properties": {
+          "at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "At"
+          },
+          "event_id": {
+            "maxLength": 128,
+            "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+            "title": "Event Id",
+            "type": "string"
+          },
+          "text": {
+            "maxLength": 50000,
+            "title": "Text",
+            "type": "string"
+          },
+          "type": {
+            "const": "user_message",
+            "default": "user_message",
+            "title": "Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_id",
+          "text"
+        ],
+        "title": "UserMessage",
+        "type": "object"
+      },
+      "VersionInfo": {
+        "additionalProperties": false,
+        "properties": {
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "git_sha": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Git Sha"
+          },
+          "hash": {
+            "title": "Hash",
+            "type": "string"
+          },
+          "kind": {
+            "enum": [
+              "brief",
+              "spec"
+            ],
+            "title": "Kind",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "version",
+          "hash",
+          "status"
+        ],
+        "title": "VersionInfo",
+        "type": "object"
+      },
+      "VersionsResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/VersionInfo"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "versions"
+        ],
+        "title": "VersionsResponse",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "HTTPBearer": {
+        "description": "Dev mode: the dev token (API_DEV_TOKEN) plus X-Tenant-Id and X-User-Id. Token mode (API_TOKENS set): one of the configured tokens; the X-* headers are ignored.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "\nThe front half of an AI mobile-app builder: talk to it, approve a plain-language Brief (Gate 1),\nlet it research and write one `APP_SPEC.md`, approve the Plan (Gate 2), and receive `spec_ready`.\n\nAuthenticate with `Authorization: Bearer <token>`. In dev mode (local use only, never on a network)\nthe token is `API_DEV_TOKEN` and the caller declares itself with `X-Tenant-Id`, `X-User-Id` and\n`X-Roles`; when the server has `API_TOKENS` the token itself selects the identity and those headers\nare ignored. Every failure is `{\"code\", \"message\"}`.\n",
+    "title": "Context Engine API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/healthz": {
+      "get": {
+        "description": "The process is up. Touches nothing else.",
+        "operationId": "healthz_healthz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HealthResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Liveness",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/readyz": {
+      "get": {
+        "description": "Ready when the database answers a trivial query and the budget ledger is sound.\n\nNo authentication, so only \"ok\" or a one-word failure per check: never a reason, a path, a\nnumber or the budget's state (the spend and the tripwire are `GET /v1/budget`, which is\nauthenticated).",
+        "operationId": "readyz_readyz_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReadyResponse"
+                }
+              }
+            },
+            "description": "The database is unreachable"
+          }
+        },
+        "summary": "Readiness",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/v1/budget": {
+      "get": {
+        "description": "Totals of the LLM gateway's budget (mock mode: zero). For development.\n\nTotals only: no per-scope breakdown (it would list other tenants' session ids and spend) and no\ntripwire. The gateway's own `/v1/budget` is service to service and unchanged.",
+        "operationId": "budget_v1_budget_get",
+        "parameters": [
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BudgetSummary"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "LLM budget (dev)",
+        "tags": [
+          "dev"
+        ]
+      }
+    },
+    "/v1/sessions": {
+      "post": {
+        "description": "Starts an app conversation in DISCOVERING and returns the session plus the greeting events (a canned message with starter chips; no LLM call). Rate limited per caller and per tenant (`429` with `Retry-After`). A tenant bound to a set of policies (`TENANT_POLICIES`, or the caller's token entry) can only start those: anything else is `403`. An Enterprise session starts from the tenant's Org Profile: the one posted in `org_profile` (stored first, replacing the old one) or else the stored one; Discover turns it into assumed slots. A Guided session never reads it.",
+        "operationId": "create_session_v1_sessions_post",
+        "parameters": [
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSessionRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CreateSessionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Request body too large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Too many requests or open streams, or the budget is used up"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Create a session",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}": {
+      "get": {
+        "description": "State, plan phase, the pending card or open gate, a slot summary and the plan job.",
+        "operationId": "get_session_v1_sessions__session_id__get",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SessionSnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Where the session stands",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}/brief": {
+      "get": {
+        "operationId": "get_brief_v1_sessions__session_id__brief_get",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A specific version; default: latest",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A specific version; default: latest",
+              "title": "Version"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Brief"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "The current Brief",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}/events": {
+      "post": {
+        "description": "One of `user_message`, `option_selected`, `upload_added`, `gate_decision`, `ui_action`.\n\nIdempotent by `event_id`: a repeat returns the original replies and has no second effect.\nDiscover turns answer synchronously. Approving Gate 1 enqueues the plan job (research, build);\nthe response is then `202` and the job's progress arrives on the stream.",
+        "operationId": "post_event_v1_sessions__session_id__events_post",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "discriminator": {
+                  "mapping": {
+                    "gate_decision": "#/components/schemas/GateDecision",
+                    "option_selected": "#/components/schemas/OptionSelected",
+                    "ui_action": "#/components/schemas/UiAction",
+                    "upload_added": "#/components/schemas/UploadAdded",
+                    "user_message": "#/components/schemas/UserMessage"
+                  },
+                  "propertyName": "type"
+                },
+                "oneOf": [
+                  {
+                    "$ref": "#/components/schemas/UserMessage"
+                  },
+                  {
+                    "$ref": "#/components/schemas/OptionSelected"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UploadAdded"
+                  },
+                  {
+                    "$ref": "#/components/schemas/GateDecision"
+                  },
+                  {
+                    "$ref": "#/components/schemas/UiAction"
+                  }
+                ],
+                "title": "Event"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Processed; the replies are in `events`"
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EventResponse"
+                }
+              }
+            },
+            "description": "Processed and a plan job was enqueued (approving Gate 1)"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Conflict, stale hash, or not allowed here"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Request body too large"
+          },
+          "415": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Unsupported upload type (for example a PDF)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Too many requests or open streams, or the budget is used up"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Send an inbound event",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}/plan": {
+      "get": {
+        "operationId": "get_plan_v1_sessions__session_id__plan_get",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A specific version; default: latest",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A specific version; default: latest",
+              "title": "Version"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanView"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "The Plan view of the current spec",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}/spec": {
+      "get": {
+        "operationId": "get_spec_v1_sessions__session_id__spec_get",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "A specific version; default: latest",
+            "in": "query",
+            "name": "version",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "A specific version; default: latest",
+              "title": "Version"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/markdown": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "The spec file, byte for byte. `X-Spec-Hash` is the file hash: sha256 of the body with its own front-matter `hash:` value blanked (equal to the embedded hash). Headers: `X-Spec-Version`, `X-Spec-Hash`, `X-Spec-Status`, `X-Spec-Git-Sha` (once committed) and `ETag`."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "APP_SPEC.md of a version",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}/stream": {
+      "get": {
+        "operationId": "stream_v1_sessions__session_id__stream_get",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Resume after this seq",
+            "in": "query",
+            "name": "after",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 2147483647,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Resume after this seq",
+              "title": "After"
+            }
+          },
+          {
+            "description": "false: send what is stored, then close",
+            "in": "query",
+            "name": "follow",
+            "required": false,
+            "schema": {
+              "default": true,
+              "description": "false: send what is stored, then close",
+              "title": "Follow",
+              "type": "boolean"
+            }
+          },
+          {
+            "description": "Close after this many events",
+            "in": "query",
+            "name": "limit",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maximum": 100000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Close after this many events",
+              "title": "Limit"
+            }
+          },
+          {
+            "description": "Close after this many seconds",
+            "in": "query",
+            "name": "timeout",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "exclusiveMinimum": 0,
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Close after this many seconds",
+              "title": "Timeout"
+            }
+          },
+          {
+            "description": "Resume after this seq",
+            "in": "header",
+            "name": "Last-Event-ID",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Resume after this seq",
+              "title": "Last-Event-Id"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/event-stream": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            },
+            "description": "`text/event-stream`. Each frame has `id` (the event's seq), `event` (its type) and `data` (the event as JSON). Reconnect with `Last-Event-ID` (or `after`) to replay what was missed."
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Too many requests or open streams, or the budget is used up"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Outbound events as server-sent events",
+        "tags": [
+          "sessions"
+        ]
+      }
+    },
+    "/v1/sessions/{session_id}/versions": {
+      "get": {
+        "operationId": "get_versions_v1_sessions__session_id__versions_get",
+        "parameters": [
+          {
+            "description": "Session id (ses_...)",
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "description": "Session id (ses_...)",
+              "maxLength": 128,
+              "minLength": 1,
+              "title": "Session Id",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Tenant-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Tenant the request is bound to (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Tenant-Id"
+            }
+          },
+          {
+            "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-User-Id",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "The calling user (dev mode only; ignored with API_TOKENS).",
+              "title": "X-User-Id"
+            }
+          },
+          {
+            "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+            "in": "header",
+            "name": "X-Roles",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Comma separated gate roles the caller acts as (dev mode only; ignored with API_TOKENS).",
+              "title": "X-Roles"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionsResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Missing or invalid credentials"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not the owner or a required approver"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "Not found (also another tenant's id)"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorBody"
+                }
+              }
+            },
+            "description": "The request is not valid"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Brief and spec versions",
+        "tags": [
+          "sessions"
+        ]
+      }
+    }
+  },
+  "tags": [
+    {
+      "description": "Conversations, events, gates and the produced documents",
+      "name": "sessions"
+    },
+    {
+      "description": "Liveness and readiness",
+      "name": "ops"
+    },
+    {
+      "description": "Development helpers",
+      "name": "dev"
+    }
+  ]
+}

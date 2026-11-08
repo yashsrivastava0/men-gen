@@ -1,0 +1,208 @@
+{
+  "format": 1,
+  "key": "1e199464155c142db51d02df5da4fe087cf5345bdff34762ffb2f847ecf67942",
+  "recorded_at": "2026-11-08T11:00:08.444979Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: email phone one-time code sign-in SDK Expo compatibility mobile app\nTopic: official documentation facts about one service or SDK (availability, Expo compatibility, caveats)\n"
+  },
+  "response": {
+    "text": "Clerk supports passwordless sign-in with one-time codes sent by email or phone through its Expo SDK; custom flows use `useSignIn()` and verify the code, and phone numbers must be in E.164 format. ([clerk.com](https://clerk.com/docs/guides/development/custom-flows/authentication/email-sms-otp?utm_source=openai))\n\nClerk’s Expo quickstart says custom React Native sign-in flows work in Expo Go without a development build. Its prebuilt native components require a development build, and the SDK documentation labels those components beta. ([clerk.com](https://clerk.com/docs/expo/getting-started/quickstart?utm_source=openai))\n\nCaveat: on native iOS and Android, JavaScript custom flows support email verification codes, not email sign-in links; the native email-link flow uses `AuthView` and requires a development build. ([clerk.com](https://clerk.com/docs/guides/configure/auth-strategies/sign-up-sign-in-options?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://clerk.com/docs/guides/development/custom-flows/authentication/email-sms-otp?utm_source=openai",
+        "title": "Build a custom sign-in flow with email or phone code - Authentication | Clerk Docs",
+        "start": 196,
+        "end": 312
+      },
+      {
+        "url": "https://clerk.com/docs/expo/getting-started/quickstart?utm_source=openai",
+        "title": "Expo Quickstart - Getting started | Clerk Docs",
+        "start": 538,
+        "end": 625
+      },
+      {
+        "url": "https://clerk.com/docs/guides/configure/auth-strategies/sign-up-sign-in-options?utm_source=openai",
+        "title": "Sign-up and sign-in options - Authentication strategies | Clerk Docs",
+        "start": 822,
+        "end": 934
+      },
+      {
+        "url": "https://clerk.com/docs/guides/development/custom-flows/authentication/email-sms-otp",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/docs/guides/configure/auth-strategies/sign-up-sign-in-options",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/develop/authentication/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/docs/reference/expo/overview",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/docs/expo/getting-started/quickstart",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/expo-authentication",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://support.auth0.com/center/s/article/magic-link-implementation-in-react-native-expo-project",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-authentication/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/articles/clerk-compatibility-in-expo-54-and-55",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://support.auth0.com/center/s/article/Implementing-Native-Login-with-React-Native-and-Expo",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/docs/reference/electron/overview",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clerk.com/docs",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://gallaghersecurity.github.io/mobileconnectsdk-docs/docs/server/Mobile%20Connect%20SDK%20Integration%20Guide%20TIP.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.android.com/developer-verification/guides/pdf-guides/adc-guide.pdf?hl=en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://email.eoiservice.com/hubfs/SBL/SWI_for_MFA.pdf?hsLang=en-us",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.expo2025.or.jp/wp/wp-content/themes/expo2025orjp_2022/assets/pdf/tickets-index/id_problem_solving_manual_en.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.myexostar.com/wp-content/uploads/2023/04/Phone-OTP-User-Guide.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.aws.amazon.com/pdfs/cognito/latest/developerguide/cognito-dg.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/reactnative/comments/183nzda",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/reactnative/comments/185pey7",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Supabase/comments/1pfrqwh/am_i_correct_that_pkce_is_the_only_auth_flow_for/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1ij0562/google_oauth_20_invalid_request400_with_expo/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1nhz042",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1n0zcfw",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Supabase/comments/1m0ajye",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12826,
+      "cached_input_tokens": 4442,
+      "output_tokens": 267,
+      "reasoning_tokens": 80,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

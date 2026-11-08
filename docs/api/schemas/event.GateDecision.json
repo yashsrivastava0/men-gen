@@ -1,0 +1,109 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approver_id": {
+      "anyOf": [
+        {
+          "maxLength": 128,
+          "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:@+-]{0,127}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Approver Id"
+    },
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "maxLength": 5000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "decision": {
+      "enum": [
+        "approve",
+        "change",
+        "reject"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "gate": {
+      "enum": [
+        "brief",
+        "plan"
+      ],
+      "title": "Gate",
+      "type": "string"
+    },
+    "hash": {
+      "maxLength": 64,
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Hash",
+      "type": "string"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "maxLength": 64,
+          "pattern": "^[A-Za-z][A-Za-z0-9_.-]{0,63}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Role"
+    },
+    "type": {
+      "const": "gate_decision",
+      "default": "gate_decision",
+      "title": "Type",
+      "type": "string"
+    },
+    "version": {
+      "maximum": 2147483647,
+      "minimum": 0,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "event_id",
+    "gate",
+    "decision",
+    "version",
+    "hash"
+  ],
+  "title": "GateDecision",
+  "type": "object"
+}

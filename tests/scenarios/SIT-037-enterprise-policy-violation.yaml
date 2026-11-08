@@ -1,0 +1,70 @@
+# SIT-037: Enterprise: request violates org policy (banned library, data region)
+# Detection: Policy check
+# Behavior:  Explain the constraint; show allowed alternatives as a card
+id: SIT-037-enterprise-policy-violation
+situation: "Enterprise: request violates org policy (banned library, data region)"
+mode: enterprise
+policy: regulated-bank
+variants:
+  banned_library:
+    steps:
+      - user: "An online shop for a client, and we want to ship updates with react-native-code-push"
+        expect:
+          text_contains: ["react-native-code-push"]
+          no_events: [gate]
+          pending_card: "Q-policy-lib:react-native-code-push"
+          card_ids: ["Q-policy-lib:react-native-code-push"]
+          llm_calls: {C1.understand: 1, C2.interpret_brief: 1, total: 2}
+      - tap: {card: "Q-policy-lib:react-native-code-push", option: store_release}
+        expect:
+          text_contains: ["Regular app store releases"]
+          pending_card: Q-type-01
+          slots:
+            idea.summary: {contains: "regular app store releases"}
+          llm_calls: {total: 0}
+  data_region:
+    steps:
+      - user: "An online shop for a client, and all customer data must be stored in the us-east region"
+        expect:
+          text_contains: ["region"]
+          pending_card: Q-policy-region
+          slots:
+            regions: {empty: true}
+      - tap: {card: Q-policy-region, option: [eu-west]}
+        expect:
+          pending_card: Q-type-01
+          slots:
+            regions: {value: [eu-west], state: confirmed, source: tap}
+  both_in_one_message:
+    steps:
+      - user: "An online shop for a client, shipping updates with react-native-code-push and keeping data in us-east"
+        expect:
+          pending_card: "Q-policy-lib:react-native-code-push"
+      - tap: {card: "Q-policy-lib:react-native-code-push", option: expo_updates}
+        expect:
+          pending_card: Q-policy-region
+      - tap: {card: Q-policy-region, option: [ap-south]}
+        expect:
+          pending_card: Q-type-01
+          slots:
+            regions: {value: [ap-south], source: tap}
+  an_allowed_region_is_accepted_without_a_word:
+    steps:
+      - user: "An online shop for a client, and all customer data must be stored in the eu-west region"
+        expect:
+          pending_card: Q-type-01
+          text_absent: ["do not allow", "approved regions"]
+  policy_reaches_the_spec:
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - decide: {gate: brief, role: requester}
+      - decide: {gate: brief, role: product_owner, as: product_owner}
+        expect: {state: PLANNING}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          spec: {text_contains: "react-native-code-push"}

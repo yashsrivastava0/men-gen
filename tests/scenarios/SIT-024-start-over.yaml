@@ -1,0 +1,23 @@
+# SIT-024: Wants to start over
+# Detection: Intent
+# Behavior:  Confirm; archive the draft; fresh session (memory options offered)
+id: SIT-024-start-over
+situation: "Wants to start over"
+mode: guided
+steps:
+  - user: "An online shop"
+    expect: {pending_card: Q-type-01}
+  - tap: {card: Q-type-01, option: A}
+    expect: {pending_card: Q-apps-01}
+  - user: "start over"
+    expect:
+      state: ARCHIVED
+      text_contains: ["starting fresh"]
+      llm_calls: {total: 0}
+      sessions: {archived: 1, total: 1}
+  - new_session: true
+    expect:
+      state: DISCOVERING
+      events:
+        - {type: assistant_message, text_contains: "What would you like to build"}
+      sessions: {archived: 1, total: 2}

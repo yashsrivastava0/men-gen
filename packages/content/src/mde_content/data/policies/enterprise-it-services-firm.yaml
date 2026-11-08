@@ -1,0 +1,26 @@
+# Enterprise example: an IT services firm delivering apps for clients (spec section 10). Example
+# values only; nothing here is code. A client profile can inherit this one (a third level) to add
+# its own brand and constraints.
+version: 1
+id: enterprise-it-services-firm
+org: example-services-firm
+description: IT services or consulting firm delivering for clients. Single sign-on and data classification are must, deep research that never puts the client name in a web query, plan approved by the client product owner and the delivery lead who both see the full file.
+mode: enterprise
+inherits: platform-default@1
+slot_policy:
+  auth.sso: must
+  data.classification: must
+  design.direction: should # client brand usually overrides
+research:
+  depth: deep
+  web: {allow_company_name_in_queries: false, blocked_domains: []}
+  connectors: [docs, wiki, tickets]
+gates:
+  brief: {approvers: [requester]}
+  plan: {approvers: [client_product_owner, delivery_lead], full_file_view: true}
+  post_handoff:
+    heavy_if: [scope, auth, pay, integrations]
+    max_new_screens_light: 5
+limits: {max_screens: 60}
+model_policy: {providers: [approved-a, approved-b], retention: none}
+role_precedence: [delivery_lead, client_product_owner, requester]

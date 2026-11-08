@@ -1,0 +1,28 @@
+# SIT-017: Dislikes all visual options
+# Detection: "None of these"
+# Behavior:  Three new options; after two rounds, upload or describe
+id: SIT-017-dislikes-all-visual-options
+situation: "Dislikes all visual options"
+mode: guided
+steps:
+  - user: "An online shop"
+  - tap: {card: Q-type-01, option: A}
+  - tap: {card: Q-apps-01, recommended: true}
+  - tap: {card: Q-feat-01, recommended: true}
+  - tap: {card: Q-auth-01, recommended: true}
+    expect: {pending_card: Q-look-01}
+  - tap: {card: Q-look-01}
+    expect:
+      pending_card: Q-look-11
+      llm_calls: {total: 0}
+  - user: "none of these"
+    expect:
+      pending_card: Q-gen-describe-look
+      llm_calls: {total: 0}
+  - user: "something dark and bold please"
+    expect:
+      slots:
+        design.direction: {value: bold-dark}
+        design.mode: {value: dark}
+      pending_card: Q-brand-01
+      llm_calls: {total: 0}

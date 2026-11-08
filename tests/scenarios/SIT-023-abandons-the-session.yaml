@@ -1,0 +1,73 @@
+# SIT-023: Abandons the session
+# Detection: Inactivity
+# Behavior:  Save state (including an open gate); resume later with a summary; refresh a stale Research Note
+id: SIT-023-abandons-the-session
+situation: "Abandons the session"
+mode: guided
+variants:
+  gate_left_open_then_resume:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - advance_clock: 1814400
+      - check: true
+        expect:
+          state: BRIEF_REVIEW
+          gate_open: {gate: brief, status: open}
+          approvals_count: 0
+          spec_ready: 0
+      - decide: {gate: brief}
+        expect: {state: PLANNING}
+  pause_mid_interview_and_resume:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - ui: {action: pause}
+        expect:
+          state: PAUSED
+          notices: [session_paused]
+      - advance_clock: 604800
+      - ui: {action: resume}
+        expect:
+          state: DISCOVERING
+          pending_card: Q-apps-01
+          events:
+            - {type: card, card_id: Q-apps-01}
+  stale_research_note_is_refreshed:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - advance_clock: 1296000
+      - user: "change the look to bold dark"
+        expect: {state: PLANNING, plan_phase: research}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          llm_calls:
+            C6.plan_research: 1
+            C8.synthesize_research: 1

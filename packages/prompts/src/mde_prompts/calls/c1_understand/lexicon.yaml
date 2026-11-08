@@ -1,0 +1,224 @@
+# Lexicon for the Discover step: short phrases in English, Hindi (Devanagari) and Hinglish.
+#
+# Used by the keyword understander (the C1 mock handler and the C1 deterministic fallback), the C2,
+# C3 and C14 mock handlers, and the Discover IntentRouter (deterministic fast paths before any LLM).
+# It is data: phrases are normalised (casefold, punctuation and apostrophes removed) when loaded, so
+# write them naturally. Nothing here is specific to one company or app type.
+#
+# Matching modes: "exact" compares the whole message after trimming polite fillers; "contains"
+# looks for the phrase as whole words anywhere.
+
+version: 1
+
+fillers:
+  leading: [please, pls, plz, kindly, "i want to", "i would like to", "id like to", "lets", "let us", "can we", "can you", "could you", "i want you to", "ok so", "so", chalo, kripya, "कृपया", "चलो"]
+  trailing: [please, pls, plz, now, "right now", "for now", "for me", yaar, bhai, ji, na, "जी", "अब", "कृपया", "भाई"]
+
+intents:
+  greeting: [hi, hii, hiii, hello, hey, heya, hola, yo, sup, "hi there", "hello there", "hey there", "good morning", "good afternoon", "good evening", gm, namaste, namaskar, pranam, salaam, "ram ram", "kaise ho", "kya haal hai", "नमस्ते", "नमस्कार", "हेलो", "हाय", "प्रणाम", "सलाम"]
+  approve: ["yes", yeah, yep, yup, ok, okay, k, sure, "go ahead", "build it", "looks good", "looks right", "looks great", "that works", approved, approve, confirm, "sounds good", perfect, great, "do it", "lets go", "go for it", "yes build it", "yes please", "yes go ahead", "all good", correct, right, "thats right", "thats correct", haan, han, haa, "ji haan", "haan ji", "haan kar do", "theek hai", "thik hai", bilkul, "kar do", "bana do", "build kar do", "shuru karo", "sahi hai", "sab theek hai", "हाँ", "हां", "जी हाँ", "जी हां", "ठीक है", "बिल्कुल", "कर दो", "हाँ कर दो", "बना दो", "सही है", "शुरू करो", "हां कर दो"]
+  negative: ["no", nope, nah, "not quite", "not really", "no thanks", "not this", nahi, nahin, "nahi yeh nahi", "नहीं", "नही", "ना", "बिल्कुल नहीं"]
+  hedge: [maybe, "i guess", perhaps, "not sure", hmm, hmmm, but, however, "ok but", "kind of", "sort of", shayad, lekin, magar, par, "शायद", "लेकिन", "मगर"]
+  you_decide: ["you decide", "you choose", "you pick", "choose for me", "pick for me", "your choice", "up to you", "i dont care", "dont care", whatever, "whatever you think", "surprise me", "any is fine", "anything works", "anything is fine", "you decide for me", "decide for me", "tum decide karo", "aap decide kar lo", "aap decide karo", "aap hi chun lo", "tum chun lo", "tum decide kar lo", "jo theek lage", "jo aapko sahi lage", "apni pasand se", "kuch bhi", "kuch bhi chalega", "aap hi decide kar do", "aap hi decide kar lo", "decide kar lo", "decide kar do", "decide karo", "tum hi decide karo", "tum hi chun lo", "aap hi chun do", "mere liye chun lo", "आप तय कर लीजिए", "आप ही चुन लीजिए", "तुम चुन लो", "जो ठीक लगे", "मेरे लिए चुन लीजिए", "आप ही तय करें", "कुछ भी चलेगा", "आप ही चुन लो"]
+  finish_with_defaults: ["finish with smart defaults", "finish with defaults", "use smart defaults", "use defaults", "use default", "with defaults", "with smart defaults", "build with defaults", "go with defaults", "just use defaults", "skip the questions", "skip questions", "fill in the rest", "default se bana do", "default ke saath", "defaults ke saath", "smart defaults ke saath poora karein", "baaki sab default", "baaki default rakho", "default rakho", "डिफ़ॉल्ट के साथ", "डिफॉल्ट के साथ", "बाकी सब डिफ़ॉल्ट", "स्मार्ट डिफ़ॉल्ट के साथ पूरा करें"]
+  stop: [stop, cancel, "cancel it", "stop it", halt, abort, "stop karo", "cancel karo", "band karo", "band kar do", "ruk jao", rukiye, "bas karo", "bas", "रुकिए", "बंद करो", "रोक दो", "रोको", "बंद कर दो", "रुक जाओ", "बस करो"]
+  pause: [pause, "hold on", wait, "wait a moment", "one moment", "one minute", "give me a minute", "let me think", "ill be back", "be right back", brb, later, "talk later", "baad mein", "thodi der baad", "ek minute", "ruko", "ruko zara", "zara ruko", "ek minute ruko", "रुको", "रुको ज़रा", "एक मिनट", "थोड़ी देर बाद", "बाद में"]
+  start_over: ["start over", restart, "start again", "begin again", "new chat", "new session", reset, "fresh start", "start from scratch", "start fresh", "shuru se", "shuru se karo", "dobara shuru karo", "phir se shuru", "phir se shuru karo", "nayi shuruaat", "naya shuru karo", "फिर से शुरू करो", "दोबारा शुरू करो", "नए सिरे से शुरू करो", "शुरू से", "शुरू से करो"]
+  confused: ["i dont know", idk, "not sure", "no idea", dunno, confused, "i am confused", "im confused", "what should i choose", "what do you suggest", "help me", help, "not sure what to pick", "i dont understand", "dont understand", "pata nahi", "patan nahi", "malum nahi", "samajh nahi aaya", "samajh nahi aa raha", "kya chunu", "kya karun", "mujhe nahi pata", "kuch samajh nahi aa raha", "मुझे नहीं पता", "पता नहीं", "समझ नहीं आया", "समझ नहीं आ रहा", "कन्फ्यूज", "कन्फ्यूज़"]
+  none_of_these: ["none of these", "none of them", "i dont like any", "i dont like these", "not these", "show me more", "show more", "show others", "something else", "different", "other options", "any other", "none of the above", "koi aur dikhao", "aur dikhao", "inme se koi nahi", "ye pasand nahi", "yeh pasand nahi", "koi nahi", "kuch aur dikhao", "inmein se koi nahi", "इनमें से कोई नहीं", "और दिखाओ", "कुछ और दिखाओ", "ये पसंद नहीं", "यह पसंद नहीं"]
+  chitchat: [thanks, "thank you", thx, cool, nice, lol, haha, hahaha, wow, "how are you", "who are you", "whats up", "tell me a joke", joke, weather, "good night", bye, goodbye, "see you", dhanyavaad, shukriya, "thanks a lot", "ok cool", "bahut badhiya", mast, "tum kaun ho", "aap kaun hain", "धन्यवाद", "शुक्रिया", "बढ़िया", "आप कौन हैं", "अलविदा", "मज़ा आ गया"]
+  change_verbs: [change, switch, replace, rename, instead, remove, delete, "get rid of", "take out", "no more", "dont want", badal, badlo, "badal do", hata, hatao, "hata do", "nikal do", "बदलो", "बदल दो", "हटाओ", "हटा दो", "निकाल दो"]
+  change_cue: [change, make, add, remove, delete, instead, switch, replace, update, rather, actually, rename, "i dont want", "dont want", "no more", "get rid of", "take out", "take away", "swap", "use", "set", "badlo", "badal", "badal do", "hata", "hatao", "hata do", "nikal do", "jod", "jodo", "jod do", "daalo", "add karo", "change karo", "banao", "bana do", "rakho", "बदलो", "बदल दो", "हटाओ", "हटा दो", "निकाल दो", "जोड़ो", "जोड़ दो", "बनाओ", "रखो"]
+  question_words: [how, what, whats, why, when, where, who, which, can, could, will, would, do, does, did, is, are, "kya", kaise, kyun, kyon, kitna, kitne, kitni, kab, kahan, kaun, kon, "क्या", "कैसे", "क्यों", "कितना", "कितने", "कितनी", "कब", "कहाँ", "कहां", "कौन"]
+  idea_verbs: ["i want", "i need", "i would like", "id like", "i am building", "im building", "i want to build", "i want to make", "i want to create", "build me", "make me", "create an app", "build an app", "make an app", "an app for", "app for my", "app that", "i have a", "i run", "i own", "mujhe", "mujhe app", "app chahiye", "banana hai", "banani hai", "app banana", "app banani", "chahiye", "मुझे", "ऐप चाहिए", "बनाना है", "बनानी है", "ऐप बनाना", "चाहिए", "ऐप के लिए"]
+  vague: ["something like an app", "an app for my business", "some app", "any app", "an app", "something", "kuch app", "koi app", "kuch aisa", "कुछ ऐप", "कोई ऐप", "कुछ"]
+  additive: [also, add, plus, "as well", "too", "and also", aur, bhi, jod, "और", "भी", "जोड़"]
+  exclusive: [only, just, "sirf", "bas", "सिर्फ़", "सिर्फ", "बस"]
+  login_none: ["no login", "no sign in", "no signin", "no sign up", "no signup", "without login", "without sign in", "no accounts", "no account needed", "no registration", "no need to login", "no need for login", "dont need login", "bina login", "login nahi", "sign in nahi", "bina sign in", "login ki zaroorat nahi", "बिना लॉगिन", "लॉगिन नहीं", "साइन इन नहीं", "बिना साइन इन"]
+  login_social: ["log in with google", "log in with apple", "sign in with apple", "google or apple", "with google", "with apple", "using google", "using apple", "social login", "login with google", "sign in with google", "google login", "google sign in", "apple sign in", "login with apple", "google ya apple", "गूगल से लॉगिन"]
+  login_password: ["password login", "email and password", "username and password", "login with password", "password se login"]
+  login_code: ["otp", "phone otp", "email code", "magic link", "phone code", "login with otp", "otp se login", "फ़ोन कोड", "ओटीपी"]
+  login_sso: [sso, "single sign on", "company login", okta, "azure ad", "work account", "company sign in"]
+  login_guest: ["guest checkout", "browse without login", "guest mode", "guest first", "browse freely"]
+  pay_none: ["no payments", "no payment", "without payments", "no online payment", "payment nahi", "payments nahi", "bina payment", "पेमेंट नहीं"]
+  pay_delivery: ["cash on delivery", cod, "cash only", "sirf cash", "pay on delivery", "pay when it arrives", "cod only", "कैश ऑन डिलीवरी", "सिर्फ़ कैश"]
+  pay_online: ["pay online", "online payment", "online payments", "pay in the app", "upi", "card payments", "online pay"]
+  pay_both: ["online or cash", "cash or online", "online and cash on delivery"]
+  screen_words: [screen, page, tab, "स्क्रीन", "पेज"]
+  upload_word: ["uploaded", "attached", "attachment"]
+
+# Words that mark the language. Hinglish is Hindi written in Latin letters.
+hinglish_markers: [hai, hain, hoon, hun, nahi, nahin, kya, kyun, kyon, kaise, kitna, kitne, kitni, mujhe, mera, meri, mere, aap, apna, apni, apne, tum, hum, aur, bhi, toh, mein, wala, wali, wale, chahiye, chahta, chahti, banana, banani, banao, karo, karna, karni, karein, kijiye, dena, dukaan, dukan, liye, ka, ki, ke, ko, pe, haan, theek, thik, accha, achha, bilkul, zaroor, pata, samajh, bhai, yaar, sab, kuch, abhi, phir, baad, shuru, ruko, rukiye, nayi, naya, bataiye, batao, dikhao, lijiye, chunna, kaun, kab, kahan]
+
+language_markers:
+  es: [quiero, una, para, mi, tienda, aplicacion, aplicación, que, con, por, necesito, hola, gracias, un, el, la, los, las, mis, tengo, pueda, puedan]
+  fr: [je, veux, une, pour, mon, magasin, application, avec, bonjour, merci, les, des, besoin, voudrais, ma, mes, qui]
+  de: [ich, möchte, moechte, eine, für, fuer, mein, meine, laden, anwendung, und, mit, brauche, hallo, danke, einen, das, die, der, ein]
+
+scripts:  # Unicode block start, end, language
+  - ["ऀ", "ॿ", hi]
+  - ["ঀ", "৿", bn]
+  - ["਀", "੿", pa]
+  - ["઀", "૿", gu]
+  - ["஀", "௿", ta]
+  - ["ఀ", "౿", te]
+  - ["ಀ", "೿", kn]
+  - ["ഀ", "ൿ", ml]
+  - ["؀", "ۿ", ar]
+  - ["一", "鿿", zh]
+
+safety:
+  unsafe:
+    illegal: ["sell drugs", "buy drugs", "drug dealing", cocaine, heroin, "money laundering", "launder money", scam, scams, phishing, "fake id", "fake ids", "fake passport", "fake passports", counterfeit, "credit card fraud", "steal credit cards", "pirated", "ghar se drugs"]
+    harmful: [bomb, bombs, explosive, explosives, "make a weapon", "sell weapons", "buy guns", "sell guns", "stalk", "stalking", "track my ex", "spy on my wife", "spy on my husband", spyware, keylogger, malware, ransomware, ddos, "self harm", "self-harm", suicide, terrorist, terrorism, "child abuse", "child porn", "revenge porn"]
+    abuse: ["you are an idiot", "you are stupid", "you idiot", "stupid bot", "useless bot", "shut up", "you are useless", "tu bekaar hai", "tum bekaar ho", "bakwaas bot", "pagal bot"]
+  # Regexes run on every message and upload: no unbounded \s*, \s+ or .* (use {0,8}); the text is
+  # whitespace-folded before matching (tests/security/test_regex_linearity.py holds the line).
+  injection:
+    - "ignore (all |any |the )?(previous|prior|above|earlier|system) (instructions|prompts?|rules|messages)"
+    - "disregard (the |all |any )?(previous|prior|above|system) "
+    - "(reveal|show|print|repeat|tell me|output) (me )?(your|the) (system |hidden |initial |secret )?(prompt|instructions)"
+    - "you are now (a|an|in|the) "
+    - "new instructions?:"
+    - "system prompt"
+    - "developer mode"
+    - "jailbreak"
+    - "do anything now"
+    - "<\\s{0,8}/?\\s{0,8}system\\s{0,8}>"
+    - "override (your|the) (rules|instructions|safety|policy)"
+    - "forget (all|everything|your) (previous|prior|earlier|instructions)"
+    - "(send|give|tell|reveal) (me )?(the |your )?(api )?(key|password|secret|token)"
+    - "mark (this|the) (idea|app|request) as"
+    - "(पिछले|ऊपर के) (निर्देश|निर्देशों) (को )?(अनदेखा|भूल)"
+    - "pichhle instructions (ko )?(ignore|bhool)"
+
+slot_labels:
+  idea.summary: {en: "Your idea", hi: "आपका आइडिया", hi-Latn: "Aapka idea"}
+  idea.archetype: {en: "Type of app", hi: "ऐप का प्रकार", hi-Latn: "App ka type"}
+  scope.apps: {en: "Which app first", hi: "पहले कौन सा ऐप", hi-Latn: "Pehle kaun sa app"}
+  scope.features: {en: "Main features", hi: "मुख्य फ़ीचर", hi-Latn: "Mukhya features"}
+  users.roles: {en: "Kinds of users", hi: "उपयोगकर्ताओं के प्रकार", hi-Latn: "Users ke type"}
+  auth.method: {en: "Sign-in", hi: "साइन इन", hi-Latn: "Sign in"}
+  design.direction: {en: "Look", hi: "लुक", hi-Latn: "Look"}
+  brand.name: {en: "App name", hi: "ऐप का नाम", hi-Latn: "App ka naam"}
+  brand.assets: {en: "Logo or brand files", hi: "लोगो या ब्रांड फ़ाइलें", hi-Latn: "Logo ya brand files"}
+  design.accent: {en: "Accent color", hi: "एक्सेंट रंग", hi-Latn: "Accent rang"}
+  design.mode: {en: "Light or dark", hi: "लाइट या डार्क", hi-Latn: "Light ya dark"}
+  design.nav_style: {en: "Navigation style", hi: "नेविगेशन शैली", hi-Latn: "Navigation style"}
+  pay.model: {en: "Payments", hi: "भुगतान", hi-Latn: "Payments"}
+  pay.provider: {en: "Payment provider", hi: "पेमेंट प्रोवाइडर", hi-Latn: "Payment provider"}
+  data.source: {en: "Where the data comes from", hi: "डेटा कहाँ से आएगा", hi-Latn: "Data kahan se aayega"}
+  behavior.offline: {en: "Working offline", hi: "ऑफ़लाइन चलना", hi-Latn: "Offline chalna"}
+  behavior.notifications: {en: "Notifications", hi: "नोटिफिकेशन", hi-Latn: "Notifications"}
+  behavior.analytics: {en: "Usage tracking", hi: "उपयोग ट्रैकिंग", hi-Latn: "Usage tracking"}
+  locale: {en: "Language of the app", hi: "ऐप की भाषा", hi-Latn: "App ki bhasha"}
+  a11y: {en: "Accessibility", hi: "सुगम्यता", hi-Latn: "Accessibility"}
+  compliance.flags: {en: "Sensitive-area care", hi: "संवेदनशील क्षेत्र की सावधानी", hi-Latn: "Sensitive area ki saavdhani"}
+  auth.sso: {en: "Company sign-in", hi: "कंपनी साइन-इन", hi-Latn: "Company sign-in"}
+  integrations.list: {en: "Company systems", hi: "कंपनी के सिस्टम", hi-Latn: "Company ke systems"}
+  data.classification: {en: "Data sensitivity", hi: "डेटा की संवेदनशीलता", hi-Latn: "Data ki sensitivity"}
+  regions: {en: "Regions", hi: "क्षेत्र", hi-Latn: "Regions"}
+  release.channel: {en: "Who gets it first", hi: "सबसे पहले किसे मिलेगा", hi-Latn: "Sabse pehle kisko milega"}
+  approvers: {en: "Approvers", hi: "मंज़ूरी देने वाले", hi-Latn: "Approvers"}
+
+# Extra feature synonyms by feature id (the labels of the question cards are matched too).
+feature_keywords:
+  catalog_browse: [catalog, catalogue, browse, "product list", products]
+  search: [search, "search bar", "find products", "सर्च", "खोज"]
+  cart_checkout: [cart, checkout, basket, "add to cart", "check out", "कार्ट", "चेकआउट"]
+  payments: [payments, payment, "pay online", "online payment", upi, "pay in the app", "पेमेंट", "भुगतान"]
+  order_tracking: ["track order", "track orders", "order tracking", "order status", "track my order", tracking, "ऑर्डर ट्रैकिंग"]
+  reviews: [reviews, review, ratings, rating, "rate products", "रिव्यू", "रेटिंग", "समीक्षा"]
+  favorites: [favorites, favourites, favorite, wishlist, "save products", "saved items", "फेवरेट", "पसंदीदा", "विशलिस्ट"]
+  push_notifications: [notifications, notification, "push notification", "push notifications", alerts, "order updates", notify, "नोटिफिकेशन"]
+  loyalty: [loyalty, "loyalty points", rewards, "reward points", cashback, "लॉयल्टी", "रिवॉर्ड"]
+  support_chat: ["support chat", "live chat", "chat support", "customer support", helpdesk]
+  restaurant_browse: [restaurants, "restaurant list", "browse restaurants", "browse menu"]
+  menu_item_options: ["menu options", customisation, customization, customise, customize, "add ons", addons, toppings]
+  live_order_tracking: ["live tracking", "track delivery", "delivery tracking", "live order tracking", "where is my order", "live location"]
+  ratings: [ratings, rating, reviews]
+  saved_addresses: ["saved addresses", addresses, "address book"]
+  promo_codes: ["promo codes", "promo code", coupons, coupon, discounts, "discount codes", offers]
+  support: [support, helpdesk, "customer support"]
+  service_catalog: ["service list", services, "service catalog", "our services"]
+  provider_profiles: ["provider profiles", "staff profiles", "trainer profiles", "doctor profiles", stylists, "expert profiles"]
+  slot_booking: [booking, bookings, "book a slot", "time slots", slots, appointments, appointment, scheduling, "slot booking", "बुकिंग"]
+  reminders: [reminders, reminder, "appointment reminders"]
+  reschedule_cancel: [reschedule, "cancel booking", "change booking", cancellation, "reschedule or cancel"]
+  memberships: [memberships, membership, subscriptions, subscription, "class packs"]
+  task_lists: [tasks, "task list", "to do", todo, "to-do", "task management"]
+  forms_checklists: [forms, checklists, checklist, inspections, inspection, "safety checks"]
+  approvals: [approvals, approval, "approve requests", "leave requests", "expense approvals"]
+  timesheets: [timesheet, timesheets, "time tracking", attendance, "clock in", "punch in", "उपस्थिति"]
+  directory: [directory, "staff directory", "employee directory", "contact list"]
+  announcements: [announcements, announcement, news, notices, "company news"]
+  offline_sync: [offline, "work offline", "offline mode", sync]
+  kiosk_mode: [kiosk, "kiosk mode", "shared device"]
+  reports: [reports, report, dashboards, dashboard]
+  list_detail: ["lists", "detail pages", "list and detail"]
+  forms: [form, forms]
+  auth_profile: [profile, profiles, accounts, "user accounts", "login and profile"]
+  notifications: [notifications, alerts]
+  settings: [settings, preferences]
+  media_gallery: [gallery, photos, "photo gallery", images, "media gallery"]
+  maps: [map, maps, "map view"]
+  payments_mock: ["practice payments"]
+
+# Words that point to a look. Each theme id also matches the words of its own label.
+theme_keywords:
+  clean-bright: [clean, bright, fresh, white, light, crisp, airy, "साफ़", "सफ़ेद", "उजला"]
+  bold-dark: [bold, dark, black, night, premium, dramatic, "डार्क", "काला", "गहरा"]
+  warm-friendly: [warm, friendly, soft, cozy, cosy, welcoming, rounded, earthy, "गर्म", "नरम", "दोस्ताना"]
+  minimal-mono: [minimal, minimalist, simple, plain, mono, monochrome, "black and white", "less is more", "सादा", "सिंपल"]
+  vibrant-playful: [vibrant, playful, colorful, colourful, fun, bright colors, lively, youthful, "रंगीन", "मज़ेदार", "चटकीला"]
+  corporate-calm: [calm, professional, corporate, business, serious, formal, trustworthy, blue, "प्रोफेशनल", "शांत"]
+
+color_words: [red, green, blue, orange, purple, pink, yellow, teal, black, white, gold, violet, maroon, navy, "लाल", "हरा", "नीला", "नारंगी", "बैंगनी", "पीला"]
+
+# Knowledge topics: snippet id suffix (after "kb-") -> words that point to it.
+knowledge_topics:
+  cost: [price, pricing, cost, costs, charge, charges, fee, fees, "how much", paise, kitna, kitne, "कीमत", "कितना", "कितने पैसे", "free", "subscription"]
+  time: ["how long", "how many days", "how soon", deadline, "how fast", "kitne din", "kitna time", "kitna samay", "कितना समय", "कितने दिन", "when will it be ready", "turnaround"]
+  code-download: [code, download, "source code", own, ownership, export, github, "who owns", "download the code", "code milega", "कोड"]
+  privacy: [privacy, private, secure, security, safe, "my data", "data safe", delete, secrets, "surakshit", "डेटा सुरक्षित", "गोपनीयता"]
+  preview: [preview, test, try, demo, "see the app", "see it", expo, "on my phone", "phone par", "प्रिव्यू"]
+  how-it-works: ["how does it work", "how it works", process, steps, "what happens", "what happens next", "how do you work", "kaise kaam", "kaise chalta", "कैसे काम"]
+  what-we-build: ["what can you build", "what do you build", "what can you do", "who are you", "what are you", "what is this", "kya bana", "kya kar sakte", "आप क्या बना"]
+  brief: [brief, summary, "the brief", "ब्रीफ़"]
+  after-approval: ["after approval", "after i approve", "once approved", "what after", "after that", "approval ke baad", "मंज़ूरी के बाद"]
+  changes: ["change my mind", "can i change", "make changes", "edit later", "change later", "badal sakte", "बदल सकते"]
+  unsupported: [game, games, ar, vr, "desktop app", "background audio", "not supported", unsupported]
+  languages: [language, languages, hindi, english, "other languages", bhasha, "भाषा", "हिंदी"]
+  reference-apps: ["like swiggy", "like uber", "copy an app", "clone", "similar app", "same as", "jaisa app", "जैसा ऐप"]
+  save-resume: ["save my progress", "come back", "resume", "continue later", "save and resume", "baad mein continue", "later continue"]
+
+unknown_reply:
+  en: "I do not have that detail, so I will not guess. You will see the plan before anything is built."
+  hi: "मेरे पास यह जानकारी नहीं है, इसलिए मैं अंदाज़ा नहीं लगाऊँगा। कुछ भी बनने से पहले आप प्लान देखेंगे।"
+  hi-Latn: "Mere paas yeh jaankari nahi hai, isliye main andaaza nahi lagaunga. Kuch bhi banne se pehle aap plan dekhenge."
+
+chitchat_replies:
+  en: ["Happy to chat for a moment.", "Fair enough, that is good to know.", "Thanks for sharing that."]
+  hi: ["थोड़ी बात करके अच्छा लगा।", "ठीक है, यह जानना अच्छा रहा।", "यह बताने के लिए धन्यवाद।"]
+  hi-Latn: ["Thodi baat karke accha laga.", "Theek hai, yeh jaanna accha raha.", "Yeh batane ke liye dhanyavaad."]
+
+steer_back:
+  en: "Whenever you are ready, shall we get back to your app?"
+  hi: "जब आप तैयार हों, क्या हम आपके ऐप पर वापस चलें?"
+  hi-Latn: "Jab aap taiyaar hon, kya hum aapke app par wapas chalein?"
+
+idea_chips:
+  en: ["A shop for my products", "Bookings for my services", "An app for my team"]
+  hi: ["मेरे सामान की दुकान", "मेरी सेवाओं की बुकिंग", "मेरी टीम के लिए ऐप"]
+  hi-Latn: ["Mere saman ki dukaan", "Meri services ki booking", "Meri team ke liye app"]
+
+regions:  # words that name a place -> region label (the interpreter maps labels to region ids)
+  India: [india, indian, mumbai, delhi, bengaluru, bangalore, chennai, kolkata, hyderabad, pune, jaipur, ahmedabad, lucknow, "भारत", "मुंबई", "दिल्ली"]
+  Europe: [europe, european, eu, uk, "united kingdom", london, germany, france, spain, italy, berlin, paris]
+  "United States": [usa, "united states", america, american, "new york", california, texas]
+  Other: [dubai, uae, singapore, australia, canada, nigeria, kenya, brazil]
+
+region_ids: {India: in, Europe: eu, "United States": us, Other: other}
+
+known_apps: [Swiggy, Zomato, Uber, Ola, Amazon, Flipkart, Airbnb, Instagram, Spotify, Netflix, Myntra, Zepto, Blinkit, BigBasket, Bookmyshow, Urban Company, UrbanClap, Paytm, PhonePe, Meesho, Nykaa, Dunzo, Rapido, WhatsApp, Facebook, Uber Eats, DoorDash, Shopify, Etsy]
+reference_cues: ["like", "similar to", "inspired by", "clone of", "same as", "jaisa", "jaise", "ki tarah", "जैसा", "जैसे", "की तरह"]

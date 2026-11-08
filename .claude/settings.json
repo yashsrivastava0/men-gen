@@ -1,0 +1,108 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv:*)",
+      "Bash(just:*)",
+      "Bash(git:*)",
+      "Bash(pytest:*)",
+      "Bash(ruff:*)",
+      "Bash(pyright:*)",
+      "Bash(docker compose:*)",
+      "Bash(alembic:*)",
+      "Bash(python scripts/:*)",
+      "Bash(python -m pytest:*)",
+      "Bash(py -3.13 scripts/:*)",
+      "Bash(python .claude/hooks/:*)",
+      "Read(./.env.example)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.local)",
+      "Read(./.env.live)",
+      "Read(./.env.dev)",
+      "Read(./.env.development)",
+      "Read(./.env.test)",
+      "Read(./.env.staging)",
+      "Read(./.env.prod)",
+      "Read(./.env.production)",
+      "Read(**/.env)",
+      "Edit(./.env)",
+      "Write(./.env)",
+      "Bash(cat .env*)",
+      "Bash(cat ./.env*)",
+      "Bash(type .env*)",
+      "Bash(type .\\.env*)",
+      "Bash(Get-Content .env*)",
+      "Bash(Get-Content ./.env*)",
+      "Bash(Get-Content .\\.env*)",
+      "Bash(gc .env*)",
+      "Bash(more .env*)",
+      "Bash(less .env*)",
+      "Bash(head .env*)",
+      "Bash(tail .env*)",
+      "Bash(sed * .env*)",
+      "Bash(awk * .env*)",
+      "Bash(Select-String * .env*)",
+      "Bash(source .env*)",
+      "Bash(. .env*)",
+      "Bash(printenv*)",
+      "Bash(env)",
+      "Bash(env *)",
+      "Bash(set)",
+      "Bash(Get-ChildItem env:*)",
+      "Bash(gci env:*)",
+      "Bash(dir env:*)",
+      "Bash(ls env:*)",
+      "Bash(echo *OPENAI_API_KEY*)",
+      "Bash(Write-Output *OPENAI_API_KEY*)",
+      "Bash(Write-Host *OPENAI_API_KEY*)",
+      "PowerShell(cat .env*)",
+      "PowerShell(type .env*)",
+      "PowerShell(Get-Content .env*)",
+      "PowerShell(gc .env*)",
+      "PowerShell(Select-String * .env*)",
+      "PowerShell(Get-ChildItem env:*)",
+      "PowerShell(gci env:*)",
+      "PowerShell(dir env:*)",
+      "PowerShell(ls env:*)",
+      "PowerShell(Get-Item env:*)",
+      "PowerShell(echo *OPENAI_API_KEY*)",
+      "PowerShell(Write-Output *OPENAI_API_KEY*)",
+      "PowerShell(Write-Host *OPENAI_API_KEY*)",
+      "PowerShell($env:OPENAI_API_KEY*)"
+    ]
+  },
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_py.py\""
+          }
+        ]
+      }
+    ],
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_live.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "PowerShell",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_live.py\""
+          }
+        ]
+      }
+    ]
+  }
+}

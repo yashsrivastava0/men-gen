@@ -1,0 +1,21 @@
+id: P04-confused-hinglish
+title: Confused, writes Hinglish
+who: Does not know what to choose, says so in Hinglish, lets the system decide.
+language: hi-Latn
+mode: guided
+script:
+  - user: "mujhe salon ka app chahiye, booking aur reminders ke saath"
+  - user: "pata nahi"
+  - user: "aap hi decide kar lo"
+  - user: "aap hi decide kar lo"
+  - ui: {action: finish_with_defaults}
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  slots:
+    idea.archetype: booking_services
+    locale: hi-Latn

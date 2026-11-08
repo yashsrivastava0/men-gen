@@ -1,0 +1,144 @@
+# SIT-028: Types while research or building is running
+# Detection: State PLANNING
+# Behavior:  Queue and acknowledge; apply at Gate 2; Stop button available; a change of app type cancels the run (section 3.6)
+id: SIT-028-typing-while-research-or-building-runs
+situation: "Types while research or building is running"
+mode: guided
+variants:
+  message_during_research_is_queued:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - start_plan: {hold: research}
+        expect: {state: PLANNING, plan_phase: research, job: running}
+      - user: "make the buttons rounder"
+        expect:
+          state: PLANNING
+          text_contains: ["apply this as soon as the plan is ready"]
+          queued_messages: 1
+          job: running
+          no_events: [gate]
+      - finish_plan: true
+        expect:
+          state: PLANNING
+          plan_phase: build
+          queued_messages: 0
+          text_contains: ["Applying the notes you sent"]
+          events:
+            - {type: gate, gate: plan, version: 1}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 2}
+  message_during_build_is_queued:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - start_plan: {hold: build}
+        expect: {state: PLANNING, plan_phase: build, job: running}
+      - user: "use rounder buttons"
+        expect:
+          text_contains: ["apply this as soon as the plan is ready"]
+          queued_messages: 1
+      - finish_plan: true
+        expect:
+          state: PLANNING
+          queued_messages: 0
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 2}
+  stop_returns_to_where_the_run_started:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - start_plan: {hold: research}
+        expect: {state: PLANNING, job: running}
+      - ui: {action: stop}
+        expect:
+          state: BRIEF_REVIEW
+          origin: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - finish_plan: true
+        expect:
+          state: BRIEF_REVIEW
+          job: none
+          last_job_state: cancelled
+          research_version: none
+          spec_version: none
+          spec_ready: 0
+  change_of_app_type_cancels_the_run:
+    provider_script:
+      C1.understand:
+        - {mock: true}
+        - {intent: change, confidence: 0.9, language: en}
+      C14.interpret_change:
+        - {understood: true, ops: [{kind: set_slot, slot_id: idea.archetype, value_text: booking_services}], confidence: 0.9}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - start_plan: {hold: research}
+      - user: "it is not a shop, it is a booking app"
+        expect:
+          text_contains: ["changes the kind of app"]
+          slots:
+            idea.archetype: {value: booking_services}
+          brief_version: 2
+          gate: {gate: brief, version: 2, single_button: true}
+          approvals_count: 1
+      - finish_plan: true
+        expect:
+          state: BRIEF_REVIEW
+          job: none
+          spec_version: none
+          research_version: none
+          last_job_state: cancelled
+          spec_ready: 0

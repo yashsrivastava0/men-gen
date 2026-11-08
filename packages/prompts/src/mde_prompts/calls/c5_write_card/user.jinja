@@ -1,0 +1,15 @@
+Slot: {{ slot }}{% if slot_hint %} ({{ slot_hint }}){% endif %}
+
+App type: {{ archetype }}. Mode: {{ mode }}. Language: {{ language }}. Card type: {{ card_type }}.
+{% if slots %}
+Known slots:
+{% for s in slots %}
+- {{ s.slot_id }} = {{ s.value }} [{{ s.state }}]
+{% endfor %}
+{% endif %}
+{% if options_hint %}
+Option hints:
+{% for o in options_hint %}
+- {{ o }}
+{% endfor %}
+{% endif %}

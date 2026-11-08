@@ -1,0 +1,39 @@
+# Rules of the offline C7 mock: how a careful extraction model would behave on the canned search
+# answers. Deterministic. The mock picks up to `max_facts` sentences (sentences backed by several
+# sources first), writes each as a short statement and attributes it to every source marker it
+# carries (so a claim stated by two independent sources is returned twice, once per source).
+version: 1
+
+max_facts: 3
+min_words: 5
+max_statement_chars: 240
+
+# job -> default fact kind
+job_kind:
+  R1: feature
+  R2: pattern
+  R3: brand
+  R4: compliance
+  R5: integration
+  R6: other
+
+# in R1 and R2 a sentence with one of these words is a pattern, not a feature
+pattern_words: [flow, pattern, navigation, layout, onboarding, tab, screen, timeline, checkout, view]
+
+# a sentence with one of these words is a high-impact claim (rules, money, platform limits)
+high_impact_words: [regulation, law, legal, required, requires, requirement, consent, restricted, development build, encrypted, "card data", "card numbers"]
+# every R4 fact is high impact (rules and duties)
+high_impact_jobs: [R4]
+
+# the mock behaves like a model that refuses instructions found in the content: such sentences are
+# never turned into facts and the result is flagged
+instruction_patterns:
+  - '\b(ignore|disregard|forget|override)\b[^.\n]{0,40}\b(previous|prior|above|earlier|all|any|your)\b[^.\n]{0,30}\b(instruction|prompt|rule)s?'
+  - '\bsystem prompt\b'
+  - '\b(reveal|print|show|repeat|leak|disclose)\b[^.\n]{0,40}\b(prompt|instructions|api key|secret|password)'
+  - '\b(visit|fetch|open|download|browse to|go to|click)\b[^.\n]{0,60}https?://'
+  - 'https?://'
+  - '</?(script|iframe|style)'
+  - '\bas an ai\b'
+  - '"(statement|source_url|facts|injection_suspected)"\s{0,16}:'
+  - '(^|[.!?]\s{1,16})(system|assistant|developer)\s{0,16}[:>]'

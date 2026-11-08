@@ -1,0 +1,84 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "done": {
+      "default": 0,
+      "title": "Done",
+      "type": "integer"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "in_reply_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "In Reply To"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "phase": {
+      "enum": [
+        "research",
+        "build"
+      ],
+      "title": "Phase",
+      "type": "string"
+    },
+    "seq": {
+      "default": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "step": {
+      "title": "Step",
+      "type": "string"
+    },
+    "total": {
+      "default": 0,
+      "title": "Total",
+      "type": "integer"
+    },
+    "type": {
+      "const": "progress",
+      "default": "progress",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "phase",
+    "step",
+    "label"
+  ],
+  "title": "ProgressEvent",
+  "type": "object"
+}

@@ -1,0 +1,73 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "app_id": {
+      "title": "App Id",
+      "type": "string"
+    },
+    "brief_hash": {
+      "title": "Brief Hash",
+      "type": "string"
+    },
+    "hash": {
+      "default": "",
+      "title": "Hash",
+      "type": "string"
+    },
+    "inherits": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Inherits",
+      "type": "array"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "mode": {
+      "default": "guided",
+      "enum": [
+        "guided",
+        "enterprise"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "research_note_hash": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Research Note Hash"
+    },
+    "schema_id": {
+      "default": "mde.app-spec/1",
+      "title": "Schema Id",
+      "type": "string"
+    },
+    "spec_version": {
+      "title": "Spec Version",
+      "type": "integer"
+    },
+    "stack_profile": {
+      "default": "expo-managed",
+      "title": "Stack Profile",
+      "type": "string"
+    }
+  },
+  "required": [
+    "spec_version",
+    "app_id",
+    "brief_hash"
+  ],
+  "title": "SpecHeader",
+  "type": "object"
+}

@@ -1,0 +1,95 @@
+{
+  "proposals": [
+    {
+      "kind": "fix_reference",
+      "target": "SCR-006",
+      "source": "repair",
+      "research_ref": null,
+      "rationale": "Replacement does not exist",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "SCR-099",
+          "value": "SCR-098"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "fix_reference",
+      "target": "SCR-006",
+      "source": "repair",
+      "research_ref": null,
+      "rationale": "Not dangling",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "SCR-004",
+          "value": "SCR-005"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "remove_item",
+      "target": "FLW-001",
+      "source": "repair",
+      "research_ref": null,
+      "rationale": "Removes the main journey",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "remove_item",
+      "target": "SCR-002",
+      "source": "repair",
+      "research_ref": null,
+      "rationale": "Sign-in screen",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    }
+  ],
+  "notes": null
+}

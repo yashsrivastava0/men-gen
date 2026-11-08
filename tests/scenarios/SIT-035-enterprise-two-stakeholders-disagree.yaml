@@ -1,0 +1,102 @@
+# SIT-035: Enterprise: two stakeholders disagree
+# Detection: Conflicting answers on one slot
+# Behavior:  Record both; resolve by the role precedence in policy or flag to the decision owner; never overwrite silently
+id: SIT-035-enterprise-two-stakeholders-disagree
+situation: "Enterprise: two stakeholders disagree"
+mode: enterprise
+policy: regulated-bank
+policies:
+  # the same approvers as regulated-bank, but the requester outranks the product owner
+  - {id: requester-first, mode: enterprise, inherits: "regulated-bank@1", role_precedence: [requester, product_owner]}
+  # ... and one where no precedence is written down at all
+  - {id: no-precedence, mode: enterprise, inherits: "regulated-bank@1", role_precedence: []}
+integration: true
+variants:
+  both_answers_are_recorded:
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - user: "change the look to bold dark"
+        expect:
+          gate: {gate: brief, version: 2}
+          slots:
+            design.direction: {value: bold-dark}
+      - decide: {gate: brief, decision: change, as: product_owner, comment: "use the warm and friendly look"}
+        expect:
+          approvals:
+            - {gate: brief, decision: change, role: product_owner}
+  role_precedence_resolves_the_conflict:
+    # regulated-bank: the product owner is listed above the requester, so their answer is used and
+    # the requester's stays on record (both are named in the notice)
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - user: "change the look to bold dark"
+        expect:
+          slots:
+            design.direction: {value: bold-dark}
+      - decide: {gate: brief, decision: change, as: product_owner, comment: "use the warm and friendly look"}
+        expect:
+          notices: [slot_conflict_resolved]
+          text_contains: ["bold-dark from requester", "The policy puts product_owner first"]
+          slots:
+            design.direction: {value: warm-friendly}
+  a_lower_precedence_answer_does_not_overwrite:
+    policy: requester-first
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - user: "change the look to bold dark"
+        expect:
+          slots:
+            design.direction: {value: bold-dark}
+      - decide: {gate: brief, decision: change, as: product_owner, comment: "use the warm and friendly look"}
+        expect:
+          notices: [slot_conflict_resolved]
+          text_contains: ["The policy puts requester first", "warm-friendly from product_owner"]
+          slots:
+            design.direction: {value: bold-dark}
+          gate: {gate: brief, version: 2}
+  no_precedence_flags_the_decision_owner_and_blocks_approval:
+    # nothing says who wins: the earlier answer stays, the slot is disputed, the owner is asked,
+    # and the Brief cannot be approved until they choose
+    policy: no-precedence
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - user: "change the look to bold dark"
+        expect:
+          slots:
+            design.direction: {value: bold-dark}
+      - decide: {gate: brief, decision: change, as: product_owner, comment: "use the warm and friendly look"}
+        expect:
+          notices: [slot_disputed]
+          text_contains: ["The person who owns this app needs to choose", "bold-dark from requester", "warm-friendly from product_owner"]
+          slots:
+            design.direction: {value: bold-dark, state: disputed}
+          gate: {gate: brief, version: 2}
+      - decide: {gate: brief, as: product_owner}
+        expect:
+          state: BRIEF_REVIEW
+      - decide: {gate: brief}
+        expect:
+          state: BRIEF_REVIEW
+          notices: [dispute_blocks_approval]
+          no_events: [spec_ready]
+      - user: "use the warm and friendly look"
+        expect:
+          notices: [slot_dispute_settled]
+          slots:
+            design.direction: {value: warm-friendly}

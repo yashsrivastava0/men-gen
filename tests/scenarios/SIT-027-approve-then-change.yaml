@@ -1,0 +1,66 @@
+# SIT-027: Approves, then immediately changes
+# Detection: Approve then change before the next step has run
+# Behavior:  Version changes, approval void, same gate re-opens with a diff
+id: SIT-027-approve-then-change
+situation: "Approves, then immediately changes"
+mode: guided
+integration: true
+variants:
+  at_gate_one:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - user: "change the look to bold dark"
+        expect:
+          state: BRIEF_REVIEW
+          job: none
+          brief_version: 2
+          gate: {gate: brief, version: 2, single_button: true, diff_contains: look}
+          gate_open: {gate: brief, status: open, version: 2}
+          notices_absent: [stale_gate]
+          text_contains: ["earlier approval no longer applies"]
+          approvals_count: 1
+          spec_ready: 0
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          approvals_count: 2
+  enterprise_one_role_approved_then_change:
+    mode: enterprise
+    policy: enterprise-it-services-firm
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - decide: {gate: brief}
+        expect: {state: PLANNING, plan_phase: research}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1, required_roles: [client_product_owner, delivery_lead]}
+      - decide: {gate: plan, role: client_product_owner, as: client_product_owner}
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, approved_roles: [client_product_owner]}
+      - user: "change the look to bold dark"
+        expect:
+          state: PLANNING
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 2, approved_roles: [], single_button: true}
+          spec_ready: 0

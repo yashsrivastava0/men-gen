@@ -1,0 +1,300 @@
+slots:
+  a11y:
+    value: standard
+    state: assumed
+  approvers:
+    value:
+    - requester
+    state: assumed
+  auth.method:
+    value: email_phone_code
+    state: confirmed
+  auth.sso:
+    value: not_needed
+    state: assumed
+  behavior.analytics:
+    value: false
+    state: assumed
+  behavior.notifications:
+    value: true
+    state: assumed
+  behavior.offline:
+    value: basic
+    state: assumed
+  brand.name:
+    value: Blue Basket
+    state: confirmed
+  data.classification:
+    value: internal
+    state: assumed
+  data.source:
+    value: generated
+    state: assumed
+  design.direction:
+    value: clean-bright
+    state: confirmed
+  design.mode:
+    value: system
+    state: assumed
+  idea.archetype:
+    value: custom
+    state: confirmed
+  idea.summary:
+    value: A community garden tracker where neighbours share plots and tools
+    state: volunteered
+  locale:
+    value: en
+    state: assumed
+  release.channel:
+    value: internal
+    state: assumed
+  scope.features:
+    value:
+    - list_detail
+    - search
+    - auth_profile
+    - settings
+    state: confirmed
+  users.roles:
+    value:
+    - user
+    state: confirmed
+screens:
+- id: SCR-001
+  route: /welcome
+  recipe: welcome
+  surface: customer
+  auth: public
+- id: SCR-002
+  route: /login
+  recipe: login-otp
+  surface: customer
+  auth: public
+- id: SCR-003
+  route: /signup
+  recipe: signup
+  surface: customer
+  auth: public
+- id: SCR-004
+  route: /home
+  recipe: dashboard
+  surface: customer
+  auth: public
+- id: SCR-005
+  route: /categories
+  recipe: list
+  surface: customer
+  auth: public
+- id: SCR-006
+  route: /items
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-007
+  route: /items/[id]
+  recipe: detail
+  surface: customer
+  auth: public
+- id: SCR-008
+  route: /items/edit
+  recipe: form
+  surface: customer
+  auth: ROLE-admin
+- id: SCR-009
+  route: /gallery
+  recipe: media-gallery
+  surface: customer
+  auth: authenticated
+- id: SCR-010
+  route: /gallery/[id]
+  recipe: detail
+  surface: customer
+  auth: authenticated
+- id: SCR-011
+  route: /gallery/new
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-012
+  route: /map
+  recipe: map-view
+  surface: customer
+  auth: public
+- id: SCR-013
+  route: /map/[id]
+  recipe: detail
+  surface: customer
+  auth: public
+- id: SCR-014
+  route: /search
+  recipe: search
+  surface: customer
+  auth: public
+- id: SCR-015
+  route: /search/results
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-016
+  route: /forms
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-017
+  route: /forms/new
+  recipe: multi-step-form
+  surface: customer
+  auth: authenticated
+- id: SCR-018
+  route: /forms/submitted
+  recipe: confirmation
+  surface: customer
+  auth: authenticated
+- id: SCR-019
+  route: /forms/[id]
+  recipe: detail
+  surface: customer
+  auth: authenticated
+- id: SCR-020
+  route: /admin/forms
+  recipe: approvals-queue
+  surface: customer
+  auth: ROLE-staff
+- id: SCR-021
+  route: /account
+  recipe: profile
+  surface: customer
+  auth: authenticated
+- id: SCR-022
+  route: /account/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-023
+  route: /settings
+  recipe: settings
+  surface: customer
+  auth: authenticated
+- id: SCR-024
+  route: /help
+  recipe: list
+  surface: customer
+  auth: public
+- id: SCR-025
+  route: /legal
+  recipe: detail
+  surface: customer
+  auth: public
+- id: SCR-026
+  route: /settings/delete-account
+  recipe: form
+  surface: customer
+  auth: authenticated
+flows:
+- id: FLW-001
+  name: Browse and open an item
+  screens:
+  - SCR-004
+  - SCR-005
+  - SCR-006
+  - SCR-007
+- id: FLW-002
+  name: Sign in
+  screens:
+  - SCR-001
+  - SCR-002
+  - SCR-004
+- id: FLW-003
+  name: Search for an item
+  screens:
+  - SCR-004
+  - SCR-014
+  - SCR-015
+  - SCR-007
+- id: FLW-004
+  name: Send a form and follow it
+  screens:
+  - SCR-004
+  - SCR-017
+  - SCR-018
+  - SCR-016
+  - SCR-019
+- id: FLW-005
+  name: Review submissions
+  screens:
+  - SCR-020
+  - SCR-019
+- id: FLW-006
+  name: Edit an item
+  screens:
+  - SCR-006
+  - SCR-007
+  - SCR-008
+- id: FLW-007
+  name: Add a photo
+  screens:
+  - SCR-009
+  - SCR-011
+- id: FLW-008
+  name: View a photo
+  screens:
+  - SCR-009
+  - SCR-010
+- id: FLW-009
+  name: Explore places
+  screens:
+  - SCR-012
+  - SCR-013
+- id: FLW-010
+  name: Change my details
+  screens:
+  - SCR-021
+  - SCR-022
+- id: FLW-011
+  name: Find help and legal pages
+  screens:
+  - SCR-023
+  - SCR-024
+  - SCR-025
+- id: FLW-012
+  name: Delete my account
+  screens:
+  - SCR-023
+  - SCR-026
+entities:
+- ENT-User
+- ENT-Category
+- ENT-Item
+- ENT-Entry
+- ENT-MediaItem
+- ENT-Place
+operations:
+- API-requestOtp
+- API-verifyOtp
+- API-getMe
+- API-updateMe
+- API-deleteAccount
+- API-listCategories
+- API-listItems
+- API-getItem
+- API-saveItem
+- API-searchItems
+- API-createEntry
+- API-listMyEntries
+- API-getEntry
+- API-listAllEntries
+- API-updateEntryStatus
+- API-listMedia
+- API-uploadMedia
+- API-deleteMedia
+- API-listPlaces
+- API-getPlace
+roles:
+- ROLE-user
+- ROLE-staff
+- ROLE-admin
+counts:
+  screens: 26
+  flows: 12
+  entities: 6
+  operations: 20

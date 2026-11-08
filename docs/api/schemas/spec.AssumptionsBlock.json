@@ -1,0 +1,179 @@
+{
+  "$defs": {
+    "AssumptionItem": {
+      "additionalProperties": false,
+      "properties": {
+        "impact": {
+          "title": "Impact",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "slot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot Id"
+        },
+        "value_text": {
+          "title": "Value Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value_text",
+        "impact"
+      ],
+      "title": "AssumptionItem",
+      "type": "object"
+    },
+    "ResearchAddition": {
+      "additionalProperties": false,
+      "properties": {
+        "affects": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Affects",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^RA-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "included": {
+          "default": true,
+          "title": "Included",
+          "type": "boolean"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind"
+      ],
+      "title": "ResearchAddition",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "retrieved_at": {
+          "format": "date",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "retrieved_at"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "assumptions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AssumptionItem"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "research_additions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResearchAddition"
+      },
+      "title": "Research Additions",
+      "type": "array"
+    },
+    "research_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Research Note"
+    },
+    "research_status": {
+      "default": "skipped",
+      "enum": [
+        "ok",
+        "partial",
+        "unavailable",
+        "skipped"
+      ],
+      "title": "Research Status",
+      "type": "string"
+    }
+  },
+  "title": "AssumptionsBlock",
+  "type": "object"
+}

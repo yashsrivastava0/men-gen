@@ -1,0 +1,58 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "end": {
+      "pattern": "^SCR-\\d{3}$",
+      "title": "End",
+      "type": "string"
+    },
+    "id": {
+      "pattern": "^FLW-\\d{3}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "primary": {
+      "default": false,
+      "title": "Primary",
+      "type": "boolean"
+    },
+    "purpose": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Purpose"
+    },
+    "screens": {
+      "items": {
+        "pattern": "^SCR-\\d{3}$",
+        "type": "string"
+      },
+      "title": "Screens",
+      "type": "array"
+    },
+    "start": {
+      "pattern": "^SCR-\\d{3}$",
+      "title": "Start",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "screens",
+    "start",
+    "end"
+  ],
+  "title": "FlowBlock",
+  "type": "object"
+}

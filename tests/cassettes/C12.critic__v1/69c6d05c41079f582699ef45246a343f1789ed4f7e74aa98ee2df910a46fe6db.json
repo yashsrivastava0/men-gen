@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "69c6d05c41079f582699ef45246a343f1789ed4f7e74aa98ee2df910a46fe6db",
+  "recorded_at": "2026-11-08T11:02:57.891398Z",
+  "request": {
+    "spec_id": "C12.critic",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "6f9ad48ce14b24ca445ed1da61e591b7e3f0db46c460f1c0a5e860df2cad7b5e",
+    "tools": [],
+    "kind": "main",
+    "system": "You check whether a mobile app plan matches what the user asked for. You see the approved Brief, a compact outline of the plan and the findings of the code validators.\n\nRules:\n- Report only real problems: a mismatch with the Brief, a contradiction, a flow the Brief needs but the plan lacks, a feature the Brief asks for that no screen or data supports, or something the Brief rules out.\n- severity error: the app would be wrong or unusable for the user's idea. severity warn: worth a look. severity info: a note. Do not repeat what the validators already report, except to say what to do about it.\n- kind is one of mismatch, contradiction, missing_flow, missing_feature, other. target_ids are ids from the outline. suggested_fix is one short sentence or null.\n- At most 5 findings. verdict is \"fix\" only when at least one finding has severity error; otherwise \"pass\".\n- If the plan fits the Brief, return verdict \"pass\" and no findings.",
+    "user": "Brief\n- Idea: Blue Basket is a clean, bright booking app for hair salon clients to book appointments in available time slots.\n- Type: booking_services; mode: guided; language: en\n- Users: Customer\n- Features: Services, Booking with time slots\n- Look: Clean and bright\n- Login: Email or phone code\n- App name: Blue Basket\nBaseline screens (id route [recipe] flow: purpose):\nSCR-001 /welcome [welcome] FLW-002: Introduce the app to a signed-out visitor and offer to sign in, create an accou...\nSCR-002 /login [login-otp] FLW-002: Sign in with an email address or phone number and a one-time code.\nSCR-003 /signup [signup]: Finish a new account with a name and an optional email after the phone number i...\nSCR-004 /home [dashboard] FLW-001: Show service categories and popular services and lead into booking\nSCR-005 /services [list-with-filters] FLW-001: List services with search, category filters and sorting\nSCR-006 /services/[id] [detail-with-sticky-cta] FLW-001: Show one service with its duration, price and what to expect, and start booking...\nSCR-007 /book/time [calendar-slot-picker] FLW-001: Pick a day and a free time for the chosen service\nSCR-008 /book/review [checkout-review] FLW-001: Review the service, time and place, add a note and confirm the booking\nSCR-009 /book/confirmed [confirmation] FLW-001: Confirm the booking with its reference, time and place\nSCR-010 /bookings [list]: List upcoming and past bookings\nSCR-011 /bookings/[id] [detail]: Show everything about one booking and what can still be done with it\nSCR-012 /account [profile] FLW-003: Show who is signed in and lead to account areas\nSCR-013 /account/edit [form]: Change the name, email and photo\nSCR-014 /account/addresses [list] FLW-003: List saved addresses used for services at the customer's place\nSCR-015 /account/addresses/edit [form] FLW-003: Add or change an address with a map pin and access notes\nSCR-016 /settings [settings]: Notifications, language, appearance and privacy choices\nSCR-017 /book/stylist [list]: Choose a specific stylist or any available professional for this service.\nFlows (id name: screens):\nFLW-001 Find a service and book it (primary): SCR-004 SCR-005 SCR-006 SCR-007 SCR-008 SCR-009\nFLW-002 Sign in: SCR-001 SCR-002 SCR-004\nFLW-003 Manage saved addresses: SCR-012 SCR-014 SCR-015\nEntities (id: fields):\nENT-User: name, phone, email, avatar, created_at\nENT-Address: user, label, line1, line2, city, postal_code, latitude, longitude, access_notes, is_default\nENT-ServiceCategory: name, image\nENT-Service: category, name, description, duration_minutes, price, image, location_kind, is_active\nENT-Provider: name, title, bio, photo, rating, rating_count, years_experience, languages, location_name, city\nENT-Slot: provider, starts_at, ends_at, is_available\nENT-Booking: user, service, provider, status, starts_at, ends_at, location_kind, address, notes, price, payment_method, reference, created_at, cancel_reason\nENT-WaitlistEntries: user, service, provider, slot, created_at, status\nAPI operations (id method path):\nAPI-requestOtp POST /auth/otp\nAPI-verifyOtp POST /auth/otp/verify\nAPI-getMe GET /me\nAPI-updateMe PATCH /me\nAPI-listAddresses GET /addresses\nAPI-createAddress POST /addresses\nAPI-updateAddress PUT /addresses/{id}\nAPI-deleteAddress DELETE /addresses/{id}\nAPI-listCategories GET /categories\nAPI-listServices GET /services\nAPI-getService GET /services/{id}\nAPI-listSlots GET /slots\nAPI-createBooking POST /bookings\nAPI-listBookings GET /bookings\nAPI-getBooking GET /bookings/{id}\nAPI-cancelBooking PATCH /bookings/{id}/cancel\nAPI-rescheduleBooking PATCH /bookings/{id}/reschedule\nAPI-listProviders GET /providers\nAPI-joinWaitlist POST /waitlist\nAPI-leaveWaitlist DELETE /waitlist/{id}\nRoles: ROLE-customer\nIntegrations: INT-sms_otp, INT-maps, INT-mock_calendar, INT-mock_appointment_reminders\nValidator findings (severity validator ids: message):\nwarn stack_profile INT-maps BEHAVIOR SCR-015: Maps with markers and routes needs a development build (needed by INT-maps, BEHAVIOR, SCR-015). The web preview shows a static map image or the list fallback.\nwarn stack_profile INT-mock_appointment_reminders: Push notifications needs a development build (needed by INT-mock_appointment_reminders). The preview shows an in-app banner instead of a real push.\nwarn stack_profile SCR-008 SCR-011: Payments through provider SDKs needs a development build (needed by SCR-008, SCR-011). The preview always uses the mock provider and a test card form.\n"
+  },
+  "response": {
+    "text": "{\"verdict\":\"pass\",\"findings\":[]}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 1488,
+      "cached_input_tokens": 0,
+      "output_tokens": 874,
+      "reasoning_tokens": 852,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

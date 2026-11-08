@@ -1,0 +1,40 @@
+Depth: {{ depth }}
+max_search_calls: {{ max_search_calls }}
+max_queries_per_job: {{ max_queries_per_job }}
+remaining_budget_micros: {{ remaining_budget_micros }}
+Jobs available: {{ jobs_available | join(", ") }}
+policy.allow_company_name_in_queries: {{ policy.allow_company_name_in_queries | lower }}
+{% if policy.allowed_domains %}
+policy.allowed_domains: {{ policy.allowed_domains | join(", ") }}
+{% endif %}
+
+Brief
+- App: {{ brief.app_summary }}
+- Type: {{ brief.archetype }}
+- Language: {{ brief.language }}
+{% if brief.regions %}
+- Regions: {{ brief.regions | join(", ") }}
+{% endif %}
+{% if brief.roles %}
+- Roles: {{ brief.roles | join(", ") }}
+{% endif %}
+- Features: {% for f in brief.features %}{{ f.label }}{% if not loop.last %}, {% endif %}{% else %}none listed{% endfor %}
+
+{% if brief.login %}
+- Login: {{ brief.login }}
+{% endif %}
+{% if brief.look %}
+- Look: {{ brief.look }}
+{% endif %}
+{% if brief.compliance_flags %}
+- Compliance flags: {{ brief.compliance_flags | join(", ") }}
+{% endif %}
+{% if brief.references %}
+- Named reference apps: {{ brief.references | join(", ") }}
+{% endif %}
+{% if brief.brand_url %}
+- Brand website: {{ brief.brand_url }}
+{% endif %}
+{% if brief.assumptions %}
+- Assumed: {{ brief.assumptions | join("; ") }}
+{% endif %}

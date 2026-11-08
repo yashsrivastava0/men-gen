@@ -1,0 +1,34 @@
+id: P05-pastes-a-long-prd
+title: Pastes a long product requirements document
+who: Has a written PRD, uploads it and expects only the missing questions.
+language: en
+mode: guided
+script:
+  - upload:
+      filename: prd.md
+      text: >-
+        # Product requirements: FreshBite
+        We run a restaurant group with six kitchens and want customers to order food for delivery or pickup.
+        Customers browse the menu, search by dish, add items to a cart, pay online and track the delivery.
+        We want ratings and reviews, favorites, push notifications for order updates and a loyalty program.
+        The look should be warm and friendly with rounded corners. Customers sign in with a phone code.
+        Staff manage menus and orders from the same app. Operating regions: India.
+        Non-goals for the first version: table reservations, gift cards, a web admin site.
+        Detail about the kitchen workflow. Detail about the menu structure. Detail about delivery zones.
+        Detail about the kitchen workflow. Detail about the menu structure. Detail about delivery zones.
+        Detail about the kitchen workflow. Detail about the menu structure. Detail about delivery zones.
+        Detail about the kitchen workflow. Detail about the menu structure. Detail about delivery zones.
+        Detail about the kitchen workflow. Detail about the menu structure. Detail about delivery zones.
+        Detail about the kitchen workflow. Detail about the menu structure. Detail about delivery zones.
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  text_contains: ["Here is what I understood"]
+  slots:
+    idea.archetype: food_delivery
+    design.direction: warm-friendly

@@ -1,0 +1,956 @@
+# Domain Pack: internal_workforce (employee and field-staff apps: tasks, checklists, approvals,
+# timesheets, directory, announcements). One app for all staff. Managers use the same app and see
+# extra screens because of their role. No customer-facing surface.
+# See commerce.yaml for the file conventions and docs/specs/domain-pack-format.md.
+id: internal_workforce
+archetype: internal_workforce
+label: Internal workforce app
+description: A company app for employees and field staff. Sign in with the company account, see and finish tasks, fill forms and checklists, request and approve things, log time and read announcements. Works with poor signal. Managers see approvals and reports in the same app.
+theme_candidates: [corporate-calm, clean-bright, minimal-mono]
+default_theme: corporate-calm
+
+features:
+  - {id: task_lists, label: Tasks, tier: core, description: "A list of tasks with status, priority and due date, task details with comments and creating tasks.", i18n: {hi: कार्य सूची}}
+  - {id: forms_checklists, label: Forms and checklists, tier: core, description: "Fill in forms and tick off checklists with notes and photos, and see past submissions.", i18n: {hi: फ़ॉर्म और चेकलिस्ट}}
+  - {id: approvals, label: Requests and approvals, tier: standard, description: "Employees send requests such as leave or expenses and managers approve or reject them.", i18n: {hi: अनुरोध और अनुमोदन}}
+  - {id: timesheets, label: Timesheets, tier: extra, default_on: false, description: "Log hours per day and submit the week.", i18n: {hi: टाइमशीट}}
+  - {id: directory, label: People directory, tier: extra, default_on: false, description: "Find colleagues and see their role, team and contact details.", i18n: {hi: कर्मचारी निर्देशिका}}
+  - {id: announcements, label: Announcements, tier: standard, description: "Company news with a way to confirm that important notices were read.", i18n: {hi: घोषणाएं}}
+  - {id: offline_sync, label: Works offline, tier: extra, default_on: false, description: "Keep working without signal and sync later, with a screen showing what is waiting.", i18n: {hi: ऑफ़लाइन काम}}
+  - {id: push_notifications, label: Push notifications, tier: standard, description: "Task assignments, approval decisions and notices on the phone.", i18n: {hi: पुश सूचनाएं}}
+  - {id: kiosk_mode, label: Shared-device kiosk mode, tier: extra, default_on: false, description: "A big-button mode for a shared tablet with badge or PIN check-in and a protected exit.", i18n: {hi: किओस्क मोड}}
+  - {id: reports, label: Reports for managers, tier: extra, default_on: false, description: "Summary numbers for tasks, time and approvals with export.", i18n: {hi: रिपोर्ट}}
+
+roles:
+  - {id: ROLE-employee, name: Employee, description: "Does the work, fills forms and logs time.", surface: employee}
+  - {id: ROLE-manager, name: Manager, description: "Everything an employee can do, plus approving requests and viewing reports for the team.", surface: employee}
+  - {id: ROLE-admin, name: Admin, description: "Everything a manager can do, plus managing people and app settings.", surface: employee}
+
+enums:
+  - {name: TaskStatus, values: [todo, in_progress, blocked, done]}
+  - {name: Priority, values: [low, normal, high, urgent]}
+  - {name: FormKind, values: [form, checklist]}
+  - {name: SubmissionStatus, values: [draft, submitted]}
+  - {name: RequestKind, values: [leave, expense, equipment, other]}
+  - {name: ApprovalStatus, values: [pending, approved, rejected, withdrawn]}
+  - {name: TimesheetStatus, values: [open, submitted, approved, rejected]}
+  - {name: SyncState, values: [pending, failed, conflict]}
+  - {name: NotificationKind, values: [task_assigned, approval_decision, announcement, system]}
+
+entities:
+  - id: ENT-Employee
+    name: Employee
+    plain_name: People
+    fields:
+      - {name: name, type: string}
+      - {name: email, type: string}
+      - {name: phone, type: string, required: false}
+      - {name: job_title, type: string}
+      - {name: department, type: string}
+      - {name: photo, type: image, required: false}
+      - {name: manager, type: ref, ref: ENT-Employee, required: false}
+      - {name: location, type: string, required: false, description: "Site or office"}
+      - {name: is_active, type: bool}
+    seed_guidance: 12 to 20 employees across three or four departments, one manager per department, with believable job titles and sites.
+  - id: ENT-Task
+    name: Task
+    plain_name: Tasks
+    fields:
+      - {name: title, type: string}
+      - {name: description, type: text, required: false}
+      - {name: status, type: enum, enum: TaskStatus}
+      - {name: priority, type: enum, enum: Priority}
+      - {name: due_at, type: datetime, required: false}
+      - {name: assignee, type: ref, ref: ENT-Employee, required: false}
+      - {name: created_by, type: ref, ref: ENT-Employee}
+      - {name: location, type: string, required: false}
+      - {name: form_template, type: ref, ref: ENT-FormTemplate, required: false, description: "Checklist or form to complete for this task"}
+    state_machine:
+      field: status
+      states: [todo, in_progress, blocked, done]
+      transitions:
+        - {source: todo, target: in_progress, "on": start}
+        - {source: in_progress, target: blocked, "on": block}
+        - {source: blocked, target: in_progress, "on": unblock}
+        - {source: in_progress, target: done, "on": complete}
+    seed_guidance: 10 to 15 tasks for the main employee, due today, tomorrow and overdue, a few with a checklist attached.
+  - id: ENT-TaskComment
+    name: Task comment
+    plain_name: Task comments
+    fields:
+      - {name: task, type: ref, ref: ENT-Task}
+      - {name: author, type: ref, ref: ENT-Employee}
+      - {name: body, type: text}
+      - {name: created_at, type: datetime}
+  - id: ENT-FormTemplate
+    name: Form template
+    plain_name: Forms and checklists
+    fields:
+      - {name: name, type: string}
+      - {name: description, type: text, required: false}
+      - {name: kind, type: enum, enum: FormKind}
+      - {name: fields, type: json, description: "Field or checklist item definitions: label, type, required"}
+      - {name: requires_photo, type: bool}
+      - {name: estimated_minutes, type: int, required: false}
+    seed_guidance: Five templates such as a site safety checklist, a vehicle check, an incident report, a delivery sign-off and a visit report.
+  - id: ENT-FormSubmission
+    name: Form submission
+    plain_name: Submitted forms
+    fields:
+      - {name: template, type: ref, ref: ENT-FormTemplate}
+      - {name: submitted_by, type: ref, ref: ENT-Employee}
+      - {name: task, type: ref, ref: ENT-Task, required: false}
+      - {name: status, type: enum, enum: SubmissionStatus}
+      - {name: answers, type: json}
+      - {name: photos, type: json, required: false, description: "List of uploaded photo references"}
+      - {name: submitted_at, type: datetime, required: false}
+    state_machine:
+      field: status
+      states: [draft, submitted]
+      transitions:
+        - {source: draft, target: submitted, "on": submit}
+  - id: ENT-ApprovalRequest
+    name: Approval request
+    plain_name: Requests
+    fields:
+      - {name: kind, type: enum, enum: RequestKind}
+      - {name: title, type: string}
+      - {name: details, type: text, required: false}
+      - {name: requester, type: ref, ref: ENT-Employee}
+      - {name: approver, type: ref, ref: ENT-Employee, required: false}
+      - {name: status, type: enum, enum: ApprovalStatus}
+      - {name: amount, type: money, required: false}
+      - {name: starts_on, type: date, required: false}
+      - {name: ends_on, type: date, required: false}
+      - {name: decision_note, type: string, required: false}
+      - {name: decided_at, type: datetime, required: false}
+      - {name: created_at, type: datetime}
+    state_machine:
+      field: status
+      states: [pending, approved, rejected, withdrawn]
+      transitions:
+        - {source: pending, target: approved, "on": approve}
+        - {source: pending, target: rejected, "on": reject}
+        - {source: pending, target: withdrawn, "on": withdraw}
+    seed_guidance: Five requests across kinds and statuses, three waiting for the sample manager.
+  - id: ENT-Timesheet
+    name: Timesheet
+    plain_name: Timesheets
+    fields:
+      - {name: employee, type: ref, ref: ENT-Employee}
+      - {name: week_start, type: date}
+      - {name: status, type: enum, enum: TimesheetStatus}
+      - {name: total_minutes, type: int}
+    state_machine:
+      field: status
+      states: [open, submitted, approved, rejected]
+      transitions:
+        - {source: open, target: submitted, "on": submit}
+        - {source: submitted, target: approved, "on": approve}
+        - {source: submitted, target: rejected, "on": reject}
+        - {source: rejected, target: open, "on": reopen}
+  - id: ENT-TimeEntry
+    name: Time entry
+    plain_name: Time entries
+    fields:
+      - {name: timesheet, type: ref, ref: ENT-Timesheet}
+      - {name: work_date, type: date}
+      - {name: minutes, type: int, description: "Whole minutes, never fractional hours"}
+      - {name: task, type: ref, ref: ENT-Task, required: false}
+      - {name: project, type: string, required: false}
+      - {name: note, type: string, required: false}
+  - id: ENT-Announcement
+    name: Announcement
+    plain_name: Announcements
+    fields:
+      - {name: title, type: string}
+      - {name: body, type: text}
+      - {name: author, type: ref, ref: ENT-Employee}
+      - {name: published_at, type: datetime}
+      - {name: pinned, type: bool}
+      - {name: requires_ack, type: bool}
+  - id: ENT-AnnouncementAck
+    name: Announcement acknowledgement
+    plain_name: Read confirmations
+    fields:
+      - {name: announcement, type: ref, ref: ENT-Announcement}
+      - {name: employee, type: ref, ref: ENT-Employee}
+      - {name: acknowledged_at, type: datetime}
+  - id: ENT-SyncItem
+    name: Sync item
+    plain_name: Changes waiting to sync
+    fields:
+      - {name: label, type: string, description: "For example Safety checklist, Site 4"}
+      - {name: entity_type, type: string}
+      - {name: state, type: enum, enum: SyncState}
+      - {name: queued_at, type: datetime}
+      - {name: error, type: string, required: false}
+  - id: ENT-Notification
+    name: Notification
+    plain_name: Notifications
+    fields:
+      - {name: employee, type: ref, ref: ENT-Employee}
+      - {name: kind, type: enum, enum: NotificationKind}
+      - {name: title, type: string}
+      - {name: body, type: text}
+      - {name: is_read, type: bool}
+      - {name: created_at, type: datetime}
+  - id: ENT-KioskCheckIn
+    name: Kiosk check-in
+    plain_name: Shared-device check-ins
+    fields:
+      - {name: employee, type: ref, ref: ENT-Employee, required: false}
+      - {name: badge_code, type: string, description: "Scanned or typed badge number. PINs are never stored."}
+      - {name: device_name, type: string}
+      - {name: checked_in_at, type: datetime}
+  - id: ENT-Report
+    name: Report
+    plain_name: Reports
+    fields:
+      - {name: title, type: string}
+      - {name: period, type: string, description: "For example 2026-W45 or 2026-10"}
+      - {name: summary, type: json, description: "Headline numbers and chart series"}
+      - {name: generated_at, type: datetime}
+
+api_operations:
+  # ---- account
+  - {id: API-signInSso, name: Sign in with the company account, method: POST, path: /auth/sso, response_entity: ENT-Employee, notes: "Exchanges the single sign-on result for a session. Mock account in the preview."}
+  - {id: API-getMe, name: Get my profile, method: GET, path: /me, response_entity: ENT-Employee, auth: authenticated}
+  # ---- tasks
+  - {id: API-listTasks, name: List tasks, method: GET, path: /tasks, response_entity: ENT-Task, response_many: true, auth: authenticated, notes: "Query: status, assignee, due, page."}
+  - {id: API-getTask, name: Get a task, method: GET, path: "/tasks/{id}", response_entity: ENT-Task, auth: authenticated, notes: "Includes its comments (ENT-TaskComment)."}
+  - {id: API-createTask, name: Create a task, method: POST, path: /tasks, request_entity: ENT-Task, response_entity: ENT-Task, auth: authenticated}
+  - {id: API-updateTask, name: Change a task, method: PATCH, path: "/tasks/{id}", request_entity: ENT-Task, response_entity: ENT-Task, auth: authenticated}
+  - {id: API-addTaskComment, name: Comment on a task, method: POST, path: "/tasks/{id}/comments", request_entity: ENT-TaskComment, response_entity: ENT-TaskComment, auth: authenticated}
+  # ---- forms
+  - {id: API-listFormTemplates, name: List forms and checklists, method: GET, path: /forms, response_entity: ENT-FormTemplate, response_many: true, auth: authenticated}
+  - {id: API-getFormTemplate, name: Get a form or checklist, method: GET, path: "/forms/{id}", response_entity: ENT-FormTemplate, auth: authenticated}
+  - {id: API-submitForm, name: Submit a form or checklist, method: POST, path: /submissions, request_entity: ENT-FormSubmission, response_entity: ENT-FormSubmission, auth: authenticated, notes: "Accepted offline: queued on the phone and sent when there is signal."}
+  - {id: API-listSubmissions, name: List my submissions, method: GET, path: /submissions, response_entity: ENT-FormSubmission, response_many: true, auth: authenticated}
+  # ---- approvals
+  - {id: API-createRequest, name: Send a request, method: POST, path: /requests, request_entity: ENT-ApprovalRequest, response_entity: ENT-ApprovalRequest, auth: authenticated}
+  - {id: API-listMyRequests, name: List my requests, method: GET, path: /requests, response_entity: ENT-ApprovalRequest, response_many: true, auth: authenticated}
+  - {id: API-listApprovals, name: List requests waiting for me, method: GET, path: /approvals, response_entity: ENT-ApprovalRequest, response_many: true, auth: ROLE-manager, roles: [ROLE-manager, ROLE-admin], notes: "Query: status."}
+  - {id: API-getApproval, name: Get a request to decide, method: GET, path: "/approvals/{id}", response_entity: ENT-ApprovalRequest, auth: ROLE-manager, roles: [ROLE-manager, ROLE-admin]}
+  - {id: API-decideApproval, name: Approve or reject, method: POST, path: "/approvals/{id}/decision", request_entity: ENT-ApprovalRequest, response_entity: ENT-ApprovalRequest, auth: ROLE-manager, roles: [ROLE-manager, ROLE-admin], notes: "Rejecting needs a decision note."}
+  # ---- timesheets
+  - {id: API-getTimesheet, name: Get a week's timesheet, method: GET, path: /timesheets/current, response_entity: ENT-Timesheet, auth: authenticated, notes: "Query: week_start. Includes its entries (ENT-TimeEntry)."}
+  - {id: API-saveTimeEntry, name: Save a time entry, method: PUT, path: "/timesheets/entries/{id}", request_entity: ENT-TimeEntry, response_entity: ENT-TimeEntry, auth: authenticated}
+  - {id: API-submitTimesheet, name: Submit the week, method: POST, path: "/timesheets/{id}/submit", response_entity: ENT-Timesheet, auth: authenticated}
+  - {id: API-listTimesheets, name: List past timesheets, method: GET, path: /timesheets, response_entity: ENT-Timesheet, response_many: true, auth: authenticated}
+  # ---- directory and announcements
+  - {id: API-searchPeople, name: Search the directory, method: GET, path: /people, response_entity: ENT-Employee, response_many: true, auth: authenticated, notes: "Query: q, department, location, page."}
+  - {id: API-getPerson, name: Get a person, method: GET, path: "/people/{id}", response_entity: ENT-Employee, auth: authenticated}
+  - {id: API-listAnnouncements, name: List announcements, method: GET, path: /announcements, response_entity: ENT-Announcement, response_many: true, auth: authenticated}
+  - {id: API-getAnnouncement, name: Get an announcement, method: GET, path: "/announcements/{id}", response_entity: ENT-Announcement, auth: authenticated}
+  - {id: API-acknowledgeAnnouncement, name: Confirm I read it, method: POST, path: "/announcements/{id}/ack", response_entity: ENT-AnnouncementAck, auth: authenticated}
+  # ---- offline sync and notifications
+  - {id: API-getSyncStatus, name: List changes waiting to sync, method: GET, path: /sync/status, response_entity: ENT-SyncItem, response_many: true, auth: authenticated}
+  - {id: API-syncNow, name: Send waiting changes now, method: POST, path: /sync, response_entity: ENT-SyncItem, response_many: true, auth: authenticated, notes: "Sends the queued changes in order and returns any that failed or conflicted."}
+  - {id: API-discardPendingChange, name: Discard a waiting change, method: DELETE, path: "/sync/items/{id}", auth: authenticated}
+  - {id: API-listNotifications, name: List my notifications, method: GET, path: /notifications, response_entity: ENT-Notification, response_many: true, auth: authenticated}
+  - {id: API-markNotificationRead, name: Mark a notification read, method: POST, path: "/notifications/{id}/read", response_entity: ENT-Notification, auth: authenticated}
+  - {id: API-registerPushToken, name: Register this phone for push, method: POST, path: /devices/push-token, auth: authenticated, notes: "Body carries the device token. Mock in the preview."}
+  # ---- kiosk and reports
+  - {id: API-kioskCheckIn, name: Check in at a shared device, method: POST, path: /kiosk/check-in, request_entity: ENT-KioskCheckIn, response_entity: ENT-KioskCheckIn, auth: authenticated}
+  - {id: API-verifyKioskExit, name: Verify the manager PIN to leave kiosk mode, method: POST, path: /kiosk/exit, auth: authenticated, notes: "The PIN is checked on the server and never stored on the device."}
+  - {id: API-listReports, name: List reports, method: GET, path: /reports, response_entity: ENT-Report, response_many: true, auth: ROLE-manager, roles: [ROLE-manager, ROLE-admin]}
+  - {id: API-getReport, name: Get a report, method: GET, path: "/reports/{id}", response_entity: ENT-Report, auth: ROLE-manager, roles: [ROLE-manager, ROLE-admin]}
+  - {id: API-exportReport, name: Export a report, method: POST, path: "/reports/{id}/export", response_entity: ENT-Report, auth: ROLE-manager, roles: [ROLE-manager, ROLE-admin], notes: "Returns a link to a file the manager can share."}
+
+integrations:
+  - {id: INT-sso, name: Company single sign-on, purpose: Sign people in with their company account., mode: mock, notes: "A sample company account signs in during the preview. A real identity provider (OpenID Connect or SAML) is configured at release."}
+  - {id: INT-hr_system, name: HR system, purpose: Read people and teams and write approved leave and expenses back., mode: mock, notes: "Sample people in the preview. A real HR connector is chosen at release."}
+  - {id: INT-file_storage, name: File storage, purpose: Store photos and attachments from forms and checklists., mode: mock}
+  - {id: INT-push_notifications, name: Push notifications, purpose: Send assignments and approval decisions to the phone., mode: mock, notes: "Shown as in-app banners in the preview."}
+
+compliance_triggers:
+  - id: employee_identity_records
+    label: Handles employee identity records
+    sensitive_domain: identity_documents
+    cards: [Q-comp-04]
+    keywords: ["employee id", badge, "id card", "hr records", passport, "work permit", "national id"]
+    conservative_defaults: {compliance.flags: [identity_documents]}
+    research_hint: employee personal data handling and retention for internal mobile apps
+  - id: field_location_tracking
+    label: Tracks staff location
+    sensitive_domain: precise_location
+    cards: [Q-comp-05]
+    keywords: [gps, geofence, geofencing, "field staff", "location tracking", "check in location", "live location", "track employees"]
+    conservative_defaults: {compliance.flags: [precise_location]}
+    research_hint: employee location monitoring consent and proportionality rules
+  - id: expenses_and_payroll
+    label: Handles expenses or payroll
+    sensitive_domain: finance
+    cards: [Q-comp-02]
+    keywords: [expense, expenses, payroll, salary, reimbursement, "purchase approval", "bank details"]
+    conservative_defaults: {compliance.flags: [financial_data]}
+    research_hint: handling of financial data in expense and payroll related mobile apps
+  - id: health_and_safety_records
+    label: Handles health and safety records
+    sensitive_domain: health
+    cards: [Q-comp-01]
+    keywords: ["sick leave", "medical certificate", "occupational health", "health and safety", "incident report", injury]
+    conservative_defaults: {compliance.flags: [health_data_privacy]}
+    research_hint: handling of employee health and incident records in workplace apps
+
+screens:
+  # ------------------------------------------------------------------ sign in and home
+  - key: login
+    surface: employee
+    route: /login
+    recipe: login-sso
+    purpose: Sign in with the company account
+    actions:
+      - {name: sign_in_with_company, calls: API-signInSso, go: "@home", on_success: "save the session and open the home screen"}
+    states:
+      not_allowed: {show: "Your account is not allowed to use this app. Contact your administrator", disable: sign_in_with_company}
+    texts: {title: "Sign in", cta: "Continue with company account"}
+    checks:
+      - Signing in opens the home screen with the person's name
+      - An account without access sees a plain message and no retry loop
+  - key: home
+    surface: employee
+    route: /home
+    recipe: dashboard
+    purpose: Show today's tasks and shortcuts to the things the person does most
+    auth: authenticated
+    feature: task_lists
+    data:
+      - {bind: "API-listTasks(mine, due)", show: [title, status, priority, due_at, location]}
+    sections: [greeting, sync_banner, todays_tasks, quick_actions, announcements_strip]
+    actions:
+      - {name: open_task, go: "@task_detail"}
+      - {name: open_tasks, go: "@tasks"}
+      - {name: open_forms, go: "@forms_list"}
+      - {name: open_timesheet, go: "@timesheet_week"}
+      - {name: open_announcements, go: "@announcements"}
+      - {name: open_directory, go: "@directory"}
+      - {name: open_my_requests, go: "@my_requests"}
+      - {name: start_kiosk_mode, go: "@kiosk_home"}
+    states:
+      empty: {message: "Nothing due today", action: "See all tasks"}
+    texts: {title: "Today"}
+    checks:
+      - Overdue tasks are listed first and marked with text, not color alone
+      - The offline banner appears when there is no signal and says how many changes are waiting
+  # ------------------------------------------------------------------ tasks
+  - key: tasks
+    surface: employee
+    route: /tasks
+    recipe: list-with-filters
+    purpose: List tasks with filters for status, priority and who they are assigned to
+    auth: authenticated
+    feature: task_lists
+    data:
+      - {bind: "API-listTasks(status, assignee, due)", show: [title, status, priority, due_at, assignee, location]}
+    sections: [search_bar, filter_chips, sort_control, task_rows, load_more]
+    actions:
+      - {name: open_task, go: "@task_detail"}
+      - {name: create_task, go: "@task_create"}
+    states:
+      empty: {message: "No tasks match", action: "Clear filters"}
+    texts: {title: "Tasks"}
+    checks:
+      - The default filter shows open tasks assigned to me
+      - Tasks load from the local copy first when there is no signal
+  - key: task_detail
+    surface: employee
+    route: /tasks/[id]
+    recipe: detail
+    purpose: Show one task with its status, notes and comments and let the person move it forward
+    auth: authenticated
+    feature: task_lists
+    data:
+      - {bind: "API-getTask(id)", show: [title, description, status, priority, due_at, assignee, location, form_template]}
+      - {bind: "ENT-TaskComment.body", show: [author, body, created_at]}
+    sections: [status_header, description, checklist_link, comments, secondary_actions]
+    actions:
+      - {name: update_status, calls: API-updateTask, on_success: "status changes and the list refreshes"}
+      - {name: add_comment, calls: API-addTaskComment, on_success: "comment appears at the bottom"}
+      - {name: start_checklist, go: "@checklist_run"}
+    states:
+      blocked: {show: "Blocked. Add a comment to say why", require: comment}
+    checks:
+      - Only valid next statuses are offered
+      - Marking a task done is blocked until its checklist is complete
+  - key: task_create
+    surface: employee
+    route: /tasks/new
+    recipe: form
+    purpose: Create a task with a due date, priority and an assignee
+    auth: authenticated
+    feature: task_lists
+    sections: [title_input, description_input, priority_picker, due_date_picker, assignee_picker, location_input, save]
+    actions:
+      - {name: save_task, calls: API-createTask, go: "@tasks", on_success: "task appears at the top of the list"}
+    texts: {title: "New task", cta: "Create task"}
+    checks:
+      - Only a title is required
+      - Saving without signal queues the task and shows it as waiting to sync
+  # ------------------------------------------------------------------ forms and checklists
+  - key: forms_list
+    surface: employee
+    route: /forms
+    recipe: list
+    purpose: List the forms and checklists the person can fill in
+    auth: authenticated
+    feature: forms_checklists
+    data:
+      - {bind: "API-listFormTemplates", show: [name, description, kind, estimated_minutes]}
+    actions:
+      - {name: open_form, go: "@form_fill"}
+      - {name: open_checklist, go: "@checklist_run"}
+      - {name: open_history, go: "@submissions"}
+    states:
+      empty: {message: "No forms assigned to you", action: "Back to tasks"}
+    texts: {title: "Forms"}
+    checks:
+      - Checklists and forms are told apart by an icon and a label
+  - key: form_fill
+    surface: employee
+    route: /forms/[id]
+    recipe: multi-step-form
+    purpose: Fill in a form in short steps, with photos where required, and submit it
+    auth: authenticated
+    feature: forms_checklists
+    data:
+      - {bind: "API-getFormTemplate(id)", show: [name, fields, requires_photo]}
+    sections: [progress_steps, step_fields, photo_attachments, review_step, submit]
+    actions:
+      - {name: submit_form, calls: API-submitForm, go: "@form_submitted", on_success: "queue for sync if offline"}
+    states:
+      draft_saved: {show: "Draft saved on this phone", allow: "resume later"}
+    checks:
+      - Required fields block the next step with a message under the field
+      - A half-filled form is kept as a draft if the app closes
+  - key: checklist_run
+    surface: employee
+    route: /checklists/[id]
+    recipe: checklist
+    purpose: Work through a checklist item by item with notes and photos and sign it off
+    auth: authenticated
+    feature: forms_checklists
+    data:
+      - {bind: "API-getFormTemplate(id)", show: [name, fields, requires_photo]}
+    sections: [progress_header, check_items, notes, photo_attachments, sign_off]
+    actions:
+      - {name: complete_checklist, calls: API-submitForm, go: "@form_submitted", on_success: "task is marked done when it came from a task"}
+    states:
+      incomplete: {disable: complete_checklist, show: "Finish all required items"}
+    checks:
+      - The progress count updates as items are ticked
+      - Sign-off is disabled until every required item is done
+  - key: form_submitted
+    surface: employee
+    route: /forms/submitted
+    recipe: confirmation
+    purpose: Confirm the form or checklist was submitted, or queued if there is no signal
+    auth: authenticated
+    feature: forms_checklists
+    actions:
+      - {name: back_to_forms, go: "@forms_list"}
+      - {name: back_home, go: "@home"}
+    texts: {title: "Submitted", message: "If you are offline it will be sent when you have signal."}
+    checks:
+      - The message differs for sent and queued submissions
+  - key: submissions
+    surface: employee
+    route: /forms/history
+    recipe: list
+    purpose: List the forms and checklists the person has submitted
+    auth: authenticated
+    feature: forms_checklists
+    data:
+      - {bind: "API-listSubmissions", show: [template, status, submitted_at]}
+    states:
+      empty: {message: "Nothing submitted yet", action: "Open a form"}
+    checks:
+      - Submissions waiting to sync are marked as waiting
+  # ------------------------------------------------------------------ requests and approvals
+  - key: my_requests
+    surface: employee
+    route: /requests
+    recipe: list
+    purpose: List the requests the person sent and their status
+    auth: authenticated
+    feature: approvals
+    data:
+      - {bind: "API-listMyRequests", show: [kind, title, status, starts_on, ends_on, amount]}
+    actions:
+      - {name: new_request, go: "@request_form"}
+    states:
+      empty: {message: "No requests yet", action: "Send a request"}
+    texts: {title: "My requests"}
+    checks:
+      - A rejected request shows the decision note
+  - key: request_form
+    surface: employee
+    route: /requests/new
+    recipe: form
+    purpose: Send a leave, expense or equipment request to the manager
+    auth: authenticated
+    feature: approvals
+    sections: [kind_picker, title_input, dates_or_amount, details_input, attachment, submit]
+    actions:
+      - {name: submit_request, calls: API-createRequest, go: "@my_requests", on_success: "request shows as pending"}
+    texts: {title: "New request", cta: "Send request"}
+    checks:
+      - Leave needs dates and expenses need an amount and a receipt photo
+  - key: approvals
+    surface: employee
+    route: /approvals
+    recipe: approvals-queue
+    auth: ROLE-manager
+    purpose: Show requests waiting for the manager's decision, most urgent first
+    feature: approvals
+    data:
+      - {bind: "API-listApprovals(status)", show: [kind, title, requester, starts_on, ends_on, amount, created_at]}
+    sections: [summary_counts, filter_chips, pending_items, decided_items]
+    actions:
+      - {name: open_request, go: "@approval_detail"}
+      - {name: approve, calls: API-decideApproval, on_success: "row moves to decided"}
+      - {name: reject, calls: API-decideApproval, on_success: "row moves to decided after a reason is entered"}
+    states:
+      empty: {message: "Nothing waiting for you", action: "Back to home"}
+    checks:
+      - Rejecting asks for a reason before it is sent
+      - The pending count on the tab matches the list
+  - key: approval_detail
+    surface: employee
+    route: /approvals/[id]
+    recipe: detail
+    auth: ROLE-manager
+    purpose: Show one request with its details and let the manager decide
+    feature: approvals
+    data:
+      - {bind: "API-getApproval(id)", show: [kind, title, details, requester, starts_on, ends_on, amount, status, created_at]}
+    actions:
+      - {name: approve_request, calls: API-decideApproval, go: "@approvals", on_success: "requester is notified"}
+      - {name: reject_request, calls: API-decideApproval, go: "@approvals", on_success: "requester sees the reason"}
+    checks:
+      - A decision cannot be changed after it is sent
+  # ------------------------------------------------------------------ timesheets
+  - key: timesheet_week
+    surface: employee
+    route: /timesheet
+    recipe: form
+    purpose: Show the week with the minutes logged per day and submit it
+    auth: authenticated
+    feature: timesheets
+    data:
+      - {bind: "API-getTimesheet(week_start)", show: [week_start, status, total_minutes, entries]}
+    sections: [week_switcher, day_rows, total_minutes, submit_week]
+    actions:
+      - {name: add_entry, go: "@timesheet_entry"}
+      - {name: submit_week, calls: API-submitTimesheet, on_success: "week becomes read-only and shows submitted"}
+      - {name: open_history, go: "@timesheet_history"}
+    states:
+      submitted: {disable: add_entry, show: "Submitted. Ask your manager to reopen it to change"}
+    texts: {title: "Timesheet"}
+    checks:
+      - Totals are shown as hours and minutes and stored as minutes
+      - A submitted week cannot be edited
+  - key: timesheet_entry
+    surface: employee
+    route: /timesheet/entry
+    recipe: form
+    purpose: Add or change the time worked on one day
+    auth: authenticated
+    feature: timesheets
+    sections: [date_picker, start_end_or_duration, task_or_project_picker, note_input, save]
+    actions:
+      - {name: save_entry, calls: API-saveTimeEntry, go: "@timesheet_week"}
+    checks:
+      - An entry over 16 hours in one day asks for confirmation
+  - key: timesheet_history
+    surface: employee
+    route: /timesheet/history
+    recipe: list
+    purpose: List past weeks with their totals and status
+    auth: authenticated
+    feature: timesheets
+    data:
+      - {bind: "API-listTimesheets", show: [week_start, status, total_minutes]}
+    actions:
+      - {name: open_week, go: "@timesheet_week"}
+    states:
+      empty: {message: "No past timesheets", action: "Log time"}
+    checks:
+      - Rejected weeks are marked and open for editing
+  # ------------------------------------------------------------------ directory and announcements
+  - key: directory
+    surface: employee
+    route: /directory
+    recipe: list-with-filters
+    purpose: Find colleagues by name, department or site
+    auth: authenticated
+    feature: directory
+    data:
+      - {bind: "API-searchPeople(q, department, location)", show: [name, job_title, department, photo, location]}
+    sections: [search_bar, department_chips, people_rows, load_more]
+    actions:
+      - {name: open_person, go: "@person_detail"}
+    states:
+      empty: {message: "No one matches your search", action: "Clear filters"}
+    texts: {title: "People"}
+    checks:
+      - Search matches name, job title and department
+  - key: person_detail
+    surface: employee
+    route: /directory/[id]
+    recipe: detail
+    purpose: Show a colleague's role, team and contact details
+    auth: authenticated
+    feature: directory
+    data:
+      - {bind: "API-getPerson(id)", show: [name, job_title, department, photo, email, phone, manager, location]}
+    actions:
+      - {name: assign_task, go: "@task_create"}
+      - {name: back_to_directory, go: "@directory"}
+    checks:
+      - Email and phone open the mail and phone apps
+  - key: announcements
+    surface: employee
+    route: /announcements
+    recipe: list
+    purpose: List company announcements with pinned ones on top
+    auth: authenticated
+    feature: announcements
+    data:
+      - {bind: "API-listAnnouncements", show: [title, author, published_at, pinned, requires_ack]}
+    actions:
+      - {name: open_announcement, go: "@announcement_detail"}
+    states:
+      empty: {message: "No announcements", action: "Back to home"}
+    texts: {title: "Announcements"}
+    checks:
+      - Notices that need a read confirmation are marked until confirmed
+  - key: announcement_detail
+    surface: employee
+    route: /announcements/[id]
+    recipe: detail
+    purpose: Show one announcement and let the person confirm they read it
+    auth: authenticated
+    feature: announcements
+    data:
+      - {bind: "API-getAnnouncement(id)", show: [title, body, author, published_at, requires_ack]}
+    actions:
+      - {name: acknowledge, calls: API-acknowledgeAnnouncement, on_success: "button becomes a Read tick"}
+    checks:
+      - The confirm button appears only for notices that require it
+  # ------------------------------------------------------------------ offline and notifications
+  - key: sync_status
+    surface: employee
+    route: /sync
+    recipe: list
+    purpose: Show what is waiting to be sent, what failed and let the person retry or discard
+    auth: authenticated
+    feature: offline_sync
+    data:
+      - {bind: "API-getSyncStatus", show: [label, entity_type, state, queued_at, error]}
+    sections: [connection_banner, pending_items, failed_items]
+    actions:
+      - {name: sync_now, calls: API-syncNow, on_success: "waiting items disappear as they are accepted"}
+      - {name: discard_change, calls: API-discardPendingChange}
+    states:
+      empty: {message: "Everything is up to date", action: "Back"}
+      conflict: {show: "Someone else changed this. Keep yours or use theirs"}
+    checks:
+      - Discarding a change asks for confirmation and says what is lost
+      - Sync now is disabled while there is no connection
+  - key: notifications
+    surface: employee
+    route: /notifications
+    recipe: notifications
+    purpose: Show task assignments, decisions and notices the person received
+    auth: authenticated
+    feature: push_notifications
+    data:
+      - {bind: "API-listNotifications", show: [kind, title, body, is_read, created_at]}
+    actions:
+      - {name: open_task, go: "@task_detail"}
+      - {name: open_announcement, go: "@announcement_detail"}
+      - {name: mark_read, calls: API-markNotificationRead}
+    checks:
+      - Unread items are marked and become read when opened
+  # ------------------------------------------------------------------ kiosk mode
+  - key: kiosk_home
+    surface: employee
+    route: /kiosk
+    recipe: kiosk-home
+    purpose: Big-button home for a shared tablet that returns to the start after a period of inactivity
+    auth: authenticated
+    feature: kiosk_mode
+    sections: [clock_header, big_actions, idle_notice, exit_gesture]
+    actions:
+      - {name: check_in, go: "@kiosk_checkin"}
+      - {name: open_checklists, go: "@forms_list"}
+      - {name: exit_kiosk_mode, go: "@kiosk_exit"}
+    states:
+      idle: {show: "Touch to start", after: "90 seconds without touch"}
+    checks:
+      - The screen stays on and returns here after 90 seconds of inactivity
+      - Buttons are at least 64 points tall
+  - key: kiosk_checkin
+    surface: employee
+    route: /kiosk/check-in
+    recipe: form
+    purpose: Check in by scanning or typing a badge number
+    auth: authenticated
+    feature: kiosk_mode
+    sections: [badge_input, scan_button, confirm]
+    actions:
+      - {name: confirm_checkin, calls: API-kioskCheckIn, go: "@kiosk_home", on_success: "show the person's name for three seconds"}
+    states:
+      unknown_badge: {show: "Badge not recognised", allow: "try again or ask a manager"}
+    checks:
+      - A scan or a typed number works the same way
+  - key: kiosk_exit
+    surface: employee
+    route: /kiosk/exit
+    recipe: form
+    purpose: Leave kiosk mode with a manager PIN
+    auth: authenticated
+    feature: kiosk_mode
+    sections: [pin_input, confirm]
+    actions:
+      - {name: exit_kiosk, calls: API-verifyKioskExit, go: "@home", on_success: "kiosk mode ends"}
+    states:
+      locked_out: {show: "Too many tries. Wait a minute", disable: exit_kiosk}
+    checks:
+      - Three wrong PINs lock the screen for a minute
+  # ------------------------------------------------------------------ reports (managers)
+  - key: reports
+    surface: employee
+    route: /reports
+    recipe: dashboard
+    auth: ROLE-manager
+    purpose: Show summary numbers for the team's tasks, time and approvals for a chosen period
+    feature: reports
+    data:
+      - {bind: "API-listReports", show: [title, period, summary, generated_at]}
+    sections: [period_picker, headline_numbers, report_cards]
+    actions:
+      - {name: open_report, go: "@report_detail"}
+    states:
+      empty: {message: "No reports for this period", action: "Choose another period"}
+    texts: {title: "Reports"}
+    checks:
+      - Changing the period reloads every number
+  - key: report_detail
+    surface: employee
+    route: /reports/[id]
+    recipe: detail
+    auth: ROLE-manager
+    purpose: Show one report with its charts and tables and let the manager export it
+    feature: reports
+    data:
+      - {bind: "API-getReport(id)", show: [title, period, summary, generated_at]}
+    actions:
+      - {name: export_report, calls: API-exportReport, on_success: "open the share sheet with the file"}
+      - {name: back_to_reports, go: "@reports"}
+    checks:
+      - Exported numbers match what is on the screen
+  # ------------------------------------------------------------------ account
+  - key: profile
+    surface: employee
+    route: /more
+    recipe: profile
+    purpose: Show who is signed in and lead to settings and the rest of the app
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, job_title, department, photo, email]}
+    sections: [identity_header, menu_groups, sign_out]
+    actions:
+      - {name: open_my_requests, go: "@my_requests"}
+      - {name: open_timesheet_history, go: "@timesheet_history"}
+      - {name: open_directory, go: "@directory"}
+      - {name: open_announcements, go: "@announcements"}
+      - {name: open_reports, go: "@reports"}
+      - {name: open_sync_status, go: "@sync_status"}
+      - {name: open_notifications, go: "@notifications"}
+      - {name: open_settings, go: "@settings"}
+      - {name: sign_out, go: "@login", on_success: "clear the session, keep unsent changes on the phone"}
+    texts: {title: "More"}
+    checks:
+      - Personal details come from the company account and cannot be edited here
+      - Signing out warns if changes are still waiting to sync
+  - key: settings
+    surface: employee
+    route: /settings
+    recipe: settings
+    purpose: Notifications, language, appearance and offline options
+    auth: authenticated
+    sections: [notifications_group, offline_group, appearance_group, language_group, about_group, sign_out]
+    actions:
+      - {name: enable_push, calls: API-registerPushToken, on_success: "ask the system for permission, then save the token"}
+      - {name: open_sync_status, go: "@sync_status"}
+      - {name: sign_out, go: "@login", on_success: "clear the session, keep unsent changes on the phone"}
+    checks:
+      - Changes apply immediately without a save button
+
+flows:
+  - key: finish_a_task
+    name: Pick up a task and finish its checklist
+    primary: true
+    screens: [home, tasks, task_detail, checklist_run, form_submitted]
+    purpose: The main journey for field staff, from the day's list to a signed-off checklist.
+  - key: sign_in
+    name: Sign in
+    screens: [login, home]
+  - key: fill_a_form
+    name: Fill in a form
+    screens: [forms_list, form_fill, form_submitted]
+  - key: ask_for_approval
+    name: Send a request
+    feature: approvals
+    screens: [my_requests, request_form]
+  - key: decide_a_request
+    name: Approve or reject a request
+    feature: approvals
+    screens: [approvals, approval_detail]
+  - key: log_time
+    name: Log time worked
+    feature: timesheets
+    screens: [home, timesheet_week, timesheet_entry]
+  - key: submit_the_week
+    name: Review past weeks
+    feature: timesheets
+    screens: [timesheet_week, timesheet_history]
+  - key: find_a_colleague
+    name: Find a colleague
+    feature: directory
+    screens: [home, directory, person_detail]
+  - key: read_an_announcement
+    name: Read an announcement
+    feature: announcements
+    screens: [home, announcements, announcement_detail]
+  - key: check_sync
+    name: Check what is waiting to sync
+    feature: offline_sync
+    screens: [profile, sync_status]
+  - key: check_in_at_a_kiosk
+    name: Check in at a shared device
+    feature: kiosk_mode
+    screens: [kiosk_home, kiosk_checkin]
+  - key: leave_kiosk_mode
+    name: Leave kiosk mode
+    feature: kiosk_mode
+    screens: [kiosk_home, kiosk_exit]
+  - key: review_reports
+    name: Review a report
+    feature: reports
+    screens: [reports, report_detail]
+
+navigation:
+  id: NAV-001
+  route: /
+  kind: auth_gate
+  label: App
+  auth: authenticated
+  children:
+    - {id: NAV-002, route: /login, kind: screen, screen: "@login", auth: public}
+    - id: NAV-010
+      route: /(tabs)
+      kind: tabs
+      auth: authenticated
+      children:
+        - id: NAV-011
+          route: /home
+          kind: stack
+          label: Today
+          screen: "@home"
+          auth: authenticated
+          children:
+            - {id: NAV-012, route: /directory, kind: screen, screen: "@directory", auth: authenticated}
+            - {id: NAV-013, route: "/directory/[id]", kind: screen, screen: "@person_detail", auth: authenticated}
+            - {id: NAV-014, route: /announcements, kind: screen, screen: "@announcements", auth: authenticated}
+            - {id: NAV-015, route: "/announcements/[id]", kind: screen, screen: "@announcement_detail", auth: authenticated}
+            - {id: NAV-016, route: /timesheet, kind: screen, screen: "@timesheet_week", auth: authenticated}
+            - {id: NAV-017, route: /timesheet/entry, kind: screen, screen: "@timesheet_entry", auth: authenticated}
+            - {id: NAV-018, route: /timesheet/history, kind: screen, screen: "@timesheet_history", auth: authenticated}
+        - id: NAV-020
+          route: /tasks
+          kind: stack
+          label: Tasks
+          screen: "@tasks"
+          auth: authenticated
+          children:
+            - {id: NAV-021, route: "/tasks/[id]", kind: screen, screen: "@task_detail", auth: authenticated}
+            - {id: NAV-022, route: /tasks/new, kind: screen, screen: "@task_create", auth: authenticated}
+        - id: NAV-030
+          route: /forms
+          kind: stack
+          label: Forms
+          screen: "@forms_list"
+          auth: authenticated
+          children:
+            - {id: NAV-031, route: "/forms/[id]", kind: screen, screen: "@form_fill", auth: authenticated}
+            - {id: NAV-032, route: "/checklists/[id]", kind: screen, screen: "@checklist_run", auth: authenticated}
+            - {id: NAV-033, route: /forms/submitted, kind: screen, screen: "@form_submitted", auth: authenticated}
+            - {id: NAV-034, route: /forms/history, kind: screen, screen: "@submissions", auth: authenticated}
+        - id: NAV-040
+          route: /approvals
+          kind: stack
+          label: Approvals
+          screen: "@approvals"
+          auth: ROLE-manager
+          children:
+            - {id: NAV-041, route: "/approvals/[id]", kind: screen, screen: "@approval_detail", auth: ROLE-manager}
+        - id: NAV-050
+          route: /more
+          kind: stack
+          label: More
+          screen: "@profile"
+          auth: authenticated
+          children:
+            - {id: NAV-051, route: /requests, kind: screen, screen: "@my_requests", auth: authenticated}
+            - {id: NAV-052, route: /requests/new, kind: screen, screen: "@request_form", auth: authenticated}
+            - {id: NAV-053, route: /reports, kind: screen, screen: "@reports", auth: ROLE-manager}
+            - {id: NAV-054, route: "/reports/[id]", kind: screen, screen: "@report_detail", auth: ROLE-manager}
+            - {id: NAV-055, route: /sync, kind: screen, screen: "@sync_status", auth: authenticated}
+            - {id: NAV-056, route: /notifications, kind: screen, screen: "@notifications", auth: authenticated}
+            - {id: NAV-057, route: /settings, kind: screen, screen: "@settings", auth: authenticated}
+    - id: NAV-070
+      route: /kiosk
+      kind: stack
+      label: Kiosk
+      screen: "@kiosk_home"
+      auth: authenticated
+      children:
+        - {id: NAV-071, route: /kiosk/check-in, kind: screen, screen: "@kiosk_checkin", auth: authenticated}
+        - {id: NAV-072, route: /kiosk/exit, kind: screen, screen: "@kiosk_exit", auth: authenticated}
+
+feature_parts:
+  approvals:
+    operations: [API-createRequest, API-listMyRequests, API-listApprovals, API-getApproval, API-decideApproval]
+    entities: [ENT-ApprovalRequest]
+  timesheets:
+    operations: [API-getTimesheet, API-saveTimeEntry, API-submitTimesheet, API-listTimesheets]
+    entities: [ENT-Timesheet, ENT-TimeEntry]
+  directory:
+    operations: [API-searchPeople, API-getPerson]
+  announcements:
+    operations: [API-listAnnouncements, API-getAnnouncement, API-acknowledgeAnnouncement]
+    entities: [ENT-Announcement, ENT-AnnouncementAck]
+    screens:
+      home: {sections: [announcements_strip]}
+  offline_sync:
+    operations: [API-getSyncStatus, API-syncNow, API-discardPendingChange]
+    entities: [ENT-SyncItem]
+    screens:
+      home: {sections: [sync_banner]}
+      settings: {sections: [offline_group]}
+  push_notifications:
+    operations: [API-listNotifications, API-markNotificationRead, API-registerPushToken]
+    entities: [ENT-Notification]
+    integrations: [INT-push_notifications]
+    screens:
+      settings: {sections: [notifications_group], actions: [enable_push]}
+  kiosk_mode:
+    operations: [API-kioskCheckIn, API-verifyKioskExit]
+    entities: [ENT-KioskCheckIn]
+  reports:
+    operations: [API-listReports, API-getReport, API-exportReport]
+    entities: [ENT-Report]

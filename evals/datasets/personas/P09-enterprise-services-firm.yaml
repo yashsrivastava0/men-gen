@@ -1,0 +1,15 @@
+id: P09-enterprise-services-firm
+title: IT services firm with a policy and named approvers
+who: A delivery lead building a field-service app for a client; the client product owner and the delivery lead approve the plan.
+language: en
+mode: enterprise
+policy: enterprise-it-services-firm
+script:
+  - user: "We are an IT services firm. For a client we need a company app for their field staff: work order checklists, attendance and approvals, with single sign-on"
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1

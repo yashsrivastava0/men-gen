@@ -1,0 +1,53 @@
+Brief
+- Idea: {{ brief.app_summary }}
+- Type: {{ brief.archetype }}; mode: {{ brief.mode }}; language: {{ brief.language }}
+{% if brief.roles %}
+- Users: {{ brief.roles | join(', ') }}
+{% endif %}
+{% if brief.features %}
+- Features: {% for f in brief.features %}{{ f.label }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+{% endif %}
+{% if brief.look %}
+- Look: {{ brief.look }}
+{% endif %}
+{% if brief.login %}
+- Login: {{ brief.login }}
+{% endif %}
+{% if brief.regions %}
+- Regions: {{ brief.regions | join(', ') }}
+{% endif %}
+{% if brief.compliance_flags %}
+- Sensitive areas: {{ brief.compliance_flags | join(', ') }}
+{% endif %}
+{% if brief.brand_name %}
+- App name: {{ brief.brand_name }}
+{% endif %}
+Baseline screens (id route [recipe] flow: purpose):
+{% for s in outline.screens %}
+{{ s.id }} {{ s.route }} [{{ s.recipe }}]{% if s.flow %} {{ s.flow }}{% endif %}: {{ s.purpose }}
+{% endfor %}
+Flows (id name: screens):
+{% for f in outline.flows %}
+{{ f.id }} {{ f.name }}: {{ f.screens | join(' ') }}
+{% endfor %}
+Entities (id: fields):
+{% for e in outline.entities %}
+{{ e.id }}: {{ e.fields | join(', ') }}
+{% endfor %}
+API operations (id method path):
+{% for o in outline.operations %}
+{{ o.id }} {{ o.method }} {{ o.path }}
+{% endfor %}
+Roles: {% for r in outline.roles %}{{ r.id }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+Integrations: {% for i in outline.integrations %}{{ i.id }}{% if not loop.last %}, {% endif %}{% endfor %}
+
+{% if validator_findings %}
+Validator findings (severity validator ids: message):
+{% for f in validator_findings %}
+{{ f.severity }} {{ f.validator }} {{ f.target_ids | join(' ') }}: {{ f.message }}
+{% endfor %}
+{% else %}
+The validators found nothing to report.
+{% endif %}

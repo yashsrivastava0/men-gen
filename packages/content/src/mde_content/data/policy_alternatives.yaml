@@ -1,0 +1,128 @@
+# Company-rule checks and their allowed alternatives (Enterprise policy, spec section 9 row
+# "request violates org policy"). Data, not code: the Discover engine (mde_discovery.policy_guard)
+# reads this file to recognise a request for a banned library or a region the policy does not allow,
+# and to build the "pick an allowed alternative" card. Nothing here names a company or an app type.
+#
+# The policy itself decides WHAT is banned or allowed (Policy.banned_libraries, Policy.allowed_regions).
+# This file only knows how people refer to things, and what can be offered instead:
+#
+#   libraries   by the id as a policy writes it (case-insensitive, punctuation ignored):
+#                 aliases     other ways to name it. The id itself always counts.
+#                 match_name  false when the bare id is an everyday word (only the aliases count)
+#                 alternatives  what we can offer instead: id, label, description, phrase (en, hi,
+#                               hi-Latn). `phrase` replaces the mention inside a sentence.
+#   generic     what is offered for a banned library this file does not know
+#   regions     region ids as a policy writes them, with the region group the `regions` slot uses
+#               (in | eu | us | other), a label per language and aliases
+#   region_patterns  how a cloud-style region id appears in text (us-east-1, eu-west-2, ...)
+#   prefix_groups    region group of an id this file does not list, by its prefix
+#
+# Every label and phrase has en, hi and hi-Latn. Matching is whole-word and case-insensitive.
+version: 1
+
+libraries:
+  react-native-code-push:
+    aliases: [codepush, code push, app center code push, appcenter codepush]
+    alternatives:
+      - id: store_release
+        label: {en: "Regular app store releases", hi: "ऐप स्टोर के ज़रिए नियमित रिलीज़", hi-Latn: "App store ke zariye niyamit release"}
+        description: {en: "Updates go out as normal store releases.", hi: "अपडेट सामान्य स्टोर रिलीज़ के रूप में जाते हैं।", hi-Latn: "Updates normal store release ke roop mein jaate hain."}
+        phrase: {en: "regular app store releases", hi: "ऐप स्टोर के ज़रिए नियमित रिलीज़", hi-Latn: "app store ke zariye niyamit release"}
+      - id: expo_updates
+        label: {en: "Expo's own update service", hi: "Expo की अपनी अपडेट सेवा", hi-Latn: "Expo ki apni update seva"}
+        description: {en: "Small updates reach phones without a store release.", hi: "छोटे अपडेट बिना स्टोर रिलीज़ के फ़ोन तक पहुँचते हैं।", hi-Latn: "Chhote updates bina store release ke phone tak pahunchte hain."}
+        phrase: {en: "Expo's own update service", hi: "Expo की अपनी अपडेट सेवा", hi-Latn: "Expo ki apni update seva"}
+
+  moment:
+    match_name: false
+    aliases: [moment.js, momentjs, moment js]
+    alternatives:
+      - id: light_dates
+        label: {en: "A lightweight date toolkit", hi: "हल्का तारीख़ टूलकिट", hi-Latn: "Halka date toolkit"}
+        description: {en: "Handles dates and times without the banned library.", hi: "प्रतिबंधित लाइब्रेरी के बिना तारीख़ और समय संभालता है।", hi-Latn: "Pratibandhit library ke bina date aur time sambhalta hai."}
+        phrase: {en: "a lightweight date toolkit", hi: "एक हल्का तारीख़ टूलकिट", hi-Latn: "ek halka date toolkit"}
+      - id: built_in_dates
+        label: {en: "The phone's built-in date tools", hi: "फ़ोन के अपने तारीख़ टूल", hi-Latn: "Phone ke apne date tools"}
+        description: {en: "Nothing extra to install.", hi: "अलग से कुछ इंस्टॉल नहीं करना पड़ता।", hi-Latn: "Alag se kuch install nahi karna padta."}
+        phrase: {en: "the phone's built-in date tools", hi: "फ़ोन के अपने तारीख़ टूल", hi-Latn: "phone ke apne date tools"}
+
+  lodash:
+    aliases: [lodash.js]
+    alternatives:
+      - id: built_in_helpers
+        label: {en: "Plain built-in functions", hi: "सामान्य बिल्ट-इन फ़ंक्शन", hi-Latn: "Saamaanya built-in functions"}
+        description: {en: "Everyday helpers written without the banned library.", hi: "प्रतिबंधित लाइब्रेरी के बिना लिखे रोज़ के हेल्पर।", hi-Latn: "Pratibandhit library ke bina likhe roz ke helpers."}
+        phrase: {en: "plain built-in functions", hi: "सामान्य बिल्ट-इन फ़ंक्शन", hi-Latn: "saamaanya built-in functions"}
+
+  axios:
+    alternatives:
+      - id: built_in_network
+        label: {en: "The built-in network calls", hi: "बिल्ट-इन नेटवर्क कॉल", hi-Latn: "Built-in network calls"}
+        description: {en: "The app talks to the server with what the phone already provides.", hi: "ऐप सर्वर से उसी से बात करता है जो फ़ोन में पहले से है।", hi-Latn: "App server se usi se baat karta hai jo phone mein pehle se hai."}
+        phrase: {en: "the built-in network calls", hi: "बिल्ट-इन नेटवर्क कॉल", hi-Latn: "built-in network calls"}
+
+generic:
+  alternatives:
+    - id: approved_option
+      label: {en: "An option your company has approved", hi: "आपकी कंपनी द्वारा मंज़ूर विकल्प", hi-Latn: "Aapki company dwara manzoor option"}
+      description: {en: "I use one that fits your company's rules.", hi: "मैं वह इस्तेमाल करूँगा जो आपकी कंपनी के नियमों में फ़िट हो।", hi-Latn: "Main woh istemal karunga jo aapki company ke niyamon mein fit ho."}
+      phrase: {en: "an option your company has approved", hi: "आपकी कंपनी द्वारा मंज़ूर एक विकल्प", hi-Latn: "aapki company dwara manzoor ek option"}
+    - id: ask_it
+      label: {en: "I will ask my IT team", hi: "मैं अपनी आईटी टीम से पूछूँगा", hi-Latn: "Main apni IT team se poochunga"}
+      description: {en: "We note it so it is settled before approval.", hi: "हम इसे नोट कर लेते हैं ताकि मंज़ूरी से पहले यह तय हो जाए।", hi-Latn: "Hum ise note kar lete hain taaki manzoori se pehle yeh tay ho jaye."}
+      phrase: {en: "an option to be confirmed with your IT team", hi: "एक विकल्प जो आपकी आईटी टीम से तय होगा", hi-Latn: "ek option jo aapki IT team se tay hoga"}
+
+regions:
+  - id: us-east
+    group: us
+    label: {en: "United States (East)", hi: "संयुक्त राज्य अमेरिका (पूर्व)", hi-Latn: "United States (East)"}
+    aliases: []
+  - id: us-west
+    group: us
+    label: {en: "United States (West)", hi: "संयुक्त राज्य अमेरिका (पश्चिम)", hi-Latn: "United States (West)"}
+    aliases: []
+  - id: eu-west
+    group: eu
+    label: {en: "Western Europe", hi: "पश्चिमी यूरोप", hi-Latn: "Pashchimi Europe"}
+    aliases: []
+  - id: eu-central
+    group: eu
+    label: {en: "Central Europe", hi: "मध्य यूरोप", hi-Latn: "Madhya Europe"}
+    aliases: []
+  - id: eu-north
+    group: eu
+    label: {en: "Northern Europe", hi: "उत्तरी यूरोप", hi-Latn: "Uttari Europe"}
+    aliases: []
+  - id: ap-south
+    group: in
+    label: {en: "India (South Asia)", hi: "भारत (दक्षिण एशिया)", hi-Latn: "India (South Asia)"}
+    aliases: []
+  - id: ap-southeast
+    group: other
+    label: {en: "Southeast Asia", hi: "दक्षिण-पूर्व एशिया", hi-Latn: "Dakshin-Poorv Asia"}
+    aliases: []
+  - id: ap-northeast
+    group: other
+    label: {en: "Northeast Asia", hi: "उत्तर-पूर्व एशिया", hi-Latn: "Uttar-Poorv Asia"}
+    aliases: []
+  - id: sa-east
+    group: other
+    label: {en: "South America", hi: "दक्षिण अमेरिका", hi-Latn: "Dakshin America"}
+    aliases: []
+  - id: ca-central
+    group: other
+    label: {en: "Canada", hi: "कनाडा", hi-Latn: "Canada"}
+    aliases: []
+  - id: me-central
+    group: other
+    label: {en: "Middle East", hi: "मध्य पूर्व", hi-Latn: "Madhya Poorv"}
+    aliases: []
+  - id: af-south
+    group: other
+    label: {en: "Africa", hi: "अफ़्रीका", hi-Latn: "Africa"}
+    aliases: []
+
+region_patterns:
+  - '(?<![A-Za-z0-9-])(?:us|eu|ap|sa|ca|me|af|il)-(?:north|south|east|west|central)(?:east|west)?(?:-[0-9]{1,2})?(?![A-Za-z0-9-])'
+
+prefix_groups: {us: us, eu: eu, ap: other, sa: other, ca: other, me: other, af: other, il: other}

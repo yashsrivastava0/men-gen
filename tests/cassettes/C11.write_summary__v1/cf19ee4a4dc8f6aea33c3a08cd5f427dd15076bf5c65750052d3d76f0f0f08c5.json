@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "cf19ee4a4dc8f6aea33c3a08cd5f427dd15076bf5c65750052d3d76f0f0f08c5",
+  "recorded_at": "2026-11-08T10:47:49.811393Z",
+  "request": {
+    "spec_id": "C11.write_summary",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "54669b5e6a1bfebb4d15788d41b5cd5fb8e51fc2d982eb2383a42262c748c90a",
+    "tools": [],
+    "kind": "main",
+    "system": "You write one short plain-language summary of an app for the person who asked for it. One job: return the text.\n\nRules:\n- Use only the facts given. Never add features, numbers, dates, prices or promises.\n- brief_sentence: exactly one sentence of at most max_words words that says what the app is, who it is for and its main features.\n- plan_summary: two or three short sentences in plain words.\n- Write in the user's language. No marketing words, no jargon.",
+    "user": "Kind: brief_sentence. Language: hi-Latn. Maximum words: 40.\nApp name: My App\nFacts:\n- Booking aur appointment: Mujhe salon ke liye booking aur reminders wala app chahiye\n- jisme booking reminders hain\n- saaf aur chamakdaar look mein\n"
+  },
+  "response": {
+    "text": "{\"text\":\"My App salon ke liye ek saaf aur chamakdaar app hai, jisme booking aur appointment reminders hain.\"}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 200,
+      "cached_input_tokens": 0,
+      "output_tokens": 122,
+      "reasoning_tokens": 81,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

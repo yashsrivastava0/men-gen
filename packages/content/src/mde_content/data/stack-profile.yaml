@@ -1,0 +1,201 @@
+# Stack Profile: what the frontend engine's stack (Expo, managed workflow, React Native) can do,
+# what needs a development build (a custom native build instead of the stock preview client),
+# and the app types we cannot build. Version numbers are never written here: `pinned_at_build`
+# lists what the build step pins. Keywords are matched as whole words, case-insensitive, and
+# include Hindi and Hinglish forms. `preview_limit` says what the web / stock-client preview
+# cannot show (a mock or placeholder is shown instead).
+id: expo-managed
+label: Expo managed workflow with React Native (iOS and Android)
+pinned_at_build: [expo_sdk, react_native, expo_router, typescript]
+max_screens_guided: 50
+
+capabilities:
+  # ------------------------------------------------------------------ device
+  - id: camera
+    label: Camera (photos and video)
+    keywords: [camera, photo, photos, selfie, "take a picture", "click photo", video recording, kamera, tasveer, फोटो, कैमरा]
+    preview_limit: The web preview cannot use a device camera; it shows a file picker or a placeholder image.
+  - id: photo_library
+    label: Photo library picker
+    keywords: [gallery, "photo library", "pick an image", "upload photo", "upload image", गैलरी]
+    preview_limit: On web the picker opens a file chooser.
+  - id: barcode_scan
+    label: Barcode and QR scanning
+    keywords: [barcode, "qr code", "qr scan", scanner, "scan code", क्यूआर, "scan karna"]
+    preview_limit: The web preview cannot scan; it offers a type-in-the-code box.
+  - id: location_foreground
+    label: Location while the app is open
+    keywords: [location, gps, "near me", nearby, "my location", "current location", "aas paas", लोकेशन, "आस पास"]
+    preview_limit: The web preview uses the browser location or a fixed sample location.
+  - id: location_background
+    label: Location while the app is closed
+    needs_dev_build: true
+    keywords: ["background location", "track while closed", "live tracking in background", geofence, geofencing, "location history"]
+    preview_limit: Not available in the preview; a recorded sample route is shown.
+    note: Store review needs a clear written reason; ask for it only if the product truly needs it.
+  - id: maps
+    label: Maps with markers and routes
+    needs_dev_build: true
+    keywords: [map, maps, directions, "get directions", "turn by turn", "store locator", नक्शा, naksha, "map pe"]
+    preview_limit: The web preview shows a static map image or the list fallback.
+    note: Map provider keys are needed at release time; mock tiles are used until then.
+  - id: biometrics
+    label: Face or fingerprint unlock
+    keywords: ["face id", "touch id", fingerprint, biometric, biometrics, फिंगरप्रिंट, "face unlock"]
+    preview_limit: Not available on web; the preview falls back to a PIN prompt.
+  - id: secure_storage
+    label: Secure storage for tokens
+    keywords: [keychain, "secure token", "secure storage", "remember me"]
+  - id: haptics
+    label: Haptic feedback
+    keywords: [haptic, haptics, vibration, vibrate]
+    preview_limit: Silent on web.
+  - id: nfc
+    label: Contactless / NFC reading
+    needs_dev_build: true
+    keywords: [nfc, "tap card", contactless, "tap to pay"]
+    preview_limit: Not available in the preview.
+  - id: bluetooth
+    label: Bluetooth for simple peripherals
+    needs_dev_build: true
+    keywords: [bluetooth, ble, "bluetooth device"]
+    preview_limit: Not available in the preview.
+    note: Simple peripherals only. Anything custom or heavy is a hardware-heavy app (not supported).
+  - id: keep_awake
+    label: Keep the screen on and idle timeout (shared-device / kiosk behavior)
+    keywords: [kiosk, "shared device", "keep screen on", "wall mounted", "tablet at counter"]
+    note: The app can stay awake and return to start when idle. Locking the device to one app is a device-management setting outside the app.
+
+  # ------------------------------------------------------------------ messaging
+  - id: push_notifications
+    label: Push notifications
+    needs_dev_build: true
+    keywords: [push, "push notification", notification, notifications, alerts, "alert bhejna", सूचना, "notification bhejna"]
+    preview_limit: The preview shows an in-app banner instead of a real push.
+    note: Remote push needs a development build and a push provider account at release time.
+  - id: local_notifications
+    label: Local reminders and scheduled notices
+    keywords: [reminder, reminders, "remind me", "yaad dilana", रिमाइंडर]
+    preview_limit: The preview shows an in-app banner at the scheduled time.
+  - id: share_sheet
+    label: Share sheet
+    keywords: [share, "share link", "send to friends", "whatsapp share", शेयर]
+    preview_limit: On web the share falls back to copy-to-clipboard.
+  - id: contacts
+    label: Contacts access
+    keywords: [contacts, "address book", phonebook, "invite from contacts", संपर्क]
+    preview_limit: The web preview uses a short list of sample contacts.
+  - id: calendar
+    label: Add to device calendar
+    keywords: ["add to calendar", "calendar event", "calendar sync"]
+    preview_limit: The web preview shows a confirmation only.
+
+  # ------------------------------------------------------------------ money and identity
+  - id: payments
+    label: Payments through provider SDKs
+    needs_dev_build: true
+    keywords: [payment, payments, pay, checkout, wallet, upi, stripe, razorpay, bhugtan, पेमेंट]
+    preview_limit: The preview always uses the mock provider and a test card form.
+    note: Mock provider by default. A real provider SDK with native code needs a development build, and card data stays with the provider.
+  - id: in_app_purchases
+    label: In-app purchases and subscriptions
+    needs_dev_build: true
+    keywords: ["in-app purchase", subscription, "premium plan", "buy coins", "paid plan"]
+    preview_limit: The preview simulates a successful purchase.
+    note: Store rules apply to digital goods; physical goods and services use normal payments.
+  - id: social_login
+    label: Sign in with Google, Apple or other providers
+    needs_dev_build: true
+    keywords: ["google sign in", "login with google", "sign in with apple", "facebook login", "social login"]
+    preview_limit: Browser-based sign-in works in the preview; native one-tap sign-in needs a development build.
+  - id: sso_enterprise
+    label: Company single sign-on (browser based)
+    keywords: [sso, "single sign on", okta, saml, "azure ad", "company login", "work account"]
+    preview_limit: The preview signs in with a sample company account.
+
+  # ------------------------------------------------------------------ data and sync
+  - id: offline_storage
+    label: Offline storage and cache
+    keywords: [offline, "works without internet", "no network", "offline mode", ऑफलाइन, "bina internet"]
+    preview_limit: The web preview keeps data in browser storage, which the browser may clear.
+  - id: background_sync
+    label: Background sync
+    needs_dev_build: true
+    keywords: ["background sync", "sync in background", "auto sync", "sync when online"]
+    preview_limit: Not available on web; a manual sync button is shown instead.
+    note: The operating system decides when background work runs, so timing is best effort.
+  - id: file_upload
+    label: Document and file upload
+    keywords: ["upload document", "attach file", "file upload", "pdf upload", "document picker", "documents upload", दस्तावेज़]
+    preview_limit: On web the picker opens a file chooser.
+  - id: deep_links
+    label: Deep links and shared links
+    keywords: ["deep link", "deep links", "universal link", "open link in app", "app link"]
+    note: A custom link scheme works from the start. Verified web-domain links need a domain you control at release time.
+  - id: web_content
+    label: Embedded web pages and in-app browser
+    keywords: [webview, "embedded website", "open website", "in-app browser"]
+
+  # ------------------------------------------------------------------ media and voice
+  - id: video_playback
+    label: Video playback (app open)
+    keywords: [video, videos, reels, "play videos", "video player"]
+  - id: audio_playback
+    label: Audio playback while the app is open
+    keywords: ["voice message", "sound effect", "audio clip", "play audio"]
+    note: Playback that continues with the screen locked is background audio and is not supported.
+  - id: audio_recording
+    label: Audio recording
+    keywords: ["voice note", "record audio", "audio recording", "voice recording"]
+    preview_limit: The web preview records through the browser microphone if permitted.
+  - id: speech_synthesis
+    label: Read-aloud (text to speech)
+    keywords: ["read aloud", "text to speech", "voice output"]
+  - id: speech_recognition
+    label: Voice input (speech to text)
+    needs_dev_build: true
+    keywords: ["voice input", "speech to text", dictation, "voice search", "voice command", "bol kar"]
+    preview_limit: Not available in the preview; a typed box is shown.
+
+  # ------------------------------------------------------------------ app-wide
+  - id: analytics
+    label: Usage analytics (events)
+    keywords: [analytics, "usage stats", "track events", "event tracking"]
+    note: Events are sent through a simple HTTP endpoint; native analytics SDKs would need a development build.
+  - id: localization
+    label: Multiple languages and right-to-left layout
+    keywords: [hindi, "multiple languages", multilingual, rtl, arabic, हिंदी, "do bhasha"]
+  - id: appearance
+    label: Light and dark mode
+    keywords: ["dark mode", "light mode", "dark theme"]
+
+unsupported_types:
+  - id: game
+    label: Games
+    keywords: [game, games, gaming, "3d game", "multiplayer game", "game engine", unity, unreal, arcade, ludo, खेल, गेम, "game wala app", khel]
+    reason: Games need a real-time graphics engine and a game loop. This builder makes standard screens, lists and forms.
+    closest_option: A companion app around the game (profiles, leaderboards, news, store, community), with the game itself built in a game engine.
+
+  - id: ar
+    label: Augmented and virtual reality
+    keywords: [ar, vr, "augmented reality", "virtual reality", "virtual try on", "virtual try-on", "ar try on", metaverse, "ऑगमेंटेड रियलिटी", "ar wala"]
+    reason: AR and VR need camera tracking, 3D rendering and native modules that are outside this stack.
+    closest_option: A catalog app with ordinary photos, a 360-style image carousel and a "see it at home" size guide, with AR added later by a specialist.
+
+  - id: desktop
+    label: Desktop, TV, watch or browser-extension apps
+    keywords: ["desktop app", "desktop application", "desktop software", "windows app", "mac app", "macos app", "linux app", electron, "pc software", "browser extension", "chrome extension", "smart tv", "tv app", "smartwatch app", "apple watch app", "wear os", "डेस्कटॉप ऐप", "laptop app", "desktop wala app"]
+    reason: The stack builds phone apps for iOS and Android only.
+    closest_option: A phone app with the same features, plus a mobile-friendly web preview. A desktop or TV version would be a separate project.
+
+  - id: background_audio
+    label: Audio that keeps playing in the background
+    keywords: ["background audio", "music streaming", "music player", "music app", "podcast player", "podcast app", audiobook, "radio app", "lock screen controls", "play in background", "keeps playing", "gaane wala app", "music wala app", "संगीत ऐप"]
+    reason: Playback with the screen locked, lock-screen controls and audio focus handling need native audio services that are not in scope.
+    closest_option: A browse-and-listen app that plays audio while it is open, with playlists and favorites. Background playback is flagged as a later native step.
+
+  - id: hardware_heavy
+    label: Hardware-heavy and device-control apps
+    keywords: [iot, "smart home device", drone, robot, arduino, "raspberry pi", embedded, firmware, "bluetooth printer", "pos terminal", "card reader", "custom hardware", "sensor network", "3d printer", "medical device", "device se connect", ड्रोन]
+    reason: Pairing with custom hardware needs device-specific native code and certification that this stack does not cover.
+    closest_option: A companion app that shows status and sends commands through a cloud service, with the direct device pairing left to a native engineer.

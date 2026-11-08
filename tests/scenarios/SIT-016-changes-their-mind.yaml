@@ -1,0 +1,112 @@
+# SIT-016: Changes their mind
+# Detection: Change intent
+# Behavior:  Section 3.6; show diff
+id: SIT-016-changes-their-mind
+situation: "Changes their mind"
+mode: guided
+variants:
+  during_discover_type_change:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - tap: {card: Q-apps-01, recommended: true}
+        expect: {pending_card: Q-feat-01}
+      - user: "it is not a shop, it is a booking app"
+        expect:
+          slots:
+            idea.archetype: {value: booking_services}
+  at_gate_one:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - user: "change the look to bold dark"
+        expect:
+          state: BRIEF_REVIEW
+          brief_version: 2
+          slots:
+            design.direction: {value: bold-dark, state: confirmed}
+          gate:
+            gate: brief
+            version: 2
+            single_button: true
+            diff_contains: look
+          gate_open: {gate: brief, status: open}
+          approvals_count: 0
+  at_gate_two:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - user: "change the look to bold dark"
+        expect:
+          state: PLANNING
+          plan_phase: build
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          spec_version: 2
+          gate: {gate: plan, version: 2}
+          llm_calls:
+            C6.plan_research: 0
+            S1.web_search: 0
+            C8.synthesize_research: 0
+          gate:
+            gate: plan
+            version: 2
+            single_button: true
+            diff_contains: look
+  a_design_change_is_a_cheap_patch_with_a_readable_diff:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - user: "change the look to bold dark"
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          llm_calls:
+            C9c.design_tokens: 1
+            C9a.screens_nav: 0
+            C9b.data_api_roles: 0
+            C10.screen_briefs: 0
+          plan: {diff_absent: "Removed item", diff_contains: "Changed the look"}

@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "231d092c0769efede3aefa9ab2c14997aa954ea3cb0a15d7092eaee22f2219de",
+  "recorded_at": "2026-11-08T10:59:36.507087Z",
+  "request": {
+    "spec_id": "C11.write_summary",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "54669b5e6a1bfebb4d15788d41b5cd5fb8e51fc2d982eb2383a42262c748c90a",
+    "tools": [],
+    "kind": "main",
+    "system": "You write one short plain-language summary of an app for the person who asked for it. One job: return the text.\n\nRules:\n- Use only the facts given. Never add features, numbers, dates, prices or promises.\n- brief_sentence: exactly one sentence of at most max_words words that says what the app is, who it is for and its main features.\n- plan_summary: two or three short sentences in plain words.\n- Write in the user's language. No marketing words, no jargon.",
+    "user": "Kind: brief_sentence. Language: en. Maximum words: 40.\nApp name: Blue Basket\nFacts:\n- Bookings and appointments: A booking app for a hair salon where clients can book appointments\n- with booking with time slots\n- in a clean and bright look\n"
+  },
+  "response": {
+    "text": "{\"text\":\"Blue Basket is a clean, bright booking app for hair salon clients to book appointments in available time slots.\"}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 193,
+      "cached_input_tokens": 0,
+      "output_tokens": 35,
+      "reasoning_tokens": 0,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

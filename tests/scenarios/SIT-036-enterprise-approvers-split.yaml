@@ -1,0 +1,37 @@
+# SIT-036: Enterprise: approvers split (one approves, one rejects)
+# Detection: Gate approvals on one hash
+# Behavior:  The build does not start; the rejection comments become change requests; the owner decides per policy
+id: SIT-036-enterprise-approvers-split
+situation: "Enterprise: approvers split (one approves, one rejects)"
+mode: enterprise
+policy: enterprise-it-services-firm
+integration: true
+steps:
+  - user: "An online shop for a client"
+  - answer_recommended: {limit: 60}
+    expect:
+      state: BRIEF_REVIEW
+      gate: {gate: brief, version: 1}
+  - decide: {gate: brief}
+    expect: {state: PLANNING, plan_phase: research}
+  - wait_for_plan: true
+    expect:
+      state: PLAN_REVIEW
+      gate: {gate: plan, version: 1, required_roles: [client_product_owner, delivery_lead]}
+  - decide: {gate: plan, role: client_product_owner, as: client_product_owner}
+    expect:
+      state: PLAN_REVIEW
+      gate: {gate: plan, approved_roles: [client_product_owner]}
+      spec_ready: 0
+  - decide: {gate: plan, decision: reject, role: delivery_lead, as: delivery_lead, comment: "Add a loyalty program"}
+    expect:
+      spec_ready: 0
+      frontend_notified: 0
+      handoff_commits: 0
+      approvals:
+        - {gate: plan, decision: approve, role: client_product_owner}
+        - {gate: plan, decision: reject, role: delivery_lead}
+final:
+  spec_ready: 0
+  frontend_notified: 0
+  handoff_commits: 0

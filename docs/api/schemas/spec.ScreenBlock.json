@@ -1,0 +1,232 @@
+{
+  "$defs": {
+    "DataBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "bind": {
+          "title": "Bind",
+          "type": "string"
+        },
+        "show": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Show",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bind"
+      ],
+      "title": "DataBinding",
+      "type": "object"
+    },
+    "ScreenAction": {
+      "additionalProperties": false,
+      "properties": {
+        "calls": {
+          "anyOf": [
+            {
+              "pattern": "^API-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Calls"
+        },
+        "go": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Go"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "on_success": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On Success"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ScreenAction",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "actions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ScreenAction"
+      },
+      "title": "Actions",
+      "type": "array"
+    },
+    "auth": {
+      "default": "public",
+      "title": "Auth",
+      "type": "string"
+    },
+    "checks": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Checks",
+      "type": "array"
+    },
+    "data": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/DataBinding"
+      },
+      "title": "Data",
+      "type": "array"
+    },
+    "flow": {
+      "anyOf": [
+        {
+          "pattern": "^FLW-\\d{3}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Flow"
+    },
+    "id": {
+      "pattern": "^SCR-\\d{3}$",
+      "title": "Id",
+      "type": "string"
+    },
+    "locked": {
+      "default": false,
+      "title": "Locked",
+      "type": "boolean"
+    },
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "recipe": {
+      "title": "Recipe",
+      "type": "string"
+    },
+    "research_ref": {
+      "anyOf": [
+        {
+          "pattern": "^RA-\\d{3}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Research Ref"
+    },
+    "route": {
+      "title": "Route",
+      "type": "string"
+    },
+    "sections": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Sections",
+      "type": "array"
+    },
+    "source": {
+      "default": "default",
+      "enum": [
+        "brief",
+        "default",
+        "research",
+        "custom"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "states": {
+      "additionalProperties": {
+        "additionalProperties": {
+          "type": "string"
+        },
+        "type": "object"
+      },
+      "default": {},
+      "title": "States",
+      "type": "object"
+    },
+    "surface": {
+      "default": "customer",
+      "title": "Surface",
+      "type": "string"
+    },
+    "texts": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "default": {},
+      "title": "Texts",
+      "type": "object"
+    },
+    "title": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Title"
+    }
+  },
+  "required": [
+    "id",
+    "route",
+    "recipe",
+    "purpose"
+  ],
+  "title": "ScreenBlock",
+  "type": "object"
+}

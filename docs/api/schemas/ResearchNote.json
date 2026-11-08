@@ -1,0 +1,462 @@
+{
+  "$defs": {
+    "BrandFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "colors": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Colors",
+          "type": "array"
+        },
+        "fonts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fonts",
+          "type": "array"
+        },
+        "logo_available": {
+          "default": false,
+          "title": "Logo Available",
+          "type": "boolean"
+        },
+        "nearest_direction": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nearest Direction"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        },
+        "tone_words": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Tone Words",
+          "type": "array"
+        }
+      },
+      "required": [
+        "source_url"
+      ],
+      "title": "BrandFinding",
+      "type": "object"
+    },
+    "CompliancePointer": {
+      "additionalProperties": false,
+      "properties": {
+        "flag": {
+          "title": "Flag",
+          "type": "string"
+        },
+        "note": {
+          "default": "Pointer only; not legal advice.",
+          "title": "Note",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "flag",
+        "title",
+        "url"
+      ],
+      "title": "CompliancePointer",
+      "type": "object"
+    },
+    "IntegrationNote": {
+      "additionalProperties": false,
+      "properties": {
+        "caveats": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Caveats",
+          "type": "array"
+        },
+        "expo_compatible": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Expo Compatible"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "sdk_available": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sdk Available"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SourceRef"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "provider"
+      ],
+      "title": "IntegrationNote",
+      "type": "object"
+    },
+    "ResearchFact": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "default": "medium",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "impact": {
+          "default": "low",
+          "enum": [
+            "low",
+            "high"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "job": {
+          "enum": [
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5",
+            "R6"
+          ],
+          "title": "Job",
+          "type": "string"
+        },
+        "kind": {
+          "default": "other",
+          "enum": [
+            "feature",
+            "pattern",
+            "brand",
+            "compliance",
+            "integration",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "job",
+        "statement",
+        "sources"
+      ],
+      "title": "ResearchFact",
+      "type": "object"
+    },
+    "ResearchSuggestion": {
+      "additionalProperties": false,
+      "description": "A research-driven addition. Appears at Gate 2 as 'What research added' with a toggle.",
+      "properties": {
+        "applies_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applies To"
+        },
+        "default_included": {
+          "default": true,
+          "title": "Default Included",
+          "type": "boolean"
+        },
+        "fact_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fact Ids",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^RA-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "feature",
+            "pattern",
+            "compliance",
+            "integration",
+            "brand"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "rationale"
+      ],
+      "title": "ResearchSuggestion",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "retrieved_at": {
+          "format": "date",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "retrieved_at"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "brand": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/BrandFinding"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "brief_hash": {
+      "title": "Brief Hash",
+      "type": "string"
+    },
+    "compliance": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/CompliancePointer"
+      },
+      "title": "Compliance",
+      "type": "array"
+    },
+    "cost_micros": {
+      "default": 0,
+      "title": "Cost Micros",
+      "type": "integer"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "depth": {
+      "default": "light",
+      "enum": [
+        "light",
+        "standard",
+        "deep"
+      ],
+      "title": "Depth",
+      "type": "string"
+    },
+    "facts": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResearchFact"
+      },
+      "title": "Facts",
+      "type": "array"
+    },
+    "gaps": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "hash": {
+      "default": "",
+      "title": "Hash",
+      "type": "string"
+    },
+    "integrations": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/IntegrationNote"
+      },
+      "title": "Integrations",
+      "type": "array"
+    },
+    "queries_run": {
+      "default": 0,
+      "title": "Queries Run",
+      "type": "integer"
+    },
+    "status": {
+      "default": "ok",
+      "enum": [
+        "ok",
+        "partial",
+        "unavailable"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "suggestions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResearchSuggestion"
+      },
+      "title": "Suggestions",
+      "type": "array"
+    },
+    "unavailable_reason": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Unavailable Reason"
+    },
+    "version": {
+      "default": 1,
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "brief_hash"
+  ],
+  "title": "ResearchNote",
+  "type": "object"
+}

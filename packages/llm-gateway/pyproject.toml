@@ -1,0 +1,25 @@
+[project]
+name = "mde-llm-gateway"
+version = "0.1.0"
+description = "LLM Gateway: providers, pipeline, budget guard, retries, cassettes"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "mde-core",
+  "mde-contracts",
+  "openai>=1.60",
+  "httpx>=0.27",
+  "jinja2>=3.1",
+  "pyyaml>=6.0",
+  "structlog>=24.4"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mde_llm_gateway"]
+
+[tool.uv.sources]
+mde-core = { workspace = true }
+mde-contracts = { workspace = true }

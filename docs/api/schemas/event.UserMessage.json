@@ -1,0 +1,41 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "text": {
+      "maxLength": 50000,
+      "title": "Text",
+      "type": "string"
+    },
+    "type": {
+      "const": "user_message",
+      "default": "user_message",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "text"
+  ],
+  "title": "UserMessage",
+  "type": "object"
+}

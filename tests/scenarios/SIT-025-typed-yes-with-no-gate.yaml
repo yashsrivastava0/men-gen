@@ -1,0 +1,47 @@
+# SIT-025: Types "yes" or "ok" with no gate open
+# Detection: Approve intent, state not a review state
+# Behavior:  Not an approval; treat as an answer to the pending card or ask what they mean
+id: SIT-025-typed-yes-with-no-gate
+situation: "Types \"yes\" or \"ok\" with no gate open"
+mode: guided
+variants:
+  yes_answers_a_confirm_card:
+    steps:
+      - user: "I want an app for my online shop with cart and reviews"
+        expect: {pending_card: Q-type-01}
+      - user: "yes"
+        expect:
+          state: DISCOVERING
+          no_events: [gate, spec_ready, plan_ready]
+          slots:
+            idea.archetype: {state: confirmed}
+          approvals_count: 0
+  yes_on_a_choice_card_asks_what_they_mean:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "yes"
+        expect:
+          state: DISCOVERING
+          text_contains: ["Nothing is waiting for approval"]
+          pending_card: Q-apps-01
+          no_events: [gate, spec_ready]
+          approvals_count: 0
+  ok_and_haan_in_hinglish:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "ok"
+        expect:
+          state: DISCOVERING
+          no_events: [gate]
+      - user: "haan"
+        expect:
+          state: DISCOVERING
+          no_events: [gate]
+          approvals_count: 0
+          spec_ready: 0

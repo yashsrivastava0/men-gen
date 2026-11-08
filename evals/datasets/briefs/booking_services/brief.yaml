@@ -1,0 +1,5 @@
+id: booking_services
+title: Hair salon appointments
+archetype: booking_services
+mode: guided
+opening: "A booking app for my hair salon so clients can book appointments"

@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "258d90f65fcce14a6c0edcb5db07257c34611593c9fa1fa4852bd4189a069f3d",
+  "recorded_at": "2026-11-08T11:06:13.654211Z",
+  "request": {
+    "spec_id": "C12.critic",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "6f9ad48ce14b24ca445ed1da61e591b7e3f0db46c460f1c0a5e860df2cad7b5e",
+    "tools": [],
+    "kind": "main",
+    "system": "You check whether a mobile app plan matches what the user asked for. You see the approved Brief, a compact outline of the plan and the findings of the code validators.\n\nRules:\n- Report only real problems: a mismatch with the Brief, a contradiction, a flow the Brief needs but the plan lacks, a feature the Brief asks for that no screen or data supports, or something the Brief rules out.\n- severity error: the app would be wrong or unusable for the user's idea. severity warn: worth a look. severity info: a note. Do not repeat what the validators already report, except to say what to do about it.\n- kind is one of mismatch, contradiction, missing_flow, missing_feature, other. target_ids are ids from the outline. suggested_fix is one short sentence or null.\n- At most 5 findings. verdict is \"fix\" only when at least one finding has severity error; otherwise \"pass\".\n- If the plan fits the Brief, return verdict \"pass\" and no findings.",
+    "user": "Brief\n- Idea: Blue Basket is a company app for employees and field staff to complete checklists, record attendance, and manage requests and approvals in a calm, professional design.\n- Type: internal_workforce; mode: guided; language: en\n- Users: Employee, Manager\n- Features: Tasks, Forms and checklists, Requests and approvals\n- Look: Calm and professional\n- Login: Work email or phone code\n- Sensitive areas: precise_location\n- App name: Blue Basket\nBaseline screens (id route [recipe] flow: purpose):\nSCR-001 /login [login-sso] FLW-002: Sign in with the company account\nSCR-002 /home [dashboard] FLW-001: Show today's tasks and shortcuts to the things the person does most\nSCR-003 /tasks [list-with-filters] FLW-001: List tasks with filters for status, priority and who they are assigned to\nSCR-004 /tasks/[id] [detail] FLW-001: Show one task with its status, notes and comments and let the person move it fo...\nSCR-005 /tasks/new [form]: Create a task with a due date, priority and an assignee\nSCR-006 /forms [list] FLW-003: List the forms and checklists the person can fill in\nSCR-007 /forms/[id] [multi-step-form] FLW-003: Fill in a form in short steps, with photos where required, and submit it\nSCR-008 /checklists/[id] [checklist] FLW-001: Work through a checklist item by item with notes and photos and sign it off\nSCR-009 /forms/submitted [confirmation] FLW-001: Confirm the form or checklist was submitted, or queued if there is no signal\nSCR-010 /forms/history [list]: List the forms and checklists the person has submitted\nSCR-011 /approvals [approvals-queue] FLW-005: Show requests waiting for the manager's decision, most urgent first\nSCR-012 /approvals/[id] [detail] FLW-005: Show one request with its details and let the manager decide\nSCR-013 /more [profile]: Show who is signed in and lead to settings and the rest of the app\nSCR-014 /requests [list] FLW-004: List the requests the person sent and their status\nSCR-015 /requests/new [form] FLW-004: Send a leave, expense or equipment request to the manager\nSCR-016 /settings [settings]: Notifications, language, appearance and offline options\nSCR-017 /approvals/[id]/schedule-check [calendar-slot-picker] FLW-005: Review the employee’s leave balance and scheduling conflicts before approving o...\nFlows (id name: screens):\nFLW-001 Pick up a task and finish its checklist (primary): SCR-002 SCR-003 SCR-004 SCR-008 SCR-009\nFLW-002 Sign in: SCR-001 SCR-002\nFLW-003 Fill in a form: SCR-006 SCR-007 SCR-009\nFLW-004 Send a request: SCR-014 SCR-015\nFLW-005 Approve or reject a request: SCR-011 SCR-012 SCR-017\nEntities (id: fields):\nENT-Employee: name, email, phone, job_title, department, photo, manager, location, is_active\nENT-Task: title, description, status, priority, due_at, assignee, created_by, location, form_template\nENT-TaskComment: task, author, body, created_at\nENT-FormTemplate: name, description, kind, fields, requires_photo, estimated_minutes\nENT-FormSubmission: template, submitted_by, task, status, answers, photos, submitted_at\nENT-ApprovalRequest: kind, title, details, requester, approver, status, amount, starts_on, ends_on, decision_note, decided_at, created_at\nENT-AttendanceRecord: employee, clock_in_at, clock_out_at, status\nENT-LeaveBalance: employee, leave_type, balance_days, as_of\nAPI operations (id method path):\nAPI-signInSso POST /auth/sso\nAPI-getMe GET /me\nAPI-listTasks GET /tasks\nAPI-getTask GET /tasks/{id}\nAPI-createTask POST /tasks\nAPI-updateTask PATCH /tasks/{id}\nAPI-addTaskComment POST /tasks/{id}/comments\nAPI-listFormTemplates GET /forms\nAPI-getFormTemplate GET /forms/{id}\nAPI-submitForm POST /submissions\nAPI-listSubmissions GET /submissions\nAPI-createRequest POST /requests\nAPI-listMyRequests GET /requests\nAPI-listApprovals GET /approvals\nAPI-getApproval GET /approvals/{id}\nAPI-decideApproval POST /approvals/{id}/decision\nAPI-createAttendanceRecord POST /attendance\nAPI-listMyAttendance GET /attendance\nAPI-requestSignInCode POST /auth/code/request\nAPI-verifySignInCode POST /auth/code/verify\nAPI-listMyLeaveBalances GET /leave-balances\nAPI-checkRequestSchedulingConflicts GET /requests/conflicts\nRoles: ROLE-employee, ROLE-manager\nIntegrations: INT-sso, INT-hr_system, INT-file_storage, INT-clerk_sign_in\nThe validators found nothing to report.\n"
+  },
+  "response": {
+    "text": "{\"verdict\":\"fix\",\"findings\":[{\"kind\":\"missing_feature\",\"severity\":\"error\",\"message\":\"The idea requires employees and field staff to record attendance, but no screen or flow lets them clock in or out. Attendance appears only in the data/API outline.\",\"target_ids\":[\"ENT-AttendanceRecord\",\"API-createAttendanceRecord\",\"SCR-002\"],\"suggested_fix\":\"Add an attendance screen and flow for recording and viewing clock-in and clock-out.\"}]}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 1461,
+      "cached_input_tokens": 0,
+      "output_tokens": 455,
+      "reasoning_tokens": 349,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

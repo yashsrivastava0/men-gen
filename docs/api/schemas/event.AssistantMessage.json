@@ -1,0 +1,78 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "canned": {
+      "default": false,
+      "title": "Canned",
+      "type": "boolean"
+    },
+    "chips": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Chips",
+      "type": "array"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "in_reply_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "In Reply To"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "seq": {
+      "default": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "type": {
+      "const": "assistant_message",
+      "default": "assistant_message",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "text"
+  ],
+  "title": "AssistantMessage",
+  "type": "object"
+}

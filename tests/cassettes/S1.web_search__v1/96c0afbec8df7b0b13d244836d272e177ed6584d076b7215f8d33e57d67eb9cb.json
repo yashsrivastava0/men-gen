@@ -1,0 +1,172 @@
+{
+  "format": 1,
+  "key": "96c0afbec8df7b0b13d244836d272e177ed6584d076b7215f8d33e57d67eb9cb",
+  "recorded_at": "2026-11-08T10:55:56.488871Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: handmade candle ecommerce mobile app browsing filters checkout patterns\nTopic: common features and design patterns of similar mobile apps\n"
+  },
+  "response": {
+    "text": "Similar candle-shopping apps and storefronts commonly organize browsing around scent/fragrance, product type, season, and price. Search and filters help shoppers narrow options; scent notes, mood descriptions, product stories, and clear size-specific pricing and images support choosing without smelling the candle in person. Some designs add a scent quiz, wishlists, product recommendations, or quick add-to-cart. ([sarahross.ca](https://www.sarahross.ca/work/good-vibes?utm_source=openai))\n\nProduct pages may show safety and allergen information, reviews, and gifting options such as gift wrap and a message. Checkout patterns described include a shopping cart, multiple payment options, secure checkout, and simplified checkout for returning customers. ([dorsetwaxandwicks.co.uk](https://dorsetwaxandwicks.co.uk/pages/app?utm_source=openai))\n\nFor navigation, one candle-app usability case found that a visible bottom navigation bar worked better than a hidden dropdown menu. The same case included order history and reordering; another candle app highlights loyalty rewards and app-only offers. ([sarahross.ca](https://www.sarahross.ca/work/good-vibes?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://www.sarahross.ca/work/good-vibes?utm_source=openai",
+        "title": "Good Vibes Candle Co. App - Sarah Ross Designs",
+        "start": 415,
+        "end": 491
+      },
+      {
+        "url": "https://dorsetwaxandwicks.co.uk/pages/app?utm_source=openai",
+        "title": "Our iPhone App | Dorset Wax & Wicks",
+        "start": 756,
+        "end": 844
+      },
+      {
+        "url": "https://www.sarahross.ca/work/good-vibes?utm_source=openai",
+        "title": "Good Vibes Candle Co. App - Sarah Ross Designs",
+        "start": 1098,
+        "end": 1174
+      },
+      {
+        "url": "https://www.sarahross.ca/work/good-vibes",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://cdn.featuredcustomers.com/CustomerCaseStudy.document/case-study-yankee-candle.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.cro-designer.com/case-studies/case-study-9",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://orangeskyinc.com/work/florida-candles/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.templatemonster.com/ui-elements/aurum-mobile-e-commerce-candle-store-app-ui-template-525720.html",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ayde.com/handmade/app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://themes.shopify.com/themes/handmade/presets/aroma",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://apps.apple.com/us/app/ccc-candle-co/id6745807958",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://candlesm.art/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://d2r3z0h7oyiawr.cloudfront.net/2025/08/29/17/11/18/b2c802fe-a7f6-4461-9dff-683ee16557f7/CandleScience2025HolidayShoppingTrendsReport.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://commercegeek.com/stores/brooklyncandlestudio.com",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://alphabite.io/our-work/inara",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://dribbble.com/shots/27041168-Luxury-Candle-Shopping-Mobile-App-UI-Scented-Elegance",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.thinkwithgoogle.com/_qs/documents/1094/mobile-retail-apps-and-sites-designing-better-experience-for-shoppers-UK.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://dorsetwaxandwicks.co.uk/pages/app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.theseus.fi/bitstream/10024/785762/4/Trinh_Hoang%20Dung.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://insights.daffodilsw.com/hubfs/CaseStudies/SouledStore-CaseStudy_Daffodil.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://litcommerce.com/wp-content/uploads/2025/09/BFCM-2025-Playbook.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/bathandbodyworks/comments/1x4nuid/we_created_a_candle_organizing_app_for_my_wife/",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12820,
+      "cached_input_tokens": 0,
+      "output_tokens": 303,
+      "reasoning_tokens": 48,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

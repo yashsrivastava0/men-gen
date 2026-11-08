@@ -1,0 +1,101 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "from_state": {
+      "enum": [
+        "DISCOVERING",
+        "BRIEF_REVIEW",
+        "PLANNING",
+        "PLAN_REVIEW",
+        "HANDED_OFF",
+        "PAUSED",
+        "STOPPED",
+        "ARCHIVED"
+      ],
+      "title": "From State",
+      "type": "string"
+    },
+    "in_reply_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "In Reply To"
+    },
+    "plan_phase": {
+      "anyOf": [
+        {
+          "enum": [
+            "research",
+            "build"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Plan Phase"
+    },
+    "seq": {
+      "default": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "to_state": {
+      "enum": [
+        "DISCOVERING",
+        "BRIEF_REVIEW",
+        "PLANNING",
+        "PLAN_REVIEW",
+        "HANDED_OFF",
+        "PAUSED",
+        "STOPPED",
+        "ARCHIVED"
+      ],
+      "title": "To State",
+      "type": "string"
+    },
+    "type": {
+      "const": "state_changed",
+      "default": "state_changed",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "from_state",
+    "to_state"
+  ],
+  "title": "StateChanged",
+  "type": "object"
+}

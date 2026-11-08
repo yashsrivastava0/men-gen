@@ -1,0 +1,32 @@
+# Golden cases for C11: the facts joined into short plain text.
+cases:
+  - name: brief_sentence
+    input:
+      kind: brief_sentence
+      facts: ["an online shop for handmade gifts", "with browsing, cart and checkout", "in a warm and friendly look"]
+    expect: {text: "An online shop for handmade gifts, with browsing, cart and checkout, in a warm and friendly look."}
+
+  - name: brief_sentence_is_capped
+    input:
+      kind: brief_sentence
+      max_words: 6
+      facts: ["an online shop for handmade gifts", "with browsing, cart and checkout"]
+    expect: {text: "An online shop for handmade gifts."}
+
+  - name: plan_summary_is_a_few_sentences
+    input:
+      kind: plan_summary
+      max_words: 60
+      facts: ["12 screens in 4 flows", "customers browse, order and track", "a warm and friendly look"]
+    expect: {text: "12 screens in 4 flows. Customers browse, order and track. A warm and friendly look."}
+
+  - name: hindi_facts_are_joined_not_translated
+    input:
+      kind: brief_sentence
+      language: hi
+      facts: ["हाथ से बने तोहफ़ों की ऑनलाइन दुकान", "कार्ट और चेकआउट के साथ"]
+    expect: {text: "हाथ से बने तोहफ़ों की ऑनलाइन दुकान, कार्ट और चेकआउट के साथ."}
+
+  - name: no_facts_gives_the_name
+    input: {kind: brief_sentence, app_name: Blue Basket, facts: []}
+    expect: {text: Blue Basket}

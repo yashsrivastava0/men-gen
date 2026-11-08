@@ -1,0 +1,184 @@
+# Question bank: custom (the fallback archetype: basic building blocks). Cards here apply to this
+# archetype only. Feature ids are the base-recipe feature ids (docs/packages/content.md).
+
+archetype: custom
+
+cards:
+  - id: Q-type-05
+    slot: idea.archetype
+    type: choice3
+    text: "I could not match this to a ready-made type, so I will start from basic building blocks like lists, details and forms. Is that okay?"
+    help: "Ready-made types come with more features already set up. Basic building blocks are the most flexible."
+    options:
+      - {id: A, label: "Yes, start from the basics", description: "We shape it together from simple parts.", recommended: true, sets: {idea.archetype: custom}}
+      - {id: B, label: "Actually, it is an online shop", description: "Customers browse and buy products.", sets: {idea.archetype: commerce}}
+      - {id: C, label: "Actually, it is a booking app", description: "Customers pick a service and a time.", sets: {idea.archetype: booking_services}}
+    other: {enabled: true, placeholder: "Tell me what kind of app it is"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'custom'"
+    i18n:
+      hi:
+        text: "मैं इसे किसी तैयार प्रकार से नहीं मिला पाया, इसलिए मैं सूची, विवरण और फ़ॉर्म जैसे बुनियादी हिस्सों से शुरू करूँगा। क्या यह ठीक है?"
+        options: {A: "हाँ, बुनियादी हिस्सों से शुरू करें", B: "असल में यह एक ऑनलाइन दुकान है", C: "असल में यह एक बुकिंग ऐप है"}
+        other_placeholder: "बताइए यह किस तरह का ऐप है"
+        help: "तैयार प्रकारों में ज़्यादा फ़ीचर पहले से सेट होते हैं। बुनियादी हिस्से सबसे लचीले होते हैं।"
+      hi-Latn:
+        text: "Main ise kisi taiyaar type se nahi mila paya, isliye main list, detail aur form jaise basic hisson se shuru karunga. Kya yeh theek hai?"
+        options: {A: "Haan, basic hisson se shuru karein", B: "Asal mein yeh ek online dukaan hai", C: "Asal mein yeh ek booking app hai"}
+        other_placeholder: "Bataiye yeh kis tarah ka app hai"
+        help: "Taiyaar types mein zyada features pehle se set hote hain. Basic hisse sabse lachile hote hain."
+
+  - id: Q-roles-02
+    slot: users.roles
+    type: choice3
+    text: "Will everyone use the app in the same way?"
+    help: "This decides who sees what. You can add more kinds of users later."
+    options:
+      - {id: A, label: "Yes, one kind of user", description: "Everyone sees the same things.", recommended: true, sets: {users.roles: [user]}}
+      - {id: B, label: "Users and an admin", description: "An admin manages the content and people.", sets: {users.roles: [user, admin]}}
+      - {id: C, label: "Users, staff and an admin", description: "Staff handle day-to-day work; the admin sets things up.", sets: {users.roles: [user, staff, admin]}}
+    other: {enabled: true, placeholder: "Describe who will use it"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'custom'"
+    i18n:
+      hi:
+        text: "क्या ऐप का इस्तेमाल सब एक ही तरह से करेंगे?"
+        options: {A: "हाँ, एक ही तरह के उपयोगकर्ता", B: "उपयोगकर्ता और एक एडमिन", C: "उपयोगकर्ता, स्टाफ और एक एडमिन"}
+        other_placeholder: "बताइए कौन इस्तेमाल करेगा"
+        help: "इससे तय होता है कि कौन क्या देखेगा। बाद में और तरह के उपयोगकर्ता जोड़ सकते हैं।"
+      hi-Latn:
+        text: "Kya app ka istemal sab ek hi tarah se karenge?"
+        options: {A: "Haan, ek hi tarah ke users", B: "Users aur ek admin", C: "Users, staff aur ek admin"}
+        other_placeholder: "Bataiye kaun istemal karega"
+        help: "Isse tay hota hai ki kaun kya dekhega. Baad mein aur tarah ke users jod sakte hain."
+
+  - id: Q-feat-05
+    slot: scope.features
+    type: multi
+    text: "Which of these building blocks should your app have? I have ticked the usual ones."
+    help: "You can change this any time. Anything you leave out can be added later."
+    options:
+      - {id: list_detail, label: "Lists and detail pages", description: "Show items in a list and open one for more.", recommended: true, sets: {scope.features: [list_detail]}}
+      - {id: search, label: "Search", description: "People find things by typing.", recommended: true, sets: {scope.features: [search]}}
+      - {id: forms, label: "Forms", description: "People fill in and submit information.", sets: {scope.features: [forms]}}
+      - {id: auth_profile, label: "Accounts and profiles", description: "People sign in and have a profile.", recommended: true, sets: {scope.features: [auth_profile]}}
+      - {id: notifications, label: "Notifications", description: "Messages and reminders on the phone.", sets: {scope.features: [notifications]}}
+      - {id: settings, label: "Settings", description: "A place to change preferences.", recommended: true, sets: {scope.features: [settings]}}
+      - {id: media_gallery, label: "Photos and media", description: "Show a gallery of photos or videos.", sets: {scope.features: [media_gallery]}}
+      - {id: maps, label: "Maps", description: "Show places on a map.", sets: {scope.features: [maps]}}
+      - {id: payments_mock, label: "Practice payments", description: "A pretend checkout to try the flow.", sets: {scope.features: [payments_mock]}}
+    other: {enabled: true, placeholder: "Add my own"}
+    skip: {enabled: true}
+    ask_if: "idea.archetype == 'custom'"
+    i18n:
+      hi:
+        text: "आपके ऐप में इनमें से कौन से बुनियादी हिस्से होने चाहिए? मैंने आम हिस्सों पर निशान लगा दिए हैं।"
+        options: {list_detail: "सूची और विवरण पेज", search: "खोज", forms: "फ़ॉर्म", auth_profile: "अकाउंट और प्रोफ़ाइल", notifications: "नोटिफिकेशन", settings: "सेटिंग", media_gallery: "फ़ोटो और मीडिया", maps: "नक्शे", payments_mock: "प्रैक्टिस भुगतान"}
+        other_placeholder: "अपना जोड़िए"
+        help: "आप इसे कभी भी बदल सकते हैं। जो अभी छोड़ेंगे उसे बाद में जोड़ सकते हैं।"
+      hi-Latn:
+        text: "Aapke app mein inmein se kaun se basic hisse hone chahiye? Maine aam hisson par nishaan laga diye hain."
+        options: {list_detail: "List aur detail pages", search: "Search", forms: "Forms", auth_profile: "Account aur profile", notifications: "Notifications", settings: "Settings", media_gallery: "Photos aur media", maps: "Maps", payments_mock: "Practice payments"}
+        other_placeholder: "Apna jodiye"
+        help: "Aap ise kabhi bhi badal sakte hain. Jo abhi chhodenge use baad mein jod sakte hain."
+
+  - id: Q-look-05
+    slot: design.direction
+    type: visual3
+    text: "Which look feels closest to your app?"
+    help: "This sets colors, shapes and feel. You can change it later."
+    options:
+      - {id: A, label: "Clean and bright", description: "Light, fresh and easy to read.", preview: "theme:clean-bright", recommended: true, sets: {design.direction: clean-bright}}
+      - {id: B, label: "Simple and minimal", description: "Black, white and grey with lots of space.", preview: "theme:minimal-mono", sets: {design.direction: minimal-mono}}
+      - {id: C, label: "Vibrant and playful", description: "Bright colors and a lively feel.", preview: "theme:vibrant-playful", sets: {design.direction: vibrant-playful}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "कौन सा लुक आपके ऐप के सबसे करीब है?"
+        options: {A: "साफ़ और चमकीला", B: "सादा और मिनिमल", C: "रंगीन और मज़ेदार"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+        help: "इससे रंग, आकार और अंदाज़ तय होता है। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Kaun sa look aapke app ke sabse kareeb hai?"
+        options: {A: "Saaf aur chamakdaar", B: "Saada aur minimal", C: "Rangeen aur mazedaar"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+        help: "Isse rang, aakaar aur andaaz tay hota hai. Baad mein badal sakte hain."
+
+  - id: Q-look-15
+    slot: design.direction
+    type: visual3
+    text: "Here are three more looks. Which one is closest?"
+    options:
+      - {id: A, label: "Warm and friendly", description: "Soft, welcoming colors and rounded shapes.", preview: "theme:warm-friendly", recommended: true, sets: {design.direction: warm-friendly}}
+      - {id: B, label: "Bold and dark", description: "Dark screens with strong contrast.", preview: "theme:bold-dark", sets: {design.direction: bold-dark}}
+      - {id: C, label: "Calm and professional", description: "Steady blues and a tidy, business-like feel.", preview: "theme:corporate-calm", sets: {design.direction: corporate-calm}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "ये रहे तीन और लुक। कौन सा सबसे करीब है?"
+        options: {A: "गर्म और दोस्ताना", B: "गहरा और दमदार", C: "शांत और प्रोफ़ेशनल"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+      hi-Latn:
+        text: "Ye rahe teen aur look. Kaun sa sabse kareeb hai?"
+        options: {A: "Garam aur dostana", B: "Gehra aur damdaar", C: "Shaant aur professional"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+
+  - id: Q-fix-05
+    slot: auth.method
+    type: choice3
+    kind: resolution
+    text: "You said people do not need to sign in, but accounts and profiles are on the feature list. What should we do?"
+    help: "Accounts and profiles need people to sign in."
+    options:
+      - {id: A, label: "Add a simple sign-in", description: "A short code sent to email or phone.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Browse freely, sign in only when needed", description: "People sign in when they want a profile or to save something.", sets: {auth.method: guest_first}}
+      - {id: C, label: "No sign-in, leave out accounts", description: "We remove accounts and profiles.", sets: {auth.method: none, scope.features: [list_detail, search, settings]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "auth.method == 'none' and 'auth_profile' in scope.features"
+    i18n:
+      hi:
+        text: "आपने कहा कि लोगों को साइन इन करने की ज़रूरत नहीं, लेकिन अकाउंट और प्रोफ़ाइल फ़ीचर सूची में हैं। हम क्या करें?"
+        options: {A: "एक सरल साइन-इन जोड़ें", B: "खुलकर देखें, ज़रूरत पर ही साइन इन करें", C: "साइन-इन नहीं, अकाउंट हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "अकाउंट और प्रोफ़ाइल के लिए लोगों को साइन इन करना पड़ता है।"
+      hi-Latn:
+        text: "Aapne kaha ki logon ko sign in karne ki zaroorat nahi, lekin account aur profile feature list mein hain. Hum kya karein?"
+        options: {A: "Ek simple sign-in jodein", B: "Khulkar dekhein, zaroorat par hi sign in karein", C: "Sign-in nahi, accounts hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Account aur profile ke liye logon ko sign in karna padta hai."
+
+inspiration_cards:
+  - id: Q-insp-05
+    slot: idea.summary
+    type: choice3
+    kind: inspiration
+    text: "Here are a few ideas to get you started. Pick the closest one, or describe your own."
+    options:
+      - {id: A, label: "Community events", description: "A list of local events with details and reminders.", recommended: true, sets: {idea.summary: "A community app listing local events with details and reminders", idea.archetype: custom}}
+      - {id: B, label: "Habit tracker", description: "People log their daily habits.", sets: {idea.summary: "A habit tracker app where people log daily habits", idea.archetype: custom}}
+      - {id: C, label: "Local places guide", description: "Places to visit, shown on a map.", sets: {idea.summary: "A guide app listing local places on a map", idea.archetype: custom}}
+    other: {enabled: true, placeholder: "Describe your own idea"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "शुरुआत के लिए कुछ आइडिया ये रहे। सबसे करीब वाला चुनिए, या अपना बताइए।"
+        options: {A: "सामुदायिक कार्यक्रम", B: "आदत ट्रैकर", C: "स्थानीय जगहों की गाइड"}
+        other_placeholder: "अपना आइडिया बताइए"
+      hi-Latn:
+        text: "Shuruaat ke liye kuch ideas ye rahe. Sabse kareeb wala chuniye, ya apna bataiye."
+        options: {A: "Community events", B: "Habit tracker", C: "Local jagahon ki guide"}
+        other_placeholder: "Apna idea bataiye"
+
+starter_chips:
+  - {id: chip-custom-01, label: "A community events app", prefill: "I want an app that lists events in my community", archetype: custom, sets: {idea.archetype: custom}, i18n: {hi: "कम्युनिटी इवेंट ऐप", hi-Latn: "Community events app"}}
+  - {id: chip-custom-02, label: "A habit tracker", prefill: "I want a habit tracker app", archetype: custom, sets: {idea.archetype: custom}, i18n: {hi: "आदत ट्रैकर", hi-Latn: "Habit tracker"}}
+  - {id: chip-custom-03, label: "A recipe collection", prefill: "I want an app to keep and share my recipes", archetype: custom, sets: {idea.archetype: custom}, i18n: {hi: "रेसिपी संग्रह", hi-Latn: "Recipe collection"}}
+  - {id: chip-custom-04, label: "A photo gallery with places", prefill: "I want an app with a photo gallery and a map of places", archetype: custom, sets: {idea.archetype: custom}, i18n: {hi: "जगहों के साथ फ़ोटो गैलरी", hi-Latn: "Jagahon ke saath photo gallery"}}
+  - {id: chip-custom-05, label: "A local places guide", prefill: "I want a guide app for places in my city", archetype: custom, sets: {idea.archetype: custom}, i18n: {hi: "स्थानीय जगहों की गाइड", hi-Latn: "Local jagahon ki guide"}}
+  - {id: chip-custom-06, label: "A study notes organiser", prefill: "I want an app to organise my study notes", archetype: custom, sets: {idea.archetype: custom}, i18n: {hi: "पढ़ाई के नोट्स", hi-Latn: "Padhai ke notes"}}

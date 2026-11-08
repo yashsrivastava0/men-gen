@@ -1,0 +1,8 @@
+Kind: {{ kind }}. Language: {{ language }}. Maximum words: {{ max_words }}.
+{% if app_name %}
+App name: {{ app_name }}
+{% endif %}
+Facts:
+{% for f in facts %}
+- {{ f }}
+{% endfor %}

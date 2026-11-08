@@ -1,0 +1,178 @@
+{
+  "$defs": {
+    "ChangeOp": {
+      "additionalProperties": false,
+      "properties": {
+        "instruction": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Plain instruction for patch ops",
+          "title": "Instruction"
+        },
+        "kind": {
+          "enum": [
+            "set_slot",
+            "clear_slot",
+            "toggle_feature",
+            "add_screen",
+            "remove_screen",
+            "patch_screen",
+            "set_copy",
+            "toggle_research_item",
+            "toggle_assumption",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "slot_id": {
+          "anyOf": [
+            {
+              "enum": [
+                "idea.summary",
+                "idea.archetype",
+                "scope.apps",
+                "scope.features",
+                "users.roles",
+                "auth.method",
+                "design.direction",
+                "brand.name",
+                "brand.assets",
+                "design.accent",
+                "design.mode",
+                "design.nav_style",
+                "pay.model",
+                "pay.provider",
+                "data.source",
+                "behavior.offline",
+                "behavior.notifications",
+                "behavior.analytics",
+                "locale",
+                "a11y",
+                "compliance.flags",
+                "auth.sso",
+                "integrations.list",
+                "data.classification",
+                "regions",
+                "release.channel",
+                "approvers"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot Id"
+        },
+        "target_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Screen/feature/research id or null",
+          "title": "Target Id"
+        },
+        "value_bool": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Bool"
+        },
+        "value_list": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value List"
+        },
+        "value_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Text"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "ChangeOp",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "clarify_question": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Clarify Question"
+    },
+    "confidence": {
+      "default": 0.8,
+      "title": "Confidence",
+      "type": "number"
+    },
+    "is_approval": {
+      "default": false,
+      "title": "Is Approval",
+      "type": "boolean"
+    },
+    "ops": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ChangeOp"
+      },
+      "title": "Ops",
+      "type": "array"
+    },
+    "understood": {
+      "title": "Understood",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "understood"
+  ],
+  "title": "C14Output",
+  "type": "object"
+}

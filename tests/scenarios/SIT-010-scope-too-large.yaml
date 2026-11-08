@@ -1,0 +1,12 @@
+# SIT-010: Scope too large
+# Detection: Size estimate over cap
+# Behavior:  Propose phase one plus a Phase 2 backlog
+id: SIT-010-scope-too-large
+situation: "Scope too large"
+mode: guided
+steps:
+  - user: "We run a marketplace. Customers browse shops, order, pay and track."
+    repeat_tail: {text: " Customers browse shops, order, pay and track.", times: 120}
+    expect:
+      text_contains: ["first phase"]
+      state: DISCOVERING

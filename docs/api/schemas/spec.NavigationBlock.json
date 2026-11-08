@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "NavNode": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "default": "public",
+          "title": "Auth",
+          "type": "string"
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/NavNode"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "tabs",
+            "stack",
+            "modal",
+            "screen",
+            "auth_gate"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "screen": {
+          "anyOf": [
+            {
+              "pattern": "^SCR-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screen"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "kind"
+      ],
+      "title": "NavNode",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "root": {
+      "$ref": "#/$defs/NavNode"
+    }
+  },
+  "required": [
+    "root"
+  ],
+  "title": "NavigationBlock",
+  "type": "object"
+}

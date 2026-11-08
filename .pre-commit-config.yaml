@@ -1,0 +1,19 @@
+# Optional: `just hooks` installs these. Not installed by `just bootstrap` (agents commit often).
+repos:
+  - repo: local
+    hooks:
+      - id: ruff
+        name: ruff check
+        entry: uv run ruff check --fix
+        language: system
+        types: [python]
+      - id: ruff-format
+        name: ruff format
+        entry: uv run ruff format
+        language: system
+        types: [python]
+      - id: no-env
+        name: refuse .env files
+        entry: python -c "import sys; sys.exit(1)"
+        language: system
+        files: '(^|/)\.env($|\.(?!example$))'

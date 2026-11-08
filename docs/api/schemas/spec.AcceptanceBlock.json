@@ -1,0 +1,15 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "checks": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Checks",
+      "type": "array"
+    }
+  },
+  "title": "AcceptanceBlock",
+  "type": "object"
+}

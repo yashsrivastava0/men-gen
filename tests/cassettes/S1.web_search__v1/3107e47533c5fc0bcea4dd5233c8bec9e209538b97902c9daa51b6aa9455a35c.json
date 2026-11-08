@@ -1,0 +1,166 @@
+{
+  "format": 1,
+  "key": "3107e47533c5fc0bcea4dd5233c8bec9e209538b97902c9daa51b6aa9455a35c",
+  "recorded_at": "2026-11-08T11:00:18.596798Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: SMS verification pricing limits consent mobile app authentication\nTopic: official documentation facts about one service or SDK (availability, Expo compatibility, caveats)\n"
+  },
+  "response": {
+    "text": "Firebase Authentication sends SMS one-time codes for phone sign-in. SMS is billed per message sent, and phone verification requires a Cloud Billing account; Firebase says there is no longer free SMS on the Spark plan. ([firebase.google.com](https://firebase.google.com/pricing?utm_source=openai))\n\nThe published limits include 3,000 verification SMS per project per day, 900 per minute, 50 per IP per minute and 500 per IP per hour. Firebase also rate-limits messages to individual numbers, and says limits can change without notice. ([firebase.google.com](https://firebase.google.com/docs/auth/limits?utm_source=openai))\n\nDevelopers should obtain users’ consent because Google stores submitted phone numbers to help prevent spam and abuse. Firebase also recommends telling users that verification texts may incur standard carrier rates; phone-number sign-in is less secure than other methods. ([firebase.google.com](https://firebase.google.com/docs/auth/web/phone-auth?authuser=19&hl=en&utm_source=openai))\n\nExpo’s authentication guide lists Firebase among the ecosystem’s providers generally, but cautions that some authentication integrations require native code and won’t work in Expo Go. The cited Expo overview does not specifically confirm Firebase phone-auth compatibility with Expo Go. ([docs.expo.dev](https://docs.expo.dev/guides/using-authentication/?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://firebase.google.com/pricing?utm_source=openai",
+        "title": "Firebase Pricing",
+        "start": 218,
+        "end": 296
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/limits?utm_source=openai",
+        "title": "Firebase Authentication Limits",
+        "start": 534,
+        "end": 621
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/web/phone-auth?authuser=19&hl=en&utm_source=openai",
+        "title": "Authenticate with Firebase with a Phone Number Using JavaScript",
+        "start": 894,
+        "end": 1007
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-authentication/?utm_source=openai",
+        "title": "Using authentication SDKs and libraries - Expo documentation",
+        "start": 1295,
+        "end": 1382
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/limits",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/pricing",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/faq-and-troubleshooting",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/ios/phone-auth?hl=en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/flutter/phone-auth?authuser=0&hl=en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/web/phone-auth?authuser=19&hl=en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/web/phone-auth?hl=en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/phone-number-verification?authuser=0",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/web/multi-factor",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/docs/auth/ios/multi-factor",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-authentication/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/downloads/gdpr/2019_Firebase_SOC3_Report.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/downloads/gdpr/2018_Firebase_SOC3_Report.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/downloads/gdpr/2017_Firebase_SOC3_Report.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/downloads/gdpr/DEC2020_Firebase_SOC3_Report.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://firebase.google.com/downloads/gdpr/JUNE2021_Firebase_SOC3_Report.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12909,
+      "cached_input_tokens": 4442,
+      "output_tokens": 333,
+      "reasoning_tokens": 73,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

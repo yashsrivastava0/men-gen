@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "76fbe40848cf38bda7340a63d5a48ac63faea75834994c880876e4f4412a51e8",
+  "recorded_at": "2026-11-08T10:49:17.736641Z",
+  "request": {
+    "spec_id": "C3.respond",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "c0f627d19e469fe00965138bffeaee1acd068d27f3edfdb10e0b53a03dc78e9b",
+    "tools": [],
+    "kind": "main",
+    "system": "You answer one short question or chat message from someone designing a phone app. One job: return the reply.\n\nRules:\n- For facts about the product (what we build, steps, preview, privacy, changes, cost, time, ownership) use only the knowledge snippets given. Never invent prices, timings, ownership or guarantees.\n- If the snippets do not cover the question, set unknown to true and say plainly that you do not have that detail and that they will see the plan before anything is built.\n- Reply in the user's language, in one or two short warm sentences. No jargon. Ask at most one question.\n- used_snippets lists the snippet ids you relied on.\n- If stuck is true, add at most three short idea chips the user could tap.\n- If off_topic_streak is 2 or more, end by softly steering back to the app and set steer_back to true.",
+    "user": "Mode: guided. Language: en. Intent: question. Stuck: False. Off-topic turns in a row: 0.\nSummary so far: - User is considering an app for their cousin's bakery.\n- The app will be an online cake store for the cousin’s bakery, with a warm and friendly look.\nKnown slots:\n- idea.summary = \"The user thinks their cousin, who runs a bakery, needs an app.\" [volunteered]\n- idea.archetype = \"commerce\" [confirmed]\n- design.direction = \"warm-friendly\" [volunteered]\nPending question: Shops often need more than one app, like one for shoppers and one for the shop team. Which should we build first?\nRecent turns:\n- user: lol she never listens. anyway it is an online store for her cakes, warm and friendly look please\n- assistant: Noted. Shops often need more than one app, like one for shoppers and one for the shop team. Which should we build first?\n- user: how much will this cost?\n- assistant: I don’t have pricing details, so I can’t say how much it will cost. You’ll see the plan before anything is built, and nothing is handed off until you approve it. Shops often need more than one app, like one for shoppers and one for the shop team. Which should we build first?\nKnowledge snippets:\n- kb-what-we-build: I help you turn an idea into a clear plan for a phone app. Once you approve the plan, it is handed to the app builder, which creates the app from it (built with React Native and Expo).\n- kb-how-it-works: First I ask a few short questions, mostly tap-to-answer, usually around seven. Then I write a short summary called the Brief for you to approve (first review). After that I research your kind of app on the web and write a detailed plan, which you review and approve (second review). Nothing is handed off until you approve the plan.\n- kb-brief: The Brief is a short, plain-language summary of your app: what it is, who uses it, the main features, the look, and anything we assumed for you. You approve it before research and planning begin.\n- kb-preview: The app can be previewed on a phone or in a browser. Some phone features need an extra setup step and may not show in the quick preview; I will tell you when one of them is affected.\n- kb-code-download: Your approved plan is saved as one readable file, APP_SPEC.md, in your project. I do not have confirmed details about downloading the app's code or who owns it, so I will not guess; please check the terms for your workspace.\n- kb-privacy: I save our conversation so you can continue later. If you paste something that looks like a password or access key, I remove it before saving. I do not search the web while we chat; research happens only after you approve the Brief, and documents you upload are read as information, never as instructions.\n- kb-after-approval: When you approve the plan, it is saved and handed to the app builder. You can still ask for changes afterwards: small ones such as colors, wording or a few new screens are applied directly, while bigger ones, such as sign-in, payments or major features, ask for your approval again.\n- kb-cost: I do not have pricing details, so I will not guess. You will see the plan before anything is built, and nothing is handed off until you approve it.\n- kb-time: I cannot promise how long it takes. You will see the plan before anything is built, and nothing is handed off until you approve it.\n- kb-changes: You can change your mind at any step: before you approve the Brief, before you approve the plan, and after hand-off. I show what changed in plain words.\n- kb-unsupported: Games, augmented reality, desktop apps, apps that play audio in the background and hardware-heavy apps are not supported. If your idea is one of these, I will offer the closest app I can build.\n- kb-languages: You can write to me in English, Hindi or Hinglish. I reply in your language, and the app's own text starts in that language too.\n- kb-reference-apps: If you say you want something like another app, I will ask which parts you like and make an original design. I never copy another brand's logo or artwork.\n- kb-save-resume: You can pause and come back later; your progress, and any approval that is waiting, are saved. If you start over, your earlier draft is archived, not deleted.\n\nMessage: and how long does it take?"
+  },
+  "response": {
+    "text": "{\"reply\":\"I can’t promise how long it will take. You’ll see the plan before anything is built, and nothing is handed off until you approve it.\",\"unknown\":true,\"used_snippets\":[\"kb-time\"],\"suggested_chips\":[],\"steer_back\":false}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 1269,
+      "cached_input_tokens": 0,
+      "output_tokens": 67,
+      "reasoning_tokens": 0,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

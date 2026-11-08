@@ -1,0 +1,154 @@
+{
+  "format": 1,
+  "key": "3d1a519c0fc9e59f385bdd1b9c56c5b1cf41fb4a87957b6110d728f21e5628a9",
+  "recorded_at": "2026-11-08T10:56:22.743607Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: Expo mobile app payment SDK options checkout integration caveats\nTopic: official documentation facts about one service or SDK (availability, Expo compatibility, caveats)\n"
+  },
+  "response": {
+    "text": "Expo lists `@stripe/stripe-react-native` as supported for native iOS and Android payment flows; install the Expo-compatible version with `npx expo install`. Its Google Pay and Apple Pay features require a development build and are not supported in Expo Go. Redirect-based checkout also needs a URL scheme configured in Stripe initialization. ([docs.expo.dev](https://docs.expo.dev/versions/latest/sdk/stripe/?utm_source=openai))\n\nFor digital goods or features consumed in the app, Expo’s IAP guide lists `react-native-purchases` and `expo-iap`; these use native code and require a development build rather than Expo Go. ([docs.expo.dev](https://docs.expo.dev/guides/in-app-purchases/?utm_source=openai))\n\nApple’s guidelines say physical goods or services consumed outside the app should be paid for using methods other than in-app purchase, such as Apple Pay or card entry. Digital-purchase payment options can vary by storefront and applicable entitlements. ([developer.apple.com](https://developer.apple.com/app-store/review/guidelines/?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://docs.expo.dev/versions/latest/sdk/stripe/?utm_source=openai",
+        "title": "@stripe/stripe-react-native - Expo documentation",
+        "start": 342,
+        "end": 428
+      },
+      {
+        "url": "https://docs.expo.dev/guides/in-app-purchases/?utm_source=openai",
+        "title": "Using in-app purchases - Expo documentation",
+        "start": 620,
+        "end": 703
+      },
+      {
+        "url": "https://developer.apple.com/app-store/review/guidelines/?utm_source=openai",
+        "title": "App Review Guidelines - Apple Developer",
+        "start": 959,
+        "end": 1058
+      },
+      {
+        "url": "https://docs.expo.dev/versions/latest/sdk/stripe/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/guides/in-app-purchases/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/app-store/review/guidelines/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/develop/development-builds/faq/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/documentation/storekit/external-purchase",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/faq/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/help/app-store-connect/manage-app-information/complete-the-digital-goods-and-services-questionnaire",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-authentication/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/develop/development-builds/introduction/?buildenv=build-with-expo-services",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/design/human-interface-guidelines/apple-in-app-purchase",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/get-started/set-up-your-environment/?buildEnv=local&mode=development-build",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/build/setup/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/programs/information/Apple_Developer_Program_Information_8_12_15.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/contact/request/download/StoreKit_External_Purchase_Entitlement_Addendum_KR.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/contact/request/download/external/StoreKit-External-Purchase-Link-%28EU%29-Entitlement-Addendum.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://developer.apple.com/contact/request/download/alternate_eu_terms_addendum.pdf?trk=public_post_comment-text",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12783,
+      "cached_input_tokens": 4442,
+      "output_tokens": 302,
+      "reasoning_tokens": 90,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

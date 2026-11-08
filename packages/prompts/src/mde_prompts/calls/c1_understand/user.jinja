@@ -1,0 +1,44 @@
+Mode: {{ mode }}. Session state: {{ state }}{% if gate_open %}, open gate: {{ gate_open }}{% endif %}.
+{% if language_hint %}
+Language so far: {{ language_hint }}.
+{% endif %}
+{% if summary %}
+Summary so far: {{ summary }}
+{% endif %}
+{% if archetypes %}
+App types:
+{% for a in archetypes %}
+- {{ a.id }}: {{ a.label }}
+{% endfor %}
+{% endif %}
+{% if slot_catalog %}
+Slot catalog:
+{% for s in slot_catalog %}
+- {{ s.slot_id }} ({{ s.kind }}){% if s.hint %}: {{ s.hint }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if slots %}
+Known slots:
+{% for s in slots %}
+- {{ s.slot_id }} = {{ s.value }} [{{ s.state }}]
+{% endfor %}
+{% endif %}
+{% if pending_card %}
+Pending card {{ pending_card.card_id }} for {{ pending_card.slot }} ({{ pending_card.type }}): {{ pending_card.text }}
+{% for o in pending_card.options %}
+- {{ o.id }}: {{ o.label }}
+{% endfor %}
+{% endif %}
+{% if recent_turns %}
+Recent turns:
+{% for t in recent_turns %}
+- {{ t.role }}: {{ t.text }}
+{% endfor %}
+{% endif %}
+
+Message: {{ message }}
+{% if attachment_text %}
+Attachment:
+{{ attachment_text }}
+{% endif %}

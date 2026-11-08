@@ -1,0 +1,100 @@
+{
+  "$defs": {
+    "OptionChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionChoice",
+      "type": "object"
+    },
+    "SensitiveDomainOption": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "SensitiveDomainOption",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "archetypes": {
+      "items": {
+        "$ref": "#/$defs/OptionChoice"
+      },
+      "title": "Archetypes",
+      "type": "array"
+    },
+    "document_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Document Text"
+    },
+    "idea_text": {
+      "title": "Idea Text",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "sensitive_domains": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SensitiveDomainOption"
+      },
+      "title": "Sensitive Domains",
+      "type": "array"
+    },
+    "unsupported_types": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OptionChoice"
+      },
+      "title": "Unsupported Types",
+      "type": "array"
+    }
+  },
+  "required": [
+    "idea_text",
+    "archetypes"
+  ],
+  "title": "C2Input",
+  "type": "object"
+}

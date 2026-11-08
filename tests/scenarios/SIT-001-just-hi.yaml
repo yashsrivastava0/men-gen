@@ -1,0 +1,25 @@
+# SIT-001: Just "hi"
+# Detection: Greeting intent
+# Behavior:  Canned greeting, starter chips, input box
+id: SIT-001-just-hi
+situation: "Just \"hi\""
+mode: guided
+integration: true
+steps:
+  - user: "hi"
+    expect:
+      state: DISCOVERING
+      events:
+        - {type: assistant_message, text_contains: "What would you like to build"}
+      llm_calls: {total: 0}
+      pending_card: none
+  - user: "Hello!"
+    expect:
+      state: DISCOVERING
+      llm_calls: {total: 0}
+      events:
+        - {type: assistant_message}
+final:
+  llm_calls_total: {total: 0}
+  spec_ready: 0
+  brief_version: none

@@ -1,0 +1,5 @@
+id: food_delivery
+title: Restaurant ordering and delivery
+archetype: food_delivery
+mode: guided
+opening: "I run a restaurant and want customers to order food for delivery"

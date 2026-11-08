@@ -1,0 +1,44 @@
+# Regulated organization (banking, health): compliance and data classification are must-confirm,
+# research is limited to named sources, data stays in approved regions, only approved model
+# providers are used and the whole file is reviewed at Gate 2. Example values only.
+version: 1
+id: regulated-bank
+org: example-regional-bank
+description: Regulated organization. Compliance, data classification, regions and identity are must-confirm. Research limited to approved public sources and internal libraries. Regional data handling, approved model providers only, full-file review by security and compliance at Gate 2.
+mode: enterprise
+inherits: platform-default@1
+slot_policy:
+  compliance.flags: must
+  data.classification: must
+  regions: must
+  auth.sso: must
+  pay.model: must
+  integrations.list: must
+  approvers: must
+  release.channel: should
+  design.direction: should
+research:
+  enabled: true
+  depth: standard
+  web:
+    allow_company_name_in_queries: false
+    allowed_domains: [docs.expo.dev, reactnative.dev, developer.apple.com, developer.android.com, owasp.org, nist.gov]
+    blocked_domains: [pastebin.com, reddit.com, quora.com, facebook.com, x.com, t.me]
+  connectors: [policy_library, risk_register, docs]
+gates:
+  brief: {approvers: [requester, product_owner]}
+  plan: {approvers: [product_owner, security_officer, compliance_officer], full_file_view: true, reminder_hours: 24}
+  post_handoff:
+    heavy_if: [scope, auth, pay, integrations, data, roles]
+    max_new_screens_light: 3
+limits:
+  max_screens: 50
+  max_cards: 30
+  max_turns: 60
+  session_budget_usd: "1.00"
+  research_budget_usd: "0.60"
+  max_new_screens_light: 3
+model_policy: {providers: [approved-a], retention: none}
+banned_libraries: [react-native-code-push]
+allowed_regions: [eu-west, ap-south]
+role_precedence: [compliance_officer, security_officer, product_owner, requester]

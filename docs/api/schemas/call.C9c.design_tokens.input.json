@@ -1,0 +1,284 @@
+{
+  "$defs": {
+    "BriefContext": {
+      "additionalProperties": false,
+      "description": "Compact approved-Brief view passed to research and spec-building calls.",
+      "properties": {
+        "app_summary": {
+          "title": "App Summary",
+          "type": "string"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "brand_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Name"
+        },
+        "brand_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Url"
+        },
+        "compliance_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Compliance Flags",
+          "type": "array"
+        },
+        "features": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "login": {
+          "default": "",
+          "title": "Login",
+          "type": "string"
+        },
+        "look": {
+          "default": "",
+          "title": "Look",
+          "type": "string"
+        },
+        "mode": {
+          "default": "guided",
+          "enum": [
+            "guided",
+            "enterprise"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "regions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "app_summary",
+        "archetype"
+      ],
+      "title": "BriefContext",
+      "type": "object"
+    },
+    "DesignBaseline": {
+      "additionalProperties": false,
+      "properties": {
+        "color_tokens_light": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/KeyValue"
+          },
+          "title": "Color Tokens Light",
+          "type": "array"
+        },
+        "direction": {
+          "title": "Direction",
+          "type": "string"
+        },
+        "font_family": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font Family"
+        },
+        "radius": {
+          "default": 12,
+          "title": "Radius",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "direction"
+      ],
+      "title": "DesignBaseline",
+      "type": "object"
+    },
+    "KeyValue": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "KeyValue",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    },
+    "ResearchAdditionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_to": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applies To"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "feature",
+            "pattern",
+            "compliance",
+            "integration",
+            "brand"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "title",
+        "rationale"
+      ],
+      "title": "ResearchAdditionLite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "baseline": {
+      "$ref": "#/$defs/DesignBaseline"
+    },
+    "brand_colors": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Brand Colors",
+      "type": "array"
+    },
+    "brand_tone": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Brand Tone",
+      "type": "array"
+    },
+    "brief": {
+      "$ref": "#/$defs/BriefContext"
+    },
+    "research": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/ResearchAdditionLite"
+      },
+      "title": "Research",
+      "type": "array"
+    }
+  },
+  "required": [
+    "brief",
+    "baseline"
+  ],
+  "title": "C9cInput",
+  "type": "object"
+}

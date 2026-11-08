@@ -1,0 +1,382 @@
+# Canned Research Note drafts for the offline C8 mock, one block per archetype plus `common`.
+#
+# A draft is only emitted when at least one fact in the call's input matches one of its `match`
+# words (case-insensitive substring of the fact statement); its fact_ids are the matching facts.
+# Features the Brief already has are skipped. `feature_id` values exist in the matching Domain Pack
+# (checked by the tests); `applies_to` is "scope.features:<feature id>" for a feature, or a spec
+# section / slot id for everything else.
+version: 1
+archetypes:
+  commerce:
+    gap_phrase: online shopping returns and refunds
+    suggestions:
+    - kind: feature
+      feature_id: reviews
+      title: Product ratings and reviews
+      rationale: Similar shops show ratings and reviews on product pages to build trust, often limited to verified
+        buyers.
+      match:
+      - reviews
+      default_included: true
+      applies_to: scope.features:reviews
+    - kind: feature
+      feature_id: favorites
+      title: Favorites and wish list
+      rationale: Saved favorites help shoppers come back to products later and are common in similar shops.
+      match:
+      - favorites
+      - wish list
+      default_included: true
+      applies_to: scope.features:favorites
+    - kind: feature
+      feature_id: loyalty
+      title: Loyalty points
+      rationale: A minority of shop apps reward repeat purchases with points, which needs extra backend work.
+      match:
+      - loyalty
+      default_included: false
+      applies_to: scope.features:loyalty
+    - kind: feature
+      feature_id: support_chat
+      title: Help and chat on the order screen
+      rationale: Many shops offer a help or chat entry for delivery questions.
+      match:
+      - help or chat
+      default_included: false
+      applies_to: scope.features:support_chat
+    - kind: pattern
+      title: Guest checkout
+      rationale: Letting people pay without creating an account first is a common way to reduce drop-off.
+      match:
+      - guest checkout
+      default_included: true
+      applies_to: screens
+    - kind: pattern
+      title: Order status timeline
+      rationale: Similar apps show order progress as a clear timeline from placed to delivered.
+      match:
+      - status timeline
+      default_included: true
+      applies_to: screens
+    - kind: pattern
+      title: Return and refund request
+      rationale: Shops usually let buyers request a return from the order screen and show a refund status.
+      match:
+      - return
+      default_included: false
+      applies_to: screens
+  food_delivery:
+    gap_phrase: food ordering delivery fees and minimum order
+    suggestions:
+    - kind: feature
+      feature_id: ratings
+      title: Ratings for restaurants and dishes
+      rationale: Similar apps collect ratings after delivery to help other customers choose.
+      match:
+      - ratings
+      default_included: true
+      applies_to: scope.features:ratings
+    - kind: feature
+      feature_id: promo_codes
+      title: Promo codes
+      rationale: Discounts are frequent in food ordering apps but need rules for stacking and expiry.
+      match:
+      - promo codes
+      default_included: false
+      applies_to: scope.features:promo_codes
+    - kind: feature
+      feature_id: saved_addresses
+      title: Saved delivery addresses
+      rationale: Saved addresses and quick reorder are widely offered.
+      match:
+      - saved delivery addresses
+      default_included: true
+      applies_to: scope.features:saved_addresses
+    - kind: feature
+      feature_id: live_order_tracking
+      title: Live order tracking
+      rationale: A map with an estimated arrival time is a standard feature in delivery apps.
+      match:
+      - live order tracking
+      default_included: true
+      applies_to: scope.features:live_order_tracking
+    - kind: feature
+      feature_id: push_notifications
+      title: Order status updates by push
+      rationale: Delivery apps often send status updates as push notifications.
+      match:
+      - push notifications
+      default_included: true
+      applies_to: scope.features:push_notifications
+    - kind: pattern
+      title: Item options sheet
+      rationale: Size, extras and notes are chosen in a sheet before the item is added to the cart.
+      match:
+      - item options
+      default_included: true
+      applies_to: screens
+    - kind: pattern
+      title: Delivery fee breakdown
+      rationale: Similar apps show the delivery fee and any minimum order before checkout.
+      match:
+      - delivery fee
+      default_included: false
+      applies_to: screens
+  booking_services:
+    gap_phrase: appointment booking cancellation fees and no-show handling
+    suggestions:
+    - kind: feature
+      feature_id: reminders
+      title: Appointment reminders
+      rationale: Reminders by push or text message reduce no-shows in similar booking apps.
+      match:
+      - reminders
+      default_included: true
+      applies_to: scope.features:reminders
+    - kind: feature
+      feature_id: reschedule_cancel
+      title: Reschedule and cancel
+      rationale: Changing or cancelling a booking in the app, with a clear cutoff, is widely expected.
+      match:
+      - rescheduling
+      default_included: true
+      applies_to: scope.features:reschedule_cancel
+    - kind: feature
+      feature_id: memberships
+      title: Memberships and session packages
+      rationale: Some providers sell packages of sessions, which adds billing complexity.
+      match:
+      - memberships
+      default_included: false
+      applies_to: scope.features:memberships
+    - kind: feature
+      feature_id: reviews
+      title: Reviews of providers
+      rationale: Reviews help new customers choose a provider.
+      match:
+      - reviews of providers
+      default_included: true
+      applies_to: scope.features:reviews
+    - kind: feature
+      feature_id: provider_profiles
+      title: Provider profiles
+      rationale: Profiles with photo, specialties and ratings help customers choose.
+      match:
+      - provider profiles
+      default_included: true
+      applies_to: scope.features:provider_profiles
+    - kind: pattern
+      title: Three-step booking flow
+      rationale: Choosing the service, picking a time and confirming is the most common booking pattern.
+      match:
+      - three-step
+      default_included: true
+      applies_to: screens
+    - kind: pattern
+      title: Cancellation window shown before confirming
+      rationale: Booking apps state the cancellation window and any fee before the customer confirms.
+      match:
+      - cancellation window
+      default_included: false
+      applies_to: screens
+  internal_workforce:
+    gap_phrase: field staff leave and expense approvals
+    suggestions:
+    - kind: feature
+      feature_id: forms_checklists
+      title: Forms and checklists on site
+      rationale: Staff complete forms and checklists on site, sometimes with photos, in most workforce apps.
+      match:
+      - forms and checklists
+      default_included: true
+      applies_to: scope.features:forms_checklists
+    - kind: feature
+      feature_id: offline_sync
+      title: Offline use for field staff
+      rationale: Signal is often poor on site, so changes are kept and synced when a connection returns.
+      match:
+      - offline
+      default_included: true
+      applies_to: scope.features:offline_sync
+    - kind: feature
+      feature_id: approvals
+      title: Approvals inside the app
+      rationale: Leave or expense requests are routed to a manager in the app.
+      match:
+      - approvals
+      default_included: true
+      applies_to: scope.features:approvals
+    - kind: feature
+      feature_id: timesheets
+      title: Timesheets
+      rationale: Timesheets appear less often in similar apps.
+      match:
+      - timesheets
+      default_included: false
+      applies_to: scope.features:timesheets
+    - kind: feature
+      feature_id: directory
+      title: Staff directory
+      rationale: A staff directory appears less often in similar apps.
+      match:
+      - directories
+      default_included: false
+      applies_to: scope.features:directory
+    - kind: feature
+      feature_id: announcements
+      title: Company announcements
+      rationale: Notices from the company are commonly shown on the home screen.
+      match:
+      - announcements
+      default_included: true
+      applies_to: scope.features:announcements
+    - kind: integration
+      title: Company single sign-on
+      rationale: Sign-in through the company's single sign-on is the norm for employee apps.
+      match:
+      - single sign-on
+      default_included: true
+      applies_to: auth.sso
+    - kind: pattern
+      title: Role-based views
+      rationale: Managers see team items that other staff cannot.
+      match:
+      - role-based
+      default_included: true
+      applies_to: roles
+    - kind: pattern
+      title: Request status with one-tap approval
+      rationale: Approval flows show pending, approved or rejected and let managers approve in one tap.
+      match:
+      - pending, approved
+      default_included: false
+      applies_to: screens
+  custom:
+    gap_phrase: everyday app settings screens
+    suggestions:
+    - kind: feature
+      feature_id: forms
+      title: Forms to collect information
+      rationale: Forms are a common building block in general-purpose apps.
+      match:
+      - forms for collecting
+      default_included: true
+      applies_to: scope.features:forms
+    - kind: feature
+      feature_id: notifications
+      title: Notifications
+      rationale: Notifications keep users informed and are usually optional in settings.
+      match:
+      - notifications keep
+      default_included: true
+      applies_to: scope.features:notifications
+    - kind: feature
+      feature_id: media_gallery
+      title: Photo gallery
+      rationale: Photo galleries are used when the content is visual.
+      match:
+      - photo galleries
+      default_included: false
+      applies_to: scope.features:media_gallery
+    - kind: feature
+      feature_id: maps
+      title: Map view
+      rationale: Map views are used when content is based on location.
+      match:
+      - map views
+      default_included: false
+      applies_to: scope.features:maps
+    - kind: feature
+      feature_id: search
+      title: Search box
+      rationale: A search box is part of the usual list and detail layout.
+      match:
+      - search box
+      default_included: true
+      applies_to: scope.features:search
+    - kind: pattern
+      title: Bottom tab navigation
+      rationale: Three to five bottom tabs are the most common layout for mobile apps.
+      match:
+      - bottom tab
+      default_included: true
+      applies_to: navigation
+    - kind: pattern
+      title: Short onboarding
+      rationale: A skippable onboarding of two or three screens is widely used before sign-in.
+      match:
+      - onboarding
+      default_included: true
+      applies_to: screens
+    - kind: pattern
+      title: Empty, loading and error states
+      rationale: Every list screen is expected to handle these three states.
+      match:
+      - empty, loading
+      default_included: true
+      applies_to: screens
+    - kind: pattern
+      title: Grouped settings
+      rationale: Settings are usually grouped into account, notifications and privacy.
+      match:
+      - settings screens
+      default_included: false
+      applies_to: screens
+common:
+- kind: compliance
+  title: Ask for consent before collecting sensitive data
+  rationale: Similar apps explain what is collected and ask for clear consent first.
+  match:
+  - consent
+  default_included: true
+  applies_to: behavior
+- kind: compliance
+  title: Describe data use in the store disclosures
+  rationale: App stores ask developers to describe data use in privacy disclosures.
+  match:
+  - privacy disclosures
+  default_included: true
+  applies_to: behavior
+- kind: integration
+  title: Plan for a development build
+  rationale: Services with native code need an Expo development build instead of the stock preview client.
+  match:
+  - development build
+  default_included: true
+  applies_to: integrations
+- kind: integration
+  title: Send codes and reminders from the server
+  rationale: Text messages and reminders are sent through a provider API from a server, not from the app.
+  match:
+  - messaging provider
+  default_included: true
+  applies_to: integrations
+
+# compliance flag -> pointer title and the words that find its fact among the compliance facts
+pointers:
+  health_data_privacy: {title: Health data privacy and consent basics, words: [health]}
+  financial_data: {title: Card data handling basics, words: [card, payment]}
+  child_safety: {title: Children's data and parental consent basics, words: [children]}
+  identity_documents: {title: Identity document handling basics, words: [identity, age verification]}
+  precise_location: {title: Location consent basics, words: [location]}
+
+# integration facts -> one note per service (first matching rule wins; words are case-insensitive)
+integration_topics:
+  - {provider: Payment provider, words: [payment, card data]}
+  - {provider: Push notifications, words: [push notification]}
+  - {provider: Maps, words: [map views, map providers]}
+  - {provider: Single sign-on, words: [single sign-on]}
+  - {provider: Text message provider, words: [text message]}
+  - {provider: Support chat, words: [support chat, chat widgets]}
+  - {provider: Offline sync, words: [offline sync]}
+  - {provider: Third-party service, words: [sdk, native code]}
+
+# tone word -> style direction id (themes of mde_content); the first tone word that maps wins
+tone_directions:
+  friendly: warm-friendly
+  playful: vibrant-playful
+  bold: bold-dark
+  calm: corporate-calm
+  professional: corporate-calm
+  minimal: minimal-mono
+  clean: clean-bright

@@ -1,0 +1,49 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "audience": {
+      "title": "Audience",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "platforms": {
+      "default": [
+        "ios",
+        "android"
+      ],
+      "items": {
+        "enum": [
+          "ios",
+          "android"
+        ],
+        "type": "string"
+      },
+      "title": "Platforms",
+      "type": "array"
+    },
+    "purpose": {
+      "title": "Purpose",
+      "type": "string"
+    },
+    "tone": {
+      "default": "friendly",
+      "title": "Tone",
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "purpose",
+    "audience"
+  ],
+  "title": "AppBlock",
+  "type": "object"
+}

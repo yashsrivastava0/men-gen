@@ -1,0 +1,35 @@
+# Platform baseline: every other policy inherits from this one (directly or through an
+# organization profile). Values are spelled out so the base is data, not hidden code defaults.
+# `version` is file metadata (the N in "platform-default@N" used by `inherits`); the loader strips
+# it before validating the Policy model.
+version: 1
+id: platform-default
+org: platform
+description: Platform baseline. Light research after Gate 1, one requester approval per gate, 50-screen cap, no data retention at the model provider.
+mode: guided
+slot_policy: {}
+research:
+  enabled: true
+  depth: light
+  web:
+    allow_company_name_in_queries: true
+    allowed_domains: []
+    blocked_domains: []
+  connectors: []
+gates:
+  brief: {approvers: [requester], full_file_view: false}
+  plan: {approvers: [requester], full_file_view: false}
+  post_handoff:
+    heavy_if: [scope, auth, pay, integrations]
+    max_new_screens_light: 5
+limits:
+  max_screens: 50
+  max_cards: 10
+  max_turns: 30
+  session_budget_usd: "0.50"
+  research_budget_usd: "0.30"
+  max_new_screens_light: 5
+model_policy: {providers: [openai], retention: none}
+banned_libraries: []
+allowed_regions: []
+role_precedence: []

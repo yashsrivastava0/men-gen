@@ -1,0 +1,86 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "data_ref": {
+      "anyOf": [
+        {
+          "maxLength": 512,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Data Ref"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "filename": {
+      "maxLength": 255,
+      "title": "Filename",
+      "type": "string"
+    },
+    "media_type": {
+      "maxLength": 200,
+      "pattern": "^(?:[A-Za-z0-9][A-Za-z0-9.+_-]{0,62}/[A-Za-z0-9][A-Za-z0-9.+_-]{0,95}(?: ?; ?[A-Za-z0-9_-]{1,32}=(?:[A-Za-z0-9._+-]{1,64}|\\\"[A-Za-z0-9 ._+-]{0,64}\\\")){0,4})?$",
+      "title": "Media Type",
+      "type": "string"
+    },
+    "size_bytes": {
+      "title": "Size Bytes",
+      "type": "integer"
+    },
+    "text": {
+      "anyOf": [
+        {
+          "maxLength": 200000,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Text"
+    },
+    "type": {
+      "const": "upload_added",
+      "default": "upload_added",
+      "title": "Type",
+      "type": "string"
+    },
+    "upload_id": {
+      "maxLength": 200,
+      "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+      "title": "Upload Id",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "upload_id",
+    "filename",
+    "media_type",
+    "size_bytes"
+  ],
+  "title": "UploadAdded",
+  "type": "object"
+}

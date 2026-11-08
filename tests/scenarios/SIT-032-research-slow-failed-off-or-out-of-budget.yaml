@@ -1,0 +1,105 @@
+# SIT-032: Research slow, failed, off by policy or out of budget
+# Detection: Timeout, error, policy or metering
+# Behavior:  Skip it, build from Domain Pack defaults, say so in the Plan view
+id: SIT-032-research-slow-failed-off-or-out-of-budget
+situation: "Research slow, failed, off by policy or out of budget"
+mode: guided
+policies:
+  - {id: guided-no-research, mode: guided, inherits: "guided-default@1", research: {enabled: false}}
+variants:
+  failed:
+    provider_script:
+      S1.web_search:
+        - {error: provider_500, times: 40, optional: true}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          research: {status: unavailable}
+          notices: [research_unavailable]
+          plan: {research_status: unavailable}
+          spec: {screens_min: 8}
+          gate: {gate: plan}
+  slow_timeouts:
+    provider_script:
+      S1.web_search:
+        - {error: timeout, times: 40, optional: true}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          research: {status: unavailable}
+          plan: {research_status: unavailable}
+          spec: {screens_min: 8}
+  off_by_policy:
+    policy: guided-no-research
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          research: {status: unavailable, reason: policy}
+          llm_calls: {S1.web_search: 0, C6.plan_research: 0, C7.extract: 0, C8.synthesize_research: 0}
+          plan: {research_status: unavailable}
+          notices: [research_unavailable]
+          spec: {screens_min: 8}
+  out_of_budget:
+    gateway: {research_cap_usd: "0.00005"}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          research: {status: unavailable, reason: budget}
+          plan: {research_status: unavailable}
+          spec: {screens_min: 8}

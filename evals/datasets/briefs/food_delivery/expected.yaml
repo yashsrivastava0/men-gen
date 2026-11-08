@@ -1,0 +1,309 @@
+slots:
+  a11y:
+    value: standard
+    state: assumed
+  approvers:
+    value:
+    - requester
+    state: assumed
+  auth.method:
+    value: email_phone_code
+    state: confirmed
+  auth.sso:
+    value: not_needed
+    state: assumed
+  behavior.analytics:
+    value: false
+    state: assumed
+  behavior.notifications:
+    value: true
+    state: assumed
+  behavior.offline:
+    value: basic
+    state: assumed
+  brand.name:
+    value: Blue Basket
+    state: confirmed
+  data.classification:
+    value: internal
+    state: assumed
+  data.source:
+    value: generated
+    state: assumed
+  design.direction:
+    value: warm-friendly
+    state: confirmed
+  design.mode:
+    value: system
+    state: assumed
+  idea.archetype:
+    value: food_delivery
+    state: confirmed
+  idea.summary:
+    value: I run a restaurant and want customers to order food for delivery
+    state: volunteered
+  locale:
+    value: en
+    state: assumed
+  pay.model:
+    value: online
+    state: confirmed
+  pay.provider:
+    value: mock
+    state: assumed
+  release.channel:
+    value: internal
+    state: assumed
+  scope.apps:
+    value:
+    - customer
+    state: confirmed
+  scope.features:
+    value:
+    - restaurant_browse
+    - menu_item_options
+    - cart_checkout
+    - payments
+    - live_order_tracking
+    - saved_addresses
+    - push_notifications
+    state: confirmed
+screens:
+- id: SCR-001
+  route: /welcome
+  recipe: welcome
+  surface: customer
+  auth: public
+- id: SCR-002
+  route: /login
+  recipe: login-otp
+  surface: customer
+  auth: public
+- id: SCR-003
+  route: /signup
+  recipe: signup
+  surface: customer
+  auth: public
+- id: SCR-004
+  route: /home
+  recipe: dashboard
+  surface: customer
+  auth: public
+- id: SCR-005
+  route: /restaurants
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-006
+  route: /restaurants/map
+  recipe: map-view
+  surface: customer
+  auth: public
+- id: SCR-007
+  route: /restaurant/[id]
+  recipe: detail
+  surface: customer
+  auth: public
+- id: SCR-008
+  route: /menu-item/[id]
+  recipe: detail-with-sticky-cta
+  surface: customer
+  auth: public
+- id: SCR-009
+  route: /restaurant/[id]/ratings
+  recipe: list
+  surface: customer
+  auth: public
+- id: SCR-010
+  route: /orders/[id]/rate
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-011
+  route: /search
+  recipe: search
+  surface: customer
+  auth: public
+- id: SCR-012
+  route: /cart
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-013
+  route: /checkout
+  recipe: checkout-review
+  surface: customer
+  auth: authenticated
+- id: SCR-014
+  route: /address/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-015
+  route: /order-placed
+  recipe: confirmation
+  surface: customer
+  auth: authenticated
+- id: SCR-016
+  route: /payment-failed
+  recipe: empty-state-only
+  surface: customer
+  auth: authenticated
+- id: SCR-017
+  route: /orders
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-018
+  route: /orders/[id]
+  recipe: detail
+  surface: customer
+  auth: authenticated
+- id: SCR-019
+  route: /orders/[id]/tracking
+  recipe: tracking
+  surface: customer
+  auth: authenticated
+- id: SCR-020
+  route: /account
+  recipe: profile
+  surface: customer
+  auth: authenticated
+- id: SCR-021
+  route: /account/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-022
+  route: /addresses
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-023
+  route: /payment-methods
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-024
+  route: /payment-methods/new
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-025
+  route: /notifications
+  recipe: notifications
+  surface: customer
+  auth: authenticated
+- id: SCR-026
+  route: /settings
+  recipe: settings
+  surface: customer
+  auth: authenticated
+flows:
+- id: FLW-001
+  name: Find a dish and place an order
+  screens:
+  - SCR-004
+  - SCR-007
+  - SCR-008
+  - SCR-012
+  - SCR-013
+  - SCR-015
+- id: FLW-002
+  name: Sign in
+  screens:
+  - SCR-001
+  - SCR-002
+  - SCR-004
+- id: FLW-003
+  name: Pick a restaurant on the map
+  screens:
+  - SCR-005
+  - SCR-006
+  - SCR-007
+- id: FLW-004
+  name: Add a payment method at checkout
+  screens:
+  - SCR-013
+  - SCR-023
+  - SCR-024
+- id: FLW-005
+  name: Pick or add a saved address
+  screens:
+  - SCR-013
+  - SCR-022
+  - SCR-014
+- id: FLW-006
+  name: Follow the delivery
+  screens:
+  - SCR-017
+  - SCR-018
+  - SCR-019
+- id: FLW-007
+  name: Rate a meal
+  screens:
+  - SCR-017
+  - SCR-018
+  - SCR-010
+entities:
+- ENT-User
+- ENT-Address
+- ENT-Cuisine
+- ENT-Restaurant
+- ENT-MenuCategory
+- ENT-MenuItem
+- ENT-OptionGroup
+- ENT-OptionChoice
+- ENT-Cart
+- ENT-CartItem
+- ENT-Order
+- ENT-OrderItem
+- ENT-OrderEvent
+- ENT-CourierLocation
+- ENT-Courier
+- ENT-PaymentMethod
+- ENT-Payment
+- ENT-Rating
+- ENT-Notification
+operations:
+- API-requestOtp
+- API-verifyOtp
+- API-getMe
+- API-updateMe
+- API-createAddress
+- API-listAddresses
+- API-updateAddress
+- API-deleteAddress
+- API-listCuisines
+- API-listRestaurants
+- API-getRestaurant
+- API-searchRestaurants
+- API-getMenu
+- API-getMenuItem
+- API-getCart
+- API-addCartItem
+- API-updateCartItem
+- API-removeCartItem
+- API-clearCart
+- API-createOrder
+- API-listOrders
+- API-getOrder
+- API-cancelOrder
+- API-getOrderTracking
+- API-getCourierLocation
+- API-listPaymentMethods
+- API-addPaymentMethod
+- API-removePaymentMethod
+- API-createPayment
+- API-createRating
+- API-listRestaurantRatings
+- API-listNotifications
+- API-markNotificationRead
+- API-registerPushToken
+roles:
+- ROLE-customer
+counts:
+  screens: 26
+  flows: 7
+  entities: 19
+  operations: 34

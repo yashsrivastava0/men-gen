@@ -1,0 +1,107 @@
+{
+  "$defs": {
+    "Integration": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^INT-[a-z][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mode": {
+          "default": "mock",
+          "enum": [
+            "mock",
+            "adapter",
+            "real"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "needs_dev_build": {
+          "default": false,
+          "title": "Needs Dev Build",
+          "type": "boolean"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "research_ref": {
+          "anyOf": [
+            {
+              "pattern": "^RA-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research Ref"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "purpose"
+      ],
+      "title": "Integration",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "items": {
+      "items": {
+        "$ref": "#/$defs/Integration"
+      },
+      "title": "Items",
+      "type": "array"
+    }
+  },
+  "required": [
+    "items"
+  ],
+  "title": "IntegrationsBlock",
+  "type": "object"
+}

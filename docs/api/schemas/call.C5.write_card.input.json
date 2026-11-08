@@ -1,0 +1,180 @@
+{
+  "$defs": {
+    "SlotBrief": {
+      "additionalProperties": false,
+      "description": "One slot as shown to a prompt: compact, no provenance noise.",
+      "properties": {
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "enum": [
+                "tap",
+                "text",
+                "upload",
+                "research",
+                "org_profile",
+                "memory",
+                "default"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "state": {
+          "enum": [
+            "empty",
+            "assumed",
+            "volunteered",
+            "confirmed",
+            "disputed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "value",
+        "state"
+      ],
+      "title": "SlotBrief",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "archetype": {
+      "title": "Archetype",
+      "type": "string"
+    },
+    "card_type": {
+      "default": "choice3",
+      "enum": [
+        "choice3",
+        "multi",
+        "visual3",
+        "text",
+        "upload",
+        "confirm"
+      ],
+      "title": "Card Type",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "mode": {
+      "default": "guided",
+      "enum": [
+        "guided",
+        "enterprise"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "options_hint": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Options Hint",
+      "type": "array"
+    },
+    "slot": {
+      "enum": [
+        "idea.summary",
+        "idea.archetype",
+        "scope.apps",
+        "scope.features",
+        "users.roles",
+        "auth.method",
+        "design.direction",
+        "brand.name",
+        "brand.assets",
+        "design.accent",
+        "design.mode",
+        "design.nav_style",
+        "pay.model",
+        "pay.provider",
+        "data.source",
+        "behavior.offline",
+        "behavior.notifications",
+        "behavior.analytics",
+        "locale",
+        "a11y",
+        "compliance.flags",
+        "auth.sso",
+        "integrations.list",
+        "data.classification",
+        "regions",
+        "release.channel",
+        "approvers"
+      ],
+      "title": "Slot",
+      "type": "string"
+    },
+    "slot_hint": {
+      "default": "",
+      "title": "Slot Hint",
+      "type": "string"
+    },
+    "slots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotBrief"
+      },
+      "title": "Slots",
+      "type": "array"
+    }
+  },
+  "required": [
+    "slot",
+    "archetype"
+  ],
+  "title": "C5Input",
+  "type": "object"
+}

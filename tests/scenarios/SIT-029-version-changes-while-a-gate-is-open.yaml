@@ -1,0 +1,77 @@
+# SIT-029: Version changes while a gate is open
+# Detection: Hash mismatch
+# Behavior:  Approval void; re-open with a diff; never approve a stale version
+id: SIT-029-version-changes-while-a-gate-is-open
+situation: "Version changes while a gate is open"
+mode: guided
+integration: true
+variants:
+  gate_one:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - user: "change the look to bold dark"
+        expect:
+          gate: {gate: brief, version: 2}
+      - decide: {gate: brief, hash: stale}
+        expect:
+          state: BRIEF_REVIEW
+          notices: [stale_gate]
+          approvals_count: 0
+          events:
+            - {type: gate, gate: brief, version: 2}
+      - decide: {gate: brief, hash: wrong}
+        expect:
+          state: BRIEF_REVIEW
+          notices: [stale_gate]
+          approvals_count: 0
+      - decide: {gate: brief, hash: current}
+        expect:
+          state: PLANNING
+          approvals: [{gate: brief, version: 2, decision: approve}]
+          approvals_count: 1
+  gate_two:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - user: "change the look to bold dark"
+        expect: {state: PLANNING}
+      - wait_for_plan: true
+        expect:
+          gate: {gate: plan, version: 2}
+      - decide: {gate: plan, hash: stale}
+        expect:
+          state: PLAN_REVIEW
+          notices: [stale_gate]
+          approvals_count: 1
+          spec_ready: 0
+          events:
+            - {type: gate, gate: plan, version: 2}
+      - decide: {gate: plan, hash: current}
+        expect:
+          state: HANDED_OFF
+          spec_ready: 1
+          approvals: [{gate: plan, version: 2, decision: approve}]

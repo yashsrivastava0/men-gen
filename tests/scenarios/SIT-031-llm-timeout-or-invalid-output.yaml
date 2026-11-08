@@ -1,0 +1,85 @@
+# SIT-031: LLM timeout or invalid output
+# Detection: Gateway
+# Behavior:  One repair retry; fall back to bank cards and templates; friendly "taking longer than usual" message
+id: SIT-031-llm-timeout-or-invalid-output
+situation: "LLM timeout or invalid output"
+mode: guided
+variants:
+  timeout_falls_back_to_the_keyword_understander:
+    gateway: {max_attempts: 2}
+    provider_script:
+      C1.understand:
+        - {error: timeout, times: 2}
+    steps:
+      - user: "I want an online store for handmade candles"
+        expect:
+          state: DISCOVERING
+          notices: [taking_longer]
+          pending_card: Q-type-01
+          llm_failed: 1
+          slots:
+            idea.archetype: {value: commerce}
+  invalid_output_is_repaired_once_then_falls_back:
+    provider_script:
+      C1.understand:
+        - {raw: "this is not json at all", times: 2}
+    steps:
+      - user: "I want an online store for handmade candles"
+        expect:
+          notices: [taking_longer]
+          llm_failed: 1
+          pending_card: Q-type-01
+  one_repair_is_enough:
+    provider_script:
+      C1.understand:
+        - {raw: "{\"intent\": "}
+        - {intent: idea, confidence: 0.9, language: en, slot_updates: [{slot_id: idea.summary, value_text: An online shop}]}
+    steps:
+      - user: "I want an online store for handmade candles"
+        expect:
+          notices_absent: [taking_longer]
+          llm_repaired: 1
+          llm_failed: 0
+  structured_output_error_falls_back:
+    provider_script:
+      C1.understand:
+        - {error: structured_output_error}
+    steps:
+      - user: "I want an online store for handmade candles"
+        expect:
+          notices: [taking_longer]
+          pending_card: Q-type-01
+          llm_failed: 1
+  budget_refusal_falls_back:
+    provider_script:
+      C1.understand:
+        - {error: budget_exceeded}
+    steps:
+      - user: "I want an online store for handmade candles"
+        expect:
+          notices: [taking_longer]
+          pending_card: Q-type-01
+  timeout_while_planning_does_not_lose_the_gate:
+    provider_script:
+      C9a.screens_nav:
+        - {error: timeout, times: 4}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan}
+          spec: {screens_min: 8}

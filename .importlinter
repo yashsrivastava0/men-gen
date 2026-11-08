@@ -1,0 +1,115 @@
+[importlinter]
+root_packages =
+    mde_core
+    mde_contracts
+    mde_llm_gateway
+    mde_prompts
+    mde_content
+    mde_persistence
+    mde_spec_loader
+    mde_discovery
+    mde_research
+    mde_spec_builder
+    mde_flow
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+include_external_packages = True
+
+[importlinter:contract:layers]
+name = Package layering (brief 5.2)
+type = layers
+layers =
+    mde_cli
+    mde_context_api | mde_llm_gateway_api
+    mde_flow
+    mde_discovery | mde_research | mde_spec_builder
+    mde_prompts
+    mde_llm_gateway | mde_content | mde_persistence | mde_spec_loader
+    mde_contracts
+    mde_core
+
+[importlinter:contract:engines-independent]
+name = Engines never import each other (flow wires them through contracts)
+type = independence
+modules =
+    mde_discovery
+    mde_research
+    mde_spec_builder
+
+[importlinter:contract:foundations-independent]
+name = Foundation packages do not import each other
+type = independence
+modules =
+    mde_llm_gateway
+    mde_content
+    mde_persistence
+    mde_spec_loader
+
+[importlinter:contract:only-gateway-imports-openai]
+name = Only mde_llm_gateway may import openai
+type = forbidden
+source_modules =
+    mde_core
+    mde_contracts
+    mde_prompts
+    mde_content
+    mde_persistence
+    mde_spec_loader
+    mde_discovery
+    mde_research
+    mde_spec_builder
+    mde_flow
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+forbidden_modules =
+    openai
+allow_indirect_imports = True
+
+[importlinter:contract:no-agent-frameworks-no-sqlite]
+name = No agent frameworks, no SQLite, anywhere
+type = forbidden
+source_modules =
+    mde_core
+    mde_contracts
+    mde_llm_gateway
+    mde_prompts
+    mde_content
+    mde_persistence
+    mde_spec_loader
+    mde_discovery
+    mde_research
+    mde_spec_builder
+    mde_flow
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+forbidden_modules =
+    langchain
+    langgraph
+    llama_index
+    crewai
+    autogen
+    semantic_kernel
+    dspy
+    instructor
+    sqlite3
+    aiosqlite
+allow_indirect_imports = True
+
+[importlinter:contract:contracts-and-core-have-no-io]
+name = contracts and core do no network / database / web I/O
+type = forbidden
+source_modules =
+    mde_contracts
+    mde_core
+forbidden_modules =
+    openai
+    httpx
+    requests
+    sqlalchemy
+    psycopg
+    fastapi
+    uvicorn
+allow_indirect_imports = True

@@ -1,0 +1,212 @@
+{
+  "proposals": [
+    {
+      "kind": "set_screen_copy",
+      "target": "SCR-006",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "A short intro line makes the screen's job clear to the user.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "intro",
+          "value": "Show one product and let the shopper add it to the cart"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "add_screen_section",
+      "target": "SCR-006",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "A small help hint lowers confusion for first-time users.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "help_hint"
+      ]
+    },
+    {
+      "kind": "add_screen_check",
+      "target": "SCR-006",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "One testable sentence ties the screen to its purpose.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "Everything this screen promises works: show one product and let the shopper add it to the cart"
+      ]
+    },
+    {
+      "kind": "set_screen_copy",
+      "target": "SCR-011",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "A short intro line makes the screen's job clear to the user.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "intro",
+          "value": "Review the items, change quantities and continue to checkout"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "add_screen_section",
+      "target": "SCR-011",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "A small help hint lowers confusion for first-time users.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "help_hint"
+      ]
+    },
+    {
+      "kind": "add_screen_check",
+      "target": "SCR-011",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "One testable sentence ties the screen to its purpose.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "Everything this screen promises works: review the items, change quantities and continue to checkout"
+      ]
+    },
+    {
+      "kind": "set_screen_copy",
+      "target": "SCR-012",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "A short intro line makes the screen's job clear to the user.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "intro",
+          "value": "Confirm the address and payment and place the order"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "add_screen_section",
+      "target": "SCR-012",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "A small help hint lowers confusion for first-time users.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "help_hint"
+      ]
+    },
+    {
+      "kind": "add_screen_check",
+      "target": "SCR-012",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "One testable sentence ties the screen to its purpose.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": [
+        "Everything this screen promises works: confirm the address and payment and place the order"
+      ]
+    }
+  ],
+  "notes": "mock: copy, a section and a check per screen"
+}

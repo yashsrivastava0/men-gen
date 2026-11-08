@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "35f80bc5fb736a3994d085e06a74c1815afeccb467534c1115c87dd4e0e93570",
+  "recorded_at": "2026-11-08T11:03:12.545597Z",
+  "request": {
+    "spec_id": "C11.write_summary",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "54669b5e6a1bfebb4d15788d41b5cd5fb8e51fc2d982eb2383a42262c748c90a",
+    "tools": [],
+    "kind": "main",
+    "system": "You write one short plain-language summary of an app for the person who asked for it. One job: return the text.\n\nRules:\n- Use only the facts given. Never add features, numbers, dates, prices or promises.\n- brief_sentence: exactly one sentence of at most max_words words that says what the app is, who it is for and its main features.\n- plan_summary: two or three short sentences in plain words.\n- Write in the user's language. No marketing words, no jargon.",
+    "user": "Kind: brief_sentence. Language: en. Maximum words: 40.\nApp name: Blue Basket\nFacts:\n- Team or staff app: A company app for employees and field staff to use checklists, record attendance, and manage approvals\n- with requests and approvals\n- in a calm and professional look\n"
+  },
+  "response": {
+    "text": "{\"text\":\"Blue Basket is a company app for employees and field staff to complete checklists, record attendance, and manage requests and approvals in a calm, professional design.\"}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 199,
+      "cached_input_tokens": 0,
+      "output_tokens": 114,
+      "reasoning_tokens": 67,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

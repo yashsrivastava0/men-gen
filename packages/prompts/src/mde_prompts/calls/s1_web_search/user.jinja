@@ -1,0 +1,12 @@
+{% set topics = {
+  "R1": "common features and design patterns of similar mobile apps",
+  "R2": "public feature overview of one named app",
+  "R3": "public brand style of one website (colors, fonts, tone of voice, logo)",
+  "R4": "pointers to the rules that apply to this kind of app",
+  "R5": "official documentation facts about one service or SDK (availability, Expo compatibility, caveats)",
+} %}
+Question: {{ query }}
+Topic: {{ topics.get(job, "general background for a mobile app") }}
+{% if allowed_domains %}
+Use only these sites: {{ allowed_domains | join(", ") }}
+{% endif %}

@@ -1,0 +1,88 @@
+{
+  "brief": {
+    "app_summary": "A small app for my shop where people can order",
+    "archetype": "commerce",
+    "language": "hi",
+    "mode": "guided",
+    "roles": [
+      "Customer"
+    ],
+    "features": [],
+    "look": "Warm and friendly",
+    "login": "",
+    "regions": [
+      "in"
+    ],
+    "references": [],
+    "compliance_flags": [
+      "precise_location",
+      "financial_data"
+    ],
+    "assumptions": [],
+    "brand_name": null,
+    "brand_url": null
+  },
+  "baseline": {
+    "direction": "warm-friendly",
+    "color_tokens_light": [
+      {
+        "key": "background",
+        "value": "#FFFBF5"
+      },
+      {
+        "key": "surface",
+        "value": "#FFF3E6"
+      },
+      {
+        "key": "surface_alt",
+        "value": "#FBE7D0"
+      },
+      {
+        "key": "text",
+        "value": "#2B1B12"
+      },
+      {
+        "key": "text_muted",
+        "value": "#6B4F3F"
+      },
+      {
+        "key": "primary",
+        "value": "#BE4826"
+      },
+      {
+        "key": "text_on_primary",
+        "value": "#FFFFFF"
+      },
+      {
+        "key": "accent",
+        "value": "#2F7D5B"
+      },
+      {
+        "key": "text_on_accent",
+        "value": "#FFFFFF"
+      },
+      {
+        "key": "border",
+        "value": "#E8D3BC"
+      },
+      {
+        "key": "danger",
+        "value": "#B3261E"
+      },
+      {
+        "key": "success",
+        "value": "#1E7A4C"
+      }
+    ],
+    "radius": 14,
+    "font_family": "Inter"
+  },
+  "brand_colors": [
+    "#E4572E"
+  ],
+  "brand_tone": [
+    "playful",
+    "warm"
+  ],
+  "research": []
+}

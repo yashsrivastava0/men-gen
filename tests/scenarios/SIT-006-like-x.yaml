@@ -1,0 +1,24 @@
+# SIT-006: Names a known app ("like X")
+# Detection: C2 reference
+# Behavior:  Ask which parts they want; R2 runs at step 3; build an original design, never copy brand assets
+id: SIT-006-like-x
+situation: "Names a known app (\"like X\")"
+mode: guided
+variants:
+  discover_notes_the_reference:
+    steps:
+      - user: "I want a restaurant app like Swiggy"
+        expect:
+          text_contains: ["original design inspired by Swiggy", "never copy"]
+          pending_card: Q-type-02
+          llm_calls: {C1.understand: 1, C2.interpret_brief: 1}
+  reference_reaches_research:
+    steps:
+      - user: "I want a restaurant app like Swiggy"
+      - user: "finish with smart defaults"
+        expect: {state: BRIEF_REVIEW}
+      - decide: {gate: brief}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          inputs_contain: {S1.web_search: ["Swiggy"]}

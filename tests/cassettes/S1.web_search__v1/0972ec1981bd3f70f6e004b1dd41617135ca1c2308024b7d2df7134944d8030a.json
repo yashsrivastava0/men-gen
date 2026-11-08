@@ -1,0 +1,250 @@
+{
+  "format": 1,
+  "key": "0972ec1981bd3f70f6e004b1dd41617135ca1c2308024b7d2df7134944d8030a",
+  "recorded_at": "2026-11-08T10:59:46.489224Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: hair salon booking app common service and available time slot features\nTopic: common features and design patterns of similar mobile apps\n"
+  },
+  "response": {
+    "text": "Common salon-booking flows let customers browse a service menu, select a stylist (or choose any available professional), then choose a date and an available time before confirming. Services can be customized, and appointment duration helps determine which slots are offered. ([fresha.com](https://www.fresha.com/for-business/features?utm_source=openai))\n\nAvailability typically reflects staff working hours, breaks, time off, and service permissions, with live slot updates to prevent clashes. Some systems also limit options to reduce unusable gaps between appointments. ([fresha.com](https://www.fresha.com/for-business/features/scheduling?utm_source=openai))\n\nCommon supporting features include 24/7 booking and rescheduling, instant confirmations, reminders, deposits or upfront payment, rebooking, and waitlists that match clients to newly open slots. ([fresha.com](https://www.fresha.com/for-business/features?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://www.fresha.com/for-business/features?utm_source=openai",
+        "title": "Salon Software Features | Booking, POS & Payments | Fresha",
+        "start": 275,
+        "end": 353
+      },
+      {
+        "url": "https://www.fresha.com/for-business/features/scheduling?utm_source=openai",
+        "title": "Salon Scheduling Software | Online Booking System | Fresha",
+        "start": 572,
+        "end": 661
+      },
+      {
+        "url": "https://www.fresha.com/for-business/features?utm_source=openai",
+        "title": "Salon Software Features | Booking, POS & Payments | Fresha",
+        "start": 857,
+        "end": 935
+      },
+      {
+        "url": "https://www.fresha.com/for-business/features",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.fresha.com/for-business/features/scheduling",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://glossgenius.com/calendar-scheduling-app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.refreshmeapp.com/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.zenoti.com/salon-management-software/salon-booking-app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://biz.booksy.com/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://salongram.app/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.salonappy.com/hair-salon-booking-app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://heybooked.com/blogs/best-salon-booking-apps",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://support.glossgenius.com/en/articles/1235-how-to-use-minimize-scheduling-gaps",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.salonna.app/en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.capterra.com/resources/salon-booking-software-reviews-analysis/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.mealsuite.com/a/docs/Book-Services-Appointments.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://publisher.uthm.edu.my/periodicals/index.php/aitcs/article/download/16261/5690/104582",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://scholar.ucu.ac.ug/server/api/core/bitstreams/aa0f9390-0bfa-446d-8eb8-567f54a6ef0a/content",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.gettimely.com/media/el0dpvvv/client-experience-guide.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.gettimely.com/media/ipiaszt5/timely_tips-sheet.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://clover.banccard.com/hc/en-us/article_attachments/35526511369876",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/smallbusiness/comments/1gq6f5e",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/hairstylist/comments/1hugy8l",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/hairstylist/comments/1ow6vz7/best_paymentbooking_app/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Esthetics/comments/1w1rqt3/what_is_the_best_booking_site_for_estheticians/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/webdev/comments/1cgo1tc",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Estheticians/comments/1kjbru0/booking_platform/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/hairstylist/comments/1wmg4u6/booking_software/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/hairstylist/comments/1itphbs",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/hairstylist/comments/1up2ewi/does_anybody_have_any_good_bookingappointment_app/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Estheticians/comments/1lejt9f/what_booking_appif_one_at_all/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/MedSpa/comments/1udblv2/salon_owners_how_do_you_currently_handle/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/SaaS/comments/1ods3q6",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/Booksy",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/Appointment_scheduling_software",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12928,
+      "cached_input_tokens": 4442,
+      "output_tokens": 279,
+      "reasoning_tokens": 58,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

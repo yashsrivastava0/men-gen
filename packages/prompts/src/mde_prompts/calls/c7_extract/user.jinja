@@ -1,0 +1,16 @@
+Job: {{ job }}
+Search question: {{ query }}
+{% if brief_hint %}
+About the app: {{ brief_hint }}
+{% endif %}
+
+Sources:
+{% for s in sources %}
+[{{ loop.index }}] {{ s.url }}{% if s.title %} ({{ s.title }}){% endif %}
+
+{% else %}
+(none)
+{% endfor %}
+
+Content to extract from:
+{{ search_text }}

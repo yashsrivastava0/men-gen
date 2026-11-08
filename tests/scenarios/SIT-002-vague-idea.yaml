@@ -1,0 +1,44 @@
+# SIT-002: Vague idea ("something like an app")
+# Detection: C1 low confidence
+# Behavior:  Help mode: three inspiration cards, or "tell me about your business"
+id: SIT-002-vague-idea
+situation: "Vague idea (\"something like an app\")"
+mode: guided
+variants:
+  keyword_understander:
+    steps:
+      - user: "I want to make something like an app for my business"
+        expect:
+          state: DISCOVERING
+          events:
+            - {type: card, card_id: Q-help-01}
+          pending_card: Q-help-01
+          slots:
+            idea.summary: {empty: true}
+      - tap: {card: Q-help-01, option: A}
+        expect:
+          slots:
+            idea.archetype: {value: commerce}
+          pending_card: Q-type-01
+  low_confidence_from_c1:
+    provider_script:
+      C1.understand:
+        - {intent: idea, confidence: 0.3, language: en}
+    steps:
+      - user: "I have something in mind for my customers but I cannot explain it well"
+        expect:
+          state: DISCOVERING
+          pending_card: Q-help-01
+          slots:
+            idea.summary: {empty: true}
+          llm_calls: {C1.understand: 1}
+  tell_me_about_your_business:
+    steps:
+      - user: "something like an app for my business"
+        expect:
+          pending_card: Q-help-01
+      - user: "I run a bakery where people pre-order cakes"
+        expect:
+          slots:
+            idea.archetype: {value: food_delivery}
+          pending_card: Q-type-02

@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "7dec05a507352eacdbcf1b23ecbc9e070cb7d5223e58b6b72ed220077f75bfe1",
+  "recorded_at": "2026-11-08T10:48:38.039015Z",
+  "request": {
+    "spec_id": "C11.write_summary",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "54669b5e6a1bfebb4d15788d41b5cd5fb8e51fc2d982eb2383a42262c748c90a",
+    "tools": [],
+    "kind": "main",
+    "system": "You write one short plain-language summary of an app for the person who asked for it. One job: return the text.\n\nRules:\n- Use only the facts given. Never add features, numbers, dates, prices or promises.\n- brief_sentence: exactly one sentence of at most max_words words that says what the app is, who it is for and its main features.\n- plan_summary: two or three short sentences in plain words.\n- Write in the user's language. No marketing words, no jargon.",
+    "user": "Kind: brief_sentence. Language: en. Maximum words: 40.\nApp name: Blue Basket\nFacts:\n- Bookings and appointments: A clinic app where patients book appointments and see their prescriptions\n- with services, provider profiles, booking with time slots, online payments, booking reminders, reschedule and cancel, push notifications\n- in a clean and bright look\n"
+  },
+  "response": {
+    "text": "{\"text\":\"Blue Basket is a clinic app for patients to explore services and provider profiles, book time slots, pay online, view prescriptions, and reschedule or cancel appointments with reminders and push notifications in a clean, bright design.\"}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 211,
+      "cached_input_tokens": 0,
+      "output_tokens": 141,
+      "reasoning_tokens": 82,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

@@ -1,0 +1,35 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Least privilege: the jobs only read the repository (no token write scopes).
+permissions:
+  contents: read
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: mde
+          POSTGRES_PASSWORD: mde
+          POSTGRES_DB: mde
+        ports:
+          - 54329:5432
+        options: >-
+          --health-cmd "pg_isready -U mde -d mde"
+          --health-interval 5s --health-timeout 3s --health-retries 20
+    env:
+      LLM_MODE: mock
+      DATABASE_URL: postgresql+psycopg://mde:mde@127.0.0.1:54329/mde
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - uses: extractions/setup-just@v2
+      - run: uv python install 3.13
+      - run: just bootstrap
+      - run: just ci

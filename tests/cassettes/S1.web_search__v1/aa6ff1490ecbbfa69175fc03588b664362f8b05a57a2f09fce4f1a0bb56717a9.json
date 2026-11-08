@@ -1,0 +1,292 @@
+{
+  "format": 1,
+  "key": "aa6ff1490ecbbfa69175fc03588b664362f8b05a57a2f09fce4f1a0bb56717a9",
+  "recorded_at": "2026-11-08T10:56:11.906167Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: ecommerce mobile app order tracking push notification patterns\nTopic: common features and design patterns of similar mobile apps\n"
+  },
+  "response": {
+    "text": "Common order-tracking notification patterns include:\n\n- **Milestone alerts:** notify customers as an order progresses through key stages, such as confirmation, shipment, out for delivery, and delivery. Shop supports push notifications for shipping milestones; Shopify also describes delivery notifications and real-time status updates. ([help.shopify.com](https://help.shopify.com/en/manual/fulfillment/setup/order-status-page/order-tracking?utm_source=openai))\n- **Progressive status display:** show the current stage in a progress bar, with stage icons, so customers can understand progress without opening the app. Instacart documents this pattern for its mobile apps. ([docs.instacart.com](https://docs.instacart.com/storefront/order_fulfillment/order_status/live_update_mobile?utm_source=openai))\n- **Estimated timing and map tracking:** pair updates with estimated delivery dates or live map tracking. Shop offers both; Amazon describes map tracking for opted-in customers when a package is close to delivery. ([help.shopify.com](https://help.shopify.com/en/manual/online-sales-channels/shop/delivery-tracking?utm_source=openai))\n- **Preference controls and multiple channels:** let customers choose which alerts to receive and deliver updates through channels such as app notifications, SMS, or email. UPS My Choice documents configurable alerts across these channels. ([assets.ups.com](https://assets.ups.com/adobe/assets/urn%3Aaaid%3Aaem%3A29892e1f-11d8-4d8f-8008-f31bf6593dbc/original/as/service-guide-base-ie-gb-en.pdf?utm_source=openai))\n- **Contextual actions:** some order-status notifications include buttons for tasks such as adding items or approving replacements, as in Instacart’s examples. ([docs.instacart.com](https://docs.instacart.com/storefront/order_fulfillment/order_status/live_update_mobile?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://help.shopify.com/en/manual/fulfillment/setup/order-status-page/order-tracking?utm_source=openai",
+        "title": "Shopify Help Center | Order tracking at Shopify",
+        "start": 336,
+        "end": 461
+      },
+      {
+        "url": "https://docs.instacart.com/storefront/order_fulfillment/order_status/live_update_mobile?utm_source=openai",
+        "title": "Live order status updates on mobile devices | Instacart Docs",
+        "start": 672,
+        "end": 801
+      },
+      {
+        "url": "https://help.shopify.com/en/manual/online-sales-channels/shop/delivery-tracking?utm_source=openai",
+        "title": "Shopify Help Center | Delivery tracking with Shop",
+        "start": 1016,
+        "end": 1135
+      },
+      {
+        "url": "https://assets.ups.com/adobe/assets/urn%3Aaaid%3Aaem%3A29892e1f-11d8-4d8f-8008-f31bf6593dbc/original/as/service-guide-base-ie-gb-en.pdf?utm_source=openai",
+        "title": "UPS My Choice®",
+        "start": 1376,
+        "end": 1549
+      },
+      {
+        "url": "https://docs.instacart.com/storefront/order_fulfillment/order_status/live_update_mobile?utm_source=openai",
+        "title": "Live order status updates on mobile devices | Instacart Docs",
+        "start": 1710,
+        "end": 1839
+      },
+      {
+        "url": "https://help.shopify.com/en/manual/fulfillment/setup/order-status-page/order-tracking",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.shopify.com/en/manual/online-sales-channels/shop/delivery-tracking",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.business.amazon.com/docs/package-tracking-push-notifications",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.instacart.com/storefront/order_fulfillment/order_status/live_update_mobile",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://assets.ups.com/adobe/assets/urn%3Aaaid%3Aaem%3A29892e1f-11d8-4d8f-8008-f31bf6593dbc/original/as/service-guide-base-ie-gb-en.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.appbrew.com/articles/3016574962-post-purchase-experience",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ordering.co/features/order-tracking-notifications/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.business.amazon.com/docs/package-tracking-overview",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://shopify.dev/docs/api/commerce-components/pay/troubleshooting-guide",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://shipping.amazon.com/resources/getting-started-guide/customer-experience-tools-and-support",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.storeep.com/en/orders/new-order-notifications",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.shopify.com/en/manual/fulfillment/setup/order-status-page/understanding-order-status-pages?link_search=true&page=1&q=Gavin+Ballard",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.aboutamazon.co.uk/news/retail/how-to-track-an-amazon-package",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://pub-mediabox-storage.rxweb-prd.com/exhibitor/document/exh-a27f70de-7d51-46d3-b561-1aba53cb0d0f/4cdf1411-c7dc-4446-87ec-dafe26eb60a8.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.thinkwithgoogle.com/_qs/documents/3325/e862b_Shopping_on_mobile_-_FR_2016_Market_Insights_1.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://m.media-amazon.com/images/G/39/MP/XD/Amazon_Track_Usage_GuideNJ5_26.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://assets.nextleap.app/submissions/LIPAmazonnotification-84382340-78e6-418d-9a6d-6e59929fbbec.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://brigadeweb.com/wp-content/uploads/2022/03/FOC_PDF_FA.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/shopify/comments/1qpvfo5/shop_app_sending_out_delivery_confirmation_but/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/amazonprime/comments/1v3x5xr/whats_up_with_these_new_email_notifications/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Shopify_USA/comments/1tnzn0b/discussion_is_anyone_else_tired_of_delayed/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/amazonprime/comments/1pg24pr/new_message_from_amazon_has_anyone_else_received/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/UPS/comments/1pnk4tc/how_do_i_set_up_text_alerts_on_the_ups_app/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/shopify_shipping_help/comments/1vual9h/shopifys_default_shipping_emails_are_not_enough/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/shopify/comments/1sy1eta/track_with_shop_nightmare/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/shopify_shipping_help/comments/1vuamqj/how_to_set_up_automated_shipping_notifications_in/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/AfterShip",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/amazonprime/comments/1vg13il/im_getting_suspicious_amazon_shopping_push/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/UPS/comments/1mj5bq2/how_to_reenable_sms_notifications/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/assholedesign/comments/da45kc",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/shopify_shipping_help/comments/1vmcuwy/how_to_set_up_a_complete_postpurchase_experience/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://time.com/4328619/ups-follow-my-delivery/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.tomsguide.com/tech/i-tried-amazons-new-ultrafast-delivery-option-and-my-package-actually-beat-the-3-hour-window",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.youtube.com/watch?v=IvcTGuoTNlE",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.youtube.com/watch?v=qB5RdwQ3hFM",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.tomsguide.com/sales-events/your-amazon-wish-lists-give-you-a-head-start-on-deals-heres-how-to-create-share-and-enable-alerts",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://arxiv.org/abs/1707.08113",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12701,
+      "cached_input_tokens": 4442,
+      "output_tokens": 379,
+      "reasoning_tokens": 74,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

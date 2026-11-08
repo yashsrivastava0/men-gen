@@ -1,0 +1,94 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "action": {
+      "enum": [
+        "stop",
+        "undo",
+        "restart",
+        "pause",
+        "resume",
+        "finish_with_defaults",
+        "toggle_assumption",
+        "toggle_research_item",
+        "toggle_feature",
+        "edit_row",
+        "archive",
+        "idle"
+      ],
+      "title": "Action",
+      "type": "string"
+    },
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "event_id": {
+      "maxLength": 128,
+      "pattern": "^[A-Za-z0-9][A-Za-z0-9_.:-]{0,127}$",
+      "title": "Event Id",
+      "type": "string"
+    },
+    "selected_screen_id": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selected Screen Id"
+    },
+    "target": {
+      "anyOf": [
+        {
+          "maxLength": 200,
+          "pattern": "^[A-Za-z0-9_.:-]{1,200}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target"
+    },
+    "type": {
+      "const": "ui_action",
+      "default": "ui_action",
+      "title": "Type",
+      "type": "string"
+    },
+    "value": {
+      "anyOf": [
+        {
+          "type": "boolean"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Value"
+    }
+  },
+  "required": [
+    "event_id",
+    "action"
+  ],
+  "title": "UiAction",
+  "type": "object"
+}

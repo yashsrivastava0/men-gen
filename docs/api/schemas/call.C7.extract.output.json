@@ -1,0 +1,76 @@
+{
+  "$defs": {
+    "ExtractedFact": {
+      "additionalProperties": false,
+      "properties": {
+        "confidence": {
+          "default": "medium",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "impact": {
+          "default": "low",
+          "enum": [
+            "low",
+            "high"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "kind": {
+          "default": "other",
+          "enum": [
+            "feature",
+            "pattern",
+            "brand",
+            "compliance",
+            "integration",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source_url": {
+          "title": "Source Url",
+          "type": "string"
+        },
+        "statement": {
+          "description": "Short paraphrase of what the content states; never infer",
+          "title": "Statement",
+          "type": "string"
+        }
+      },
+      "required": [
+        "statement",
+        "source_url"
+      ],
+      "title": "ExtractedFact",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/ExtractedFact"
+      },
+      "title": "Facts",
+      "type": "array"
+    },
+    "injection_suspected": {
+      "default": false,
+      "title": "Injection Suspected",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "facts"
+  ],
+  "title": "C7Output",
+  "type": "object"
+}

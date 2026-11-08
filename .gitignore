@@ -1,0 +1,30 @@
+# secrets (never commit)
+.env
+.env.*
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.ruff_cache/
+.pyright/
+.hypothesis/
+.coverage
+htmlcov/
+*.egg-info/
+dist/
+build/
+
+# runtime data (gitignored per brief 5.1); anchored so packages/**/data/ (content YAML) is NOT ignored
+/data/
+evals/reports/
+.claude/settings.local.json
+.claude/worktrees/
+
+# editors / os
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

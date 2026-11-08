@@ -1,0 +1,18 @@
+id: P08-sensitive-health-app
+title: A clinic app that holds patient information
+who: Runs a clinic, wants appointments and patient notes, answers the compliance card.
+language: en
+mode: guided
+script:
+  - user: "I want a clinic app where patients book appointments and see their prescriptions"
+  - tap: {recommended: true}
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  slots:
+    behavior.analytics: false

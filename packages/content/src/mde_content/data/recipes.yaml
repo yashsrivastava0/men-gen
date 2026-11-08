@@ -1,0 +1,227 @@
+# Base recipe library (brief 8.6). A recipe is a reusable screen pattern. It supplies the
+# loading / empty / error / offline states and the default sections, so a pack screen or a spec
+# screen block only lists deviations. Kit components are PascalCase names from the component kit
+# (signatures live in the kit slices, not here). Section names are snake_case.
+recipes:
+  # ---------------------------------------------------------------- auth
+  - id: welcome
+    name: Welcome
+    description: First screen for signed-out people. Brand mark, a one-line promise and the main ways in.
+    kind: auth
+    states_provided: [loading, error, offline]
+    default_sections: [brand, promise, primary_cta, secondary_cta, legal_links]
+    kit_components: [Screen, Image, Text, Button, Link]
+
+  - id: login-otp
+    name: Sign in with a code
+    description: Enter a phone number or email, then the one-time code that was sent. Resend and change-number are built in.
+    kind: auth
+    states_provided: [loading, error, offline]
+    default_sections: [identifier_input, code_input, resend_timer, submit, help_link]
+    kit_components: [Screen, Header, TextField, OtpInput, Button, Link, Toast]
+
+  - id: login-password
+    name: Sign in with a password
+    description: Email and password with show/hide, a forgot-password link and an inline error under the field that failed.
+    kind: auth
+    states_provided: [loading, error, offline]
+    default_sections: [email_input, password_input, forgot_link, submit, alternative_sign_in]
+    kit_components: [Screen, Header, TextField, PasswordField, Button, Link, Toast]
+
+  - id: login-sso
+    name: Sign in with a company account
+    description: One button that opens the company single sign-on page, with a clear message when the account is not allowed.
+    kind: auth
+    states_provided: [loading, error, offline]
+    default_sections: [brand, sso_button, device_note, help_link]
+    kit_components: [Screen, Image, Button, Banner, Link]
+
+  - id: signup
+    name: Create account
+    description: Short sign-up form (name plus the way to sign in) with terms consent. No more fields than the app needs.
+    kind: auth
+    states_provided: [loading, error, offline]
+    default_sections: [name_input, identifier_input, consent_checkbox, submit, sign_in_link]
+    kit_components: [Screen, Header, TextField, PasswordField, Checkbox, Button, Link]
+
+  # ---------------------------------------------------------------- profile / settings
+  - id: profile
+    name: Profile hub
+    description: Who the person is, plus a grouped menu of everything account related (details, addresses, saved items, help).
+    kind: profile
+    states_provided: [loading, error, offline]
+    default_sections: [identity_header, quick_stats, menu_groups, sign_out]
+    kit_components: [Screen, Avatar, Text, ListItem, Divider, Button]
+
+  - id: settings
+    name: Settings
+    description: Grouped switches and choices (notifications, language, appearance, privacy) with immediate save.
+    kind: settings
+    states_provided: [loading, error, offline]
+    default_sections: [notifications_group, appearance_group, language_group, privacy_group, about_group, sign_out]
+    kit_components: [Screen, SectionHeader, ListItem, Switch, SegmentedControl, BottomSheet, Button]
+
+  # ---------------------------------------------------------------- lists
+  - id: list
+    name: List
+    description: A vertical list of rows or cards with pull-to-refresh and paging. The workhorse for most "browse" screens.
+    kind: list
+    states_provided: [loading, empty, error, offline]
+    default_sections: [header, items, load_more]
+    kit_components: [Screen, Header, List, ListItem, Card, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  - id: list-with-filters
+    name: List with search and filters
+    description: A list with a search field, filter chips, a sort control and a result count.
+    kind: list
+    states_provided: [loading, empty, error, offline]
+    default_sections: [search_bar, filter_chips, sort_control, result_count, items, load_more]
+    kit_components: [Screen, Header, SearchBar, FilterBar, Chip, BottomSheet, List, Card, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  - id: approvals-queue
+    name: Approvals queue
+    description: Items waiting for the person's decision, grouped by urgency, with approve and reject on every row and a reason prompt for rejects.
+    kind: list
+    states_provided: [loading, empty, error, offline]
+    default_sections: [summary_counts, filter_chips, pending_items, decided_items]
+    kit_components: [Screen, Header, SegmentedControl, List, ListItem, Badge, Button, BottomSheet, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  # ---------------------------------------------------------------- details
+  - id: detail
+    name: Detail
+    description: One record shown in full, with a header, grouped facts and secondary actions in the header menu.
+    kind: detail
+    states_provided: [loading, empty, error, offline]
+    default_sections: [header, summary, facts, related_items, secondary_actions]
+    kit_components: [Screen, Header, Image, Text, Badge, ListItem, Card, IconButton, Skeleton, ErrorState, OfflineBanner]
+
+  - id: detail-with-sticky-cta
+    name: Detail with sticky action
+    description: A rich detail screen (gallery, title and price, options, description) with a primary action pinned to the bottom edge.
+    kind: detail
+    states_provided: [loading, empty, error, offline]
+    default_sections: [gallery, title_price, option_picker, description, related_items, sticky_cta]
+    kit_components: [Screen, Header, Carousel, Image, Text, PriceText, Rating, Chip, StickyFooter, Button, Skeleton, ErrorState, OfflineBanner]
+
+  # ---------------------------------------------------------------- forms
+  - id: form
+    name: Form
+    description: A single-page form with inline validation, a disabled submit until valid, a busy state and a success toast.
+    kind: form
+    states_provided: [loading, error, offline]
+    default_sections: [fields, helper_text, submit]
+    kit_components: [Screen, Header, TextField, Select, Checkbox, Switch, DatePicker, Button, Toast]
+
+  - id: multi-step-form
+    name: Multi-step form
+    description: A form split into short steps with a progress bar, back and next, and a review step before submit. Progress is kept if the app closes.
+    kind: form
+    states_provided: [loading, error, offline]
+    default_sections: [progress_steps, step_fields, review_step, submit]
+    kit_components: [Screen, Header, ProgressSteps, TextField, Select, Checkbox, DatePicker, Button, Toast]
+
+  - id: checklist
+    name: Checklist
+    description: A list of tasks to tick off with optional notes and photos, a progress count and a final sign-off.
+    kind: form
+    states_provided: [loading, empty, error, offline]
+    default_sections: [progress_header, check_items, notes, photo_attachments, sign_off]
+    kit_components: [Screen, Header, ProgressBar, Checkbox, TextField, ImagePicker, Button, Toast, OfflineBanner]
+
+  - id: calendar-slot-picker
+    name: Calendar and slot picker
+    description: Pick a day on a strip or month calendar, then a free time slot. Unavailable slots are shown but disabled, with a reason.
+    kind: form
+    states_provided: [loading, empty, error, offline]
+    default_sections: [date_selector, slot_grid, selection_summary, continue_cta]
+    kit_components: [Screen, Header, DatePicker, SlotGrid, Chip, StickyFooter, Button, Skeleton, EmptyState, ErrorState]
+
+  # ---------------------------------------------------------------- search / notifications / dashboard
+  - id: search
+    name: Search
+    description: A search field with recent searches and suggestions before typing, live results while typing and a clear no-results state.
+    kind: search
+    states_provided: [loading, empty, error, offline]
+    default_sections: [search_input, recent_searches, suggestions, results]
+    kit_components: [Screen, SearchBar, Chip, List, ListItem, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  - id: notifications
+    name: Notifications
+    description: A reverse-chronological feed with unread markers, swipe to dismiss and a mark-all-read action.
+    kind: notifications
+    states_provided: [loading, empty, error, offline]
+    default_sections: [mark_all_read, today_group, earlier_group]
+    kit_components: [Screen, Header, List, ListItem, Badge, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  - id: dashboard
+    name: Dashboard
+    description: A home or overview screen made of stacked blocks (greeting, highlights, quick actions, shortcuts to lists).
+    kind: dashboard
+    states_provided: [loading, empty, error, offline]
+    default_sections: [greeting, highlights, quick_actions, content_rows]
+    kit_components: [Screen, Header, StatCard, Card, Carousel, Chip, List, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  # ---------------------------------------------------------------- other
+  - id: checkout-review
+    name: Checkout review
+    description: A final summary of what is being bought or booked (items, address or time, payment method, totals), with one confirming action.
+    kind: other
+    states_provided: [loading, error, offline]
+    default_sections: [order_summary, address_or_time, payment_method, price_breakdown, place_cta]
+    kit_components: [Screen, Header, Card, ListItem, PriceText, StickyFooter, Button, BottomSheet, Toast]
+
+  - id: confirmation
+    name: Confirmation
+    description: A success screen after an action completes. Big check, a plain sentence, the reference number and the next step.
+    kind: other
+    states_provided: [error, offline]
+    default_sections: [success_mark, message, reference, summary, next_actions]
+    kit_components: [Screen, Illustration, Text, Card, Button]
+
+  - id: tracking
+    name: Tracking
+    description: Progress of something in motion (order, delivery, request) as a timeline, optionally with a live map and a contact action.
+    kind: other
+    states_provided: [loading, empty, error, offline]
+    default_sections: [status_header, progress_timeline, live_map, contact_actions, details]
+    kit_components: [Screen, Header, Timeline, MapView, Marker, Card, Button, Skeleton, ErrorState, OfflineBanner]
+
+  - id: empty-state-only
+    name: Message screen
+    description: A full-screen message with an illustration, a short explanation and up to two actions (failure, not found, maintenance, permission needed).
+    kind: other
+    states_provided: [offline]
+    default_sections: [illustration, message, primary_action, secondary_action]
+    kit_components: [Screen, Illustration, Text, Button]
+
+  - id: chat
+    name: Chat
+    description: A message thread with a composer, delivery status, quick replies and a clear note when the other side is offline.
+    kind: other
+    states_provided: [loading, empty, error, offline]
+    default_sections: [message_thread, quick_replies, composer]
+    kit_components: [Screen, Header, ChatBubble, Chip, MessageInput, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  - id: map-view
+    name: Map and list
+    description: A map with markers and a bottom sheet list of the same places. Tapping either focuses the other. Falls back to the list if the map cannot load.
+    kind: other
+    states_provided: [loading, empty, error, offline]
+    default_sections: [map, filter_chips, places_sheet, locate_me]
+    kit_components: [Screen, MapView, Marker, Chip, BottomSheet, ListItem, IconButton, Skeleton, EmptyState, ErrorState]
+
+  - id: media-gallery
+    name: Media gallery
+    description: A grid of photos or videos with a full-screen viewer, swipe between items, share and optional upload.
+    kind: other
+    states_provided: [loading, empty, error, offline]
+    default_sections: [media_grid, upload_button, viewer]
+    kit_components: [Screen, Header, Image, Video, Carousel, IconButton, ImagePicker, Skeleton, EmptyState, ErrorState, OfflineBanner]
+
+  - id: kiosk-home
+    name: Shared-device home
+    description: A large-target home for a shared or wall-mounted device with a few big actions, an idle timeout back to the start and a hidden exit.
+    kind: other
+    states_provided: [loading, error, offline]
+    default_sections: [clock_header, big_actions, idle_notice, exit_gesture]
+    kit_components: [Screen, Text, Button, Card, OfflineBanner]

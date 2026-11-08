@@ -1,0 +1,19 @@
+# SIT-009: Several apps requested (customer plus business plus admin)
+# Detection: C2 multi-app flag
+# Behavior:  Ask which to build first (one app recommended); each app is its own session and file
+id: SIT-009-several-apps
+situation: "Several apps requested (customer plus business plus admin)"
+mode: guided
+steps:
+  - user: "I need a customer app, a seller app and an admin panel for my shop"
+    expect:
+      text_contains: ["more than one app"]
+      pending_card: Q-type-01
+  - tap: {card: Q-type-01, option: A}
+    expect:
+      pending_card: Q-apps-01
+  - tap: {card: Q-apps-01, option: A}
+    expect:
+      slots:
+        scope.apps: {value: [customer]}
+      pending_card: Q-feat-01

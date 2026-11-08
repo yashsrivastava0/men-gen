@@ -1,0 +1,54 @@
+# Golden cases for C2. The archetype, sensitive-domain and unsupported lists are filled in by the
+# test from the content catalogs and the stack profile.
+cases:
+  - name: clinic_booking_in_mumbai
+    input: {idea_text: "I want an app for my clinic where patients can book appointments. Based in Mumbai."}
+    expect:
+      archetype_candidates: [{archetype_id: booking_services}]
+      sensitive_flags: [health]
+      regions: [India]
+      multi_app: false
+      unsupported_type: null
+
+  - name: grocery_like_another_app
+    input: {idea_text: "A grocery store app like Swiggy with cart and reviews"}
+    expect:
+      archetype_candidates: [{archetype_id: commerce}]
+      named_references: [Swiggy]
+      volunteered: [{slot_id: scope.features, value_list: [cart_checkout, reviews]}]
+
+  - name: customer_seller_admin
+    input: {idea_text: "I need a customer app, a seller app and an admin panel for my marketplace"}
+    expect: {multi_app: true, app_count_hint: 3}
+
+  - name: unsupported_game
+    input: {idea_text: "I want to build a 3D multiplayer game"}
+    expect: {unsupported_type: game, archetype_candidates: [{archetype_id: custom}]}
+
+  - name: shop_that_sells_board_games_is_not_a_game
+    input: {idea_text: "An online store to sell board games with cart and reviews"}
+    expect: {unsupported_type: null, archetype_candidates: [{archetype_id: commerce}]}
+
+  - name: several_sensitive_domains
+    input: {idea_text: "A loan app that scans an aadhaar card for kids and parents"}
+    expect: {sensitive_flags: [finance, identity_documents, children]}
+
+  - name: hindi_restaurant
+    input: {idea_text: "मुझे अपने रेस्टोरेंट के लिए खाना ऑर्डर करने का ऐप चाहिए", language: hi}
+    expect: {archetype_candidates: [{archetype_id: food_delivery}], unsupported_type: null}
+
+  - name: hinglish_dukaan
+    input: {idea_text: "mujhe apni dukaan ke liye app chahiye jisme cart ho", language: hi-Latn}
+    expect:
+      archetype_candidates: [{archetype_id: commerce}]
+      volunteered: [{slot_id: scope.features, value_list: [cart_checkout]}]
+
+  - name: long_document_is_large
+    input:
+      idea_text: "See the attached product notes."
+      document_text: "{{LONG}}"
+    expect: {size_estimate: large}
+
+  - name: vague_idea_falls_back_to_custom
+    input: {idea_text: "something"}
+    expect: {archetype_candidates: [{archetype_id: custom, confidence: "<=0.4"}], size_estimate: small}

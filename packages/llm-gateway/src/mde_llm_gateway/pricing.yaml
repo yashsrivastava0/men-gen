@@ -1,0 +1,23 @@
+# Price list (brief 7.9). USD per 1M tokens, quoted strings so they load as exact Decimals.
+# A model or tool that is not listed here is REFUSED (UnknownModelPrice): never guess a price.
+version: 1
+
+models:
+  gpt-6-luna:
+    input_usd_per_million: "0.10"
+    cached_input_usd_per_million: "0.01"
+    output_usd_per_million: "0.50"
+    # Prompts above this many input tokens are billed at the multiplied rates for the WHOLE request.
+    long_context:
+      threshold_tokens: 272000
+      input_multiplier: "2.0"
+      output_multiplier: "1.5"
+
+tools:
+  web_search:
+    per_call_usd: "0.01"
+    # Search content tokens are billed as input at the model rate. They normally appear inside
+    # usage.input_tokens; the reservation (worst case) still assumes this many extra tokens per call.
+    # L0 live smoke (2026-11-08) measured about 8,700 input tokens for ONE web_search call, so the
+    # worst-case estimate assumes 12,000 (the first guess of 3,000 under-reserved).
+    assumed_content_tokens: 12000

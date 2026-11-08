@@ -1,0 +1,73 @@
+# SIT-012: Sensitive domain (health, finance, children, identity documents, precise location)
+# Detection: C2 flags, pack rules
+# Behavior:  Must-confirm compliance cards in Discover, conservative defaults, visible flag; R4 adds source pointers at step 3 (not legal advice)
+id: SIT-012-sensitive-domain
+situation: "Sensitive domain (health, finance, children, identity documents, precise location)"
+mode: guided
+variants:
+  health:
+    steps:
+      - user: "I want a clinic app where patients book appointments"
+        expect:
+          pending_card: Q-type-03
+      - tap: {card: Q-type-03, option: A}
+        expect:
+          pending_card: Q-comp-01
+      - tap: {card: Q-comp-01, option: C}
+        expect:
+          slots:
+            compliance.flags: {contains: health_data_privacy}
+            behavior.analytics: {value: false}
+  research_adds_source_pointers_at_step_three:
+    steps:
+      - user: "I want a clinic app where patients book appointments"
+      - tap: {card: Q-type-03, option: A}
+      - tap: {card: Q-comp-01, option: C}
+      - user: "finish with smart defaults"
+        expect: {state: BRIEF_REVIEW}
+      - decide: {gate: brief}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          plan: {compliance_min: 1}
+          spec: {text_contains: "health_data_privacy"}
+  precise_location:
+    steps:
+      - user: "I want a delivery app with live location tracking of the rider"
+        expect: {state: DISCOVERING}
+      - tap: {recommended: true}
+        expect:
+          pending_card: Q-comp-05
+  finance:
+    steps:
+      - user: "I want a loan app where people apply for personal loans"
+        expect: {state: DISCOVERING}
+      - tap: {option: A}
+        expect:
+          pending_card: Q-comp-02
+  children:
+    steps:
+      - user: "I want a learning app for kids and their parents"
+        expect: {state: DISCOVERING}
+      - tap: {option: A}
+        expect:
+          pending_card: Q-comp-03
+  identity_documents:
+    provider_script:
+      C1.understand:
+        - {intent: idea, confidence: 0.9, language: en, slot_updates: [{slot_id: idea.summary, value_text: "An app that scans an aadhaar card for kyc"}]}
+    steps:
+      - user: "I want an app that scans an aadhaar card for kyc"
+        expect: {state: DISCOVERING}
+      - tap: {recommended: true}
+        expect:
+          pending_card: Q-comp-04
+  guided_skip_is_conservative:
+    steps:
+      - user: "I want a clinic app where patients book appointments"
+      - tap: {card: Q-type-03, option: A}
+        expect: {pending_card: Q-comp-01}
+      - tap: {card: Q-comp-01, you_decide: true}
+        expect:
+          slots:
+            compliance.flags: {contains: health_data_privacy, state: assumed}

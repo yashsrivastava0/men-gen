@@ -1,0 +1,14 @@
+id: P01-hi-only
+title: Says hi and nothing else
+who: Opens the chat, greets, never says what they want.
+language: en
+mode: guided
+script:
+  - user: "hi"
+  - user: "hello"
+  - user: "hey there"
+expect:
+  state: DISCOVERING
+  spec_ready: 0
+  max_cards: 0
+  text_contains: ["What would you like to build"]

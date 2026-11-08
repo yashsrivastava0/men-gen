@@ -1,0 +1,831 @@
+# Domain Pack: custom (the fallback for ideas that do not match a known type). A generic app built
+# only from the base recipes: browse and detail, search, forms, sign-in and profile,
+# notifications, settings, media, maps and a mock checkout. The Spec Builder and the section
+# writers rename and refine it for the idea; nothing here belongs to one company or app type.
+# See commerce.yaml for the file conventions and docs/specs/domain-pack-format.md.
+id: custom
+archetype: custom
+label: Custom app
+description: A flexible starting point for anything that is not an online store, food ordering, booking or an internal tool. People browse items, open details, search, send forms, keep a profile, get notifications and change settings. Photos, maps and a mock checkout can be added. The generic word "item" is renamed to the idea's own noun by later steps.
+theme_candidates: [clean-bright, minimal-mono, vibrant-playful]
+default_theme: clean-bright
+
+features:
+  - {id: list_detail, label: Browse items, tier: core, description: "Categories, a list of items and a page for each item.", i18n: {hi: आइटम देखें}}
+  - {id: search, label: Search, tier: standard, description: "Find items by name with filters and sorting.", i18n: {hi: खोज}}
+  - {id: forms, label: Forms, tier: extra, default_on: false, description: "Send a form, follow its status and review submissions as an admin.", i18n: {hi: फ़ॉर्म}}
+  - {id: auth_profile, label: Sign-in and profile, tier: core, description: "Sign in with a code and keep a small profile.", i18n: {hi: साइन-इन और प्रोफ़ाइल}}
+  - {id: notifications, label: Notifications, tier: extra, default_on: false, description: "A list of updates, with push on the phone.", i18n: {hi: सूचनाएं}}
+  - {id: settings, label: Settings and help, tier: standard, description: "Preferences, a help page, legal pages and account deletion.", i18n: {hi: सेटिंग्स और सहायता}}
+  - {id: media_gallery, label: Photos and media, tier: extra, default_on: false, description: "A gallery with a full-screen viewer and uploads.", i18n: {hi: फ़ोटो और मीडिया}}
+  - {id: maps, label: Maps and places, tier: extra, default_on: false, description: "Places on a map with a list and a page for each place.", i18n: {hi: नक्शा और स्थान}}
+  - {id: payments_mock, label: Mock checkout, tier: extra, default_on: false, description: "A cart and a pretend payment so the flow can be tried before a real provider is chosen.", i18n: {hi: डेमो भुगतान}}
+
+roles:
+  - {id: ROLE-user, name: User, description: "Browses, sends forms and keeps a profile.", surface: customer}
+  - {id: ROLE-staff, name: Staff, description: "Handles day-to-day work such as reviewing submissions.", surface: customer}
+  - {id: ROLE-admin, name: Admin, description: "Sets things up: edits items and manages content.", surface: customer}
+
+enums:
+  - {name: ItemStatus, values: [draft, published, archived]}
+  - {name: EntryStatus, values: [submitted, reviewed]}
+  - {name: NotificationKind, values: [update, reminder, account]}
+  - {name: MediaKind, values: [photo, video]}
+  - {name: PaymentStatus, values: [pending, paid, failed]}
+
+entities:
+  - id: ENT-User
+    name: User
+    plain_name: People
+    fields:
+      - {name: name, type: string}
+      - {name: email, type: string, required: false}
+      - {name: phone, type: string, required: false}
+      - {name: avatar, type: image, required: false}
+      - {name: created_at, type: datetime}
+    seed_guidance: Two sample users and one admin with names that match the app locale.
+  - id: ENT-Category
+    name: Category
+    plain_name: Categories
+    fields:
+      - {name: name, type: string}
+      - {name: image, type: image, required: false}
+    seed_guidance: Four to six categories that fit the idea.
+  - id: ENT-Item
+    name: Item
+    plain_name: Items
+    fields:
+      - {name: title, type: string}
+      - {name: summary, type: string}
+      - {name: description, type: text}
+      - {name: image, type: image}
+      - {name: category, type: ref, ref: ENT-Category}
+      - {name: status, type: enum, enum: ItemStatus}
+      - {name: price, type: money, required: false, description: "Only when the idea sells things"}
+      - {name: created_at, type: datetime}
+    state_machine:
+      field: status
+      states: [draft, published, archived]
+      transitions:
+        - {source: draft, target: published, "on": publish}
+        - {source: published, target: archived, "on": archive}
+        - {source: archived, target: published, "on": restore}
+    seed_guidance: 12 to 24 items with believable titles, short summaries and photos, mostly published and two in draft.
+  - id: ENT-Entry
+    name: Entry
+    plain_name: Form submissions
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: title, type: string}
+      - {name: details, type: text}
+      - {name: attachments, type: json, required: false, description: "List of uploaded file references"}
+      - {name: status, type: enum, enum: EntryStatus}
+      - {name: created_at, type: datetime}
+    state_machine:
+      field: status
+      states: [submitted, reviewed]
+      transitions:
+        - {source: submitted, target: reviewed, "on": review}
+  - id: ENT-Notification
+    name: Notification
+    plain_name: Notifications
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: NotificationKind}
+      - {name: title, type: string}
+      - {name: body, type: text}
+      - {name: is_read, type: bool}
+      - {name: created_at, type: datetime}
+  - id: ENT-MediaItem
+    name: Media item
+    plain_name: Photos and videos
+    fields:
+      - {name: owner, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: MediaKind}
+      - {name: file, type: image, description: "Photo or video thumbnail"}
+      - {name: caption, type: string, required: false}
+      - {name: created_at, type: datetime}
+  - id: ENT-Place
+    name: Place
+    plain_name: Places
+    fields:
+      - {name: name, type: string}
+      - {name: description, type: text, required: false}
+      - {name: address, type: text}
+      - {name: latitude, type: number}
+      - {name: longitude, type: number}
+      - {name: image, type: image, required: false}
+    seed_guidance: Eight to twelve places clustered in a fictional city centre.
+  - id: ENT-Cart
+    name: Cart
+    plain_name: Cart
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: item_count, type: int}
+      - {name: total, type: money}
+  - id: ENT-CartItem
+    name: Cart item
+    plain_name: Cart items
+    fields:
+      - {name: cart, type: ref, ref: ENT-Cart}
+      - {name: item, type: ref, ref: ENT-Item}
+      - {name: quantity, type: int}
+      - {name: unit_price, type: money}
+  - id: ENT-Order
+    name: Order
+    plain_name: Mock orders
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: total, type: money}
+      - {name: reference, type: string}
+      - {name: created_at, type: datetime}
+  - id: ENT-Payment
+    name: Payment
+    plain_name: Mock payments
+    fields:
+      - {name: order, type: ref, ref: ENT-Order}
+      - {name: status, type: enum, enum: PaymentStatus}
+      - {name: amount, type: money}
+      - {name: method, type: string, description: "Always mock until a real provider is chosen"}
+      - {name: created_at, type: datetime}
+
+api_operations:
+  # ---- account
+  - {id: API-requestOtp, name: Request sign-in code, method: POST, path: /auth/otp, request_entity: ENT-User, notes: "Sends a one-time code to the email or phone number. Mock sender in the preview."}
+  - {id: API-verifyOtp, name: Verify sign-in code, method: POST, path: /auth/otp/verify, request_entity: ENT-User, response_entity: ENT-User, notes: "Returns the session. New people create a user."}
+  - {id: API-getMe, name: Get my profile, method: GET, path: /me, response_entity: ENT-User, auth: authenticated}
+  - {id: API-updateMe, name: Update my profile, method: PATCH, path: /me, request_entity: ENT-User, response_entity: ENT-User, auth: authenticated}
+  - {id: API-deleteAccount, name: Delete my account, method: DELETE, path: /me, auth: authenticated, notes: "Removes the profile and personal data."}
+  # ---- items
+  - {id: API-listCategories, name: List categories, method: GET, path: /categories, response_entity: ENT-Category, response_many: true}
+  - {id: API-listItems, name: List items, method: GET, path: /items, response_entity: ENT-Item, response_many: true, notes: "Query: category, sort, page."}
+  - {id: API-getItem, name: Get an item, method: GET, path: "/items/{id}", response_entity: ENT-Item}
+  - {id: API-saveItem, name: Save an item, method: PUT, path: "/admin/items/{id}", request_entity: ENT-Item, response_entity: ENT-Item, auth: ROLE-admin, roles: [ROLE-admin]}
+  - {id: API-searchItems, name: Search items, method: GET, path: /search, response_entity: ENT-Item, response_many: true, notes: "Query: q, filters, sort, page."}
+  # ---- forms
+  - {id: API-createEntry, name: Send a form, method: POST, path: /entries, request_entity: ENT-Entry, response_entity: ENT-Entry, auth: authenticated}
+  - {id: API-listMyEntries, name: List my submissions, method: GET, path: /entries, response_entity: ENT-Entry, response_many: true, auth: authenticated}
+  - {id: API-getEntry, name: Get a submission, method: GET, path: "/entries/{id}", response_entity: ENT-Entry, auth: authenticated}
+  - {id: API-listAllEntries, name: List all submissions, method: GET, path: /admin/entries, response_entity: ENT-Entry, response_many: true, auth: ROLE-staff, roles: [ROLE-staff, ROLE-admin], notes: "Query: status, page."}
+  - {id: API-updateEntryStatus, name: Mark a submission reviewed, method: PATCH, path: "/admin/entries/{id}", request_entity: ENT-Entry, response_entity: ENT-Entry, auth: ROLE-staff, roles: [ROLE-staff, ROLE-admin]}
+  # ---- notifications and settings
+  - {id: API-listNotifications, name: List my notifications, method: GET, path: /notifications, response_entity: ENT-Notification, response_many: true, auth: authenticated}
+  - {id: API-markNotificationRead, name: Mark a notification read, method: POST, path: "/notifications/{id}/read", response_entity: ENT-Notification, auth: authenticated}
+  - {id: API-registerPushToken, name: Register this phone for push, method: POST, path: /devices/push-token, auth: authenticated, notes: "Body carries the device token. Mock in the preview."}
+  # ---- media and maps
+  - {id: API-listMedia, name: List photos and videos, method: GET, path: /media, response_entity: ENT-MediaItem, response_many: true, auth: authenticated}
+  - {id: API-uploadMedia, name: Upload a photo or video, method: POST, path: /media, request_entity: ENT-MediaItem, response_entity: ENT-MediaItem, auth: authenticated}
+  - {id: API-deleteMedia, name: Delete a photo or video, method: DELETE, path: "/media/{id}", auth: authenticated}
+  - {id: API-listPlaces, name: List places, method: GET, path: /places, response_entity: ENT-Place, response_many: true, notes: "Query: near (latitude and longitude), q, page."}
+  - {id: API-getPlace, name: Get a place, method: GET, path: "/places/{id}", response_entity: ENT-Place}
+  # ---- mock checkout
+  - {id: API-getCart, name: Get my cart, method: GET, path: /cart, response_entity: ENT-Cart, auth: authenticated, notes: "Includes its items (ENT-CartItem)."}
+  - {id: API-addCartItem, name: Add to cart, method: POST, path: /cart/items, request_entity: ENT-CartItem, response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-removeCartItem, name: Remove from cart, method: DELETE, path: "/cart/items/{id}", response_entity: ENT-Cart, auth: authenticated}
+  - {id: API-createOrder, name: Place a mock order, method: POST, path: /orders, request_entity: ENT-Order, response_entity: ENT-Order, auth: authenticated}
+  - {id: API-createPayment, name: Make a mock payment, method: POST, path: /payments, request_entity: ENT-Payment, response_entity: ENT-Payment, auth: authenticated, notes: "Always approves unless the test amount for decline is used. No real money moves."}
+  - {id: API-listPayments, name: List my payments, method: GET, path: /payments, response_entity: ENT-Payment, response_many: true, auth: authenticated}
+
+integrations:
+  - {id: INT-otp_delivery, name: Sign-in codes, purpose: Send one-time codes by email or SMS so people can sign in., mode: mock, notes: "Mock sender prints the code in the preview. A real email or SMS provider is chosen at release."}
+  - {id: INT-file_storage, name: File storage, purpose: Store photos and attachments people upload., mode: mock}
+  - {id: INT-maps, name: Maps and geocoding, purpose: Show places on a map and give directions., mode: mock, notes: "Static sample map in the preview. A real map provider key is needed at release."}
+  - {id: INT-payments, name: Payments, purpose: Stand in for a payment provider so the checkout can be tried., mode: mock, notes: "Mock only. A real provider SDK needs a development build and keeps card data off our servers."}
+  - {id: INT-push_notifications, name: Push notifications, purpose: Send updates to the phone., mode: mock, notes: "Shown as in-app banners in the preview."}
+
+compliance_triggers:
+  - id: health_information
+    label: Handles health information
+    sensitive_domain: health
+    cards: [Q-comp-01]
+    keywords: [health, medical, doctor, patient, symptoms, medication, therapy, wellness, "health records"]
+    conservative_defaults: {compliance.flags: [health_data_privacy]}
+    research_hint: health information privacy and consent rules for mobile apps
+  - id: money_and_payments
+    label: Handles money or payments
+    sensitive_domain: finance
+    cards: [Q-comp-02]
+    keywords: [payment, payments, bank, loan, wallet, invoice, "pay online", card, investment, insurance]
+    conservative_defaults: {compliance.flags: [financial_data]}
+    research_hint: payment and financial data handling responsibilities for a mobile app
+  - id: children_users
+    label: Used by children
+    sensitive_domain: children
+    cards: [Q-comp-03]
+    keywords: [kids, children, child, students, school, "parents", toddler, teen]
+    conservative_defaults: {compliance.flags: [child_safety]}
+    research_hint: children's data and parental consent rules for mobile apps
+  - id: identity_documents
+    label: Handles identity documents
+    sensitive_domain: identity_documents
+    cards: [Q-comp-04]
+    keywords: [passport, "id card", "driving licence", "driver license", aadhaar, "national id", "kyc", "identity proof"]
+    conservative_defaults: {compliance.flags: [identity_documents]}
+    research_hint: identity document capture, storage and retention rules for mobile apps
+  - id: precise_location_use
+    label: Uses precise location
+    sensitive_domain: precise_location
+    cards: [Q-comp-05]
+    keywords: [gps, "live location", "current location", "track location", "near me", geofence, "location history"]
+    conservative_defaults: {compliance.flags: [precise_location]}
+    research_hint: consent, purpose limits and retention for precise location in mobile apps
+
+screens:
+  # ------------------------------------------------------------------ sign in and profile
+  - key: welcome
+    route: /welcome
+    recipe: welcome
+    purpose: Introduce the app to a signed-out visitor and offer to sign in, create an account or look around
+    feature: auth_profile
+    actions:
+      - {name: sign_in, go: "@login"}
+      - {name: create_account, go: "@signup"}
+      - {name: browse_as_guest, go: "@home"}
+    texts: {title: "Welcome", cta_primary: "Sign in", cta_secondary: "Create account", cta_guest: "Take a look first"}
+    checks:
+      - Take a look first opens the home screen without asking for an account
+      - Sign in and Create account open the matching screens
+  - key: login
+    route: /login
+    recipe: login-otp
+    purpose: Sign in with an email or phone number and a one-time code
+    feature: auth_profile
+    actions:
+      - {name: send_code, calls: API-requestOtp, on_success: "show the code field and start the resend timer"}
+      - {name: verify_code, calls: API-verifyOtp, go: "@home", on_success: "save the session and open the home screen"}
+      - {name: new_user_setup, go: "@signup", on_success: "opened instead of home when the person is new"}
+    states:
+      wrong_code: {show: "inline error under the code field", allow: "retry, and resend after 30 seconds"}
+    texts: {title: "Sign in", cta: "Send code", hint: "We will send you a 6-digit code"}
+    checks:
+      - A wrong code shows an error and allows another try
+      - The resend link stays disabled for 30 seconds after a send
+  - key: signup
+    route: /signup
+    recipe: signup
+    purpose: Finish a new account with a name after the code is verified
+    feature: auth_profile
+    actions:
+      - {name: finish_profile, calls: API-updateMe, go: "@home", on_success: "open the home screen"}
+    texts: {title: "Almost there", cta: "Create account"}
+    checks:
+      - The name is required and the other fields are optional
+  - key: profile
+    route: /account
+    recipe: profile
+    purpose: Show who is signed in and lead to account areas
+    auth: authenticated
+    feature: auth_profile
+    data:
+      - {bind: "API-getMe", show: [name, email, phone, avatar]}
+    sections: [identity_header, menu_groups, sign_out]
+    actions:
+      - {name: edit_profile, go: "@edit_profile"}
+      - {name: open_my_entries, go: "@my_entries"}
+      - {name: open_gallery, go: "@gallery"}
+      - {name: open_payment_history, go: "@payment_history"}
+      - {name: open_notifications, go: "@notifications"}
+      - {name: open_settings, go: "@settings"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Sign out returns to the welcome screen and clears the session
+  - key: edit_profile
+    route: /account/edit
+    recipe: form
+    purpose: Change the name, contact details and photo
+    auth: authenticated
+    feature: auth_profile
+    data:
+      - {bind: "API-getMe", show: [name, email, phone, avatar]}
+    sections: [photo, name_input, email_input, phone_input, save]
+    actions:
+      - {name: save_profile, calls: API-updateMe, go: "@profile"}
+    checks:
+      - Changing the email or phone asks for a new code before saving
+  # ------------------------------------------------------------------ browse
+  - key: home
+    route: /home
+    recipe: dashboard
+    purpose: Show categories and featured items with shortcuts to the other parts of the app
+    feature: list_detail
+    data:
+      - {bind: "API-listCategories", show: [name, image]}
+      - {bind: "API-listItems(featured)", show: [title, summary, image]}
+    sections: [search_entry, featured_items, categories, quick_links]
+    actions:
+      - {name: open_search, go: "@search"}
+      - {name: open_categories, go: "@category_list"}
+      - {name: open_item, go: "@item_detail"}
+      - {name: open_entry_form, go: "@entry_form"}
+      - {name: open_gallery, go: "@gallery"}
+      - {name: open_map, go: "@map"}
+    texts: {title: "Home"}
+    checks:
+      - Quick links appear only for the features that are switched on
+      - Tapping an item opens its page
+  - key: category_list
+    route: /categories
+    recipe: list
+    purpose: List all categories so people can pick one to browse
+    feature: list_detail
+    data:
+      - {bind: "API-listCategories", show: [name, image]}
+    actions:
+      - {name: open_category, go: "@items"}
+    states:
+      empty: {message: "Nothing here yet", action: "Back to home"}
+    texts: {title: "Browse"}
+    checks:
+      - Each row shows the category name and image
+  - key: items
+    route: /items
+    recipe: list-with-filters
+    purpose: List the items of a category with filters and sorting
+    feature: list_detail
+    data:
+      - {bind: "API-listItems(category, sort)", show: [title, summary, image, price, status]}
+    sections: [filter_chips, sort_control, result_count, item_cards, load_more]
+    actions:
+      - {name: open_item, go: "@item_detail"}
+      - {name: add_item, go: "@item_editor"}
+    states:
+      empty: {message: "No items here yet", action: "Browse other categories"}
+    checks:
+      - Changing the sort order reloads the list from the first page
+      - The add button appears only for admins
+  - key: item_detail
+    route: /items/[id]
+    recipe: detail
+    purpose: Show one item in full
+    feature: list_detail
+    data:
+      - {bind: "API-getItem(id)", show: [title, image, summary, description, category, price]}
+    sections: [header, summary, facts, related_items, secondary_actions]
+    actions:
+      - {name: add_to_cart, calls: API-addCartItem, on_success: "toast and the cart count goes up"}
+      - {name: view_cart, go: "@cart"}
+      - {name: edit_item, go: "@item_editor"}
+    checks:
+      - The edit action appears only for admins
+      - Add to cart appears only when the mock checkout is switched on
+  - key: item_editor
+    route: /items/edit
+    recipe: form
+    purpose: Add or change an item with a photo, text and category
+    auth: ROLE-admin
+    feature: list_detail
+    data:
+      - {bind: "API-getItem(id)", show: [title, summary, description, image, category, price, status]}
+    sections: [photo, title_input, summary_input, description_input, category_picker, price_input, status_picker, save]
+    actions:
+      - {name: save_item, calls: API-saveItem, go: "@items"}
+    checks:
+      - The title and category are required
+  # ------------------------------------------------------------------ search
+  - key: search
+    route: /search
+    recipe: search
+    purpose: Search items by name with recent searches
+    feature: search
+    data:
+      - {bind: "API-searchItems(q)", show: [title, summary, image]}
+    actions:
+      - {name: open_results, go: "@search_results"}
+      - {name: open_item, go: "@item_detail"}
+    texts: {hint: "Search"}
+    checks:
+      - Recent searches appear before typing and can be cleared
+  - key: search_results
+    route: /search/results
+    recipe: list-with-filters
+    purpose: Show matching items with filters and sorting
+    feature: search
+    data:
+      - {bind: "API-searchItems(q, filters, sort)", show: [title, summary, image, price]}
+    sections: [search_bar, filter_chips, sort_control, result_count, item_cards, load_more]
+    actions:
+      - {name: open_item, go: "@item_detail"}
+    states:
+      empty: {message: "Nothing matches your search", action: "Clear filters"}
+    checks:
+      - The result count matches the number of rows after filtering
+  # ------------------------------------------------------------------ forms
+  - key: entry_form
+    route: /forms/new
+    recipe: multi-step-form
+    purpose: Collect a title, details and optional attachments and send them
+    auth: authenticated
+    feature: forms
+    sections: [progress_steps, step_fields, attachments, review_step, submit]
+    actions:
+      - {name: send_entry, calls: API-createEntry, go: "@entry_submitted", on_success: "clear the draft"}
+    states:
+      draft_saved: {show: "Draft saved on this phone", allow: "resume later"}
+    texts: {title: "New request", cta: "Send"}
+    checks:
+      - Required fields block the next step with a message under the field
+      - A half-filled form is kept as a draft if the app closes
+  - key: entry_submitted
+    route: /forms/submitted
+    recipe: confirmation
+    purpose: Confirm the form was sent and where to follow it
+    auth: authenticated
+    feature: forms
+    actions:
+      - {name: view_entry, go: "@my_entries"}
+      - {name: back_home, go: "@home"}
+    texts: {title: "Sent", message: "We have your request."}
+    checks:
+      - The back button returns to home, not to the form
+  - key: my_entries
+    route: /forms
+    recipe: list
+    purpose: List the forms the person sent with their status
+    auth: authenticated
+    feature: forms
+    data:
+      - {bind: "API-listMyEntries", show: [title, status, created_at]}
+    actions:
+      - {name: open_entry, go: "@entry_detail"}
+      - {name: new_entry, go: "@entry_form"}
+    states:
+      empty: {message: "You have not sent anything yet", action: "Send a request"}
+    texts: {title: "My requests"}
+    checks:
+      - Each row shows the status as text, not color alone
+  - key: entry_detail
+    route: /forms/[id]
+    recipe: detail
+    purpose: Show one submission with its details, attachments and status
+    auth: authenticated
+    feature: forms
+    data:
+      - {bind: "API-getEntry(id)", show: [title, details, attachments, status, created_at]}
+    actions:
+      - {name: back_to_list, go: "@my_entries"}
+    checks:
+      - Attachments open in the full-screen viewer
+  - key: entry_review
+    route: /admin/forms
+    recipe: approvals-queue
+    purpose: Show submissions waiting for review so staff can open or mark them reviewed
+    auth: ROLE-staff
+    feature: forms
+    data:
+      - {bind: "API-listAllEntries(status)", show: [title, user, status, created_at]}
+    sections: [summary_counts, filter_chips, pending_items, decided_items]
+    actions:
+      - {name: open_entry, go: "@entry_detail"}
+      - {name: mark_reviewed, calls: API-updateEntryStatus, on_success: "row moves to reviewed"}
+    states:
+      empty: {message: "Nothing to review", action: "Back to home"}
+    checks:
+      - Marking reviewed cannot be undone from this screen
+  # ------------------------------------------------------------------ notifications and settings
+  - key: notifications
+    route: /notifications
+    recipe: notifications
+    purpose: Show updates and reminders the person received
+    auth: authenticated
+    feature: notifications
+    data:
+      - {bind: "API-listNotifications", show: [kind, title, body, is_read, created_at]}
+    actions:
+      - {name: open_entry, go: "@entry_detail"}
+      - {name: mark_read, calls: API-markNotificationRead}
+      - {name: enable_push, calls: API-registerPushToken, on_success: "ask the system for permission, then save the token"}
+    checks:
+      - Unread items are marked and become read when opened
+  - key: settings
+    route: /settings
+    recipe: settings
+    purpose: Notifications, language, appearance and privacy choices
+    auth: authenticated
+    feature: settings
+    sections: [notifications_group, appearance_group, language_group, privacy_group, about_group, sign_out]
+    actions:
+      - {name: enable_push, calls: API-registerPushToken, on_success: "ask the system for permission, then save the token"}
+      - {name: open_help, go: "@help_center"}
+      - {name: open_legal, go: "@legal"}
+      - {name: delete_account, go: "@delete_account"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Changes apply immediately without a save button
+  - key: help_center
+    route: /help
+    recipe: list
+    purpose: Answer common questions and say how to get in touch
+    feature: settings
+    sections: [faq_groups, contact_options]
+    actions:
+      - {name: open_legal, go: "@legal"}
+    texts: {title: "Help"}
+    checks:
+      - Each question expands in place to show its answer
+  - key: legal
+    route: /legal
+    recipe: detail
+    purpose: Show the terms of use and the privacy notice with their dates
+    feature: settings
+    sections: [terms, privacy_notice, version_date]
+    texts: {title: "Terms and privacy"}
+    checks:
+      - Both documents show the date they were last changed
+  - key: delete_account
+    route: /settings/delete-account
+    recipe: form
+    purpose: Let a person delete their account and data after a clear warning
+    auth: authenticated
+    feature: settings
+    sections: [warning, reason_picker, confirm_input, delete_button]
+    actions:
+      - {name: confirm_delete, calls: API-deleteAccount, go: "@welcome", on_success: "sign out and remove local data"}
+    texts: {title: "Delete account", cta: "Delete my account"}
+    checks:
+      - The delete button is enabled only after the person types the confirmation word
+  # ------------------------------------------------------------------ media
+  - key: gallery
+    route: /gallery
+    recipe: media-gallery
+    purpose: Show the person's photos and videos in a grid with an upload button
+    auth: authenticated
+    feature: media_gallery
+    data:
+      - {bind: "API-listMedia", show: [kind, file, caption, created_at]}
+    actions:
+      - {name: open_media, go: "@media_viewer"}
+      - {name: add_media, go: "@media_upload"}
+    states:
+      empty: {message: "No photos yet", action: "Add the first one"}
+    texts: {title: "Gallery"}
+    checks:
+      - Thumbnails load progressively and keep their place while loading
+  - key: media_viewer
+    route: /gallery/[id]
+    recipe: detail
+    purpose: Show one photo or video full screen with its caption and a delete option
+    auth: authenticated
+    feature: media_gallery
+    data:
+      - {bind: "ENT-MediaItem.caption", show: [file, caption, created_at]}
+    sections: [media, caption, secondary_actions]
+    actions:
+      - {name: delete_media, calls: API-deleteMedia, go: "@gallery", on_success: "item disappears from the gallery"}
+    checks:
+      - Swiping moves to the next item and pinching zooms a photo
+  - key: media_upload
+    route: /gallery/new
+    recipe: form
+    purpose: Pick or take a photo or video, add a caption and upload it
+    auth: authenticated
+    feature: media_gallery
+    sections: [source_picker, preview, caption_input, upload]
+    actions:
+      - {name: upload_media, calls: API-uploadMedia, go: "@gallery", on_success: "new item appears first in the grid"}
+    states:
+      camera_denied: {show: "Choose from your library instead", action: "Open library"}
+    checks:
+      - The upload shows progress and can be cancelled
+  # ------------------------------------------------------------------ maps
+  - key: map
+    route: /map
+    recipe: map-view
+    purpose: Show places on a map with a list sheet
+    feature: maps
+    data:
+      - {bind: "API-listPlaces(near, q)", show: [name, latitude, longitude, image]}
+    actions:
+      - {name: open_place, go: "@place_detail"}
+    states:
+      location_denied: {show: "Showing the city centre", action: "Allow location"}
+    texts: {title: "Map"}
+    checks:
+      - Tapping a marker highlights the same place in the list sheet
+  - key: place_detail
+    route: /map/[id]
+    recipe: detail
+    purpose: Show one place with its address and a way to get directions
+    feature: maps
+    data:
+      - {bind: "API-getPlace(id)", show: [name, description, address, image, latitude, longitude]}
+    sections: [header, address, mini_map, secondary_actions]
+    actions:
+      - {name: back_to_map, go: "@map"}
+    checks:
+      - Get directions opens the system maps app with the place as the destination
+  # ------------------------------------------------------------------ mock checkout
+  - key: cart
+    route: /cart
+    recipe: list
+    purpose: Review the items in the cart and continue to the mock checkout
+    auth: authenticated
+    feature: payments_mock
+    data:
+      - {bind: "API-getCart", show: [items, item_count, total]}
+    sections: [cart_items, order_total, checkout_cta]
+    actions:
+      - {name: remove_item, calls: API-removeCartItem}
+      - {name: checkout, go: "@checkout"}
+      - {name: keep_browsing, go: "@items"}
+    states:
+      empty: {message: "Your cart is empty", action: "Browse items"}
+    texts: {title: "Cart", cta: "Checkout"}
+    checks:
+      - Removing the last item shows the empty cart
+  - key: checkout
+    route: /checkout
+    recipe: checkout-review
+    purpose: Confirm the order and make a pretend payment
+    auth: authenticated
+    feature: payments_mock
+    data:
+      - {bind: "API-getCart", show: [items, total]}
+    sections: [order_summary, payment_method, price_breakdown, place_cta]
+    actions:
+      - {name: place_order, calls: API-createOrder, on_success: "the pretend payment runs next"}
+      - {name: pay_now, calls: API-createPayment, go: "@payment_result", on_success: "open the result"}
+    texts: {title: "Review and pay", cta: "Pay now", note: "This is a demo. No real money moves."}
+    checks:
+      - A visible note says that the payment is a demo
+  - key: payment_result
+    route: /checkout/result
+    recipe: confirmation
+    purpose: Show whether the pretend payment succeeded and where to see it
+    auth: authenticated
+    feature: payments_mock
+    data:
+      - {bind: "ENT-Payment.status", show: [status, amount]}
+    actions:
+      - {name: view_history, go: "@payment_history"}
+      - {name: back_home, go: "@home"}
+    texts: {title: "Payment complete", message: "This was a demo payment."}
+    checks:
+      - A declined demo payment shows a retry action instead of the success mark
+  - key: payment_history
+    route: /payments
+    recipe: list
+    purpose: List the person's demo payments
+    auth: authenticated
+    feature: payments_mock
+    data:
+      - {bind: "API-listPayments", show: [amount, status, method, created_at]}
+    actions:
+      - {name: browse_items, go: "@items"}
+    states:
+      empty: {message: "No payments yet", action: "Browse items"}
+    texts: {title: "Payments"}
+    checks:
+      - Each row is marked as a demo payment
+
+flows:
+  - key: browse_and_view
+    name: Browse and open an item
+    primary: true
+    screens: [home, category_list, items, item_detail]
+    purpose: The main journey, from the home screen to an item page.
+  - key: sign_in
+    name: Sign in
+    feature: auth_profile
+    screens: [welcome, login, home]
+  - key: find_an_item
+    name: Search for an item
+    feature: search
+    screens: [home, search, search_results, item_detail]
+  - key: send_a_form
+    name: Send a form and follow it
+    feature: forms
+    screens: [home, entry_form, entry_submitted, my_entries, entry_detail]
+  - key: review_submissions
+    name: Review submissions
+    feature: forms
+    screens: [entry_review, entry_detail]
+  - key: edit_an_item
+    name: Edit an item
+    screens: [items, item_detail, item_editor]
+  - key: add_photos
+    name: Add a photo
+    feature: media_gallery
+    screens: [gallery, media_upload]
+  - key: view_photos
+    name: View a photo
+    feature: media_gallery
+    screens: [gallery, media_viewer]
+  - key: explore_places
+    name: Explore places
+    feature: maps
+    screens: [map, place_detail]
+  - key: try_the_checkout
+    name: Try the mock checkout
+    feature: payments_mock
+    screens: [item_detail, cart, checkout, payment_result, payment_history]
+  - key: change_my_details
+    name: Change my details
+    feature: auth_profile
+    screens: [profile, edit_profile]
+  - key: read_the_small_print
+    name: Find help and legal pages
+    feature: settings
+    screens: [settings, help_center, legal]
+  - key: delete_my_account
+    name: Delete my account
+    feature: settings
+    screens: [settings, delete_account]
+
+navigation:
+  id: NAV-001
+  route: /
+  kind: auth_gate
+  label: App
+  auth: public
+  children:
+    - id: NAV-002
+      route: /welcome
+      kind: stack
+      label: Welcome
+      screen: "@welcome"
+      children:
+        - {id: NAV-003, route: /login, kind: screen, screen: "@login"}
+        - {id: NAV-004, route: /signup, kind: screen, screen: "@signup"}
+    - id: NAV-010
+      route: /(tabs)
+      kind: tabs
+      children:
+        - id: NAV-011
+          route: /home
+          kind: stack
+          label: Home
+          screen: "@home"
+          children:
+            - {id: NAV-012, route: /categories, kind: screen, screen: "@category_list"}
+            - {id: NAV-013, route: /items, kind: screen, screen: "@items"}
+            - {id: NAV-014, route: "/items/[id]", kind: screen, screen: "@item_detail"}
+            - {id: NAV-015, route: /items/edit, kind: screen, screen: "@item_editor", auth: ROLE-admin}
+            - {id: NAV-016, route: /gallery, kind: screen, screen: "@gallery", auth: authenticated}
+            - {id: NAV-017, route: "/gallery/[id]", kind: screen, screen: "@media_viewer", auth: authenticated}
+            - {id: NAV-018, route: /gallery/new, kind: screen, screen: "@media_upload", auth: authenticated}
+            - {id: NAV-019, route: /map, kind: screen, screen: "@map"}
+            - {id: NAV-020, route: "/map/[id]", kind: screen, screen: "@place_detail"}
+            - {id: NAV-021, route: /cart, kind: screen, screen: "@cart", auth: authenticated}
+            - {id: NAV-022, route: /checkout, kind: screen, screen: "@checkout", auth: authenticated}
+            - {id: NAV-023, route: /checkout/result, kind: screen, screen: "@payment_result", auth: authenticated}
+        - id: NAV-030
+          route: /search
+          kind: stack
+          label: Search
+          screen: "@search"
+          children:
+            - {id: NAV-031, route: /search/results, kind: screen, screen: "@search_results"}
+        - id: NAV-040
+          route: /forms
+          kind: stack
+          label: Requests
+          screen: "@my_entries"
+          auth: authenticated
+          children:
+            - {id: NAV-041, route: /forms/new, kind: screen, screen: "@entry_form", auth: authenticated}
+            - {id: NAV-042, route: /forms/submitted, kind: screen, screen: "@entry_submitted", auth: authenticated}
+            - {id: NAV-043, route: "/forms/[id]", kind: screen, screen: "@entry_detail", auth: authenticated}
+            - {id: NAV-044, route: /admin/forms, kind: screen, screen: "@entry_review", auth: ROLE-staff}
+        - id: NAV-050
+          route: /account
+          kind: stack
+          label: Account
+          screen: "@profile"
+          auth: authenticated
+          children:
+            - {id: NAV-051, route: /account/edit, kind: screen, screen: "@edit_profile", auth: authenticated}
+            - {id: NAV-052, route: /payments, kind: screen, screen: "@payment_history", auth: authenticated}
+            - {id: NAV-053, route: /notifications, kind: screen, screen: "@notifications", auth: authenticated}
+            - {id: NAV-054, route: /settings, kind: screen, screen: "@settings", auth: authenticated}
+            - {id: NAV-055, route: /help, kind: screen, screen: "@help_center"}
+            - {id: NAV-056, route: /legal, kind: screen, screen: "@legal"}
+            - {id: NAV-057, route: /settings/delete-account, kind: screen, screen: "@delete_account", auth: authenticated}
+
+feature_parts:
+  search:
+    operations: [API-searchItems]
+    screens:
+      home: {sections: [search_entry]}
+  forms:
+    operations: [API-createEntry, API-listMyEntries, API-getEntry, API-listAllEntries, API-updateEntryStatus]
+    entities: [ENT-Entry]
+  notifications:
+    operations: [API-listNotifications, API-markNotificationRead, API-registerPushToken]
+    entities: [ENT-Notification]
+    integrations: [INT-push_notifications]
+    screens:
+      settings: {sections: [notifications_group], actions: [enable_push]}
+  settings:
+    operations: [API-deleteAccount]
+  media_gallery:
+    operations: [API-listMedia, API-uploadMedia, API-deleteMedia]
+    entities: [ENT-MediaItem]
+    integrations: [INT-file_storage]
+  maps:
+    operations: [API-listPlaces, API-getPlace]
+    entities: [ENT-Place]
+    integrations: [INT-maps]
+  payments_mock:
+    operations: [API-getCart, API-addCartItem, API-removeCartItem, API-createOrder, API-createPayment, API-listPayments]
+    entities: [ENT-Cart, ENT-CartItem, ENT-Order, ENT-Payment]
+    integrations: [INT-payments]

@@ -1,0 +1,275 @@
+slots:
+  a11y:
+    value: standard
+    state: assumed
+  approvers:
+    value:
+    - requester
+    state: assumed
+  auth.method:
+    value: email_phone_code
+    state: confirmed
+  auth.sso:
+    value: not_needed
+    state: assumed
+  behavior.analytics:
+    value: false
+    state: confirmed
+  behavior.notifications:
+    value: true
+    state: assumed
+  behavior.offline:
+    value: basic
+    state: assumed
+  brand.name:
+    value: Blue Basket
+    state: confirmed
+  compliance.flags:
+    value:
+    - precise_location
+    state: confirmed
+  data.classification:
+    value: internal
+    state: assumed
+  data.source:
+    value: generated
+    state: assumed
+  design.direction:
+    value: corporate-calm
+    state: confirmed
+  design.mode:
+    value: system
+    state: assumed
+  idea.archetype:
+    value: internal_workforce
+    state: confirmed
+  idea.summary:
+    value: 'A company app for our employees and field staff: checklists, attendance and approvals'
+    state: volunteered
+  locale:
+    value: en
+    state: assumed
+  release.channel:
+    value: internal
+    state: assumed
+  scope.features:
+    value:
+    - forms_checklists
+    - approvals
+    - timesheets
+    state: confirmed
+  users.roles:
+    value:
+    - employee
+    - manager
+    state: confirmed
+screens:
+- id: SCR-001
+  route: /login
+  recipe: login-sso
+  surface: employee
+  auth: public
+- id: SCR-002
+  route: /home
+  recipe: dashboard
+  surface: employee
+  auth: authenticated
+- id: SCR-003
+  route: /announcements
+  recipe: list
+  surface: employee
+  auth: authenticated
+- id: SCR-004
+  route: /announcements/[id]
+  recipe: detail
+  surface: employee
+  auth: authenticated
+- id: SCR-005
+  route: /timesheet
+  recipe: form
+  surface: employee
+  auth: authenticated
+- id: SCR-006
+  route: /timesheet/entry
+  recipe: form
+  surface: employee
+  auth: authenticated
+- id: SCR-007
+  route: /timesheet/history
+  recipe: list
+  surface: employee
+  auth: authenticated
+- id: SCR-008
+  route: /tasks
+  recipe: list-with-filters
+  surface: employee
+  auth: authenticated
+- id: SCR-009
+  route: /tasks/[id]
+  recipe: detail
+  surface: employee
+  auth: authenticated
+- id: SCR-010
+  route: /tasks/new
+  recipe: form
+  surface: employee
+  auth: authenticated
+- id: SCR-011
+  route: /forms
+  recipe: list
+  surface: employee
+  auth: authenticated
+- id: SCR-012
+  route: /forms/[id]
+  recipe: multi-step-form
+  surface: employee
+  auth: authenticated
+- id: SCR-013
+  route: /checklists/[id]
+  recipe: checklist
+  surface: employee
+  auth: authenticated
+- id: SCR-014
+  route: /forms/submitted
+  recipe: confirmation
+  surface: employee
+  auth: authenticated
+- id: SCR-015
+  route: /forms/history
+  recipe: list
+  surface: employee
+  auth: authenticated
+- id: SCR-016
+  route: /approvals
+  recipe: approvals-queue
+  surface: employee
+  auth: ROLE-manager
+- id: SCR-017
+  route: /approvals/[id]
+  recipe: detail
+  surface: employee
+  auth: ROLE-manager
+- id: SCR-018
+  route: /more
+  recipe: profile
+  surface: employee
+  auth: authenticated
+- id: SCR-019
+  route: /requests
+  recipe: list
+  surface: employee
+  auth: authenticated
+- id: SCR-020
+  route: /requests/new
+  recipe: form
+  surface: employee
+  auth: authenticated
+- id: SCR-021
+  route: /sync
+  recipe: list
+  surface: employee
+  auth: authenticated
+- id: SCR-022
+  route: /settings
+  recipe: settings
+  surface: employee
+  auth: authenticated
+flows:
+- id: FLW-001
+  name: Pick up a task and finish its checklist
+  screens:
+  - SCR-002
+  - SCR-008
+  - SCR-009
+  - SCR-013
+  - SCR-014
+- id: FLW-002
+  name: Sign in
+  screens:
+  - SCR-001
+  - SCR-002
+- id: FLW-003
+  name: Fill in a form
+  screens:
+  - SCR-011
+  - SCR-012
+  - SCR-014
+- id: FLW-004
+  name: Send a request
+  screens:
+  - SCR-019
+  - SCR-020
+- id: FLW-005
+  name: Approve or reject a request
+  screens:
+  - SCR-016
+  - SCR-017
+- id: FLW-006
+  name: Log time worked
+  screens:
+  - SCR-002
+  - SCR-005
+  - SCR-006
+- id: FLW-007
+  name: Review past weeks
+  screens:
+  - SCR-005
+  - SCR-007
+- id: FLW-008
+  name: Read an announcement
+  screens:
+  - SCR-002
+  - SCR-003
+  - SCR-004
+- id: FLW-009
+  name: Check what is waiting to sync
+  screens:
+  - SCR-018
+  - SCR-021
+entities:
+- ENT-Employee
+- ENT-Task
+- ENT-TaskComment
+- ENT-FormTemplate
+- ENT-FormSubmission
+- ENT-ApprovalRequest
+- ENT-Timesheet
+- ENT-TimeEntry
+- ENT-Announcement
+- ENT-AnnouncementAck
+- ENT-SyncItem
+operations:
+- API-signInSso
+- API-getMe
+- API-listTasks
+- API-getTask
+- API-createTask
+- API-updateTask
+- API-addTaskComment
+- API-listFormTemplates
+- API-getFormTemplate
+- API-submitForm
+- API-listSubmissions
+- API-createRequest
+- API-listMyRequests
+- API-listApprovals
+- API-getApproval
+- API-decideApproval
+- API-getTimesheet
+- API-saveTimeEntry
+- API-submitTimesheet
+- API-listTimesheets
+- API-listAnnouncements
+- API-getAnnouncement
+- API-acknowledgeAnnouncement
+- API-getSyncStatus
+- API-syncNow
+- API-discardPendingChange
+roles:
+- ROLE-employee
+- ROLE-manager
+counts:
+  screens: 22
+  flows: 9
+  entities: 11
+  operations: 26

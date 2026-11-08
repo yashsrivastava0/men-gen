@@ -1,0 +1,75 @@
+{
+  "additionalProperties": false,
+  "description": "Friendly, non-fatal message ('taking longer than usual'); never a raw error.",
+  "properties": {
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "code": {
+      "title": "Code",
+      "type": "string"
+    },
+    "event_id": {
+      "title": "Event Id",
+      "type": "string"
+    },
+    "in_reply_to": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "In Reply To"
+    },
+    "level": {
+      "default": "info",
+      "enum": [
+        "info",
+        "warn"
+      ],
+      "title": "Level",
+      "type": "string"
+    },
+    "seq": {
+      "default": 0,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "type": {
+      "const": "notice",
+      "default": "notice",
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "event_id",
+    "session_id",
+    "code",
+    "text"
+  ],
+  "title": "Notice",
+  "type": "object"
+}

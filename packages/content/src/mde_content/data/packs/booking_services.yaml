@@ -1,0 +1,984 @@
+# Domain Pack: booking_services (appointments and classes at a venue, online or at the
+# customer's place: salons, clinics, tutors, fitness, home services). The customer app is the
+# default; the provider side (agenda and availability) is an optional second surface.
+# See commerce.yaml for the file conventions and docs/specs/domain-pack-format.md.
+id: booking_services
+archetype: booking_services
+label: Booking and services
+description: Let customers find a service, pick a provider and a time, pay and manage the booking. Reminders, reschedule and cancel, reviews and memberships are optional. A provider side (agenda, booking details, availability) is included as an optional surface.
+theme_candidates: [clean-bright, warm-friendly, minimal-mono]
+default_theme: clean-bright
+
+features:
+  - {id: service_catalog, label: Services, tier: core, description: "Categories, a searchable list of services and a page for each with duration and price.", i18n: {hi: सेवाएं}}
+  - {id: provider_profiles, label: Provider profiles, tier: standard, description: "Pick a specific provider and read about them.", i18n: {hi: सेवा प्रदाता प्रोफ़ाइल}}
+  - {id: slot_booking, label: Booking with time slots, tier: core, description: "Choose a day and time, review and confirm, and see upcoming and past bookings.", i18n: {hi: स्लॉट बुकिंग}}
+  - {id: payments, label: Online payments, tier: standard, description: "Pay at booking time. Mock provider until a real one is chosen; paying at the venue stays possible.", i18n: {hi: ऑनलाइन भुगतान}}
+  - {id: reminders, label: Booking reminders, tier: standard, description: "A reminder before the appointment, with a choice of how early.", i18n: {hi: बुकिंग रिमाइंडर}}
+  - {id: reviews, label: Ratings and reviews, tier: extra, default_on: false, description: "Rate a finished booking and read reviews of services and providers.", i18n: {hi: रेटिंग और समीक्षा}}
+  - {id: reschedule_cancel, label: Reschedule and cancel, tier: standard, description: "Move or cancel a booking within the cancellation policy.", i18n: {hi: बदलें और रद्द करें}}
+  - {id: push_notifications, label: Push notifications, tier: standard, description: "Booking updates and offers on the phone.", i18n: {hi: पुश सूचनाएं}}
+  - {id: memberships, label: Memberships, tier: extra, default_on: false, description: "Monthly or yearly plans with included sessions or perks.", i18n: {hi: सदस्यता}}
+  - {id: support, label: Help and support chat, tier: extra, default_on: false, description: "Common questions and a chat with the team.", i18n: {hi: सहायता}}
+
+roles:
+  - {id: ROLE-customer, name: Customer, description: "Finds services, books and pays.", surface: customer}
+  - {id: ROLE-provider, name: Provider, description: "Delivers the service, sees their agenda and sets when they are available.", surface: business}
+
+enums:
+  - {name: BookingStatus, values: [requested, confirmed, completed, cancelled, no_show]}
+  - {name: LocationKind, values: [at_venue, at_customer, online]}
+  - {name: PaymentMethodType, values: [card, wallet, pay_at_venue]}
+  - {name: PaymentStatus, values: [pending, paid, failed, refunded]}
+  - {name: ReminderChannel, values: [push, sms, email]}
+  - {name: MembershipStatus, values: [active, paused, expired, cancelled]}
+  - {name: NotificationKind, values: [booking_update, reminder, offer, account]}
+  - {name: MessageSender, values: [customer, agent]}
+
+entities:
+  - id: ENT-User
+    name: User
+    plain_name: Customers and providers
+    fields:
+      - {name: name, type: string}
+      - {name: phone, type: string}
+      - {name: email, type: string, required: false}
+      - {name: avatar, type: image, required: false}
+      - {name: created_at, type: datetime}
+    seed_guidance: Two sample customers and two provider accounts with names that match the app locale.
+  - id: ENT-Address
+    name: Address
+    plain_name: Saved addresses
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: label, type: string, description: "Home, Work, ..."}
+      - {name: line1, type: string}
+      - {name: line2, type: string, required: false}
+      - {name: city, type: string}
+      - {name: postal_code, type: string}
+      - {name: latitude, type: number, required: false, description: "From the map pin"}
+      - {name: longitude, type: number, required: false, description: "From the map pin"}
+      - {name: access_notes, type: string, required: false, description: "Gate code, floor, parking"}
+      - {name: is_default, type: bool}
+  - id: ENT-ServiceCategory
+    name: Service category
+    plain_name: Service categories
+    fields:
+      - {name: name, type: string}
+      - {name: image, type: image, required: false}
+    seed_guidance: Three to five categories that fit the business, for example hair, skin, wellness.
+  - id: ENT-Service
+    name: Service
+    plain_name: Services
+    fields:
+      - {name: category, type: ref, ref: ENT-ServiceCategory}
+      - {name: name, type: string}
+      - {name: description, type: text}
+      - {name: duration_minutes, type: int}
+      - {name: price, type: money}
+      - {name: image, type: image, required: false}
+      - {name: location_kind, type: enum, enum: LocationKind}
+      - {name: is_active, type: bool}
+    seed_guidance: 10 to 20 services with durations from 15 to 120 minutes and a mix of venue, at-customer and online services.
+  - id: ENT-Provider
+    name: Provider
+    plain_name: Providers
+    fields:
+      - {name: name, type: string}
+      - {name: title, type: string, required: false, description: "For example Senior stylist"}
+      - {name: bio, type: text}
+      - {name: photo, type: image}
+      - {name: rating, type: number, required: false}
+      - {name: rating_count, type: int, required: false}
+      - {name: years_experience, type: int, required: false}
+      - {name: languages, type: json, required: false}
+      - {name: location_name, type: string}
+      - {name: city, type: string}
+    seed_guidance: Four to eight providers, each offering three to six of the services.
+  - id: ENT-ProviderService
+    name: Provider service
+    plain_name: What each provider offers
+    fields:
+      - {name: provider, type: ref, ref: ENT-Provider}
+      - {name: service, type: ref, ref: ENT-Service}
+      - {name: price, type: money, required: false, description: "Only when it differs from the service price"}
+  - id: ENT-Slot
+    name: Slot
+    plain_name: Available times
+    fields:
+      - {name: provider, type: ref, ref: ENT-Provider, required: false}
+      - {name: starts_at, type: datetime}
+      - {name: ends_at, type: datetime}
+      - {name: is_available, type: bool}
+    seed_guidance: Hourly or half-hourly slots for the next 14 days with realistic gaps, some already taken.
+  - id: ENT-Booking
+    name: Booking
+    plain_name: Bookings
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: service, type: ref, ref: ENT-Service}
+      - {name: provider, type: ref, ref: ENT-Provider, required: false}
+      - {name: status, type: enum, enum: BookingStatus}
+      - {name: starts_at, type: datetime}
+      - {name: ends_at, type: datetime}
+      - {name: location_kind, type: enum, enum: LocationKind}
+      - {name: address, type: ref, ref: ENT-Address, required: false}
+      - {name: notes, type: text, required: false}
+      - {name: price, type: money}
+      - {name: payment_method, type: enum, enum: PaymentMethodType, required: false}
+      - {name: reference, type: string, description: "Short booking code shown to the customer"}
+      - {name: created_at, type: datetime}
+      - {name: cancel_reason, type: string, required: false}
+    state_machine:
+      field: status
+      states: [requested, confirmed, completed, cancelled, no_show]
+      transitions:
+        - {source: requested, target: confirmed, "on": confirm}
+        - {source: confirmed, target: completed, "on": complete}
+        - {source: confirmed, target: no_show, "on": mark_no_show}
+        - {source: requested, target: cancelled, "on": cancel}
+        - {source: confirmed, target: cancelled, "on": cancel}
+    seed_guidance: Four sample bookings for the main customer, covering upcoming confirmed, requested, completed and cancelled.
+  - id: ENT-PaymentMethod
+    name: Payment method
+    plain_name: Saved payment methods
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: PaymentMethodType}
+      - {name: label, type: string, description: "Display text only, for example Card ending 4242. Never a full number."}
+      - {name: is_default, type: bool}
+  - id: ENT-Payment
+    name: Payment
+    plain_name: Payments
+    fields:
+      - {name: booking, type: ref, ref: ENT-Booking}
+      - {name: method, type: enum, enum: PaymentMethodType}
+      - {name: status, type: enum, enum: PaymentStatus}
+      - {name: amount, type: money}
+      - {name: provider_reference, type: string, required: false}
+  - id: ENT-Review
+    name: Review
+    plain_name: Reviews
+    fields:
+      - {name: booking, type: ref, ref: ENT-Booking}
+      - {name: service, type: ref, ref: ENT-Service}
+      - {name: provider, type: ref, ref: ENT-Provider, required: false}
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: rating, type: int, description: "1 to 5"}
+      - {name: comment, type: text, required: false}
+      - {name: created_at, type: datetime}
+  - id: ENT-ReminderPreference
+    name: Reminder preference
+    plain_name: Reminder settings
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: enabled, type: bool}
+      - {name: lead_minutes, type: int, description: "How long before the booking, for example 60 or 1440"}
+      - {name: channel, type: enum, enum: ReminderChannel}
+  - id: ENT-MembershipPlan
+    name: Membership plan
+    plain_name: Membership plans
+    fields:
+      - {name: name, type: string}
+      - {name: description, type: text}
+      - {name: price, type: money}
+      - {name: billing_period, type: string, description: "month or year"}
+      - {name: sessions_included, type: int, required: false}
+      - {name: perks, type: json, required: false, description: "List of short perk descriptions"}
+  - id: ENT-Membership
+    name: Membership
+    plain_name: My membership
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: plan, type: ref, ref: ENT-MembershipPlan}
+      - {name: status, type: enum, enum: MembershipStatus}
+      - {name: renews_on, type: date, required: false}
+      - {name: sessions_left, type: int, required: false}
+  - id: ENT-Notification
+    name: Notification
+    plain_name: Notifications
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: kind, type: enum, enum: NotificationKind}
+      - {name: title, type: string}
+      - {name: body, type: text}
+      - {name: is_read, type: bool}
+      - {name: created_at, type: datetime}
+  - id: ENT-SupportMessage
+    name: Support message
+    plain_name: Support chat messages
+    fields:
+      - {name: user, type: ref, ref: ENT-User}
+      - {name: sender, type: enum, enum: MessageSender}
+      - {name: body, type: text}
+      - {name: created_at, type: datetime}
+
+api_operations:
+  # ---- account and addresses
+  - {id: API-requestOtp, name: Request sign-in code, method: POST, path: /auth/otp, request_entity: ENT-User, notes: "Sends a one-time code to the phone number. Mock sender in the preview."}
+  - {id: API-verifyOtp, name: Verify sign-in code, method: POST, path: /auth/otp/verify, request_entity: ENT-User, response_entity: ENT-User, notes: "Returns the session. New phone numbers create a user."}
+  - {id: API-getMe, name: Get my profile, method: GET, path: /me, response_entity: ENT-User, auth: authenticated}
+  - {id: API-updateMe, name: Update my profile, method: PATCH, path: /me, request_entity: ENT-User, response_entity: ENT-User, auth: authenticated}
+  - {id: API-listAddresses, name: List my addresses, method: GET, path: /addresses, response_entity: ENT-Address, response_many: true, auth: authenticated}
+  - {id: API-createAddress, name: Add an address, method: POST, path: /addresses, request_entity: ENT-Address, response_entity: ENT-Address, auth: authenticated}
+  - {id: API-updateAddress, name: Change an address, method: PUT, path: "/addresses/{id}", request_entity: ENT-Address, response_entity: ENT-Address, auth: authenticated}
+  - {id: API-deleteAddress, name: Delete an address, method: DELETE, path: "/addresses/{id}", auth: authenticated}
+  # ---- catalog and providers
+  - {id: API-listCategories, name: List service categories, method: GET, path: /categories, response_entity: ENT-ServiceCategory, response_many: true}
+  - {id: API-listServices, name: List services, method: GET, path: /services, response_entity: ENT-Service, response_many: true, notes: "Query: category, q, sort, page."}
+  - {id: API-getService, name: Get a service, method: GET, path: "/services/{id}", response_entity: ENT-Service}
+  - {id: API-listProviders, name: List providers, method: GET, path: /providers, response_entity: ENT-Provider, response_many: true, notes: "Query: service, sort, page."}
+  - {id: API-getProvider, name: Get a provider, method: GET, path: "/providers/{id}", response_entity: ENT-Provider, notes: "Includes what they offer (ENT-ProviderService)."}
+  # ---- slots and bookings
+  - {id: API-listSlots, name: List available times, method: GET, path: /slots, response_entity: ENT-Slot, response_many: true, notes: "Query: service, provider (optional), date. Without a provider the slots of any provider are merged."}
+  - {id: API-createBooking, name: Create a booking, method: POST, path: /bookings, request_entity: ENT-Booking, response_entity: ENT-Booking, auth: authenticated, notes: "Holds the slot. Refuses a slot that was just taken."}
+  - {id: API-listBookings, name: List my bookings, method: GET, path: /bookings, response_entity: ENT-Booking, response_many: true, auth: authenticated, notes: "Query: when (upcoming or past)."}
+  - {id: API-getBooking, name: Get a booking, method: GET, path: "/bookings/{id}", response_entity: ENT-Booking, auth: authenticated}
+  - {id: API-rescheduleBooking, name: Move a booking, method: POST, path: "/bookings/{id}/reschedule", request_entity: ENT-Booking, response_entity: ENT-Booking, auth: authenticated, notes: "Allowed only before the cancellation cutoff."}
+  - {id: API-cancelBooking, name: Cancel a booking, method: POST, path: "/bookings/{id}/cancel", response_entity: ENT-Booking, auth: authenticated}
+  # ---- payments
+  - {id: API-listPaymentMethods, name: List saved payment methods, method: GET, path: /payment-methods, response_entity: ENT-PaymentMethod, response_many: true, auth: authenticated}
+  - {id: API-addPaymentMethod, name: Save a payment method, method: POST, path: /payment-methods, request_entity: ENT-PaymentMethod, response_entity: ENT-PaymentMethod, auth: authenticated, notes: "The provider tokenizes the card; only the display label is stored."}
+  - {id: API-removePaymentMethod, name: Remove a payment method, method: DELETE, path: "/payment-methods/{id}", auth: authenticated}
+  - {id: API-createPayment, name: Pay for a booking, method: POST, path: /payments, request_entity: ENT-Payment, response_entity: ENT-Payment, auth: authenticated, notes: "Mock provider by default."}
+  # ---- reviews, reminders, memberships
+  - {id: API-listReviews, name: List reviews, method: GET, path: /reviews, response_entity: ENT-Review, response_many: true, notes: "Query: service or provider."}
+  - {id: API-createReview, name: Write a review, method: POST, path: "/bookings/{id}/review", request_entity: ENT-Review, response_entity: ENT-Review, auth: authenticated, notes: "Only for completed bookings."}
+  - {id: API-getReminderPreference, name: Get my reminder settings, method: GET, path: /reminders, response_entity: ENT-ReminderPreference, auth: authenticated}
+  - {id: API-updateReminderPreference, name: Change my reminder settings, method: PUT, path: /reminders, request_entity: ENT-ReminderPreference, response_entity: ENT-ReminderPreference, auth: authenticated}
+  - {id: API-listMembershipPlans, name: List membership plans, method: GET, path: /membership-plans, response_entity: ENT-MembershipPlan, response_many: true}
+  - {id: API-getMembershipPlan, name: Get a membership plan, method: GET, path: "/membership-plans/{id}", response_entity: ENT-MembershipPlan}
+  - {id: API-getMyMembership, name: Get my membership, method: GET, path: /membership, response_entity: ENT-Membership, auth: authenticated}
+  - {id: API-subscribeMembership, name: Start a membership, method: POST, path: /membership, request_entity: ENT-Membership, response_entity: ENT-Membership, auth: authenticated}
+  - {id: API-cancelMembership, name: Cancel my membership, method: DELETE, path: /membership, response_entity: ENT-Membership, auth: authenticated}
+  # ---- notifications and support
+  - {id: API-listNotifications, name: List my notifications, method: GET, path: /notifications, response_entity: ENT-Notification, response_many: true, auth: authenticated}
+  - {id: API-markNotificationRead, name: Mark a notification read, method: POST, path: "/notifications/{id}/read", response_entity: ENT-Notification, auth: authenticated}
+  - {id: API-registerPushToken, name: Register this phone for push, method: POST, path: /devices/push-token, auth: authenticated, notes: "Body carries the device token. Mock in the preview."}
+  - {id: API-listSupportMessages, name: List support messages, method: GET, path: /support/messages, response_entity: ENT-SupportMessage, response_many: true, auth: authenticated}
+  - {id: API-sendSupportMessage, name: Send a support message, method: POST, path: /support/messages, request_entity: ENT-SupportMessage, response_entity: ENT-SupportMessage, auth: authenticated}
+  # ---- provider side
+  - {id: API-getProviderAgenda, name: Get my agenda, method: GET, path: /provider/agenda, response_entity: ENT-Booking, response_many: true, auth: ROLE-provider, roles: [ROLE-provider], notes: "Query: date."}
+  - {id: API-getProviderBooking, name: Get a booking as the provider, method: GET, path: "/provider/bookings/{id}", response_entity: ENT-Booking, auth: ROLE-provider, roles: [ROLE-provider]}
+  - {id: API-updateBookingStatus, name: "Confirm, complete or mark a no-show", method: PATCH, path: "/provider/bookings/{id}", request_entity: ENT-Booking, response_entity: ENT-Booking, auth: ROLE-provider, roles: [ROLE-provider]}
+  - {id: API-listProviderAvailability, name: List my availability, method: GET, path: /provider/availability, response_entity: ENT-Slot, response_many: true, auth: ROLE-provider, roles: [ROLE-provider]}
+  - {id: API-saveProviderAvailability, name: Save my availability, method: PUT, path: /provider/availability, request_entity: ENT-Slot, response_entity: ENT-Slot, response_many: true, auth: ROLE-provider, roles: [ROLE-provider]}
+
+integrations:
+  - {id: INT-sms_otp, name: Sign-in codes by SMS, purpose: Send one-time codes so people can sign in with a phone number., mode: mock, notes: "Mock sender prints the code in the preview. A real SMS provider is chosen at release."}
+  - {id: INT-maps, name: Maps and directions, purpose: Show the venue or the provider area on a map and give directions., mode: mock, notes: "Static sample map in the preview. A real map provider key is needed at release."}
+  - {id: INT-payments, name: Payments, purpose: Take card and wallet payments through a payment provider., mode: mock, notes: "Mock provider by default. A real provider SDK needs a development build and keeps card data off our servers."}
+  - {id: INT-reminders, name: Booking reminders, purpose: Schedule a reminder before each booking as a notification., mode: mock, notes: "Shown as an in-app banner at the reminder time in the preview."}
+  - {id: INT-push_notifications, name: Push notifications, purpose: Send booking updates and offers to the phone., mode: mock, notes: "Shown as in-app banners in the preview."}
+  - {id: INT-support, name: Support chat, purpose: Connect the chat screen to the team's inbox., mode: mock}
+
+compliance_triggers:
+  - id: home_visits_location
+    label: Uses precise location
+    sensitive_domain: precise_location
+    cards: [Q-comp-05]
+    keywords: ["home visit", "at your home", "come to your place", doorstep, "on-site", "service at home", gps, "live location", "provider on the way"]
+    conservative_defaults: {compliance.flags: [precise_location]}
+    research_hint: consent, purpose limits and retention for home addresses and provider location in booking apps
+  - id: health_information
+    label: Handles health information
+    sensitive_domain: health
+    cards: [Q-comp-01]
+    keywords: [doctor, clinic, therapy, therapist, physio, physiotherapy, dental, medical, counselling, wellness, "health records", patient]
+    conservative_defaults: {compliance.flags: [health_data_privacy]}
+    research_hint: health information privacy and consent for appointment booking apps
+  - id: children_participants
+    label: Serves children
+    sensitive_domain: children
+    cards: [Q-comp-03]
+    keywords: [kids, children, child, "kids class", "parents", "after school", tutoring, "school students"]
+    conservative_defaults: {compliance.flags: [child_safety]}
+    research_hint: children's data and parental consent for booking and class apps
+  - id: payments_finance
+    label: Takes payments or memberships
+    sensitive_domain: finance
+    cards: [Q-comp-02]
+    keywords: [payment, payments, "pay online", membership, subscription, "recurring payment", card, wallet]
+    conservative_defaults: {compliance.flags: [financial_data]}
+    research_hint: payment card data handling and recurring billing responsibilities in a mobile booking app
+
+screens:
+  # ------------------------------------------------------------------ sign in
+  - key: welcome
+    route: /welcome
+    recipe: welcome
+    purpose: Introduce the app to a signed-out visitor and offer to sign in, create an account or look around
+    actions:
+      - {name: sign_in, go: "@login"}
+      - {name: create_account, go: "@signup"}
+      - {name: browse_as_guest, go: "@home"}
+    texts: {title: "Book in a few taps", cta_primary: "Sign in", cta_secondary: "Create account", cta_guest: "See our services"}
+    checks:
+      - See our services opens the home screen without asking for an account
+      - Sign in and Create account open the matching screens
+  - key: login
+    route: /login
+    recipe: login-otp
+    purpose: Sign in with a phone number and a one-time code
+    actions:
+      - {name: send_code, calls: API-requestOtp, on_success: "show the code field and start the resend timer"}
+      - {name: verify_code, calls: API-verifyOtp, go: "@home", on_success: "save the session and open the home screen"}
+      - {name: new_user_setup, go: "@signup", on_success: "opened instead of home when the number is new"}
+    states:
+      wrong_code: {show: "inline error under the code field", allow: "retry, and resend after 30 seconds"}
+    texts: {title: "Sign in", cta: "Send code", hint: "We will text you a 6-digit code"}
+    checks:
+      - A wrong code shows an error and allows another try
+      - The resend link stays disabled for 30 seconds after a send
+  - key: signup
+    route: /signup
+    recipe: signup
+    purpose: Finish a new account with a name and an optional email after the phone number is verified
+    actions:
+      - {name: finish_profile, calls: API-updateMe, go: "@home", on_success: "open the home screen"}
+    texts: {title: "Almost there", cta: "Start booking"}
+    checks:
+      - The name is required and the email is optional
+  # ------------------------------------------------------------------ discover
+  - key: home
+    route: /home
+    recipe: dashboard
+    purpose: Show service categories and popular services and lead into booking
+    feature: service_catalog
+    data:
+      - {bind: "API-listCategories", show: [name, image]}
+      - {bind: "API-listServices(featured)", show: [name, image, duration_minutes, price]}
+    sections: [greeting, categories, popular_services, membership_banner]
+    actions:
+      - {name: open_category, go: "@services"}
+      - {name: open_service, go: "@service_detail"}
+      - {name: open_memberships, go: "@memberships"}
+    texts: {title: "Home"}
+    checks:
+      - Tapping a category opens the service list filtered to it
+      - Tapping a service opens its page
+  - key: services
+    route: /services
+    recipe: list-with-filters
+    purpose: List services with search, category filters and sorting
+    feature: service_catalog
+    data:
+      - {bind: "API-listServices(category, q, sort)", show: [name, image, duration_minutes, price, location_kind]}
+    sections: [search_bar, category_chips, sort_control, service_cards, load_more]
+    actions:
+      - {name: open_service, go: "@service_detail"}
+    states:
+      empty: {message: "No services match your search", action: "Clear filters"}
+    checks:
+      - Each card shows the duration and the price
+      - Searching by name narrows the list as the person types
+  - key: service_detail
+    route: /services/[id]
+    recipe: detail-with-sticky-cta
+    purpose: Show one service with its duration, price and what to expect, and start booking it
+    feature: service_catalog
+    data:
+      - {bind: "API-getService(id)", show: [name, image, description, duration_minutes, price, location_kind]}
+    sections: [gallery, title_price_duration, description, what_to_expect, providers_row, reviews_preview, sticky_cta]
+    actions:
+      - {name: book_now, go: "@slot_picker"}
+      - {name: see_providers, go: "@providers"}
+      - {name: see_reviews, go: "@reviews_list"}
+    texts: {cta: "Book now"}
+    checks:
+      - The location kind (at the venue, at your place or online) is shown clearly
+      - Book now opens the time picker for this service
+  - key: providers
+    route: /providers
+    recipe: list-with-filters
+    purpose: List the providers who offer a service with their rating and next free time
+    feature: provider_profiles
+    data:
+      - {bind: "API-listProviders(service, sort)", show: [name, title, photo, rating, rating_count, location_name]}
+    sections: [filter_chips, sort_control, provider_cards, load_more]
+    actions:
+      - {name: open_provider, go: "@provider_detail"}
+    states:
+      empty: {message: "No providers offer this service yet", action: "Back to services"}
+    checks:
+      - Sorting by rating puts the highest rated provider first
+  - key: provider_detail
+    route: /providers/[id]
+    recipe: detail
+    purpose: Introduce one provider and let the customer book with them
+    feature: provider_profiles
+    data:
+      - {bind: "API-getProvider(id)", show: [name, title, photo, bio, rating, rating_count, years_experience, languages, location_name]}
+      - {bind: "ENT-ProviderService.price", show: [service, price]}
+    sections: [photo_name_title, rating_summary, bio, services_offered, reviews_preview]
+    actions:
+      - {name: book_with_provider, go: "@slot_picker"}
+      - {name: see_reviews, go: "@reviews_list"}
+    checks:
+      - The price shown for a service is the provider's own price when it differs
+  # ------------------------------------------------------------------ booking
+  - key: slot_picker
+    route: /book/time
+    recipe: calendar-slot-picker
+    purpose: Pick a day and a free time for the chosen service
+    feature: slot_booking
+    data:
+      - {bind: "API-listSlots(service, provider, date)", show: [starts_at, ends_at, is_available]}
+    sections: [service_summary, provider_choice, date_strip, slot_grid, continue_cta]
+    actions:
+      - {name: choose_provider, go: "@providers"}
+      - {name: continue, go: "@booking_review"}
+    states:
+      no_slots: {message: "No times left on this day", action: "Try another day"}
+    texts: {title: "Choose a time", cta: "Continue"}
+    checks:
+      - Times in the past and already booked times are disabled
+      - Times are shown in the customer's local time zone
+  - key: booking_review
+    route: /book/review
+    recipe: checkout-review
+    purpose: Review the service, time and place, add a note and confirm the booking
+    auth: authenticated
+    feature: slot_booking
+    data:
+      - {bind: "ENT-Booking.price", show: [price]}
+      - {bind: "API-listAddresses", show: [label, line1, city, access_notes, is_default]}
+    sections: [service_summary, provider, date_time, location_or_address, notes_input, payment_method, price_breakdown, confirm_cta]
+    actions:
+      - {name: choose_address, go: "@addresses"}
+      - {name: choose_payment, go: "@payment_methods"}
+      - {name: pay_now, calls: API-createPayment, on_success: "payment captured, then confirm_booking runs"}
+      - {name: payment_declined, go: "@payment_failed", on_success: "opened when the provider declines the payment"}
+      - {name: confirm_booking, calls: API-createBooking, go: "@booking_confirmation", on_success: "hold the slot and open the confirmation"}
+    states:
+      slot_taken: {show: "That time was just taken", action: "Pick another time"}
+      address_needed: {disable: confirm_booking, show: "Add the address where the service happens"}
+    texts: {title: "Review your booking", cta: "Confirm booking"}
+    checks:
+      - An address is required only for at-your-place services
+      - If the slot is taken meanwhile the person is sent back to the time picker with a message
+  - key: booking_confirmation
+    route: /book/confirmed
+    recipe: confirmation
+    purpose: Confirm the booking with its reference, time and place
+    auth: authenticated
+    feature: slot_booking
+    data:
+      - {bind: "ENT-Booking.reference", show: [reference]}
+      - {bind: "ENT-Booking.starts_at", show: [starts_at]}
+    actions:
+      - {name: view_booking, go: "@booking_detail"}
+      - {name: set_reminder, go: "@reminder_settings"}
+      - {name: back_home, go: "@home"}
+    texts: {title: "You are booked", message: "We will remind you before it starts."}
+    checks:
+      - The back button returns to home, not to the review screen
+  - key: bookings
+    route: /bookings
+    recipe: list
+    purpose: List upcoming and past bookings
+    auth: authenticated
+    feature: slot_booking
+    data:
+      - {bind: "API-listBookings(when)", show: [service, provider, starts_at, status, location_kind]}
+    sections: [upcoming_past_switch, booking_rows]
+    actions:
+      - {name: open_booking, go: "@booking_detail"}
+      - {name: book_something, go: "@services"}
+    states:
+      empty: {message: "No bookings yet", action: "Book a service"}
+    texts: {title: "Your bookings"}
+    checks:
+      - Upcoming bookings are ordered soonest first and past ones newest first
+  - key: booking_detail
+    route: /bookings/[id]
+    recipe: detail
+    purpose: Show everything about one booking and what can still be done with it
+    auth: authenticated
+    feature: slot_booking
+    data:
+      - {bind: "API-getBooking(id)", show: [status, service, provider, starts_at, ends_at, location_kind, address, notes, price, payment_method, reference]}
+    sections: [status_header, service, provider, date_time, location, price_payment, secondary_actions]
+    actions:
+      - {name: reschedule, go: "@reschedule"}
+      - {name: cancel, go: "@cancel_booking"}
+      - {name: write_review, go: "@write_review"}
+      - {name: get_help, go: "@support_chat"}
+    states:
+      past_cutoff: {disable: reschedule, show: "Too close to the start time to change online"}
+    checks:
+      - Reschedule and cancel are offered only for upcoming bookings
+      - Write a review appears only after the booking is completed
+  - key: reschedule
+    route: /bookings/[id]/reschedule
+    recipe: calendar-slot-picker
+    purpose: Move a booking to another free time within the change policy
+    auth: authenticated
+    feature: reschedule_cancel
+    data:
+      - {bind: "API-listSlots(service, provider, date)", show: [starts_at, ends_at, is_available]}
+    sections: [current_booking, date_strip, slot_grid, confirm_cta]
+    actions:
+      - {name: confirm_reschedule, calls: API-rescheduleBooking, go: "@booking_detail", on_success: "the booking shows the new time"}
+    texts: {title: "Pick a new time", cta: "Move my booking"}
+    checks:
+      - The old time is released only after the new one is confirmed
+  - key: cancel_booking
+    route: /bookings/[id]/cancel
+    recipe: form
+    purpose: Cancel a booking after showing the cancellation policy and asking why
+    auth: authenticated
+    feature: reschedule_cancel
+    sections: [booking_summary, policy_note, reason_picker, confirm]
+    actions:
+      - {name: confirm_cancel, calls: API-cancelBooking, go: "@bookings", on_success: "booking becomes cancelled and the slot is released"}
+    texts: {title: "Cancel this booking?", cta: "Cancel booking"}
+    checks:
+      - The policy note states whether a fee or refund applies before the person confirms
+  # ------------------------------------------------------------------ payments
+  - key: payment_failed
+    route: /book/payment-failed
+    recipe: empty-state-only
+    purpose: Explain that the payment did not go through and offer a way forward
+    auth: authenticated
+    feature: payments
+    actions:
+      - {name: retry_payment, go: "@booking_review"}
+      - {name: change_method, go: "@payment_methods"}
+      - {name: back_to_services, go: "@services"}
+    texts: {title: "Payment did not go through", message: "You have not been charged. Try again or use another method."}
+    checks:
+      - The chosen time stays held for a few minutes after a failed payment
+  - key: payment_methods
+    route: /payment-methods
+    recipe: list
+    purpose: Show saved payment methods and let the customer add or remove one
+    auth: authenticated
+    feature: payments
+    data:
+      - {bind: "API-listPaymentMethods", show: [label, kind, is_default]}
+    actions:
+      - {name: add_method, go: "@add_payment_method"}
+      - {name: remove_method, calls: API-removePaymentMethod}
+    states:
+      empty: {message: "No saved payment methods", action: "Add one"}
+    checks:
+      - Only a display label such as Card ending 4242 is ever shown
+  - key: add_payment_method
+    route: /payment-methods/new
+    recipe: form
+    purpose: Add a card or wallet through the payment provider's secure fields
+    auth: authenticated
+    feature: payments
+    sections: [method_type, provider_card_fields, set_default, save_cta]
+    actions:
+      - {name: save_method, calls: API-addPaymentMethod, go: "@payment_methods"}
+    texts: {title: "Add payment method", note: "Card details go straight to the payment provider. This app never stores them."}
+    checks:
+      - Card number fields come from the provider, not from our own text inputs
+  # ------------------------------------------------------------------ reviews, reminders
+  - key: reviews_list
+    route: /reviews
+    recipe: list
+    purpose: Read reviews of a service or a provider with the average rating
+    feature: reviews
+    data:
+      - {bind: "API-listReviews(service, provider)", show: [rating, comment, user, created_at]}
+    sections: [rating_summary, review_cards, load_more]
+    states:
+      empty: {message: "No reviews yet", action: "Book and be the first to review"}
+    checks:
+      - The average rating and the number of reviews are shown above the list
+  - key: write_review
+    route: /bookings/[id]/review
+    recipe: form
+    purpose: Let a customer rate a finished booking and add a short comment
+    auth: authenticated
+    feature: reviews
+    sections: [star_picker, comment_input, submit]
+    actions:
+      - {name: submit_review, calls: API-createReview, go: "@booking_detail", on_success: "thank-you toast"}
+    texts: {title: "How was it?", cta: "Post review"}
+    checks:
+      - A star rating is required and the comment is optional
+  - key: reminder_settings
+    route: /reminders
+    recipe: settings
+    purpose: Choose whether to be reminded before a booking, how early and how
+    auth: authenticated
+    feature: reminders
+    data:
+      - {bind: "API-getReminderPreference", show: [enabled, lead_minutes, channel]}
+    sections: [reminder_switch, lead_time_choice, channel_choice]
+    actions:
+      - {name: change_reminder, calls: API-updateReminderPreference, on_success: "saved immediately with a small confirmation"}
+    checks:
+      - Turning reminders off keeps the chosen lead time for later
+  # ------------------------------------------------------------------ notifications, memberships, help
+  - key: notifications
+    route: /notifications
+    recipe: notifications
+    purpose: Show booking updates, reminders and offers the customer received
+    auth: authenticated
+    feature: push_notifications
+    data:
+      - {bind: "API-listNotifications", show: [kind, title, body, is_read, created_at]}
+    actions:
+      - {name: open_booking, go: "@booking_detail"}
+      - {name: mark_read, calls: API-markNotificationRead}
+    checks:
+      - Unread items are marked and become read when opened
+  - key: memberships
+    route: /memberships
+    recipe: list
+    purpose: List membership plans with what each includes
+    feature: memberships
+    data:
+      - {bind: "API-listMembershipPlans", show: [name, price, billing_period, sessions_included, perks]}
+    actions:
+      - {name: open_plan, go: "@membership_detail"}
+    checks:
+      - Each plan shows its price per month or year and what it includes
+  - key: membership_detail
+    route: /memberships/[id]
+    recipe: detail-with-sticky-cta
+    purpose: Explain one plan in full and let the customer start it
+    feature: memberships
+    data:
+      - {bind: "API-getMembershipPlan(id)", show: [name, description, price, billing_period, sessions_included, perks]}
+    sections: [plan_header, perks_list, terms, sticky_cta]
+    actions:
+      - {name: subscribe, calls: API-subscribeMembership, go: "@my_membership", on_success: "membership becomes active"}
+    texts: {cta: "Start membership"}
+    checks:
+      - Renewal date and cancellation terms are stated before the button
+  - key: my_membership
+    route: /membership
+    recipe: dashboard
+    purpose: Show the active plan, sessions left and the renewal date
+    auth: authenticated
+    feature: memberships
+    data:
+      - {bind: "API-getMyMembership", show: [plan, status, renews_on, sessions_left]}
+    sections: [plan_card, sessions_left, renewal_info]
+    actions:
+      - {name: book_a_session, go: "@services"}
+      - {name: cancel_membership, calls: API-cancelMembership, on_success: "plan stays active until the renewal date"}
+    checks:
+      - Cancelling asks for confirmation and states when access ends
+  - key: support
+    route: /help
+    recipe: list
+    purpose: Answer common questions about bookings, payments and changes, and offer a chat
+    feature: support
+    sections: [faq_groups, contact_options]
+    actions:
+      - {name: start_chat, go: "@support_chat"}
+    texts: {title: "Help"}
+    checks:
+      - Each question expands in place to show its answer
+  - key: support_chat
+    route: /help/chat
+    recipe: chat
+    purpose: Chat with the team about a booking
+    auth: authenticated
+    feature: support
+    data:
+      - {bind: "API-listSupportMessages", show: [sender, body, created_at]}
+    actions:
+      - {name: send_message, calls: API-sendSupportMessage}
+    texts: {title: "Chat with us", hint: "Type your message"}
+    checks:
+      - A message that cannot be sent shows a failed state with retry
+  # ------------------------------------------------------------------ account
+  - key: profile
+    route: /account
+    recipe: profile
+    purpose: Show who is signed in and lead to account areas
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, phone, avatar]}
+    sections: [identity_header, menu_groups, sign_out]
+    actions:
+      - {name: edit_profile, go: "@edit_profile"}
+      - {name: open_addresses, go: "@addresses"}
+      - {name: open_payment_methods, go: "@payment_methods"}
+      - {name: open_reminders, go: "@reminder_settings"}
+      - {name: open_my_membership, go: "@my_membership"}
+      - {name: open_notifications, go: "@notifications"}
+      - {name: open_settings, go: "@settings"}
+      - {name: open_help, go: "@support"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Sign out returns to the welcome screen and clears the session
+  - key: edit_profile
+    route: /account/edit
+    recipe: form
+    purpose: Change the name, email and photo
+    auth: authenticated
+    data:
+      - {bind: "API-getMe", show: [name, phone, email, avatar]}
+    sections: [photo, name_input, email_input, save]
+    actions:
+      - {name: save_profile, calls: API-updateMe, go: "@profile"}
+    checks:
+      - The phone number is shown but cannot be edited here
+  - key: addresses
+    route: /account/addresses
+    recipe: list
+    purpose: List saved addresses used for services at the customer's place
+    auth: authenticated
+    feature: slot_booking
+    data:
+      - {bind: "API-listAddresses", show: [label, line1, city, access_notes, is_default]}
+    actions:
+      - {name: add_address, go: "@address_form"}
+      - {name: edit_address, go: "@address_form"}
+      - {name: delete_address, calls: API-deleteAddress}
+      - {name: use_address, go: "@booking_review"}
+    states:
+      empty: {message: "No saved addresses", action: "Add an address"}
+    checks:
+      - Exactly one address is marked as default
+  - key: address_form
+    route: /account/addresses/edit
+    recipe: form
+    purpose: Add or change an address with a map pin and access notes
+    auth: authenticated
+    feature: slot_booking
+    sections: [map_pin, label_picker, address_fields, access_notes, default_switch, save]
+    actions:
+      - {name: save_new, calls: API-createAddress, go: "@addresses"}
+      - {name: save_changes, calls: API-updateAddress, go: "@addresses"}
+    states:
+      location_denied: {show: "Type the address instead", action: "Allow location"}
+    checks:
+      - The address can be saved without the location permission
+  - key: settings
+    route: /settings
+    recipe: settings
+    purpose: Notifications, language, appearance and privacy choices
+    auth: authenticated
+    sections: [notifications_group, appearance_group, language_group, privacy_group, about_group, sign_out]
+    actions:
+      - {name: enable_push, calls: API-registerPushToken, on_success: "ask the system for permission, then save the token"}
+      - {name: open_help, go: "@support"}
+      - {name: sign_out, go: "@welcome", on_success: "clear the session"}
+    checks:
+      - Changes apply immediately without a save button
+  # ------------------------------------------------------------------ provider side
+  - key: provider_agenda
+    route: /provider/agenda
+    recipe: list
+    surface: business
+    auth: ROLE-provider
+    purpose: Show the provider's bookings for a day, with a day switcher
+    data:
+      - {bind: "API-getProviderAgenda(date)", show: [starts_at, service, user, status, location_kind]}
+    sections: [day_switcher, agenda_rows]
+    actions:
+      - {name: open_booking, go: "@provider_booking_detail"}
+      - {name: open_availability, go: "@provider_availability"}
+    states:
+      empty: {message: "Nothing booked for this day", action: "Set availability"}
+    checks:
+      - Bookings are ordered by start time and show the customer's first name
+  - key: provider_booking_detail
+    route: /provider/bookings/[id]
+    recipe: detail
+    surface: business
+    auth: ROLE-provider
+    purpose: Show one booking with the customer's notes and move it through its statuses
+    data:
+      - {bind: "API-getProviderBooking(id)", show: [status, service, user, starts_at, ends_at, location_kind, address, notes]}
+    actions:
+      - {name: confirm_booking, calls: API-updateBookingStatus, on_success: "status becomes confirmed and the customer is told"}
+      - {name: complete_booking, calls: API-updateBookingStatus, on_success: "status becomes completed"}
+      - {name: mark_no_show, calls: API-updateBookingStatus, on_success: "status becomes no_show"}
+      - {name: back_to_agenda, go: "@provider_agenda"}
+    checks:
+      - Complete and no-show are offered only after the start time
+      - The customer's address is shown only for at-customer bookings
+  - key: provider_availability
+    route: /provider/availability
+    recipe: form
+    surface: business
+    auth: ROLE-provider
+    purpose: Set weekly working hours and block days off
+    data:
+      - {bind: "API-listProviderAvailability", show: [starts_at, ends_at, is_available]}
+    sections: [weekly_hours, days_off, save]
+    actions:
+      - {name: save_availability, calls: API-saveProviderAvailability, go: "@provider_agenda"}
+    checks:
+      - Existing bookings are never removed by changing availability
+
+flows:
+  - key: book_a_service
+    name: Find a service and book it
+    primary: true
+    screens: [home, services, service_detail, slot_picker, booking_review, booking_confirmation]
+    purpose: The main journey, from the home screen to a confirmed booking.
+  - key: sign_in
+    name: Sign in
+    screens: [welcome, login, home]
+  - key: choose_a_provider
+    name: Book with a specific provider
+    feature: provider_profiles
+    screens: [services, service_detail, providers, provider_detail, slot_picker]
+  - key: pay_online
+    name: Add a payment method while booking
+    feature: payments
+    screens: [booking_review, payment_methods, add_payment_method]
+  - key: set_reminders
+    name: Set a reminder after booking
+    feature: reminders
+    screens: [booking_confirmation, reminder_settings]
+  - key: reschedule_a_booking
+    name: Move a booking
+    feature: reschedule_cancel
+    screens: [bookings, booking_detail, reschedule]
+  - key: cancel_a_booking
+    name: Cancel a booking
+    feature: reschedule_cancel
+    screens: [bookings, booking_detail, cancel_booking]
+  - key: review_a_visit
+    name: Review a finished booking
+    feature: reviews
+    screens: [bookings, booking_detail, write_review]
+  - key: join_a_membership
+    name: Start a membership
+    feature: memberships
+    screens: [memberships, membership_detail, my_membership]
+  - key: get_help
+    name: Get help
+    feature: support
+    screens: [support, support_chat]
+  - key: manage_addresses
+    name: Manage saved addresses
+    screens: [profile, addresses, address_form]
+  - key: run_the_day
+    name: Work through the day's bookings
+    screens: [provider_agenda, provider_booking_detail]
+  - key: set_availability
+    name: Set availability
+    screens: [provider_agenda, provider_availability]
+
+navigation:
+  id: NAV-001
+  route: /
+  kind: auth_gate
+  label: App
+  auth: public
+  children:
+    - id: NAV-002
+      route: /welcome
+      kind: stack
+      label: Welcome
+      screen: "@welcome"
+      children:
+        - {id: NAV-003, route: /login, kind: screen, screen: "@login"}
+        - {id: NAV-004, route: /signup, kind: screen, screen: "@signup"}
+    - id: NAV-010
+      route: /(tabs)
+      kind: tabs
+      children:
+        - id: NAV-011
+          route: /home
+          kind: stack
+          label: Home
+          screen: "@home"
+        - id: NAV-020
+          route: /services
+          kind: stack
+          label: Services
+          screen: "@services"
+          children:
+            - {id: NAV-021, route: "/services/[id]", kind: screen, screen: "@service_detail"}
+            - {id: NAV-022, route: /providers, kind: screen, screen: "@providers"}
+            - {id: NAV-023, route: "/providers/[id]", kind: screen, screen: "@provider_detail"}
+            - {id: NAV-024, route: /book/time, kind: screen, screen: "@slot_picker"}
+            - {id: NAV-025, route: /book/review, kind: screen, screen: "@booking_review", auth: authenticated}
+            - {id: NAV-026, route: /book/confirmed, kind: screen, screen: "@booking_confirmation", auth: authenticated}
+            - {id: NAV-027, route: /book/payment-failed, kind: screen, screen: "@payment_failed", auth: authenticated}
+            - {id: NAV-028, route: /reviews, kind: screen, screen: "@reviews_list"}
+        - id: NAV-030
+          route: /bookings
+          kind: stack
+          label: Bookings
+          screen: "@bookings"
+          auth: authenticated
+          children:
+            - {id: NAV-031, route: "/bookings/[id]", kind: screen, screen: "@booking_detail", auth: authenticated}
+            - {id: NAV-032, route: "/bookings/[id]/reschedule", kind: screen, screen: "@reschedule", auth: authenticated}
+            - {id: NAV-033, route: "/bookings/[id]/cancel", kind: screen, screen: "@cancel_booking", auth: authenticated}
+            - {id: NAV-034, route: "/bookings/[id]/review", kind: screen, screen: "@write_review", auth: authenticated}
+        - id: NAV-050
+          route: /account
+          kind: stack
+          label: Account
+          screen: "@profile"
+          auth: authenticated
+          children:
+            - {id: NAV-051, route: /account/edit, kind: screen, screen: "@edit_profile", auth: authenticated}
+            - {id: NAV-052, route: /account/addresses, kind: screen, screen: "@addresses", auth: authenticated}
+            - {id: NAV-053, route: /account/addresses/edit, kind: screen, screen: "@address_form", auth: authenticated}
+            - {id: NAV-054, route: /payment-methods, kind: screen, screen: "@payment_methods", auth: authenticated}
+            - {id: NAV-055, route: /payment-methods/new, kind: screen, screen: "@add_payment_method", auth: authenticated}
+            - {id: NAV-056, route: /reminders, kind: screen, screen: "@reminder_settings", auth: authenticated}
+            - {id: NAV-057, route: /notifications, kind: screen, screen: "@notifications", auth: authenticated}
+            - {id: NAV-058, route: /memberships, kind: screen, screen: "@memberships"}
+            - {id: NAV-059, route: "/memberships/[id]", kind: screen, screen: "@membership_detail"}
+            - {id: NAV-060, route: /membership, kind: screen, screen: "@my_membership", auth: authenticated}
+            - {id: NAV-061, route: /settings, kind: screen, screen: "@settings", auth: authenticated}
+            - {id: NAV-062, route: /help, kind: screen, screen: "@support"}
+            - {id: NAV-063, route: /help/chat, kind: screen, screen: "@support_chat", auth: authenticated}
+    - id: NAV-070
+      route: /provider/agenda
+      kind: stack
+      label: Provider
+      screen: "@provider_agenda"
+      auth: ROLE-provider
+      children:
+        - {id: NAV-071, route: "/provider/bookings/[id]", kind: screen, screen: "@provider_booking_detail", auth: ROLE-provider}
+        - {id: NAV-072, route: /provider/availability, kind: screen, screen: "@provider_availability", auth: ROLE-provider}
+
+feature_parts:
+  provider_profiles:
+    operations: [API-listProviders, API-getProvider]
+    entities: [ENT-ProviderService]
+    screens:
+      service_detail: {sections: [providers_row]}
+      slot_picker: {sections: [provider_choice]}
+  payments:
+    operations: [API-listPaymentMethods, API-addPaymentMethod, API-removePaymentMethod, API-createPayment]
+    entities: [ENT-PaymentMethod, ENT-Payment]
+    integrations: [INT-payments]
+    screens:
+      booking_review: {sections: [payment_method], actions: [pay_now]}
+  reminders:
+    operations: [API-getReminderPreference, API-updateReminderPreference]
+    entities: [ENT-ReminderPreference]
+    integrations: [INT-reminders]
+  reviews:
+    operations: [API-listReviews, API-createReview]
+    entities: [ENT-Review]
+    screens:
+      service_detail: {sections: [reviews_preview]}
+  reschedule_cancel:
+    operations: [API-rescheduleBooking, API-cancelBooking]
+  push_notifications:
+    operations: [API-listNotifications, API-markNotificationRead, API-registerPushToken]
+    entities: [ENT-Notification]
+    integrations: [INT-push_notifications]
+    screens:
+      settings: {sections: [notifications_group], actions: [enable_push]}
+  memberships:
+    operations: [API-listMembershipPlans, API-getMembershipPlan, API-getMyMembership, API-subscribeMembership, API-cancelMembership]
+    entities: [ENT-MembershipPlan, ENT-Membership]
+    screens:
+      home: {sections: [membership_banner]}
+  support:
+    operations: [API-listSupportMessages, API-sendSupportMessage]
+    entities: [ENT-SupportMessage]
+    integrations: [INT-support]

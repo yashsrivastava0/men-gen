@@ -1,0 +1,838 @@
+{
+  "brief": {
+    "app_summary": "A small app for my shop where people can order",
+    "archetype": "commerce",
+    "language": "hi",
+    "mode": "guided",
+    "roles": [
+      "Customer"
+    ],
+    "features": [
+      {
+        "id": "catalog_browse",
+        "label": "Browse products"
+      },
+      {
+        "id": "search",
+        "label": "Search and filters"
+      },
+      {
+        "id": "cart_checkout",
+        "label": "Cart and checkout"
+      },
+      {
+        "id": "payments",
+        "label": "Online payments"
+      },
+      {
+        "id": "order_tracking",
+        "label": "Orders and tracking"
+      },
+      {
+        "id": "reviews",
+        "label": "Ratings and reviews"
+      },
+      {
+        "id": "favorites",
+        "label": "Favorites"
+      },
+      {
+        "id": "push_notifications",
+        "label": "Push notifications"
+      },
+      {
+        "id": "loyalty",
+        "label": "Loyalty points"
+      },
+      {
+        "id": "support_chat",
+        "label": "Support chat"
+      }
+    ],
+    "look": "Warm and friendly",
+    "login": "",
+    "regions": [
+      "in"
+    ],
+    "references": [],
+    "compliance_flags": [
+      "precise_location",
+      "financial_data"
+    ],
+    "assumptions": [],
+    "brand_name": null,
+    "brand_url": null
+  },
+  "outline": {
+    "screens": [
+      {
+        "id": "SCR-001",
+        "route": "/welcome",
+        "recipe": "welcome",
+        "flow": "FLW-002",
+        "purpose": "Introduce the app to a signed-out visitor and offer to sign in, create an accou…",
+        "source": "default"
+      },
+      {
+        "id": "SCR-002",
+        "route": "/login",
+        "recipe": "login-otp",
+        "flow": "FLW-002",
+        "purpose": "Sign in with a phone number and a one-time code",
+        "source": "default"
+      },
+      {
+        "id": "SCR-003",
+        "route": "/signup",
+        "recipe": "signup",
+        "flow": null,
+        "purpose": "Finish a new account with a name and an optional email after the phone number i…",
+        "source": "default"
+      },
+      {
+        "id": "SCR-004",
+        "route": "/home",
+        "recipe": "dashboard",
+        "flow": "FLW-001",
+        "purpose": "Show categories and featured products and lead people into browsing",
+        "source": "default"
+      },
+      {
+        "id": "SCR-005",
+        "route": "/category/[id]",
+        "recipe": "list-with-filters",
+        "flow": null,
+        "purpose": "List the products of one category with sorting and filters",
+        "source": "default"
+      },
+      {
+        "id": "SCR-006",
+        "route": "/product/[id]",
+        "recipe": "detail-with-sticky-cta",
+        "flow": "FLW-001",
+        "purpose": "Show one product and let the shopper add it to the cart",
+        "source": "default"
+      },
+      {
+        "id": "SCR-007",
+        "route": "/product/[id]/reviews",
+        "recipe": "list",
+        "flow": "FLW-006",
+        "purpose": "Read all reviews of a product with an average rating",
+        "source": "default"
+      },
+      {
+        "id": "SCR-008",
+        "route": "/product/[id]/review/new",
+        "recipe": "form",
+        "flow": "FLW-006",
+        "purpose": "Let a customer rate a product and add a short review",
+        "source": "default"
+      },
+      {
+        "id": "SCR-009",
+        "route": "/search",
+        "recipe": "search",
+        "flow": "FLW-003",
+        "purpose": "Search the catalog by name with recent searches and suggestions",
+        "source": "default"
+      },
+      {
+        "id": "SCR-010",
+        "route": "/search/results",
+        "recipe": "list-with-filters",
+        "flow": "FLW-003",
+        "purpose": "Show matching products with filters and sorting",
+        "source": "default"
+      },
+      {
+        "id": "SCR-011",
+        "route": "/cart",
+        "recipe": "list",
+        "flow": "FLW-001",
+        "purpose": "Review the items, change quantities and continue to checkout",
+        "source": "default"
+      },
+      {
+        "id": "SCR-012",
+        "route": "/checkout",
+        "recipe": "checkout-review",
+        "flow": "FLW-001",
+        "purpose": "Confirm the address and payment and place the order",
+        "source": "default"
+      },
+      {
+        "id": "SCR-013",
+        "route": "/order-confirmation",
+        "recipe": "confirmation",
+        "flow": "FLW-001",
+        "purpose": "Tell the shopper the order is placed and what happens next",
+        "source": "default"
+      },
+      {
+        "id": "SCR-014",
+        "route": "/payment-failed",
+        "recipe": "empty-state-only",
+        "flow": null,
+        "purpose": "Explain that the payment did not go through and offer a way forward",
+        "source": "default"
+      },
+      {
+        "id": "SCR-015",
+        "route": "/orders",
+        "recipe": "list",
+        "flow": "FLW-005",
+        "purpose": "List the shopper's orders, newest first",
+        "source": "default"
+      },
+      {
+        "id": "SCR-016",
+        "route": "/orders/[id]",
+        "recipe": "detail",
+        "flow": "FLW-005",
+        "purpose": "Show the items, address, payment and status of one order",
+        "source": "default"
+      },
+      {
+        "id": "SCR-017",
+        "route": "/orders/[id]/tracking",
+        "recipe": "tracking",
+        "flow": "FLW-005",
+        "purpose": "Show where the order is with a step-by-step timeline",
+        "source": "default"
+      },
+      {
+        "id": "SCR-018",
+        "route": "/account",
+        "recipe": "profile",
+        "flow": "FLW-008",
+        "purpose": "Show who is signed in and lead to account areas",
+        "source": "default"
+      },
+      {
+        "id": "SCR-019",
+        "route": "/account/edit",
+        "recipe": "form",
+        "flow": null,
+        "purpose": "Change the name, email and photo",
+        "source": "default"
+      },
+      {
+        "id": "SCR-020",
+        "route": "/account/addresses",
+        "recipe": "list",
+        "flow": "FLW-008",
+        "purpose": "List saved delivery addresses",
+        "source": "default"
+      },
+      {
+        "id": "SCR-021",
+        "route": "/account/addresses/edit",
+        "recipe": "form",
+        "flow": "FLW-008",
+        "purpose": "Add or change a delivery address",
+        "source": "default"
+      },
+      {
+        "id": "SCR-022",
+        "route": "/payment-methods",
+        "recipe": "list",
+        "flow": "FLW-004",
+        "purpose": "Show saved payment methods and let the shopper add or remove one",
+        "source": "default"
+      },
+      {
+        "id": "SCR-023",
+        "route": "/payment-methods/new",
+        "recipe": "form",
+        "flow": "FLW-004",
+        "purpose": "Add a card or wallet through the payment provider's secure fields",
+        "source": "default"
+      },
+      {
+        "id": "SCR-024",
+        "route": "/favorites",
+        "recipe": "list",
+        "flow": "FLW-007",
+        "purpose": "Show the products the shopper has saved",
+        "source": "default"
+      },
+      {
+        "id": "SCR-025",
+        "route": "/notifications",
+        "recipe": "notifications",
+        "flow": null,
+        "purpose": "Show order updates and offers the shopper received",
+        "source": "default"
+      },
+      {
+        "id": "SCR-026",
+        "route": "/loyalty",
+        "recipe": "dashboard",
+        "flow": "FLW-009",
+        "purpose": "Show the points balance, the tier and ways to earn more",
+        "source": "default"
+      },
+      {
+        "id": "SCR-027",
+        "route": "/loyalty/history",
+        "recipe": "list",
+        "flow": "FLW-009",
+        "purpose": "List points earned and used",
+        "source": "default"
+      },
+      {
+        "id": "SCR-028",
+        "route": "/settings",
+        "recipe": "settings",
+        "flow": null,
+        "purpose": "Notifications, language, appearance and privacy choices",
+        "source": "default"
+      },
+      {
+        "id": "SCR-029",
+        "route": "/help",
+        "recipe": "list",
+        "flow": "FLW-010",
+        "purpose": "Answer common questions about orders, payments and returns, and say how to reac…",
+        "source": "default"
+      },
+      {
+        "id": "SCR-030",
+        "route": "/support/chat",
+        "recipe": "chat",
+        "flow": "FLW-010",
+        "purpose": "Chat with the shop team about an order or a product",
+        "source": "default"
+      }
+    ],
+    "entities": [
+      {
+        "id": "ENT-User",
+        "name": "User",
+        "fields": [
+          "name",
+          "phone",
+          "email",
+          "avatar",
+          "created_at"
+        ]
+      },
+      {
+        "id": "ENT-Address",
+        "name": "Address",
+        "fields": [
+          "user",
+          "label",
+          "recipient_name",
+          "phone",
+          "line1",
+          "line2",
+          "city",
+          "region",
+          "postal_code",
+          "is_default"
+        ]
+      },
+      {
+        "id": "ENT-Category",
+        "name": "Category",
+        "fields": [
+          "name",
+          "image",
+          "parent"
+        ]
+      },
+      {
+        "id": "ENT-Product",
+        "name": "Product",
+        "fields": [
+          "name",
+          "description",
+          "price",
+          "compare_at_price",
+          "image",
+          "gallery",
+          "category",
+          "brand",
+          "rating",
+          "rating_count",
+          "in_stock"
+        ]
+      },
+      {
+        "id": "ENT-ProductVariant",
+        "name": "Product variant",
+        "fields": [
+          "product",
+          "label",
+          "sku",
+          "price",
+          "in_stock"
+        ]
+      },
+      {
+        "id": "ENT-Cart",
+        "name": "Cart",
+        "fields": [
+          "user",
+          "item_count",
+          "subtotal",
+          "shipping_fee",
+          "total"
+        ]
+      },
+      {
+        "id": "ENT-CartItem",
+        "name": "Cart item",
+        "fields": [
+          "cart",
+          "product",
+          "variant",
+          "quantity",
+          "unit_price"
+        ]
+      },
+      {
+        "id": "ENT-Order",
+        "name": "Order",
+        "fields": [
+          "user",
+          "status",
+          "shipping_address",
+          "items_total",
+          "shipping_fee",
+          "total",
+          "payment_method",
+          "placed_at",
+          "estimated_delivery",
+          "tracking_code",
+          "cancel_reason"
+        ]
+      },
+      {
+        "id": "ENT-OrderItem",
+        "name": "Order item",
+        "fields": [
+          "order",
+          "product",
+          "variant",
+          "name",
+          "quantity",
+          "unit_price"
+        ]
+      },
+      {
+        "id": "ENT-OrderEvent",
+        "name": "Order event",
+        "fields": [
+          "order",
+          "status",
+          "note",
+          "at"
+        ]
+      },
+      {
+        "id": "ENT-PaymentMethod",
+        "name": "Payment method",
+        "fields": [
+          "user",
+          "kind",
+          "label",
+          "is_default"
+        ]
+      },
+      {
+        "id": "ENT-Payment",
+        "name": "Payment",
+        "fields": [
+          "order",
+          "method",
+          "status",
+          "amount",
+          "provider_reference"
+        ]
+      },
+      {
+        "id": "ENT-Review",
+        "name": "Review",
+        "fields": [
+          "product",
+          "user",
+          "rating",
+          "title",
+          "body",
+          "created_at"
+        ]
+      },
+      {
+        "id": "ENT-Favorite",
+        "name": "Favorite",
+        "fields": [
+          "user",
+          "product",
+          "created_at"
+        ]
+      },
+      {
+        "id": "ENT-Notification",
+        "name": "Notification",
+        "fields": [
+          "user",
+          "kind",
+          "title",
+          "body",
+          "is_read",
+          "created_at"
+        ]
+      },
+      {
+        "id": "ENT-LoyaltyAccount",
+        "name": "Loyalty account",
+        "fields": [
+          "user",
+          "points_balance",
+          "tier"
+        ]
+      },
+      {
+        "id": "ENT-LoyaltyEntry",
+        "name": "Loyalty entry",
+        "fields": [
+          "account",
+          "points",
+          "reason",
+          "created_at"
+        ]
+      },
+      {
+        "id": "ENT-SupportMessage",
+        "name": "Support message",
+        "fields": [
+          "user",
+          "sender",
+          "body",
+          "created_at"
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "id": "API-requestOtp",
+        "method": "POST",
+        "path": "/auth/otp"
+      },
+      {
+        "id": "API-verifyOtp",
+        "method": "POST",
+        "path": "/auth/otp/verify"
+      },
+      {
+        "id": "API-getMe",
+        "method": "GET",
+        "path": "/me"
+      },
+      {
+        "id": "API-updateMe",
+        "method": "PATCH",
+        "path": "/me"
+      },
+      {
+        "id": "API-listAddresses",
+        "method": "GET",
+        "path": "/addresses"
+      },
+      {
+        "id": "API-createAddress",
+        "method": "POST",
+        "path": "/addresses"
+      },
+      {
+        "id": "API-updateAddress",
+        "method": "PUT",
+        "path": "/addresses/{id}"
+      },
+      {
+        "id": "API-deleteAddress",
+        "method": "DELETE",
+        "path": "/addresses/{id}"
+      },
+      {
+        "id": "API-listCategories",
+        "method": "GET",
+        "path": "/categories"
+      },
+      {
+        "id": "API-listProducts",
+        "method": "GET",
+        "path": "/products"
+      },
+      {
+        "id": "API-getProduct",
+        "method": "GET",
+        "path": "/products/{id}"
+      },
+      {
+        "id": "API-searchProducts",
+        "method": "GET",
+        "path": "/search"
+      },
+      {
+        "id": "API-getCart",
+        "method": "GET",
+        "path": "/cart"
+      },
+      {
+        "id": "API-addCartItem",
+        "method": "POST",
+        "path": "/cart/items"
+      },
+      {
+        "id": "API-updateCartItem",
+        "method": "PATCH",
+        "path": "/cart/items/{id}"
+      },
+      {
+        "id": "API-removeCartItem",
+        "method": "DELETE",
+        "path": "/cart/items/{id}"
+      },
+      {
+        "id": "API-createOrder",
+        "method": "POST",
+        "path": "/orders"
+      },
+      {
+        "id": "API-listOrders",
+        "method": "GET",
+        "path": "/orders"
+      },
+      {
+        "id": "API-getOrder",
+        "method": "GET",
+        "path": "/orders/{id}"
+      },
+      {
+        "id": "API-getOrderTracking",
+        "method": "GET",
+        "path": "/orders/{id}/tracking"
+      },
+      {
+        "id": "API-cancelOrder",
+        "method": "POST",
+        "path": "/orders/{id}/cancel"
+      },
+      {
+        "id": "API-listPaymentMethods",
+        "method": "GET",
+        "path": "/payment-methods"
+      },
+      {
+        "id": "API-addPaymentMethod",
+        "method": "POST",
+        "path": "/payment-methods"
+      },
+      {
+        "id": "API-removePaymentMethod",
+        "method": "DELETE",
+        "path": "/payment-methods/{id}"
+      },
+      {
+        "id": "API-createPayment",
+        "method": "POST",
+        "path": "/payments"
+      },
+      {
+        "id": "API-listReviews",
+        "method": "GET",
+        "path": "/products/{id}/reviews"
+      },
+      {
+        "id": "API-createReview",
+        "method": "POST",
+        "path": "/products/{id}/reviews"
+      },
+      {
+        "id": "API-listFavorites",
+        "method": "GET",
+        "path": "/favorites"
+      },
+      {
+        "id": "API-addFavorite",
+        "method": "POST",
+        "path": "/favorites"
+      },
+      {
+        "id": "API-removeFavorite",
+        "method": "DELETE",
+        "path": "/favorites/{id}"
+      },
+      {
+        "id": "API-listNotifications",
+        "method": "GET",
+        "path": "/notifications"
+      },
+      {
+        "id": "API-markNotificationRead",
+        "method": "POST",
+        "path": "/notifications/{id}/read"
+      },
+      {
+        "id": "API-registerPushToken",
+        "method": "POST",
+        "path": "/devices/push-token"
+      },
+      {
+        "id": "API-getLoyaltyAccount",
+        "method": "GET",
+        "path": "/loyalty"
+      },
+      {
+        "id": "API-listLoyaltyEntries",
+        "method": "GET",
+        "path": "/loyalty/entries"
+      },
+      {
+        "id": "API-listSupportMessages",
+        "method": "GET",
+        "path": "/support/messages"
+      },
+      {
+        "id": "API-sendSupportMessage",
+        "method": "POST",
+        "path": "/support/messages"
+      }
+    ],
+    "flows": [
+      {
+        "id": "FLW-001",
+        "name": "Find a product and place an order (primary)",
+        "screens": [
+          "SCR-004",
+          "SCR-006",
+          "SCR-011",
+          "SCR-012",
+          "SCR-013"
+        ]
+      },
+      {
+        "id": "FLW-002",
+        "name": "Sign in",
+        "screens": [
+          "SCR-001",
+          "SCR-002",
+          "SCR-004"
+        ]
+      },
+      {
+        "id": "FLW-003",
+        "name": "Search for a product",
+        "screens": [
+          "SCR-009",
+          "SCR-010",
+          "SCR-006"
+        ]
+      },
+      {
+        "id": "FLW-004",
+        "name": "Add a payment method at checkout",
+        "screens": [
+          "SCR-012",
+          "SCR-022",
+          "SCR-023"
+        ]
+      },
+      {
+        "id": "FLW-005",
+        "name": "Follow an order",
+        "screens": [
+          "SCR-015",
+          "SCR-016",
+          "SCR-017"
+        ]
+      },
+      {
+        "id": "FLW-006",
+        "name": "Review a product",
+        "screens": [
+          "SCR-006",
+          "SCR-007",
+          "SCR-008"
+        ]
+      },
+      {
+        "id": "FLW-007",
+        "name": "Come back to a saved product",
+        "screens": [
+          "SCR-024",
+          "SCR-006",
+          "SCR-011"
+        ]
+      },
+      {
+        "id": "FLW-008",
+        "name": "Manage delivery addresses",
+        "screens": [
+          "SCR-018",
+          "SCR-020",
+          "SCR-021"
+        ]
+      },
+      {
+        "id": "FLW-009",
+        "name": "Check loyalty points",
+        "screens": [
+          "SCR-026",
+          "SCR-027"
+        ]
+      },
+      {
+        "id": "FLW-010",
+        "name": "Get help from the shop",
+        "screens": [
+          "SCR-029",
+          "SCR-030"
+        ]
+      }
+    ],
+    "roles": [
+      {
+        "id": "ROLE-customer",
+        "name": "Customer"
+      }
+    ],
+    "integrations": [
+      {
+        "id": "INT-sms_otp",
+        "name": "Sign-in codes by SMS"
+      },
+      {
+        "id": "INT-order_emails",
+        "name": "Order emails"
+      },
+      {
+        "id": "INT-payments",
+        "name": "Payments"
+      },
+      {
+        "id": "INT-push_notifications",
+        "name": "Push notifications"
+      },
+      {
+        "id": "INT-support_chat",
+        "name": "Support chat"
+      }
+    ],
+    "design_direction": "warm-friendly"
+  },
+  "validator_findings": [
+    {
+      "validator": "action_targets",
+      "severity": "error",
+      "target_ids": [
+        "SCR-006"
+      ],
+      "message": "Action 'broken' on SCR-006 goes to SCR-099, which is not a screen, sheet or route"
+    }
+  ]
+}

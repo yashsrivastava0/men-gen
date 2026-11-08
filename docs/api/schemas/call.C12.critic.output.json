@@ -1,0 +1,84 @@
+{
+  "$defs": {
+    "CriticFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "mismatch",
+            "contradiction",
+            "missing_flow",
+            "missing_feature",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warn",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "suggested_fix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Suggested Fix"
+        },
+        "target_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "severity",
+        "message"
+      ],
+      "title": "CriticFinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "findings": {
+      "items": {
+        "$ref": "#/$defs/CriticFinding"
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "verdict": {
+      "enum": [
+        "pass",
+        "fix"
+      ],
+      "title": "Verdict",
+      "type": "string"
+    }
+  },
+  "required": [
+    "verdict",
+    "findings"
+  ],
+  "title": "C12Output",
+  "type": "object"
+}

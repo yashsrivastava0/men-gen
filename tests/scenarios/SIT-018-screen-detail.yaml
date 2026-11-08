@@ -1,0 +1,57 @@
+# SIT-018: Specific detail about one screen
+# Detection: Text referencing a screen
+# Behavior:  Store as that screen's notes; mark `custom`
+id: SIT-018-screen-detail
+situation: "Specific detail about one screen"
+mode: guided
+variants:
+  note_is_kept_in_discover:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "on the cart screen I want a gift message field"
+        expect:
+          text_contains: ["keep that detail for that screen"]
+          pending_card: Q-apps-01
+  note_reaches_the_spec:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "on the cart screen I want a gift message field"
+      - user: "finish with smart defaults"
+        expect: {state: BRIEF_REVIEW}
+      - decide: {gate: brief}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          spec: {text_contains: "gift message"}
+  detail_after_handoff:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+      - wait_for_plan: true
+      - decide: {gate: plan}
+        expect: {state: HANDED_OFF}
+      - user: "on the cart screen I want a gift message field"
+      - wait_for_plan: true
+        expect:
+          state: HANDED_OFF
+          spec_version: 2
+          spec: {text_contains: "gift message"}
+          llm_calls:
+            C9a.screens_nav: 0
+            C9b.data_api_roles: 0
+            C9c.design_tokens: 0
+            C10.screen_briefs: 1

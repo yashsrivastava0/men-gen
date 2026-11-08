@@ -1,0 +1,375 @@
+{
+  "brief": {
+    "app_summary": "A small app for my shop where people can order",
+    "archetype": "commerce",
+    "language": "hi",
+    "mode": "guided",
+    "roles": [
+      "Customer"
+    ],
+    "features": [
+      {
+        "id": "catalog_browse",
+        "label": "Browse products"
+      },
+      {
+        "id": "search",
+        "label": "Search and filters"
+      },
+      {
+        "id": "cart_checkout",
+        "label": "Cart and checkout"
+      },
+      {
+        "id": "payments",
+        "label": "Online payments"
+      },
+      {
+        "id": "order_tracking",
+        "label": "Orders and tracking"
+      },
+      {
+        "id": "reviews",
+        "label": "Ratings and reviews"
+      },
+      {
+        "id": "favorites",
+        "label": "Favorites"
+      },
+      {
+        "id": "push_notifications",
+        "label": "Push notifications"
+      },
+      {
+        "id": "loyalty",
+        "label": "Loyalty points"
+      },
+      {
+        "id": "support_chat",
+        "label": "Support chat"
+      }
+    ],
+    "look": "Warm and friendly",
+    "login": "",
+    "regions": [
+      "in"
+    ],
+    "references": [],
+    "compliance_flags": [
+      "precise_location",
+      "financial_data"
+    ],
+    "assumptions": [],
+    "brand_name": null,
+    "brand_url": null
+  },
+  "screens": [
+    {
+      "id": "SCR-006",
+      "route": "/product/[id]",
+      "recipe": "detail-with-sticky-cta",
+      "surface": "customer",
+      "purpose": "Show one product and let the shopper add it to the cart",
+      "sections": [
+        "gallery",
+        "title_price",
+        "favorite_button",
+        "variant_picker",
+        "description",
+        "delivery_info",
+        "reviews_preview",
+        "sticky_cta"
+      ],
+      "actions": [
+        "add_to_cart -> API-addCartItem",
+        "view_cart -> SCR-011",
+        "toggle_favorite -> API-addFavorite",
+        "see_all_reviews -> SCR-007"
+      ],
+      "copy_keys": [
+        "cta"
+      ]
+    },
+    {
+      "id": "SCR-011",
+      "route": "/cart",
+      "recipe": "list",
+      "surface": "customer",
+      "purpose": "Review the items, change quantities and continue to checkout",
+      "sections": [
+        "cart_items",
+        "order_totals",
+        "checkout_cta"
+      ],
+      "actions": [
+        "change_quantity -> API-updateCartItem",
+        "remove_item -> API-removeCartItem",
+        "checkout -> SCR-012",
+        "keep_shopping -> SCR-004"
+      ],
+      "copy_keys": [
+        "title",
+        "cta"
+      ]
+    },
+    {
+      "id": "SCR-012",
+      "route": "/checkout",
+      "recipe": "checkout-review",
+      "surface": "customer",
+      "purpose": "Confirm the address and payment and place the order",
+      "sections": [
+        "order_summary",
+        "delivery_address",
+        "payment_method",
+        "price_breakdown",
+        "place_cta"
+      ],
+      "actions": [
+        "change_address -> SCR-020",
+        "choose_payment -> SCR-022",
+        "pay_now -> API-createPayment",
+        "payment_declined -> SCR-014",
+        "place_order -> API-createOrder"
+      ],
+      "copy_keys": [
+        "title",
+        "cta"
+      ]
+    }
+  ],
+  "recipes": [
+    {
+      "id": "list",
+      "kind": "list",
+      "default_sections": [
+        "header",
+        "items",
+        "load_more"
+      ]
+    },
+    {
+      "id": "detail-with-sticky-cta",
+      "kind": "detail",
+      "default_sections": [
+        "gallery",
+        "title_price",
+        "option_picker",
+        "description",
+        "related_items",
+        "sticky_cta"
+      ]
+    },
+    {
+      "id": "checkout-review",
+      "kind": "other",
+      "default_sections": [
+        "order_summary",
+        "address_or_time",
+        "payment_method",
+        "price_breakdown",
+        "place_cta"
+      ]
+    }
+  ],
+  "entities": [
+    {
+      "id": "ENT-Product",
+      "name": "Product",
+      "fields": [
+        "name",
+        "description",
+        "price",
+        "compare_at_price",
+        "image",
+        "gallery",
+        "category",
+        "brand",
+        "rating",
+        "rating_count",
+        "in_stock"
+      ]
+    },
+    {
+      "id": "ENT-CartItem",
+      "name": "Cart item",
+      "fields": [
+        "cart",
+        "product",
+        "variant",
+        "quantity",
+        "unit_price"
+      ]
+    },
+    {
+      "id": "ENT-Cart",
+      "name": "Cart",
+      "fields": [
+        "user",
+        "item_count",
+        "subtotal",
+        "shipping_fee",
+        "total"
+      ]
+    },
+    {
+      "id": "ENT-Favorite",
+      "name": "Favorite",
+      "fields": [
+        "user",
+        "product",
+        "created_at"
+      ]
+    },
+    {
+      "id": "ENT-Address",
+      "name": "Address",
+      "fields": [
+        "user",
+        "label",
+        "recipient_name",
+        "phone",
+        "line1",
+        "line2",
+        "city",
+        "region",
+        "postal_code",
+        "is_default"
+      ]
+    },
+    {
+      "id": "ENT-Payment",
+      "name": "Payment",
+      "fields": [
+        "order",
+        "method",
+        "status",
+        "amount",
+        "provider_reference"
+      ]
+    },
+    {
+      "id": "ENT-Order",
+      "name": "Order",
+      "fields": [
+        "user",
+        "status",
+        "shipping_address",
+        "items_total",
+        "shipping_fee",
+        "total",
+        "payment_method",
+        "placed_at",
+        "estimated_delivery",
+        "tracking_code",
+        "cancel_reason"
+      ]
+    }
+  ],
+  "operations": [
+    {
+      "id": "API-getProduct",
+      "method": "GET",
+      "path": "/products/{id}"
+    },
+    {
+      "id": "API-addCartItem",
+      "method": "POST",
+      "path": "/cart/items"
+    },
+    {
+      "id": "API-addFavorite",
+      "method": "POST",
+      "path": "/favorites"
+    },
+    {
+      "id": "API-getCart",
+      "method": "GET",
+      "path": "/cart"
+    },
+    {
+      "id": "API-updateCartItem",
+      "method": "PATCH",
+      "path": "/cart/items/{id}"
+    },
+    {
+      "id": "API-removeCartItem",
+      "method": "DELETE",
+      "path": "/cart/items/{id}"
+    },
+    {
+      "id": "API-listAddresses",
+      "method": "GET",
+      "path": "/addresses"
+    },
+    {
+      "id": "API-createPayment",
+      "method": "POST",
+      "path": "/payments"
+    },
+    {
+      "id": "API-createOrder",
+      "method": "POST",
+      "path": "/orders"
+    }
+  ],
+  "neighbors": [
+    {
+      "id": "SCR-007",
+      "route": "/product/[id]/reviews",
+      "recipe": "list",
+      "flow": "FLW-006",
+      "purpose": "Read all reviews of a product with an average rating",
+      "source": "default"
+    },
+    {
+      "id": "SCR-004",
+      "route": "/home",
+      "recipe": "dashboard",
+      "flow": "FLW-001",
+      "purpose": "Show categories and featured products and lead people into browsing",
+      "source": "default"
+    },
+    {
+      "id": "SCR-020",
+      "route": "/account/addresses",
+      "recipe": "list",
+      "flow": "FLW-008",
+      "purpose": "List saved delivery addresses",
+      "source": "default"
+    },
+    {
+      "id": "SCR-022",
+      "route": "/payment-methods",
+      "recipe": "list",
+      "flow": "FLW-004",
+      "purpose": "Show saved payment methods and let the shopper add or remove one",
+      "source": "default"
+    },
+    {
+      "id": "SCR-014",
+      "route": "/payment-failed",
+      "recipe": "empty-state-only",
+      "flow": null,
+      "purpose": "Explain that the payment did not go through and offer a way forward",
+      "source": "default"
+    },
+    {
+      "id": "SCR-013",
+      "route": "/order-confirmation",
+      "recipe": "confirmation",
+      "flow": "FLW-001",
+      "purpose": "Tell the shopper the order is placed and what happens next",
+      "source": "default"
+    }
+  ],
+  "research": [
+    {
+      "id": "RA-001",
+      "kind": "feature",
+      "title": "Favorites list",
+      "rationale": "Seen in most similar apps",
+      "applies_to": null
+    }
+  ]
+}

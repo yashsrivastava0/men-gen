@@ -1,0 +1,19 @@
+# Guided mode: anyone, including non-technical users. About seven cards (hard cap ten), light
+# research after Gate 1, one tap per gate by the person who asked. Slot levels come from the slot
+# catalog (spec 3.3); this policy adds no overrides.
+version: 1
+id: guided-default
+org: platform
+description: Guided mode for anyone. About seven cards (cap 10), light research after Gate 1, one requester approval per gate, at most 50 screens.
+mode: guided
+inherits: platform-default@1
+research:
+  enabled: true
+  depth: light
+gates:
+  brief: {approvers: [requester]}
+  plan: {approvers: [requester]}
+limits:
+  max_cards: 10
+  max_turns: 30
+  max_screens: 50

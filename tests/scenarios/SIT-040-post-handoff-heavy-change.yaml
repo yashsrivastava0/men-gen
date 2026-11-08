@@ -1,0 +1,78 @@
+# SIT-040: Post-handoff heavy change
+# Detection: Change in HANDED_OFF, heavy
+# Behavior:  Patch, Gate 2 re-opens with a diff; the incremental run starts after approval
+id: SIT-040-post-handoff-heavy-change
+situation: "Post-handoff heavy change"
+mode: guided
+integration: true
+variants:
+  payments:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - decide: {gate: plan}
+        expect:
+          state: HANDED_OFF
+          spec_ready: 1
+      - user: "make it cash on delivery only"
+        expect: {state: PLANNING, origin: HANDED_OFF}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          spec_ready: 1
+          handoff_commits: 1
+          gate: {gate: plan, version: 2, single_button: true, diff_contains: payment}
+          text_contains: ["bigger change"]
+      - decide: {gate: plan}
+        expect:
+          state: HANDED_OFF
+          spec_ready: 2
+          handoff_commits: 2
+          frontend_notified: 2
+  login_method:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - decide: {gate: plan}
+        expect:
+          state: HANDED_OFF
+          spec_ready: 1
+      - user: "use sign in with Google instead"
+        expect: {state: PLANNING}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          spec_ready: 1
+          gate: {gate: plan, version: 2}

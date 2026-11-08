@@ -1,0 +1,194 @@
+# Six theme presets (brief 8.6). Every theme has light AND dark palettes, a type scale, a spacing
+# scale, radius, elevation and motion tokens. `contrast_pairs` are (foreground token, background
+# token): a test checks WCAG AA (>= 4.5:1 for normal text) for every pair in both modes.
+# Hex values are quoted because `#` starts a YAML comment. Sizes are logical pixels (React Native
+# density-independent units); elevation values are shadow descriptions the kit maps to platform
+# shadows; motion durations are milliseconds with named easings.
+themes:
+  # ------------------------------------------------------------------ clean-bright
+  - id: clean-bright
+    label: Clean and bright
+    description: White space, crisp blue actions, light rounded corners. Calm and easy to read. The safe default for most apps.
+    nav_style: bottom-tabs
+    contrast_pairs: &pairs
+      - [text, background]
+      - [text, surface]
+      - [text, surface_alt]
+      - [text_muted, background]
+      - [text_muted, surface]
+      - [text_muted, surface_alt]
+      - [text_on_primary, primary]
+      - [primary, background]
+      - [primary, surface]
+      - [text_on_accent, accent]
+      - [danger, background]
+      - [danger, surface]
+      - [success, background]
+      - [success, surface]
+    tokens:
+      colors_light: {background: "#FFFFFF", surface: "#F5F7FA", surface_alt: "#E9EEF5", text: "#0F172A", text_muted: "#475569", primary: "#1B5FD9", text_on_primary: "#FFFFFF", accent: "#0F766E", text_on_accent: "#FFFFFF", border: "#CBD5E1", danger: "#B42318", success: "#067647"}
+      colors_dark: {background: "#0B1220", surface: "#131C2E", surface_alt: "#1C2740", text: "#F1F5F9", text_muted: "#A9B4C7", primary: "#7AA7FF", text_on_primary: "#0B1220", accent: "#2DD4BF", text_on_accent: "#04201C", border: "#2B3752", danger: "#FF9A90", success: "#5FD38D"}
+      type_scale:
+        display: {size: 32, weight: 700, line_height: 1.2}
+        h1: {size: 28, weight: 700, line_height: 1.25}
+        h2: {size: 22, weight: 600, line_height: 1.3}
+        h3: {size: 18, weight: 600, line_height: 1.3}
+        body_large: {size: 17, weight: 400, line_height: 1.5}
+        body: {size: 15, weight: 400, line_height: 1.5}
+        body_small: {size: 13, weight: 400, line_height: 1.45}
+        label: {size: 13, weight: 500, line_height: 1.3}
+        caption: {size: 12, weight: 400, line_height: 1.35}
+        button: {size: 15, weight: 600, line_height: 1.2}
+      spacing: &spacing [0, 4, 8, 12, 16, 20, 24, 32, 40, 48, 64]
+      radius: {none: 0, sm: 6, md: 10, lg: 16, xl: 24, full: 9999}
+      elevation:
+        none: none
+        sm: "0 1px 2px rgba(16,24,40,0.06)"
+        md: "0 4px 12px rgba(16,24,40,0.08)"
+        lg: "0 12px 32px rgba(16,24,40,0.12)"
+      motion: {duration_fast: 120ms, duration_base: 200ms, duration_slow: 320ms, easing_standard: "cubic-bezier(0.2, 0, 0, 1)", easing_emphasized: "cubic-bezier(0.3, 0, 0, 1)", character: smooth}
+
+  # ------------------------------------------------------------------ bold-dark
+  - id: bold-dark
+    label: Bold and dark
+    description: Near-black surfaces, violet and orange highlights, heavy headings. Feels premium and energetic, best for media, fitness and nightlife.
+    nav_style: bottom-tabs
+    contrast_pairs: *pairs
+    tokens:
+      colors_light: {background: "#FAFAFA", surface: "#FFFFFF", surface_alt: "#F0F0F2", text: "#111114", text_muted: "#4B4B55", primary: "#6D28D9", text_on_primary: "#FFFFFF", accent: "#C2410C", text_on_accent: "#FFFFFF", border: "#D4D4DA", danger: "#B91C1C", success: "#15803D"}
+      colors_dark: {background: "#0A0A0F", surface: "#14141C", surface_alt: "#1E1E29", text: "#F5F5F7", text_muted: "#A1A1B0", primary: "#A78BFA", text_on_primary: "#0A0A0F", accent: "#FB923C", text_on_accent: "#1A0B02", border: "#30303F", danger: "#FF8A8A", success: "#4ADE80"}
+      type_scale:
+        display: {size: 36, weight: 800, line_height: 1.1}
+        h1: {size: 30, weight: 800, line_height: 1.15}
+        h2: {size: 24, weight: 700, line_height: 1.2}
+        h3: {size: 19, weight: 700, line_height: 1.25}
+        body_large: {size: 17, weight: 400, line_height: 1.5}
+        body: {size: 15, weight: 400, line_height: 1.45}
+        body_small: {size: 13, weight: 400, line_height: 1.4}
+        label: {size: 12, weight: 700, line_height: 1.3}
+        caption: {size: 11, weight: 500, line_height: 1.35}
+        button: {size: 15, weight: 700, line_height: 1.2}
+      spacing: *spacing
+      radius: {none: 0, sm: 8, md: 12, lg: 18, xl: 28, full: 9999}
+      elevation:
+        none: none
+        sm: "0 0 0 1px rgba(255,255,255,0.06)"
+        md: "0 6px 16px rgba(0,0,0,0.35)"
+        lg: "0 16px 40px rgba(0,0,0,0.5)"
+      motion: {duration_fast: 100ms, duration_base: 180ms, duration_slow: 280ms, easing_standard: "cubic-bezier(0.3, 0, 0, 1)", easing_emphasized: "cubic-bezier(0.2, 0, 0, 1.15)", character: snappy}
+
+  # ------------------------------------------------------------------ warm-friendly
+  - id: warm-friendly
+    label: Warm and friendly
+    description: Cream backgrounds, terracotta actions, soft sage accents and very round corners. Welcoming and human, good for food, community and family apps.
+    nav_style: bottom-tabs
+    contrast_pairs: *pairs
+    tokens:
+      colors_light: {background: "#FFFBF5", surface: "#FFF3E6", surface_alt: "#FBE7D0", text: "#2B1B12", text_muted: "#6B4F3F", primary: "#C2410C", text_on_primary: "#FFFFFF", accent: "#2F7D5B", text_on_accent: "#FFFFFF", border: "#E8D3BC", danger: "#B3261E", success: "#1E7A4C"}
+      colors_dark: {background: "#1A120D", surface: "#251A13", surface_alt: "#31231A", text: "#FBEFE3", text_muted: "#C9AE98", primary: "#FF9B6A", text_on_primary: "#2B1206", accent: "#7FD1A5", text_on_accent: "#072617", border: "#4A3628", danger: "#FF9A8F", success: "#7FD1A5"}
+      type_scale:
+        display: {size: 32, weight: 700, line_height: 1.2}
+        h1: {size: 27, weight: 700, line_height: 1.25}
+        h2: {size: 22, weight: 600, line_height: 1.3}
+        h3: {size: 18, weight: 600, line_height: 1.35}
+        body_large: {size: 18, weight: 400, line_height: 1.55}
+        body: {size: 16, weight: 400, line_height: 1.55}
+        body_small: {size: 14, weight: 400, line_height: 1.5}
+        label: {size: 13, weight: 600, line_height: 1.3}
+        caption: {size: 12, weight: 400, line_height: 1.4}
+        button: {size: 16, weight: 600, line_height: 1.2}
+      spacing: *spacing
+      radius: {none: 0, sm: 10, md: 14, lg: 20, xl: 28, full: 9999}
+      elevation:
+        none: none
+        sm: "0 1px 3px rgba(94,52,20,0.10)"
+        md: "0 6px 16px rgba(94,52,20,0.12)"
+        lg: "0 14px 32px rgba(94,52,20,0.16)"
+      motion: {duration_fast: 140ms, duration_base: 240ms, duration_slow: 360ms, easing_standard: "cubic-bezier(0.2, 0, 0, 1)", easing_emphasized: "cubic-bezier(0.34, 1.56, 0.64, 1)", character: gentle spring}
+
+  # ------------------------------------------------------------------ minimal-mono
+  - id: minimal-mono
+    label: Minimal and mono
+    description: Black, white and greys only, hairline borders, small corners and almost no shadow. Quiet and editorial, good for tools, notes and portfolios.
+    nav_style: bottom-tabs
+    contrast_pairs: *pairs
+    tokens:
+      colors_light: {background: "#FFFFFF", surface: "#F4F4F5", surface_alt: "#E8E8EA", text: "#111111", text_muted: "#55555B", primary: "#111111", text_on_primary: "#FFFFFF", accent: "#3F3F46", text_on_accent: "#FFFFFF", border: "#D4D4D8", danger: "#B42318", success: "#166534"}
+      colors_dark: {background: "#0C0C0D", surface: "#161618", surface_alt: "#212124", text: "#F4F4F5", text_muted: "#A1A1AA", primary: "#F4F4F5", text_on_primary: "#0C0C0D", accent: "#D4D4D8", text_on_accent: "#0C0C0D", border: "#34343A", danger: "#FF8E85", success: "#6EE7A0"}
+      type_scale:
+        display: {size: 30, weight: 500, line_height: 1.2}
+        h1: {size: 26, weight: 500, line_height: 1.25}
+        h2: {size: 21, weight: 500, line_height: 1.3}
+        h3: {size: 17, weight: 500, line_height: 1.35}
+        body_large: {size: 16, weight: 400, line_height: 1.55}
+        body: {size: 14, weight: 400, line_height: 1.55}
+        body_small: {size: 12, weight: 400, line_height: 1.5}
+        label: {size: 12, weight: 500, line_height: 1.3}
+        caption: {size: 11, weight: 400, line_height: 1.4}
+        button: {size: 14, weight: 500, line_height: 1.2}
+      spacing: *spacing
+      radius: {none: 0, sm: 2, md: 4, lg: 8, xl: 12, full: 9999}
+      elevation:
+        none: none
+        sm: "0 0 0 1px rgba(0,0,0,0.08)"
+        md: "0 1px 3px rgba(0,0,0,0.10)"
+        lg: "0 4px 12px rgba(0,0,0,0.12)"
+      motion: {duration_fast: 90ms, duration_base: 150ms, duration_slow: 240ms, easing_standard: "cubic-bezier(0.4, 0, 0.2, 1)", easing_emphasized: "cubic-bezier(0.4, 0, 0.2, 1)", character: minimal}
+
+  # ------------------------------------------------------------------ vibrant-playful
+  - id: vibrant-playful
+    label: Vibrant and playful
+    description: Candy magenta and aqua on soft pink surfaces, chunky headings and the roundest corners. Fun and youthful, good for games-adjacent, kids-and-family and social apps.
+    nav_style: bottom-tabs
+    contrast_pairs: *pairs
+    tokens:
+      colors_light: {background: "#FFFCFF", surface: "#FFF0FA", surface_alt: "#FFE0F4", text: "#2A1038", text_muted: "#6A4A7A", primary: "#B21FC4", text_on_primary: "#FFFFFF", accent: "#0E7490", text_on_accent: "#FFFFFF", border: "#F0C9E6", danger: "#C81E4D", success: "#0F7B4F"}
+      colors_dark: {background: "#150A1F", surface: "#1F1230", surface_alt: "#2B1A42", text: "#FFF0FC", text_muted: "#D1B3E0", primary: "#F08CFF", text_on_primary: "#230A2B", accent: "#5EE0F5", text_on_accent: "#052A33", border: "#46285F", danger: "#FF93AE", success: "#6EE7A8"}
+      type_scale:
+        display: {size: 34, weight: 800, line_height: 1.15}
+        h1: {size: 29, weight: 800, line_height: 1.2}
+        h2: {size: 23, weight: 700, line_height: 1.25}
+        h3: {size: 19, weight: 700, line_height: 1.3}
+        body_large: {size: 18, weight: 400, line_height: 1.5}
+        body: {size: 16, weight: 400, line_height: 1.5}
+        body_small: {size: 14, weight: 400, line_height: 1.45}
+        label: {size: 13, weight: 700, line_height: 1.3}
+        caption: {size: 12, weight: 500, line_height: 1.35}
+        button: {size: 16, weight: 700, line_height: 1.2}
+      spacing: *spacing
+      radius: {none: 0, sm: 12, md: 16, lg: 24, xl: 32, full: 9999}
+      elevation:
+        none: none
+        sm: "0 2px 4px rgba(178,31,196,0.12)"
+        md: "0 8px 20px rgba(178,31,196,0.18)"
+        lg: "0 16px 36px rgba(178,31,196,0.24)"
+      motion: {duration_fast: 140ms, duration_base: 260ms, duration_slow: 420ms, easing_standard: "cubic-bezier(0.2, 0, 0, 1)", easing_emphasized: "cubic-bezier(0.34, 1.7, 0.64, 1)", character: bouncy}
+
+  # ------------------------------------------------------------------ corporate-calm
+  - id: corporate-calm
+    label: Corporate and calm
+    description: Slate neutrals, a steady deep-blue action color and compact, even spacing. Trustworthy and dense enough for work, good for internal tools, finance and services.
+    nav_style: bottom-tabs
+    contrast_pairs: *pairs
+    tokens:
+      colors_light: {background: "#F8FAFC", surface: "#FFFFFF", surface_alt: "#EEF2F6", text: "#1E293B", text_muted: "#4B5B70", primary: "#0F5F8C", text_on_primary: "#FFFFFF", accent: "#0F766E", text_on_accent: "#FFFFFF", border: "#CFD8E3", danger: "#A32A20", success: "#1E6B3A"}
+      colors_dark: {background: "#0F172A", surface: "#172236", surface_alt: "#1F2D45", text: "#E8EEF6", text_muted: "#9FB0C6", primary: "#6CB8E8", text_on_primary: "#08202F", accent: "#5EC4B8", text_on_accent: "#05231F", border: "#2C3B54", danger: "#F59A90", success: "#6FCF97"}
+      type_scale:
+        display: {size: 28, weight: 600, line_height: 1.25}
+        h1: {size: 24, weight: 600, line_height: 1.3}
+        h2: {size: 20, weight: 600, line_height: 1.3}
+        h3: {size: 17, weight: 600, line_height: 1.35}
+        body_large: {size: 16, weight: 400, line_height: 1.5}
+        body: {size: 14, weight: 400, line_height: 1.5}
+        body_small: {size: 12, weight: 400, line_height: 1.45}
+        label: {size: 12, weight: 600, line_height: 1.3}
+        caption: {size: 11, weight: 400, line_height: 1.4}
+        button: {size: 14, weight: 600, line_height: 1.2}
+      spacing: *spacing
+      radius: {none: 0, sm: 4, md: 8, lg: 12, xl: 16, full: 9999}
+      elevation:
+        none: none
+        sm: "0 1px 2px rgba(15,23,42,0.06)"
+        md: "0 3px 8px rgba(15,23,42,0.08)"
+        lg: "0 8px 24px rgba(15,23,42,0.12)"
+      motion: {duration_fast: 110ms, duration_base: 200ms, duration_slow: 300ms, easing_standard: "cubic-bezier(0.4, 0, 0.2, 1)", easing_emphasized: "cubic-bezier(0.3, 0, 0, 1)", character: calm}

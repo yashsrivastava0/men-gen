@@ -1,0 +1,34 @@
+# SIT-003: User is confused or says "I don't know"
+# Detection: Confused intent
+# Behavior:  Offer examples; "you decide"; explain the choice in one line
+id: SIT-003-confused
+situation: "User is confused or says \"I don't know\""
+mode: guided
+variants:
+  mid_interview_hinglish:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "pata nahi"
+        expect:
+          pending_card: Q-apps-01
+          slots:
+            scope.apps: {empty: true}
+      - tap: {card: Q-apps-01, you_decide: true}
+        expect:
+          slots:
+            scope.apps: {state: assumed, source: default}
+          pending_card: Q-feat-01
+  before_any_idea:
+    steps:
+      - user: "I don't know"
+        expect:
+          pending_card: Q-help-01
+          events:
+            - {type: card, card_id: Q-help-01}
+      - tap: {card: Q-help-01, you_decide: true}
+        expect:
+          slots:
+            idea.archetype: {value: custom, state: assumed}

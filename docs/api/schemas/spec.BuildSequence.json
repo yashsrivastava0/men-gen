@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "BuildStep": {
+      "additionalProperties": false,
+      "properties": {
+        "flow": {
+          "anyOf": [
+            {
+              "pattern": "^FLW-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "gate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        },
+        "id": {
+          "pattern": "^S(?:[0-9]|10)$",
+          "title": "Id",
+          "type": "string"
+        },
+        "load": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Load",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "parallel": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParallelGroup"
+          },
+          "title": "Parallel",
+          "type": "array"
+        },
+        "screens": {
+          "default": [],
+          "items": {
+            "pattern": "^SCR-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        },
+        "stop_for_feedback": {
+          "default": false,
+          "title": "Stop For Feedback",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "BuildStep",
+      "type": "object"
+    },
+    "ParallelGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "title": "Group",
+          "type": "string"
+        },
+        "owns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owns",
+          "type": "array"
+        },
+        "screens": {
+          "items": {
+            "pattern": "^SCR-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "group",
+        "screens",
+        "owns"
+      ],
+      "title": "ParallelGroup",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "steps": {
+      "items": {
+        "$ref": "#/$defs/BuildStep"
+      },
+      "title": "Steps",
+      "type": "array"
+    }
+  },
+  "required": [
+    "steps"
+  ],
+  "title": "BuildSequence",
+  "type": "object"
+}

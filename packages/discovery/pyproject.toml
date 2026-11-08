@@ -1,0 +1,26 @@
+[project]
+name = "mde-discovery"
+version = "0.1.0"
+description = "Discover engine: turn loop, intents, slots, selector, brief compiler"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "mde-core",
+  "mde-contracts",
+  "mde-prompts",
+  "mde-content",
+  "pydantic>=2.9",
+  "pyyaml>=6.0"
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mde_discovery"]
+
+[tool.uv.sources]
+mde-core = { workspace = true }
+mde-contracts = { workspace = true }
+mde-prompts = { workspace = true }
+mde-content = { workspace = true }

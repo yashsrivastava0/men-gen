@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "c9a0e8ae1a391f45cd5c6f94388810e3546a5e9de79005d695d4ca761c18a34c",
+  "recorded_at": "2026-11-08T11:06:26.511384Z",
+  "request": {
+    "spec_id": "C11.write_summary",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "54669b5e6a1bfebb4d15788d41b5cd5fb8e51fc2d982eb2383a42262c748c90a",
+    "tools": [],
+    "kind": "main",
+    "system": "You write one short plain-language summary of an app for the person who asked for it. One job: return the text.\n\nRules:\n- Use only the facts given. Never add features, numbers, dates, prices or promises.\n- brief_sentence: exactly one sentence of at most max_words words that says what the app is, who it is for and its main features.\n- plan_summary: two or three short sentences in plain words.\n- Write in the user's language. No marketing words, no jargon.",
+    "user": "Kind: plan_summary. Language: en. Maximum words: 60.\nApp name: Blue Basket\nFacts:\n- App: Blue Basket: A company app for employees and field staff to use checklists, record attendance, and manage approvals.\n- Audience: Employees only, Staff\n- 17 screens in 5 journeys\n- Journeys: Pick up a task and finish its checklist, Sign in, Fill in a form, Send a request, Approve or reject a request\n- Roles: Employee, Manager\n- Look: Corporate and calm\n- Mocked for now: Company single sign-on, HR system, File storage, Clerk sign-in\n- Assumed: Light or dark, Where the data comes from, Offline, Notifications, Language, Accessibility, Company sign-in, Data classification, Release channel, Approvers\n- Added from research: Show leave balances and scheduling conflicts, Show request status and history, Add Clerk sign-in options\n"
+  },
+  "response": {
+    "text": "{\"text\":\"Blue Basket is a company app for employees and field staff to complete checklists, record attendance, and manage approvals. It supports task, sign-in, form, and request workflows, with leave balances, scheduling conflicts, and request status and history.\"}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 328,
+      "cached_input_tokens": 0,
+      "output_tokens": 225,
+      "reasoning_tokens": 160,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

@@ -1,0 +1,33 @@
+tests/cassettes: recorded provider responses (format notes only; no recordings are committed yet)
+
+What a cassette is
+  One JSON file per provider request, written by RecordingProvider during a LIVE batch (the lead or
+  the live-runner runs those; see docs/runbooks/live-llm-budget.md) and served by ReplayProvider
+  (LLM_MODE=replay) so reruns are free. Source of truth: packages/llm-gateway/.../providers/cassette.py.
+
+Layout
+  tests/cassettes/<spec_id>__v<version>/<key>.json        (CASSETTE_DIR overrides the root)
+
+Key
+  sha256 of the canonical JSON of {spec_id, spec_version, model, system, user, tools, effort,
+  schema_hash}: the RENDERED messages, not the input object. Any change to a prompt template, a
+  schema, the model, the tool settings or the effort misses the cassette (re-record that call in the
+  next live batch). Retries share a key; the repair call and the escalated retry have their own.
+
+Content (format 1)
+  {format, key, recorded_at, request: {spec_id, spec_version, model, effort, schema_hash, tools,
+  kind, system, user}, response: {text, status, incomplete_reason, refusal, citations, search_calls,
+  usage}}
+  Sanitised on write: no headers, no API keys, every text field goes through redact_text, and email addresses and phone numbers are redacted too (conservative, linear patterns). Replay verifies that the file's own key matches the lookup key and refuses otherwise. The prompt
+  text IS stored (redacted) so a miss can be diagnosed by diffing the request.
+
+Rules
+  * A missing cassette FAILS with a clear message naming the spec and the key; replay never goes live.
+  * Never edit a cassette by hand; delete it and re-record.
+  * The repo secret scan (tests/security) covers this directory.
+  * The eval runners record while they pay: evals/runners/live_batch.py passes record_cassettes=True,
+    so every live response of batches L1 to L4 becomes a cassette. Scripted web-search results
+    (the injection payloads) are NOT cassettes: they come from evals/datasets/injections.
+  * Session ids in live runs are random ULIDs (budget scopes name sessions); prompts do not contain
+    ids, so cassette keys do not depend on them. The scripted persona and brief conversations are
+    deterministic, which is what makes a replay of a whole session possible.

@@ -1,0 +1,26 @@
+# Wording for the generic card the offline handler (and the engine fallback) builds from a slot's
+# own options. {topic} is the plain-language name of the slot in the user's language.
+choice:
+  en: "Which would you like for {topic}?"
+  hi: "{topic} के लिए आप क्या चुनेंगे?"
+  hi-Latn: "{topic} ke liye aap kya chunenge?"
+multi:
+  en: "Which of these should be included for {topic}? I have ticked the first one."
+  hi: "{topic} में इनमें से क्या शामिल होना चाहिए? मैंने पहला चुन रखा है।"
+  hi-Latn: "{topic} mein inmein se kya shamil hona chahiye? Maine pehla chun rakha hai."
+text:
+  en: "What should we use for {topic}?"
+  hi: "{topic} के लिए हम क्या इस्तेमाल करें?"
+  hi-Latn: "{topic} ke liye hum kya istemal karein?"
+other_placeholder:
+  en: "Something else? Tell me"
+  hi: "कुछ और? बताइए"
+  hi-Latn: "Kuch aur? Bataiye"
+text_placeholder:
+  en: "Type your answer"
+  hi: "अपना जवाब लिखिए"
+  hi-Latn: "Apna jawab likhiye"
+help:
+  en: "If you are not sure, I will pick the first option and you can change it later."
+  hi: "अगर आप पक्का नहीं हैं, तो मैं पहला विकल्प चुन लूँगा और आप बाद में बदल सकते हैं।"
+  hi-Latn: "Agar aap pakka nahi hain, to main pehla option chun loonga aur aap baad mein badal sakte hain."

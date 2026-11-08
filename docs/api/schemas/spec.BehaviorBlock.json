@@ -1,0 +1,65 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "accessibility": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Accessibility",
+      "type": "array"
+    },
+    "analytics_events": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Analytics Events",
+      "type": "array"
+    },
+    "deep_links": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Deep Links",
+      "type": "array"
+    },
+    "error_conventions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Error Conventions",
+      "type": "array"
+    },
+    "locale": {
+      "default": "en",
+      "title": "Locale",
+      "type": "string"
+    },
+    "notifications": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Notifications",
+      "type": "array"
+    },
+    "offline": {
+      "default": "basic cache",
+      "title": "Offline",
+      "type": "string"
+    },
+    "permission_prompts": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Permission Prompts",
+      "type": "array"
+    }
+  },
+  "title": "BehaviorBlock",
+  "type": "object"
+}

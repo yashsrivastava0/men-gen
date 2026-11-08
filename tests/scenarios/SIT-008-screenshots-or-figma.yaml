@@ -1,0 +1,27 @@
+# SIT-008: Uploads screenshots or Figma
+# Detection: Upload
+# Behavior:  Extract style and layout notes into slots; confirm
+id: SIT-008-screenshots-or-figma
+situation: "Uploads screenshots or Figma"
+mode: guided
+variants:
+  screenshot:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - upload: {filename: logo.png, media_type: image/png}
+        expect:
+          text_contains: ["saved logo.png"]
+          llm_calls: {total: 0}
+          slots:
+            brand.assets: {contains: "upload"}
+  figma_style_notes:
+    steps:
+      - upload:
+          filename: figma-export.md
+          text: "Style notes exported from Figma for a candle shop. Warm and friendly look, rounded corners. Customers browse products and pay online."
+        expect:
+          text_contains: ["Here is what I understood from figma-export.md"]
+          llm_calls: {C1.understand: 1, C2.interpret_brief: 1}
+          slots:
+            design.direction: {value: warm-friendly}

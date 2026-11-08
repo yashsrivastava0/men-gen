@@ -1,0 +1,51 @@
+# SIT-019: Writes in another language
+# Detection: C1 language
+# Behavior:  Reply in that language; app copy defaults to it; spec keywords stay English
+id: SIT-019-another-language
+situation: "Writes in another language"
+mode: guided
+variants:
+  hindi:
+    steps:
+      - user: "मुझे अपनी दुकान के लिए ऐप चाहिए"
+        expect:
+          language: hi
+          text_absent: ["Noted"]
+          pending_card: Q-type-01
+      - tap: {card: Q-type-01, option: A}
+        expect:
+          language: hi
+          pending_card: Q-apps-01
+      - user: "ok"
+        expect:
+          language: hi
+      - user: "finish with smart defaults"
+        expect:
+          slots:
+            locale: {value: hi}
+  hinglish:
+    steps:
+      - user: "mujhe salon ka app chahiye, booking aur reminders ke saath"
+        expect:
+          language: hi-Latn
+          pending_card: Q-type-03
+      - user: "finish with smart defaults"
+        expect:
+          slots:
+            locale: {value: hi-Latn}
+  spanish:
+    steps:
+      - user: "Quiero una aplicación para mi tienda de ropa y mis clientes"
+        expect:
+          language: es
+          state: DISCOVERING
+  hinglish_app_copy_defaults_to_the_language_and_reaches_gate_one:
+    steps:
+      - user: "mujhe salon ka app chahiye, booking aur reminders ke saath"
+        expect: {language: hi-Latn}
+      - user: "finish with smart defaults"
+        expect:
+          state: BRIEF_REVIEW
+          language: hi-Latn
+          slots:
+            locale: {value: hi-Latn}

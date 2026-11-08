@@ -1,0 +1,11 @@
+Person: {{ persona_title }}
+About them: {{ persona_who }}
+Their language: {{ language }}
+Turn {{ turn }} of {{ max_turns }}.
+
+What happened so far (most recent last):
+{% for line in history %}{{ line }}
+{% else %}(nothing yet)
+{% endfor %}
+Now the assistant is showing ({{ kind }}):
+{{ situation }}

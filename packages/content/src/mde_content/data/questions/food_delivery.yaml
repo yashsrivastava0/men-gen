@@ -1,0 +1,227 @@
+# Question bank: food_delivery (food ordering). Cards here apply to this archetype only.
+# Feature ids are the pack feature ids (docs/packages/content.md). Pre-ticked = recommended.
+
+archetype: food_delivery
+
+cards:
+  - id: Q-type-02
+    slot: idea.archetype
+    type: confirm
+    text: "It sounds like a food ordering app, where people pick from a menu and get it delivered or ready for pickup. Is that right?"
+    options:
+      - {id: A, label: "Yes, food ordering", recommended: true, sets: {idea.archetype: food_delivery}}
+      - {id: B, label: "Not quite, start with basic building blocks", sets: {idea.archetype: custom}}
+    other: {enabled: true, placeholder: "Tell me what kind of app it is"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'food_delivery'"
+    i18n:
+      hi:
+        text: "लगता है आप एक खाना ऑर्डर करने वाला ऐप चाहते हैं, जहाँ लोग मेन्यू से चुनें और खाना घर पहुँचे या पिकअप के लिए तैयार हो। क्या यह सही है?"
+        options: {A: "हाँ, खाना ऑर्डर करना", B: "बिल्कुल नहीं, बुनियादी हिस्सों से शुरू करें"}
+        other_placeholder: "बताइए यह किस तरह का ऐप है"
+      hi-Latn:
+        text: "Lagta hai aap ek khana order karne wala app chahte hain, jahan log menu se chunein aur khana ghar pahunche ya pickup ke liye taiyaar ho. Kya yeh sahi hai?"
+        options: {A: "Haan, khana order karna", B: "Bilkul nahi, basic hisson se shuru karein"}
+        other_placeholder: "Bataiye yeh kis tarah ka app hai"
+
+  - id: Q-apps-02
+    slot: scope.apps
+    type: choice3
+    text: "Food ordering usually needs more than one app: one for customers, one for restaurants and one for delivery partners. Which should we build first?"
+    help: "Each app is its own project, so we start with one. You can build the others next."
+    options:
+      - {id: A, label: "The customer app", description: "For the people who order food.", recommended: true, sets: {scope.apps: [customer]}}
+      - {id: B, label: "The restaurant app", description: "For restaurants to receive and manage orders.", sets: {scope.apps: [business]}}
+      - {id: C, label: "The delivery partner app", description: "For the people who deliver the food.", sets: {scope.apps: [courier]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'food_delivery'"
+    i18n:
+      hi:
+        text: "खाना ऑर्डर करने वाली सेवा में आम तौर पर एक से ज़्यादा ऐप चाहिए: ग्राहकों के लिए, रेस्टोरेंट के लिए और डिलीवरी पार्टनर के लिए। पहले कौन सा बनाएँ?"
+        options: {A: "ग्राहकों का ऐप", B: "रेस्टोरेंट का ऐप", C: "डिलीवरी पार्टनर का ऐप"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "हर ऐप अपना अलग प्रोजेक्ट है, इसलिए हम एक से शुरू करते हैं। बाकी आप अगले में बना सकते हैं।"
+      hi-Latn:
+        text: "Khana order karne wali service mein aam taur par ek se zyada app chahiye: customers ke liye, restaurants ke liye aur delivery partners ke liye. Pehle kaun sa banayein?"
+        options: {A: "Customers ka app", B: "Restaurant ka app", C: "Delivery partner ka app"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Har app apna alag project hai, isliye hum ek se shuru karte hain. Baaki aap agle mein bana sakte hain."
+
+  - id: Q-feat-02
+    slot: scope.features
+    type: multi
+    text: "Which of these should your food app have? I have ticked the usual ones."
+    help: "You can change this any time. Anything you leave out can be added later."
+    options:
+      - {id: restaurant_browse, label: "Browse restaurants", description: "Customers see restaurants or menus nearby.", recommended: true, sets: {scope.features: [restaurant_browse]}}
+      - {id: menu_item_options, label: "Menu with choices", description: "Items with sizes, extras and notes.", recommended: true, sets: {scope.features: [menu_item_options]}}
+      - {id: cart_checkout, label: "Cart and checkout", description: "Customers add items and place an order.", recommended: true, sets: {scope.features: [cart_checkout]}}
+      - {id: payments, label: "Payments", description: "Customers pay in the app. We start with a practice checkout.", recommended: true, sets: {scope.features: [payments]}}
+      - {id: live_order_tracking, label: "Live order tracking", description: "Customers follow their order from kitchen to door.", recommended: true, sets: {scope.features: [live_order_tracking]}}
+      - {id: ratings, label: "Ratings", description: "Customers rate the food and the delivery.", sets: {scope.features: [ratings]}}
+      - {id: saved_addresses, label: "Saved addresses", description: "Customers keep home and work addresses.", recommended: true, sets: {scope.features: [saved_addresses]}}
+      - {id: push_notifications, label: "Notifications", description: "Order status updates on the phone.", recommended: true, sets: {scope.features: [push_notifications]}}
+      - {id: promo_codes, label: "Promo codes", description: "Customers enter a code for a discount.", sets: {scope.features: [promo_codes]}}
+      - {id: support, label: "Help and support", description: "Customers can reach support about an order.", sets: {scope.features: [support]}}
+    other: {enabled: true, placeholder: "Add my own"}
+    skip: {enabled: true}
+    ask_if: "idea.archetype == 'food_delivery'"
+    i18n:
+      hi:
+        text: "आपके फ़ूड ऐप में इनमें से क्या-क्या होना चाहिए? मैंने आम चीज़ों पर निशान लगा दिए हैं।"
+        options: {restaurant_browse: "रेस्टोरेंट देखना", menu_item_options: "विकल्पों के साथ मेन्यू", cart_checkout: "कार्ट और चेकआउट", payments: "भुगतान", live_order_tracking: "लाइव ऑर्डर ट्रैकिंग", ratings: "रेटिंग", saved_addresses: "सेव किए पते", push_notifications: "नोटिफिकेशन", promo_codes: "प्रोमो कोड", support: "सहायता"}
+        other_placeholder: "अपना जोड़िए"
+        help: "आप इसे कभी भी बदल सकते हैं। जो अभी छोड़ेंगे उसे बाद में जोड़ सकते हैं।"
+      hi-Latn:
+        text: "Aapke food app mein inmein se kya-kya hona chahiye? Maine aam cheezon par nishaan laga diye hain."
+        options: {restaurant_browse: "Restaurants dekhna", menu_item_options: "Options ke saath menu", cart_checkout: "Cart aur checkout", payments: "Payment", live_order_tracking: "Live order tracking", ratings: "Rating", saved_addresses: "Saved addresses", push_notifications: "Notifications", promo_codes: "Promo codes", support: "Help aur support"}
+        other_placeholder: "Apna jodiye"
+        help: "Aap ise kabhi bhi badal sakte hain. Jo abhi chhodenge use baad mein jod sakte hain."
+
+  - id: Q-look-02
+    slot: design.direction
+    type: visual3
+    text: "Which look feels closest to your food app?"
+    help: "This sets colors, shapes and feel. You can change it later."
+    options:
+      - {id: A, label: "Warm and friendly", description: "Soft, welcoming colors and rounded shapes.", preview: "theme:warm-friendly", recommended: true, sets: {design.direction: warm-friendly}}
+      - {id: B, label: "Vibrant and playful", description: "Bright colors and a lively feel.", preview: "theme:vibrant-playful", sets: {design.direction: vibrant-playful}}
+      - {id: C, label: "Clean and bright", description: "Light, fresh and easy to read.", preview: "theme:clean-bright", sets: {design.direction: clean-bright}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "कौन सा लुक आपके फ़ूड ऐप के सबसे करीब है?"
+        options: {A: "गर्म और दोस्ताना", B: "रंगीन और मज़ेदार", C: "साफ़ और चमकीला"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+        help: "इससे रंग, आकार और अंदाज़ तय होता है। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Kaun sa look aapke food app ke sabse kareeb hai?"
+        options: {A: "Garam aur dostana", B: "Rangeen aur mazedaar", C: "Saaf aur chamakdaar"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+        help: "Isse rang, aakaar aur andaaz tay hota hai. Baad mein badal sakte hain."
+
+  - id: Q-look-12
+    slot: design.direction
+    type: visual3
+    text: "Here are three more looks. Which one is closest?"
+    options:
+      - {id: A, label: "Bold and dark", description: "Dark screens with strong contrast.", preview: "theme:bold-dark", recommended: true, sets: {design.direction: bold-dark}}
+      - {id: B, label: "Simple and minimal", description: "Black, white and grey with lots of space.", preview: "theme:minimal-mono", sets: {design.direction: minimal-mono}}
+      - {id: C, label: "Calm and professional", description: "Steady blues and a tidy, business-like feel.", preview: "theme:corporate-calm", sets: {design.direction: corporate-calm}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "ये रहे तीन और लुक। कौन सा सबसे करीब है?"
+        options: {A: "गहरा और दमदार", B: "सादा और मिनिमल", C: "शांत और प्रोफ़ेशनल"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+      hi-Latn:
+        text: "Ye rahe teen aur look. Kaun sa sabse kareeb hai?"
+        options: {A: "Gehra aur damdaar", B: "Saada aur minimal", C: "Shaant aur professional"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+
+  - id: Q-pay-02
+    slot: pay.model
+    type: choice3
+    text: "How will customers pay?"
+    help: "The first version uses a practice checkout. A real payment provider is connected later."
+    options:
+      - {id: A, label: "Online, in the app", description: "We start with a practice checkout so you can try it.", recommended: true, sets: {pay.model: online}}
+      - {id: B, label: "Online or cash on delivery", description: "Customers choose at checkout.", sets: {pay.model: both}}
+      - {id: C, label: "Cash on delivery only", description: "Customers pay the person who delivers.", sets: {pay.model: on_delivery}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'payments' in scope.features"
+    i18n:
+      hi:
+        text: "ग्राहक भुगतान कैसे करेंगे?"
+        options: {A: "ऑनलाइन, ऐप में", B: "ऑनलाइन या डिलीवरी पर नकद", C: "सिर्फ़ डिलीवरी पर नकद"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "पहले संस्करण में एक प्रैक्टिस चेकआउट होता है। असली पेमेंट प्रोवाइडर बाद में जोड़ा जाता है।"
+      hi-Latn:
+        text: "Customers payment kaise karenge?"
+        options: {A: "Online, app mein", B: "Online ya delivery par cash", C: "Sirf delivery par cash"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Pehle version mein ek practice checkout hota hai. Asli payment provider baad mein joda jata hai."
+
+  - id: Q-fix-02
+    slot: auth.method
+    type: choice3
+    kind: resolution
+    text: "You said people do not need to sign in, but a few features need an account. What should we do?"
+    help: "Features like saved addresses, ratings and promo codes need to know who the customer is."
+    options:
+      - {id: A, label: "Add a simple sign-in", description: "A short code sent to email or phone.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Browse freely, sign in only when needed", description: "People sign in when they order or save something.", sets: {auth.method: guest_first}}
+      - {id: C, label: "No sign-in, leave out account features", description: "We remove the features that need an account.", sets: {auth.method: none, scope.features: [restaurant_browse, menu_item_options, cart_checkout, payments, live_order_tracking, push_notifications, support]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "auth.method == 'none' and scope.features in [saved_addresses, ratings, promo_codes]"
+    i18n:
+      hi:
+        text: "आपने कहा कि लोगों को साइन इन करने की ज़रूरत नहीं, लेकिन कुछ फ़ीचर के लिए अकाउंट चाहिए। हम क्या करें?"
+        options: {A: "एक सरल साइन-इन जोड़ें", B: "खुलकर देखें, ज़रूरत पर ही साइन इन करें", C: "साइन-इन नहीं, अकाउंट वाले फ़ीचर हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "सेव किए पते, रेटिंग और प्रोमो कोड जैसे फ़ीचर को पता होना चाहिए कि ग्राहक कौन है।"
+      hi-Latn:
+        text: "Aapne kaha ki logon ko sign in karne ki zaroorat nahi, lekin kuch features ke liye account chahiye. Hum kya karein?"
+        options: {A: "Ek simple sign-in jodein", B: "Khulkar dekhein, zaroorat par hi sign in karein", C: "Sign-in nahi, account wale features hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Saved addresses, rating aur promo codes jaise features ko pata hona chahiye ki customer kaun hai."
+
+  - id: Q-fix-07
+    slot: pay.model
+    type: choice3
+    kind: resolution
+    text: "You said no payments in the app, but payments are still on the feature list. What should we do?"
+    options:
+      - {id: A, label: "Keep payments", description: "We start with a practice checkout.", recommended: true, sets: {pay.model: online}}
+      - {id: B, label: "Cash on delivery", description: "Customers pay the person who delivers.", sets: {pay.model: on_delivery}}
+      - {id: C, label: "Remove payments", description: "The app will not take payments.", sets: {pay.model: none, scope.features: [restaurant_browse, menu_item_options, cart_checkout, live_order_tracking, saved_addresses, push_notifications]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "pay.model == 'none' and 'payments' in scope.features"
+    i18n:
+      hi:
+        text: "आपने कहा कि ऐप में भुगतान नहीं, लेकिन भुगतान अब भी फ़ीचर सूची में है। हम क्या करें?"
+        options: {A: "भुगतान रखें", B: "डिलीवरी पर नकद", C: "भुगतान हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+      hi-Latn:
+        text: "Aapne kaha ki app mein payment nahi, lekin payment ab bhi feature list mein hai. Hum kya karein?"
+        options: {A: "Payment rakhein", B: "Delivery par cash", C: "Payment hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+
+inspiration_cards:
+  - id: Q-insp-02
+    slot: idea.summary
+    type: choice3
+    kind: inspiration
+    text: "Here are a few ideas for food apps. Pick the closest one, or describe your own."
+    options:
+      - {id: A, label: "Restaurant with online ordering", description: "Customers order from the menu and follow the delivery.", recommended: true, sets: {idea.summary: "A restaurant app where customers order from the menu and follow the delivery", idea.archetype: food_delivery}}
+      - {id: B, label: "Bakery with pre-orders", description: "Customers order cakes and bread ahead of time.", sets: {idea.summary: "A bakery app where customers pre-order cakes and bread", idea.archetype: food_delivery}}
+      - {id: C, label: "Tiffin or meal service", description: "Customers order daily meals.", sets: {idea.summary: "A tiffin service app where customers order daily meals", idea.archetype: food_delivery}}
+    other: {enabled: true, placeholder: "Describe your own food app"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "फ़ूड ऐप के लिए कुछ आइडिया ये रहे। सबसे करीब वाला चुनिए, या अपना बताइए।"
+        options: {A: "ऑनलाइन ऑर्डर वाला रेस्टोरेंट", B: "प्री-ऑर्डर वाली बेकरी", C: "टिफ़िन या मील सर्विस"}
+        other_placeholder: "अपने फ़ूड ऐप के बारे में बताइए"
+      hi-Latn:
+        text: "Food app ke liye kuch ideas ye rahe. Sabse kareeb wala chuniye, ya apna bataiye."
+        options: {A: "Online order wala restaurant", B: "Pre-order wali bakery", C: "Tiffin ya meal service"}
+        other_placeholder: "Apne food app ke baare mein bataiye"
+
+starter_chips:
+  - {id: chip-food-01, label: "A restaurant with online ordering", prefill: "I want an online ordering app for my restaurant", archetype: food_delivery, sets: {idea.archetype: food_delivery}, i18n: {hi: "ऑनलाइन ऑर्डर वाला रेस्टोरेंट", hi-Latn: "Online order wala restaurant"}}
+  - {id: chip-food-02, label: "A cloud kitchen", prefill: "I want an app for my cloud kitchen with home delivery", archetype: food_delivery, sets: {idea.archetype: food_delivery}, i18n: {hi: "क्लाउड किचन", hi-Latn: "Cloud kitchen"}}
+  - {id: chip-food-03, label: "A bakery with pre-orders", prefill: "I want an app where people can pre-order from my bakery", archetype: food_delivery, sets: {idea.archetype: food_delivery}, i18n: {hi: "प्री-ऑर्डर वाली बेकरी", hi-Latn: "Pre-order wali bakery"}}
+  - {id: chip-food-04, label: "A tiffin service", prefill: "I want an app for my tiffin service", archetype: food_delivery, sets: {idea.archetype: food_delivery}, i18n: {hi: "टिफ़िन सर्विस", hi-Latn: "Tiffin service"}}
+  - {id: chip-food-05, label: "A cafe with pickup", prefill: "I want an app where people order ahead and pick up at my cafe", archetype: food_delivery, sets: {idea.archetype: food_delivery}, i18n: {hi: "पिकअप वाला कैफ़े", hi-Latn: "Pickup wala cafe"}}
+  - {id: chip-food-06, label: "A food court ordering app", prefill: "I want an ordering app for a food court", archetype: food_delivery, sets: {idea.archetype: food_delivery}, i18n: {hi: "फ़ूड कोर्ट ऑर्डरिंग ऐप", hi-Latn: "Food court ordering app"}}

@@ -1,0 +1,358 @@
+{
+  "$defs": {
+    "FieldProposal": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "string",
+          "enum": [
+            "string",
+            "text",
+            "int",
+            "number",
+            "bool",
+            "datetime",
+            "date",
+            "money",
+            "enum",
+            "ref",
+            "image"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "FieldProposal",
+      "type": "object"
+    },
+    "KeyValue": {
+      "additionalProperties": false,
+      "properties": {
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "value"
+      ],
+      "title": "KeyValue",
+      "type": "object"
+    },
+    "Proposal": {
+      "additionalProperties": false,
+      "description": "One validated-by-code edit (patch op). Valid proposals are applied, invalid ones dropped.",
+      "properties": {
+        "fields": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/FieldProposal"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fields"
+        },
+        "flow": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "items": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "sections, checks, rules, states",
+          "title": "Items"
+        },
+        "kind": {
+          "enum": [
+            "add_screen",
+            "rename_screen",
+            "set_screen_purpose",
+            "set_screen_copy",
+            "add_screen_action",
+            "add_screen_section",
+            "add_screen_check",
+            "add_screen_state",
+            "add_flow_screen",
+            "add_entity",
+            "add_entity_fields",
+            "add_api_operation",
+            "add_role",
+            "set_design_token",
+            "add_imagery_rule",
+            "add_integration",
+            "set_integration_mode",
+            "set_behavior_item",
+            "add_acceptance_check",
+            "fix_reference",
+            "remove_item"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Method"
+        },
+        "name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Name"
+        },
+        "pairs": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/KeyValue"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "key/value pairs (copy, tokens)",
+          "title": "Pairs"
+        },
+        "path": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Path"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purpose"
+        },
+        "rationale": {
+          "description": "One short sentence tying the edit to the Brief/Research",
+          "title": "Rationale",
+          "type": "string"
+        },
+        "recipe": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Recipe"
+        },
+        "request_entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Entity"
+        },
+        "research_ref": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "RA-### when source is research",
+          "title": "Research Ref"
+        },
+        "response_entity": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Response Entity"
+        },
+        "route": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Route"
+        },
+        "source": {
+          "default": "brief",
+          "enum": [
+            "brief",
+            "research",
+            "repair"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "surface": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Surface"
+        },
+        "target": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Existing baseline id (SCR-003, ENT-Order, FLW-001, ...) or null",
+          "title": "Target"
+        }
+      },
+      "required": [
+        "kind",
+        "rationale"
+      ],
+      "title": "Proposal",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "notes": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Notes"
+    },
+    "proposals": {
+      "items": {
+        "$ref": "#/$defs/Proposal"
+      },
+      "title": "Proposals",
+      "type": "array"
+    }
+  },
+  "required": [
+    "proposals"
+  ],
+  "title": "SpecProposals",
+  "type": "object"
+}

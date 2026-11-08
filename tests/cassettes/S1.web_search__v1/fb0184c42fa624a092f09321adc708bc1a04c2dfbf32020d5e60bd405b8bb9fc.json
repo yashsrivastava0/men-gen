@@ -1,0 +1,220 @@
+{
+  "format": 1,
+  "key": "fb0184c42fa624a092f09321adc708bc1a04c2dfbf32020d5e60bd405b8bb9fc",
+  "recorded_at": "2026-11-08T10:56:33.145378Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: Expo push notifications email phone code authentication SDK compatibility\nTopic: official documentation facts about one service or SDK (availability, Expo compatibility, caveats)\n"
+  },
+  "response": {
+    "text": "The question does not name a specific authentication service or SDK, so its email- and phone-code authentication compatibility with Expo cannot be confirmed. Expo’s documentation describes authentication integrations including Clerk and Supabase, and notes that some providers require custom native code and are not supported in Expo Go. ([docs.expo.dev](https://docs.expo.dev/guides/using-authentication/?utm_source=openai))\n\nFor push notifications, Expo’s `expo-notifications` works with Expo’s push service and directly with FCM and APNs; using push requires a development build, not Expo Go. ([docs.expo.dev](https://docs.expo.dev/guides/using-push-notifications-services/?utm_source=openai)) Expo’s push service has a limit of 600 notifications per second per project. ([docs.expo.dev](https://docs.expo.dev/push-notifications/faq/?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://docs.expo.dev/guides/using-authentication/?utm_source=openai",
+        "title": "Using authentication SDKs and libraries - Expo documentation",
+        "start": 338,
+        "end": 425
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-push-notifications-services/?utm_source=openai",
+        "title": "Using push notifications - Expo documentation",
+        "start": 596,
+        "end": 696
+      },
+      {
+        "url": "https://docs.expo.dev/push-notifications/faq/?utm_source=openai",
+        "title": "Push notifications troubleshooting and FAQ - Expo documentation",
+        "start": 774,
+        "end": 856
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-push-notifications-services/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/push-notifications/overview/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/push-notifications/faq/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/versions/latest/sdk/notifications/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/push-notifications/what-you-need-to-know/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/push-notifications/sending-notifications/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/guides/using-authentication/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/push-notifications/sending-notifications-custom/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/app-signing/security/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/develop/authentication/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/develop/development-builds/faq/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.expo.dev/app-signing/managed-credentials/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://aayush.io/assets/files/talks/relabs.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://docs.aws.amazon.com/pdfs/push-notifications/latest/userguide/push-ug.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://achilles.tu.kielce.pl/portal/Members/7637837b75044f12a9338bd380002931/mobile-applications/lecture/lecture-7.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1ftn5oi",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1lu33o5/is_it_possible_to_receive_push_notifications_in/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1f8r27k/push_notifications_android/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1gkfx9i",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1j7a7ac/expo_communication_notifications/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/reactnative/comments/1ptydkg/i_built_a_small_dashboard_to_make_expo_push/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1irglf0",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/13x049e",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1b3huxz",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1p2vnvb/question_about_push_notification_api/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1og67mr",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/expo/comments/1igqv17",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 13001,
+      "cached_input_tokens": 4442,
+      "output_tokens": 229,
+      "reasoning_tokens": 62,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

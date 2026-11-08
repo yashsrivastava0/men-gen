@@ -1,0 +1,24 @@
+Language: {{ language }}
+Idea: {{ idea_text }}
+{% if document_text %}
+Document:
+{{ document_text }}
+{% endif %}
+
+App types:
+{% for a in archetypes %}
+- {{ a.id }}: {{ a.label }}{% if a.description %} ({{ a.description }}){% endif %}
+
+{% endfor %}
+{% if sensitive_domains %}
+Sensitive domains:
+{% for d in sensitive_domains %}
+- {{ d.id }}: {{ d.label }}
+{% endfor %}
+{% endif %}
+{% if unsupported_types %}
+Unsupported types:
+{% for u in unsupported_types %}
+- {{ u.id }}: {{ u.label }}
+{% endfor %}
+{% endif %}

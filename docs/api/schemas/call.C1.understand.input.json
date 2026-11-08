@@ -1,0 +1,409 @@
+{
+  "$defs": {
+    "OptionChoice": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionChoice",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    },
+    "PendingCardLite": {
+      "additionalProperties": false,
+      "properties": {
+        "card_id": {
+          "title": "Card Id",
+          "type": "string"
+        },
+        "options": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "slot": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "choice3",
+            "multi",
+            "visual3",
+            "text",
+            "upload",
+            "confirm"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "card_id",
+        "slot",
+        "type",
+        "text"
+      ],
+      "title": "PendingCardLite",
+      "type": "object"
+    },
+    "SlotBrief": {
+      "additionalProperties": false,
+      "description": "One slot as shown to a prompt: compact, no provenance noise.",
+      "properties": {
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "enum": [
+                "tap",
+                "text",
+                "upload",
+                "research",
+                "org_profile",
+                "memory",
+                "default"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "state": {
+          "enum": [
+            "empty",
+            "assumed",
+            "volunteered",
+            "confirmed",
+            "disputed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "value",
+        "state"
+      ],
+      "title": "SlotBrief",
+      "type": "object"
+    },
+    "SlotCatalogItem": {
+      "additionalProperties": false,
+      "properties": {
+        "hint": {
+          "default": "",
+          "title": "Hint",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "bool",
+            "choice",
+            "list"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "kind"
+      ],
+      "title": "SlotCatalogItem",
+      "type": "object"
+    },
+    "TurnLite": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "text"
+      ],
+      "title": "TurnLite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "archetypes": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/OptionChoice"
+      },
+      "title": "Archetypes",
+      "type": "array"
+    },
+    "attachment_text": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Attachment Text"
+    },
+    "gate_open": {
+      "anyOf": [
+        {
+          "enum": [
+            "brief",
+            "plan"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gate Open"
+    },
+    "language_hint": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Language Hint"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "mode": {
+      "default": "guided",
+      "enum": [
+        "guided",
+        "enterprise"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "pending_card": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PendingCardLite"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "recent_turns": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/TurnLite"
+      },
+      "title": "Recent Turns",
+      "type": "array"
+    },
+    "slot_catalog": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotCatalogItem"
+      },
+      "title": "Slot Catalog",
+      "type": "array"
+    },
+    "slots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotBrief"
+      },
+      "title": "Slots",
+      "type": "array"
+    },
+    "state": {
+      "default": "DISCOVERING",
+      "enum": [
+        "DISCOVERING",
+        "BRIEF_REVIEW",
+        "PLANNING",
+        "PLAN_REVIEW",
+        "HANDED_OFF",
+        "PAUSED",
+        "STOPPED",
+        "ARCHIVED"
+      ],
+      "title": "State",
+      "type": "string"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message"
+  ],
+  "title": "C1Input",
+  "type": "object"
+}

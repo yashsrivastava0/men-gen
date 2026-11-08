@@ -1,0 +1,99 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "approver_id": {
+      "title": "Approver Id",
+      "type": "string"
+    },
+    "at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "At"
+    },
+    "comment": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Comment"
+    },
+    "decision": {
+      "enum": [
+        "approve",
+        "change",
+        "reject"
+      ],
+      "title": "Decision",
+      "type": "string"
+    },
+    "gate": {
+      "enum": [
+        "brief",
+        "plan"
+      ],
+      "title": "Gate",
+      "type": "string"
+    },
+    "hash": {
+      "title": "Hash",
+      "type": "string"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "role": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Role"
+    },
+    "session_id": {
+      "title": "Session Id",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    },
+    "via": {
+      "default": "tap",
+      "enum": [
+        "tap",
+        "typed"
+      ],
+      "title": "Via",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "session_id",
+    "gate",
+    "version",
+    "hash",
+    "approver_id",
+    "decision"
+  ],
+  "title": "ApprovalRecord",
+  "type": "object"
+}

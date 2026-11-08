@@ -1,0 +1,238 @@
+{
+  "$defs": {
+    "BriefContext": {
+      "additionalProperties": false,
+      "description": "Compact approved-Brief view passed to research and spec-building calls.",
+      "properties": {
+        "app_summary": {
+          "title": "App Summary",
+          "type": "string"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "brand_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Name"
+        },
+        "brand_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Url"
+        },
+        "compliance_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Compliance Flags",
+          "type": "array"
+        },
+        "features": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "login": {
+          "default": "",
+          "title": "Login",
+          "type": "string"
+        },
+        "look": {
+          "default": "",
+          "title": "Look",
+          "type": "string"
+        },
+        "mode": {
+          "default": "guided",
+          "enum": [
+            "guided",
+            "enterprise"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "regions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "app_summary",
+        "archetype"
+      ],
+      "title": "BriefContext",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    },
+    "ResearchPolicyLite": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_company_name_in_queries": {
+          "default": true,
+          "title": "Allow Company Name In Queries",
+          "type": "boolean"
+        },
+        "allowed_domains": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Domains",
+          "type": "array"
+        },
+        "blocked_domains": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Blocked Domains",
+          "type": "array"
+        },
+        "connectors": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Connectors",
+          "type": "array"
+        }
+      },
+      "title": "ResearchPolicyLite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "brief": {
+      "$ref": "#/$defs/BriefContext"
+    },
+    "depth": {
+      "default": "light",
+      "enum": [
+        "light",
+        "standard",
+        "deep"
+      ],
+      "title": "Depth",
+      "type": "string"
+    },
+    "jobs_available": {
+      "default": [
+        "R1",
+        "R2",
+        "R3",
+        "R4",
+        "R5"
+      ],
+      "items": {
+        "enum": [
+          "R1",
+          "R2",
+          "R3",
+          "R4",
+          "R5",
+          "R6"
+        ],
+        "type": "string"
+      },
+      "title": "Jobs Available",
+      "type": "array"
+    },
+    "max_queries_per_job": {
+      "default": 2,
+      "maximum": 8,
+      "minimum": 1,
+      "title": "Max Queries Per Job",
+      "type": "integer"
+    },
+    "max_search_calls": {
+      "title": "Max Search Calls",
+      "type": "integer"
+    },
+    "policy": {
+      "$ref": "#/$defs/ResearchPolicyLite"
+    },
+    "remaining_budget_micros": {
+      "title": "Remaining Budget Micros",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "brief",
+    "max_search_calls",
+    "remaining_budget_micros"
+  ],
+  "title": "C6Input",
+  "type": "object"
+}

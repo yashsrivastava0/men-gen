@@ -1,0 +1,393 @@
+{
+  "$defs": {
+    "Card": {
+      "additionalProperties": false,
+      "properties": {
+        "archetypes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Archetypes",
+          "type": "array"
+        },
+        "ask_if": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ask If"
+        },
+        "help": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Help"
+        },
+        "i18n": {
+          "additionalProperties": {
+            "$ref": "#/$defs/CardI18n"
+          },
+          "title": "I18N",
+          "type": "object"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "default": "standard",
+          "enum": [
+            "standard",
+            "help",
+            "compliance",
+            "resolution",
+            "inspiration",
+            "nudge"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "modes": {
+          "default": [],
+          "items": {
+            "enum": [
+              "guided",
+              "enterprise"
+            ],
+            "type": "string"
+          },
+          "title": "Modes",
+          "type": "array"
+        },
+        "options": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/CardOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "other": {
+          "$ref": "#/$defs/OtherInput"
+        },
+        "skip": {
+          "$ref": "#/$defs/SkipSpec"
+        },
+        "slot": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "choice3",
+            "multi",
+            "visual3",
+            "text",
+            "upload",
+            "confirm"
+          ],
+          "title": "Type",
+          "type": "string"
+        },
+        "version": {
+          "default": 1,
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "id",
+        "slot",
+        "type",
+        "text"
+      ],
+      "title": "Card",
+      "type": "object"
+    },
+    "CardI18n": {
+      "additionalProperties": false,
+      "description": "Localised copy for one language (``hi`` Hindi, ``hi-Latn`` Hinglish, ...).",
+      "properties": {
+        "help": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Help"
+        },
+        "options": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Options",
+          "type": "object"
+        },
+        "other_placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Other Placeholder"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "text"
+      ],
+      "title": "CardI18n",
+      "type": "object"
+    },
+    "CardOption": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "preview": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Preview"
+        },
+        "recommended": {
+          "default": false,
+          "title": "Recommended",
+          "type": "boolean"
+        },
+        "sets": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Sets",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "CardOption",
+      "type": "object"
+    },
+    "CardProgress": {
+      "additionalProperties": false,
+      "properties": {
+        "asked": {
+          "title": "Asked",
+          "type": "integer"
+        },
+        "cap": {
+          "title": "Cap",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "asked",
+        "cap"
+      ],
+      "title": "CardProgress",
+      "type": "object"
+    },
+    "OtherInput": {
+      "additionalProperties": false,
+      "properties": {
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "placeholder": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Placeholder"
+        }
+      },
+      "title": "OtherInput",
+      "type": "object"
+    },
+    "SkipSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "assumes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Assumes"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        }
+      },
+      "title": "SkipSpec",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A card as shown to the user in one session.",
+  "properties": {
+    "card": {
+      "$ref": "#/$defs/Card"
+    },
+    "generated": {
+      "default": false,
+      "title": "Generated",
+      "type": "boolean"
+    },
+    "instance_id": {
+      "title": "Instance Id",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "progress": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CardProgress"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "shown_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Shown At"
+    }
+  },
+  "required": [
+    "instance_id",
+    "card"
+  ],
+  "title": "CardInstance",
+  "type": "object"
+}

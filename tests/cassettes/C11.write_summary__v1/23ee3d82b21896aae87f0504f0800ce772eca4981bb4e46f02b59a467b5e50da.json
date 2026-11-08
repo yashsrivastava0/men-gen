@@ -1,0 +1,32 @@
+{
+  "format": 1,
+  "key": "23ee3d82b21896aae87f0504f0800ce772eca4981bb4e46f02b59a467b5e50da",
+  "recorded_at": "2026-11-08T10:47:19.318790Z",
+  "request": {
+    "spec_id": "C11.write_summary",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "medium",
+    "schema_hash": "54669b5e6a1bfebb4d15788d41b5cd5fb8e51fc2d982eb2383a42262c748c90a",
+    "tools": [],
+    "kind": "main",
+    "system": "You write one short plain-language summary of an app for the person who asked for it. One job: return the text.\n\nRules:\n- Use only the facts given. Never add features, numbers, dates, prices or promises.\n- brief_sentence: exactly one sentence of at most max_words words that says what the app is, who it is for and its main features.\n- plan_summary: two or three short sentences in plain words.\n- Write in the user's language. No marketing words, no jargon.",
+    "user": "Kind: brief_sentence. Language: hi. Maximum words: 40.\nApp name: Blue Basket\nFacts:\n- ऑनलाइन दुकान: मुझे अपनी दुकान के लिए एक ऐप चाहिए।\n- जिसमें उत्पाद देखें, खोज और फ़िल्टर, कार्ट और चेकआउट, ऑनलाइन भुगतान, ऑर्डर और ट्रैकिंग, पुश सूचनाएं हैं\n- साफ़ और चमकीला लुक में\n"
+  },
+  "response": {
+    "text": "{\"text\":\"Blue Basket आपकी दुकान के लिए ऑनलाइन शॉपिंग ऐप है, जिसमें उत्पाद देखना, खोजना और फ़िल्टर करना, कार्ट व चेकआउट, ऑनलाइन भुगतान, ऑर्डर ट्रैकिंग और पुश सूचनाएं साफ़, चमकीले लुक में हैं।\"}",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [],
+    "search_calls": 0,
+    "usage": {
+      "input_tokens": 221,
+      "cached_input_tokens": 0,
+      "output_tokens": 141,
+      "reasoning_tokens": 64,
+      "tool_calls": 0,
+      "cost_micros": 0
+    }
+  }
+}

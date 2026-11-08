@@ -1,0 +1,18 @@
+id: P06-wants-three-apps
+title: Wants a customer app, a seller app and an admin panel
+who: Describes a marketplace with three audiences and expects all of it at once.
+language: en
+mode: guided
+script:
+  - user: "I need a customer app, a seller app and an admin panel for my shop"
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  text_contains: ["more than one app"]
+  slots:
+    scope.apps: [customer]

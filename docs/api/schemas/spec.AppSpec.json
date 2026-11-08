@@ -1,0 +1,1744 @@
+{
+  "$defs": {
+    "AcceptanceBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "checks": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Checks",
+          "type": "array"
+        }
+      },
+      "title": "AcceptanceBlock",
+      "type": "object"
+    },
+    "ApiBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "mock_guidance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Mock Guidance"
+        },
+        "operations": {
+          "items": {
+            "$ref": "#/$defs/ApiOperation"
+          },
+          "title": "Operations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "operations"
+      ],
+      "title": "ApiBlock",
+      "type": "object"
+    },
+    "ApiOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "default": "public",
+          "title": "Auth",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^API-[A-Za-z][A-Za-z0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "method": {
+          "enum": [
+            "GET",
+            "POST",
+            "PUT",
+            "PATCH",
+            "DELETE"
+          ],
+          "title": "Method",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "request_entity": {
+          "anyOf": [
+            {
+              "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Request Entity"
+        },
+        "response_entity": {
+          "anyOf": [
+            {
+              "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Response Entity"
+        },
+        "response_many": {
+          "default": false,
+          "title": "Response Many",
+          "type": "boolean"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "pattern": "^ROLE-[a-z][a-z0-9_]*$",
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "method",
+        "path"
+      ],
+      "title": "ApiOperation",
+      "type": "object"
+    },
+    "AppBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "audience": {
+          "title": "Audience",
+          "type": "string"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "platforms": {
+          "default": [
+            "ios",
+            "android"
+          ],
+          "items": {
+            "enum": [
+              "ios",
+              "android"
+            ],
+            "type": "string"
+          },
+          "title": "Platforms",
+          "type": "array"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "tone": {
+          "default": "friendly",
+          "title": "Tone",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "purpose",
+        "audience"
+      ],
+      "title": "AppBlock",
+      "type": "object"
+    },
+    "AssumptionItem": {
+      "additionalProperties": false,
+      "properties": {
+        "impact": {
+          "title": "Impact",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "slot_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot Id"
+        },
+        "value_text": {
+          "title": "Value Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value_text",
+        "impact"
+      ],
+      "title": "AssumptionItem",
+      "type": "object"
+    },
+    "AssumptionsBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "assumptions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/AssumptionItem"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "research_additions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ResearchAddition"
+          },
+          "title": "Research Additions",
+          "type": "array"
+        },
+        "research_note": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research Note"
+        },
+        "research_status": {
+          "default": "skipped",
+          "enum": [
+            "ok",
+            "partial",
+            "unavailable",
+            "skipped"
+          ],
+          "title": "Research Status",
+          "type": "string"
+        }
+      },
+      "title": "AssumptionsBlock",
+      "type": "object"
+    },
+    "BacklogItem": {
+      "additionalProperties": false,
+      "properties": {
+        "reason": {
+          "default": "phase 2",
+          "title": "Reason",
+          "type": "string"
+        },
+        "screens_hint": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Screens Hint",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "BacklogItem",
+      "type": "object"
+    },
+    "BehaviorBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "accessibility": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Accessibility",
+          "type": "array"
+        },
+        "analytics_events": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Analytics Events",
+          "type": "array"
+        },
+        "deep_links": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Deep Links",
+          "type": "array"
+        },
+        "error_conventions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Error Conventions",
+          "type": "array"
+        },
+        "locale": {
+          "default": "en",
+          "title": "Locale",
+          "type": "string"
+        },
+        "notifications": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Notifications",
+          "type": "array"
+        },
+        "offline": {
+          "default": "basic cache",
+          "title": "Offline",
+          "type": "string"
+        },
+        "permission_prompts": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Permission Prompts",
+          "type": "array"
+        }
+      },
+      "title": "BehaviorBlock",
+      "type": "object"
+    },
+    "BuildSequence": {
+      "additionalProperties": false,
+      "properties": {
+        "steps": {
+          "items": {
+            "$ref": "#/$defs/BuildStep"
+          },
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "steps"
+      ],
+      "title": "BuildSequence",
+      "type": "object"
+    },
+    "BuildStep": {
+      "additionalProperties": false,
+      "properties": {
+        "flow": {
+          "anyOf": [
+            {
+              "pattern": "^FLW-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "gate": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Gate"
+        },
+        "id": {
+          "pattern": "^S(?:[0-9]|10)$",
+          "title": "Id",
+          "type": "string"
+        },
+        "load": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Load",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "parallel": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ParallelGroup"
+          },
+          "title": "Parallel",
+          "type": "array"
+        },
+        "screens": {
+          "default": [],
+          "items": {
+            "pattern": "^SCR-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        },
+        "stop_for_feedback": {
+          "default": false,
+          "title": "Stop For Feedback",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "BuildStep",
+      "type": "object"
+    },
+    "DataBinding": {
+      "additionalProperties": false,
+      "properties": {
+        "bind": {
+          "title": "Bind",
+          "type": "string"
+        },
+        "show": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Show",
+          "type": "array"
+        }
+      },
+      "required": [
+        "bind"
+      ],
+      "title": "DataBinding",
+      "type": "object"
+    },
+    "DataBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "entities": {
+          "items": {
+            "$ref": "#/$defs/Entity"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "enums": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/EnumDef"
+          },
+          "title": "Enums",
+          "type": "array"
+        },
+        "seed_guidance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed Guidance"
+        }
+      },
+      "required": [
+        "entities"
+      ],
+      "title": "DataBlock",
+      "type": "object"
+    },
+    "DesignBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "component_variants": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "default": {},
+          "title": "Component Variants",
+          "type": "object"
+        },
+        "direction": {
+          "title": "Direction",
+          "type": "string"
+        },
+        "imagery_rules": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Imagery Rules",
+          "type": "array"
+        },
+        "nav_style": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Nav Style"
+        },
+        "tokens": {
+          "$ref": "#/$defs/DesignTokens"
+        }
+      },
+      "required": [
+        "direction",
+        "tokens"
+      ],
+      "title": "DesignBlock",
+      "type": "object"
+    },
+    "DesignTokens": {
+      "additionalProperties": false,
+      "properties": {
+        "colors_dark": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Colors Dark",
+          "type": "object"
+        },
+        "colors_light": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Colors Light",
+          "type": "object"
+        },
+        "elevation": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Elevation",
+          "type": "object"
+        },
+        "motion": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Motion",
+          "type": "object"
+        },
+        "radius": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Radius",
+          "type": "object"
+        },
+        "spacing": {
+          "items": {
+            "type": "integer"
+          },
+          "title": "Spacing",
+          "type": "array"
+        },
+        "type_scale": {
+          "additionalProperties": {
+            "$ref": "#/$defs/TypeStyle"
+          },
+          "title": "Type Scale",
+          "type": "object"
+        }
+      },
+      "required": [
+        "colors_light",
+        "colors_dark",
+        "type_scale",
+        "spacing",
+        "radius",
+        "elevation",
+        "motion"
+      ],
+      "title": "DesignTokens",
+      "type": "object"
+    },
+    "Entity": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/FieldDef"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "plain_name": {
+          "title": "Plain Name",
+          "type": "string"
+        },
+        "seed_guidance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed Guidance"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "state_machine": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StateMachine"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "plain_name",
+        "fields"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "EnumDef": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "values"
+      ],
+      "title": "EnumDef",
+      "type": "object"
+    },
+    "FieldDef": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enum"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "string",
+          "enum": [
+            "string",
+            "text",
+            "int",
+            "number",
+            "bool",
+            "datetime",
+            "date",
+            "money",
+            "enum",
+            "ref",
+            "image",
+            "json"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "FieldDef",
+      "type": "object"
+    },
+    "FlowBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "end": {
+          "pattern": "^SCR-\\d{3}$",
+          "title": "End",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^FLW-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "primary": {
+          "default": false,
+          "title": "Primary",
+          "type": "boolean"
+        },
+        "purpose": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purpose"
+        },
+        "screens": {
+          "items": {
+            "pattern": "^SCR-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        },
+        "start": {
+          "pattern": "^SCR-\\d{3}$",
+          "title": "Start",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "screens",
+        "start",
+        "end"
+      ],
+      "title": "FlowBlock",
+      "type": "object"
+    },
+    "Integration": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "pattern": "^INT-[a-z][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "mode": {
+          "default": "mock",
+          "enum": [
+            "mock",
+            "adapter",
+            "real"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "needs_dev_build": {
+          "default": false,
+          "title": "Needs Dev Build",
+          "type": "boolean"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "provider": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Provider"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "research_ref": {
+          "anyOf": [
+            {
+              "pattern": "^RA-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research Ref"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "purpose"
+      ],
+      "title": "Integration",
+      "type": "object"
+    },
+    "IntegrationsBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "items": {
+            "$ref": "#/$defs/Integration"
+          },
+          "title": "Items",
+          "type": "array"
+        }
+      },
+      "required": [
+        "items"
+      ],
+      "title": "IntegrationsBlock",
+      "type": "object"
+    },
+    "NavNode": {
+      "additionalProperties": false,
+      "properties": {
+        "auth": {
+          "default": "public",
+          "title": "Auth",
+          "type": "string"
+        },
+        "children": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/NavNode"
+          },
+          "title": "Children",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "tabs",
+            "stack",
+            "modal",
+            "screen",
+            "auth_gate"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Label"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "screen": {
+          "anyOf": [
+            {
+              "pattern": "^SCR-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Screen"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "kind"
+      ],
+      "title": "NavNode",
+      "type": "object"
+    },
+    "NavigationBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "root": {
+          "$ref": "#/$defs/NavNode"
+        }
+      },
+      "required": [
+        "root"
+      ],
+      "title": "NavigationBlock",
+      "type": "object"
+    },
+    "ParallelGroup": {
+      "additionalProperties": false,
+      "properties": {
+        "group": {
+          "title": "Group",
+          "type": "string"
+        },
+        "owns": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Owns",
+          "type": "array"
+        },
+        "screens": {
+          "items": {
+            "pattern": "^SCR-\\d{3}$",
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "group",
+        "screens",
+        "owns"
+      ],
+      "title": "ParallelGroup",
+      "type": "object"
+    },
+    "Permission": {
+      "additionalProperties": false,
+      "properties": {
+        "operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Operations",
+          "type": "array"
+        },
+        "role": {
+          "pattern": "^ROLE-[a-z][a-z0-9_]*$",
+          "title": "Role",
+          "type": "string"
+        },
+        "screens": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "role",
+        "screens",
+        "operations"
+      ],
+      "title": "Permission",
+      "type": "object"
+    },
+    "ResearchAddition": {
+      "additionalProperties": false,
+      "properties": {
+        "affects": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Affects",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^RA-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "included": {
+          "default": true,
+          "title": "Included",
+          "type": "boolean"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "sources": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title",
+        "kind"
+      ],
+      "title": "ResearchAddition",
+      "type": "object"
+    },
+    "RevisionBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "changed_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Changed Ids",
+          "type": "array"
+        },
+        "previous_version": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Previous Version"
+        },
+        "version": {
+          "title": "Version",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "version"
+      ],
+      "title": "RevisionBlock",
+      "type": "object"
+    },
+    "Role": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^ROLE-[a-z][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "surface": {
+          "default": "customer",
+          "title": "Surface",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Role",
+      "type": "object"
+    },
+    "RolesBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "permissions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Permission"
+          },
+          "title": "Permissions",
+          "type": "array"
+        },
+        "roles": {
+          "items": {
+            "$ref": "#/$defs/Role"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "roles"
+      ],
+      "title": "RolesBlock",
+      "type": "object"
+    },
+    "ScreenAction": {
+      "additionalProperties": false,
+      "properties": {
+        "calls": {
+          "anyOf": [
+            {
+              "pattern": "^API-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Calls"
+        },
+        "go": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Go"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "on_success": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "On Success"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "ScreenAction",
+      "type": "object"
+    },
+    "ScreenBlock": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/ScreenAction"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "auth": {
+          "default": "public",
+          "title": "Auth",
+          "type": "string"
+        },
+        "checks": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Checks",
+          "type": "array"
+        },
+        "data": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/DataBinding"
+          },
+          "title": "Data",
+          "type": "array"
+        },
+        "flow": {
+          "anyOf": [
+            {
+              "pattern": "^FLW-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "id": {
+          "pattern": "^SCR-\\d{3}$",
+          "title": "Id",
+          "type": "string"
+        },
+        "locked": {
+          "default": false,
+          "title": "Locked",
+          "type": "boolean"
+        },
+        "notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Notes"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "recipe": {
+          "title": "Recipe",
+          "type": "string"
+        },
+        "research_ref": {
+          "anyOf": [
+            {
+              "pattern": "^RA-\\d{3}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research Ref"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "sections": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Sections",
+          "type": "array"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "states": {
+          "additionalProperties": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "type": "object"
+          },
+          "default": {},
+          "title": "States",
+          "type": "object"
+        },
+        "surface": {
+          "default": "customer",
+          "title": "Surface",
+          "type": "string"
+        },
+        "texts": {
+          "additionalProperties": {
+            "type": "string"
+          },
+          "default": {},
+          "title": "Texts",
+          "type": "object"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "recipe",
+        "purpose"
+      ],
+      "title": "ScreenBlock",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "retrieved_at": {
+          "format": "date",
+          "title": "Retrieved At",
+          "type": "string"
+        },
+        "title": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Title"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "url",
+        "retrieved_at"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "SpecHeader": {
+      "additionalProperties": false,
+      "properties": {
+        "app_id": {
+          "title": "App Id",
+          "type": "string"
+        },
+        "brief_hash": {
+          "title": "Brief Hash",
+          "type": "string"
+        },
+        "hash": {
+          "default": "",
+          "title": "Hash",
+          "type": "string"
+        },
+        "inherits": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Inherits",
+          "type": "array"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "mode": {
+          "default": "guided",
+          "enum": [
+            "guided",
+            "enterprise"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "research_note_hash": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Research Note Hash"
+        },
+        "schema_id": {
+          "default": "mde.app-spec/1",
+          "title": "Schema Id",
+          "type": "string"
+        },
+        "spec_version": {
+          "title": "Spec Version",
+          "type": "integer"
+        },
+        "stack_profile": {
+          "default": "expo-managed",
+          "title": "Stack Profile",
+          "type": "string"
+        }
+      },
+      "required": [
+        "spec_version",
+        "app_id",
+        "brief_hash"
+      ],
+      "title": "SpecHeader",
+      "type": "object"
+    },
+    "StateMachine": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "title": "States",
+          "type": "array"
+        },
+        "transitions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "title": "Transitions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "states"
+      ],
+      "title": "StateMachine",
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "on": {
+          "title": "On",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "on"
+      ],
+      "title": "Transition",
+      "type": "object"
+    },
+    "TypeStyle": {
+      "additionalProperties": false,
+      "properties": {
+        "line_height": {
+          "default": 1.3,
+          "title": "Line Height",
+          "type": "number"
+        },
+        "size": {
+          "title": "Size",
+          "type": "integer"
+        },
+        "weight": {
+          "default": 400,
+          "title": "Weight",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "size"
+      ],
+      "title": "TypeStyle",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "The Spec Draft: structured truth during the conversation; ``APP_SPEC.md`` is its render.",
+  "properties": {
+    "acceptance": {
+      "$ref": "#/$defs/AcceptanceBlock"
+    },
+    "api": {
+      "$ref": "#/$defs/ApiBlock"
+    },
+    "app": {
+      "$ref": "#/$defs/AppBlock"
+    },
+    "assumptions": {
+      "$ref": "#/$defs/AssumptionsBlock"
+    },
+    "backlog": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/BacklogItem"
+      },
+      "title": "Backlog",
+      "type": "array"
+    },
+    "behavior": {
+      "$ref": "#/$defs/BehaviorBlock"
+    },
+    "build": {
+      "$ref": "#/$defs/BuildSequence"
+    },
+    "data": {
+      "$ref": "#/$defs/DataBlock"
+    },
+    "design": {
+      "$ref": "#/$defs/DesignBlock"
+    },
+    "flows": {
+      "items": {
+        "$ref": "#/$defs/FlowBlock"
+      },
+      "title": "Flows",
+      "type": "array"
+    },
+    "header": {
+      "$ref": "#/$defs/SpecHeader"
+    },
+    "integrations": {
+      "$ref": "#/$defs/IntegrationsBlock"
+    },
+    "navigation": {
+      "$ref": "#/$defs/NavigationBlock"
+    },
+    "revision": {
+      "$ref": "#/$defs/RevisionBlock"
+    },
+    "roles": {
+      "$ref": "#/$defs/RolesBlock"
+    },
+    "screens": {
+      "items": {
+        "$ref": "#/$defs/ScreenBlock"
+      },
+      "title": "Screens",
+      "type": "array"
+    },
+    "summary": {
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "header",
+    "summary",
+    "app",
+    "design",
+    "navigation",
+    "data",
+    "api",
+    "roles",
+    "integrations",
+    "behavior",
+    "screens",
+    "flows",
+    "build",
+    "acceptance",
+    "assumptions",
+    "revision"
+  ],
+  "title": "AppSpec",
+  "type": "object"
+}

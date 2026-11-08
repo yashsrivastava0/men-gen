@@ -1,0 +1,133 @@
+# Generic query building blocks for the deterministic research plan (C6 mock and the engine's
+# fallback). Queries are built from the kind of app, feature names, the region, the sensitive area
+# and the service type. Names (company, brand, references) only enter R2 and R3 queries, and only
+# when the policy allows company names in queries; the engine checks every query again.
+#
+# Every job lists its query templates in priority order: the FIRST template of a job is the one that
+# is always worth running, the later ones add distinct angles. Jobs that have several subjects (the
+# apps named, the sensitive areas, the services) expand angle by angle, so the first queries of a
+# job cover every subject before any subject gets a second angle. `trim()` then keeps the first
+# query of every job before any job's second one.
+version: 2
+
+# archetype id -> generic phrase. Unknown archetypes use their id with underscores turned into
+# spaces; an empty phrase falls back to `fallback_topic`.
+topics:
+  commerce: online shopping
+  food_delivery: food ordering
+  booking_services: appointment booking
+  internal_workforce: field staff task
+  custom: ""
+fallback_topic: everyday app
+
+regions:
+  in: India
+  eu: Europe
+  us: United States
+  uk: United Kingdom
+
+# How many queries one job may carry (D-078). The engine computes it once per run with
+# `plan.queries_per_job(depth_cap, active_web_jobs)` and hands it to C6 as `max_queries_per_job`;
+# the planner and the engine's validation both use that number, so they cannot drift:
+#     per_job = clamp(ceil(depth_cap / active_web_jobs), min, max)
+# `min` is the Light value and the floor; `max` is the upper bound of `C6Input.max_queries_per_job`.
+# A depth cap up to `fixed_up_to_cap` (Light, 6) always gets `min`: Light stays at two queries per
+# job whatever number of jobs apply (6 searches over five jobs is 2 each), so a small Guided brief
+# does not suddenly search more. The depth cap still trims the plan to its total.
+queries_per_job:
+  min: 2
+  max: 8
+  fixed_up_to_cap: 6
+
+# a web search costs about USD 0.011 (L0 smoke) plus extraction; used to trim the plan to the budget
+search_cost_micros: 12000
+
+# one entry per job; `{}` placeholders are filled by plan.py
+jobs:
+  R1:
+    rationale: See which features and patterns similar apps usually have.
+    # generic queries, in order. The first `lead_queries` run first; after that the per-feature
+    # queries (one for every feature of the Brief, `{feature}`) alternate with the rest of this list.
+    lead_queries: 2
+    queries:
+      - "common features of {topic} mobile apps{region}"
+      - "{topic} mobile app UX patterns onboarding navigation"
+      - "{topic} mobile app monetization and pricing models"
+      - "{topic} mobile app retention and engagement ideas"
+      - "{topic} mobile app accessibility and localization"
+      - "{topic} mobile app notifications and permission prompts"
+      - "{topic} mobile app performance on slow networks"
+      - "{topic} mobile app user feedback common complaints"
+    feature_queries:
+      - "how {feature} is designed in {topic} mobile apps"
+  R2:
+    rationale: Check the public feature lists of the apps you named.
+    # `{reference}` is one app the Brief names; angle by angle across all named apps
+    queries:
+      - "{reference} mobile app features overview"
+      - "{reference} app user reviews complaints"
+      - "{reference} app pricing subscription plans"
+      - "{reference} app onboarding sign-up flow"
+  R3:
+    rationale: Look at your own website for colors, fonts and tone of voice.
+    queries:
+      - "{brand_host} brand colors fonts logo tone of voice"
+      - "{brand_host} about us mission values"
+      - "{brand_host} logo usage guidelines"
+      - "{brand_host} app store listing screenshots"
+  R4:
+    rationale: Find pointers to the rules that apply to this kind of app.
+    # `{compliance_topic}` is one flagged sensitive area; angle by angle across all flagged areas
+    queries:
+      - "{compliance_topic} requirements for {topic} mobile apps{region}"
+      - "{compliance_topic} app store privacy disclosure"
+      - "{compliance_topic} permission screen wording"
+      - "{compliance_topic} deletion requests handling"
+      - "{compliance_topic} encryption and secure storage"
+      - "{compliance_topic} third party data sharing"
+      - "{compliance_topic} checklist for app developers"
+      - "{compliance_topic} enforcement and penalties"
+  R5:
+    rationale: Check what the services this app needs offer for mobile apps.
+    # `{integration_topic}` is one service type the Brief implies; angle by angle across all of them
+    queries:
+      - "{integration_topic} SDK React Native Expo compatibility"
+      - "{integration_topic} pricing and usage limits"
+      - "{integration_topic} Expo config plugin setup"
+      - "{integration_topic} privacy and data retention"
+      - "{integration_topic} known issues and caveats"
+      - "{integration_topic} alternatives comparison"
+      - "{integration_topic} development build testing"
+      - "{integration_topic} API keys and authentication"
+  R6:
+    rationale: Read the company documents that are connected for this project.
+    queries:
+      - "{topic} app requirements"
+
+# compliance flag id (compliance.flags slot) -> generic topic phrase for R4 queries
+compliance_topics:
+  health_data_privacy: health data privacy and consent
+  financial_data: payment card data handling
+  child_safety: children data and parental consent
+  identity_documents: identity document storage and retention
+  precise_location: precise location consent and retention
+
+# pack feature id -> service type phrase for R5 queries (every distinct topic is used)
+integration_features:
+  payments: payment provider
+  push_notifications: push notification service
+  notifications: push notification service
+  maps: maps
+  live_order_tracking: maps
+  reminders: SMS reminders
+  support_chat: support chat
+  support: support chat
+  offline_sync: offline sync
+
+# login method -> service type phrase
+integration_logins:
+  sso: single sign-on
+  email_phone_code: SMS sign-in codes
+
+# job id -> priority when the plan must be trimmed (lower first)
+job_priority: [R1, R4, R5, R2, R3, R6]

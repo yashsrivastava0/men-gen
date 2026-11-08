@@ -1,0 +1,260 @@
+{
+  "$defs": {
+    "Reference": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "company",
+            "like_app",
+            "region",
+            "url",
+            "person"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind",
+        "text"
+      ],
+      "title": "Reference",
+      "type": "object"
+    },
+    "SafetyFlags": {
+      "additionalProperties": false,
+      "properties": {
+        "category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "abuse | illegal | harmful | other",
+          "title": "Category"
+        },
+        "injection_suspected": {
+          "default": false,
+          "title": "Injection Suspected",
+          "type": "boolean"
+        },
+        "secret_detected": {
+          "default": false,
+          "title": "Secret Detected",
+          "type": "boolean"
+        },
+        "unsafe": {
+          "default": false,
+          "title": "Unsafe",
+          "type": "boolean"
+        }
+      },
+      "title": "SafetyFlags",
+      "type": "object"
+    },
+    "SlotUpdate": {
+      "additionalProperties": false,
+      "description": "A slot value found in text. Exactly one of the value fields is set (or ``negate``).",
+      "properties": {
+        "confidence": {
+          "default": 0.8,
+          "description": "0 to 1",
+          "title": "Confidence",
+          "type": "number"
+        },
+        "evidence": {
+          "default": "",
+          "description": "Short quote or paraphrase of the evidence",
+          "title": "Evidence",
+          "type": "string"
+        },
+        "negate": {
+          "default": false,
+          "description": "True if the user explicitly negated it",
+          "title": "Negate",
+          "type": "boolean"
+        },
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "value_bool": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Boolean value, or null",
+          "title": "Value Bool"
+        },
+        "value_list": {
+          "anyOf": [
+            {
+              "items": {
+                "type": "string"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "List value, or null",
+          "title": "Value List"
+        },
+        "value_text": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Text/choice value, or null",
+          "title": "Value Text"
+        }
+      },
+      "required": [
+        "slot_id"
+      ],
+      "title": "SlotUpdate",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "answers_pending_card": {
+      "default": false,
+      "title": "Answers Pending Card",
+      "type": "boolean"
+    },
+    "confidence": {
+      "description": "0 to 1 confidence in the intent",
+      "title": "Confidence",
+      "type": "number"
+    },
+    "intent": {
+      "enum": [
+        "greeting",
+        "idea",
+        "answer",
+        "volunteered",
+        "question",
+        "chitchat",
+        "confused",
+        "change",
+        "upload",
+        "approve",
+        "stop",
+        "pause",
+        "start_over",
+        "unsafe",
+        "other"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "language": {
+      "description": "BCP-47-ish code of the user's language: en, hi, hi-Latn, ...",
+      "title": "Language",
+      "type": "string"
+    },
+    "references": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Reference"
+      },
+      "title": "References",
+      "type": "array"
+    },
+    "safety": {
+      "$ref": "#/$defs/SafetyFlags"
+    },
+    "selected_option_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Option id of the pending card the text selects, or null",
+      "title": "Selected Option Id"
+    },
+    "slot_updates": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotUpdate"
+      },
+      "title": "Slot Updates",
+      "type": "array"
+    },
+    "summary_update": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "One short line to append to the rolling summary, or null",
+      "title": "Summary Update"
+    }
+  },
+  "required": [
+    "intent",
+    "confidence",
+    "language"
+  ],
+  "title": "C1Output",
+  "type": "object"
+}

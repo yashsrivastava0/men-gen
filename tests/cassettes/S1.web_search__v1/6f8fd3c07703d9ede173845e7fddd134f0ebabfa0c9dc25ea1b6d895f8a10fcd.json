@@ -1,0 +1,166 @@
+{
+  "format": 1,
+  "key": "6f8fd3c07703d9ede173845e7fddd134f0ebabfa0c9dc25ea1b6d895f8a10fcd",
+  "recorded_at": "2026-11-08T11:03:35.396587Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: workforce app precise location privacy consent retention\nTopic: pointers to the rules that apply to this kind of app\n"
+  },
+  "response": {
+    "text": "For a U.S. workforce app, these are useful starting points; the applicable rules can depend on the states where workers are located and how the app and location data are used.\n\nThe FTC’s mobile-app guidance says to clearly disclose data collection and sharing, obtain affirmative consent before collecting sensitive information such as precise location, secure retained data, and safely dispose of data no longer needed. ([ftc.gov](https://www.ftc.gov/business-guidance/resources/marketing-your-mobile-app-get-it-right-start?utm_source=openai)) FTC guidance also says not to keep data longer than needed and to account for service providers’ handling of it. ([ftc.gov](https://www.ftc.gov/business-guidance/resources/app-developers-start-security?trk=public_post_comment-text&utm_source=openai))\n\nFor consent and purpose limits, FTC cases involving location-data companies point to clear disclosure of how location is collected and used, consent for those purposes, and ways to withdraw consent or request deletion. These are case-specific actions, not a single universal employee-app rule. ([ftc.gov](https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/03/ftc-cracks-down-mass-data-collectors-closer-look-avast-x-mode-inmarket?page=1&utm_source=openai))\n\nFor workplace use, the EEOC’s wearable-technology fact sheet flags that GPS tracking and related data practices may raise federal employment-discrimination issues. ([eeoc.gov](https://www.eeoc.gov/sites/default/files/2024-12/Wearables_Fact_Sheet_V10_%28002%29_508FINAL.pdf?utm_source=openai)) Check state and local employee-monitoring and privacy laws as well; the sources reviewed here do not establish which apply without knowing the deployment locations.",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://www.ftc.gov/business-guidance/resources/marketing-your-mobile-app-get-it-right-start?utm_source=openai",
+        "title": "Marketing Your Mobile App: Get It Right from the Start | Federal Trade Commission",
+        "start": 421,
+        "end": 544
+      },
+      {
+        "url": "https://www.ftc.gov/business-guidance/resources/app-developers-start-security?trk=public_post_comment-text&utm_source=openai",
+        "title": "App Developers: Start with Security | Federal Trade Commission",
+        "start": 658,
+        "end": 795
+      },
+      {
+        "url": "https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/03/ftc-cracks-down-mass-data-collectors-closer-look-avast-x-mode-inmarket?page=1&utm_source=openai",
+        "title": "FTC Cracks Down on Mass Data Collectors: A Closer Look at Avast, X-Mode, and InMarket | Federal Trade Commission",
+        "start": 1091,
+        "end": 1264
+      },
+      {
+        "url": "https://www.eeoc.gov/sites/default/files/2024-12/Wearables_Fact_Sheet_V10_%28002%29_508FINAL.pdf?utm_source=openai",
+        "title": "USING WEARABLE TECHNOLOGIES UNDER",
+        "start": 1430,
+        "end": 1558
+      },
+      {
+        "url": "https://www.ftc.gov/system/files/ftc_gov/pdf/212_3035_-_gravy_analytics_final_consent_package_without_signatures.pdf?trk=public_post_comment-text",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/business-guidance/resources/marketing-your-mobile-app-get-it-right-start",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.eeoc.gov/sites/default/files/2024-12/Wearables_Fact_Sheet_V10_%28002%29_508FINAL.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/business-guidance/resources/mobile-health-app-developers-ftc-best-practices",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/business-guidance/resources/complying-coppa-frequently-asked-questions",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/business-guidance/blog/2016/09/ad-libraries-app-developers-check-out-advice",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/business-guidance/resources/app-developers-start-security?trk=public_post_comment-text",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/policy/advocacy-research/tech-at-ftc/2024/03/ftc-cracks-down-mass-data-collectors-closer-look-avast-x-mode-inmarket?page=1",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/news-events/news/press-releases/2024/01/ftc-order-will-ban-inmarket-selling-precise-consumer-location-data",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/system/files/ftc_gov/pdf/2023196mobilewallaaapc.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.law.cornell.edu/wex/electronic_surveillance",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://search.ftc.gov/business-guidance/blog/2017/09/stick-security-make-sure-your-service-providers-implement-reasonable-security-measures",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.eeoc.gov/employers/small-business/manager-responsibilities-reasonable-accommodation-tips",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://search.ftc.gov/news-events/news/press-releases/2026/05/ftc-ban-kochava-subsidiary-selling-sensitive-location-data-settle-charges-they-sold-location-data",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/news-events/news/press-releases/2017/01/ftc-releases-new-report-cross-device-tracking",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/system/files/ftc_gov/pdf/Jolt-2-8-24-final.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.ftc.gov/system/files/documents/public_events/1223263/privacycon_apps_location_chitkara_0.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12770,
+      "cached_input_tokens": 4442,
+      "output_tokens": 379,
+      "reasoning_tokens": 90,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

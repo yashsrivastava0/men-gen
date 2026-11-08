@@ -1,0 +1,502 @@
+{
+  "$defs": {
+    "BlockToRepair": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "kind": {
+          "title": "Kind",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "kind",
+        "text"
+      ],
+      "title": "BlockToRepair",
+      "type": "object"
+    },
+    "BriefContext": {
+      "additionalProperties": false,
+      "description": "Compact approved-Brief view passed to research and spec-building calls.",
+      "properties": {
+        "app_summary": {
+          "title": "App Summary",
+          "type": "string"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "brand_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Name"
+        },
+        "brand_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Url"
+        },
+        "compliance_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Compliance Flags",
+          "type": "array"
+        },
+        "features": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "login": {
+          "default": "",
+          "title": "Login",
+          "type": "string"
+        },
+        "look": {
+          "default": "",
+          "title": "Look",
+          "type": "string"
+        },
+        "mode": {
+          "default": "guided",
+          "enum": [
+            "guided",
+            "enterprise"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "regions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "app_summary",
+        "archetype"
+      ],
+      "title": "BriefContext",
+      "type": "object"
+    },
+    "CriticFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "enum": [
+            "mismatch",
+            "contradiction",
+            "missing_flow",
+            "missing_feature",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "error",
+            "warn",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "suggested_fix": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Suggested Fix"
+        },
+        "target_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "kind",
+        "severity",
+        "message"
+      ],
+      "title": "CriticFinding",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    },
+    "OutlineEntity": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineEntity",
+      "type": "object"
+    },
+    "OutlineFlow": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "screens": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineFlow",
+      "type": "object"
+    },
+    "OutlineItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineItem",
+      "type": "object"
+    },
+    "OutlineOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "method",
+        "path"
+      ],
+      "title": "OutlineOperation",
+      "type": "object"
+    },
+    "OutlineScreen": {
+      "additionalProperties": false,
+      "properties": {
+        "flow": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "recipe": {
+          "title": "Recipe",
+          "type": "string"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "source": {
+          "default": "default",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "recipe"
+      ],
+      "title": "OutlineScreen",
+      "type": "object"
+    },
+    "SpecOutline": {
+      "additionalProperties": false,
+      "properties": {
+        "design_direction": {
+          "default": "",
+          "title": "Design Direction",
+          "type": "string"
+        },
+        "entities": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineEntity"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "flows": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineFlow"
+          },
+          "title": "Flows",
+          "type": "array"
+        },
+        "integrations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineItem"
+          },
+          "title": "Integrations",
+          "type": "array"
+        },
+        "operations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineOperation"
+          },
+          "title": "Operations",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineItem"
+          },
+          "title": "Roles",
+          "type": "array"
+        },
+        "screens": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineScreen"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "title": "SpecOutline",
+      "type": "object"
+    },
+    "ValidatorFinding": {
+      "additionalProperties": false,
+      "properties": {
+        "message": {
+          "title": "Message",
+          "type": "string"
+        },
+        "severity": {
+          "default": "error",
+          "enum": [
+            "error",
+            "warn",
+            "info"
+          ],
+          "title": "Severity",
+          "type": "string"
+        },
+        "target_ids": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Target Ids",
+          "type": "array"
+        },
+        "validator": {
+          "title": "Validator",
+          "type": "string"
+        }
+      },
+      "required": [
+        "validator",
+        "message"
+      ],
+      "title": "ValidatorFinding",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "blocks": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/BlockToRepair"
+      },
+      "title": "Blocks",
+      "type": "array"
+    },
+    "brief": {
+      "$ref": "#/$defs/BriefContext"
+    },
+    "findings": {
+      "items": {
+        "anyOf": [
+          {
+            "$ref": "#/$defs/ValidatorFinding"
+          },
+          {
+            "$ref": "#/$defs/CriticFinding"
+          }
+        ]
+      },
+      "title": "Findings",
+      "type": "array"
+    },
+    "outline": {
+      "$ref": "#/$defs/SpecOutline"
+    },
+    "round": {
+      "default": 1,
+      "title": "Round",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "brief",
+    "outline",
+    "findings"
+  ],
+  "title": "C13Input",
+  "type": "object"
+}

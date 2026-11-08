@@ -1,0 +1,19 @@
+id: P02-vague-founder-hindi
+title: Vague non-technical founder, writes Hindi (Devanagari)
+who: Runs a small shop, has no spec, wants "some app", answers in Hindi and agrees with suggestions.
+language: hi
+mode: guided
+script:
+  - user: "नमस्ते"
+  - user: "मुझे अपनी दुकान के लिए ऐप चाहिए"
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  slots:
+    idea.archetype: commerce
+    locale: hi

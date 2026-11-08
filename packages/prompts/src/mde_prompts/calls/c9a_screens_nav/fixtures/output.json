@@ -1,0 +1,25 @@
+{
+  "proposals": [
+    {
+      "kind": "add_screen",
+      "target": "SCR-004",
+      "source": "research",
+      "research_ref": "RA-001",
+      "rationale": "Research found that favorites list is common in similar apps.",
+      "name": "Favorites list",
+      "route": "/favorites-list",
+      "recipe": "list",
+      "purpose": "Favorites list: Seen in most similar apps",
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    }
+  ],
+  "notes": "mock: screens from research additions"
+}

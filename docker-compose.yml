@@ -1,0 +1,21 @@
+# PostgreSQL for CI and machines where Docker is usable. Port 54329 on purpose (5432 is often taken).
+# On the primary dev box Docker is paused, so scripts/dev_db.py runs a private local cluster instead.
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: mde
+      POSTGRES_PASSWORD: mde
+      POSTGRES_DB: mde
+    ports:
+      - "127.0.0.1:54329:5432"
+    command: ["postgres", "-c", "fsync=off", "-c", "max_connections=80", "-c", "shared_buffers=64MB"]
+    volumes:
+      - mde-pg:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U mde -d mde"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+volumes:
+  mde-pg:

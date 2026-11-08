@@ -1,0 +1,105 @@
+# Copy the Discover engine needs that the content bank's ui_copy does not carry: short notices and
+# confirmations. English, Hindi and Hinglish; placeholders are {name}. The Brief rows, the Brief
+# sentence pieces and the one-line reasons of the assumptions live in the content bank
+# (mde_content, questions/shared.yaml ui_copy: row_*, reason.<slot id>, ...), as do the greeting,
+# the nudges and stop/pause. This file is checked by tests so every entry has all three languages.
+contradiction_intro:
+  en: "Those two answers pull in different directions. Which of these should we go with?"
+  hi: "ये दोनों जवाब एक-दूसरे से मेल नहीं खाते। हम इनमें से किस पर चलें?"
+  hi-Latn: "Ye dono jawab ek-dusre se mel nahi khate. Hum inmein se kis par chalein?"
+stale_card:
+  en: "That question is no longer current. Here is the one we are on."
+  hi: "यह सवाल अब चालू नहीं है। हम इस सवाल पर हैं।"
+  hi-Latn: "Yeh sawaal ab chalu nahi hai. Hum is sawaal par hain."
+must_confirm:
+  en: "This one needs your confirmation, so I cannot choose for you. Please pick an option."
+  hi: "इसके लिए आपकी पुष्टि ज़रूरी है, इसलिए मैं आपके लिए नहीं चुन सकता। कृपया एक विकल्प चुनिए।"
+  hi-Latn: "Iske liye aapki pushti zaroori hai, isliye main aapke liye nahi chun sakta. Kripya ek option chuniye."
+unsafe_reason_abuse:
+  en: "Let's keep things respectful."
+  hi: "आइए बातचीत सम्मानजनक रखें।"
+  hi-Latn: "Aaiye baatcheet sammaanjanak rakhein."
+unsafe_reason_illegal:
+  en: "It would help break the law."
+  hi: "इससे कानून तोड़ने में मदद मिलेगी।"
+  hi-Latn: "Isse kanoon todne mein madad milegi."
+unsafe_reason_harmful:
+  en: "It could cause serious harm to people."
+  hi: "इससे लोगों को गंभीर नुकसान हो सकता है।"
+  hi-Latn: "Isse logon ko gambhir nuksaan ho sakta hai."
+unsafe_reason_other:
+  en: "It is not something I can help with."
+  hi: "यह ऐसी चीज़ नहीं है जिसमें मैं मदद कर सकूँ।"
+  hi-Latn: "Yeh aisi cheez nahi hai jisme main madad kar sakun."
+injection_notice:
+  en: "Part of what was shared looked like instructions aimed at me. I treated it as plain text and did not act on it."
+  hi: "जो साझा किया गया उसका एक हिस्सा मुझे दिए गए निर्देशों जैसा लगा। मैंने उसे सामान्य पाठ माना और उस पर कुछ नहीं किया।"
+  hi-Latn: "Jo share kiya gaya uska ek hissa mujhe diye gaye instructions jaisa laga. Maine use normal text maana aur us par kuch nahi kiya."
+upload_understood:
+  en: "Here is what I understood from {name}: {summary}. I will only ask about what is still missing."
+  hi: "{name} से मैंने यह समझा: {summary}। अब मैं सिर्फ़ वही पूछूँगा जो बाकी है।"
+  hi-Latn: "{name} se maine yeh samjha: {summary}. Ab main sirf wahi poochunga jo baaki hai."
+upload_image:
+  en: "Thanks, I saved {name} as a reference for the look and logo."
+  hi: "धन्यवाद, मैंने {name} को लुक और लोगो के संदर्भ के रूप में सेव कर लिया।"
+  hi-Latn: "Dhanyavaad, maine {name} ko look aur logo ke reference ke roop mein save kar liya."
+upload_empty:
+  en: "I could not read any text in {name}. You can paste the important parts here instead."
+  hi: "मुझे {name} में कोई पाठ नहीं मिला। आप ज़रूरी हिस्से यहाँ चिपका सकते हैं।"
+  hi-Latn: "Mujhe {name} mein koi text nahi mila. Aap zaroori hisse yahan paste kar sakte hain."
+defaults_applied:
+  en: "Done. I filled in the rest with smart defaults. You will see everything in the summary and can change anything."
+  hi: "हो गया। मैंने बाकी स्मार्ट डिफ़ॉल्ट से भर दिया। आपको सब कुछ सारांश में दिखेगा और आप कुछ भी बदल सकते हैं।"
+  hi-Latn: "Ho gaya. Maine baaki smart defaults se bhar diya. Aapko sab kuch summary mein dikhega aur aap kuch bhi badal sakte hain."
+defaults_path:
+  en: "Okay, I will use smart defaults. I only need your idea and the look."
+  hi: "ठीक है, मैं स्मार्ट डिफ़ॉल्ट इस्तेमाल करूँगा। मुझे बस आपका आइडिया और लुक चाहिए।"
+  hi-Latn: "Theek hai, main smart defaults istemal karunga. Mujhe bas aapka idea aur look chahiye."
+look_mapped:
+  en: "I matched that to the {look} look."
+  hi: "मैंने इसे {look} लुक से मिलाया है।"
+  hi-Latn: "Maine ise {look} look se milaya hai."
+change_applied:
+  en: "Done, I updated {what}."
+  hi: "हो गया, मैंने {what} बदल दिया।"
+  hi-Latn: "Ho gaya, maine {what} badal diya."
+reopen_intro:
+  en: "Sure, let's look at that again."
+  hi: "ज़रूर, इसे फिर से देखते हैं।"
+  hi-Latn: "Zaroor, ise phir se dekhte hain."
+assumed_as_described:
+  en: "That is what you described."
+  hi: "आपने यही बताया था।"
+  hi-Latn: "Aapne yahi bataya tha."
+paste_understood:
+  en: "Here is what I understood: {summary}. I will only ask about what is still missing."
+  hi: "मैंने यह समझा: {summary}। अब मैं सिर्फ़ वही पूछूँगा जो बाकी है।"
+  hi-Latn: "Maine yeh samjha: {summary}. Ab main sirf wahi poochunga jo baaki hai."
+screen_note:
+  en: "Noted. I will keep that detail for that screen in your plan."
+  hi: "ठीक है। मैं वह बात आपके प्लान में उस स्क्रीन के लिए रख लूँगा।"
+  hi-Latn: "Theek hai. Main woh baat aapke plan mein us screen ke liye rakh loonga."
+wait_ok:
+  en: "Of course, take your time."
+  hi: "ज़रूर, आराम से सोचिए।"
+  hi-Latn: "Zaroor, araam se sochiye."
+type_confirmed:
+  en: "Got it, I will treat this as {type}."
+  hi: "ठीक है, मैं इसे {type} मानूँगा।"
+  hi-Latn: "Theek hai, main ise {type} maanunga."
+region_ack:
+  en: "Noted, this is for {region}."
+  hi: "ठीक है, यह {region} के लिए है।"
+  hi-Latn: "Theek hai, yeh {region} ke liye hai."
+custom_type_note:
+  en: "I could not match this to a ready-made type, so I will start from basic building blocks."
+  hi: "मैं इसे किसी तैयार प्रकार से नहीं मिला पाया, इसलिए बुनियादी हिस्सों से शुरू करूँगा।"
+  hi-Latn: "Main ise kisi taiyaar type se nahi mila paya, isliye basic hisson se shuru karunga."
+org_profile_loaded:
+  en: "I started from your organization's profile (brand, sign-in, regions and more). Nothing is final: each of these shows in the summary as an assumption and you can change any of them."
+  hi: "मैंने आपके संगठन की प्रोफ़ाइल से शुरुआत की है (ब्रांड, साइन-इन, क्षेत्र और बहुत कुछ)। कुछ भी अंतिम नहीं है: ये सब सारांश में अनुमान के रूप में दिखेंगे और आप इनमें से कुछ भी बदल सकते हैं।"
+  hi-Latn: "Maine aapke organization ki profile se shuruaat ki hai (brand, sign-in, regions aur bahut kuch). Kuch bhi final nahi hai: ye sab summary mein anumaan ke roop mein dikhenge aur aap inmein se kuch bhi badal sakte hain."
+org_profile_evidence:
+  en: "From your organization profile"
+  hi: "आपके संगठन की प्रोफ़ाइल से"
+  hi-Latn: "Aapke organization ki profile se"

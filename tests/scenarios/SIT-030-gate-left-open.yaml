@@ -1,0 +1,81 @@
+# SIT-030: Gate left open for a long time
+# Detection: Inactivity in a review state
+# Behavior:  State persists; no auto-approval; Enterprise reminds approvers
+id: SIT-030-gate-left-open
+situation: "Gate left open for a long time"
+mode: guided
+variants:
+  guided_nothing_is_auto_approved:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - advance_clock: 2592000
+      - check: true
+        expect:
+          state: BRIEF_REVIEW
+          gate_open: {gate: brief, status: open}
+          approvals_count: 0
+          job: none
+          spec_ready: 0
+          reminders: {scheduled: 0}
+  guided_plan_gate_after_a_month:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1}
+      - advance_clock: 2592000
+      - check: true
+        expect:
+          state: PLAN_REVIEW
+          gate_open: {gate: plan, status: open}
+          approvals_count: 1
+          spec_ready: 0
+  enterprise_reminds_the_named_approvers:
+    mode: enterprise
+    policy: regulated-bank
+    steps:
+      - user: "An online shop for a client"
+      - answer_recommended: {limit: 60}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1}
+      - decide: {gate: brief, role: requester}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, approved_roles: [requester]}
+      - decide: {gate: brief, role: product_owner, as: product_owner}
+        expect: {state: PLANNING, plan_phase: research}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan, version: 1, required_roles: [product_owner, security_officer, compliance_officer]}
+      - advance_clock: 2592000
+      - check: true
+        expect:
+          state: PLAN_REVIEW
+          gate_open: {gate: plan, status: open}
+          approvals_count: 2
+          spec_ready: 0
+          reminders: {roles: [product_owner, security_officer, compliance_officer]}

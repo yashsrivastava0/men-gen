@@ -1,0 +1,227 @@
+# Question bank: commerce (online shop). Cards here apply to the commerce archetype only.
+# Feature ids are the pack feature ids (docs/packages/content.md). Pre-ticked = recommended.
+
+archetype: commerce
+
+cards:
+  - id: Q-type-01
+    slot: idea.archetype
+    type: confirm
+    text: "It sounds like an online shop where people browse and buy things. Is that right?"
+    options:
+      - {id: A, label: "Yes, an online shop", recommended: true, sets: {idea.archetype: commerce}}
+      - {id: B, label: "Not quite, start with basic building blocks", sets: {idea.archetype: custom}}
+    other: {enabled: true, placeholder: "Tell me what kind of app it is"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'commerce'"
+    i18n:
+      hi:
+        text: "लगता है आप एक ऑनलाइन दुकान चाहते हैं जहाँ लोग सामान देखें और खरीदें। क्या यह सही है?"
+        options: {A: "हाँ, ऑनलाइन दुकान", B: "बिल्कुल नहीं, बुनियादी हिस्सों से शुरू करें"}
+        other_placeholder: "बताइए यह किस तरह का ऐप है"
+      hi-Latn:
+        text: "Lagta hai aap ek online dukaan chahte hain jahan log saman dekhein aur kharidein. Kya yeh sahi hai?"
+        options: {A: "Haan, online dukaan", B: "Bilkul nahi, basic hisson se shuru karein"}
+        other_placeholder: "Bataiye yeh kis tarah ka app hai"
+
+  - id: Q-apps-01
+    slot: scope.apps
+    type: choice3
+    text: "Shops often need more than one app, like one for shoppers and one for the shop team. Which should we build first?"
+    help: "Each app is its own project, so we start with one. You can build the others next."
+    options:
+      - {id: A, label: "The shopper app", description: "For the people who browse and buy.", recommended: true, sets: {scope.apps: [customer]}}
+      - {id: B, label: "The seller app", description: "For the shop team to manage products and orders.", sets: {scope.apps: [business]}}
+      - {id: C, label: "An admin app", description: "For running the whole platform.", sets: {scope.apps: [admin]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'commerce'"
+    i18n:
+      hi:
+        text: "दुकानों को अक्सर एक से ज़्यादा ऐप चाहिए होते हैं, जैसे ग्राहकों के लिए एक और दुकान की टीम के लिए एक। पहले कौन सा बनाएँ?"
+        options: {A: "ग्राहकों का ऐप", B: "विक्रेता का ऐप", C: "एडमिन ऐप"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "हर ऐप अपना अलग प्रोजेक्ट है, इसलिए हम एक से शुरू करते हैं। बाकी आप अगले में बना सकते हैं।"
+      hi-Latn:
+        text: "Dukaanon ko aksar ek se zyada app chahiye hote hain, jaise customers ke liye ek aur dukaan ki team ke liye ek. Pehle kaun sa banayein?"
+        options: {A: "Customers ka app", B: "Seller ka app", C: "Admin app"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Har app apna alag project hai, isliye hum ek se shuru karte hain. Baaki aap agle mein bana sakte hain."
+
+  - id: Q-feat-01
+    slot: scope.features
+    type: multi
+    text: "Which of these should your shop have? I have ticked the usual ones."
+    help: "You can change this any time. Anything you leave out can be added later."
+    options:
+      - {id: catalog_browse, label: "Browse products", description: "Customers scroll through categories and products.", recommended: true, sets: {scope.features: [catalog_browse]}}
+      - {id: search, label: "Search", description: "Customers find a product by typing.", recommended: true, sets: {scope.features: [search]}}
+      - {id: cart_checkout, label: "Cart and checkout", description: "Customers add items and place an order.", recommended: true, sets: {scope.features: [cart_checkout]}}
+      - {id: payments, label: "Payments", description: "Customers pay in the app. We start with a practice checkout.", recommended: true, sets: {scope.features: [payments]}}
+      - {id: order_tracking, label: "Order tracking", description: "Customers see where their order is.", recommended: true, sets: {scope.features: [order_tracking]}}
+      - {id: reviews, label: "Reviews and ratings", description: "Customers rate and review products.", sets: {scope.features: [reviews]}}
+      - {id: favorites, label: "Favorites", description: "Customers save products they like.", sets: {scope.features: [favorites]}}
+      - {id: push_notifications, label: "Notifications", description: "Order updates and offers on the phone.", recommended: true, sets: {scope.features: [push_notifications]}}
+      - {id: loyalty, label: "Loyalty points", description: "Customers earn rewards for buying.", sets: {scope.features: [loyalty]}}
+      - {id: support_chat, label: "Support chat", description: "Customers can ask for help in the app.", sets: {scope.features: [support_chat]}}
+    other: {enabled: true, placeholder: "Add my own"}
+    skip: {enabled: true}
+    ask_if: "idea.archetype == 'commerce'"
+    i18n:
+      hi:
+        text: "आपकी दुकान में इनमें से क्या-क्या होना चाहिए? मैंने आम चीज़ों पर निशान लगा दिए हैं।"
+        options: {catalog_browse: "प्रोडक्ट ब्राउज़ करना", search: "खोज", cart_checkout: "कार्ट और चेकआउट", payments: "भुगतान", order_tracking: "ऑर्डर ट्रैकिंग", reviews: "रिव्यू और रेटिंग", favorites: "पसंदीदा", push_notifications: "नोटिफिकेशन", loyalty: "लॉयल्टी पॉइंट्स", support_chat: "सपोर्ट चैट"}
+        other_placeholder: "अपना जोड़िए"
+        help: "आप इसे कभी भी बदल सकते हैं। जो अभी छोड़ेंगे उसे बाद में जोड़ सकते हैं।"
+      hi-Latn:
+        text: "Aapki dukaan mein inmein se kya-kya hona chahiye? Maine aam cheezon par nishaan laga diye hain."
+        options: {catalog_browse: "Products browse karna", search: "Search", cart_checkout: "Cart aur checkout", payments: "Payment", order_tracking: "Order tracking", reviews: "Review aur rating", favorites: "Favorites", push_notifications: "Notifications", loyalty: "Loyalty points", support_chat: "Support chat"}
+        other_placeholder: "Apna jodiye"
+        help: "Aap ise kabhi bhi badal sakte hain. Jo abhi chhodenge use baad mein jod sakte hain."
+
+  - id: Q-look-01
+    slot: design.direction
+    type: visual3
+    text: "Which look feels closest to your shop?"
+    help: "This sets colors, shapes and feel. You can change it later."
+    options:
+      - {id: A, label: "Clean and bright", description: "Light, fresh and easy to read.", preview: "theme:clean-bright", recommended: true, sets: {design.direction: clean-bright}}
+      - {id: B, label: "Bold and dark", description: "Dark screens with strong contrast.", preview: "theme:bold-dark", sets: {design.direction: bold-dark}}
+      - {id: C, label: "Warm and friendly", description: "Soft, welcoming colors and rounded shapes.", preview: "theme:warm-friendly", sets: {design.direction: warm-friendly}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "कौन सा लुक आपकी दुकान के सबसे करीब है?"
+        options: {A: "साफ़ और चमकीला", B: "गहरा और दमदार", C: "गर्म और दोस्ताना"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+        help: "इससे रंग, आकार और अंदाज़ तय होता है। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Kaun sa look aapki dukaan ke sabse kareeb hai?"
+        options: {A: "Saaf aur chamakdaar", B: "Gehra aur damdaar", C: "Garam aur dostana"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+        help: "Isse rang, aakaar aur andaaz tay hota hai. Baad mein badal sakte hain."
+
+  - id: Q-look-11
+    slot: design.direction
+    type: visual3
+    text: "Here are three more looks. Which one is closest?"
+    options:
+      - {id: A, label: "Simple and minimal", description: "Black, white and grey with lots of space.", preview: "theme:minimal-mono", recommended: true, sets: {design.direction: minimal-mono}}
+      - {id: B, label: "Vibrant and playful", description: "Bright colors and a lively feel.", preview: "theme:vibrant-playful", sets: {design.direction: vibrant-playful}}
+      - {id: C, label: "Calm and professional", description: "Steady blues and a tidy, business-like feel.", preview: "theme:corporate-calm", sets: {design.direction: corporate-calm}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "ये रहे तीन और लुक। कौन सा सबसे करीब है?"
+        options: {A: "सादा और मिनिमल", B: "रंगीन और मज़ेदार", C: "शांत और प्रोफ़ेशनल"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+      hi-Latn:
+        text: "Ye rahe teen aur look. Kaun sa sabse kareeb hai?"
+        options: {A: "Saada aur minimal", B: "Rangeen aur mazedaar", C: "Shaant aur professional"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+
+  - id: Q-pay-01
+    slot: pay.model
+    type: choice3
+    text: "How will customers pay?"
+    help: "The first version uses a practice checkout. A real payment provider is connected later."
+    options:
+      - {id: A, label: "Online, in the app", description: "We start with a practice checkout so you can try it.", recommended: true, sets: {pay.model: online}}
+      - {id: B, label: "Online or cash on delivery", description: "Customers choose at checkout.", sets: {pay.model: both}}
+      - {id: C, label: "Only when the order arrives", description: "Customers pay the person who delivers.", sets: {pay.model: on_delivery}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'payments' in scope.features"
+    i18n:
+      hi:
+        text: "ग्राहक भुगतान कैसे करेंगे?"
+        options: {A: "ऑनलाइन, ऐप में", B: "ऑनलाइन या डिलीवरी पर नकद", C: "सिर्फ़ ऑर्डर पहुँचने पर"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "पहले संस्करण में एक प्रैक्टिस चेकआउट होता है। असली पेमेंट प्रोवाइडर बाद में जोड़ा जाता है।"
+      hi-Latn:
+        text: "Customers payment kaise karenge?"
+        options: {A: "Online, app mein", B: "Online ya delivery par cash", C: "Sirf order pahunchne par"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Pehle version mein ek practice checkout hota hai. Asli payment provider baad mein joda jata hai."
+
+  - id: Q-fix-01
+    slot: auth.method
+    type: choice3
+    kind: resolution
+    text: "You said people do not need to sign in, but a few features need an account. What should we do?"
+    help: "Features like favorites, reviews and order tracking need to know who the customer is."
+    options:
+      - {id: A, label: "Add a simple sign-in", description: "A short code sent to email or phone.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Browse freely, sign in only when needed", description: "People sign in when they check out or save something.", sets: {auth.method: guest_first}}
+      - {id: C, label: "No sign-in, leave out account features", description: "We remove the features that need an account.", sets: {auth.method: none, scope.features: [catalog_browse, search, cart_checkout, payments, push_notifications]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "auth.method == 'none' and scope.features in [favorites, order_tracking, reviews, loyalty]"
+    i18n:
+      hi:
+        text: "आपने कहा कि लोगों को साइन इन करने की ज़रूरत नहीं, लेकिन कुछ फ़ीचर के लिए अकाउंट चाहिए। हम क्या करें?"
+        options: {A: "एक सरल साइन-इन जोड़ें", B: "खुलकर देखें, ज़रूरत पर ही साइन इन करें", C: "साइन-इन नहीं, अकाउंट वाले फ़ीचर हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "पसंदीदा, रिव्यू और ऑर्डर ट्रैकिंग जैसे फ़ीचर को पता होना चाहिए कि ग्राहक कौन है।"
+      hi-Latn:
+        text: "Aapne kaha ki logon ko sign in karne ki zaroorat nahi, lekin kuch features ke liye account chahiye. Hum kya karein?"
+        options: {A: "Ek simple sign-in jodein", B: "Khulkar dekhein, zaroorat par hi sign in karein", C: "Sign-in nahi, account wale features hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Favorites, review aur order tracking jaise features ko pata hona chahiye ki customer kaun hai."
+
+  - id: Q-fix-06
+    slot: pay.model
+    type: choice3
+    kind: resolution
+    text: "You said no payments in the app, but payments are still on the feature list. What should we do?"
+    options:
+      - {id: A, label: "Keep payments", description: "We start with a practice checkout.", recommended: true, sets: {pay.model: online}}
+      - {id: B, label: "Take payment when the order arrives", description: "Customers pay the person who delivers.", sets: {pay.model: on_delivery}}
+      - {id: C, label: "Remove payments", description: "The app will not take payments.", sets: {pay.model: none, scope.features: [catalog_browse, search, cart_checkout, order_tracking, push_notifications]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "pay.model == 'none' and 'payments' in scope.features"
+    i18n:
+      hi:
+        text: "आपने कहा कि ऐप में भुगतान नहीं, लेकिन भुगतान अब भी फ़ीचर सूची में है। हम क्या करें?"
+        options: {A: "भुगतान रखें", B: "ऑर्डर पहुँचने पर भुगतान लें", C: "भुगतान हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+      hi-Latn:
+        text: "Aapne kaha ki app mein payment nahi, lekin payment ab bhi feature list mein hai. Hum kya karein?"
+        options: {A: "Payment rakhein", B: "Order pahunchne par payment lein", C: "Payment hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+
+inspiration_cards:
+  - id: Q-insp-01
+    slot: idea.summary
+    type: choice3
+    kind: inspiration
+    text: "Here are a few ideas for shops. Pick the closest one, or describe your own."
+    options:
+      - {id: A, label: "Grocery store", description: "Customers order groceries for home delivery.", recommended: true, sets: {idea.summary: "A grocery store app where customers order groceries", idea.archetype: commerce}}
+      - {id: B, label: "Fashion boutique", description: "A catalog of clothes with favorites.", sets: {idea.summary: "A fashion boutique app with a catalog of clothes and favorites", idea.archetype: commerce}}
+      - {id: C, label: "Local sellers marketplace", description: "Many small sellers in one place.", sets: {idea.summary: "A marketplace app where local sellers list their products", idea.archetype: commerce}}
+    other: {enabled: true, placeholder: "Describe your own shop"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "दुकानों के लिए कुछ आइडिया ये रहे। सबसे करीब वाला चुनिए, या अपना बताइए।"
+        options: {A: "किराना स्टोर", B: "फ़ैशन बुटीक", C: "स्थानीय विक्रेताओं का बाज़ार"}
+        other_placeholder: "अपनी दुकान के बारे में बताइए"
+      hi-Latn:
+        text: "Dukaanon ke liye kuch ideas ye rahe. Sabse kareeb wala chuniye, ya apna bataiye."
+        options: {A: "Kirana store", B: "Fashion boutique", C: "Local sellers ka bazaar"}
+        other_placeholder: "Apni dukaan ke baare mein bataiye"
+
+starter_chips:
+  - {id: chip-commerce-01, label: "A clothing store", prefill: "I want an app for my clothing store", archetype: commerce, sets: {idea.archetype: commerce}, i18n: {hi: "कपड़ों की दुकान", hi-Latn: "Kapdon ki dukaan"}}
+  - {id: chip-commerce-02, label: "A grocery app", prefill: "I want a grocery shopping app", archetype: commerce, sets: {idea.archetype: commerce}, i18n: {hi: "किराना ऐप", hi-Latn: "Kirana app"}}
+  - {id: chip-commerce-03, label: "Handmade gifts", prefill: "I want an app to sell my handmade gifts", archetype: commerce, sets: {idea.archetype: commerce}, i18n: {hi: "हाथ से बने तोहफ़े", hi-Latn: "Haath se bane tohfe"}}
+  - {id: chip-commerce-04, label: "Books and stationery", prefill: "I want an app for my books and stationery shop", archetype: commerce, sets: {idea.archetype: commerce}, i18n: {hi: "किताबें और स्टेशनरी", hi-Latn: "Kitaabein aur stationery"}}
+  - {id: chip-commerce-05, label: "Beauty products", prefill: "I want an app to sell beauty products", archetype: commerce, sets: {idea.archetype: commerce}, i18n: {hi: "ब्यूटी प्रोडक्ट", hi-Latn: "Beauty products"}}
+  - {id: chip-commerce-06, label: "A marketplace for local sellers", prefill: "I want a marketplace app for local sellers", archetype: commerce, sets: {idea.archetype: commerce}, i18n: {hi: "स्थानीय विक्रेताओं का बाज़ार", hi-Latn: "Local sellers ka bazaar"}}

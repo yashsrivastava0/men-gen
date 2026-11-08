@@ -1,0 +1,88 @@
+{
+  "$defs": {
+    "Permission": {
+      "additionalProperties": false,
+      "properties": {
+        "operations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Operations",
+          "type": "array"
+        },
+        "role": {
+          "pattern": "^ROLE-[a-z][a-z0-9_]*$",
+          "title": "Role",
+          "type": "string"
+        },
+        "screens": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "role",
+        "screens",
+        "operations"
+      ],
+      "title": "Permission",
+      "type": "object"
+    },
+    "Role": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "default": "",
+          "title": "Description",
+          "type": "string"
+        },
+        "id": {
+          "pattern": "^ROLE-[a-z][a-z0-9_]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "surface": {
+          "default": "customer",
+          "title": "Surface",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "Role",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "permissions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/Permission"
+      },
+      "title": "Permissions",
+      "type": "array"
+    },
+    "roles": {
+      "items": {
+        "$ref": "#/$defs/Role"
+      },
+      "title": "Roles",
+      "type": "array"
+    }
+  },
+  "required": [
+    "roles"
+  ],
+  "title": "RolesBlock",
+  "type": "object"
+}

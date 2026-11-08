@@ -1,0 +1,252 @@
+{
+  "$defs": {
+    "AssumedItem": {
+      "additionalProperties": false,
+      "description": "Something we assumed instead of asking. The user can toggle or edit each one.",
+      "properties": {
+        "included": {
+          "default": true,
+          "title": "Included",
+          "type": "boolean"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "reason": {
+          "title": "Reason",
+          "type": "string"
+        },
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "value_text": {
+          "title": "Value Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "label",
+        "value_text",
+        "reason"
+      ],
+      "title": "AssumedItem",
+      "type": "object"
+    },
+    "BriefFeature": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "on": {
+          "default": true,
+          "title": "On",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "BriefFeature",
+      "type": "object"
+    },
+    "BriefRow": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/BriefFeature"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "key": {
+          "enum": [
+            "building",
+            "users",
+            "features",
+            "look",
+            "login",
+            "name_logo"
+          ],
+          "title": "Key",
+          "type": "string"
+        },
+        "slot_ids": {
+          "items": {
+            "enum": [
+              "idea.summary",
+              "idea.archetype",
+              "scope.apps",
+              "scope.features",
+              "users.roles",
+              "auth.method",
+              "design.direction",
+              "brand.name",
+              "brand.assets",
+              "design.accent",
+              "design.mode",
+              "design.nav_style",
+              "pay.model",
+              "pay.provider",
+              "data.source",
+              "behavior.offline",
+              "behavior.notifications",
+              "behavior.analytics",
+              "locale",
+              "a11y",
+              "compliance.flags",
+              "auth.sso",
+              "integrations.list",
+              "data.classification",
+              "regions",
+              "release.channel",
+              "approvers"
+            ],
+            "type": "string"
+          },
+          "title": "Slot Ids",
+          "type": "array"
+        },
+        "swatch": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Swatch",
+          "type": "array"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "title": {
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "key",
+        "title",
+        "text",
+        "slot_ids"
+      ],
+      "title": "BriefRow",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "app_summary": {
+      "title": "App Summary",
+      "type": "string"
+    },
+    "assumptions": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/AssumedItem"
+      },
+      "title": "Assumptions",
+      "type": "array"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "hash": {
+      "default": "",
+      "title": "Hash",
+      "type": "string"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "mode": {
+      "default": "guided",
+      "enum": [
+        "guided",
+        "enterprise"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "rows": {
+      "items": {
+        "$ref": "#/$defs/BriefRow"
+      },
+      "title": "Rows",
+      "type": "array"
+    },
+    "status": {
+      "default": "draft",
+      "enum": [
+        "draft",
+        "approved",
+        "superseded"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version",
+    "app_summary",
+    "rows"
+  ],
+  "title": "Brief",
+  "type": "object"
+}

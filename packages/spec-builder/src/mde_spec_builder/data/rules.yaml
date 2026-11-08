@@ -1,0 +1,360 @@
+# Baseline rules (B2): how slot values turn into spec content that is not already in a Domain Pack.
+# This is data, not code: wording and tables live here, the logic lives in baseline.py.
+# Validated by mde_spec_builder.rules.Rules. Placeholders in {braces} are filled by the baseline.
+version: 1
+
+# ---------------------------------------------------------------------------- sign-in variants
+# `auth.method` picks the variant of the auth screens. Methods that are not listed (email_phone_code)
+# keep the pack as authored. `{USER}` in an operation means the entity that API-getMe returns.
+auth_methods:
+  email_phone_code:
+    label: Email or phone code
+    summary: People sign in with a one-time code sent to their email or phone.
+  guest_first:
+    label: Look around first
+    summary: People can browse as guests and sign in only when an action needs an account.
+  password:
+    label: Email and password
+    summary: People sign in with an email address and a password.
+    otp: false
+    login:
+      recipe: login-password
+      purpose: Sign in with an email address and a password
+      sections: [email_input, password_input, forgot_link, submit]
+      texts: {title: "Sign in", cta: "Sign in", hint: "Use the email you signed up with"}
+      checks:
+        - A wrong password shows an error under the field and allows another try
+        - The password can be shown or hidden
+      states:
+        wrong_password: {show: "inline error under the password field"}
+      actions:
+        - {name: sign_in, calls: API-signInPassword, success: true, on_success: "save the session and open the first screen"}
+        - {name: new_user_setup, to_signup: true, on_success: "opened for people who have no account yet"}
+    signup:
+      purpose: Create an account with a name, an email address and a password
+      sections: [name_input, email_input, password_input, consent_checkbox, submit]
+      texts: {title: "Create your account", cta: "Create account"}
+    operations:
+      - {id: API-signInPassword, name: Sign in with a password, method: POST, path: /auth/sign-in, response_user: true, notes: "Returns the session. A wrong password returns a plain error."}
+  social:
+    label: Google or Apple sign-in
+    summary: People sign in with a Google or Apple account they already have.
+    otp: false
+    login:
+      recipe: login-sso
+      purpose: Sign in with a Google or Apple account
+      sections: [brand, social_buttons, help_link]
+      texts: {title: "Sign in", cta: "Continue with Google or Apple"}
+      checks:
+        - Cancelling the provider screen returns to this screen without an error
+      actions:
+        - {name: sign_in_with_provider, calls: API-signInSocial, success: true, on_success: "save the session and open the first screen"}
+    operations:
+      - {id: API-signInSocial, name: Sign in with a social account, method: POST, path: /auth/social, response_user: true, notes: "Exchanges the provider result for a session. Mock account in the preview."}
+    integrations:
+      - {id: INT-social_login, name: Google and Apple sign-in, purpose: "Let people sign in with an account they already have.", notes: "Mock accounts in the preview. Real providers need a development build and keys chosen at release.", capability: social_login}
+    drop_recipes: [signup]
+  sso:
+    label: Company sign-in
+    summary: People sign in with their company account (single sign-on).
+    otp: false
+    login:
+      recipe: login-sso
+      purpose: Sign in with the company account
+      sections: [brand, sso_button, device_note, help_link]
+      texts: {title: "Sign in", cta: "Continue with company account"}
+      checks:
+        - An account without access sees a plain message and no retry loop
+      states:
+        not_allowed: {show: "Your account is not allowed to use this app. Contact your administrator"}
+      actions:
+        - {name: sign_in_with_company, calls: API-signInSso, success: true, on_success: "save the session and open the first screen"}
+    operations:
+      - {id: API-signInSso, name: Sign in with the company account, method: POST, path: /auth/sso, response_user: true, notes: "Exchanges the single sign-on result for a session. Mock account in the preview."}
+    integrations:
+      - {id: INT-sso, name: Company single sign-on, purpose: "Sign people in with their company account.", notes: "A sample company account signs in during the preview. A real identity provider is configured at release.", capability: sso_enterprise}
+    drop_recipes: [signup]
+  none:
+    label: No sign-in
+    summary: Anyone can use the app straight away; there are no accounts.
+    otp: false
+    drop_auth_screens: true
+
+# Operations and integrations that only exist for one-time-code sign-in. Removed for the methods
+# above that set `otp: false`.
+otp_operations: [API-requestOtp, API-verifyOtp]
+otp_integrations: [INT-sms_otp, INT-otp_delivery]
+
+# ---------------------------------------------------------------------------- payments
+payments:
+  integration_prefix: INT-payments
+  model_notes:
+    both: Cash on delivery is also accepted; only the online part uses the payment provider.
+    online: Online payment only.
+  mock_note: "Mock provider by default, so no real money moves until a real provider is connected."
+  adapter_note: A typed adapter with a mock behind it; a real provider needs a development build.
+  real_note: A real provider is connected; keep card data with the provider.
+
+# ---------------------------------------------------------------------------- data and API
+data_source:
+  generated:
+    seed: Generate sample records that read like a real business, in the language of the app.
+    mock: A generated mock backend answers every operation; nothing leaves the device in the preview.
+  existing_api:
+    seed: Use the company's own records as the model for the sample data; keep names and fields close to the real ones.
+    mock: Build a typed client for the existing API and answer with a mock until the real endpoints are connected.
+  sample:
+    seed: Keep a small fixed set of sample records; no generated variety is needed.
+    mock: Static sample data answers every operation; nothing is stored between runs.
+
+# ---------------------------------------------------------------------------- behavior
+behavior:
+  offline:
+    basic: Basic cache. The last loaded lists and details stay readable without a connection, and changes wait on the phone until the connection returns.
+    full: Offline first. Everything the person already opened works without a connection, and changes made offline are saved on the phone and sent when the connection returns.
+    none: Online only. The app needs a connection and says so clearly when it is lost.
+  notifications_on: [account updates]
+  notifications_off_note: Notifications are off; important updates appear inside the app.
+  analytics_base: [screen_viewed, sign_in_completed]
+  analytics_flow_event: "{flow}_completed"
+  accessibility:
+    standard:
+      - Every control has a text label for screen readers
+      - Text meets WCAG AA contrast in light and dark mode
+      - Text grows with the phone's font size setting
+      - Touch targets are at least 44 by 44 points
+    enhanced:
+      - Every journey is tested with a screen reader
+      - The reduce-motion setting is respected
+      - No information is shown by color alone
+      - Focus order follows reading order
+  error_conventions:
+    - Show a plain-language message and a retry action, never a raw error code
+    - Keep what the person typed when a request fails
+    - Loading, empty, error and offline states come from the screen recipe
+  permission_prompts:
+    INT-maps: Location, only while the app is open and only when the person uses a nearby or map feature
+    INT-push_notifications: Notifications, asked after the first useful moment and not at launch
+    INT-file_storage: Photos and files, only when the person adds an attachment
+
+# ---------------------------------------------------------------------------- compliance flags
+# What a flag adds to the spec. `behavior` lists are appended to the matching BehaviorBlock field.
+compliance_flags:
+  health_data_privacy:
+    label: Health information
+    impact: Analytics stay off, health details never appear in notifications or error messages.
+    behavior:
+      notifications: [Notification text never shows health details]
+      error_conventions: [Never put health details in error messages or logs]
+    acceptance: [Health details are not sent to analytics and not shown in notifications]
+    analytics_off: true
+  financial_data:
+    label: Money and financial data
+    impact: Card or account numbers are never stored or shown; only a display label such as Card ending 4242 appears.
+    behavior:
+      error_conventions: [Never show or log full card or account numbers]
+    acceptance: [Only a display label is ever shown for a payment method]
+  child_safety:
+    label: Children
+    impact: Analytics and notification marketing stay off and no personal details are public.
+    behavior:
+      notifications: [No marketing notifications]
+    acceptance: [No personal details of a child are visible to other people]
+    analytics_off: true
+  identity_documents:
+    label: Identity documents
+    impact: Identity documents are handled only through a provider and never kept in the app.
+    behavior:
+      error_conventions: [Never keep identity document images on the phone after upload]
+    acceptance: [Identity documents are not stored on the phone after they are sent]
+    analytics_off: true
+  precise_location:
+    label: Exact location
+    impact: Location is asked only while the app is open, with a clear reason, and analytics stay off.
+    behavior:
+      permission_prompts: [Exact location, asked only while the app is open and with a clear reason]
+    acceptance: [The app works, with fewer features, when location permission is refused]
+    analytics_off: true
+  needs_expert_review:
+    label: Needs expert review
+    impact: A specialist reviews the plan before release; this app never claims to be compliant by itself.
+    acceptance: [A named expert has reviewed the compliance notes before release]
+
+# ---------------------------------------------------------------------------- policy copy-in
+# Enterprise policy values copied into the spec so the file is self-contained.
+policy_copy:
+  banned_libraries:
+    label: "Company rule: banned libraries"
+    impact: The app must not depend on these libraries.
+    acceptance: "The app does not depend on any of these libraries: {items}"
+  allowed_regions:
+    label: "Company rule: allowed data regions"
+    impact: Backend data and logs stay in these regions.
+    acceptance: "Backend data and logs stay in these regions: {items}"
+  data_classification:
+    label: "Company rule: data classification"
+    impact: "Data is treated as {items}; personal data is never written to logs."
+    acceptance: "Personal data is never written to logs (data classification: {items})"
+    behavior_error_convention: "Never log personal data (data classification: {items})"
+  sso:
+    label: "Company rule: single sign-on"
+    impact: People sign in with the company account; there are no separate passwords.
+    acceptance: Sign-in uses the company single sign-on only
+
+# ---------------------------------------------------------------------------- assumptions
+# One line per slot: what an assumed value changes in the app.
+slot_notes:
+  idea.archetype: {label: "Type of app", impact: "Decides the starting screens, data and flows."}
+  scope.apps: {label: "Apps to build", impact: "Only the first app is built here; the others become separate projects."}
+  scope.features: {label: "Features", impact: "Decides which screens, data and operations are included."}
+  users.roles: {label: "Kinds of users", impact: "Decides the roles and which screens each role sees."}
+  auth.method: {label: "Sign-in method", impact: "Decides the sign-in and sign-up screens."}
+  design.direction: {label: "Look", impact: "Decides the colors, type, corners and motion."}
+  brand.name: {label: "App name", impact: "Shown on the first screen and in the app store listing."}
+  brand.assets: {label: "Logo", impact: "A placeholder mark is used until a logo is added."}
+  design.accent: {label: "Accent color", impact: "Sets the main action color."}
+  design.mode: {label: "Light or dark", impact: "Sets whether the app follows the phone setting or stays light or dark."}
+  design.nav_style: {label: "Navigation style", impact: "Decides how people move between the main areas."}
+  pay.model: {label: "How people pay", impact: "Decides whether online payment screens and operations are included."}
+  pay.provider: {label: "Payment provider", impact: "Decides whether payments are mocked or go through a provider adapter."}
+  data.source: {label: "Where the data comes from", impact: "Decides how the sample data and the mock backend are described."}
+  behavior.offline: {label: "Offline", impact: "Decides what works without a connection."}
+  behavior.notifications: {label: "Notifications", impact: "Decides whether notification kinds are listed in the behavior section."}
+  behavior.analytics: {label: "Usage analytics", impact: "Decides whether analytics events are listed."}
+  locale: {label: "Language", impact: "Sets the language of the app text."}
+  a11y: {label: "Accessibility", impact: "Decides how strict the accessibility checks are."}
+  compliance.flags: {label: "Sensitive areas", impact: "Adds careful defaults and notes for the flagged areas."}
+  auth.sso: {label: "Company sign-in", impact: "Decides whether sign-in uses the company account."}
+  integrations.list: {label: "Connected systems", impact: "Each named system is added as an integration."}
+  data.classification: {label: "Data classification", impact: "Adds data handling rules to the file."}
+  regions: {label: "Data regions", impact: "Adds data location rules to the file."}
+  release.channel: {label: "Release channel", impact: "Decides who receives the first builds."}
+  approvers: {label: "Approvers", impact: "Decides who must approve the plan."}
+default_impact: Uses the standard default for this setting.
+forced_role:
+  label: "Role added: {name}"
+  impact: A feature you chose needs this role, so it stays even though it was not picked.
+
+# ---------------------------------------------------------------------------- design
+design:
+  imagery_rules:
+    - Use real photos where the content has them and a neutral placeholder otherwise
+    - Keep images in one aspect ratio inside a list
+    - Never place text on an image without a scrim that keeps it readable
+  component_variants:
+    button: [primary, secondary, ghost, danger]
+    input: [outlined, filled]
+    card: [flat, elevated]
+  appearance_key: appearance
+  font_key: font_family
+  color_names:
+    red: "#C62828"
+    orange: "#E65100"
+    amber: "#B26A00"
+    yellow: "#9E7B00"
+    green: "#2E7D32"
+    teal: "#00796B"
+    blue: "#1B5FD9"
+    indigo: "#3949AB"
+    purple: "#6D28D9"
+    pink: "#C2185B"
+    brown: "#6D4C41"
+    black: "#111111"
+  theme_tones:
+    clean-bright: friendly
+    bold-dark: bold
+    warm-friendly: warm
+    minimal-mono: minimal
+    vibrant-playful: playful
+    corporate-calm: professional
+
+# ---------------------------------------------------------------------------- acceptance
+acceptance:
+  global:
+    - The app starts in the web preview without errors
+    - Every screen can be reached from the navigation or from another screen
+    - Every list screen shows loading, empty and error states
+    - No screen shows a raw error code or a stack trace
+    - Every action opens a screen or calls an operation
+    - Text stays readable at the largest system font size
+  signed_in: Signed-in screens ask a signed-out person to sign in first
+  mock_integrations: Every integration works in mock mode with no keys
+
+# ---------------------------------------------------------------------------- summary template
+summary:
+  lead: "{name}: {purpose}"
+  users: "Who uses it: {users}."
+  journeys: "It has {screens} screens in {flows} journeys: {flow_names}."
+  look: "The look is {look} with a {nav} navigation."
+  mocked: "Mocked for now: {mocked}."
+  nothing_mocked: "Nothing is mocked."
+  assumed: "Assumed instead of asked: {assumed}."
+  research: "Added from research: {added}."
+  backlog: "Left for phase two: {backlog}."
+  fallback_sentence: "{name} has {screens} screens in {flows} journeys, built from your approved brief."
+  more_flows: "and {n} more"
+
+# ---------------------------------------------------------------------------- change requests
+# Screen-level change requests (spec 3.6) and the notes a person gave about one screen. The builder
+# turns each into a validated proposal or a deterministic edit; what it cannot do becomes one plain
+# line in the Plan view's list of changes. `recipe_keywords` pick the recipe of a screen that is
+# added from a few words (first entry with a word in the text wins; whole words, case insensitive).
+change_ops:
+  removed_reason: removed at your request
+  default_recipe: detail
+  purpose: "{name}: added at your request"
+  recipe_keywords:
+    - {recipe: media-gallery, words: [gallery, photos, photo, pictures, images, album]}
+    - {recipe: map-view, words: [map, nearby, locator, locations]}
+    - {recipe: chat, words: [chat, messages, inbox]}
+    - {recipe: calendar-slot-picker, words: [calendar, schedule, appointment, slots]}
+    - {recipe: settings, words: [settings, preferences]}
+    - {recipe: profile, words: [profile, account]}
+    - {recipe: notifications, words: [notifications, alerts]}
+    - {recipe: dashboard, words: [dashboard, overview, stats, reports]}
+    - {recipe: search, words: [search]}
+    - {recipe: tracking, words: [tracking, track]}
+    - {recipe: checklist, words: [checklist, todo, tasks]}
+    - {recipe: form, words: [form, apply, feedback, contact, request, submit]}
+    - {recipe: list, words: [list, history, orders, catalog, items, favorites, wishlist, reviews]}
+    - {recipe: detail, words: [detail, details, about, info]}
+  messages:
+    unknown_screen: "I could not tell which screen \"{what}\" is about, so it is not in the plan."
+    no_detail: "You did not say what to change on {screen}, so it is as before."
+    secret: "I left out a detail for {screen} because it looks like a password or a key."
+    cannot_add: "I could not add the screen \"{what}\": {reason}."
+    cannot_remove: "I could not remove {screen}: {reason}."
+    no_name: "I could not add a screen without a name."
+
+# ---------------------------------------------------------------------------- questions (needs_answer)
+# One plain question per failing check. `sets` values: a literal, or one of the tokens
+# $core_features, $default_features. The first option is the recommended one.
+questions:
+  limits:
+    slot: scope.features
+    text: "This plan is bigger than one app can comfortably hold. How should we start?"
+    options:
+      - {label: "Start with the main features", description: "We keep the features most apps of this type have and leave the rest for later.", sets: {scope.features: $default_features}}
+      - {label: "Start with the essentials only", description: "We build only the always-on parts first.", sets: {scope.features: $core_features}}
+      - {label: "I will choose myself", description: "You pick the features one by one.", sets: {}}
+  stack_profile:
+    slot: scope.features
+    text: "Part of the plan needs something this kind of app cannot do yet. How should we continue?"
+    options:
+      - {label: "Leave it out and keep the rest", description: "We keep the main features and drop the part that cannot work.", sets: {scope.features: $default_features}}
+      - {label: "Build only the essentials", description: "We keep just the always-on parts.", sets: {scope.features: $core_features}}
+      - {label: "I will explain what I need", description: "You tell us what matters most.", sets: {}}
+  no_secrets:
+    slot: brand.name
+    text: "Something in the plan looks like a password or a key, which must never be written in the file. What should the app be called?"
+    options:
+      - {label: "Use a placeholder name", description: "We call it My App for now. You can rename it later.", sets: {brand.name: "My App"}}
+      - {label: "Let me type a name", description: "You type the name yourself.", sets: {}}
+      - {label: "Skip the name for now", description: "We keep the placeholder.", sets: {brand.name: "My App"}}
+  default:
+    slot: scope.features
+    text: "We could not fit everything into a working plan. How would you like to start?"
+    options:
+      - {label: "Start with the main features", description: "We keep the features most apps of this type have.", sets: {scope.features: $default_features}}
+      - {label: "Start with the essentials only", description: "We build only the always-on parts first.", sets: {scope.features: $core_features}}
+      - {label: "Let me explain what matters most", description: "You tell us in your own words.", sets: {}}

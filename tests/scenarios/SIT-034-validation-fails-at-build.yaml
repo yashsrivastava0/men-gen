@@ -1,0 +1,123 @@
+# SIT-034: Validation fails at build
+# Detection: B6, B7
+# Behavior:  Repair up to twice; if still failing, ask the user one plain question derived from the failing check
+id: SIT-034-validation-fails-at-build
+situation: "Validation fails at build"
+mode: guided
+integration: true
+variants:
+  repaired_twice_then_one_plain_question:
+    provider_script:
+      C12.critic:
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+      C13.repair:
+        - {proposals: []}
+        - {proposals: []}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect:
+          state: DISCOVERING
+          llm_calls: {C13.repair: 2}
+          events:
+            - {type: card, card_id: Q-build-default}
+          pending_card: Q-build-default
+          job: none
+          spec_ready: 0
+      - tap: {card: Q-build-default, option: B}
+        expect:
+          state: PLANNING
+          plan_phase: build
+          text_contains: ["continuing with your plan"]
+          llm_calls: {total: 0}
+          slots:
+            scope.features: {state: confirmed}
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          llm_calls: {C6.plan_research: 0, S1.web_search: 0}
+          gate: {gate: plan}
+  an_answer_equal_to_the_current_value_still_resumes:
+    provider_script:
+      C12.critic:
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+      C13.repair:
+        - {proposals: []}
+        - {proposals: []}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - decide: {gate: brief}
+        expect:
+          state: PLANNING
+          plan_phase: research
+          job: queued
+      - wait_for_plan: true
+        expect: {pending_card: Q-build-default}
+      - tap: {card: Q-build-default, option: A}
+        expect:
+          state: PLANNING
+          plan_phase: build
+  chatter_gets_a_reminder_then_the_default_is_offered:
+    provider_script:
+      C12.critic:
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+        - {verdict: fix, findings: [{kind: mismatch, severity: error, message: "the plan does not fit the brief", target_ids: []}]}
+      C13.repair:
+        - {proposals: []}
+        - {proposals: []}
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect: {pending_card: Q-look-01}
+      - tap: {card: Q-look-01, option: A}
+        expect: {state: BRIEF_REVIEW}
+      - decide: {gate: brief}
+        expect: {state: PLANNING}
+      - wait_for_plan: true
+        expect: {pending_card: Q-build-default}
+      - user: "hmm"
+        expect:
+          state: DISCOVERING
+          pending_card: Q-build-default
+          notices: [answer_needed]
+      - user: "hmmm"
+        expect: {state: DISCOVERING, pending_card: Q-build-default}
+      - user: "hmm hmm"
+        expect:
+          state: DISCOVERING
+          pending_card: Q-build-default
+          text_contains: ["Use the default"]
+      - user: "Use the default"
+        expect:
+          state: PLANNING
+          plan_phase: build
+          text_contains: ["continuing with your plan"]
+      - wait_for_plan: true
+        expect:
+          state: PLAN_REVIEW
+          gate: {gate: plan}

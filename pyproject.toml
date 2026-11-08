@@ -1,0 +1,148 @@
+[project]
+name = "mde-workspace"
+version = "0.1.0"
+description = "Context Engine for an enterprise AI mobile-app builder (uv workspace root)"
+requires-python = ">=3.12,<3.14"
+readme = "README.md"
+dependencies = [
+  "mde-core",
+  "mde-contracts",
+  "mde-llm-gateway",
+  "mde-prompts",
+  "mde-content",
+  "mde-persistence",
+  "mde-spec-loader",
+  "mde-discovery",
+  "mde-research",
+  "mde-spec-builder",
+  "mde-flow",
+  "mde-context-api",
+  "mde-llm-gateway-api",
+  "mde-cli",
+]
+
+[tool.uv]
+package = false
+
+[tool.uv.workspace]
+members = ["packages/*", "apps/*"]
+
+[tool.uv.sources]
+mde-core = { workspace = true }
+mde-contracts = { workspace = true }
+mde-llm-gateway = { workspace = true }
+mde-prompts = { workspace = true }
+mde-content = { workspace = true }
+mde-persistence = { workspace = true }
+mde-spec-loader = { workspace = true }
+mde-discovery = { workspace = true }
+mde-research = { workspace = true }
+mde-spec-builder = { workspace = true }
+mde-flow = { workspace = true }
+mde-context-api = { workspace = true }
+mde-llm-gateway-api = { workspace = true }
+mde-cli = { workspace = true }
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3",
+  "pytest-asyncio>=0.24",
+  "pytest-cov>=5.0",
+  "hypothesis>=6.112",
+  "ruff>=0.7",
+  "pyright>=1.1.380",
+  "import-linter>=2.1",
+  "pre-commit>=4.0",
+  "anyio>=4.5",
+]
+
+# --------------------------------------------------------------------------
+# Tooling
+# --------------------------------------------------------------------------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+extend-exclude = ["data", "evals/reports", ".venv", "*.md"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "ASYNC", "SIM", "RUF", "S", "PT", "C4", "T20", "DTZ", "TID"]
+ignore = [
+  "E501",    # formatter owns line length
+  "RUF001", "RUF002", "RUF003",  # Hindi / Hinglish text is intentional
+  "S101",    # asserts are fine in this codebase's invariants; overridden below for src where needed
+  "B008",    # FastAPI Depends() in defaults
+  "SIM108",
+  "RUF012",  # Pydantic copies mutable defaults per instance; `x: list[str] = []` is correct there
+  "UP046", "UP047",  # keep classic TypeVar/Generic (Pydantic + pyright friendly)
+  "RUF028",  # `# fmt: skip` on multi-line statements is intentional
+]
+
+[tool.ruff.lint.per-file-ignores]
+"**/tests/**" = ["S105", "S106", "S108", "S311", "S603", "S607", "T20", "PT011", "PT018", "C408"]
+"tests/**" = ["S105", "S106", "S108", "S311", "S603", "S607", "T20", "PT011", "PT018", "C408"]
+"scripts/**" = ["T20", "S603", "S607", "S404"]
+"apps/cli/**" = ["T20"]
+".claude/hooks/**" = ["T20", "S603", "S607"]
+"packages/llm-gateway/**" = ["TID251"]   # the only package allowed to import openai
+"packages/persistence/**/migrations/**" = ["E402"]
+
+[tool.ruff.lint.flake8-tidy-imports.banned-api]
+"openai".msg = "Only mde_llm_gateway may import openai (brief section 2)."
+"langchain".msg = "Agent frameworks are forbidden."
+"langgraph".msg = "Agent frameworks are forbidden."
+"llama_index".msg = "Agent frameworks are forbidden."
+"crewai".msg = "Agent frameworks are forbidden."
+"autogen".msg = "Agent frameworks are forbidden."
+"semantic_kernel".msg = "Agent frameworks are forbidden."
+"dspy".msg = "Agent frameworks are forbidden."
+"instructor".msg = "Agent frameworks are forbidden."
+"agents".msg = "The OpenAI Agents SDK is forbidden."
+"sqlite3".msg = "No SQLite anywhere (brief section 2): PostgreSQL only."
+"aiosqlite".msg = "No SQLite anywhere (brief section 2): PostgreSQL only."
+
+[tool.ruff.lint.isort]
+known-first-party = [
+  "mde_core", "mde_contracts", "mde_llm_gateway", "mde_prompts", "mde_content",
+  "mde_persistence", "mde_spec_loader", "mde_discovery", "mde_research",
+  "mde_spec_builder", "mde_flow", "mde_context_api", "mde_llm_gateway_api", "mde_cli",
+]
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.pyright]
+venvPath = "."
+venv = ".venv"
+pythonVersion = "3.13"
+typeCheckingMode = "standard"
+include = ["packages", "apps", "scripts", "tests", "evals"]
+exclude = ["**/__pycache__", "**/.venv", "data", "**/migrations/versions"]
+reportMissingTypeStubs = false
+# strict where the brief requires it (5.3)
+strict = [
+  "packages/contracts/src",
+  "packages/core/src",
+  "packages/llm-gateway/src",
+  "packages/flow/src",
+  "packages/spec-loader/src",
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+testpaths = ["packages", "apps", "tests"]
+addopts = "-ra --strict-markers --import-mode=importlib"
+markers = [
+  "integration: needs the local PostgreSQL cluster (just db-up)",
+  "e2e: end-to-end through the API in mock mode",
+  "live: calls the real OpenAI API; needs ALLOW_LIVE_LLM=1 in the outer environment",
+  "slow: slow test",
+]
+filterwarnings = ["error::DeprecationWarning:mde_*"]
+
+[tool.coverage.run]
+branch = true
+source = [
+  "packages/flow/src", "packages/llm-gateway/src", "packages/spec-loader/src",
+  "packages/spec-builder/src", "packages/discovery/src",
+]

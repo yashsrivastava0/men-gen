@@ -1,0 +1,25 @@
+Depth: {{ depth }}
+gap_round: {{ gap_round | lower }}
+max_suggestions: {{ max_suggestions }}
+
+Brief
+- App: {{ brief.app_summary }}
+- Type: {{ brief.archetype }}
+- Features it has: {% for f in brief.features %}{{ f.id }}{% if not loop.last %}, {% endif %}{% else %}none listed{% endfor %}
+
+{% if brief.look %}
+- Look: {{ brief.look }}
+{% endif %}
+{% if brief.compliance_flags %}
+- Compliance flags: {{ brief.compliance_flags | join(", ") }}
+{% endif %}
+{% if brief.brand_url %}
+- Brand website: {{ brief.brand_url }}
+{% endif %}
+
+Facts:
+{% for fact in facts %}
+{{ fact }}
+{% else %}
+(none)
+{% endfor %}

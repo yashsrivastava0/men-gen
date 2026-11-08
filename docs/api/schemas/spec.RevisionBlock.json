@@ -1,0 +1,34 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "changed_ids": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Changed Ids",
+      "type": "array"
+    },
+    "previous_version": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Previous Version"
+    },
+    "version": {
+      "title": "Version",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "version"
+  ],
+  "title": "RevisionBlock",
+  "type": "object"
+}

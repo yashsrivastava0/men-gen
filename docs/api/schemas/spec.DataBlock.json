@@ -1,0 +1,257 @@
+{
+  "$defs": {
+    "Entity": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/FieldDef"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "plain_name": {
+          "title": "Plain Name",
+          "type": "string"
+        },
+        "seed_guidance": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Seed Guidance"
+        },
+        "source": {
+          "default": "default",
+          "enum": [
+            "brief",
+            "default",
+            "research",
+            "custom"
+          ],
+          "title": "Source",
+          "type": "string"
+        },
+        "state_machine": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/StateMachine"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "plain_name",
+        "fields"
+      ],
+      "title": "Entity",
+      "type": "object"
+    },
+    "EnumDef": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "values": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "values"
+      ],
+      "title": "EnumDef",
+      "type": "object"
+    },
+    "FieldDef": {
+      "additionalProperties": false,
+      "properties": {
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Description"
+        },
+        "enum": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Enum"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "ref": {
+          "anyOf": [
+            {
+              "pattern": "^ENT-[A-Za-z][A-Za-z0-9]*$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ref"
+        },
+        "required": {
+          "default": true,
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "default": "string",
+          "enum": [
+            "string",
+            "text",
+            "int",
+            "number",
+            "bool",
+            "datetime",
+            "date",
+            "money",
+            "enum",
+            "ref",
+            "image",
+            "json"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "title": "FieldDef",
+      "type": "object"
+    },
+    "StateMachine": {
+      "additionalProperties": false,
+      "properties": {
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "title": "States",
+          "type": "array"
+        },
+        "transitions": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/Transition"
+          },
+          "title": "Transitions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "field",
+        "states"
+      ],
+      "title": "StateMachine",
+      "type": "object"
+    },
+    "Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "on": {
+          "title": "On",
+          "type": "string"
+        },
+        "source": {
+          "title": "Source",
+          "type": "string"
+        },
+        "target": {
+          "title": "Target",
+          "type": "string"
+        }
+      },
+      "required": [
+        "source",
+        "target",
+        "on"
+      ],
+      "title": "Transition",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "entities": {
+      "items": {
+        "$ref": "#/$defs/Entity"
+      },
+      "title": "Entities",
+      "type": "array"
+    },
+    "enums": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/EnumDef"
+      },
+      "title": "Enums",
+      "type": "array"
+    },
+    "seed_guidance": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Seed Guidance"
+    }
+  },
+  "required": [
+    "entities"
+  ],
+  "title": "DataBlock",
+  "type": "object"
+}

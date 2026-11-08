@@ -1,0 +1,227 @@
+# Question bank: booking_services (bookings and appointments). Cards here apply to this archetype only.
+# Feature ids are the pack feature ids (docs/packages/content.md). Pre-ticked = recommended.
+
+archetype: booking_services
+
+cards:
+  - id: Q-type-03
+    slot: idea.archetype
+    type: confirm
+    text: "It sounds like an app where customers pick a service and book a time. Is that right?"
+    options:
+      - {id: A, label: "Yes, bookings", recommended: true, sets: {idea.archetype: booking_services}}
+      - {id: B, label: "Not quite, start with basic building blocks", sets: {idea.archetype: custom}}
+    other: {enabled: true, placeholder: "Tell me what kind of app it is"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'booking_services'"
+    i18n:
+      hi:
+        text: "लगता है आप ऐसा ऐप चाहते हैं जहाँ ग्राहक सेवा चुनें और समय बुक करें। क्या यह सही है?"
+        options: {A: "हाँ, बुकिंग", B: "बिल्कुल नहीं, बुनियादी हिस्सों से शुरू करें"}
+        other_placeholder: "बताइए यह किस तरह का ऐप है"
+      hi-Latn:
+        text: "Lagta hai aap aisa app chahte hain jahan customer service chunein aur time book karein. Kya yeh sahi hai?"
+        options: {A: "Haan, booking", B: "Bilkul nahi, basic hisson se shuru karein"}
+        other_placeholder: "Bataiye yeh kis tarah ka app hai"
+
+  - id: Q-apps-03
+    slot: scope.apps
+    type: choice3
+    text: "Booking services often need more than one app: one for customers and one for the staff or providers. Which should we build first?"
+    help: "Each app is its own project, so we start with one. You can build the others next."
+    options:
+      - {id: A, label: "The customer app", description: "For the people who book.", recommended: true, sets: {scope.apps: [customer]}}
+      - {id: B, label: "The provider app", description: "For staff or providers to manage their bookings.", sets: {scope.apps: [business]}}
+      - {id: C, label: "An admin app", description: "For running the whole business.", sets: {scope.apps: [admin]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "idea.archetype == 'booking_services'"
+    i18n:
+      hi:
+        text: "बुकिंग सेवाओं को अक्सर एक से ज़्यादा ऐप चाहिए: ग्राहकों के लिए एक और स्टाफ या प्रोवाइडर के लिए एक। पहले कौन सा बनाएँ?"
+        options: {A: "ग्राहकों का ऐप", B: "प्रोवाइडर का ऐप", C: "एडमिन ऐप"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "हर ऐप अपना अलग प्रोजेक्ट है, इसलिए हम एक से शुरू करते हैं। बाकी आप अगले में बना सकते हैं।"
+      hi-Latn:
+        text: "Booking services ko aksar ek se zyada app chahiye: customers ke liye ek aur staff ya providers ke liye ek. Pehle kaun sa banayein?"
+        options: {A: "Customers ka app", B: "Provider ka app", C: "Admin app"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Har app apna alag project hai, isliye hum ek se shuru karte hain. Baaki aap agle mein bana sakte hain."
+
+  - id: Q-feat-03
+    slot: scope.features
+    type: multi
+    text: "Which of these should your booking app have? I have ticked the usual ones."
+    help: "You can change this any time. Anything you leave out can be added later."
+    options:
+      - {id: service_catalog, label: "List of services", description: "Customers see what you offer and the prices.", recommended: true, sets: {scope.features: [service_catalog]}}
+      - {id: provider_profiles, label: "Staff or provider profiles", description: "Customers see who they are booking with.", recommended: true, sets: {scope.features: [provider_profiles]}}
+      - {id: slot_booking, label: "Pick a time slot", description: "Customers choose a day and time and book.", recommended: true, sets: {scope.features: [slot_booking]}}
+      - {id: payments, label: "Payments", description: "Customers pay when booking. We start with a practice checkout.", recommended: true, sets: {scope.features: [payments]}}
+      - {id: reminders, label: "Reminders", description: "Customers get a reminder before their booking.", recommended: true, sets: {scope.features: [reminders]}}
+      - {id: reviews, label: "Reviews", description: "Customers rate their visit.", sets: {scope.features: [reviews]}}
+      - {id: reschedule_cancel, label: "Reschedule or cancel", description: "Customers change or cancel their own bookings.", recommended: true, sets: {scope.features: [reschedule_cancel]}}
+      - {id: push_notifications, label: "Notifications", description: "Booking updates on the phone.", recommended: true, sets: {scope.features: [push_notifications]}}
+      - {id: memberships, label: "Memberships and packages", description: "Customers buy a package of sessions.", sets: {scope.features: [memberships]}}
+      - {id: support, label: "Help and support", description: "Customers can reach you about a booking.", sets: {scope.features: [support]}}
+    other: {enabled: true, placeholder: "Add my own"}
+    skip: {enabled: true}
+    ask_if: "idea.archetype == 'booking_services'"
+    i18n:
+      hi:
+        text: "आपके बुकिंग ऐप में इनमें से क्या-क्या होना चाहिए? मैंने आम चीज़ों पर निशान लगा दिए हैं।"
+        options: {service_catalog: "सेवाओं की सूची", provider_profiles: "स्टाफ की प्रोफ़ाइल", slot_booking: "समय स्लॉट चुनना", payments: "भुगतान", reminders: "रिमाइंडर", reviews: "रिव्यू", reschedule_cancel: "समय बदलना या रद्द करना", push_notifications: "नोटिफिकेशन", memberships: "मेंबरशिप और पैकेज", support: "सहायता"}
+        other_placeholder: "अपना जोड़िए"
+        help: "आप इसे कभी भी बदल सकते हैं। जो अभी छोड़ेंगे उसे बाद में जोड़ सकते हैं।"
+      hi-Latn:
+        text: "Aapke booking app mein inmein se kya-kya hona chahiye? Maine aam cheezon par nishaan laga diye hain."
+        options: {service_catalog: "Services ki list", provider_profiles: "Staff ki profile", slot_booking: "Time slot chunna", payments: "Payment", reminders: "Reminder", reviews: "Review", reschedule_cancel: "Reschedule ya cancel", push_notifications: "Notifications", memberships: "Membership aur package", support: "Help aur support"}
+        other_placeholder: "Apna jodiye"
+        help: "Aap ise kabhi bhi badal sakte hain. Jo abhi chhodenge use baad mein jod sakte hain."
+
+  - id: Q-look-03
+    slot: design.direction
+    type: visual3
+    text: "Which look feels closest to your booking app?"
+    help: "This sets colors, shapes and feel. You can change it later."
+    options:
+      - {id: A, label: "Clean and bright", description: "Light, fresh and easy to read.", preview: "theme:clean-bright", recommended: true, sets: {design.direction: clean-bright}}
+      - {id: B, label: "Warm and friendly", description: "Soft, welcoming colors and rounded shapes.", preview: "theme:warm-friendly", sets: {design.direction: warm-friendly}}
+      - {id: C, label: "Simple and minimal", description: "Black, white and grey with lots of space.", preview: "theme:minimal-mono", sets: {design.direction: minimal-mono}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "कौन सा लुक आपके बुकिंग ऐप के सबसे करीब है?"
+        options: {A: "साफ़ और चमकीला", B: "गर्म और दोस्ताना", C: "सादा और मिनिमल"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+        help: "इससे रंग, आकार और अंदाज़ तय होता है। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Kaun sa look aapke booking app ke sabse kareeb hai?"
+        options: {A: "Saaf aur chamakdaar", B: "Garam aur dostana", C: "Saada aur minimal"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+        help: "Isse rang, aakaar aur andaaz tay hota hai. Baad mein badal sakte hain."
+
+  - id: Q-look-13
+    slot: design.direction
+    type: visual3
+    text: "Here are three more looks. Which one is closest?"
+    options:
+      - {id: A, label: "Bold and dark", description: "Dark screens with strong contrast.", preview: "theme:bold-dark", recommended: true, sets: {design.direction: bold-dark}}
+      - {id: B, label: "Vibrant and playful", description: "Bright colors and a lively feel.", preview: "theme:vibrant-playful", sets: {design.direction: vibrant-playful}}
+      - {id: C, label: "Calm and professional", description: "Steady blues and a tidy, business-like feel.", preview: "theme:corporate-calm", sets: {design.direction: corporate-calm}}
+    other: {enabled: true, placeholder: "Describe the look you want"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "ये रहे तीन और लुक। कौन सा सबसे करीब है?"
+        options: {A: "गहरा और दमदार", B: "रंगीन और मज़ेदार", C: "शांत और प्रोफ़ेशनल"}
+        other_placeholder: "बताइए आप कैसा लुक चाहते हैं"
+      hi-Latn:
+        text: "Ye rahe teen aur look. Kaun sa sabse kareeb hai?"
+        options: {A: "Gehra aur damdaar", B: "Rangeen aur mazedaar", C: "Shaant aur professional"}
+        other_placeholder: "Bataiye aap kaisa look chahte hain"
+
+  - id: Q-pay-03
+    slot: pay.model
+    type: choice3
+    text: "How will customers pay?"
+    help: "The first version uses a practice checkout. A real payment provider is connected later."
+    options:
+      - {id: A, label: "Online, when booking", description: "We start with a practice checkout so you can try it.", recommended: true, sets: {pay.model: online}}
+      - {id: B, label: "Online or at the venue", description: "Customers choose when they book.", sets: {pay.model: both}}
+      - {id: C, label: "At the venue only", description: "Customers pay when they arrive.", sets: {pay.model: on_delivery}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'payments' in scope.features"
+    i18n:
+      hi:
+        text: "ग्राहक भुगतान कैसे करेंगे?"
+        options: {A: "ऑनलाइन, बुकिंग के समय", B: "ऑनलाइन या जगह पर", C: "सिर्फ़ जगह पर"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "पहले संस्करण में एक प्रैक्टिस चेकआउट होता है। असली पेमेंट प्रोवाइडर बाद में जोड़ा जाता है।"
+      hi-Latn:
+        text: "Customers payment kaise karenge?"
+        options: {A: "Online, booking ke time", B: "Online ya jagah par", C: "Sirf jagah par"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Pehle version mein ek practice checkout hota hai. Asli payment provider baad mein joda jata hai."
+
+  - id: Q-fix-03
+    slot: auth.method
+    type: choice3
+    kind: resolution
+    text: "You said people do not need to sign in, but a few features need an account. What should we do?"
+    help: "Features like memberships, rescheduling and reviews need to know who the customer is."
+    options:
+      - {id: A, label: "Add a simple sign-in", description: "A short code sent to email or phone.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Browse freely, sign in only when needed", description: "People sign in when they book or save something.", sets: {auth.method: guest_first}}
+      - {id: C, label: "No sign-in, leave out account features", description: "We remove the features that need an account.", sets: {auth.method: none, scope.features: [service_catalog, provider_profiles, slot_booking, payments, reminders, push_notifications, support]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "auth.method == 'none' and scope.features in [memberships, reschedule_cancel, reviews]"
+    i18n:
+      hi:
+        text: "आपने कहा कि लोगों को साइन इन करने की ज़रूरत नहीं, लेकिन कुछ फ़ीचर के लिए अकाउंट चाहिए। हम क्या करें?"
+        options: {A: "एक सरल साइन-इन जोड़ें", B: "खुलकर देखें, ज़रूरत पर ही साइन इन करें", C: "साइन-इन नहीं, अकाउंट वाले फ़ीचर हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "मेंबरशिप, समय बदलना और रिव्यू जैसे फ़ीचर को पता होना चाहिए कि ग्राहक कौन है।"
+      hi-Latn:
+        text: "Aapne kaha ki logon ko sign in karne ki zaroorat nahi, lekin kuch features ke liye account chahiye. Hum kya karein?"
+        options: {A: "Ek simple sign-in jodein", B: "Khulkar dekhein, zaroorat par hi sign in karein", C: "Sign-in nahi, account wale features hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Membership, reschedule aur review jaise features ko pata hona chahiye ki customer kaun hai."
+
+  - id: Q-fix-08
+    slot: pay.model
+    type: choice3
+    kind: resolution
+    text: "You said no payments in the app, but payments are still on the feature list. What should we do?"
+    options:
+      - {id: A, label: "Keep payments", description: "We start with a practice checkout.", recommended: true, sets: {pay.model: online}}
+      - {id: B, label: "Pay at the venue", description: "Customers pay when they arrive.", sets: {pay.model: on_delivery}}
+      - {id: C, label: "Remove payments", description: "The app will not take payments.", sets: {pay.model: none, scope.features: [service_catalog, provider_profiles, slot_booking, reminders, reschedule_cancel, push_notifications]}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "pay.model == 'none' and 'payments' in scope.features"
+    i18n:
+      hi:
+        text: "आपने कहा कि ऐप में भुगतान नहीं, लेकिन भुगतान अब भी फ़ीचर सूची में है। हम क्या करें?"
+        options: {A: "भुगतान रखें", B: "जगह पर भुगतान", C: "भुगतान हटाएँ"}
+        other_placeholder: "कुछ और? बताइए"
+      hi-Latn:
+        text: "Aapne kaha ki app mein payment nahi, lekin payment ab bhi feature list mein hai. Hum kya karein?"
+        options: {A: "Payment rakhein", B: "Jagah par payment", C: "Payment hatayein"}
+        other_placeholder: "Kuch aur? Bataiye"
+
+inspiration_cards:
+  - id: Q-insp-03
+    slot: idea.summary
+    type: choice3
+    kind: inspiration
+    text: "Here are a few ideas for booking apps. Pick the closest one, or describe your own."
+    options:
+      - {id: A, label: "Salon and spa", description: "Customers pick a service and a time slot.", recommended: true, sets: {idea.summary: "A salon app where customers pick a service and book a time slot", idea.archetype: booking_services}}
+      - {id: B, label: "Fitness classes", description: "Members book classes with trainers.", sets: {idea.summary: "A fitness studio app where members book classes with trainers", idea.archetype: booking_services}}
+      - {id: C, label: "Home services", description: "Customers book a cleaner, plumber or electrician.", sets: {idea.summary: "A home services app where customers book a cleaner, plumber or electrician", idea.archetype: booking_services}}
+    other: {enabled: true, placeholder: "Describe your own booking app"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "बुकिंग ऐप के लिए कुछ आइडिया ये रहे। सबसे करीब वाला चुनिए, या अपना बताइए।"
+        options: {A: "सैलून और स्पा", B: "फ़िटनेस क्लास", C: "घरेलू सेवाएँ"}
+        other_placeholder: "अपने बुकिंग ऐप के बारे में बताइए"
+      hi-Latn:
+        text: "Booking app ke liye kuch ideas ye rahe. Sabse kareeb wala chuniye, ya apna bataiye."
+        options: {A: "Salon aur spa", B: "Fitness classes", C: "Ghar ki services"}
+        other_placeholder: "Apne booking app ke baare mein bataiye"
+
+starter_chips:
+  - {id: chip-booking-01, label: "Salon and spa bookings", prefill: "I want a booking app for my salon", archetype: booking_services, sets: {idea.archetype: booking_services}, i18n: {hi: "सैलून और स्पा बुकिंग", hi-Latn: "Salon aur spa booking"}}
+  - {id: chip-booking-02, label: "Clinic appointments", prefill: "I want an appointment app for my clinic", archetype: booking_services, sets: {idea.archetype: booking_services}, i18n: {hi: "क्लिनिक अपॉइंटमेंट", hi-Latn: "Clinic appointment"}}
+  - {id: chip-booking-03, label: "Fitness classes", prefill: "I want an app where people book fitness classes with trainers", archetype: booking_services, sets: {idea.archetype: booking_services}, i18n: {hi: "फ़िटनेस क्लास", hi-Latn: "Fitness classes"}}
+  - {id: chip-booking-04, label: "Home services", prefill: "I want an app where customers book home services like cleaning or repairs", archetype: booking_services, sets: {idea.archetype: booking_services}, i18n: {hi: "घरेलू सेवाएँ", hi-Latn: "Ghar ki services"}}
+  - {id: chip-booking-05, label: "Tutoring and classes", prefill: "I want an app where students book tutoring sessions", archetype: booking_services, sets: {idea.archetype: booking_services}, i18n: {hi: "ट्यूशन और क्लास", hi-Latn: "Tuition aur classes"}}
+  - {id: chip-booking-06, label: "Sports court booking", prefill: "I want an app to book my sports court or turf by the hour", archetype: booking_services, sets: {idea.archetype: booking_services}, i18n: {hi: "स्पोर्ट्स कोर्ट बुकिंग", hi-Latn: "Sports court booking"}}

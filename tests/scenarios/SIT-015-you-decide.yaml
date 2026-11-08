@@ -1,0 +1,64 @@
+# SIT-015: "You decide"
+# Detection: Phrase or button
+# Behavior:  Pick recommended, one-line reason, mark `assumed`
+id: SIT-015-you-decide
+situation: "\"You decide\""
+mode: guided
+variants:
+  tap_you_decide_link:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - tap: {card: Q-apps-01, you_decide: true}
+        expect:
+          slots:
+            scope.apps: {value: [customer], state: assumed, source: default}
+          pending_card: Q-feat-01
+          llm_calls: {total: 0}
+  typed_phrase:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "you decide"
+        expect:
+          text_contains: ["No problem, I will go with"]
+          slots:
+            scope.apps: {state: assumed, source: default}
+          llm_calls: {total: 0}
+  hindi_phrase:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "आप ही चुन लीजिए"
+        expect:
+          slots:
+            scope.apps: {state: assumed}
+          llm_calls: {total: 0}
+  hinglish_phrase:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - user: "aap hi decide kar lo"
+        expect:
+          slots:
+            scope.apps: {state: assumed}
+          llm_calls: {total: 0}
+  an_assumption_is_visible_at_gate_one:
+    steps:
+      - user: "An online shop"
+        expect: {pending_card: Q-type-01}
+      - tap: {card: Q-type-01, option: A}
+        expect: {pending_card: Q-apps-01}
+      - tap: {card: Q-apps-01, you_decide: true}
+      - user: "finish with smart defaults"
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief}

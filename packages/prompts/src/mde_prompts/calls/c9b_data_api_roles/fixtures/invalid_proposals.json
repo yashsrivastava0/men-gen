@@ -1,0 +1,146 @@
+{
+  "proposals": [
+    {
+      "kind": "add_entity_fields",
+      "target": "ENT-Product",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Reference to a missing entity",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": [
+        {
+          "name": "supplier",
+          "type": "ref",
+          "required": true,
+          "ref": "ENT-Supplier",
+          "description": null
+        }
+      ],
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "add_entity_fields",
+      "target": "ENT-Product",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Enum without an enum",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": [
+        {
+          "name": "size",
+          "type": "enum",
+          "required": true,
+          "ref": null,
+          "description": null
+        }
+      ],
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "add_api_operation",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Not an HTTP method",
+      "name": "Fetch gifts",
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": "FETCH",
+      "path": "/gifts",
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "add_api_operation",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Existing path",
+      "name": "List things",
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": "GET",
+      "path": "/me",
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "add_role",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Role already exists",
+      "name": "Customer",
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "add_integration",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Secret in the notes",
+      "name": "Vault",
+      "route": null,
+      "recipe": null,
+      "purpose": "Keeps keys",
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "notes",
+          "value": "token=hunter2hunter2"
+        }
+      ],
+      "items": null
+    }
+  ],
+  "notes": null
+}

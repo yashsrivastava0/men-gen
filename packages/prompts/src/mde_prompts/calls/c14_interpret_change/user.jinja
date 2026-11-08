@@ -1,0 +1,26 @@
+State: {{ state }}{% if gate_open %}, open gate: {{ gate_open }}{% endif %}. Source: {{ source }}. Language: {{ language }}.
+{% if selected_screen_id %}
+Selected screen: {{ selected_screen_id }}
+{% endif %}
+{% if slot_catalog %}
+Slot catalog:
+{% for s in slot_catalog %}
+- {{ s.slot_id }} ({{ s.kind }}){% if s.hint %}: {{ s.hint }}{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if slots %}
+Current slots:
+{% for s in slots %}
+- {{ s.slot_id }} = {{ s.value }} [{{ s.state }}]
+{% endfor %}
+{% endif %}
+{% if outline %}
+Screens:
+{% for s in outline.screens %}
+- {{ s.id }}: {{ s.route }} ({{ s.recipe }}){% if s.purpose %}, {{ s.purpose }}{% endif %}
+
+{% endfor %}
+{% endif %}
+
+Request: {{ message }}

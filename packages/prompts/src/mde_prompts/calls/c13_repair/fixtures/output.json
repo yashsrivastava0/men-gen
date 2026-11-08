@@ -1,0 +1,30 @@
+{
+  "proposals": [
+    {
+      "kind": "fix_reference",
+      "target": "SCR-006",
+      "source": "repair",
+      "research_ref": null,
+      "rationale": "SCR-099 does not exist; SCR-029 is the closest SCR item.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "SCR-099",
+          "value": "SCR-029"
+        }
+      ],
+      "items": null
+    }
+  ],
+  "notes": "mock: reference fixes and removals"
+}

@@ -1,0 +1,105 @@
+{
+  "proposals": [
+    {
+      "kind": "set_design_token",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Not a hex colour",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "colors_light.primary",
+          "value": "blue"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "set_design_token",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Not a token",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "colors_light.sparkle",
+          "value": "#112233"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "set_design_token",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Unreadable text",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "colors_light.text",
+          "value": "#EEEEEE"
+        }
+      ],
+      "items": null
+    },
+    {
+      "kind": "set_design_token",
+      "target": null,
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "Out of range",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": [
+        {
+          "key": "radius.md",
+          "value": "99"
+        }
+      ],
+      "items": null
+    }
+  ],
+  "notes": null
+}

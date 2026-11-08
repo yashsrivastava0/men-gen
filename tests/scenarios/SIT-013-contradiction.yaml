@@ -1,0 +1,26 @@
+# SIT-013: Contradiction ("no login" then "user accounts")
+# Detection: Consistency check
+# Behavior:  One-tap resolution card with three options
+id: SIT-013-contradiction
+situation: "Contradiction (\"no login\" then \"user accounts\")"
+mode: guided
+integration: true
+steps:
+  - user: "An online shop"
+  - tap: {card: Q-type-01, option: A}
+  - tap: {card: Q-apps-01, recommended: true}
+  - tap: {card: Q-feat-01, recommended: true}
+  - tap: {card: Q-auth-01, option: A}
+    expect:
+      pending_card: Q-look-01
+  - user: "actually no login please"
+    expect:
+      pending_card: Q-fix-01
+      text_contains: ["pull in different directions"]
+      slots:
+        auth.method: {state: disputed}
+  - tap: {card: Q-fix-01, option: A}
+    expect:
+      slots:
+        auth.method: {value: email_phone_code, state: confirmed}
+      pending_card: Q-look-01

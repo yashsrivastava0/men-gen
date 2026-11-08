@@ -1,0 +1,262 @@
+{
+  "format": 1,
+  "key": "6a732f7cbca8f63758dc9e5a615ea36322edb8b57fd5bb0e7f156b1de30cca2b",
+  "recorded_at": "2026-11-08T11:03:23.595266Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: internal workforce checklist attendance requests approvals mobile app patterns\nTopic: common features and design patterns of similar mobile apps\n"
+  },
+  "response": {
+    "text": "Common patterns in workforce apps include mobile clock-in/out, break tracking, timesheet review, and a requests area for time off or shift edits. Employees can submit requests with dates or hours, choose a leave type, add an explanation, and track request history or balances. ([help.connecteam.com](https://help.connecteam.com/en/articles/6713889-starting-guide-to-time-off?utm_source=openai))\n\nApproval tasks are surfaced to managers through a “needs attention” area or a dedicated timesheet/request screen. Managers can review pending items, approve or decline them, and-in some apps-select multiple timesheets for batch approval. ([whatsnew.deputy.com](https://whatsnew.deputy.com/an-improved-timesheets-experience-on-mobile-45UK52?utm_source=openai))\n\nApps also connect requests to schedules: managers can check for scheduling conflicts before approving time off, while employees can see leave balances and submit availability or time-off requests. ([deputy.com](https://www.deputy.com/mobile?utm_source=openai))\n\nStatus indicators and request history help employees and managers distinguish pending, approved, and declined items. Some apps also let managers filter requests by employee, status, date range, request type, or team. ([help.connecteam.com](https://help.connecteam.com/en/articles/6713889-starting-guide-to-time-off?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://help.connecteam.com/en/articles/6713889-starting-guide-to-time-off?utm_source=openai",
+        "title": "Starting Guide to Time Off | HELP CENTER",
+        "start": 277,
+        "end": 394
+      },
+      {
+        "url": "https://whatsnew.deputy.com/an-improved-timesheets-experience-on-mobile-45UK52?utm_source=openai",
+        "title": "An improved Timesheets experience on mobile 🕰 - Deputy - Deputy | What's New ✨",
+        "start": 634,
+        "end": 755
+      },
+      {
+        "url": "https://www.deputy.com/mobile?utm_source=openai",
+        "title": "Download the Deputy App Here | Manage Your Team Remotely - Deputy",
+        "start": 954,
+        "end": 1017
+      },
+      {
+        "url": "https://help.connecteam.com/en/articles/6713889-starting-guide-to-time-off?utm_source=openai",
+        "title": "Starting Guide to Time Off | HELP CENTER",
+        "start": 1236,
+        "end": 1353
+      },
+      {
+        "url": "https://help.connecteam.com/en/articles/6713889-starting-guide-to-time-off",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.connecteam.com/en/articles/5826070-time-clock-for-users",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://whatsnew.deputy.com/an-improved-timesheets-experience-on-mobile-45UK52",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.deputy.com/mobile",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.connecteam.com/en/articles/5911931-step-3-your-mobile-admin-tab-distributing-the-app-to-your-employees",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.workforce.com/en/articles/15359569-submitting-managing-availability",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.deputy.com/hc/en-au/articles/4753103029263-Manager-guide-to-the-Deputy-mobile-app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.workforce.com/help-center/4051801/collections/4051801/articles/6954196-here",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://releases.connecteam.com/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://whatsnew.deputy.com/date/2022/5",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://apps.adp.com/en-US/apps/422275/EasyWorkforce/features",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.deputy.com/features/time-and-attendance",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://sbshrs.adpinfo.com/hubfs/SBS%20TLM/SBS%20TLM%202022/Mobile%20Guide%20-%20Managing%20Employee%20Time%20Off%20Requests%20with%20the%20ADP%20Mobile%20Solutions%20App.pdf?hsLang=en",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.adp.com/-/media/adp/redesign2018/images/what-we-offer/products/adp-vantage-hcm/time-and-labor/mobile_solutions_for_wfm_may_2018.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://manuals.plus/m/c6d6e611d111d2a7b5378950a658f9ab8eadf83c98c49771760dcdb17abce3d5.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://workforcesoftware.com/wp-content/uploads/WorkForce-Product-Roadmap-August-2024.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://connecteam.com/wp-content/uploads/2019/05/Employee-Attendance-Policy-Template-2.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://connecteam.com/wp-content/uploads/2022/12/Connecteam-Media-Kit-2023_.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1vwiifw/6_employee_scheduling_apps_for_2026_where_each/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1w3qiz6/new_update_6_pto_tracking_tools_for_2026_big/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1w0602n/update_5_attendance_tracking_tools_for_2026_the/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1x1qh2k/6_clockin_clockout_apps_for_2026_time_tracking/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1w3rqne/5_employee_scheduling_tools_for_2026_where_each/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1suf44z/if_your_teams_schedule_still_lives_on_a/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/smallbusiness/comments/1kkfcpn/connecteam_too_good_to_be_true_small_business_plan/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1vyd03x/8_employee_time_tracking_apps_for_2026_where_the/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1ieh4av/honest_timetastic_review_2025_is_it_the_best/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/humanresources/comments/1wa53th/hris_options_for_business_w_25_employees_tx/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/managers/comments/1m0fh3e/how_do_you_manage_your_employee_time_off_what/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Connecteam/comments/1nw363w/hubstaff_vs_harvest_2025_which_should_your_team/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/TimeClock_Plus",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.techradar.com/best/best-employee-scheduling-software",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.techradar.com/best/best-time-and-attendance-systems",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 11053,
+      "cached_input_tokens": 4442,
+      "output_tokens": 337,
+      "reasoning_tokens": 60,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

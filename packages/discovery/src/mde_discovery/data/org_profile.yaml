@@ -1,0 +1,51 @@
+# Org Profile -> slots (spec 3.3, 3.5, 10; D-077). Content, not code (hard rule 8).
+#
+# The Org Profile is a tolerant JSON document the tenant stores once. Enterprise sessions start from
+# it: each documented key below becomes an `assumed` slot with source `org_profile`. Everything else
+# in the document (unknown keys, unknown values, wrong types) is dropped silently.
+#
+#   path        the key (or section and key) in the profile
+#   slot        the slot it seeds; checked against the slot ids and never `never_seed`
+#   kind        text    free text, one line, screened (secrets, injection, markup, company rules)
+#               url     an https link without credentials, screened the same way
+#               color   a #RRGGBB value or a known colour word
+#               choice  one value the question bank (or `values`) lists for the slot
+#               list    several values, each one the question bank (or `values`) lists
+#   max_chars   longest text accepted (text and url)
+#   values      allowed values for a slot no card offers (design.mode, locale); when absent they are
+#               the values the cards of the question bank can write (their `sets` and option ids),
+#               or the theme ids for design.direction, so a profile can only select what a card could
+#   check       regions: every item must be inside the policy's allowed regions
+#
+# Checked by packages/discovery/tests/test_org_profile.py.
+version: 1
+
+# The profile is read only up to these bounds; a document over any of them is ignored whole.
+limits:
+  max_json_bytes: 65536    # the same 64 KB the API accepts
+  max_depth: 6
+  max_nodes: 4000
+  max_list_items: 32       # items read from one list; the rest are dropped
+
+# The ids of the copy in data/copy.yaml.
+copy_ids:
+  evidence: org_profile_evidence
+  notice: org_profile_loaded
+
+# Slots that are never seeded: the user's own idea decides the app type, never a stored profile.
+never_seed: [idea.summary, idea.archetype]
+
+mappings:
+  - {path: [brand, name], slot: brand.name, kind: text, max_chars: 80}
+  - {path: [brand, assets_url], slot: brand.assets, kind: url, max_chars: 500}
+  - {path: [brand, direction], slot: design.direction, kind: choice}
+  - {path: [brand, accent], slot: design.accent, kind: color}
+  - {path: [brand, mode], slot: design.mode, kind: choice, values: [system, light, dark]}
+  - {path: [identity, sso], slot: auth.sso, kind: choice}
+  - {path: [compliance, data_classification], slot: data.classification, kind: choice}
+  - {path: [compliance, regions], slot: regions, kind: list, check: regions}
+  - {path: [compliance, flags], slot: compliance.flags, kind: list}
+  - {path: [integrations], slot: integrations.list, kind: list}
+  - {path: [approvers], slot: approvers, kind: list}
+  - {path: [release_channel], slot: release.channel, kind: choice}
+  - {path: [locale], slot: locale, kind: choice, values: [en, hi, hi-Latn]}

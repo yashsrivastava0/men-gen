@@ -1,0 +1,43 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "reply": {
+      "description": "Short, warm reply in the user's language",
+      "title": "Reply",
+      "type": "string"
+    },
+    "steer_back": {
+      "default": false,
+      "title": "Steer Back",
+      "type": "boolean"
+    },
+    "suggested_chips": {
+      "default": [],
+      "description": "At most 3 short idea chips",
+      "items": {
+        "type": "string"
+      },
+      "title": "Suggested Chips",
+      "type": "array"
+    },
+    "unknown": {
+      "description": "True if the answer is not covered by the knowledge given",
+      "title": "Unknown",
+      "type": "boolean"
+    },
+    "used_snippets": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Used Snippets",
+      "type": "array"
+    }
+  },
+  "required": [
+    "reply",
+    "unknown"
+  ],
+  "title": "C3Output",
+  "type": "object"
+}

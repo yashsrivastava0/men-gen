@@ -1,0 +1,898 @@
+{
+  "brief": {
+    "app_summary": "A small app for my shop where people can order",
+    "archetype": "commerce",
+    "language": "hi",
+    "mode": "guided",
+    "roles": [
+      "Customer"
+    ],
+    "features": [],
+    "look": "Warm and friendly",
+    "login": "",
+    "regions": [
+      "in"
+    ],
+    "references": [],
+    "compliance_flags": [
+      "precise_location",
+      "financial_data"
+    ],
+    "assumptions": [],
+    "brand_name": null,
+    "brand_url": null
+  },
+  "outline": {
+    "screens": [
+      {
+        "id": "SCR-001",
+        "route": "/welcome",
+        "recipe": "welcome",
+        "flow": "FLW-002",
+        "purpose": "Introduce the app to a signed-out visitor and offer to sign in, create an accou…",
+        "source": "default"
+      },
+      {
+        "id": "SCR-002",
+        "route": "/login",
+        "recipe": "login-otp",
+        "flow": "FLW-002",
+        "purpose": "Sign in with a phone number and a one-time code",
+        "source": "default"
+      },
+      {
+        "id": "SCR-003",
+        "route": "/signup",
+        "recipe": "signup",
+        "flow": null,
+        "purpose": "Finish a new account with a name and an optional email after the phone number i…",
+        "source": "default"
+      },
+      {
+        "id": "SCR-004",
+        "route": "/home",
+        "recipe": "dashboard",
+        "flow": "FLW-001",
+        "purpose": "Show categories and featured products and lead people into browsing",
+        "source": "default"
+      },
+      {
+        "id": "SCR-005",
+        "route": "/category/[id]",
+        "recipe": "list-with-filters",
+        "flow": null,
+        "purpose": "List the products of one category with sorting and filters",
+        "source": "default"
+      },
+      {
+        "id": "SCR-006",
+        "route": "/product/[id]",
+        "recipe": "detail-with-sticky-cta",
+        "flow": "FLW-001",
+        "purpose": "Show one product and let the shopper add it to the cart",
+        "source": "default"
+      },
+      {
+        "id": "SCR-007",
+        "route": "/search",
+        "recipe": "search",
+        "flow": "FLW-003",
+        "purpose": "Search the catalog by name with recent searches and suggestions",
+        "source": "default"
+      },
+      {
+        "id": "SCR-008",
+        "route": "/search/results",
+        "recipe": "list-with-filters",
+        "flow": "FLW-003",
+        "purpose": "Show matching products with filters and sorting",
+        "source": "default"
+      },
+      {
+        "id": "SCR-009",
+        "route": "/cart",
+        "recipe": "list",
+        "flow": "FLW-001",
+        "purpose": "Review the items, change quantities and continue to checkout",
+        "source": "default"
+      },
+      {
+        "id": "SCR-010",
+        "route": "/checkout",
+        "recipe": "checkout-review",
+        "flow": "FLW-001",
+        "purpose": "Confirm the address and payment and place the order",
+        "source": "default"
+      },
+      {
+        "id": "SCR-011",
+        "route": "/order-confirmation",
+        "recipe": "confirmation",
+        "flow": "FLW-001",
+        "purpose": "Tell the shopper the order is placed and what happens next",
+        "source": "default"
+      },
+      {
+        "id": "SCR-012",
+        "route": "/payment-failed",
+        "recipe": "empty-state-only",
+        "flow": null,
+        "purpose": "Explain that the payment did not go through and offer a way forward",
+        "source": "default"
+      },
+      {
+        "id": "SCR-013",
+        "route": "/orders",
+        "recipe": "list",
+        "flow": "FLW-005",
+        "purpose": "List the shopper's orders, newest first",
+        "source": "default"
+      },
+      {
+        "id": "SCR-014",
+        "route": "/orders/[id]",
+        "recipe": "detail",
+        "flow": "FLW-005",
+        "purpose": "Show the items, address, payment and status of one order",
+        "source": "default"
+      },
+      {
+        "id": "SCR-015",
+        "route": "/orders/[id]/tracking",
+        "recipe": "tracking",
+        "flow": "FLW-005",
+        "purpose": "Show where the order is with a step-by-step timeline",
+        "source": "default"
+      },
+      {
+        "id": "SCR-016",
+        "route": "/account",
+        "recipe": "profile",
+        "flow": "FLW-006",
+        "purpose": "Show who is signed in and lead to account areas",
+        "source": "default"
+      },
+      {
+        "id": "SCR-017",
+        "route": "/account/edit",
+        "recipe": "form",
+        "flow": null,
+        "purpose": "Change the name, email and photo",
+        "source": "default"
+      },
+      {
+        "id": "SCR-018",
+        "route": "/account/addresses",
+        "recipe": "list",
+        "flow": "FLW-006",
+        "purpose": "List saved delivery addresses",
+        "source": "default"
+      },
+      {
+        "id": "SCR-019",
+        "route": "/account/addresses/edit",
+        "recipe": "form",
+        "flow": "FLW-006",
+        "purpose": "Add or change a delivery address",
+        "source": "default"
+      },
+      {
+        "id": "SCR-020",
+        "route": "/payment-methods",
+        "recipe": "list",
+        "flow": "FLW-004",
+        "purpose": "Show saved payment methods and let the shopper add or remove one",
+        "source": "default"
+      },
+      {
+        "id": "SCR-021",
+        "route": "/payment-methods/new",
+        "recipe": "form",
+        "flow": "FLW-004",
+        "purpose": "Add a card or wallet through the payment provider's secure fields",
+        "source": "default"
+      },
+      {
+        "id": "SCR-022",
+        "route": "/notifications",
+        "recipe": "notifications",
+        "flow": null,
+        "purpose": "Show order updates and offers the shopper received",
+        "source": "default"
+      },
+      {
+        "id": "SCR-023",
+        "route": "/settings",
+        "recipe": "settings",
+        "flow": null,
+        "purpose": "Notifications, language, appearance and privacy choices",
+        "source": "default"
+      },
+      {
+        "id": "SCR-024",
+        "route": "/help",
+        "recipe": "list",
+        "flow": null,
+        "purpose": "Answer common questions about orders, payments and returns, and say how to reac…",
+        "source": "default"
+      }
+    ],
+    "entities": [
+      {
+        "id": "ENT-User",
+        "name": "User",
+        "fields": [
+          "name",
+          "phone",
+          "email",
+          "avatar",
+          "created_at"
+        ]
+      },
+      {
+        "id": "ENT-Address",
+        "name": "Address",
+        "fields": [
+          "user",
+          "label",
+          "recipient_name",
+          "phone",
+          "line1",
+          "line2",
+          "city",
+          "region",
+          "postal_code",
+          "is_default"
+        ]
+      },
+      {
+        "id": "ENT-Category",
+        "name": "Category",
+        "fields": [
+          "name",
+          "image",
+          "parent"
+        ]
+      },
+      {
+        "id": "ENT-Product",
+        "name": "Product",
+        "fields": [
+          "name",
+          "description",
+          "price",
+          "compare_at_price",
+          "image",
+          "gallery",
+          "category",
+          "brand",
+          "rating",
+          "rating_count",
+          "in_stock"
+        ]
+      },
+      {
+        "id": "ENT-ProductVariant",
+        "name": "Product variant",
+        "fields": [
+          "product",
+          "label",
+          "sku",
+          "price",
+          "in_stock"
+        ]
+      },
+      {
+        "id": "ENT-Cart",
+        "name": "Cart",
+        "fields": [
+          "user",
+          "item_count",
+          "subtotal",
+          "shipping_fee",
+          "total"
+        ]
+      },
+      {
+        "id": "ENT-CartItem",
+        "name": "Cart item",
+        "fields": [
+          "cart",
+          "product",
+          "variant",
+          "quantity",
+          "unit_price"
+        ]
+      },
+      {
+        "id": "ENT-Order",
+        "name": "Order",
+        "fields": [
+          "user",
+          "status",
+          "shipping_address",
+          "items_total",
+          "shipping_fee",
+          "total",
+          "payment_method",
+          "placed_at",
+          "estimated_delivery",
+          "tracking_code",
+          "cancel_reason"
+        ]
+      },
+      {
+        "id": "ENT-OrderItem",
+        "name": "Order item",
+        "fields": [
+          "order",
+          "product",
+          "variant",
+          "name",
+          "quantity",
+          "unit_price"
+        ]
+      },
+      {
+        "id": "ENT-OrderEvent",
+        "name": "Order event",
+        "fields": [
+          "order",
+          "status",
+          "note",
+          "at"
+        ]
+      },
+      {
+        "id": "ENT-PaymentMethod",
+        "name": "Payment method",
+        "fields": [
+          "user",
+          "kind",
+          "label",
+          "is_default"
+        ]
+      },
+      {
+        "id": "ENT-Payment",
+        "name": "Payment",
+        "fields": [
+          "order",
+          "method",
+          "status",
+          "amount",
+          "provider_reference"
+        ]
+      },
+      {
+        "id": "ENT-Notification",
+        "name": "Notification",
+        "fields": [
+          "user",
+          "kind",
+          "title",
+          "body",
+          "is_read",
+          "created_at"
+        ]
+      }
+    ],
+    "operations": [
+      {
+        "id": "API-requestOtp",
+        "method": "POST",
+        "path": "/auth/otp"
+      },
+      {
+        "id": "API-verifyOtp",
+        "method": "POST",
+        "path": "/auth/otp/verify"
+      },
+      {
+        "id": "API-getMe",
+        "method": "GET",
+        "path": "/me"
+      },
+      {
+        "id": "API-updateMe",
+        "method": "PATCH",
+        "path": "/me"
+      },
+      {
+        "id": "API-listAddresses",
+        "method": "GET",
+        "path": "/addresses"
+      },
+      {
+        "id": "API-createAddress",
+        "method": "POST",
+        "path": "/addresses"
+      },
+      {
+        "id": "API-updateAddress",
+        "method": "PUT",
+        "path": "/addresses/{id}"
+      },
+      {
+        "id": "API-deleteAddress",
+        "method": "DELETE",
+        "path": "/addresses/{id}"
+      },
+      {
+        "id": "API-listCategories",
+        "method": "GET",
+        "path": "/categories"
+      },
+      {
+        "id": "API-listProducts",
+        "method": "GET",
+        "path": "/products"
+      },
+      {
+        "id": "API-getProduct",
+        "method": "GET",
+        "path": "/products/{id}"
+      },
+      {
+        "id": "API-searchProducts",
+        "method": "GET",
+        "path": "/search"
+      },
+      {
+        "id": "API-getCart",
+        "method": "GET",
+        "path": "/cart"
+      },
+      {
+        "id": "API-addCartItem",
+        "method": "POST",
+        "path": "/cart/items"
+      },
+      {
+        "id": "API-updateCartItem",
+        "method": "PATCH",
+        "path": "/cart/items/{id}"
+      },
+      {
+        "id": "API-removeCartItem",
+        "method": "DELETE",
+        "path": "/cart/items/{id}"
+      },
+      {
+        "id": "API-createOrder",
+        "method": "POST",
+        "path": "/orders"
+      },
+      {
+        "id": "API-listOrders",
+        "method": "GET",
+        "path": "/orders"
+      },
+      {
+        "id": "API-getOrder",
+        "method": "GET",
+        "path": "/orders/{id}"
+      },
+      {
+        "id": "API-getOrderTracking",
+        "method": "GET",
+        "path": "/orders/{id}/tracking"
+      },
+      {
+        "id": "API-cancelOrder",
+        "method": "POST",
+        "path": "/orders/{id}/cancel"
+      },
+      {
+        "id": "API-listPaymentMethods",
+        "method": "GET",
+        "path": "/payment-methods"
+      },
+      {
+        "id": "API-addPaymentMethod",
+        "method": "POST",
+        "path": "/payment-methods"
+      },
+      {
+        "id": "API-removePaymentMethod",
+        "method": "DELETE",
+        "path": "/payment-methods/{id}"
+      },
+      {
+        "id": "API-createPayment",
+        "method": "POST",
+        "path": "/payments"
+      },
+      {
+        "id": "API-listNotifications",
+        "method": "GET",
+        "path": "/notifications"
+      },
+      {
+        "id": "API-markNotificationRead",
+        "method": "POST",
+        "path": "/notifications/{id}/read"
+      },
+      {
+        "id": "API-registerPushToken",
+        "method": "POST",
+        "path": "/devices/push-token"
+      }
+    ],
+    "flows": [
+      {
+        "id": "FLW-001",
+        "name": "Find a product and place an order (primary)",
+        "screens": [
+          "SCR-004",
+          "SCR-006",
+          "SCR-009",
+          "SCR-010",
+          "SCR-011"
+        ]
+      },
+      {
+        "id": "FLW-002",
+        "name": "Sign in",
+        "screens": [
+          "SCR-001",
+          "SCR-002",
+          "SCR-004"
+        ]
+      },
+      {
+        "id": "FLW-003",
+        "name": "Search for a product",
+        "screens": [
+          "SCR-007",
+          "SCR-008",
+          "SCR-006"
+        ]
+      },
+      {
+        "id": "FLW-004",
+        "name": "Add a payment method at checkout",
+        "screens": [
+          "SCR-010",
+          "SCR-020",
+          "SCR-021"
+        ]
+      },
+      {
+        "id": "FLW-005",
+        "name": "Follow an order",
+        "screens": [
+          "SCR-013",
+          "SCR-014",
+          "SCR-015"
+        ]
+      },
+      {
+        "id": "FLW-006",
+        "name": "Manage delivery addresses",
+        "screens": [
+          "SCR-016",
+          "SCR-018",
+          "SCR-019"
+        ]
+      }
+    ],
+    "roles": [
+      {
+        "id": "ROLE-customer",
+        "name": "Customer"
+      }
+    ],
+    "integrations": [
+      {
+        "id": "INT-sms_otp",
+        "name": "Sign-in codes by SMS"
+      },
+      {
+        "id": "INT-order_emails",
+        "name": "Order emails"
+      },
+      {
+        "id": "INT-payments",
+        "name": "Payments"
+      },
+      {
+        "id": "INT-push_notifications",
+        "name": "Push notifications"
+      }
+    ],
+    "design_direction": "warm-friendly"
+  },
+  "recipes": [
+    {
+      "id": "welcome",
+      "kind": "auth",
+      "default_sections": [
+        "brand",
+        "promise",
+        "primary_cta",
+        "secondary_cta",
+        "legal_links"
+      ]
+    },
+    {
+      "id": "login-otp",
+      "kind": "auth",
+      "default_sections": [
+        "identifier_input",
+        "code_input",
+        "resend_timer",
+        "submit",
+        "help_link"
+      ]
+    },
+    {
+      "id": "login-password",
+      "kind": "auth",
+      "default_sections": [
+        "email_input",
+        "password_input",
+        "forgot_link",
+        "submit",
+        "alternative_sign_in"
+      ]
+    },
+    {
+      "id": "login-sso",
+      "kind": "auth",
+      "default_sections": [
+        "brand",
+        "sso_button",
+        "device_note",
+        "help_link"
+      ]
+    },
+    {
+      "id": "signup",
+      "kind": "auth",
+      "default_sections": [
+        "name_input",
+        "identifier_input",
+        "consent_checkbox",
+        "submit",
+        "sign_in_link"
+      ]
+    },
+    {
+      "id": "profile",
+      "kind": "profile",
+      "default_sections": [
+        "identity_header",
+        "quick_stats",
+        "menu_groups",
+        "sign_out"
+      ]
+    },
+    {
+      "id": "settings",
+      "kind": "settings",
+      "default_sections": [
+        "notifications_group",
+        "appearance_group",
+        "language_group",
+        "privacy_group",
+        "about_group",
+        "sign_out"
+      ]
+    },
+    {
+      "id": "list",
+      "kind": "list",
+      "default_sections": [
+        "header",
+        "items",
+        "load_more"
+      ]
+    },
+    {
+      "id": "list-with-filters",
+      "kind": "list",
+      "default_sections": [
+        "search_bar",
+        "filter_chips",
+        "sort_control",
+        "result_count",
+        "items",
+        "load_more"
+      ]
+    },
+    {
+      "id": "approvals-queue",
+      "kind": "list",
+      "default_sections": [
+        "summary_counts",
+        "filter_chips",
+        "pending_items",
+        "decided_items"
+      ]
+    },
+    {
+      "id": "detail",
+      "kind": "detail",
+      "default_sections": [
+        "header",
+        "summary",
+        "facts",
+        "related_items",
+        "secondary_actions"
+      ]
+    },
+    {
+      "id": "detail-with-sticky-cta",
+      "kind": "detail",
+      "default_sections": [
+        "gallery",
+        "title_price",
+        "option_picker",
+        "description",
+        "related_items",
+        "sticky_cta"
+      ]
+    },
+    {
+      "id": "form",
+      "kind": "form",
+      "default_sections": [
+        "fields",
+        "helper_text",
+        "submit"
+      ]
+    },
+    {
+      "id": "multi-step-form",
+      "kind": "form",
+      "default_sections": [
+        "progress_steps",
+        "step_fields",
+        "review_step",
+        "submit"
+      ]
+    },
+    {
+      "id": "checklist",
+      "kind": "form",
+      "default_sections": [
+        "progress_header",
+        "check_items",
+        "notes",
+        "photo_attachments",
+        "sign_off"
+      ]
+    },
+    {
+      "id": "calendar-slot-picker",
+      "kind": "form",
+      "default_sections": [
+        "date_selector",
+        "slot_grid",
+        "selection_summary",
+        "continue_cta"
+      ]
+    },
+    {
+      "id": "search",
+      "kind": "search",
+      "default_sections": [
+        "search_input",
+        "recent_searches",
+        "suggestions",
+        "results"
+      ]
+    },
+    {
+      "id": "notifications",
+      "kind": "notifications",
+      "default_sections": [
+        "mark_all_read",
+        "today_group",
+        "earlier_group"
+      ]
+    },
+    {
+      "id": "dashboard",
+      "kind": "dashboard",
+      "default_sections": [
+        "greeting",
+        "highlights",
+        "quick_actions",
+        "content_rows"
+      ]
+    },
+    {
+      "id": "checkout-review",
+      "kind": "other",
+      "default_sections": [
+        "order_summary",
+        "address_or_time",
+        "payment_method",
+        "price_breakdown",
+        "place_cta"
+      ]
+    },
+    {
+      "id": "confirmation",
+      "kind": "other",
+      "default_sections": [
+        "success_mark",
+        "message",
+        "reference",
+        "summary",
+        "next_actions"
+      ]
+    },
+    {
+      "id": "tracking",
+      "kind": "other",
+      "default_sections": [
+        "status_header",
+        "progress_timeline",
+        "live_map",
+        "contact_actions",
+        "details"
+      ]
+    },
+    {
+      "id": "empty-state-only",
+      "kind": "other",
+      "default_sections": [
+        "illustration",
+        "message",
+        "primary_action",
+        "secondary_action"
+      ]
+    },
+    {
+      "id": "chat",
+      "kind": "other",
+      "default_sections": [
+        "message_thread",
+        "quick_replies",
+        "composer"
+      ]
+    },
+    {
+      "id": "map-view",
+      "kind": "other",
+      "default_sections": [
+        "map",
+        "filter_chips",
+        "places_sheet",
+        "locate_me"
+      ]
+    },
+    {
+      "id": "media-gallery",
+      "kind": "other",
+      "default_sections": [
+        "media_grid",
+        "upload_button",
+        "viewer"
+      ]
+    },
+    {
+      "id": "kiosk-home",
+      "kind": "other",
+      "default_sections": [
+        "clock_header",
+        "big_actions",
+        "idle_notice",
+        "exit_gesture"
+      ]
+    }
+  ],
+  "research": [
+    {
+      "id": "RA-001",
+      "kind": "feature",
+      "title": "Favorites list",
+      "rationale": "Seen in most similar apps",
+      "applies_to": null
+    }
+  ],
+  "max_new_screens": 8
+}

@@ -1,0 +1,244 @@
+{
+  "format": 1,
+  "key": "7325d49a30caf16936f741d56dc0c1045b0cf9d59e4abae22a74cee3e22132d7",
+  "recorded_at": "2026-11-08T10:59:57.326848Z",
+  "request": {
+    "spec_id": "S1.web_search",
+    "spec_version": 1,
+    "model": "gpt-6-luna",
+    "effort": "low",
+    "schema_hash": "",
+    "tools": [
+      {
+        "kind": "web_search",
+        "max_tool_calls": 1,
+        "search_context_size": "low",
+        "allowed_domains": []
+      }
+    ],
+    "kind": "main",
+    "system": "You are the web search step of a mobile-app planning tool. Search the web for the question and answer it for a product planner.\n\nRules:\n- Answer in at most 180 words of plain sentences. No headings, tables, lists of links or code.\n- State only what the sources say. Do not guess and do not add advice of your own.\n- Cite the source of each claim inline.\n- If sources disagree, or you find nothing useful, say so in one short sentence.\n- Paraphrase. Never copy long passages word for word, and never include personal data or contact details.\n- Write in English.",
+    "user": "Question: salon appointment booking mobile app rescheduling cancellation patterns\nTopic: common features and design patterns of similar mobile apps\n"
+  },
+  "response": {
+    "text": "Common patterns in salon-booking apps include an upcoming-appointments area where clients select a booking and choose a clear **Change/Reschedule** or **Cancel** action. Booksy lets clients choose a new time and, for some bookings, change the provider, add a service, or leave a note or photo. ([cf.booksy.com](https://cf.booksy.com/reschedule-us?utm_source=openai))\n\nApps commonly restrict self-service changes based on the salon’s cutoff window. Fresha says the salon sets this window and discloses it during booking; late cancellations may incur a fee, and deposits or no-show charges can apply under the salon’s policy. ([terms.fresha.com](https://terms.fresha.com/terms-service?utm_source=openai))\n\nOther recurring patterns include showing past and upcoming appointments, enabling rebooking, sending automatic reminders, and adding appointments to a personal calendar. ([fresha.com](https://www.fresha.com/help-center/knowledge-base/online-presence/102398-learn-how-clients-book-appointments-online?utm_source=openai)) Booksy’s flow also keeps rescheduling distinct from cancelling, while Fresha allows clients to make either change in the platform or contact the salon directly. ([cf.booksy.com](https://cf.booksy.com/reschedule-us?utm_source=openai))",
+    "status": "completed",
+    "incomplete_reason": null,
+    "refusal": null,
+    "citations": [
+      {
+        "url": "https://cf.booksy.com/reschedule-us?utm_source=openai",
+        "title": "Keep calm and reschedule",
+        "start": 294,
+        "end": 366
+      },
+      {
+        "url": "https://terms.fresha.com/terms-service?utm_source=openai",
+        "title": "Fresha Terms of Service",
+        "start": 624,
+        "end": 702
+      },
+      {
+        "url": "https://www.fresha.com/help-center/knowledge-base/online-presence/102398-learn-how-clients-book-appointments-online?utm_source=openai",
+        "title": "Learn how clients book appointments online",
+        "start": 874,
+        "end": 1023
+      },
+      {
+        "url": "https://cf.booksy.com/reschedule-us?utm_source=openai",
+        "title": "Keep calm and reschedule",
+        "start": 1185,
+        "end": 1257
+      },
+      {
+        "url": "https://terms.fresha.com/terms-service",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.fresha.com/help-center/knowledge-base/online-presence/102398-learn-how-clients-book-appointments-online",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.fresha.com/en/help-center/knowledge-base/calendar",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://cf.booksy.com/reschedule-us",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://biz.booksy.com/en-za/features/customer-app",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://booksy.com/en-us/core-features",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://terms.fresha.com/partner-terms",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://apps.apple.com/us/app/booksy-for-customers/id723961236?platform=ipad",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.acuityscheduling.com/learn/quick-start-guide-beauty",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.shedul.com/assets/partner-terms.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.fresha.com/help-center/knowledge-base/online-profile/101646-learn-how-clients-book-appointments-online",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://nextupwalkin.com/help/appointments",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://help.salonist.io/en/articles/17228588-i-booked-through-the-salonist-app-how-do-i-confirm-reschedule-or-cancel-or-get-a-refund",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://indah.ump.edu.my/ethesis/public/thesis/SN/CA21005.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://booksy.com/blog/gb/wp-content/uploads/2020/10/E-BOOK-Preparing-your-business-for-temporary-closure-compressed.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.gettimely.com/media/el0dpvvv/client-experience-guide.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://youcanbook.me/hubfs/resources/assets/whitepapers/State_of_online_scheduling_2022_whitepaper.pdf",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/MedSpa/comments/1udblv2/salon_owners_how_do_you_currently_handle/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/TattooArtists/comments/15csf0w",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Esthetics/comments/1vfsgdm/how_many_times_do_you_let_a_client_reschedule_the/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/lashextensions/comments/1rykmzy/would_this_make_you_stop_canceling_appointments/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Estheticians/comments/1vryok0/do_you_let_clients_cancel_and_reschedule_their/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/hairstylist/comments/1busrrn",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Barber/comments/1l1f8gx",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/blackladies/comments/1vmxx0j/is_this_hairstylist_trying_to_scam_me/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Tech4LocalBusiness/comments/1qzbz3q/how_local_salons_use_booking_apps_to_reduce/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/beauty/comments/tlj2y8",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Makeup/comments/1wuf2xz/is_it_normal_for_salons_to_not_distinguish/",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://www.reddit.com/r/Esthetics/comments/1auvo21",
+        "title": null,
+        "start": null,
+        "end": null
+      },
+      {
+        "url": "https://en.wikipedia.org/wiki/Appointment_scheduling_software",
+        "title": null,
+        "start": null,
+        "end": null
+      }
+    ],
+    "search_calls": 1,
+    "usage": {
+      "input_tokens": 12819,
+      "cached_input_tokens": 4442,
+      "output_tokens": 315,
+      "reasoning_tokens": 63,
+      "tool_calls": 1,
+      "cost_micros": 0
+    }
+  }
+}

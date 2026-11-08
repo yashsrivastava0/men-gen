@@ -1,0 +1,33 @@
+# Golden cases for C5: a generic card built only from the slot's own options.
+cases:
+  - name: choice_card_from_hints
+    input: {slot: data.source, archetype: commerce, card_type: choice3, options_hint: [generated, existing_api, sample]}
+    expect:
+      options:
+        - {label: Generated, value_text: generated, recommended: true}
+        - {label: Existing api, value_text: existing_api, recommended: false}
+        - {label: Sample, value_text: sample}
+
+  - name: choice_card_is_capped_at_three
+    input: {slot: release.channel, archetype: custom, card_type: choice3, options_hint: [internal, testers, public, extra]}
+    expect: {options: [{value_text: internal}, {value_text: testers}, {value_text: public}]}
+
+  - name: multi_card_lists_every_hint
+    input: {slot: integrations.list, archetype: internal_workforce, card_type: multi, options_hint: [email, calendar, chat, crm]}
+    expect: {options: [{value_list: [email], recommended: true}, {value_list: [crm]}]}
+
+  - name: text_card_has_no_options
+    input: {slot: brand.assets, archetype: custom, card_type: text}
+    expect: {options: [], other_placeholder: "Type your answer"}
+
+  - name: bool_slot_options
+    input: {slot: behavior.analytics, archetype: custom, card_type: choice3, options_hint: ["false", "true"]}
+    expect: {options: [{value_bool: false, recommended: true}, {value_bool: true}]}
+
+  - name: hindi_question
+    input: {slot: data.source, archetype: commerce, language: hi, card_type: choice3, options_hint: [generated, sample]}
+    expect: {text: "डेटा कहाँ से आएगा के लिए आप क्या चुनेंगे?"}
+
+  - name: hinglish_question
+    input: {slot: data.source, archetype: commerce, language: hi-Latn, card_type: choice3, options_hint: [generated, sample]}
+    expect: {other_placeholder: "Kuch aur? Bataiye"}

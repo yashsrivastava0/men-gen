@@ -1,0 +1,45 @@
+# Plain-language progress labels shown while research runs (UI copy: data, not code).
+# Keys are the steps the engine reports; `search:R1` and so on are per job. English is required,
+# other languages fall back to it.
+version: 1
+labels:
+  plan_research:
+    en: Planning the research
+    hi: शोध की योजना बना रहे हैं
+    hi-Latn: Research ki yojana bana rahe hain
+  search:R1:
+    en: Looking at similar apps
+    hi: मिलते-जुलते ऐप देख रहे हैं
+    hi-Latn: Milte-julte apps dekh rahe hain
+  search:R2:
+    en: Looking at the apps you mentioned
+    hi: आपके बताए ऐप देख रहे हैं
+    hi-Latn: Aapke bataye apps dekh rahe hain
+  search:R3:
+    en: Looking at your website
+    hi: आपकी वेबसाइट देख रहे हैं
+    hi-Latn: Aapki website dekh rahe hain
+  search:R4:
+    en: Checking rules that may apply
+    hi: लागू हो सकने वाले नियम देख रहे हैं
+    hi-Latn: Lagu ho sakne wale niyam dekh rahe hain
+  search:R5:
+    en: Checking integrations
+    hi: इंटीग्रेशन जाँच रहे हैं
+    hi-Latn: Integrations check kar rahe hain
+  search:R6:
+    en: Reading your company documents
+    hi: आपकी कंपनी के दस्तावेज़ पढ़ रहे हैं
+    hi-Latn: Aapki company ke documents padh rahe hain
+  search:gap:
+    en: Looking into open questions
+    hi: बाकी सवालों पर खोज रहे हैं
+    hi-Latn: Baaki sawaalon par khoj rahe hain
+  extract:
+    en: Reading what we found
+    hi: जो मिला उसे पढ़ रहे हैं
+    hi-Latn: Jo mila usse padh rahe hain
+  synthesize:
+    en: Putting the notes together
+    hi: नोट्स तैयार कर रहे हैं
+    hi-Latn: Notes taiyaar kar rahe hain

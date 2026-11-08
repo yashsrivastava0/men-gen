@@ -1,0 +1,40 @@
+# The CLI's own prompts and hint lines, per language (`--lang en|hi|hi-Latn`, or follow the session).
+# Everything the Context API says (questions, answers, gate buttons) comes from the API in the
+# user's language already; only these few CLI hints live here. A missing key or language falls back
+# to English.
+card_hint_choice:
+  en: "Type a number to choose. d = you decide, s = skip, or write your own answer."
+  hi: "विकल्प चुनने के लिए नंबर लिखें। d = आप तय करें, s = छोड़ें, या अपना जवाब लिखें।"
+  hi-Latn: "Vikalp chunne ke liye number likhein. d = aap tay karein, s = chhodein, ya apna jawab likhein."
+card_hint_multi:
+  en: "Type numbers separated by commas (for example 1,3). r = the suggested ones, d = you decide, s = skip."
+  hi: "नंबर कॉमा से अलग करके लिखें (जैसे 1,3)। r = सुझाए गए, d = आप तय करें, s = छोड़ें।"
+  hi-Latn: "Number comma se alag karke likhein (jaise 1,3). r = sujhaye gaye, d = aap tay karein, s = chhodein."
+card_hint_text:
+  en: "Type your answer. d = you decide, s = skip."
+  hi: "अपना जवाब लिखें। d = आप तय करें, s = छोड़ें।"
+  hi-Latn: "Apna jawab likhein. d = aap tay karein, s = chhodein."
+gate_hint:
+  en: "Type 1 or 2. You can also type a change in your own words."
+  hi: "1 या 2 लिखें। आप अपने शब्दों में बदलाव भी लिख सकते हैं।"
+  hi-Latn: "1 ya 2 likhein. Aap apne shabdon mein badlav bhi likh sakte hain."
+change_prompt:
+  en: "What would you like to change?"
+  hi: "आप क्या बदलना चाहेंगे?"
+  hi-Latn: "Aap kya badalna chahenge?"
+bad_number:
+  en: "Please pick a number from 1 to {count}, or write your own answer."
+  hi: "कृपया 1 से {count} तक का नंबर चुनें, या अपना जवाब लिखें।"
+  hi-Latn: "Kripya 1 se {count} tak ka number chunein, ya apna jawab likhein."
+pick_one:
+  en: "This question takes one answer. Please pick a single number."
+  hi: "इस सवाल का एक ही जवाब चलेगा। कृपया एक नंबर चुनें।"
+  hi-Latn: "Is sawal ka ek hi jawab chalega. Kripya ek number chunein."
+waiting:
+  en: "Working on it. Press Ctrl+C to stop watching (the work carries on)."
+  hi: "काम चल रहा है। देखना रोकने के लिए Ctrl+C दबाएँ (काम जारी रहेगा)।"
+  hi-Latn: "Kaam chal raha hai. Dekhna rokne ke liye Ctrl+C dabayein (kaam jaari rahega)."
+handed_off_hint:
+  en: "The spec is handed off. Type a change to keep going, or quit."
+  hi: "स्पेक सौंप दिया गया है। आगे बदलाव के लिए लिखें, या quit लिखें।"
+  hi-Latn: "Spec saunp diya gaya hai. Aage badlav ke liye likhein, ya quit likhein."

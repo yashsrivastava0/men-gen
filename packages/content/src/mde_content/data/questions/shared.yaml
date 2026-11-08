@@ -1,0 +1,1058 @@
+# Shared question bank: cards that serve several archetypes, compliance and Enterprise cards,
+# help/nudge cards, greeting chips, canned UI copy and the knowledge base for C3.
+# Validated by mde_contracts.content.QuestionBankFile. See docs/specs/question-cards.md.
+#
+# Conventions: option ids are A/B/C (nudge cards use semantic ids); `recommended` marks the option
+# used for "You decide" and skip; every option declares `sets` (slot id -> value). Cards whose
+# `ask_if` is `false` are never picked by the order logic; the engine shows them for a situation
+# (help mode, nudges, "none of these" re-rolls) and finds them by `kind`.
+
+archetype: shared
+
+cards:
+  # ------------------------------------------------------------------ idea
+  - id: Q-idea-01
+    slot: idea.summary
+    type: text
+    text: "Tell me about the app you have in mind, in a sentence or two."
+    help: "For example: an app for my bakery where people can order cakes."
+    other: {enabled: true, placeholder: "Describe your idea"}
+    skip: {enabled: false}
+    ask_if: "idea.summary == null"
+    i18n:
+      hi:
+        text: "आप जो ऐप बनाना चाहते हैं, उसके बारे में एक-दो वाक्य में बताइए।"
+        other_placeholder: "अपना आइडिया लिखिए"
+        help: "जैसे: मेरी बेकरी के लिए ऐप, जहाँ लोग केक ऑर्डर कर सकें।"
+      hi-Latn:
+        text: "Aap jo app banana chahte hain, uske baare mein ek-do line mein bataiye."
+        other_placeholder: "Apna idea likhiye"
+        help: "Jaise: meri bakery ke liye app, jahan log cake order kar sakein."
+
+  # ------------------------------------------------------------------ login
+  - id: Q-auth-01
+    slot: auth.method
+    type: choice3
+    archetypes: [commerce, food_delivery, booking_services, custom]
+    text: "How should people sign in?"
+    help: "Most apps start with a short code sent to email or phone. You can change this later."
+    options:
+      - {id: A, label: "Email or phone code", description: "They get a short code. No password to remember.", recommended: true, sets: {auth.method: email_phone_code}}
+      - {id: B, label: "Google or Apple sign-in", description: "One tap with an account they already have.", sets: {auth.method: social}}
+      - {id: C, label: "No sign-in", description: "Anyone can use the app straight away.", sets: {auth.method: none}}
+    other: {enabled: true, placeholder: "Something else? Tell me"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "लोग साइन इन कैसे करें?"
+        options: {A: "ईमेल या फ़ोन कोड", B: "Google या Apple से साइन इन", C: "बिना साइन इन के"}
+        other_placeholder: "कुछ और? बताइए"
+        help: "ज़्यादातर ऐप ईमेल या फ़ोन पर आए छोटे कोड से शुरू करते हैं। बाद में बदल सकते हैं।"
+      hi-Latn:
+        text: "Log sign in kaise karein?"
+        options: {A: "Email ya phone code", B: "Google ya Apple se sign in", C: "Bina sign in ke"}
+        other_placeholder: "Kuch aur? Bataiye"
+        help: "Zyadatar apps email ya phone par aaye chhote code se shuru karte hain. Baad mein badal sakte hain."
+
+  # ------------------------------------------------------------------ brand
+  - id: Q-brand-01
+    slot: brand.name
+    type: text
+    text: "What is your app called?"
+    help: "You can add a logo or website later. If you skip, we use a placeholder name."
+    other: {enabled: true, placeholder: "App name, or paste your website link"}
+    skip: {enabled: true}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "आपके ऐप का नाम क्या है?"
+        other_placeholder: "ऐप का नाम, या अपनी वेबसाइट का लिंक"
+        help: "लोगो या वेबसाइट बाद में जोड़ सकते हैं। छोड़ देंगे तो हम एक अस्थायी नाम रखेंगे।"
+      hi-Latn:
+        text: "Aapke app ka naam kya hai?"
+        other_placeholder: "App ka naam, ya apni website ka link"
+        help: "Logo ya website baad mein jod sakte hain. Chhod denge to hum ek temporary naam rakhenge."
+
+  - id: Q-brand-02
+    slot: brand.assets
+    type: upload
+    modes: [enterprise]
+    text: "Do you have a logo or brand guide to share?"
+    help: "A file or a link is fine. Your company profile may already have these."
+    other: {enabled: true, placeholder: "Upload a file or paste a link"}
+    skip: {enabled: true}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "क्या आपके पास साझा करने के लिए लोगो या ब्रांड गाइड है?"
+        other_placeholder: "फ़ाइल अपलोड कीजिए या लिंक चिपकाइए"
+        help: "फ़ाइल या लिंक, दोनों चलेंगे। हो सकता है आपकी कंपनी की प्रोफ़ाइल में ये पहले से हों।"
+      hi-Latn:
+        text: "Kya aapke paas share karne ke liye logo ya brand guide hai?"
+        other_placeholder: "File upload kijiye ya link paste kijiye"
+        help: "File ya link, dono chalenge. Ho sakta hai aapki company profile mein ye pehle se hon."
+
+  # ------------------------------------------------------------------ compliance (must-confirm)
+  - id: Q-comp-01
+    slot: compliance.flags
+    type: choice3
+    kind: compliance
+    text: "Your app may handle health information, which needs extra care. How should we treat it?"
+    help: "The careful option keeps tracking off and limits what is stored on the phone. This is not legal advice."
+    options:
+      - {id: A, label: "Handle it carefully", description: "We keep it private by default and flag it in the plan.", recommended: true, sets: {compliance.flags: [health_data_privacy], behavior.analytics: false, behavior.offline: none}}
+      - {id: B, label: "It is general information only", description: "No personal health details are collected.", sets: {compliance.flags: []}}
+      - {id: C, label: "Flag it for a specialist to review", description: "We mark it in the plan so your own advisor can check it.", sets: {compliance.flags: [health_data_privacy, needs_expert_review], behavior.analytics: false, behavior.offline: none}}
+    other: {enabled: true, placeholder: "Tell me more"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'health' in sensitive.domains"
+    i18n:
+      hi:
+        text: "आपका ऐप स्वास्थ्य से जुड़ी जानकारी संभाल सकता है, जिसके लिए ज़्यादा सावधानी चाहिए। हम इसे कैसे संभालें?"
+        options: {A: "सावधानी से संभालें", B: "सिर्फ़ सामान्य जानकारी है", C: "विशेषज्ञ से जँचवाने के लिए चिह्नित करें"}
+        other_placeholder: "और बताइए"
+        help: "सावधानी वाले विकल्प में ट्रैकिंग बंद रहती है और फ़ोन में कम चीज़ें सेव होती हैं। यह कानूनी सलाह नहीं है।"
+      hi-Latn:
+        text: "Aapka app health se judi jaankari sambhal sakta hai, jiske liye zyada saavdhani chahiye. Hum ise kaise sambhalein?"
+        options: {A: "Saavdhani se sambhalein", B: "Sirf general jaankari hai", C: "Specialist se check karwane ke liye flag karein"}
+        other_placeholder: "Aur bataiye"
+        help: "Saavdhani wale option mein tracking band rehti hai aur phone mein kam cheezein save hoti hain. Yeh legal advice nahi hai."
+
+  - id: Q-comp-02
+    slot: compliance.flags
+    type: choice3
+    kind: compliance
+    text: "Your app may deal with money or financial services, which needs extra care. How should we treat it?"
+    help: "The careful option keeps tracking off and limits what is stored on the phone. This is not legal advice."
+    options:
+      - {id: A, label: "Handle it carefully", description: "We keep tracking off and flag it in the plan.", recommended: true, sets: {compliance.flags: [financial_data], behavior.analytics: false, behavior.offline: none}}
+      - {id: B, label: "No real money or financial data", description: "It is a practice app or general information.", sets: {compliance.flags: []}}
+      - {id: C, label: "Flag it for a specialist to review", description: "We mark it in the plan so your own advisor can check it.", sets: {compliance.flags: [financial_data, needs_expert_review], behavior.analytics: false, behavior.offline: none}}
+    other: {enabled: true, placeholder: "Tell me more"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'finance' in sensitive.domains"
+    i18n:
+      hi:
+        text: "आपका ऐप पैसों या वित्तीय सेवाओं से जुड़ा हो सकता है, जिसके लिए ज़्यादा सावधानी चाहिए। हम इसे कैसे संभालें?"
+        options: {A: "सावधानी से संभालें", B: "असली पैसे या वित्तीय डेटा नहीं है", C: "विशेषज्ञ से जँचवाने के लिए चिह्नित करें"}
+        other_placeholder: "और बताइए"
+        help: "सावधानी वाले विकल्प में ट्रैकिंग बंद रहती है और फ़ोन में कम चीज़ें सेव होती हैं। यह कानूनी सलाह नहीं है।"
+      hi-Latn:
+        text: "Aapka app paison ya financial services se juda ho sakta hai, jiske liye zyada saavdhani chahiye. Hum ise kaise sambhalein?"
+        options: {A: "Saavdhani se sambhalein", B: "Asli paise ya financial data nahi hai", C: "Specialist se check karwane ke liye flag karein"}
+        other_placeholder: "Aur bataiye"
+        help: "Saavdhani wale option mein tracking band rehti hai aur phone mein kam cheezein save hoti hain. Yeh legal advice nahi hai."
+
+  - id: Q-comp-03
+    slot: compliance.flags
+    type: choice3
+    kind: compliance
+    text: "Your app may be used by children, which needs extra care. How should we treat it?"
+    help: "The careful option keeps tracking and notifications off by default. This is not legal advice."
+    options:
+      - {id: A, label: "Handle it carefully", description: "We keep tracking and notifications off by default and flag it in the plan.", recommended: true, sets: {compliance.flags: [child_safety], behavior.analytics: false, behavior.notifications: false}}
+      - {id: B, label: "It is not meant for children", description: "The app is for adults.", sets: {compliance.flags: []}}
+      - {id: C, label: "Flag it for a specialist to review", description: "We mark it in the plan so your own advisor can check it.", sets: {compliance.flags: [child_safety, needs_expert_review], behavior.analytics: false, behavior.notifications: false}}
+    other: {enabled: true, placeholder: "Tell me more"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'children' in sensitive.domains"
+    i18n:
+      hi:
+        text: "आपके ऐप का इस्तेमाल बच्चे कर सकते हैं, जिसके लिए ज़्यादा सावधानी चाहिए। हम इसे कैसे संभालें?"
+        options: {A: "सावधानी से संभालें", B: "यह बच्चों के लिए नहीं है", C: "विशेषज्ञ से जँचवाने के लिए चिह्नित करें"}
+        other_placeholder: "और बताइए"
+        help: "सावधानी वाले विकल्प में ट्रैकिंग और नोटिफिकेशन शुरू में बंद रहते हैं। यह कानूनी सलाह नहीं है।"
+      hi-Latn:
+        text: "Aapke app ka istemal bachche kar sakte hain, jiske liye zyada saavdhani chahiye. Hum ise kaise sambhalein?"
+        options: {A: "Saavdhani se sambhalein", B: "Yeh bachchon ke liye nahi hai", C: "Specialist se check karwane ke liye flag karein"}
+        other_placeholder: "Aur bataiye"
+        help: "Saavdhani wale option mein tracking aur notifications shuru mein band rehte hain. Yeh legal advice nahi hai."
+
+  - id: Q-comp-04
+    slot: compliance.flags
+    type: choice3
+    kind: compliance
+    text: "Your app may handle identity documents such as ID cards or passports. How should we treat them?"
+    help: "The careful option keeps tracking off and limits what is stored on the phone. This is not legal advice."
+    options:
+      - {id: A, label: "Handle them carefully", description: "We keep tracking off and flag it in the plan.", recommended: true, sets: {compliance.flags: [identity_documents], behavior.analytics: false, behavior.offline: none}}
+      - {id: B, label: "We will not collect them", description: "The app only mentions them and never stores them.", sets: {compliance.flags: []}}
+      - {id: C, label: "Flag it for a specialist to review", description: "We mark it in the plan so your own advisor can check it.", sets: {compliance.flags: [identity_documents, needs_expert_review], behavior.analytics: false, behavior.offline: none}}
+    other: {enabled: true, placeholder: "Tell me more"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'identity_documents' in sensitive.domains"
+    i18n:
+      hi:
+        text: "आपका ऐप पहचान पत्र या पासपोर्ट जैसे दस्तावेज़ संभाल सकता है। हम इन्हें कैसे संभालें?"
+        options: {A: "सावधानी से संभालें", B: "हम इन्हें इकट्ठा नहीं करेंगे", C: "विशेषज्ञ से जँचवाने के लिए चिह्नित करें"}
+        other_placeholder: "और बताइए"
+        help: "सावधानी वाले विकल्प में ट्रैकिंग बंद रहती है और फ़ोन में कम चीज़ें सेव होती हैं। यह कानूनी सलाह नहीं है।"
+      hi-Latn:
+        text: "Aapka app pehchaan patra ya passport jaise documents sambhal sakta hai. Hum inhein kaise sambhalein?"
+        options: {A: "Saavdhani se sambhalein", B: "Hum inhein ikattha nahi karenge", C: "Specialist se check karwane ke liye flag karein"}
+        other_placeholder: "Aur bataiye"
+        help: "Saavdhani wale option mein tracking band rehti hai aur phone mein kam cheezein save hoti hain. Yeh legal advice nahi hai."
+
+  - id: Q-comp-05
+    slot: compliance.flags
+    type: choice3
+    kind: compliance
+    text: "Your app may use people's exact location. How should we treat it?"
+    help: "The careful option asks for exact location only where a feature needs it. This is not legal advice."
+    options:
+      - {id: A, label: "Use it carefully", description: "We ask for exact location only where a feature needs it, and flag it in the plan.", recommended: true, sets: {compliance.flags: [precise_location], behavior.analytics: false}}
+      - {id: B, label: "An approximate area is enough", description: "No exact location is needed.", sets: {compliance.flags: []}}
+      - {id: C, label: "Flag it for a specialist to review", description: "We mark it in the plan so your own advisor can check it.", sets: {compliance.flags: [precise_location, needs_expert_review], behavior.analytics: false}}
+    other: {enabled: true, placeholder: "Tell me more"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "'precise_location' in sensitive.domains"
+    i18n:
+      hi:
+        text: "आपका ऐप लोगों की सटीक लोकेशन इस्तेमाल कर सकता है। हम इसे कैसे संभालें?"
+        options: {A: "सावधानी से इस्तेमाल करें", B: "अंदाज़न इलाका काफ़ी है", C: "विशेषज्ञ से जँचवाने के लिए चिह्नित करें"}
+        other_placeholder: "और बताइए"
+        help: "सावधानी वाले विकल्प में सटीक लोकेशन सिर्फ़ वहीं माँगी जाती है जहाँ किसी फ़ीचर को ज़रूरत हो। यह कानूनी सलाह नहीं है।"
+      hi-Latn:
+        text: "Aapka app logon ki exact location istemal kar sakta hai. Hum ise kaise sambhalein?"
+        options: {A: "Saavdhani se istemal karein", B: "Andaazan ilaaka kaafi hai", C: "Specialist se check karwane ke liye flag karein"}
+        other_placeholder: "Aur bataiye"
+        help: "Saavdhani wale option mein exact location sirf wahin maangi jaati hai jahan kisi feature ko zaroorat ho. Yeh legal advice nahi hai."
+
+  # ------------------------------------------------------------------ Enterprise
+  - id: Q-ent-01
+    slot: auth.sso
+    type: choice3
+    modes: [enterprise]
+    text: "Should people sign in with your company login (single sign-on)?"
+    help: "Single sign-on lets staff use the account they already have at work."
+    options:
+      - {id: A, label: "Yes, company sign-in", description: "Staff use their work account.", recommended: true, sets: {auth.sso: required, auth.method: sso}}
+      - {id: B, label: "Not for the first version", description: "We use a simpler sign-in for now.", sets: {auth.sso: not_needed}}
+      - {id: C, label: "I need to ask my IT team", description: "We flag it so it is settled before approval.", sets: {auth.sso: ask_it}}
+    other: {enabled: true, placeholder: "Anything else about sign-in?"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "क्या लोग आपकी कंपनी के लॉगिन (सिंगल साइन-ऑन) से साइन इन करें?"
+        options: {A: "हाँ, कंपनी साइन-इन", B: "पहले संस्करण में नहीं", C: "मुझे अपनी आईटी टीम से पूछना होगा"}
+        other_placeholder: "साइन इन के बारे में कुछ और?"
+        help: "सिंगल साइन-ऑन में कर्मचारी वही अकाउंट इस्तेमाल करते हैं जो उनके पास काम के लिए पहले से है।"
+      hi-Latn:
+        text: "Kya log aapki company ke login (single sign-on) se sign in karein?"
+        options: {A: "Haan, company sign-in", B: "Pehle version mein nahi", C: "Mujhe apni IT team se poochna hoga"}
+        other_placeholder: "Sign in ke baare mein kuch aur?"
+        help: "Single sign-on mein karamchari wahi account istemal karte hain jo unke paas kaam ke liye pehle se hai."
+
+  - id: Q-ent-02
+    slot: integrations.list
+    type: multi
+    modes: [enterprise]
+    text: "Which company systems should the app connect to?"
+    help: "Pick only what you already use. Your company profile may list more."
+    options:
+      - {id: email, label: "Email", sets: {integrations.list: [email]}}
+      - {id: calendar, label: "Calendar", sets: {integrations.list: [calendar]}}
+      - {id: chat, label: "Team chat", sets: {integrations.list: [chat]}}
+      - {id: hr_system, label: "HR system", sets: {integrations.list: [hr_system]}}
+      - {id: crm, label: "Customer system (CRM)", sets: {integrations.list: [crm]}}
+      - {id: erp, label: "Finance or inventory system", sets: {integrations.list: [erp]}}
+      - {id: ticketing, label: "Support tickets", sets: {integrations.list: [ticketing]}}
+      - {id: analytics, label: "Reports and analytics", sets: {integrations.list: [analytics]}}
+    other: {enabled: true, placeholder: "Add my own"}
+    skip: {enabled: true}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "ऐप को कंपनी के किन सिस्टम से जुड़ना चाहिए?"
+        options: {email: "ईमेल", calendar: "कैलेंडर", chat: "टीम चैट", hr_system: "एचआर सिस्टम", crm: "ग्राहक सिस्टम (CRM)", erp: "फ़ाइनेंस या इन्वेंटरी सिस्टम", ticketing: "सपोर्ट टिकट", analytics: "रिपोर्ट और एनालिटिक्स"}
+        other_placeholder: "अपना जोड़िए"
+        help: "सिर्फ़ वही चुनिए जो आप पहले से इस्तेमाल करते हैं। आपकी कंपनी की प्रोफ़ाइल में और भी हो सकते हैं।"
+      hi-Latn:
+        text: "App ko company ke kin systems se judna chahiye?"
+        options: {email: "Email", calendar: "Calendar", chat: "Team chat", hr_system: "HR system", crm: "Customer system (CRM)", erp: "Finance ya inventory system", ticketing: "Support tickets", analytics: "Reports aur analytics"}
+        other_placeholder: "Apna jodiye"
+        help: "Sirf wahi chuniye jo aap pehle se istemal karte hain. Aapki company profile mein aur bhi ho sakte hain."
+
+  - id: Q-ent-03
+    slot: data.classification
+    type: choice3
+    modes: [enterprise]
+    text: "How sensitive is the data in this app?"
+    help: "This tells us how carefully the app and its data must be handled."
+    options:
+      - {id: A, label: "Internal company data", description: "For staff only, not for the public.", recommended: true, sets: {data.classification: internal}}
+      - {id: B, label: "Public information", description: "Anyone may see it.", sets: {data.classification: public}}
+      - {id: C, label: "Confidential or restricted", description: "Only certain people may see it.", sets: {data.classification: confidential}}
+    other: {enabled: true, placeholder: "Use our own label"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "इस ऐप का डेटा कितना संवेदनशील है?"
+        options: {A: "कंपनी का आंतरिक डेटा", B: "सार्वजनिक जानकारी", C: "गोपनीय या प्रतिबंधित"}
+        other_placeholder: "हमारा अपना लेबल इस्तेमाल करें"
+        help: "इससे पता चलता है कि ऐप और उसके डेटा को कितनी सावधानी से संभालना है।"
+      hi-Latn:
+        text: "Is app ka data kitna sensitive hai?"
+        options: {A: "Company ka internal data", B: "Public jaankari", C: "Confidential ya restricted"}
+        other_placeholder: "Hamara apna label istemal karein"
+        help: "Isse pata chalta hai ki app aur uske data ko kitni saavdhani se sambhalna hai."
+
+  - id: Q-ent-04
+    slot: regions
+    type: multi
+    modes: [enterprise]
+    text: "Where will the app be used and its data kept?"
+    help: "Some companies must keep data inside certain regions."
+    options:
+      - {id: in, label: "India", sets: {regions: [in]}}
+      - {id: eu, label: "Europe", sets: {regions: [eu]}}
+      - {id: us, label: "United States", sets: {regions: [us]}}
+      - {id: other, label: "Somewhere else", sets: {regions: [other]}}
+    other: {enabled: true, placeholder: "Add a region"}
+    skip: {enabled: true}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "ऐप कहाँ इस्तेमाल होगा और उसका डेटा कहाँ रखा जाएगा?"
+        options: {in: "भारत", eu: "यूरोप", us: "संयुक्त राज्य अमेरिका", other: "कहीं और"}
+        other_placeholder: "कोई क्षेत्र जोड़िए"
+        help: "कुछ कंपनियों को डेटा कुछ ख़ास क्षेत्रों के भीतर रखना होता है।"
+      hi-Latn:
+        text: "App kahan istemal hoga aur uska data kahan rakha jayega?"
+        options: {in: "India", eu: "Europe", us: "United States", other: "Kahin aur"}
+        other_placeholder: "Koi region jodiye"
+        help: "Kuch companies ko data kuch khaas regions ke andar rakhna hota hai."
+
+  - id: Q-ent-05
+    slot: release.channel
+    type: choice3
+    modes: [enterprise]
+    text: "How will the first version reach people?"
+    help: "You can change this before release."
+    options:
+      - {id: A, label: "Internal testers only", description: "Your own team tries it first.", recommended: true, sets: {release.channel: internal}}
+      - {id: B, label: "A small group of testers", description: "A chosen group outside the team.", sets: {release.channel: testers}}
+      - {id: C, label: "Everyone, through the app stores", description: "A public release.", sets: {release.channel: public}}
+    other: {enabled: true, placeholder: "Something else?"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "पहला संस्करण लोगों तक कैसे पहुँचेगा?"
+        options: {A: "सिर्फ़ आंतरिक टेस्टर", B: "टेस्टरों का एक छोटा समूह", C: "सबके लिए, ऐप स्टोर से"}
+        other_placeholder: "कुछ और?"
+        help: "रिलीज़ से पहले इसे बदला जा सकता है।"
+      hi-Latn:
+        text: "Pehla version logon tak kaise pahunchega?"
+        options: {A: "Sirf internal testers", B: "Testers ka ek chhota group", C: "Sabke liye, app stores se"}
+        other_placeholder: "Kuch aur?"
+        help: "Release se pehle ise badla ja sakta hai."
+
+  - id: Q-ent-06
+    slot: approvers
+    type: multi
+    modes: [enterprise]
+    text: "Who needs to approve the plan before building starts?"
+    help: "Everyone you pick must approve the same version of the plan."
+    options:
+      - {id: requester, label: "The person asking for the app", recommended: true, sets: {approvers: [requester]}}
+      - {id: product_owner, label: "Product owner", sets: {approvers: [product_owner]}}
+      - {id: security_reviewer, label: "Security reviewer", sets: {approvers: [security_reviewer]}}
+      - {id: delivery_lead, label: "Delivery lead", sets: {approvers: [delivery_lead]}}
+      - {id: it_admin, label: "IT administrator", sets: {approvers: [it_admin]}}
+    other: {enabled: true, placeholder: "Add a role or name"}
+    skip: {enabled: true}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "निर्माण शुरू होने से पहले प्लान को कौन मंज़ूर करेगा?"
+        options: {requester: "ऐप माँगने वाला व्यक्ति", product_owner: "प्रोडक्ट ओनर", security_reviewer: "सिक्योरिटी समीक्षक", delivery_lead: "डिलीवरी लीड", it_admin: "आईटी एडमिन"}
+        other_placeholder: "कोई भूमिका या नाम जोड़िए"
+        help: "आप जिन्हें चुनेंगे, सभी को प्लान के एक ही संस्करण को मंज़ूर करना होगा।"
+      hi-Latn:
+        text: "Building shuru hone se pehle plan ko kaun approve karega?"
+        options: {requester: "App maangne wala vyakti", product_owner: "Product owner", security_reviewer: "Security reviewer", delivery_lead: "Delivery lead", it_admin: "IT admin"}
+        other_placeholder: "Koi role ya naam jodiye"
+        help: "Aap jinhein chunenge, sabko plan ke ek hi version ko approve karna hoga."
+
+  - id: Q-ent-07
+    slot: behavior.offline
+    type: choice3
+    modes: [enterprise]
+    text: "Should the app keep working without internet?"
+    help: "This matters most for staff who work in places with a weak signal."
+    options:
+      - {id: A, label: "Basic", description: "It remembers what was last shown.", recommended: true, sets: {behavior.offline: basic}}
+      - {id: B, label: "Full", description: "People keep working and the app syncs later.", sets: {behavior.offline: full}}
+      - {id: C, label: "No, it needs internet", description: "Nothing is kept on the phone.", sets: {behavior.offline: none}}
+    other: {enabled: true, placeholder: "Something else?"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "क्या ऐप बिना इंटरनेट के भी चलना चाहिए?"
+        options: {A: "बुनियादी", B: "पूरा", C: "नहीं, इंटरनेट चाहिए"}
+        other_placeholder: "कुछ और?"
+        help: "यह उन कर्मचारियों के लिए ज़रूरी है जो कमज़ोर सिग्नल वाली जगहों पर काम करते हैं।"
+      hi-Latn:
+        text: "Kya app bina internet ke bhi chalna chahiye?"
+        options: {A: "Basic", B: "Full", C: "Nahi, internet chahiye"}
+        other_placeholder: "Kuch aur?"
+        help: "Yeh un karamchariyon ke liye zaroori hai jo kamzor signal wali jagahon par kaam karte hain."
+
+  - id: Q-ent-08
+    slot: data.source
+    type: choice3
+    modes: [enterprise]
+    text: "Where should the app's data come from?"
+    help: "Your company profile may list systems the app can use."
+    options:
+      - {id: A, label: "A new backend we create", description: "We set up the data side for you.", recommended: true, sets: {data.source: generated}}
+      - {id: B, label: "Our existing systems", description: "The app uses your company's own APIs.", sets: {data.source: existing_api}}
+      - {id: C, label: "Sample data for now", description: "Good for trying the app out.", sets: {data.source: sample}}
+    other: {enabled: true, placeholder: "Something else?"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "true"
+    i18n:
+      hi:
+        text: "ऐप का डेटा कहाँ से आना चाहिए?"
+        options: {A: "हमारा बनाया नया बैकएंड", B: "आपके मौजूदा सिस्टम", C: "फ़िलहाल सैंपल डेटा"}
+        other_placeholder: "कुछ और?"
+        help: "हो सकता है आपकी कंपनी की प्रोफ़ाइल में ऐसे सिस्टम हों जिन्हें ऐप इस्तेमाल कर सके।"
+      hi-Latn:
+        text: "App ka data kahan se aana chahiye?"
+        options: {A: "Hamara banaya naya backend", B: "Aapke maujooda systems", C: "Filhaal sample data"}
+        other_placeholder: "Kuch aur?"
+        help: "Ho sakta hai aapki company profile mein aise systems hon jinhein app istemal kar sake."
+
+  - id: Q-ent-09
+    slot: pay.provider
+    type: choice3
+    modes: [enterprise]
+    text: "Which payment provider should we plan for?"
+    help: "Until a real provider is connected, the app uses a practice checkout."
+    options:
+      - {id: A, label: "A practice provider for now", description: "Try the checkout without real money.", recommended: true, sets: {pay.provider: mock}}
+      - {id: B, label: "Our company's provider", description: "We connect the one your company already uses.", sets: {pay.provider: company_provider}}
+      - {id: C, label: "I will decide later", description: "We keep the practice checkout until then.", sets: {pay.provider: later}}
+    other: {enabled: true, placeholder: "Name the provider"}
+    skip: {enabled: true, assumes: A}
+    ask_if: "pay.model in [online, both]"
+    i18n:
+      hi:
+        text: "हमें किस पेमेंट प्रोवाइडर के लिए योजना बनानी चाहिए?"
+        options: {A: "फ़िलहाल एक प्रैक्टिस प्रोवाइडर", B: "हमारी कंपनी का प्रोवाइडर", C: "मैं बाद में तय करूँगा"}
+        other_placeholder: "प्रोवाइडर का नाम बताइए"
+        help: "असली प्रोवाइडर जुड़ने तक ऐप एक प्रैक्टिस चेकआउट इस्तेमाल करता है।"
+      hi-Latn:
+        text: "Hamein kis payment provider ke liye plan banana chahiye?"
+        options: {A: "Filhaal ek practice provider", B: "Hamari company ka provider", C: "Main baad mein tay karunga"}
+        other_placeholder: "Provider ka naam bataiye"
+        help: "Asli provider judne tak app ek practice checkout istemal karta hai."
+
+  # ------------------------------------------------------------------ help mode, nudges
+  - id: Q-help-02
+    slot: idea.summary
+    type: text
+    kind: help
+    text: "Tell me a little about your business and what you would like people to do in the app."
+    help: "A few words are enough. I will take it from there."
+    other: {enabled: true, placeholder: "For example: I run a small bakery and want people to pre-order cakes"}
+    skip: {enabled: false}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "अपने बिज़नेस के बारे में थोड़ा बताइए और यह भी कि लोग ऐप में क्या करें।"
+        other_placeholder: "जैसे: मेरी छोटी बेकरी है और मैं चाहता हूँ कि लोग केक पहले से ऑर्डर करें"
+        help: "कुछ शब्द काफ़ी हैं। बाकी मैं संभाल लूँगा।"
+      hi-Latn:
+        text: "Apne business ke baare mein thoda bataiye aur yeh bhi ki log app mein kya karein."
+        other_placeholder: "Jaise: meri chhoti bakery hai aur main chahta hoon ki log cake pehle se order karein"
+        help: "Kuch shabd kaafi hain. Baaki main sambhal loonga."
+
+  # The first nudge after silence or off-topic chat is a plain message (ui_copy `nudge`, or
+  # `nudge_wait` where the card cannot be assumed) next to the same card, not a card of its own.
+  - id: Q-nudge-02
+    slot: idea.summary
+    type: choice3
+    kind: nudge
+    text: "You have skipped a few questions. Want me to finish with smart defaults?"
+    options:
+      - {id: finish, label: "Finish with smart defaults", description: "I fill in the rest and show you a summary to check.", recommended: true, sets: {}}
+      - {id: continue, label: "Keep going", description: "I will ask the next question.", sets: {}}
+    other: {enabled: false}
+    skip: {enabled: false}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "आपने कुछ सवाल छोड़ दिए हैं। क्या मैं स्मार्ट डिफ़ॉल्ट के साथ पूरा कर दूँ?"
+        options: {finish: "स्मार्ट डिफ़ॉल्ट के साथ पूरा करें", continue: "आगे बढ़ते रहें"}
+      hi-Latn:
+        text: "Aapne kuch sawaal chhod diye hain. Kya main smart defaults ke saath poora kar doon?"
+        options: {finish: "Smart defaults ke saath poora karein", continue: "Aage badhte rahein"}
+
+inspiration_cards:
+  - id: Q-help-01
+    slot: idea.archetype
+    type: choice3
+    kind: help
+    text: "No worries, we can start small. Which of these is closest to what you have in mind?"
+    help: "Pick one and I will take it from there. Or tell me about your business in your own words."
+    options:
+      - {id: A, label: "An online shop", description: "Customers browse and buy your products.", sets: {idea.summary: "An online shop where customers browse and buy products", idea.archetype: commerce}}
+      - {id: B, label: "Bookings for my services", description: "Customers pick a time and book.", sets: {idea.summary: "An app where customers book my services", idea.archetype: booking_services}}
+      - {id: C, label: "Something else, start simple", description: "Basic building blocks we can shape together.", recommended: true, sets: {idea.summary: "A simple app to get started", idea.archetype: custom}}
+    other: {enabled: true, placeholder: "Or tell me about your business"}
+    skip: {enabled: true, assumes: C}
+    ask_if: "false"
+    i18n:
+      hi:
+        text: "कोई बात नहीं, छोटी शुरुआत करते हैं। इनमें से कौन सा आपके मन के सबसे करीब है?"
+        options: {A: "एक ऑनलाइन दुकान", B: "मेरी सेवाओं की बुकिंग", C: "कुछ और, सरल शुरुआत"}
+        other_placeholder: "या अपने बिज़नेस के बारे में बताइए"
+        help: "एक चुनिए, बाकी मैं संभाल लूँगा। या अपने शब्दों में अपने बिज़नेस के बारे में बताइए।"
+      hi-Latn:
+        text: "Koi baat nahi, chhoti shuruaat karte hain. Inmein se kaun sa aapke man ke sabse kareeb hai?"
+        options: {A: "Ek online dukaan", B: "Meri services ki booking", C: "Kuch aur, simple shuruaat"}
+        other_placeholder: "Ya apne business ke baare mein bataiye"
+        help: "Ek chuniye, baaki main sambhal loonga. Ya apne shabdon mein apne business ke baare mein bataiye."
+
+starter_chips:
+  - {id: chip-greet-01, label: "An online shop", prefill: "I want an app for my online shop", sets: {idea.archetype: commerce}, i18n: {hi: "ऑनलाइन दुकान", hi-Latn: "Online dukaan"}}
+  - {id: chip-greet-02, label: "Food ordering", prefill: "I want a food ordering app for my restaurant", sets: {idea.archetype: food_delivery}, i18n: {hi: "खाना ऑर्डर करना", hi-Latn: "Khana order karna"}}
+  - {id: chip-greet-03, label: "Bookings", prefill: "I want an app where customers can book appointments", sets: {idea.archetype: booking_services}, i18n: {hi: "बुकिंग", hi-Latn: "Booking"}}
+  - {id: chip-greet-04, label: "An app for my team", prefill: "I want an app for my team or staff", sets: {idea.archetype: internal_workforce}, i18n: {hi: "मेरी टीम के लिए ऐप", hi-Latn: "Meri team ke liye app"}}
+  - {id: chip-greet-05, label: "A community or events app", prefill: "I want an app for my community or local events", sets: {idea.archetype: custom}, i18n: {hi: "कम्युनिटी या इवेंट ऐप", hi-Latn: "Community ya events app"}}
+  - {id: chip-greet-06, label: "I am not sure yet", prefill: "I am not sure yet, can you give me some ideas?", sets: {}, i18n: {hi: "अभी पक्का नहीं है", hi-Latn: "Abhi pakka nahi hai"}}
+
+ui_copy:
+  - id: greeting
+    text:
+      en: "Hi! What would you like to build?"
+      hi: "नमस्ते! आप क्या बनाना चाहेंगे?"
+      hi-Latn: "Namaste! Aap kya banana chahenge?"
+  - id: greeting_input_hint
+    text:
+      en: "Describe your idea, or pick one below"
+      hi: "अपना आइडिया लिखिए, या नीचे से चुनिए"
+      hi-Latn: "Apna idea likhiye, ya neeche se chuniye"
+  - id: ack_1
+    text:
+      en: "Got it."
+      hi: "ठीक है।"
+      hi-Latn: "Theek hai."
+  - id: ack_2
+    text:
+      en: "Noted."
+      hi: "समझ गया।"
+      hi-Latn: "Samajh gaya."
+  - id: ack_3
+    text:
+      en: "Great, thanks."
+      hi: "बढ़िया, धन्यवाद।"
+      hi-Latn: "Badhiya, dhanyavaad."
+  - id: assumed_ack
+    text:
+      en: "No problem, I will go with {option}. {reason}"
+      hi: "कोई बात नहीं, मैं {option} रखता हूँ। {reason}"
+      hi-Latn: "Koi baat nahi, main {option} rakhta hoon. {reason}"
+  - id: nudge
+    text:
+      en: "Take your time. If you like, I can choose for you."
+      hi: "आराम से सोचिए। चाहें तो मैं आपके लिए चुन सकता हूँ।"
+      hi-Latn: "Araam se sochiye. Chahein to main aapke liye chun sakta hoon."
+  - id: finish_with_defaults
+    text:
+      en: "Finish with smart defaults"
+      hi: "स्मार्ट डिफ़ॉल्ट के साथ पूरा करें"
+      hi-Latn: "Smart defaults ke saath poora karein"
+  - id: finish_with_defaults_offer
+    text:
+      en: "We have covered the main things. Want me to fill in the rest with smart defaults? You can change anything afterwards."
+      hi: "मुख्य बातें हो गई हैं। क्या मैं बाकी स्मार्ट डिफ़ॉल्ट से भर दूँ? बाद में आप कुछ भी बदल सकते हैं।"
+      hi-Latn: "Mukhya baatein ho gayi hain. Kya main baaki smart defaults se bhar doon? Baad mein aap kuch bhi badal sakte hain."
+  - id: cap_reached
+    text:
+      en: "That is enough questions for now. I can finish with smart defaults, and you can change anything later."
+      hi: "अभी के लिए इतने सवाल काफ़ी हैं। मैं स्मार्ट डिफ़ॉल्ट के साथ पूरा कर सकता हूँ, और आप बाद में कुछ भी बदल सकते हैं।"
+      hi-Latn: "Abhi ke liye itne sawaal kaafi hain. Main smart defaults ke saath poora kar sakta hoon, aur aap baad mein kuch bhi badal sakte hain."
+  - id: didnt_catch
+    text:
+      en: "I did not catch that. Here are the options."
+      hi: "मैं यह समझ नहीं पाया। ये रहे विकल्प।"
+      hi-Latn: "Main yeh samajh nahi paya. Ye rahe options."
+  - id: help_intro
+    text:
+      en: "No worries, we can start small. Pick the idea that feels closest, or tell me about your business in your own words."
+      hi: "कोई बात नहीं, छोटी शुरुआत करते हैं। जो आइडिया सबसे करीब लगे उसे चुनिए, या अपने शब्दों में अपने बिज़नेस के बारे में बताइए।"
+      hi-Latn: "Koi baat nahi, chhoti shuruaat karte hain. Jo idea sabse kareeb lage use chuniye, ya apne shabdon mein apne business ke baare mein bataiye."
+  - id: stopped
+    text:
+      en: "Okay, I have stopped. Nothing is lost, and you can pick up again whenever you like."
+      hi: "ठीक है, मैंने रोक दिया है। कुछ भी खोया नहीं है, और आप जब चाहें फिर से शुरू कर सकते हैं।"
+      hi-Latn: "Theek hai, maine rok diya hai. Kuch bhi khoya nahi hai, aur aap jab chahein phir se shuru kar sakte hain."
+  - id: paused
+    text:
+      en: "Paused. Your progress is saved, and we can continue whenever you are ready."
+      hi: "रोक दिया गया। आपकी प्रगति सेव है, और जब आप तैयार हों हम आगे बढ़ सकते हैं।"
+      hi-Latn: "Rok diya gaya. Aapki progress save hai, aur jab aap taiyaar hon hum aage badh sakte hain."
+  - id: restarted
+    text:
+      en: "Starting fresh. Your earlier draft is kept safe in case you want it back."
+      hi: "नई शुरुआत करते हैं। आपका पिछला ड्राफ़्ट सुरक्षित रखा है, अगर आपको वापस चाहिए हो।"
+      hi-Latn: "Nayi shuruaat karte hain. Aapka pichhla draft surakshit rakha hai, agar aapko wapas chahiye ho."
+  - id: resume
+    text:
+      en: "We were designing your {app}. Next question: {question}"
+      hi: "हम आपका {app} डिज़ाइन कर रहे थे। अगला सवाल: {question}"
+      hi-Latn: "Hum aapka {app} design kar rahe the. Agla sawaal: {question}"
+  - id: unsafe_decline
+    text:
+      en: "I cannot help build that. {reason} If you like, I can help with a safe version of the idea instead."
+      hi: "मैं इसे बनाने में मदद नहीं कर सकता। {reason} चाहें तो मैं इस आइडिया के किसी सुरक्षित रूप में मदद कर सकता हूँ।"
+      hi-Latn: "Main ise banane mein madad nahi kar sakta. {reason} Chahein to main is idea ke kisi surakshit roop mein madad kar sakta hoon."
+  - id: unsupported_type
+    text:
+      en: "I cannot build this kind of app yet: {type}. {reason} The closest I can build is {closest}. Want to go with that?"
+      hi: "इस तरह का ऐप मैं अभी नहीं बना सकता: {type}। {reason} सबसे करीब मैं {closest} बना सकता हूँ। क्या उसी पर चलें?"
+      hi-Latn: "Is tarah ka app main abhi nahi bana sakta: {type}. {reason} Sabse kareeb main {closest} bana sakta hoon. Kya usi par chalein?"
+  - id: unsupported_dev_build
+    text:
+      en: "{feature} needs an extra setup step before it works on a phone, so the quick preview cannot show it. {limit}"
+      hi: "{feature} को फ़ोन पर चलाने के लिए एक अतिरिक्त सेटअप चरण चाहिए, इसलिए क्विक प्रिव्यू में यह नहीं दिखेगा। {limit}"
+      hi-Latn: "{feature} ko phone par chalane ke liye ek extra setup step chahiye, isliye quick preview mein yeh nahi dikhega. {limit}"
+  - id: slow
+    text:
+      en: "This is taking longer than usual. Let's keep going with the standard questions."
+      hi: "इसमें सामान्य से ज़्यादा समय लग रहा है। चलिए, सामान्य सवालों के साथ आगे बढ़ते हैं।"
+      hi-Latn: "Isme normal se zyada time lag raha hai. Chaliye, standard sawaalon ke saath aage badhte hain."
+  - id: secret_redacted
+    text:
+      en: "I removed what looked like a password or access key before saving anything. Please do not paste secrets in the chat. When a service needs to be connected, we will show a safe way to do it."
+      hi: "कुछ भी सेव करने से पहले मैंने पासवर्ड या एक्सेस की जैसी दिखने वाली चीज़ हटा दी। कृपया चैट में गोपनीय जानकारी न चिपकाएँ। जब किसी सेवा को जोड़ना होगा, हम उसका सुरक्षित तरीका दिखाएँगे।"
+      hi-Latn: "Kuch bhi save karne se pehle maine password ya access key jaisi dikhne wali cheez hata di. Kripya chat mein secrets paste na karein. Jab kisi service ko jodna hoga, hum uska surakshit tarika dikhayenge."
+  - id: reference_app
+    text:
+      en: "I will make an original design inspired by {app}. I never copy another brand's logo or artwork. Which parts of {app} do you like most?"
+      hi: "मैं {app} से प्रेरित एक मौलिक डिज़ाइन बनाऊँगा। मैं किसी और ब्रांड का लोगो या कलाकृति कभी नहीं कॉपी करता। {app} के कौन से हिस्से आपको सबसे ज़्यादा पसंद हैं?"
+      hi-Latn: "Main {app} se prerit ek original design banaunga. Main kisi aur brand ka logo ya artwork kabhi copy nahi karta. {app} ke kaun se hisse aapko sabse zyada pasand hain?"
+  - id: multi_app
+    text:
+      en: "That sounds like more than one app. Each app is its own project, so let's start with one."
+      hi: "यह एक से ज़्यादा ऐप जैसा लगता है। हर ऐप अपना अलग प्रोजेक्ट होता है, इसलिए एक से शुरू करते हैं।"
+      hi-Latn: "Yeh ek se zyada app jaisa lagta hai. Har app apna alag project hota hai, isliye ek se shuru karte hain."
+  - id: scope_large
+    text:
+      en: "That is a big idea. Let's plan the first phase now and keep the rest on a list for later."
+      hi: "यह एक बड़ा आइडिया है। अभी पहला चरण प्लान करते हैं और बाकी को बाद के लिए सूची में रखते हैं।"
+      hi-Latn: "Yeh ek bada idea hai. Abhi pehla phase plan karte hain aur baaki ko baad ke liye list mein rakhte hain."
+  - id: no_gate_open
+    text:
+      en: "Nothing is waiting for approval right now. Did you mean to answer the question above?"
+      hi: "अभी किसी चीज़ की मंज़ूरी का इंतज़ार नहीं है। क्या आप ऊपर के सवाल का जवाब देना चाहते थे?"
+      hi-Latn: "Abhi kisi cheez ki approval ka intezaar nahi hai. Kya aap upar ke sawaal ka jawab dena chahte the?"
+  - id: gate_unclear
+    text:
+      en: "I could not tell whether that was an approval, so nothing is approved yet. Please use the buttons when you are ready."
+      hi: "मैं समझ नहीं पाया कि यह मंज़ूरी थी या नहीं, इसलिए अभी कुछ भी मंज़ूर नहीं हुआ है। तैयार होने पर कृपया बटन इस्तेमाल कीजिए।"
+      hi-Latn: "Main samajh nahi paya ki yeh approval thi ya nahi, isliye abhi kuch bhi approve nahi hua hai. Taiyaar hone par kripya buttons istemal kijiye."
+  - id: queued_change
+    text:
+      en: "Got it. I will apply this as soon as the plan is ready."
+      hi: "समझ गया। प्लान तैयार होते ही मैं इसे लागू कर दूँगा।"
+      hi-Latn: "Samajh gaya. Plan taiyaar hote hi main ise lagu kar doonga."
+  - id: new_looks
+    text:
+      en: "Here are three more looks."
+      hi: "ये रहे तीन और लुक।"
+      hi-Latn: "Ye rahe teen aur look."
+  - id: describe_look
+    text:
+      en: "Would you like to describe the look you have in mind, or share a picture? I will match it as closely as I can."
+      hi: "क्या आप अपने मन का लुक बताना चाहेंगे, या कोई तस्वीर साझा करेंगे? मैं उसके जितना हो सके करीब रखूँगा।"
+      hi-Latn: "Kya aap apne man ka look batana chahenge, ya koi tasveer share karenge? Main uske jitna ho sake kareeb rakhunga."
+  - id: nudge_wait
+    text:
+      en: "Take your time. This one needs your own answer, so I will wait here for you."
+      hi: "आराम से सोचिए। इसके लिए आपका अपना जवाब ज़रूरी है, इसलिए मैं यहीं आपका इंतज़ार करूँगा।"
+      hi-Latn: "Araam se sochiye. Iske liye aapka apna jawab zaroori hai, isliye main yahin aapka intezaar karunga."
+
+  # Company rules (Enterprise policy): a banned library or a data region outside the approved ones.
+  - id: policy_library_explain
+    text:
+      en: "Your company's rules do not allow {library} in the apps built here, so I cannot use it. Please pick what we should use instead."
+      hi: "आपकी कंपनी के नियमों के अनुसार यहाँ बनने वाले ऐप में {library} की अनुमति नहीं है, इसलिए मैं इसे इस्तेमाल नहीं कर सकता। कृपया चुनिए कि इसकी जगह क्या इस्तेमाल करें।"
+      hi-Latn: "Aapki company ke niyamon ke anusaar yahan bante apps mein {library} ki anumati nahi hai, isliye main ise istemal nahi kar sakta. Kripya chuniye ki iski jagah kya istemal karein."
+  - id: policy_library_question
+    text:
+      en: "What should we use instead of {library}?"
+      hi: "{library} की जगह हम क्या इस्तेमाल करें?"
+      hi-Latn: "{library} ki jagah hum kya istemal karein?"
+  - id: policy_library_help
+    text:
+      en: "This is a company rule, so I cannot make an exception. Pick the closest allowed option."
+      hi: "यह कंपनी का नियम है, इसलिए मैं इसमें छूट नहीं दे सकता। सबसे करीब का अनुमत विकल्प चुनिए।"
+      hi-Latn: "Yeh company ka niyam hai, isliye main isme chhoot nahi de sakta. Sabse kareeb ka anumat option chuniye."
+  - id: policy_library_applied
+    text:
+      en: "Done. We will use {choice} instead of {library}."
+      hi: "हो गया। {library} की जगह हम {choice} इस्तेमाल करेंगे।"
+      hi-Latn: "Ho gaya. {library} ki jagah hum {choice} istemal karenge."
+  - id: policy_region_explain
+    text:
+      en: "Your company's rules keep app data in approved regions only: {allowed}. I cannot use {asked}. Please choose from the approved regions."
+      hi: "आपकी कंपनी के नियमों के अनुसार ऐप का डेटा सिर्फ़ मंज़ूर किए गए क्षेत्रों में रखा जा सकता है: {allowed}। मैं {asked} इस्तेमाल नहीं कर सकता। कृपया मंज़ूर क्षेत्रों में से चुनिए।"
+      hi-Latn: "Aapki company ke niyamon ke anusaar app ka data sirf manzoor kiye gaye regions mein rakha ja sakta hai: {allowed}. Main {asked} istemal nahi kar sakta. Kripya manzoor regions mein se chuniye."
+  - id: policy_region_question
+    text:
+      en: "Which approved region should keep the app's data?"
+      hi: "ऐप का डेटा किस मंज़ूर क्षेत्र में रखा जाए?"
+      hi-Latn: "App ka data kis manzoor region mein rakha jaye?"
+  - id: policy_region_help
+    text:
+      en: "Your company only allows data in these regions. Pick the one closest to your users."
+      hi: "आपकी कंपनी सिर्फ़ इन क्षेत्रों में डेटा रखने की अनुमति देती है। अपने उपयोगकर्ताओं के सबसे करीब वाला चुनिए।"
+      hi-Latn: "Aapki company sirf in regions mein data rakhne ki anumati deti hai. Apne users ke sabse kareeb wala chuniye."
+  - id: policy_region_applied
+    text:
+      en: "Done. The app's data will stay in {region}."
+      hi: "हो गया। ऐप का डेटा {region} में रहेगा।"
+      hi-Latn: "Ho gaya. App ka data {region} mein rahega."
+
+  # The Brief (rows, sentence pieces) in the user's language. {placeholders} are filled by the engine.
+  - id: row_building
+    text:
+      en: "What you are building"
+      hi: "आप क्या बना रहे हैं"
+      hi-Latn: "Aap kya bana rahe hain"
+  - id: row_users
+    text:
+      en: "Who uses it"
+      hi: "इसे कौन इस्तेमाल करेगा"
+      hi-Latn: "Ise kaun istemal karega"
+  - id: row_features
+    text:
+      en: "Main features"
+      hi: "मुख्य फ़ीचर"
+      hi-Latn: "Mukhya features"
+  - id: row_look
+    text:
+      en: "Look"
+      hi: "लुक"
+      hi-Latn: "Look"
+  - id: row_login
+    text:
+      en: "Login"
+      hi: "लॉगिन"
+      hi-Latn: "Login"
+  - id: row_name_logo
+    text:
+      en: "Name and logo"
+      hi: "नाम और लोगो"
+      hi-Latn: "Naam aur logo"
+  - id: users_default
+    text:
+      en: "Everyone uses the app the same way (one kind of user)."
+      hi: "सभी लोग ऐप एक ही तरह से इस्तेमाल करते हैं (एक तरह का उपयोगकर्ता)।"
+      hi-Latn: "Sab log app ek hi tarah se istemal karte hain (ek tarah ka user)."
+  - id: features_none
+    text:
+      en: "No features picked yet."
+      hi: "अभी कोई फ़ीचर नहीं चुना गया है।"
+      hi-Latn: "Abhi koi feature nahi chuna gaya hai."
+  - id: features_text
+    text:
+      en: "{n} features: {list}."
+      hi: "{n} फ़ीचर: {list}।"
+      hi-Latn: "{n} features: {list}."
+  - id: features_extra
+    text:
+      en: "Also asked for: {list}."
+      hi: "आपने ये भी माँगा: {list}।"
+      hi-Latn: "Aapne ye bhi manga: {list}."
+  - id: look_dark
+    text:
+      en: "{look}, always in dark mode"
+      hi: "{look}, हमेशा डार्क मोड में"
+      hi-Latn: "{look}, hamesha dark mode mein"
+  - id: login_sso
+    text:
+      en: "{method}, plus your company sign-in"
+      hi: "{method}, और आपकी कंपनी का साइन-इन"
+      hi-Latn: "{method}, aur aapki company ka sign-in"
+  - id: name_text
+    text:
+      en: "Name: {name}. Logo: {logo}."
+      hi: "नाम: {name}। लोगो: {logo}।"
+      hi-Latn: "Naam: {name}. Logo: {logo}."
+  - id: logo_none
+    text:
+      en: "none yet, we use a placeholder"
+      hi: "अभी नहीं है, हम एक अस्थायी लोगो रखेंगे"
+      hi-Latn: "abhi nahi hai, hum ek temporary logo rakhenge"
+  - id: logo_file
+    text:
+      en: "your file"
+      hi: "आपकी फ़ाइल"
+      hi-Latn: "aapki file"
+  - id: "on"
+    text:
+      en: "on"
+      hi: "चालू"
+      hi-Latn: "chalu"
+  - id: "off"
+    text:
+      en: "off"
+      hi: "बंद"
+      hi-Latn: "band"
+  - id: fact_features
+    text:
+      en: "with {features}"
+      hi: "जिसमें {features} हैं"
+      hi-Latn: "jisme {features} hain"
+  - id: fact_look
+    text:
+      en: "in a {look} look"
+      hi: "{look} लुक में"
+      hi-Latn: "{look} look mein"
+
+  # Why a slot was assumed ("We assumed ..."), one line per slot, in the user's language. The
+  # English text equals SlotDef.default_reason in catalogs.yaml (a test keeps the two in step).
+  - id: reason.idea.summary
+    text:
+      en: "Nothing to assume here: we need your idea to start."
+      hi: "यहाँ मानने लायक कुछ नहीं है: शुरू करने के लिए हमें आपका आइडिया चाहिए।"
+      hi-Latn: "Yahan maanne layak kuch nahi hai: shuru karne ke liye hamein aapka idea chahiye."
+  - id: reason.idea.archetype
+    text:
+      en: "We start from general building blocks when we cannot tell what type of app this is."
+      hi: "जब हम समझ नहीं पाते कि यह किस तरह का ऐप है, तो हम सामान्य बुनियादी हिस्सों से शुरू करते हैं।"
+      hi-Latn: "Jab hum samajh nahi paate ki yeh kis tarah ka app hai, to hum general basic hisson se shuru karte hain."
+  - id: reason.compliance.flags
+    text:
+      en: "Nothing is flagged unless your idea touches a sensitive area; then we pick the careful option and flag it."
+      hi: "जब तक आपका आइडिया किसी संवेदनशील क्षेत्र को नहीं छूता, कुछ चिह्नित नहीं होता; तब हम सावधानी वाला विकल्प चुनकर उसे चिह्नित करते हैं।"
+      hi-Latn: "Jab tak aapka idea kisi sensitive area ko nahi chhoota, kuch flag nahi hota; tab hum saavdhani wala option chunkar use flag karte hain."
+  - id: reason.scope.apps
+    text:
+      en: "We build the main app first; the other apps can become their own projects."
+      hi: "हम पहले मुख्य ऐप बनाते हैं; बाकी ऐप अपने अलग प्रोजेक्ट बन सकते हैं।"
+      hi-Latn: "Hum pehle mukhya app banate hain; baaki apps apne alag projects ban sakte hain."
+  - id: reason.scope.features
+    text:
+      en: "We start from the features most apps of this type include; you can change them any time."
+      hi: "हम उन फ़ीचर से शुरू करते हैं जो इस तरह के ज़्यादातर ऐप में होते हैं; आप इन्हें कभी भी बदल सकते हैं।"
+      hi-Latn: "Hum un features se shuru karte hain jo is tarah ke zyadatar apps mein hote hain; aap inhein kabhi bhi badal sakte hain."
+  - id: reason.users.roles
+    text:
+      en: "We start with one kind of user."
+      hi: "हम एक तरह के उपयोगकर्ता से शुरू करते हैं।"
+      hi-Latn: "Hum ek tarah ke user se shuru karte hain."
+  - id: reason.auth.method
+    text:
+      en: "Signing in with a code sent to email or phone is simple for most people."
+      hi: "ईमेल या फ़ोन पर भेजे गए कोड से साइन इन करना ज़्यादातर लोगों के लिए आसान है।"
+      hi-Latn: "Email ya phone par bheje gaye code se sign in karna zyadatar logon ke liye aasaan hai."
+  - id: reason.design.direction
+    text:
+      en: "We use the look we recommend for this type of app."
+      hi: "हम वही लुक रखते हैं जो हम इस तरह के ऐप के लिए सुझाते हैं।"
+      hi-Latn: "Hum wahi look rakhte hain jo hum is tarah ke app ke liye sujhate hain."
+  - id: reason.brand.name
+    text:
+      en: "We use a placeholder name until you pick one."
+      hi: "जब तक आप नाम नहीं चुनते, हम एक अस्थायी नाम रखते हैं।"
+      hi-Latn: "Jab tak aap naam nahi chunte, hum ek temporary naam rakhte hain."
+  - id: reason.brand.assets
+    text:
+      en: "No logo for now; you can add one any time."
+      hi: "अभी कोई लोगो नहीं; आप कभी भी जोड़ सकते हैं।"
+      hi-Latn: "Abhi koi logo nahi; aap kabhi bhi jod sakte hain."
+  - id: reason.design.accent
+    text:
+      en: "Colors come from the look you chose."
+      hi: "रंग आपके चुने हुए लुक से आते हैं।"
+      hi-Latn: "Rang aapke chune hue look se aate hain."
+  - id: reason.design.mode
+    text:
+      en: "The app follows the phone's light or dark setting."
+      hi: "ऐप फ़ोन की लाइट या डार्क सेटिंग का पालन करता है।"
+      hi-Latn: "App phone ki light ya dark setting ko follow karta hai."
+  - id: reason.design.nav_style
+    text:
+      en: "Navigation follows the look you chose."
+      hi: "नेविगेशन आपके चुने हुए लुक के अनुसार रहता है।"
+      hi-Latn: "Navigation aapke chune hue look ke anusaar rehta hai."
+  - id: reason.pay.model
+    text:
+      en: "We start with a practice checkout so you can try the whole flow."
+      hi: "हम एक प्रैक्टिस चेकआउट से शुरू करते हैं ताकि आप पूरा फ़्लो आज़मा सकें।"
+      hi-Latn: "Hum ek practice checkout se shuru karte hain taaki aap poora flow aazma sakein."
+  - id: reason.pay.provider
+    text:
+      en: "A practice payment provider is used until you connect a real one."
+      hi: "जब तक आप असली पेमेंट प्रोवाइडर नहीं जोड़ते, एक प्रैक्टिस प्रोवाइडर इस्तेमाल होता है।"
+      hi-Latn: "Jab tak aap asli payment provider nahi jodte, ek practice provider istemal hota hai."
+  - id: reason.data.source
+    text:
+      en: "We create a new backend for your app."
+      hi: "हम आपके ऐप के लिए एक नया बैकएंड बनाते हैं।"
+      hi-Latn: "Hum aapke app ke liye ek naya backend banate hain."
+  - id: reason.behavior.offline
+    text:
+      en: "The app remembers what it last showed when the signal drops."
+      hi: "सिग्नल जाने पर ऐप को याद रहता है कि उसने आख़िर में क्या दिखाया था।"
+      hi-Latn: "Signal jaane par app ko yaad rehta hai ki usne aakhir mein kya dikhaya tha."
+  - id: reason.behavior.notifications
+    text:
+      en: "Notifications are on where they help, like order updates."
+      hi: "नोटिफिकेशन वहीं चालू रहते हैं जहाँ वे काम आते हैं, जैसे ऑर्डर अपडेट।"
+      hi-Latn: "Notifications wahin chalu rehte hain jahan ve kaam aate hain, jaise order updates."
+  - id: reason.behavior.analytics
+    text:
+      en: "No usage tracking unless you ask for it."
+      hi: "जब तक आप न माँगें, उपयोग की ट्रैकिंग नहीं होती।"
+      hi-Latn: "Jab tak aap na maangein, usage tracking nahi hoti."
+  - id: reason.locale
+    text:
+      en: "English, unless you write to us in another language."
+      hi: "अंग्रेज़ी, जब तक आप हमें किसी और भाषा में न लिखें।"
+      hi-Latn: "English, jab tak aap hamein kisi aur bhasha mein na likhein."
+  - id: reason.a11y
+    text:
+      en: "Standard accessibility: readable text, good contrast and labels for screen readers."
+      hi: "सामान्य सुगम्यता: पढ़ने लायक पाठ, अच्छा कंट्रास्ट और स्क्रीन रीडर के लिए लेबल।"
+      hi-Latn: "Standard accessibility: padhne layak text, achha contrast aur screen readers ke liye labels."
+  - id: reason.auth.sso
+    text:
+      en: "Single sign-on is only added when your company asks for it."
+      hi: "सिंगल साइन-ऑन तभी जोड़ा जाता है जब आपकी कंपनी माँगती है।"
+      hi-Latn: "Single sign-on tabhi joda jata hai jab aapki company maangti hai."
+  - id: reason.integrations.list
+    text:
+      en: "Taken from your company profile; none are added by default."
+      hi: "आपकी कंपनी की प्रोफ़ाइल से लिया गया है; अपने-आप कुछ नहीं जोड़ा जाता।"
+      hi-Latn: "Aapki company ki profile se liya gaya hai; apne-aap kuch nahi joda jata."
+  - id: reason.data.classification
+    text:
+      en: "Treated as internal company data until you say otherwise."
+      hi: "जब तक आप कुछ और न कहें, इसे कंपनी का आंतरिक डेटा माना जाता है।"
+      hi-Latn: "Jab tak aap kuch aur na kahein, ise company ka internal data maana jata hai."
+  - id: reason.regions
+    text:
+      en: "Taken from your company profile."
+      hi: "आपकी कंपनी की प्रोफ़ाइल से लिया गया है।"
+      hi-Latn: "Aapki company ki profile se liya gaya hai."
+  - id: reason.release.channel
+    text:
+      en: "Your own team tries the app first."
+      hi: "सबसे पहले आपकी अपनी टीम ऐप आज़माती है।"
+      hi-Latn: "Sabse pehle aapki apni team app aazmati hai."
+  - id: reason.approvers
+    text:
+      en: "The person who asked for the app approves, unless your company profile names others."
+      hi: "ऐप माँगने वाला व्यक्ति मंज़ूरी देता है, जब तक आपकी कंपनी की प्रोफ़ाइल में दूसरों के नाम न हों।"
+      hi-Latn: "App maangne wala vyakti manzoori deta hai, jab tak aapki company ki profile mein doosron ke naam na hon."
+
+knowledge:
+  - id: kb-what-we-build
+    topic: what_we_build
+    keywords: [build, make, create, what do you do, what is this, app, mobile app, phone app, kya banate, kya bana sakte]
+    text:
+      en: "I help you turn an idea into a clear plan for a phone app. Once you approve the plan, it is handed to the app builder, which creates the app from it (built with React Native and Expo)."
+      hi: "मैं आपके आइडिया को फ़ोन ऐप की साफ़ योजना में बदलने में मदद करता हूँ। आपके प्लान को मंज़ूर करने के बाद वह ऐप बनाने वाले हिस्से को सौंप दिया जाता है, जो उससे ऐप बनाता है (React Native और Expo से)।"
+      hi-Latn: "Main aapke idea ko phone app ki saaf yojana mein badalne mein madad karta hoon. Aapke plan ko approve karne ke baad woh app banane wale hisse ko saunp diya jata hai, jo usse app banata hai (React Native aur Expo se)."
+  - id: kb-how-it-works
+    topic: how_it_works
+    keywords: [process, steps, how does it work, how it works, review, approve, approval, kaise kaam, process kya hai]
+    text:
+      en: "First I ask a few short questions, mostly tap-to-answer, usually around seven. Then I write a short summary called the Brief for you to approve (first review). After that I research your kind of app on the web and write a detailed plan, which you review and approve (second review). Nothing is handed off until you approve the plan."
+      hi: "पहले मैं कुछ छोटे सवाल पूछता हूँ, ज़्यादातर टैप करके जवाब देने वाले, आम तौर पर लगभग सात। फिर मैं एक छोटा सारांश लिखता हूँ जिसे ब्रीफ़ कहते हैं, ताकि आप मंज़ूर करें (पहली समीक्षा)। उसके बाद मैं आपके तरह के ऐप पर वेब पर रिसर्च करता हूँ और एक विस्तृत प्लान लिखता हूँ, जिसे आप देखकर मंज़ूर करते हैं (दूसरी समीक्षा)। प्लान मंज़ूर होने तक कुछ भी आगे नहीं सौंपा जाता।"
+      hi-Latn: "Pehle main kuch chhote sawaal poochta hoon, zyadatar tap karke jawab dene wale, aam taur par lagbhag saat. Phir main ek chhota summary likhta hoon jise Brief kehte hain, taaki aap approve karein (pehli review). Uske baad main aapke type ke app par web par research karta hoon aur ek detailed plan likhta hoon, jise aap dekhkar approve karte hain (doosri review). Plan approve hone tak kuch bhi aage nahi saunpa jata."
+  - id: kb-brief
+    topic: brief
+    keywords: [brief, summary, what is the brief, brief kya hai]
+    text:
+      en: "The Brief is a short, plain-language summary of your app: what it is, who uses it, the main features, the look, and anything we assumed for you. You approve it before research and planning begin."
+      hi: "ब्रीफ़ आपके ऐप का एक छोटा, सरल सारांश है: वह क्या है, कौन इस्तेमाल करेगा, मुख्य फ़ीचर, लुक, और जो कुछ हमने आपके लिए मान लिया। रिसर्च और प्लानिंग शुरू होने से पहले आप इसे मंज़ूर करते हैं।"
+      hi-Latn: "Brief aapke app ka ek chhota, saral summary hai: woh kya hai, kaun istemal karega, mukhya features, look, aur jo kuch humne aapke liye maan liya. Research aur planning shuru hone se pehle aap ise approve karte hain."
+  - id: kb-preview
+    topic: preview
+    keywords: [preview, see the app, try the app, demo, test, expo go, dekh sakte, preview kaise]
+    text:
+      en: "The app can be previewed on a phone or in a browser. Some phone features need an extra setup step and may not show in the quick preview; I will tell you when one of them is affected."
+      hi: "ऐप का प्रिव्यू फ़ोन पर या ब्राउज़र में देखा जा सकता है। कुछ फ़ोन फ़ीचर के लिए अतिरिक्त सेटअप चरण चाहिए और वे क्विक प्रिव्यू में नहीं दिख सकते; जब कोई फ़ीचर इससे प्रभावित होगा तो मैं बता दूँगा।"
+      hi-Latn: "App ka preview phone par ya browser mein dekha ja sakta hai. Kuch phone features ke liye extra setup step chahiye aur woh quick preview mein nahi dikh sakte; jab koi feature isse prabhavit hoga to main bata doonga."
+  - id: kb-code-download
+    topic: code_download
+    keywords: [code, download, source code, ownership, own the code, export, github, code kiska, code download]
+    text:
+      en: "Your approved plan is saved as one readable file, APP_SPEC.md, in your project. I do not have confirmed details about downloading the app's code or who owns it, so I will not guess; please check the terms for your workspace."
+      hi: "आपका मंज़ूर किया हुआ प्लान आपके प्रोजेक्ट में एक पढ़ने लायक फ़ाइल, APP_SPEC.md, के रूप में सेव होता है। ऐप का कोड डाउनलोड करने या उसके मालिकाना हक़ के बारे में मेरे पास पक्की जानकारी नहीं है, इसलिए मैं अंदाज़ा नहीं लगाऊँगा; कृपया अपने वर्कस्पेस की शर्तें देखिए।"
+      hi-Latn: "Aapka approve kiya hua plan aapke project mein ek padhne layak file, APP_SPEC.md, ke roop mein save hota hai. App ka code download karne ya uske malikana haq ke baare mein mere paas pakki jaankari nahi hai, isliye main andaaza nahi lagaunga; kripya apne workspace ki sharten dekhiye."
+  - id: kb-privacy
+    topic: privacy
+    keywords: [privacy, private, data, safe, secure, secrets, password, who sees, privacy kya hai, data safe]
+    text:
+      en: "I save our conversation so you can continue later. If you paste something that looks like a password or access key, I remove it before saving. I do not search the web while we chat; research happens only after you approve the Brief, and documents you upload are read as information, never as instructions."
+      hi: "मैं हमारी बातचीत सेव रखता हूँ ताकि आप बाद में जारी रख सकें। अगर आप पासवर्ड या एक्सेस की जैसी कोई चीज़ चिपकाते हैं, तो सेव करने से पहले मैं उसे हटा देता हूँ। बातचीत के दौरान मैं वेब पर नहीं खोजता; रिसर्च सिर्फ़ ब्रीफ़ मंज़ूर होने के बाद होती है, और आपके अपलोड किए दस्तावेज़ सिर्फ़ जानकारी की तरह पढ़े जाते हैं, निर्देश की तरह कभी नहीं।"
+      hi-Latn: "Main hamari baatcheet save rakhta hoon taaki aap baad mein jaari rakh sakein. Agar aap password ya access key jaisi koi cheez paste karte hain, to save karne se pehle main use hata deta hoon. Baatcheet ke dauran main web par nahi khojta; research sirf Brief approve hone ke baad hoti hai, aur aapke upload kiye documents sirf jaankari ki tarah padhe jaate hain, nirdesh ki tarah kabhi nahi."
+  - id: kb-after-approval
+    topic: after_approval
+    keywords: [after approval, what happens next, after i approve, handoff, hand off, changes later, approve ke baad, uske baad kya]
+    text:
+      en: "When you approve the plan, it is saved and handed to the app builder. You can still ask for changes afterwards: small ones such as colors, wording or a few new screens are applied directly, while bigger ones, such as sign-in, payments or major features, ask for your approval again."
+      hi: "जब आप प्लान मंज़ूर करते हैं, तो वह सेव होकर ऐप बनाने वाले हिस्से को सौंप दिया जाता है। उसके बाद भी आप बदलाव माँग सकते हैं: रंग, शब्द या कुछ नई स्क्रीन जैसे छोटे बदलाव सीधे लागू होते हैं, जबकि साइन-इन, पेमेंट या बड़े फ़ीचर जैसे बड़े बदलावों के लिए फिर से आपकी मंज़ूरी ली जाती है।"
+      hi-Latn: "Jab aap plan approve karte hain, to woh save hokar app banane wale hisse ko saunp diya jata hai. Uske baad bhi aap badlav maang sakte hain: rang, shabd ya kuch nayi screens jaise chhote badlav seedhe lagu hote hain, jabki sign-in, payment ya bade features jaise bade badlavon ke liye phir se aapki approval li jati hai."
+  - id: kb-cost
+    topic: cost
+    keywords: [cost, price, pricing, how much, charge, fee, free, paise, kitna lagega, kitne ka, price kya hai]
+    text:
+      en: "I do not have pricing details, so I will not guess. You will see the plan before anything is built, and nothing is handed off until you approve it."
+      hi: "मेरे पास कीमत की जानकारी नहीं है, इसलिए मैं अंदाज़ा नहीं लगाऊँगा। कुछ भी बनने से पहले आप प्लान देखेंगे, और आपकी मंज़ूरी के बिना कुछ भी आगे नहीं सौंपा जाता।"
+      hi-Latn: "Mere paas keemat ki jaankari nahi hai, isliye main andaaza nahi lagaunga. Kuch bhi banne se pehle aap plan dekhenge, aur aapki approval ke bina kuch bhi aage nahi saunpa jata."
+  - id: kb-time
+    topic: time
+    keywords: [time, how long, timeline, duration, days, weeks, deadline, kitna time, kitne din, kab tak]
+    text:
+      en: "I cannot promise how long it takes. You will see the plan before anything is built, and nothing is handed off until you approve it."
+      hi: "मैं यह वादा नहीं कर सकता कि कितना समय लगेगा। कुछ भी बनने से पहले आप प्लान देखेंगे, और आपकी मंज़ूरी के बिना कुछ भी आगे नहीं सौंपा जाता।"
+      hi-Latn: "Main yeh waada nahi kar sakta ki kitna time lagega. Kuch bhi banne se pehle aap plan dekhenge, aur aapki approval ke bina kuch bhi aage nahi saunpa jata."
+  - id: kb-changes
+    topic: changes
+    keywords: [change, edit, change my mind, update, modify, undo, badalna, badlav, change kar sakte]
+    text:
+      en: "You can change your mind at any step: before you approve the Brief, before you approve the plan, and after hand-off. I show what changed in plain words."
+      hi: "आप किसी भी चरण पर अपना मन बदल सकते हैं: ब्रीफ़ मंज़ूर करने से पहले, प्लान मंज़ूर करने से पहले, और सौंपे जाने के बाद। क्या बदला, यह मैं सरल शब्दों में दिखाता हूँ।"
+      hi-Latn: "Aap kisi bhi step par apna man badal sakte hain: Brief approve karne se pehle, plan approve karne se pehle, aur saunpe jaane ke baad. Kya badla, yeh main saral shabdon mein dikhata hoon."
+  - id: kb-unsupported
+    topic: unsupported_types
+    keywords: [game, games, ar, augmented reality, desktop, background audio, hardware, bluetooth, unsupported, can you build, game bana sakte]
+    text:
+      en: "Games, augmented reality, desktop apps, apps that play audio in the background and hardware-heavy apps are not supported. If your idea is one of these, I will offer the closest app I can build."
+      hi: "गेम, ऑगमेंटेड रियलिटी, डेस्कटॉप ऐप, बैकग्राउंड में ऑडियो चलाने वाले ऐप और हार्डवेयर पर ज़्यादा निर्भर ऐप समर्थित नहीं हैं। अगर आपका आइडिया इनमें से कोई है, तो मैं सबसे करीब का ऐप सुझाऊँगा जो मैं बना सकता हूँ।"
+      hi-Latn: "Games, augmented reality, desktop apps, background mein audio chalane wale apps aur hardware par zyada nirbhar apps supported nahi hain. Agar aapka idea inmein se koi hai, to main sabse kareeb ka app sujhaunga jo main bana sakta hoon."
+  - id: kb-languages
+    topic: languages
+    keywords: [language, hindi, hinglish, english, speak hindi, bhasha, hindi mein]
+    text:
+      en: "You can write to me in English, Hindi or Hinglish. I reply in your language, and the app's own text starts in that language too."
+      hi: "आप मुझसे अंग्रेज़ी, हिंदी या हिंग्लिश में लिख सकते हैं। मैं आपकी भाषा में जवाब देता हूँ, और ऐप का अपना टेक्स्ट भी शुरू में उसी भाषा में होता है।"
+      hi-Latn: "Aap mujhse English, Hindi ya Hinglish mein likh sakte hain. Main aapki bhasha mein jawab deta hoon, aur app ka apna text bhi shuru mein usi bhasha mein hota hai."
+  - id: kb-reference-apps
+    topic: reference_apps
+    keywords: [like uber, like amazon, similar to, copy, clone, inspired by, jaisa app, jaisa banao]
+    text:
+      en: "If you say you want something like another app, I will ask which parts you like and make an original design. I never copy another brand's logo or artwork."
+      hi: "अगर आप कहते हैं कि आपको किसी दूसरे ऐप जैसा कुछ चाहिए, तो मैं पूछता हूँ कि उसके कौन से हिस्से पसंद हैं और एक मौलिक डिज़ाइन बनाता हूँ। मैं किसी और ब्रांड का लोगो या कलाकृति कभी नहीं कॉपी करता।"
+      hi-Latn: "Agar aap kehte hain ki aapko kisi doosre app jaisa kuch chahiye, to main poochta hoon ki uske kaun se hisse pasand hain aur ek original design banata hoon. Main kisi aur brand ka logo ya artwork kabhi copy nahi karta."
+  - id: kb-save-resume
+    topic: save_resume
+    keywords: [pause, resume, come back, save, start over, restart, delete, wapas aana, dobara shuru]
+    text:
+      en: "You can pause and come back later; your progress, and any approval that is waiting, are saved. If you start over, your earlier draft is archived, not deleted."
+      hi: "आप रुककर बाद में लौट सकते हैं; आपकी प्रगति और इंतज़ार कर रही कोई भी मंज़ूरी सेव रहती है। अगर आप नए सिरे से शुरू करते हैं, तो आपका पिछला ड्राफ़्ट संग्रहित रहता है, मिटाया नहीं जाता।"
+      hi-Latn: "Aap rukkar baad mein laut sakte hain; aapki progress aur intezaar kar rahi koi bhi approval save rehti hai. Agar aap naye sire se shuru karte hain, to aapka pichhla draft archive rehta hai, mitaya nahi jata."

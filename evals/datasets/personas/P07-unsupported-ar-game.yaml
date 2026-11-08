@@ -1,0 +1,18 @@
+id: P07-unsupported-ar-game
+title: Wants an augmented reality game
+who: Asks for something the stack cannot build, then accepts the closest option.
+language: en
+mode: guided
+script:
+  - user: "I want to build an augmented reality game where kids hunt monsters in the park"
+  - finish: true
+  - approve: brief
+  - plan: true
+  - approve: plan
+expect:
+  state: HANDED_OFF
+  spec_ready: 1
+  max_cards: 10
+  text_contains: ["cannot build this kind of app"]
+  slots:
+    idea.archetype: custom

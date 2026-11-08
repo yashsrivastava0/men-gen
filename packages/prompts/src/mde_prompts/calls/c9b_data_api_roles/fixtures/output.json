@@ -1,0 +1,60 @@
+{
+  "proposals": [
+    {
+      "kind": "add_entity_fields",
+      "target": "ENT-User",
+      "source": "brief",
+      "research_ref": null,
+      "rationale": "The Brief names sensitive areas, regions or a language the data should record.",
+      "name": null,
+      "route": null,
+      "recipe": null,
+      "purpose": null,
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": [
+        {
+          "name": "location_consent",
+          "type": "bool",
+          "required": false,
+          "ref": null,
+          "description": "Whether the person agreed to share exact location"
+        },
+        {
+          "name": "preferred_region",
+          "type": "string",
+          "required": false,
+          "ref": null,
+          "description": "Region the person works or shops in"
+        }
+      ],
+      "pairs": null,
+      "items": null
+    },
+    {
+      "kind": "add_integration",
+      "target": null,
+      "source": "research",
+      "research_ref": "RA-003",
+      "rationale": "Research found that store locator map is commonly used by similar apps.",
+      "name": "Store locator map",
+      "route": null,
+      "recipe": null,
+      "purpose": "Commonly used",
+      "surface": null,
+      "flow": null,
+      "method": null,
+      "path": null,
+      "request_entity": null,
+      "response_entity": null,
+      "fields": null,
+      "pairs": null,
+      "items": null
+    }
+  ],
+  "notes": "mock: fields from the Brief, research integrations"
+}

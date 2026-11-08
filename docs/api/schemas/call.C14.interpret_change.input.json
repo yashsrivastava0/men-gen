@@ -1,0 +1,444 @@
+{
+  "$defs": {
+    "OutlineEntity": {
+      "additionalProperties": false,
+      "properties": {
+        "fields": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineEntity",
+      "type": "object"
+    },
+    "OutlineFlow": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "screens": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineFlow",
+      "type": "object"
+    },
+    "OutlineItem": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "OutlineItem",
+      "type": "object"
+    },
+    "OutlineOperation": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "method": {
+          "title": "Method",
+          "type": "string"
+        },
+        "path": {
+          "title": "Path",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "method",
+        "path"
+      ],
+      "title": "OutlineOperation",
+      "type": "object"
+    },
+    "OutlineScreen": {
+      "additionalProperties": false,
+      "properties": {
+        "flow": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Flow"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "purpose": {
+          "default": "",
+          "title": "Purpose",
+          "type": "string"
+        },
+        "recipe": {
+          "title": "Recipe",
+          "type": "string"
+        },
+        "route": {
+          "title": "Route",
+          "type": "string"
+        },
+        "source": {
+          "default": "default",
+          "title": "Source",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "route",
+        "recipe"
+      ],
+      "title": "OutlineScreen",
+      "type": "object"
+    },
+    "SlotBrief": {
+      "additionalProperties": false,
+      "description": "One slot as shown to a prompt: compact, no provenance noise.",
+      "properties": {
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "enum": [
+                "tap",
+                "text",
+                "upload",
+                "research",
+                "org_profile",
+                "memory",
+                "default"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "state": {
+          "enum": [
+            "empty",
+            "assumed",
+            "volunteered",
+            "confirmed",
+            "disputed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "value",
+        "state"
+      ],
+      "title": "SlotBrief",
+      "type": "object"
+    },
+    "SlotCatalogItem": {
+      "additionalProperties": false,
+      "properties": {
+        "hint": {
+          "default": "",
+          "title": "Hint",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "text",
+            "bool",
+            "choice",
+            "list"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "kind"
+      ],
+      "title": "SlotCatalogItem",
+      "type": "object"
+    },
+    "SpecOutline": {
+      "additionalProperties": false,
+      "properties": {
+        "design_direction": {
+          "default": "",
+          "title": "Design Direction",
+          "type": "string"
+        },
+        "entities": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineEntity"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "flows": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineFlow"
+          },
+          "title": "Flows",
+          "type": "array"
+        },
+        "integrations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineItem"
+          },
+          "title": "Integrations",
+          "type": "array"
+        },
+        "operations": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineOperation"
+          },
+          "title": "Operations",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineItem"
+          },
+          "title": "Roles",
+          "type": "array"
+        },
+        "screens": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OutlineScreen"
+          },
+          "title": "Screens",
+          "type": "array"
+        }
+      },
+      "title": "SpecOutline",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "gate_open": {
+      "anyOf": [
+        {
+          "enum": [
+            "brief",
+            "plan"
+          ],
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gate Open"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "outline": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SpecOutline"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "selected_screen_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Selected Screen Id"
+    },
+    "slot_catalog": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotCatalogItem"
+      },
+      "title": "Slot Catalog",
+      "type": "array"
+    },
+    "slots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotBrief"
+      },
+      "title": "Slots",
+      "type": "array"
+    },
+    "source": {
+      "default": "text",
+      "enum": [
+        "text",
+        "gate_comment"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "state": {
+      "enum": [
+        "DISCOVERING",
+        "BRIEF_REVIEW",
+        "PLANNING",
+        "PLAN_REVIEW",
+        "HANDED_OFF",
+        "PAUSED",
+        "STOPPED",
+        "ARCHIVED"
+      ],
+      "title": "State",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message",
+    "state"
+  ],
+  "title": "C14Input",
+  "type": "object"
+}

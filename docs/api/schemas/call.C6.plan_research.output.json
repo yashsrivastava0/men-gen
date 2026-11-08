@@ -1,0 +1,55 @@
+{
+  "$defs": {
+    "ResearchJobPlan": {
+      "additionalProperties": false,
+      "properties": {
+        "job": {
+          "enum": [
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5",
+            "R6"
+          ],
+          "title": "Job",
+          "type": "string"
+        },
+        "queries": {
+          "description": "At most max_queries_per_job generic queries; no private data",
+          "items": {
+            "type": "string"
+          },
+          "title": "Queries",
+          "type": "array"
+        },
+        "rationale": {
+          "title": "Rationale",
+          "type": "string"
+        }
+      },
+      "required": [
+        "job",
+        "rationale",
+        "queries"
+      ],
+      "title": "ResearchJobPlan",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "jobs": {
+      "items": {
+        "$ref": "#/$defs/ResearchJobPlan"
+      },
+      "title": "Jobs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "jobs"
+  ],
+  "title": "C6Output",
+  "type": "object"
+}

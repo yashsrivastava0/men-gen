@@ -1,0 +1,33 @@
+# Golden cases for C3. The knowledge snippets are filled in by the test from the content bank.
+cases:
+  - name: cost_question_uses_the_cost_snippet
+    input: {message: "how much will this cost?", intent: question}
+    expect: {unknown: false, used_snippets: [kb-cost]}
+
+  - name: time_question_hinglish
+    input: {message: "kitna time lagega?", intent: question, language: hi-Latn}
+    expect: {unknown: false, used_snippets: [kb-time]}
+
+  - name: code_question_hindi
+    input: {message: "क्या मुझे कोड मिलेगा?", intent: question, language: hi}
+    expect: {unknown: false, used_snippets: [kb-code-download]}
+
+  - name: privacy_question
+    input: {message: "is my data safe?", intent: question}
+    expect: {unknown: false, used_snippets: [kb-privacy]}
+
+  - name: uncovered_question_is_unknown
+    input: {message: "which database will you use?", intent: question}
+    expect: {unknown: true, used_snippets: []}
+
+  - name: chitchat_is_short_and_warm
+    input: {message: "lol you are funny", intent: chitchat}
+    expect: {unknown: false, steer_back: false, suggested_chips: []}
+
+  - name: stuck_user_gets_idea_chips
+    input: {message: "I have no idea what to build", intent: chitchat, stuck: true}
+    expect: {steer_back: false}
+
+  - name: off_topic_twice_steers_back
+    input: {message: "do you like cricket", intent: chitchat, off_topic_streak: 2}
+    expect: {steer_back: true}

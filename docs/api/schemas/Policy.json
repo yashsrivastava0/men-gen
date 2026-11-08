@@ -1,0 +1,305 @@
+{
+  "$defs": {
+    "GateRule": {
+      "additionalProperties": false,
+      "properties": {
+        "approvers": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Approvers",
+          "type": "array"
+        },
+        "full_file_view": {
+          "default": false,
+          "title": "Full File View",
+          "type": "boolean"
+        },
+        "reminder_hours": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Reminder Hours"
+        }
+      },
+      "required": [
+        "approvers"
+      ],
+      "title": "GateRule",
+      "type": "object"
+    },
+    "Limits": {
+      "additionalProperties": false,
+      "properties": {
+        "max_cards": {
+          "default": 10,
+          "title": "Max Cards",
+          "type": "integer"
+        },
+        "max_new_screens_light": {
+          "default": 5,
+          "title": "Max New Screens Light",
+          "type": "integer"
+        },
+        "max_screens": {
+          "default": 50,
+          "title": "Max Screens",
+          "type": "integer"
+        },
+        "max_spec_tokens": {
+          "default": 60000,
+          "title": "Max Spec Tokens",
+          "type": "integer"
+        },
+        "max_turns": {
+          "default": 30,
+          "title": "Max Turns",
+          "type": "integer"
+        },
+        "research_budget_usd": {
+          "default": "0.30",
+          "title": "Research Budget Usd",
+          "type": "string"
+        },
+        "session_budget_usd": {
+          "default": "0.50",
+          "title": "Session Budget Usd",
+          "type": "string"
+        }
+      },
+      "title": "Limits",
+      "type": "object"
+    },
+    "ModelPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "providers": {
+          "default": [
+            "openai"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "title": "Providers",
+          "type": "array"
+        },
+        "retention": {
+          "default": "none",
+          "title": "Retention",
+          "type": "string"
+        }
+      },
+      "title": "ModelPolicy",
+      "type": "object"
+    },
+    "PolicyGates": {
+      "additionalProperties": false,
+      "properties": {
+        "brief": {
+          "$ref": "#/$defs/GateRule"
+        },
+        "plan": {
+          "$ref": "#/$defs/GateRule"
+        },
+        "post_handoff": {
+          "$ref": "#/$defs/PostHandoffPolicy"
+        }
+      },
+      "title": "PolicyGates",
+      "type": "object"
+    },
+    "PostHandoffPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "heavy_if": {
+          "default": [
+            "scope",
+            "auth",
+            "pay",
+            "integrations"
+          ],
+          "items": {
+            "enum": [
+              "scope",
+              "auth",
+              "pay",
+              "integrations",
+              "design",
+              "data",
+              "roles",
+              "screens"
+            ],
+            "type": "string"
+          },
+          "title": "Heavy If",
+          "type": "array"
+        },
+        "max_new_screens_light": {
+          "default": 5,
+          "title": "Max New Screens Light",
+          "type": "integer"
+        }
+      },
+      "title": "PostHandoffPolicy",
+      "type": "object"
+    },
+    "ResearchPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "connectors": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Connectors",
+          "type": "array"
+        },
+        "depth": {
+          "default": "light",
+          "enum": [
+            "light",
+            "standard",
+            "deep"
+          ],
+          "title": "Depth",
+          "type": "string"
+        },
+        "enabled": {
+          "default": true,
+          "title": "Enabled",
+          "type": "boolean"
+        },
+        "web": {
+          "$ref": "#/$defs/WebPolicy"
+        }
+      },
+      "title": "ResearchPolicy",
+      "type": "object"
+    },
+    "WebPolicy": {
+      "additionalProperties": false,
+      "properties": {
+        "allow_company_name_in_queries": {
+          "default": true,
+          "title": "Allow Company Name In Queries",
+          "type": "boolean"
+        },
+        "allowed_domains": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Allowed Domains",
+          "type": "array"
+        },
+        "blocked_domains": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Blocked Domains",
+          "type": "array"
+        }
+      },
+      "title": "WebPolicy",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "allowed_regions": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Allowed Regions",
+      "type": "array"
+    },
+    "banned_libraries": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Banned Libraries",
+      "type": "array"
+    },
+    "description": {
+      "default": "",
+      "title": "Description",
+      "type": "string"
+    },
+    "gates": {
+      "$ref": "#/$defs/PolicyGates"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "inherits": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Inherits"
+    },
+    "limits": {
+      "$ref": "#/$defs/Limits"
+    },
+    "mode": {
+      "default": "guided",
+      "enum": [
+        "guided",
+        "enterprise"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "model_policy": {
+      "$ref": "#/$defs/ModelPolicy"
+    },
+    "org": {
+      "default": "platform",
+      "title": "Org",
+      "type": "string"
+    },
+    "research": {
+      "$ref": "#/$defs/ResearchPolicy"
+    },
+    "role_precedence": {
+      "default": [],
+      "items": {
+        "type": "string"
+      },
+      "title": "Role Precedence",
+      "type": "array"
+    },
+    "slot_policy": {
+      "additionalProperties": {
+        "enum": [
+          "must",
+          "should",
+          "may"
+        ],
+        "type": "string"
+      },
+      "title": "Slot Policy",
+      "type": "object"
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "title": "Policy",
+  "type": "object"
+}

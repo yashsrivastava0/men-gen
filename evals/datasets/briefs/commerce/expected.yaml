@@ -1,0 +1,313 @@
+slots:
+  a11y:
+    value: standard
+    state: assumed
+  approvers:
+    value:
+    - requester
+    state: assumed
+  auth.method:
+    value: email_phone_code
+    state: confirmed
+  auth.sso:
+    value: not_needed
+    state: assumed
+  behavior.analytics:
+    value: false
+    state: assumed
+  behavior.notifications:
+    value: true
+    state: assumed
+  behavior.offline:
+    value: basic
+    state: assumed
+  brand.name:
+    value: Blue Basket
+    state: confirmed
+  data.classification:
+    value: internal
+    state: assumed
+  data.source:
+    value: generated
+    state: assumed
+  design.direction:
+    value: clean-bright
+    state: confirmed
+  design.mode:
+    value: system
+    state: assumed
+  idea.archetype:
+    value: commerce
+    state: confirmed
+  idea.summary:
+    value: An online shop for handmade candles
+    state: volunteered
+  locale:
+    value: en
+    state: assumed
+  pay.model:
+    value: online
+    state: confirmed
+  pay.provider:
+    value: mock
+    state: assumed
+  release.channel:
+    value: internal
+    state: assumed
+  scope.apps:
+    value:
+    - customer
+    state: confirmed
+  scope.features:
+    value:
+    - catalog_browse
+    - search
+    - cart_checkout
+    - payments
+    - order_tracking
+    - push_notifications
+    state: confirmed
+screens:
+- id: SCR-001
+  route: /welcome
+  recipe: welcome
+  surface: customer
+  auth: public
+- id: SCR-002
+  route: /login
+  recipe: login-otp
+  surface: customer
+  auth: public
+- id: SCR-003
+  route: /signup
+  recipe: signup
+  surface: customer
+  auth: public
+- id: SCR-004
+  route: /home
+  recipe: dashboard
+  surface: customer
+  auth: public
+- id: SCR-005
+  route: /category/[id]
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-006
+  route: /product/[id]
+  recipe: detail-with-sticky-cta
+  surface: customer
+  auth: public
+- id: SCR-007
+  route: /product/[id]/reviews
+  recipe: list
+  surface: customer
+  auth: public
+- id: SCR-008
+  route: /product/[id]/review/new
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-009
+  route: /search
+  recipe: search
+  surface: customer
+  auth: public
+- id: SCR-010
+  route: /search/results
+  recipe: list-with-filters
+  surface: customer
+  auth: public
+- id: SCR-011
+  route: /cart
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-012
+  route: /checkout
+  recipe: checkout-review
+  surface: customer
+  auth: authenticated
+- id: SCR-013
+  route: /order-confirmation
+  recipe: confirmation
+  surface: customer
+  auth: authenticated
+- id: SCR-014
+  route: /payment-failed
+  recipe: empty-state-only
+  surface: customer
+  auth: authenticated
+- id: SCR-015
+  route: /orders
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-016
+  route: /orders/[id]
+  recipe: detail
+  surface: customer
+  auth: authenticated
+- id: SCR-017
+  route: /orders/[id]/tracking
+  recipe: tracking
+  surface: customer
+  auth: authenticated
+- id: SCR-018
+  route: /account
+  recipe: profile
+  surface: customer
+  auth: authenticated
+- id: SCR-019
+  route: /account/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-020
+  route: /account/addresses
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-021
+  route: /account/addresses/edit
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-022
+  route: /payment-methods
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-023
+  route: /payment-methods/new
+  recipe: form
+  surface: customer
+  auth: authenticated
+- id: SCR-024
+  route: /favorites
+  recipe: list
+  surface: customer
+  auth: authenticated
+- id: SCR-025
+  route: /notifications
+  recipe: notifications
+  surface: customer
+  auth: authenticated
+- id: SCR-026
+  route: /settings
+  recipe: settings
+  surface: customer
+  auth: authenticated
+- id: SCR-027
+  route: /help
+  recipe: list
+  surface: customer
+  auth: public
+flows:
+- id: FLW-001
+  name: Find a product and place an order
+  screens:
+  - SCR-004
+  - SCR-006
+  - SCR-011
+  - SCR-012
+  - SCR-013
+- id: FLW-002
+  name: Sign in
+  screens:
+  - SCR-001
+  - SCR-002
+  - SCR-004
+- id: FLW-003
+  name: Search for a product
+  screens:
+  - SCR-009
+  - SCR-010
+  - SCR-006
+- id: FLW-004
+  name: Add a payment method at checkout
+  screens:
+  - SCR-012
+  - SCR-022
+  - SCR-023
+- id: FLW-005
+  name: Follow an order
+  screens:
+  - SCR-015
+  - SCR-016
+  - SCR-017
+- id: FLW-006
+  name: Review a product
+  screens:
+  - SCR-006
+  - SCR-007
+  - SCR-008
+- id: FLW-007
+  name: Come back to a saved product
+  screens:
+  - SCR-024
+  - SCR-006
+  - SCR-011
+- id: FLW-008
+  name: Manage delivery addresses
+  screens:
+  - SCR-018
+  - SCR-020
+  - SCR-021
+entities:
+- ENT-User
+- ENT-Address
+- ENT-Category
+- ENT-Product
+- ENT-ProductVariant
+- ENT-Cart
+- ENT-CartItem
+- ENT-Order
+- ENT-OrderItem
+- ENT-OrderEvent
+- ENT-PaymentMethod
+- ENT-Payment
+- ENT-Review
+- ENT-Favorite
+- ENT-Notification
+operations:
+- API-requestOtp
+- API-verifyOtp
+- API-getMe
+- API-updateMe
+- API-listAddresses
+- API-createAddress
+- API-updateAddress
+- API-deleteAddress
+- API-listCategories
+- API-listProducts
+- API-getProduct
+- API-searchProducts
+- API-getCart
+- API-addCartItem
+- API-updateCartItem
+- API-removeCartItem
+- API-createOrder
+- API-listOrders
+- API-getOrder
+- API-getOrderTracking
+- API-cancelOrder
+- API-listPaymentMethods
+- API-addPaymentMethod
+- API-removePaymentMethod
+- API-createPayment
+- API-listReviews
+- API-createReview
+- API-listFavorites
+- API-addFavorite
+- API-removeFavorite
+- API-listNotifications
+- API-markNotificationRead
+- API-registerPushToken
+roles:
+- ROLE-customer
+counts:
+  screens: 27
+  flows: 8
+  entities: 15
+  operations: 33

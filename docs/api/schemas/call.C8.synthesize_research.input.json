@@ -1,0 +1,245 @@
+{
+  "$defs": {
+    "BriefContext": {
+      "additionalProperties": false,
+      "description": "Compact approved-Brief view passed to research and spec-building calls.",
+      "properties": {
+        "app_summary": {
+          "title": "App Summary",
+          "type": "string"
+        },
+        "archetype": {
+          "title": "Archetype",
+          "type": "string"
+        },
+        "assumptions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "brand_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Name"
+        },
+        "brand_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Brand Url"
+        },
+        "compliance_flags": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Compliance Flags",
+          "type": "array"
+        },
+        "features": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "language": {
+          "default": "en",
+          "title": "Language",
+          "type": "string"
+        },
+        "login": {
+          "default": "",
+          "title": "Login",
+          "type": "string"
+        },
+        "look": {
+          "default": "",
+          "title": "Look",
+          "type": "string"
+        },
+        "mode": {
+          "default": "guided",
+          "enum": [
+            "guided",
+            "enterprise"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "references": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "References",
+          "type": "array"
+        },
+        "regions": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Regions",
+          "type": "array"
+        },
+        "roles": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "title": "Roles",
+          "type": "array"
+        }
+      },
+      "required": [
+        "app_summary",
+        "archetype"
+      ],
+      "title": "BriefContext",
+      "type": "object"
+    },
+    "FactForSynthesis": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "impact": {
+          "default": "low",
+          "enum": [
+            "low",
+            "high"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "job": {
+          "enum": [
+            "R1",
+            "R2",
+            "R3",
+            "R4",
+            "R5",
+            "R6"
+          ],
+          "title": "Job",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "feature",
+            "pattern",
+            "brand",
+            "compliance",
+            "integration",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "source_urls": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Urls",
+          "type": "array"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "verified": {
+          "default": false,
+          "title": "Verified",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "job",
+        "kind",
+        "statement",
+        "source_urls"
+      ],
+      "title": "FactForSynthesis",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "brief": {
+      "$ref": "#/$defs/BriefContext"
+    },
+    "depth": {
+      "default": "light",
+      "enum": [
+        "light",
+        "standard",
+        "deep"
+      ],
+      "title": "Depth",
+      "type": "string"
+    },
+    "facts": {
+      "items": {
+        "$ref": "#/$defs/FactForSynthesis"
+      },
+      "title": "Facts",
+      "type": "array"
+    },
+    "gap_round": {
+      "default": false,
+      "title": "Gap Round",
+      "type": "boolean"
+    },
+    "max_suggestions": {
+      "default": 12,
+      "title": "Max Suggestions",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "brief",
+    "facts"
+  ],
+  "title": "C8Input",
+  "type": "object"
+}

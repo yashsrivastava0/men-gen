@@ -1,0 +1,319 @@
+{
+  "$defs": {
+    "KnowledgeLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "text"
+      ],
+      "title": "KnowledgeLite",
+      "type": "object"
+    },
+    "OptionLite": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "label"
+      ],
+      "title": "OptionLite",
+      "type": "object"
+    },
+    "PendingCardLite": {
+      "additionalProperties": false,
+      "properties": {
+        "card_id": {
+          "title": "Card Id",
+          "type": "string"
+        },
+        "options": {
+          "default": [],
+          "items": {
+            "$ref": "#/$defs/OptionLite"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "slot": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "choice3",
+            "multi",
+            "visual3",
+            "text",
+            "upload",
+            "confirm"
+          ],
+          "title": "Type",
+          "type": "string"
+        }
+      },
+      "required": [
+        "card_id",
+        "slot",
+        "type",
+        "text"
+      ],
+      "title": "PendingCardLite",
+      "type": "object"
+    },
+    "SlotBrief": {
+      "additionalProperties": false,
+      "description": "One slot as shown to a prompt: compact, no provenance noise.",
+      "properties": {
+        "slot_id": {
+          "enum": [
+            "idea.summary",
+            "idea.archetype",
+            "scope.apps",
+            "scope.features",
+            "users.roles",
+            "auth.method",
+            "design.direction",
+            "brand.name",
+            "brand.assets",
+            "design.accent",
+            "design.mode",
+            "design.nav_style",
+            "pay.model",
+            "pay.provider",
+            "data.source",
+            "behavior.offline",
+            "behavior.notifications",
+            "behavior.analytics",
+            "locale",
+            "a11y",
+            "compliance.flags",
+            "auth.sso",
+            "integrations.list",
+            "data.classification",
+            "regions",
+            "release.channel",
+            "approvers"
+          ],
+          "title": "Slot Id",
+          "type": "string"
+        },
+        "source": {
+          "anyOf": [
+            {
+              "enum": [
+                "tap",
+                "text",
+                "upload",
+                "research",
+                "org_profile",
+                "memory",
+                "default"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source"
+        },
+        "state": {
+          "enum": [
+            "empty",
+            "assumed",
+            "volunteered",
+            "confirmed",
+            "disputed"
+          ],
+          "title": "State",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "slot_id",
+        "value",
+        "state"
+      ],
+      "title": "SlotBrief",
+      "type": "object"
+    },
+    "TurnLite": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "enum": [
+            "user",
+            "assistant"
+          ],
+          "title": "Role",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "role",
+        "text"
+      ],
+      "title": "TurnLite",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "intent": {
+      "enum": [
+        "greeting",
+        "idea",
+        "answer",
+        "volunteered",
+        "question",
+        "chitchat",
+        "confused",
+        "change",
+        "upload",
+        "approve",
+        "stop",
+        "pause",
+        "start_over",
+        "unsafe",
+        "other"
+      ],
+      "title": "Intent",
+      "type": "string"
+    },
+    "knowledge": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/KnowledgeLite"
+      },
+      "title": "Knowledge",
+      "type": "array"
+    },
+    "language": {
+      "default": "en",
+      "title": "Language",
+      "type": "string"
+    },
+    "message": {
+      "title": "Message",
+      "type": "string"
+    },
+    "mode": {
+      "default": "guided",
+      "enum": [
+        "guided",
+        "enterprise"
+      ],
+      "title": "Mode",
+      "type": "string"
+    },
+    "off_topic_streak": {
+      "default": 0,
+      "title": "Off Topic Streak",
+      "type": "integer"
+    },
+    "pending_card": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PendingCardLite"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "recent_turns": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/TurnLite"
+      },
+      "title": "Recent Turns",
+      "type": "array"
+    },
+    "slots": {
+      "default": [],
+      "items": {
+        "$ref": "#/$defs/SlotBrief"
+      },
+      "title": "Slots",
+      "type": "array"
+    },
+    "stuck": {
+      "default": false,
+      "title": "Stuck",
+      "type": "boolean"
+    },
+    "summary": {
+      "default": "",
+      "title": "Summary",
+      "type": "string"
+    }
+  },
+  "required": [
+    "message",
+    "intent"
+  ],
+  "title": "C3Input",
+  "type": "object"
+}

@@ -1,0 +1,62 @@
+# SIT-026: Types an unclear approval at a gate ("ok maybe", "looks fine but...")
+# Detection: C1 low confidence
+# Behavior:  Not approved; show the gate buttons again; apply any change inside the text
+id: SIT-026-unclear-approval-at-a-gate
+situation: "Types an unclear approval at a gate (\"ok maybe\", \"looks fine but...\")"
+mode: guided
+integration: true
+variants:
+  ok_maybe_is_not_an_approval:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - user: "ok maybe"
+        expect:
+          state: BRIEF_REVIEW
+          approvals_count: 0
+          notices: [not_an_approval]
+          events:
+            - {type: gate, gate: brief}
+          spec_ready: 0
+  looks_fine_but_applies_the_change:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - user: "looks good but make it dark"
+        expect:
+          state: BRIEF_REVIEW
+          approvals_count: 0
+          slots:
+            design.direction: {value: bold-dark}
+          gate: {gate: brief, version: 2, single_button: true}
+  a_clear_typed_approval_counts_and_is_recorded_as_typed:
+    steps:
+      - user: "Build me a shop app with defaults"
+        expect:
+          state: DISCOVERING
+          text_contains: ["only need your idea and the look"]
+          pending_card: Q-look-01
+      - tap: {card: Q-look-01, option: A}
+        expect:
+          state: BRIEF_REVIEW
+          gate: {gate: brief, version: 1, buttons: ["Looks right", "Change something"]}
+      - user: "looks good"
+        expect:
+          state: PLANNING
+          plan_phase: research
+          approvals:
+            - {gate: brief, decision: approve, via: typed, role: requester, version: 1}
