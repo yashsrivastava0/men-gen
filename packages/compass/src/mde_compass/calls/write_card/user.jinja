@@ -1,0 +1,36 @@
+Question {{ question_number }}. Language: {{ language }}. Speaker: expertise {{ profile.expertise }}, register {{ profile.formality }}.
+
+Frame {{ frame.id }} ({{ frame.card_type }}{% if frame.option_count %}, {{ frame.option_count }} options{% else %}, checklist or free text{% endif %}): {{ frame.purpose }}
+Guidance: {{ frame.guidance }}
+Options come from: {{ option_source }}.{% if must_confirm %} This answer must be confirmed by the user (do not make it sound optional).{% endif %}
+
+Slots on this card (value_kind says what sets_json may hold):
+{% for s in slots %}
+- {{ s.slot_id }} ({{ s.label }}; {{ s.value_kind }}){% if s.options %} options: {{ s.options | join(", ") }}{% endif %}{% if s.fields %} fields: {{ s.fields | join(", ") }}{% endif %}
+
+{% endfor %}
+{% if known_slots %}
+
+Already known (do not ask again):
+{% for k in known_slots %}
+{{ k }}
+{% endfor %}
+{% endif %}
+{% if hints %}
+
+Typical items for this kind of app (only these may carry basis "typical"):
+{% for h in hints %}
+{{ h }}
+{% endfor %}
+{% endif %}
+{% if evidence %}
+
+The user's words and document quotes:
+{% for e in evidence %}
+{{ e }}
+{% endfor %}
+{% endif %}
+{% if avoid_labels %}
+
+Do not reuse these labels: {{ avoid_labels | tojson }}
+{% endif %}

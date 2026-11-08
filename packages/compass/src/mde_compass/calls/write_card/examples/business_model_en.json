@@ -1,0 +1,72 @@
+{
+  "name": "business_model_en",
+  "input": {
+    "frame": {
+      "id": "business_model",
+      "purpose": "Learn how money flows, in the domain's own terms, when money flows at all.",
+      "guidance": "Write three mutually exclusive ways this kind of app can earn, in plain words for this domain. Use the family's typical business models only as grounding. Never quote numbers or say what most people choose.",
+      "card_type": "choose_one",
+      "option_count": 3,
+      "max_question_words": 20,
+      "max_option_words": 8
+    },
+    "slots": [
+      {
+        "slot_id": "idea.business_model",
+        "label": "How it earns money",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      }
+    ],
+    "option_source": "family",
+    "hints": [],
+    "evidence": [
+      "I run a small bakery in Pune"
+    ],
+    "must_confirm": false,
+    "language": "en",
+    "avoid_labels": [],
+    "profile": {
+      "expertise": "non_technical",
+      "formality": "casual",
+      "language": "en"
+    },
+    "known_slots": [],
+    "question_number": 3
+  },
+  "output": {
+    "question": "How will the app earn money?",
+    "why_we_ask": "It decides which payment and plan screens are needed.",
+    "options": [
+      {
+        "id": "A",
+        "label": "A small fee on each sale or booking",
+        "basis": "suggestion",
+        "recommended": true,
+        "reason": "A simple place to start; you can change it later.",
+        "sets_json": "{\"idea.business_model\": \"per_transaction_fee\"}",
+        "ticked": false
+      },
+      {
+        "id": "B",
+        "label": "A monthly or yearly plan",
+        "basis": "suggestion",
+        "recommended": false,
+        "reason": "",
+        "sets_json": "{\"idea.business_model\": \"subscription\"}",
+        "ticked": false
+      },
+      {
+        "id": "C",
+        "label": "Free to use; the business pays for it",
+        "basis": "suggestion",
+        "recommended": false,
+        "reason": "",
+        "sets_json": "{\"idea.business_model\": \"business_funded\"}",
+        "ticked": false
+      }
+    ],
+    "placeholder": ""
+  }
+}
