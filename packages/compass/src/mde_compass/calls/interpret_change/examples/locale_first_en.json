@@ -1,0 +1,22 @@
+{
+  "name": "make the app Hindi first, a Locked row (English)",
+  "input": {
+    "text": "make the app Hindi first",
+    "language": "en",
+    "target_kind": "row",
+    "target_id": "experience.locales",
+    "reason": "",
+    "history": [
+      {"turn_id": "evt_01A", "role": "user", "text": "English and Hindi both", "path": "experience.locales", "value_json": "[\"en\", \"hi\"]"}
+    ],
+    "items": [
+      {"path": "experience.locales", "label": "App languages", "value_json": "[\"en\", \"hi\"]", "tier": "Locked", "status": "confirmed", "value_kind": "locales", "options": []}
+    ],
+    "add_sections": []
+  },
+  "expect": {
+    "understood": true,
+    "ops": [["set", "experience.locales", ["hi", "en"]]],
+    "touches_locked": ["experience.locales"]
+  }
+}
