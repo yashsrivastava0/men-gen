@@ -274,11 +274,20 @@ def to_view_value(value: JsonValue, labels: Labels, slot: SlotDef | None = None)
             return list_value(_locale_lines(value, labels))
         return list_value([_object_line(value, labels)])
     if isinstance(value, list):
-        if all(isinstance(v, dict) for v in value):
-            return list_value([_object_line(v, labels) for v in value if isinstance(v, dict)])
-        items = [scalar_text(v, labels, slot) for v in value]
+        items = [_element_text(v, labels, slot) for v in value]
+        if any(isinstance(v, dict | list) for v in value):
+            return list_value(items)
         return chips_value(items)
     return text_value(scalar_text(value, labels, slot))
+
+
+def _element_text(value: JsonValue, labels: Labels, slot: SlotDef | None) -> str:
+    """One list element as a line (objects as ``name · detail``, nested lists comma-joined)."""
+    if isinstance(value, dict):
+        return _object_line(value, labels)
+    if isinstance(value, list):
+        return ", ".join(t for t in (_element_text(v, labels, slot) for v in value) if t)
+    return scalar_text(value, labels, slot)
 
 
 def _locale_lines(value: Mapping[str, JsonValue], labels: Labels) -> list[str]:
