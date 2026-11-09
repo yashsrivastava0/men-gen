@@ -18,7 +18,12 @@ from mde_compass.engine.handoff import LoggingHandoff
 from mde_compass.engine.service import Service
 from mde_core.clock import Clock, SystemClock
 from mde_core.settings import Settings, load_settings
-from mde_llm_gateway import InProcessGatewayClient, StaticRegistry, create_gateway
+from mde_llm_gateway import (
+    GatewayConfig,
+    InProcessGatewayClient,
+    StaticRegistry,
+    create_gateway,
+)
 
 
 def build_service(
@@ -49,9 +54,18 @@ def build_service(
             store_migrate.upgrade(url)
         store = PostgresStore(create_store_engine(url), clock=the_clock)
 
+    # Offline the provider is free and instant: lift the per-route rate limits (they protect live calls only).
+    config = (
+        GatewayConfig(rpm={"fast": 60_000, "standard": 60_000, "deep": 60_000})
+        if mode == "mock"
+        else None
+    )
     gateway = InProcessGatewayClient(
         create_gateway(
-            the_settings, StaticRegistry([cs.spec for cs in all_specs()]), clock=the_clock
+            the_settings,
+            StaticRegistry([cs.spec for cs in all_specs()]),
+            clock=the_clock,
+            config=config,
         )
     )
     service = Service(

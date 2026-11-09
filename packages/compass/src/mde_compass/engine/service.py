@@ -142,7 +142,16 @@ SECTION_STRING = {
     "declined": "section.cannot_build",
 }
 # Sections whose change re-seeds research, and which probes a change re-runs.
-RESEED_SECTIONS = {"idea", "context", "audience", "scope", "references"}
+# Research is re-seeded only when an op touches what the requests are built from (prompt 6.10 step 6):
+# geography, category, audience, references or features. A wording edit must not re-seed (undo stays exact).
+RESEED_PATH_PREFIXES = (
+    "idea.category",
+    "idea.subcategory",
+    "context.geo",
+    "audience.",
+    "references",
+    "scope.",
+)
 PROBES_BY_SECTION = {
     "research": {
         "idea",
@@ -1295,7 +1304,7 @@ class Service:
         self._rebuild(turn)
         voided = changed_sections(before.section_hashes, section_hashes(turn.brief))
         cs = cs.model_copy(update={"voided_sections": voided})
-        if set(voided) & RESEED_SECTIONS and turn.state != "WELCOME":
+        if any(op.path.startswith(RESEED_PATH_PREFIXES) for op in ops) and turn.state != "WELCOME":
             await self._seed(turn)
             cs = cs.model_copy(update={"reseeded_research": True})
         kinds = [k for k, secs in PROBES_BY_SECTION.items() if secs & set(voided)]

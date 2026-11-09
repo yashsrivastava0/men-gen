@@ -18,7 +18,12 @@ from mde_compass.calls.base import CompassCallSpec
 from mde_contracts.gateway import CallContext, CallResult, Usage
 from mde_core.clock import Clock
 from mde_core.settings import load_settings
-from mde_llm_gateway import InProcessGatewayClient, StaticRegistry, create_gateway
+from mde_llm_gateway import (
+    GatewayConfig,
+    InProcessGatewayClient,
+    StaticRegistry,
+    create_gateway,
+)
 
 
 def make_client(
@@ -27,7 +32,8 @@ def make_client(
     """A gateway client over the real pipeline in mock mode, serving exactly these specs."""
     settings = load_settings(llm_mode="mock")
     registry = StaticRegistry([cs.spec for cs in specs])
-    return InProcessGatewayClient(create_gateway(settings, registry, clock=clock))
+    config = GatewayConfig(rpm={"fast": 60_000, "standard": 60_000, "deep": 60_000})
+    return InProcessGatewayClient(create_gateway(settings, registry, clock=clock, config=config))
 
 
 class ScriptedGateway:
