@@ -1,5 +1,7 @@
 id: SB-IN-12
 title: '"Exactly like [brand]": patterns borrowed, never brand assets or copy; confirm before treating as a reference'
+planner_known_issue: BUG-21
+planner_known_issue_note: "the fact projector writes the reference as a volunteered value before _flow_references runs, so the patterns_only notice (never copy a brand) is never emitted"
 tags: [references, brand]
 steps:
   - say: "I want a food delivery app in Pune exactly like Zomato, same logo and same screens"

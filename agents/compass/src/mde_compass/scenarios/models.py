@@ -47,6 +47,9 @@ class SlotExpect(BaseModel):
     contains: list[str] | str | None = None  # case-insensitive, over the item's value
     not_contains: list[str] | str | None = None
     contains_any: list[str] | None = None
+    # also accepted on the planner path only (it normalizes the user's words to the registry's value, for example
+    # "we earn from ads" -> "advertising"); the legacy expectation above stays as it was
+    planner_contains_any: list[str] | None = None
     equals: Any = None
     filled: bool | None = None
     status: list[str] | str | None = None
@@ -179,6 +182,16 @@ class Scenario(BaseModel):
     contributors: list[ContributorSpec] = Field(default_factory=list)
     known_issue: str | None = None  # BUG-n: strict xfail while the product behaviour is wrong
     known_issue_note: str = ""
+    # the question engines the script can run on. A script limited to ``legacy`` asserts the frame queue's own
+    # behaviour and says why in ``engines_reason``; ``SB-QP-xx`` scripts run on the planner only.
+    engines: list[str] = Field(default_factory=lambda: ["legacy", "planner"])
+    engines_reason: str = ""
+    # a strict xfail on the planner path only (the legacy path passes): the planner path has a product defect
+    planner_known_issue: str | None = None
+    planner_known_issue_note: str = ""
+    # hand-written model outputs per call id (a file under ``providers/``, relative to the scenario directory).
+    # Empty means "providers/<id>.yaml if it exists". Planner path only.
+    provider: str = ""
     persona: dict[str, Any] = Field(default_factory=dict)  # eval metadata (kind, flags)
     steps: list[Step]
     final: Expect | None = None  # checked after the last step
@@ -188,6 +201,13 @@ class Scenario(BaseModel):
     def _id(cls, v: str) -> str:
         if not v.startswith("SB-") and not v.startswith("PERSONA-"):
             raise ValueError("scenario ids look like SB-IV-01 or PERSONA-silent")
+        return v
+
+    @field_validator("engines")
+    @classmethod
+    def _engines(cls, v: list[str]) -> list[str]:
+        if not v or any(e not in ("legacy", "planner") for e in v):
+            raise ValueError("engines is a non-empty list of legacy and planner")
         return v
 
     @field_validator("mode")

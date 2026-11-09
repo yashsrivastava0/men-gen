@@ -1,5 +1,7 @@
 id: SB-DC-03
 title: Two references pull in opposite directions, both captured and the borrow question is asked
+engines: [legacy]
+engines_reason: "asserts that the legacy frame queue asks the apps_you_like question; on the planner path the model decides whether references still need a question (references already stated are never re-asked)"
 tags: [references]
 steps:
   - say: "I want a food delivery app in Pune, like Swiggy but also like Notion"

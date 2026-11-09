@@ -1,5 +1,7 @@
 id: SB-EXPRESS-01
 title: A "just build it" user (express profile) is asked at most five questions
+planner_known_issue: BUG-20
+planner_known_issue_note: "the handoff-gap question (ask_gap) is planned with remaining budget 0 and shown anyway: 6 questions in a Quick (5) session"
 tags: [interview, express, budget]
 steps:
   - say: "Quickly, an app for my salon in Pune, asap"

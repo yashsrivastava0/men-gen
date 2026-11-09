@@ -12,7 +12,7 @@ import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import yaml
 
@@ -36,7 +36,41 @@ from mde_compass.scenarios.models import Expect, Scenario, SlotExpect, Step
 from mde_compass.testing import Conversation
 
 NON_QUESTION_FRAMES: frozenset[str] = frozenset({"welcome", "change_variants"})
+TYPED_ANSWER = (
+    "We handle about 200 orders a day for regular customers and our own staff take care of them"
+)
+TYPED_BY_NEED: dict[str, str] = {
+    "context.geo": "In Pune, India",
+    "audience.segments": "Regular customers who order from their phone every day",
+    "locales": "English and Hindi",
+    "look.tone_words": "Friendly, simple and warm",
+    "scope.features": "Ordering, online payments and order tracking",
+    "scope.priority": "Ordering and payments first, the rest can wait",
+    "roles.list": "Customers, shop staff who prepare orders, and an admin",
+    "apps.list": "One app for customers and a small admin panel",
+    "idea.business_model": "We charge a small fee on every order",
+}
+"""What a person types when a planned question has no options and the script just says "accept what is offered"
+(``tap_recommended``, ``drive``). A planner question is often free text; tapping "ok" on it would teach nothing.
+The text is about the question's own need (never another need's words), so it cannot overwrite what the person
+said elsewhere."""
 TERMINAL_STATES: frozenset[str] = frozenset({"BRIEF_REVIEW", "APPROVED", "ARCHIVED"})
+
+
+def frame_slots(frames: Sequence[str]) -> frozenset[str]:
+    """The needs (slot ids) that the legacy frames ask about; a planned question has no frame, only needs."""
+    from mde_compass.catalog import load_catalog
+
+    catalog = load_catalog()
+    return frozenset(s for f in frames if f in catalog.frames for s in catalog.frames[f].slots)
+
+
+def in_frame(card: Card, frames: Sequence[str], engine: str) -> bool:
+    """Whether a card belongs to one of the legacy frames. On the planner path a card has the frame ``planned``,
+    so the frame expectation is translated: the card's needs include a slot of that frame (D-planner-frames)."""
+    if card.frame in frames:
+        return True
+    return engine == "planner" and bool(set(card.need_ids) & frame_slots(frames))
 
 
 class ScenarioFailure(AssertionError):
@@ -75,12 +109,31 @@ class RunResult:
             raise ScenarioFailure(self.failure)
 
 
-def new_service() -> Any:
-    """A fresh real Service: mock mode, in-memory store, a fake clock (the gateway rate limiter then never waits)."""
+Engine = Literal["legacy", "planner"]
+ENGINES: tuple[Engine, ...] = ("legacy", "planner")
+
+
+def engine_config(engine: Engine) -> Any:
+    """The default configuration with the question engine set (the planner path is selected by this one field)."""
+    import dataclasses
+
+    from mde_compass.config import DEFAULT_CONFIG
+
+    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine=engine)
+    return dataclasses.replace(DEFAULT_CONFIG, interview=interview)
+
+
+def new_service(engine: Engine = "legacy", *, gateway: Any | None = None) -> Any:
+    """A fresh real Service: mock mode, in-memory store, a fake clock (the gateway rate limiter then never waits).
+
+    ``engine`` picks the question engine (``legacy`` frame queue or the AI ``planner``); ``gateway`` replaces the
+    mock gateway (a ``ScriptedGateway`` with hand-written model outputs)."""
     from mde_compass.compose import build_service
     from mde_core.clock import FakeClock
 
-    return build_service(memory=True, clock=FakeClock())
+    return build_service(
+        memory=True, clock=FakeClock(), compass_config=engine_config(engine), gateway=gateway
+    )
 
 
 # ---------------------------------------------------------------------------------------- loading
@@ -217,7 +270,9 @@ def _as_list(v: Any) -> list[Any]:
     return [] if v is None else (v if isinstance(v, list) else [v])
 
 
-def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
+def check_slot(
+    brief: dict[str, Any], path: str, exp: SlotExpect, engine: str = "legacy"
+) -> list[str]:
     nodes = _resolve(brief, path.split("."))
     errs: list[str] = []
     if not nodes:
@@ -233,10 +288,11 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     for needle in _as_list(exp.contains):
         if not any(str(needle).lower() in t for t in texts):
             errs.append(f"slot {path}: value should contain {needle!r}; got {texts[0][:200]}")
-    if exp.contains_any and not any(str(n).lower() in t for n in exp.contains_any for t in texts):
-        errs.append(
-            f"slot {path}: value should contain any of {exp.contains_any}; got {texts[0][:200]}"
-        )
+    accepted = list(exp.contains_any or [])
+    if engine == "planner":  # the planner path normalizes the user's words to the registry's value
+        accepted += list(exp.planner_contains_any or [])
+    if accepted and not any(str(n).lower() in t for n in accepted for t in texts):
+        errs.append(f"slot {path}: value should contain any of {accepted}; got {texts[0][:200]}")
     for needle in _as_list(exp.not_contains):
         if any(str(needle).lower() in t for t in texts):
             errs.append(f"slot {path}: value should NOT contain {needle!r}; got {texts[0][:200]}")
@@ -280,6 +336,19 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     return errs
 
 
+async def session_budget(conv: Conversation) -> tuple[str, int]:
+    """The interview budget of a planner session (name and most questions, follow-ups included)."""
+    raw = await conv.brief()
+    meta = cast(dict[str, Any], raw.get("meta") or {})
+    block = cast(dict[str, Any], meta.get("interview") or {})
+    plan = cast(dict[str, Any], meta.get("plan") or {})
+    name = str(plan.get("interview_budget") or block.get("budget") or "standard")
+    if name not in ("quick", "standard", "thorough"):
+        name = "standard"
+    policy = conv.service.config.interview
+    return name, int(policy.budget_max(cast(Any, name)))
+
+
 # ----------------------------------------------------------------------------------------- expectations
 async def check_expect(
     exp: Expect | None,
@@ -290,6 +359,7 @@ async def check_expect(
     version_before: int,
     version_after: int,
     card_on_screen: Card | None = None,
+    engine: str = "legacy",
 ) -> list[str]:
     exp = exp or Expect()
     errs: list[str] = []
@@ -329,11 +399,20 @@ async def check_expect(
     last = _last_card_in(events) or card_on_screen
     if exp.no_card and last is not None:
         errs.append(f"no card expected, but card {last.id} ({last.frame}) was shown")
-    if exp.card_frame and (last is None or last.frame not in _as_list(exp.card_frame)):
+    if exp.card_frame and (last is None or not in_frame(last, _as_list(exp.card_frame), engine)):
         errs.append(
             f"last card frame should be one of {exp.card_frame}; got {last.frame if last else None}"
         )
-    if exp.card_type and (last is None or last.type not in _as_list(exp.card_type)):
+    # the planner chooses the card type per question (choose_one only for three real alternatives), so a type named
+    # next to a legacy frame describes that frame's template and is not checked on the planner path
+    type_applies = not (
+        engine == "planner" and exp.card_frame and last is not None and last.frame == "planned"
+    )
+    if (
+        exp.card_type
+        and type_applies
+        and (last is None or last.type not in _as_list(exp.card_type))
+    ):
         errs.append(
             f"last card type should be one of {exp.card_type}; got {last.type if last else None}"
         )
@@ -370,8 +449,14 @@ async def check_expect(
         )
     if exp.questions_max is not None:
         total = len(question_cards(conv.events))
-        if total > exp.questions_max:
-            errs.append(f"at most {exp.questions_max} questions in the whole session; got {total}")
+        limit, why = exp.questions_max, ""
+        if (
+            engine == "planner"
+        ):  # the planner path is governed by the interview budget, not a frame count
+            name, limit = await session_budget(conv)
+            why = f" (the {name} budget)"
+        if total > limit:
+            errs.append(f"at most {limit} questions in the whole session{why}; got {total}")
     if exp.approvable is not None:
         readies = [e for e in events if e.type == "brief_ready"]
         if not readies or bool(readies[-1].payload.get("approvable")) != exp.approvable:
@@ -400,15 +485,16 @@ async def check_expect(
     if exp.slots:
         brief = await conv.brief()
         for path, sx in exp.slots.items():
-            errs.extend(check_slot(brief, path, sx))
+            errs.extend(check_slot(brief, path, sx, engine))
     return errs
 
 
 # --------------------------------------------------------------------------------------------- execution
 class _Runner:
-    def __init__(self, conv: Conversation, scenario: Scenario) -> None:
+    def __init__(self, conv: Conversation, scenario: Scenario, engine: str = "legacy") -> None:
         self.conv = conv
         self.scn = scenario
+        self.engine = engine
         self._n = 0
         self.answers: list[
             tuple[str, Card]
@@ -508,6 +594,20 @@ class _Runner:
                 )
                 await self.conv.send(BriefEdit(event_id=self.eid(), item_id=slot.brief_path, value=value, contributor_id=who))  # fmt: skip
 
+    async def _feedback_target(self, arg: Any) -> str:
+        """``target`` as written; on the planner path ``planner_target: slot:<slot id>`` names the assumption by its
+        slot (assumption numbers depend on which questions the engine asked)."""
+        target = str(arg["target"])
+        alias = arg.get("planner_target") if self.engine == "planner" else None
+        if not alias:
+            return target
+        slot_id = str(alias).removeprefix("slot:")
+        brief = await self.conv.brief()
+        for asm in brief.get("assumptions", []):
+            if asm.get("slot_id") == slot_id:
+                return str(asm["id"])
+        raise ScenarioFailure(f"no assumption for slot {slot_id!r} to give feedback on")
+
     async def execute(self, step: Step) -> str:
         """Run one step; returns how a card was answered (tap | custom | you_decide | skip | text | other)."""
         conv, who, arg = self.conv, step.contributor, step.arg
@@ -539,6 +639,13 @@ class _Runner:
         if a == "tap_recommended":
             card = await self._card()
             opt = card.recommended_option() or (card.options[0] if card.options else None)
+            if self.engine == "planner" and not card.options and card.type != "quick_form":
+                typed = str(self.scn.persona.get("typed", ""))
+                typed = typed or next(
+                    (TYPED_BY_NEED[n] for n in card.need_ids if n in TYPED_BY_NEED), TYPED_ANSWER
+                )
+                await self._answer(None, custom=typed, who=who)
+                return "custom"
             if card.type == "quick_form":
                 value: Any = await self._form_value(card)
             elif card.type == "priority":
@@ -622,8 +729,9 @@ class _Runner:
             await conv.send(BriefEdit(event_id=self.eid(), item_id=str(arg["path"]), value=arg.get("value"), contributor_id=who))  # fmt: skip
             return "other"
         if a == "feedback":
+            target = await self._feedback_target(arg)
             await conv.send(
-                BriefFeedback(event_id=self.eid(), target=str(arg["target"]), reason=arg.get("reason", "other"), text=str(arg.get("text", "")), contributor_id=who)  # type: ignore[arg-type]
+                BriefFeedback(event_id=self.eid(), target=target, reason=arg.get("reason", "other"), text=str(arg.get("text", "")), contributor_id=who)  # type: ignore[arg-type]
             )  # fmt: skip
             return "other"
         if a == "decide":
@@ -698,7 +806,7 @@ class _Runner:
             for _ in range(limit):
                 if await conv.state() == until or conv.last_card() is None:
                     break
-                if until_frame and conv.last_card().frame == until_frame:  # type: ignore[union-attr]
+                if until_frame and in_frame(conv.last_card(), [until_frame], self.engine):  # type: ignore[arg-type]
                     break
                 card = conv.last_card()
                 if card is not None and card.must_confirm and mode in ("you_decide", "skip"):
@@ -731,20 +839,24 @@ def _format_failure(
 async def run_scenario(
     scn: Scenario,
     *,
+    engine: Engine | None = None,
     service: Any | None = None,
     service_factory: Callable[[], Any] | None = None,
 ) -> RunResult:
-    """Run every step in order against a fresh service; stops at the first failed expectation."""
-    if service is None:
-        if service_factory is not None:
-            service = service_factory()
-        else:
-            service = new_service()
-    conv = await Conversation.start(service, mode=scn.mode, locale=scn.locale)
+    """Run every step in order against a fresh service; stops at the first failed expectation.
+
+    ``engine`` picks the question engine of a service built here; for a service passed in (or made by
+    ``service_factory``) the engine is read from its configuration, so the frame translation always matches."""
+    svc: Any = service
+    if svc is None:
+        svc = service_factory() if service_factory is not None else new_service(engine or "legacy")
+    service = svc
+    engine = cast(Engine, svc.config.interview.engine)
+    conv = await Conversation.start(svc, mode=scn.mode, locale=scn.locale)
     result = RunResult(scenario=scn, conv=conv)
     if scn.contributors:
         await _register_contributors(service, conv, scn)
-    runner = _Runner(conv, scn)
+    runner = _Runner(conv, scn, engine)
     for i, step in enumerate(scn.steps):
         before_n = len(conv.events)
         state_before = await conv.state()
@@ -770,7 +882,7 @@ async def run_scenario(
             errors = await check_expect(
                 step.expect, conv=conv, events=events, state_after=state_after,
                 version_before=version_before, version_after=version_after,
-                card_on_screen=conv.last_card() if step.action == "drive" else None,
+                card_on_screen=conv.last_card() if step.action == "drive" else None, engine=engine,
             )  # fmt: skip
         if errors:
             result.failure = _format_failure(scn, i, step, errors, events, conv.events)
@@ -784,7 +896,7 @@ async def run_scenario(
     if scn.final is not None:
         errors = await check_expect(
             scn.final, conv=conv, events=[], state_after=await conv.state(),
-            version_before=0, version_after=int((await conv.brief())["version"]),
+            version_before=0, version_after=int((await conv.brief())["version"]), engine=engine,
         )  # fmt: skip
         if errors:
             last = Step(action="final", arg=None, expect=scn.final)

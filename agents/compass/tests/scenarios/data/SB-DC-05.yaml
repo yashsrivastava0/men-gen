@@ -1,5 +1,7 @@
 id: SB-DC-05
 title: Hybrid category, the engine asks which is primary
+engines: [legacy]
+engines_reason: "asserts the legacy confirm_kind_of_app frame (a hybrid category is resolved by a fixed choose_one card); the planner path forms the category from the domain hypothesis, with no such card"
 tags: [category, hybrid]
 steps:
   - say: "I want an app for my gym where members book classes, and also buy protein supplements, and pay a monthly fee"
