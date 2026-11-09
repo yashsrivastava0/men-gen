@@ -16,6 +16,10 @@ real store. Adapted from ``mde_flow.testing.store`` (credit: the Mobigen flow pa
   bound to another tenant is a ``TenantViolation``.
 * **Optimistic row_version** on ``SessionRepo.save``; consecutive-only Brief versions; idempotent
   inbound events; insert-only brief versions (only ``mark_baseline`` labels one, once).
+* **Interview Memory** (``qa``, ``facts``, ``summaries``, ``batches``; ADR 0015) has no delete method.
+  Writes take the session's row lock, ``next_id`` reads the stored state under that lock (so concurrent
+  units get distinct ids), timestamps are normalised to UTC on write, and a fact's id, ``created_at``,
+  ``statement`` and ``quote`` cannot change, exactly as the database trigger enforces.
 * Records are stored as JSON and re-validated on read, so aliasing and non-serialisable fields
   cannot hide in unit tests.
 
@@ -41,16 +45,31 @@ from mde_compass.domain.changes import ChangeSet
 from mde_compass.domain.claims import Chunk, Claim, SourceInfo
 from mde_compass.domain.events import StoredEvent
 from mde_compass.domain.hashing import brief_hash, section_hashes
+from mde_compass.domain.interview import (
+    BatchRecord,
+    Fact,
+    FactStatus,
+    InterviewSummary,
+    QaRecord,
+    QaStatus,
+)
 from mde_compass.domain.session import Contributor, SessionRecord, SessionState
 from mde_compass.store.common import (
+    BATCH_ID_PREFIX,
     DEFAULT_BASELINE_LABEL,
+    FACT_ID_PREFIX,
     STALE_TURN,
+    changed_fact_identity,
     clean_json,
     clean_text,
+    fact_immutable,
+    in_utc,
+    next_numbered_id,
     normalize,
     payload_text,
 )
 from mde_compass.store.ports import (
+    BatchRepo,
     BriefRepo,
     BriefVersionRecord,
     BriefVersionSummary,
@@ -59,15 +78,19 @@ from mde_compass.store.ports import (
     ChangeSetRepo,
     ContributorRepo,
     EventRepo,
+    FactRepo,
     HistoryPage,
+    QaRepo,
     QuestionRecord,
     QuestionRepo,
     SessionRepo,
     SourceRepo,
+    SummaryRepo,
     UnitOfWork,
 )
 from mde_core.clock import Clock, FakeClock
 from mde_core.errors import Conflict, NotFound, TenantViolation, ValidationFailed
+from mde_persistence.jsonutil import utc
 
 K = TypeVar("K")
 V = TypeVar("V")
@@ -93,6 +116,10 @@ class _Data:
         self.chunks: dict[tuple[str, str], list[str]] = {}
         self.claims: dict[tuple[str, str], str] = {}
         self.contributors: dict[tuple[str, str], str] = {}
+        self.qa: dict[tuple[str, str, int], str] = {}  # (session, card id, version)
+        self.facts: dict[tuple[str, str], str] = {}
+        self.summaries: dict[str, str] = {}
+        self.batches: dict[tuple[str, str], str] = {}
 
 
 class InMemoryStore:
@@ -144,6 +171,10 @@ class _Uow:
     call_log: CallLogRepo
     sources: SourceRepo
     contributors: ContributorRepo
+    qa: QaRepo
+    facts: FactRepo
+    summaries: SummaryRepo
+    batches: BatchRepo
 
     def __init__(self, store: InMemoryStore, tenant_id: str) -> None:
         self.store = store
@@ -158,6 +189,10 @@ class _Uow:
         self.call_log = _CallLog(self)
         self.sources = _Sources(self)
         self.contributors = _Contributors(self)
+        self.qa = _Qa(self)
+        self.facts = _Facts(self)
+        self.summaries = _Summaries(self)
+        self.batches = _Batches(self)
 
     # -- transaction plumbing -----------------------------------------------------------------
     async def commit(self) -> None:
@@ -759,3 +794,186 @@ class _Contributors:
             for (sid, _), raw in self._u.data.contributors.items()
             if sid == session_id
         ]
+
+
+# --------------------------------------------------------------------------- interview memory
+
+
+class _Qa:
+    def __init__(self, uow: _Uow) -> None:
+        self._u = uow
+
+    def _rows(self, session_id: str) -> list[QaRecord]:
+        """Every version of every card of the session, in insertion order."""
+        return [
+            QaRecord.model_validate_json(raw)
+            for (sid, _, _), raw in self._u.data.qa.items()
+            if sid == session_id
+        ]
+
+    async def upsert(self, session_id: str, record: QaRecord) -> None:
+        await self._u.locked_session(session_id)
+        record = in_utc(normalize(record), "asked_at", "answered_at")
+        key = (session_id, record.card_id, record.version)
+        self._u.put(self._u.data.qa, key, record.model_dump_json())  # a replace keeps its position
+
+    async def get(self, session_id: str, card_id: str, version: int | None = None) -> QaRecord:
+        self._u.require_session(session_id)
+        card_id = clean_text(card_id)  # ids are stored NUL-free, so a lookup is too
+        if version is not None:
+            raw = self._u.data.qa.get((session_id, card_id, version))
+            if raw is None:
+                raise NotFound(f"question {card_id} v{version} of session {session_id} not found")
+            return QaRecord.model_validate_json(raw)
+        versions = [r for r in self._rows(session_id) if r.card_id == card_id]
+        if not versions:
+            raise NotFound(f"question {card_id} of session {session_id} not found")
+        return max(versions, key=lambda r: r.version)
+
+    async def list(
+        self,
+        session_id: str,
+        *,
+        status: QaStatus | None = None,
+        batch_id: str | None = None,
+        latest_only: bool = True,
+    ) -> list[QaRecord]:
+        self._u.require_session(session_id)
+        batch_id = None if batch_id is None else clean_text(batch_id)
+        rows = self._rows(session_id)
+        if latest_only:
+            newest: dict[str, int] = {}
+            for r in rows:
+                newest[r.card_id] = max(newest.get(r.card_id, 0), r.version)
+            rows = [r for r in rows if r.version == newest[r.card_id]]
+        if status is not None:
+            rows = [r for r in rows if r.status == status]
+        if batch_id is not None:
+            rows = [r for r in rows if r.batch_id == batch_id]
+        return rows
+
+
+class _Facts:
+    def __init__(self, uow: _Uow) -> None:
+        self._u = uow
+
+    def _stored(self, session_id: str, fact_id: str) -> Fact:
+        fact_id = clean_text(fact_id)
+        raw = self._u.data.facts.get((session_id, fact_id))
+        if raw is None:
+            raise NotFound(f"fact {fact_id} of session {session_id} not found")
+        return Fact.model_validate_json(raw)
+
+    async def add(self, session_id: str, fact: Fact) -> None:
+        await self._u.locked_session(session_id)
+        fact = normalize(fact)
+        key = (session_id, fact.id)
+        if key in self._u.data.facts:
+            raise Conflict(
+                f"fact {fact.id} already exists (use update to change it)",
+                details={"session_id": session_id, "fact_id": fact.id},
+            )
+        now = self._u.now()
+        stored = fact.model_copy(
+            update={"created_at": utc(fact.created_at) or now, "updated_at": now}
+        )
+        self._u.put(self._u.data.facts, key, stored.model_dump_json())
+
+    async def update(self, session_id: str, fact: Fact) -> None:
+        await self._u.locked_session(session_id)
+        fact = normalize(fact)
+        current = self._stored(session_id, fact.id)
+        changed = changed_fact_identity(current, fact)
+        if changed:
+            raise fact_immutable(session_id, fact.id, changed)
+        stored = fact.model_copy(
+            update={"created_at": current.created_at, "updated_at": self._u.now()}
+        )
+        self._u.put(self._u.data.facts, (session_id, fact.id), stored.model_dump_json())
+
+    async def get(self, session_id: str, fact_id: str) -> Fact:
+        self._u.require_session(session_id)
+        return self._stored(session_id, fact_id)
+
+    async def list(self, session_id: str, *, status: FactStatus | None = None) -> list[Fact]:
+        self._u.require_session(session_id)
+        found = [
+            Fact.model_validate_json(raw)
+            for (sid, _), raw in self._u.data.facts.items()
+            if sid == session_id
+        ]
+        return [f for f in found if status is None or f.status == status]
+
+    async def next_id(self, session_id: str) -> str:
+        await self._u.locked_session(session_id)
+        ids = (fid for (sid, fid) in self._u.data.facts if sid == session_id)
+        return next_numbered_id(FACT_ID_PREFIX, ids)
+
+
+class _Summaries:
+    def __init__(self, uow: _Uow) -> None:
+        self._u = uow
+
+    async def get(self, session_id: str) -> InterviewSummary | None:
+        self._u.require_session(session_id)
+        raw = self._u.data.summaries.get(session_id)
+        return None if raw is None else InterviewSummary.model_validate_json(raw)
+
+    async def put(self, session_id: str, summary: InterviewSummary) -> None:
+        await self._u.locked_session(session_id)
+        stored = normalize(summary).model_copy(update={"updated_at": self._u.now()})
+        self._u.put(self._u.data.summaries, session_id, stored.model_dump_json())
+
+
+class _Batches:
+    def __init__(self, uow: _Uow) -> None:
+        self._u = uow
+
+    def _rows(self, session_id: str) -> list[BatchRecord]:
+        return [
+            BatchRecord.model_validate_json(raw)
+            for (sid, _), raw in self._u.data.batches.items()
+            if sid == session_id
+        ]
+
+    async def add(self, session_id: str, record: BatchRecord) -> None:
+        await self._u.locked_session(session_id)
+        record = normalize(record)
+        if (session_id, record.id) in self._u.data.batches:
+            raise Conflict(
+                f"batch {record.id} already exists",
+                details={"session_id": session_id, "batch_id": record.id},
+            )
+        for other in self._rows(session_id):
+            if other.mode == record.mode and other.inputs_hash == record.inputs_hash:
+                raise Conflict(
+                    f"batch {other.id} already has mode {record.mode!r} and the same inputs hash",
+                    details={"session_id": session_id, "batch_id": other.id},
+                )
+        stored = record.model_copy(update={"created_at": utc(record.created_at) or self._u.now()})
+        self._u.put(self._u.data.batches, (session_id, record.id), stored.model_dump_json())
+
+    async def get(self, session_id: str, batch_id: str) -> BatchRecord:
+        self._u.require_session(session_id)
+        batch_id = clean_text(batch_id)
+        raw = self._u.data.batches.get((session_id, batch_id))
+        if raw is None:
+            raise NotFound(f"batch {batch_id} of session {session_id} not found")
+        return BatchRecord.model_validate_json(raw)
+
+    async def find(self, session_id: str, mode: str, inputs_hash: str) -> BatchRecord | None:
+        self._u.require_session(session_id)
+        mode, inputs_hash = clean_text(mode), clean_text(inputs_hash)
+        for record in self._rows(session_id):
+            if record.mode == mode and record.inputs_hash == inputs_hash:
+                return record
+        return None
+
+    async def list(self, session_id: str) -> list[BatchRecord]:
+        self._u.require_session(session_id)
+        return self._rows(session_id)
+
+    async def next_id(self, session_id: str) -> str:
+        await self._u.locked_session(session_id)
+        ids = (bid for (sid, bid) in self._u.data.batches if sid == session_id)
+        return next_numbered_id(BATCH_ID_PREFIX, ids)

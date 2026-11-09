@@ -19,11 +19,13 @@ from __future__ import annotations
 
 import asyncio
 from collections.abc import Awaitable, Callable, Coroutine
+from datetime import UTC, datetime, timedelta, timezone
 from typing import Any, TypeVar, cast
 
 from pydantic import JsonValue
 
 from mde_compass.domain.hashing import brief_hash, section_hashes
+from mde_compass.domain.interview import FactEffect
 from mde_compass.domain.session import SessionRecord
 from mde_compass.store import testing as f
 from mde_compass.store.ports import CallLogEntry, Store
@@ -835,6 +837,23 @@ async def check_nul_characters_never_break_a_write(factory: StoreFactory) -> Non
         assert await uow.sources.save_source(sid, source, chunks=chunks)
         change = f.make_change_set().model_copy(update={"summary": "su\x00m"})
         await uow.change_sets.save(sid, change)
+        await uow.qa.upsert(
+            sid,
+            f.make_qa(
+                "Q-001",
+                answer={"text": "an\x00swer"},
+                custom_text="cus\x00tom",
+                batch_id="BA\x00T-1",
+            ),
+        )
+        await uow.facts.add(
+            sid,
+            f.make_fact(statement="sta\x00tement", quote="qu\x00ote", topics=["to\x00pic"]),
+        )
+        await uow.summaries.put(sid, f.make_summary(through_fact_id="FCT\x00-001"))
+        await uow.batches.add(
+            sid, f.make_batch(inputs_hash="ha\x00sh", output={"note": "no\x00te"})
+        )
     async with store.begin(A) as uow:
         assert (await uow.briefs.get(sid)).hash == saved.hash
         assert (await uow.questions.get(sid, "Q-001")).card.question == "why?"
@@ -844,6 +863,19 @@ async def check_nul_characters_never_break_a_write(factory: StoreFactory) -> Non
         assert (await uow.sources.get_source(sid, "SRC-001")).name == "name.txt"
         assert (await uow.sources.list_chunks(sid, "SRC-001"))[0].text == "text"
         assert (await uow.change_sets.get(sid, "CHG-001")).summary == "sum"
+        qa = await uow.qa.get(sid, "Q-001")
+        assert qa.answer == {"text": "answer"} and qa.custom_text == "custom"
+        assert qa.batch_id == "BAT-1"
+        assert [x.card_id for x in await uow.qa.list(sid, batch_id="BA\x00T-1")] == ["Q-001"]
+        fact = await uow.facts.get(sid, "FCT-001")
+        assert (fact.statement, fact.quote, fact.topics) == ("statement", "quote", ["topic"])
+        # the NUL-free fact is what is stored, so writing it back changes nothing and conflicts with nothing
+        await uow.facts.update(sid, f.make_fact(statement="sta\x00tement", quote="qu\x00ote"))
+        summary = await uow.summaries.get(sid)
+        assert summary is not None and summary.through_fact_id == "FCT-001"
+        batch = await uow.batches.get(sid, "BAT-001")
+        assert batch.inputs_hash == "hash" and batch.output == {"note": "note"}
+        assert (await uow.batches.find(sid, "initial", "ha\x00sh")) is not None
 
 
 # --------------------------------------------------------------------------- sources, contributors
@@ -920,6 +952,418 @@ async def check_contributors(factory: StoreFactory) -> None:
         assert [(c.id, c.role) for c in found] == [("con_1", "commenter"), ("con_2", "approver")]
 
 
+# --------------------------------------------------------------------------- interview memory (ADR 0015)
+
+IST = timezone(timedelta(hours=5, minutes=30))
+
+
+def _clock(store: Store) -> FakeClock:
+    return cast("FakeClock", getattr(store, "clock"))  # noqa: B009
+
+
+@check
+async def check_qa_record_roundtrip(factory: StoreFactory) -> None:
+    """Every field of a Q&A record survives the store, timestamps come back as UTC, falsy answers stay."""
+    store = await factory()
+    sid = (await _new_session(store)).id
+    asked = datetime(2026, 11, 9, 14, 30, 0, 123456, tzinfo=IST)
+    answered = asked + timedelta(minutes=2)
+    card = f.make_card("Q-007", question="Which city do you start in?")
+    full = f.make_qa(
+        "Q-007",
+        1,
+        card=card,
+        batch_id="BAT-002",
+        group_id="G2",
+        mode="followup",
+        status="answered",
+        answer={"option": "B", "extra": [1, 2.5, None, True]},
+        custom_text="পুনে, then Mumbai",
+        input_mode="voice",
+        parent_card_id="Q-003",
+        asked_at=asked,
+        answered_at=answered,
+    )
+    bare = f.make_qa("Q-008", 1, mode=None, batch_id=None, group_id=None)
+    falsy: list[JsonValue] = [None, 0, False, "", [], {}, "A", ["A", "B"], {"k": None}]
+    async with store.begin(A) as uow:
+        await uow.qa.upsert(sid, full)
+        await uow.qa.upsert(sid, bare)
+        for i, answer in enumerate(falsy):
+            await uow.qa.upsert(sid, f.make_qa(f"Q-1{i:02d}", answer=answer, status="answered"))
+    async with store.begin(A) as uow:
+        got = await uow.qa.get(sid, "Q-007")
+        assert got == full.model_copy(
+            update={"asked_at": asked.astimezone(UTC), "answered_at": answered.astimezone(UTC)}
+        )
+        assert got.asked_at == asked and got.asked_at is not None
+        assert got.asked_at.utcoffset() == timedelta(0)
+        assert got.answered_at is not None and got.answered_at.utcoffset() == timedelta(0)
+        assert got.card.question == "Which city do you start in?" and len(got.card.options) == 3
+        plain = await uow.qa.get(sid, "Q-008")
+        assert plain == bare and plain.asked_at is None and plain.answered_at is None
+        assert plain.mode is None and plain.batch_id is None and plain.answer is None
+        for i, answer in enumerate(falsy):
+            back = (await uow.qa.get(sid, f"Q-1{i:02d}")).answer
+            assert back == answer and type(back) is type(answer), (answer, back)
+
+
+@check
+async def check_qa_versions_filters_ordering(factory: StoreFactory) -> None:
+    store = await factory()
+    sid = (await _new_session(store)).id
+    async with store.begin(A) as uow:
+        assert await uow.qa.list(sid) == []
+        assert await uow.qa.list(sid, latest_only=False) == []
+        await _raises(NotFound, uow.qa.get(sid, "Q-001"))
+        await _raises(NotFound, uow.qa.get(sid, "Q-001", 1))
+        await uow.qa.upsert(sid, f.make_qa("Q-001", 1, batch_id="BAT-001", status="answered"))
+        await uow.qa.upsert(sid, f.make_qa("Q-002", 1, batch_id="BAT-001"))
+        await uow.qa.upsert(sid, f.make_qa("Q-003", 1, batch_id="BAT-002", mode="followup"))
+        # an edit: v2 of Q-001 supersedes v1 (a new row; the old one is marked, never removed)
+        await uow.qa.upsert(
+            sid,
+            f.make_qa("Q-001", 2, batch_id="BAT-001", status="answered", answer="B", mode="replan"),
+        )
+        await uow.qa.upsert(sid, f.make_qa("Q-001", 1, batch_id="BAT-001", status="superseded"))
+
+    async with store.begin(A) as uow:
+        assert (await uow.qa.get(sid, "Q-001")).version == 2  # newest by default
+        assert (await uow.qa.get(sid, "Q-001")).answer == "B"
+        old = await uow.qa.get(sid, "Q-001", 1)
+        assert old.status == "superseded" and old.answer is None
+        await _raises(NotFound, uow.qa.get(sid, "Q-001", 3))
+        await _raises(NotFound, uow.qa.get(sid, "Q-009"))
+
+        def keys(rows: list[Any]) -> list[tuple[str, int]]:
+            return [(r.card_id, r.version) for r in rows]
+
+        # insertion order; replacing (Q-001, 1) did not move it
+        every = [("Q-001", 1), ("Q-002", 1), ("Q-003", 1), ("Q-001", 2)]
+        assert keys(await uow.qa.list(sid, latest_only=False)) == every
+        assert keys(await uow.qa.list(sid)) == [("Q-002", 1), ("Q-003", 1), ("Q-001", 2)]
+        # filters apply to each card's newest version; with latest_only=False to every version
+        assert keys(await uow.qa.list(sid, status="open")) == [("Q-002", 1), ("Q-003", 1)]
+        assert keys(await uow.qa.list(sid, status="answered")) == [("Q-001", 2)]
+        assert await uow.qa.list(sid, status="superseded") == []
+        superseded = await uow.qa.list(sid, status="superseded", latest_only=False)
+        assert keys(superseded) == [("Q-001", 1)]
+        assert keys(await uow.qa.list(sid, status="answered", latest_only=False)) == [("Q-001", 2)]
+        assert keys(await uow.qa.list(sid, batch_id="BAT-001")) == [("Q-002", 1), ("Q-001", 2)]
+        assert keys(await uow.qa.list(sid, batch_id="BAT-001", latest_only=False)) == [
+            ("Q-001", 1),
+            ("Q-002", 1),
+            ("Q-001", 2),
+        ]
+        assert keys(await uow.qa.list(sid, batch_id="BAT-002", status="open")) == [("Q-003", 1)]
+        assert await uow.qa.list(sid, batch_id="BAT-009") == []
+        assert (await uow.qa.list(sid, batch_id="BAT-002"))[0].mode == "followup"
+
+        # the same (card, version) is replaced in place, clearing a field that is now empty
+        await uow.qa.upsert(
+            sid, f.make_qa("Q-002", 1, batch_id="BAT-001", status="answered", answer={"x": 1})
+        )
+        assert (await uow.qa.get(sid, "Q-002")).answer == {"x": 1}
+        await uow.qa.upsert(sid, f.make_qa("Q-002", 1, batch_id="BAT-001", status="skipped"))
+        again = await uow.qa.get(sid, "Q-002")
+        assert again.status == "skipped" and again.answer is None
+        assert keys(await uow.qa.list(sid, latest_only=False)) == every
+        assert [r.status for r in await uow.qa.list(sid)] == ["skipped", "open", "answered"]
+        await _raises(NotFound, uow.qa.list("ses_missing"))
+        await _raises(NotFound, uow.qa.upsert("ses_missing", f.make_qa()))
+
+
+@check
+async def check_facts_ledger(factory: StoreFactory) -> None:
+    store = await factory()
+    clock = _clock(store)
+    sid = (await _new_session(store)).id
+    full = f.make_fact(
+        "FCT-002",
+        type="rule",
+        origin="tap",
+        confidence=0.35,
+        topics=["pricing", "refunds"],
+        entities=["tiffin plan"],
+        consumers=["blueprint", "design"],
+        source_ref="Q-004",
+        qa_card_id="Q-004",
+        claim_id="CLM-003",
+        unverified_quote=True,
+        supersedes=["FCT-001"],
+        not_used_reason="small talk",
+        effects=[
+            FactEffect(slot_id="constraints.refunds", value_json='{"days": 7}', mode="add"),
+            FactEffect(slot_id="idea.summary"),
+        ],
+        aspects=["refunds:*", "business_model:who_pays"],
+    )
+    async with store.begin(A) as uow:
+        assert await uow.facts.list(sid) == []
+        await _raises(NotFound, uow.facts.get(sid, "FCT-001"))
+        await _raises(NotFound, uow.facts.update(sid, f.make_fact("FCT-001")))
+        await uow.facts.add(sid, f.make_fact("FCT-001"))
+        await uow.facts.add(sid, full)
+        await uow.facts.add(sid, f.make_fact("FCT-003", status="disputed"))
+        dup = f.make_fact("FCT-001", statement="Something else entirely")
+        await _raises(Conflict, uow.facts.add(sid, dup))  # ids are unique; nothing was changed
+        await uow.facts.add(
+            sid, f.make_fact("FCT-004", created_at=datetime(2026, 1, 2, tzinfo=IST))
+        )
+        explicit = await uow.facts.get(sid, "FCT-004")
+        assert explicit.created_at == datetime(2026, 1, 2, tzinfo=IST)  # an explicit time is kept
+        assert explicit.created_at is not None and explicit.created_at.utcoffset() == timedelta(0)
+        assert explicit.updated_at == clock.now()  # but updated_at is always the store's
+
+    async with store.begin(A) as uow:
+        first = await uow.facts.get(sid, "FCT-001")
+        assert first.statement == "Customers pay for a tiffin plan every month"
+        assert first.status == "active" and first.created_at == clock.now() == first.updated_at
+        assert first.created_at is not None and first.created_at.utcoffset() == timedelta(0)
+        got = await uow.facts.get(sid, "FCT-002")
+        assert got == full.model_copy(update={"created_at": clock.now(), "updated_at": clock.now()})
+        assert [e.mode for e in got.effects] == ["add", "set"]
+        assert [x.id for x in await uow.facts.list(sid)] == [
+            "FCT-001",
+            "FCT-002",
+            "FCT-003",
+            "FCT-004",
+        ]
+        assert [x.id for x in await uow.facts.list(sid, status="active")] == [
+            "FCT-001",
+            "FCT-002",
+            "FCT-004",
+        ]
+        assert [x.id for x in await uow.facts.list(sid, status="disputed")] == ["FCT-003"]
+        assert await uow.facts.list(sid, status="superseded") == []
+        await _raises(NotFound, uow.facts.get(sid, "FCT-009"))
+        await _raises(NotFound, uow.facts.get("ses_missing", "FCT-001"))
+        await _raises(NotFound, uow.facts.list("ses_missing"))
+        await _raises(NotFound, uow.facts.add("ses_missing", f.make_fact()))
+
+    # update: status, links and metadata change; the order and created_at do not
+    created = clock.now()
+    clock.advance(60)
+    async with store.begin(A) as uow:
+        current = await uow.facts.get(sid, "FCT-001")
+        changed = current.model_copy(
+            update={
+                "status": "superseded",
+                "confidence": 0.1,
+                "topics": ["pricing", "history"],
+                "supersedes": [],
+                "unverified_quote": True,
+                "not_used_reason": "",
+                "aspects": [],
+                "effects": [],
+                "origin": "document",
+                "created_at": None,  # None means "unchanged"
+                "updated_at": created - timedelta(days=9),  # always replaced by the store
+            }
+        )
+        await uow.facts.update(sid, changed)
+        # identity fields cannot change; the unit of work stays usable after the Conflict
+        for field, value in (
+            ("statement", "A different statement"),
+            ("quote", "a different quote"),
+            ("created_at", created + timedelta(seconds=1)),
+        ):
+            err = await _raises(
+                Conflict, uow.facts.update(sid, current.model_copy(update={field: value}))
+            )
+            assert field in str(err) and err.details["fields"] == [field]
+        both = current.model_copy(update={"statement": "x", "quote": "y"})
+        err2 = await _raises(Conflict, uow.facts.update(sid, both))
+        assert err2.details["fields"] == ["statement", "quote"]
+        await _raises(NotFound, uow.facts.update(sid, f.make_fact("FCT-009")))
+        await _raises(NotFound, uow.facts.update("ses_missing", current))
+    async with store.begin(A) as uow:
+        after = await uow.facts.get(sid, "FCT-001")
+        assert (
+            after.status == "superseded" and after.confidence == 0.1 and after.origin == "document"
+        )
+        assert after.topics == ["pricing", "history"] and after.unverified_quote is True
+        assert after.effects == [] and after.aspects == []
+        assert after.statement == "Customers pay for a tiffin plan every month"
+        assert after.quote == "they pay monthly for the tiffin plan"
+        assert after.created_at == created and after.updated_at == clock.now()
+        assert (await uow.facts.get(sid, "FCT-002")).updated_at == created  # untouched
+        assert [x.id for x in await uow.facts.list(sid)][:3] == ["FCT-001", "FCT-002", "FCT-003"]
+        assert [x.id for x in await uow.facts.list(sid, status="superseded")] == ["FCT-001"]
+        # an unchanged fact can be written again (the order and the identity fields stay)
+        await uow.facts.update(sid, after)
+        again = await uow.facts.get(sid, "FCT-001")
+        assert again.created_at == created and again.statement == after.statement
+
+
+@check
+async def check_facts_next_id_is_never_reused(factory: StoreFactory) -> None:
+    store = await factory()
+    sid = (await _new_session(store)).id
+    other = (await _new_session(store)).id
+    async with store.begin(A) as uow:
+        assert await uow.facts.next_id(sid) == "FCT-001"
+        assert await uow.facts.next_id(sid) == "FCT-001"  # reads state, reserves nothing
+        await uow.facts.add(sid, f.make_fact("FCT-001"))
+        assert await uow.facts.next_id(sid) == "FCT-002"
+        await uow.facts.add(sid, f.make_fact("FCT-005"))  # a gap: highest + 1, not count + 1
+        assert await uow.facts.next_id(sid) == "FCT-006"
+        await uow.facts.add(sid, f.make_fact("FCT-006", status="superseded"))
+        assert await uow.facts.next_id(sid) == "FCT-007"  # superseded facts still count
+        await uow.facts.update(sid, f.make_fact("FCT-006", status="disputed", created_at=None))
+        await uow.facts.update(
+            sid, (await uow.facts.get(sid, "FCT-006")).model_copy(update={"status": "not_used"})
+        )
+        assert await uow.facts.next_id(sid) == "FCT-007"
+        assert await uow.facts.next_id(other) == "FCT-001"  # numbering is per session
+        await uow.facts.add(sid, f.make_fact("FCT-0099"))  # more digits and leading zeros parse
+        assert await uow.facts.next_id(sid) == "FCT-100"
+        await uow.facts.add(sid, f.make_fact("FCT-999"))
+        assert await uow.facts.next_id(sid) == "FCT-1000"
+        # a fact id with non-ASCII digits is stored but never counted (and never breaks a numeric cast)
+        await uow.facts.add(sid, f.make_fact("FCT-\u0667\u0667\u0667"))
+        assert await uow.facts.next_id(sid) == "FCT-1000"
+        await _raises(NotFound, uow.facts.next_id("ses_missing"))
+    async with store.begin(A) as uow:
+        assert await uow.facts.next_id(sid) == "FCT-1000"
+        assert await uow.facts.next_id(other) == "FCT-001"
+
+
+@check
+async def check_facts_concurrent_writers_get_distinct_ids(factory: StoreFactory) -> None:
+    """``next_id`` then ``add`` in one unit of work is race-free: the session lock serialises writers."""
+    store = await factory()
+    sid = (await _new_session(store)).id
+
+    async def write(n: int) -> str:
+        async with store.begin(A) as uow:
+            fact_id = await uow.facts.next_id(sid)
+            await uow.facts.add(sid, f.make_fact(fact_id, statement=f"fact from writer {n}"))
+            return fact_id
+
+    ids = await asyncio.gather(*(write(i) for i in range(CONCURRENCY)))
+    assert sorted(ids) == [f"FCT-{n:03d}" for n in range(1, CONCURRENCY + 1)]
+    async with store.begin(A) as uow:
+        assert [x.id for x in await uow.facts.list(sid)] == sorted(ids)
+
+
+@check
+async def check_summary_put_get(factory: StoreFactory) -> None:
+    store = await factory()
+    clock = _clock(store)
+    sid = (await _new_session(store)).id
+    other = (await _new_session(store)).id
+    async with store.begin(A) as uow:
+        assert await uow.summaries.get(sid) is None
+        await _raises(NotFound, uow.summaries.get("ses_missing"))
+        await _raises(NotFound, uow.summaries.put("ses_missing", f.make_summary()))
+        stale = datetime(2020, 1, 1, tzinfo=UTC)
+        await uow.summaries.put(sid, f.make_summary(1, updated_at=stale))
+        await uow.summaries.put(other, f.make_summary(7))
+    async with store.begin(A) as uow:
+        got = await uow.summaries.get(sid)
+        assert got is not None and got.version == 1
+        assert got == f.make_summary(1, updated_at=clock.now())  # updated_at is the store's clock
+        assert got.topics[0].topic == "pricing" and got.topics[0].fact_ids == ["FCT-001"]
+        assert got.through_fact_id == "FCT-001"
+    clock.advance(30)
+    async with store.begin(A) as uow:  # one row per session: put replaces
+        newer = f.make_summary(2, topics=[], through_fact_id="FCT-009")
+        await uow.summaries.put(sid, newer)
+        again = await uow.summaries.get(sid)
+        assert again == newer.model_copy(update={"updated_at": clock.now()})
+        assert again is not None and again.topics == [] and again.version == 2
+        zero = f.make_summary(0, topics=[], through_fact_id="")
+        await uow.summaries.put(sid, zero)
+    async with store.begin(A) as uow:
+        final = await uow.summaries.get(sid)
+        assert final is not None and final.version == 0 and final.through_fact_id == ""
+        theirs = await uow.summaries.get(other)
+        assert theirs is not None and theirs.version == 7  # other sessions are independent
+
+
+@check
+async def check_batches_ledger(factory: StoreFactory) -> None:
+    store = await factory()
+    clock = _clock(store)
+    sid = (await _new_session(store)).id
+    other = (await _new_session(store)).id
+    async with store.begin(A) as uow:
+        assert await uow.batches.list(sid) == []
+        assert await uow.batches.next_id(sid) == "BAT-001"
+        assert await uow.batches.find(sid, "initial", "h1") is None
+        await _raises(NotFound, uow.batches.get(sid, "BAT-001"))
+        await uow.batches.add(sid, f.make_batch("BAT-001", mode="initial", inputs_hash="h1"))
+        assert await uow.batches.next_id(sid) == "BAT-002"
+        await uow.batches.add(sid, f.make_batch("BAT-002", mode="followup", inputs_hash="h2"))
+        await uow.batches.add(sid, f.make_batch("BAT-003", mode="initial", inputs_hash="h3"))
+        # a duplicate id, and the same (mode, inputs_hash) under another id, are refused ...
+        await _raises(Conflict, uow.batches.add(sid, f.make_batch("BAT-001", inputs_hash="x")))
+        await _raises(
+            Conflict,
+            uow.batches.add(sid, f.make_batch("BAT-004", mode="initial", inputs_hash="h1")),
+        )
+        # ... but the same hash under another mode, or in another session, is a different run
+        await uow.batches.add(sid, f.make_batch("BAT-004", mode="replan", inputs_hash="h1"))
+        await uow.batches.add(other, f.make_batch("BAT-001", mode="initial", inputs_hash="h1"))
+        assert await uow.batches.next_id(sid) == "BAT-005"
+
+    async with store.begin(A) as uow:
+        assert [b.id for b in await uow.batches.list(sid)] == [
+            "BAT-001",
+            "BAT-002",
+            "BAT-003",
+            "BAT-004",
+        ]
+        found = await uow.batches.find(sid, "initial", "h1")
+        assert found is not None and found.id == "BAT-001"
+        replan = await uow.batches.find(sid, "replan", "h1")
+        assert replan is not None and replan.id == "BAT-004"
+        assert await uow.batches.find(sid, "initial", "h2") is None
+        assert await uow.batches.find(sid, "deepen", "h1") is None
+        assert await uow.batches.find(sid, "initial", "H1") is None  # exact match
+        mine = await uow.batches.find(other, "initial", "h1")
+        assert mine is not None and mine.id == "BAT-001"
+        got = await uow.batches.get(sid, "BAT-002")
+        assert got == f.make_batch(
+            "BAT-002", mode="followup", inputs_hash="h2", created_at=clock.now()
+        )
+        assert got.output["covered_needs"] == ["audience"] and got.accepted == ["Q-001", "Q-002"]
+        assert got.rejected[0].reasons == ["duplicate"] and got.verdicts[0].specific == 4
+        assert got.created_at is not None and got.created_at.utcoffset() == timedelta(0)
+        await _raises(NotFound, uow.batches.get(sid, "BAT-009"))
+        await _raises(NotFound, uow.batches.get("ses_missing", "BAT-001"))
+        await _raises(NotFound, uow.batches.list("ses_missing"))
+        await _raises(NotFound, uow.batches.find("ses_missing", "initial", "h1"))
+        await _raises(NotFound, uow.batches.next_id("ses_missing"))
+        await _raises(NotFound, uow.batches.add("ses_missing", f.make_batch("BAT-009")))
+
+    # flags, numbers and an explicit creation time survive; big costs need a 64-bit column
+    when = datetime(2026, 11, 9, 20, 0, 0, tzinfo=IST)
+    heavy = f.make_batch(
+        "BAT-010",
+        mode="simplify",
+        inputs_hash="h10",
+        used_fallback=True,
+        repaired=True,
+        latency_ms=2_000_000,
+        cost_micros=5_000_000_000,
+        created_at=when,
+        output={"nested": {"list": [1, 2.5, None, True, "x"], "empty": {}}},
+        accepted=[],
+        rejected=[],
+        verdicts=[],
+    )
+    async with store.begin(A) as uow:
+        await uow.batches.add(sid, heavy)
+        assert await uow.batches.next_id(sid) == "BAT-011"
+    async with store.begin(A) as uow:
+        back = await uow.batches.get(sid, "BAT-010")
+        assert back == heavy and back.created_at == when
+        assert back.created_at is not None and back.created_at.utcoffset() == timedelta(0)
+        assert back.used_fallback and back.repaired and back.cost_micros == 5_000_000_000
+
+
 # --------------------------------------------------------------------------- tenant isolation
 
 
@@ -938,6 +1382,10 @@ async def check_tenant_isolation(factory: StoreFactory) -> None:
         await uow.sources.save_source(sid, f.make_source(), chunks=f.make_chunks())
         await uow.sources.save_claims(sid, [f.make_claim()])
         await uow.contributors.upsert(sid, f.make_contributor())
+        await uow.qa.upsert(sid, f.make_qa("Q-001"))
+        await uow.facts.add(sid, f.make_fact("FCT-001"))
+        await uow.summaries.put(sid, f.make_summary(3))
+        await uow.batches.add(sid, f.make_batch("BAT-001"))
     await _new_session(store, tenant=B, user_id=f.USER_A)  # same user id, other tenant
 
     async with store.begin(B) as uow:
@@ -988,6 +1436,27 @@ async def check_tenant_isolation(factory: StoreFactory) -> None:
         await _raises(NotFound, uow.contributors.upsert(sid, f.make_contributor("con_9")))
         await _raises(NotFound, uow.contributors.list(sid))
 
+        await _raises(NotFound, uow.qa.upsert(sid, f.make_qa("Q-009")))
+        await _raises(NotFound, uow.qa.get(sid, "Q-001"))
+        await _raises(NotFound, uow.qa.get(sid, "Q-001", 1))
+        await _raises(NotFound, uow.qa.list(sid))
+        await _raises(NotFound, uow.qa.list(sid, status="open", latest_only=False))
+
+        await _raises(NotFound, uow.facts.add(sid, f.make_fact("FCT-009")))
+        await _raises(NotFound, uow.facts.update(sid, f.make_fact("FCT-001", status="disputed")))
+        await _raises(NotFound, uow.facts.get(sid, "FCT-001"))
+        await _raises(NotFound, uow.facts.list(sid))
+        await _raises(NotFound, uow.facts.next_id(sid))
+
+        await _raises(NotFound, uow.summaries.get(sid))
+        await _raises(NotFound, uow.summaries.put(sid, f.make_summary(9)))
+
+        await _raises(NotFound, uow.batches.add(sid, f.make_batch("BAT-009")))
+        await _raises(NotFound, uow.batches.get(sid, "BAT-001"))
+        await _raises(NotFound, uow.batches.find(sid, "initial", "hash-bat-001"))
+        await _raises(NotFound, uow.batches.list(sid))
+        await _raises(NotFound, uow.batches.next_id(sid))
+
     # tenant A's data is exactly as it was
     async with store.begin(A) as uow:
         got = await uow.sessions.get(sid)
@@ -1005,6 +1474,23 @@ async def check_tenant_isolation(factory: StoreFactory) -> None:
         assert [s.id for s in await uow.sources.list_sources(sid)] == ["SRC-001"]
         assert [c.id for c in await uow.sources.list_claims(sid)] == ["CLM-001"]
         assert [c.id for c in await uow.contributors.list(sid)] == ["con_1"]
+        assert [(q.card_id, q.status) for q in await uow.qa.list(sid)] == [("Q-001", "open")]
+        assert [x.id for x in await uow.facts.list(sid)] == ["FCT-001"]
+        assert (await uow.facts.get(sid, "FCT-001")).status == "active"
+        assert await uow.facts.next_id(sid) == "FCT-002"
+        summary = await uow.summaries.get(sid)
+        assert summary is not None and summary.version == 3
+        assert [b.id for b in await uow.batches.list(sid)] == ["BAT-001"]
+        assert await uow.batches.next_id(sid) == "BAT-002"
+    # the other tenant never sees it either, and has its own empty memory in its own session
+    other = await _new_session(store, tenant=B)
+    async with store.begin(B) as uow:
+        assert await uow.qa.list(other.id) == []
+        assert await uow.facts.list(other.id) == []
+        assert await uow.summaries.get(other.id) is None
+        assert await uow.batches.list(other.id) == []
+        assert await uow.facts.next_id(other.id) == "FCT-001"
+        await _raises(NotFound, uow.facts.get(other.id, "FCT-001"))
 
 
 # --------------------------------------------------------------------------- transactions
@@ -1027,9 +1513,20 @@ async def check_unit_of_work_rollback(factory: StoreFactory) -> None:
             await uow.briefs.save_version(doomed.id, f.make_brief(1))
             await uow.questions.record_asked(doomed.id, f.make_card(), {})
             await uow.sources.save_source(doomed.id, f.make_source(), chunks=f.make_chunks())
+            await uow.qa.upsert(doomed.id, f.make_qa("Q-001"))
+            await uow.facts.add(doomed.id, f.make_fact("FCT-001"))
+            await uow.summaries.put(doomed.id, f.make_summary())
+            await uow.batches.add(doomed.id, f.make_batch("BAT-001"))
             await uow.sessions.add_spend(keep.id, 999)
             await uow.events.append_outbound(keep.id, "notice", {"code": "also lost"})
             await uow.briefs.save_version(keep.id, f.make_brief(1))
+            await uow.qa.upsert(keep.id, f.make_qa("Q-001"))
+            await uow.qa.upsert(keep.id, f.make_qa("Q-001", 2))
+            await uow.facts.add(keep.id, f.make_fact("FCT-001"))
+            await uow.facts.update(keep.id, f.make_fact("FCT-001", status="superseded"))
+            await uow.facts.add(keep.id, f.make_fact("FCT-002"))
+            await uow.summaries.put(keep.id, f.make_summary(5))
+            await uow.batches.add(keep.id, f.make_batch("BAT-001"))
             raise Boom
     except Boom:
         pass
@@ -1040,6 +1537,14 @@ async def check_unit_of_work_rollback(factory: StoreFactory) -> None:
         assert got.spent_micros == 0 and got.outbound_seq == 0
         assert (await uow.events.list_history(keep.id)).items == []
         assert await uow.briefs.list_versions(keep.id) == []
+        # nothing of the interview memory survived either
+        assert await uow.qa.list(keep.id, latest_only=False) == []
+        assert await uow.facts.list(keep.id) == []
+        assert await uow.summaries.get(keep.id) is None
+        assert await uow.batches.list(keep.id) == []
+        # the rolled-back numbers are free again (nothing was committed, so nothing is reused)
+        assert await uow.facts.next_id(keep.id) == "FCT-001"
+        assert await uow.batches.next_id(keep.id) == "BAT-001"
         # the rolled-back sequence number is reused (no gap in the SSE ids)
         assert await uow.events.append_outbound(keep.id, "notice", {"code": "kept"}) == 1
         assert await uow.briefs.save_version(keep.id, f.make_brief(1)) is not None
@@ -1055,8 +1560,11 @@ async def check_unit_of_work_commit_and_rollback_calls(factory: StoreFactory) ->
     try:
         async with store.begin(A) as uow:
             await uow.sessions.create(first)
+            await uow.facts.add(first.id, f.make_fact("FCT-001"))
             await uow.commit()  # durable from here on
             await uow.sessions.create(second)
+            await uow.facts.add(second.id, f.make_fact("FCT-001"))
+            await uow.facts.add(first.id, f.make_fact("FCT-002"))
             await uow.rollback()  # explicit rollback undoes only the work after the commit
             await uow.sessions.create(third)
             await uow.events.record_inbound(third.id, "e1", "user_message", _payload("x"))
@@ -1065,6 +1573,7 @@ async def check_unit_of_work_commit_and_rollback_calls(factory: StoreFactory) ->
         pass
     async with store.begin(A) as uow:
         assert (await uow.sessions.get(first.id)).id == first.id
+        assert [x.id for x in await uow.facts.list(first.id)] == ["FCT-001"]
         await _raises(NotFound, uow.sessions.get(second.id))
         await _raises(NotFound, uow.sessions.get(third.id))
 
@@ -1076,9 +1585,20 @@ async def check_failed_write_does_not_poison_unit(factory: StoreFactory) -> None
     rec = await _new_session(store)
     async with store.begin(A) as uow:
         await uow.briefs.save_version(rec.id, f.make_brief(1))
+        await uow.facts.add(rec.id, f.make_fact("FCT-001"))
+        await uow.batches.add(rec.id, f.make_batch("BAT-001"))
         await uow.commit()
         await _raises(Conflict, uow.briefs.save_version(rec.id, f.make_brief(1)))
+        await _raises(Conflict, uow.facts.add(rec.id, f.make_fact("FCT-001")))
+        await _raises(Conflict, uow.batches.add(rec.id, f.make_batch("BAT-001")))
+        await _raises(
+            Conflict, uow.batches.add(rec.id, f.make_batch("BAT-002", inputs_hash="hash-bat-001"))
+        )
+        await _raises(Conflict, uow.facts.update(rec.id, f.make_fact("FCT-001", statement="new")))
         await uow.sessions.add_spend(rec.id, 10)  # still usable after the Conflict
+        await uow.facts.add(rec.id, f.make_fact("FCT-002"))
     async with store.begin(A) as uow:
         assert (await uow.sessions.get(rec.id)).spent_micros == 10
         assert [v.version for v in await uow.briefs.list_versions(rec.id)] == [1]
+        assert [x.id for x in await uow.facts.list(rec.id)] == ["FCT-001", "FCT-002"]
+        assert [b.id for b in await uow.batches.list(rec.id)] == ["BAT-001"]

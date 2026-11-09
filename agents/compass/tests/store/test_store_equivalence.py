@@ -22,9 +22,34 @@ SESSIONS = [f"ses_model_{i}" for i in range(3)]
 STATES = ["INTERVIEWING", "PLAYBACK", "PAUSED", "ARCHIVED", "BRIEF_REVIEW"]
 OUTCOMES = ["answered", "skipped", "you_decide", "back"]
 WORDS = ["pune", "Thali", "menu", "रेस्टोरेंट", "order", "delivery", "100%"]
+QA_STATUSES = ["open", "answered", "skipped", "you_decide", "assumed", "superseded", "dropped"]
+FACT_STATUSES = ["active", "superseded", "disputed", "not_used"]
+FACT_ORIGINS = ["stated", "tap", "assumption", "document"]
+MODES = ["initial", "followup", "replan", "deepen", "simplify"]
+MEMORY_KINDS = [
+    "qa_upsert",
+    "qa_upsert",
+    "qa_get",
+    "qa_list",
+    "fact_add",
+    "fact_add",
+    "fact_update",
+    "fact_update",
+    "fact_get",
+    "fact_list",
+    "fact_next",
+    "summary_put",
+    "summary_get",
+    "batch_add",
+    "batch_add",
+    "batch_find",
+    "batch_list",
+    "batch_next",
+]
+PER_SESSION = 10  # entries per session in the final-state dump
 
 
-def _ops(seed: int, count: int = 220) -> list[tuple[Any, ...]]:
+def _ops(seed: int, count: int = 360) -> list[tuple[Any, ...]]:
     rng = random.Random(seed)
     ops: list[tuple[Any, ...]] = [("create", i) for i in range(len(SESSIONS))]
     for _ in range(count):
@@ -51,6 +76,7 @@ def _ops(seed: int, count: int = 220) -> list[tuple[Any, ...]]:
                 "get_brief",
                 "questions",
                 "foreign",
+                *MEMORY_KINDS,
             ]
         )
         w = rng.choice(WORDS)
@@ -131,8 +157,96 @@ async def _run(uow: UnitOfWork, store: Store, op: tuple[Any, ...]) -> Any:
         return _dump(await uow.briefs.get(sid, None if number % 2 else n))
     if kind == "questions":
         return _dump(await uow.questions.list(sid))
+    if kind in MEMORY_KINDS:
+        return await _run_memory(uow, kind, sid, n, word, number, limit)
     # "foreign": the same session seen from another tenant
     raise AssertionError("handled below")
+
+
+async def _run_memory(
+    uow: UnitOfWork, kind: str, sid: str, n: int, word: str, number: int, limit: int
+) -> Any:
+    """The Interview Memory operations: ids collide on purpose so Conflict and NotFound paths are hit."""
+    card_id, fact_id, batch_id = f"Q-{n:03d}", f"FCT-{n:03d}", f"BAT-{n:03d}"
+    mode = MODES[number % len(MODES)]
+    if kind == "qa_upsert":
+        record = f.make_qa(
+            card_id,
+            1 + number % 3,
+            status=QA_STATUSES[number % len(QA_STATUSES)],
+            batch_id=f"BAT-{limit:03d}" if number % 4 else None,
+            mode=mode if number % 2 else None,
+            answer={"v": word, "n": number} if number % 3 else None,
+            custom_text=word if number % 5 == 0 else None,
+            input_mode=["tap", "text", "voice"][number % 3],
+        )
+        return await uow.qa.upsert(sid, record)
+    if kind == "qa_get":
+        return _dump(await uow.qa.get(sid, card_id, None if number % 2 else 1 + number % 3))
+    if kind == "qa_list":
+        return _dump(
+            await uow.qa.list(
+                sid,
+                status=QA_STATUSES[number % len(QA_STATUSES)] if number % 3 == 0 else None,  # type: ignore[arg-type]
+                batch_id=f"BAT-{limit:03d}" if number % 2 else None,
+                latest_only=number % 4 != 0,
+            )
+        )
+    if kind == "fact_add":
+        chosen = await uow.facts.next_id(sid) if number % 2 else fact_id
+        fact = f.make_fact(
+            chosen,
+            statement=f"{word} fact {number}",
+            quote=word,
+            status=FACT_STATUSES[number % len(FACT_STATUSES)],
+            origin=FACT_ORIGINS[number % len(FACT_ORIGINS)],
+            confidence=(number % 11) / 10,
+            topics=[word],
+        )
+        return await uow.facts.add(sid, fact)
+    if kind == "fact_update":
+        current = await uow.facts.get(sid, fact_id)
+        changed = current.model_copy(
+            update={
+                "status": FACT_STATUSES[number % len(FACT_STATUSES)],
+                "confidence": (number % 7) / 10,
+                "topics": [word, f"t{n}"],
+                # now and then try to rewrite what was said: a Conflict on both stores
+                "statement": word if number % 6 == 0 else current.statement,
+            }
+        )
+        return await uow.facts.update(sid, changed)
+    if kind == "fact_get":
+        return _dump(await uow.facts.get(sid, fact_id))
+    if kind == "fact_list":
+        status = FACT_STATUSES[number % len(FACT_STATUSES)] if number % 2 else None
+        return _dump(await uow.facts.list(sid, status=status))  # type: ignore[arg-type]
+    if kind == "fact_next":
+        return await uow.facts.next_id(sid)
+    if kind == "summary_put":
+        summary = f.make_summary(n, through_fact_id=f"FCT-{number:03d}")
+        return await uow.summaries.put(
+            sid, summary if number % 3 else summary.model_copy(update={"topics": []})
+        )
+    if kind == "summary_get":
+        return _dump(await uow.summaries.get(sid))
+    if kind == "batch_add":
+        chosen = await uow.batches.next_id(sid) if number % 2 else batch_id
+        record = f.make_batch(
+            chosen,
+            mode=mode,
+            inputs_hash=f"h{limit}",
+            used_fallback=number % 5 == 0,
+            latency_ms=number,
+            cost_micros=number * 1_000_000_000,
+            output={"word": word, "n": number},
+        )
+        return await uow.batches.add(sid, record)
+    if kind == "batch_find":
+        return _dump(await uow.batches.find(sid, mode, f"h{limit}"))
+    if kind == "batch_list":
+        return _dump(await uow.batches.list(sid))
+    return await uow.batches.next_id(sid)  # "batch_next"
 
 
 async def _replay(store: Store, ops: list[tuple[Any, ...]]) -> list[Any]:
@@ -154,6 +268,11 @@ async def _replay(store: Store, ops: list[tuple[Any, ...]]) -> list[Any]:
             results.append(_dump(await uow.events.list_outbound(sid, limit=500)))
             results.append(_dump(await uow.briefs.list_versions(sid)))
             results.append(_dump(await uow.questions.list(sid)))
+            results.append(_dump(await uow.qa.list(sid, latest_only=False)))
+            results.append(_dump(await uow.facts.list(sid)))
+            results.append(_dump(await uow.summaries.get(sid)))
+            results.append(_dump(await uow.batches.list(sid)))
+            results.append(await uow.facts.next_id(sid))
     return results
 
 
@@ -170,3 +289,7 @@ async def test_memory_and_postgres_agree(seed: int, make_postgres_store: Any) ->
     # the run was not trivial: it hit successes and errors
     assert any(isinstance(r, str) and r.startswith("error:") for r in expected)
     assert any(r is True for r in expected)
+    # ... and the Interview Memory ended up with real content in at least one session of each kind
+    finals = [expected[-PER_SESSION * len(SESSIONS) + i :: PER_SESSION] for i in range(PER_SESSION)]
+    for index in (5, 6, 8):  # qa, facts, batches
+        assert any(finals[index]), f"seed {seed}: nothing stored at final position {index}"

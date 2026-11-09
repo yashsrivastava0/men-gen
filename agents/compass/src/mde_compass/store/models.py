@@ -16,6 +16,10 @@ Conventions (adapted from ``mde_persistence.models``)
 - ``compass_slots``, ``compass_features``, ``compass_assumptions``, ``compass_research_requests`` and
   ``compass_glossary`` are DERIVED projections rewritten by ``BriefRepo.save_version`` from the saved
   Brief and never read back.
+- Interview Memory (migration 0002, ADR 0015): ``compass_qa`` (question and answer ledger, versioned),
+  ``compass_facts`` (the long-term memory; never deleted, a trigger guards DELETE and the identity
+  fields), ``compass_interview_summary`` (one row) and ``compass_batches`` (planner runs, unique per
+  ``(session_id, mode, inputs_hash)``). There are no delete methods on their repositories.
 """
 
 from __future__ import annotations
@@ -411,6 +415,140 @@ class CallLogRow(Base):
     outcome: Mapped[str] = mapped_column(Text, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     at: Mapped[datetime] = mapped_column(TS, nullable=False)
+
+
+# --------------------------------------------------------------------------- interview memory (0002)
+
+QA_STATUSES = ("open", "answered", "skipped", "you_decide", "assumed", "superseded", "dropped")
+PLANNER_MODES = ("initial", "followup", "replan", "deepen", "simplify")
+FACT_STATUSES = ("active", "superseded", "disputed", "not_used")
+FACT_ORIGINS = ("stated", "tap", "assumption", "document")
+INPUT_MODES = ("tap", "text", "voice")
+
+
+def _in_list(column: str, values: tuple[str, ...]) -> str:
+    return f"{column} IN ({', '.join(repr(v) for v in values)})"
+
+
+class QaRow(Base):
+    """One question and its answer, versioned: an edit adds a row with the next ``version`` (the old
+    one is marked ``superseded``). ``card`` is the full ``Card`` as it was shown; ``answer`` is the
+    answer exactly as the user sent it (SQL NULL when there is none)."""
+
+    __tablename__ = "compass_qa"
+    __table_args__ = (
+        PrimaryKeyConstraint("session_id", "card_id", "version"),
+        _session_fk(),
+        CheckConstraint("version >= 1", name="version_positive"),
+        CheckConstraint(f"mode IS NULL OR {_in_list('mode', PLANNER_MODES)}", name="mode"),
+        CheckConstraint(_in_list("status", QA_STATUSES), name="status"),
+        CheckConstraint(_in_list("input_mode", INPUT_MODES), name="input_mode"),
+        Index("ix_compass_qa_session_status", "session_id", "status"),
+        Index("ix_compass_qa_session_batch", "session_id", "batch_id"),
+    )
+
+    session_id: Mapped[str] = mapped_column(Text, nullable=False)
+    card_id: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
+    batch_id: Mapped[str | None] = mapped_column(Text)
+    group_id: Mapped[str | None] = mapped_column(Text)
+    mode: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(Text, nullable=False)
+    card: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    answer: Mapped[object | None] = mapped_column(JSONB(none_as_null=True))
+    custom_text: Mapped[str | None] = mapped_column(Text)
+    input_mode: Mapped[str] = mapped_column(Text, nullable=False)
+    parent_card_id: Mapped[str | None] = mapped_column(Text)
+    asked_at: Mapped[datetime | None] = mapped_column(TS)
+    answered_at: Mapped[datetime | None] = mapped_column(TS)
+    n: Mapped[int] = _order_column()
+
+
+class FactRow(Base):
+    """The long-term memory: one atomic statement with a verbatim quote. Facts are never deleted and
+    ``fact_id``, ``created_at``, ``statement`` and ``quote`` never change (the trigger
+    ``trg_compass_fact_guard`` enforces both; only deleting the whole session removes facts)."""
+
+    __tablename__ = "compass_facts"
+    __table_args__ = (
+        PrimaryKeyConstraint("session_id", "fact_id"),
+        _session_fk(),
+        CheckConstraint(_in_list("status", FACT_STATUSES), name="status"),
+        CheckConstraint(_in_list("origin", FACT_ORIGINS), name="origin"),
+        CheckConstraint("confidence >= 0 AND confidence <= 1", name="confidence_range"),
+    )
+
+    session_id: Mapped[str] = mapped_column(Text, nullable=False)
+    fact_id: Mapped[str] = mapped_column(Text, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
+    type: Mapped[str] = mapped_column(Text, nullable=False)
+    statement: Mapped[str] = mapped_column(Text, nullable=False)
+    topics: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    entities: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    consumers: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    confidence: Mapped[float] = mapped_column(Float, nullable=False)
+    status: Mapped[str] = mapped_column(Text, nullable=False)
+    origin: Mapped[str] = mapped_column(Text, nullable=False)
+    source_ref: Mapped[str] = mapped_column(Text, nullable=False)
+    qa_card_id: Mapped[str | None] = mapped_column(Text)
+    claim_id: Mapped[str | None] = mapped_column(Text)
+    quote: Mapped[str] = mapped_column(Text, nullable=False)
+    unverified_quote: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    supersedes: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    not_used_reason: Mapped[str] = mapped_column(Text, nullable=False)
+    effects: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    aspects: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TS, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(TS, nullable=False)
+    n: Mapped[int] = _order_column()
+
+
+class InterviewSummaryRow(Base):
+    """The rolling interview summary: exactly one row per session, replaced by each refresh."""
+
+    __tablename__ = "compass_interview_summary"
+    __table_args__ = (PrimaryKeyConstraint("session_id"), _session_fk())
+
+    session_id: Mapped[str] = mapped_column(Text, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
+    version: Mapped[int] = mapped_column(Integer, nullable=False)
+    payload: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(TS, nullable=False)
+
+
+class BatchRow(Base):
+    """One planner run. ``(session_id, mode, inputs_hash)`` is unique, so a replan with identical
+    inputs is found (``BatchRepo.find``), not repeated."""
+
+    __tablename__ = "compass_batches"
+    __table_args__ = (
+        PrimaryKeyConstraint("session_id", "batch_id"),
+        _session_fk(),
+        Index(
+            "uq_compass_batches_session_mode_inputs",
+            "session_id",
+            "mode",
+            "inputs_hash",
+            unique=True,
+        ),
+    )
+
+    session_id: Mapped[str] = mapped_column(Text, nullable=False)
+    batch_id: Mapped[str] = mapped_column(Text, nullable=False)
+    tenant_id: Mapped[str] = mapped_column(Text, nullable=False)
+    mode: Mapped[str] = mapped_column(Text, nullable=False)
+    inputs_hash: Mapped[str] = mapped_column(Text, nullable=False)
+    output: Mapped[dict[str, object]] = mapped_column(JSONB, nullable=False)
+    accepted: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    rejected: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    verdicts: Mapped[list[object]] = mapped_column(JSONB, nullable=False)
+    used_fallback: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    repaired: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    latency_ms: Mapped[int] = mapped_column(Integer, nullable=False)
+    cost_micros: Mapped[int] = mapped_column(BigInteger, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(TS, nullable=False)
+    n: Mapped[int] = _order_column()
 
 
 def include_object(

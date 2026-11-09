@@ -201,9 +201,26 @@ async def test_deleting_a_session_cascades_to_every_table(
         await uow.change_sets.save(rec.id, f.make_change_set())
         await uow.call_log.record(rec.id, f.make_call())
         await uow.contributors.upsert(rec.id, f.make_contributor())
+        await uow.qa.upsert(rec.id, f.make_qa())
+        await uow.facts.add(rec.id, f.make_fact())
+        await uow.summaries.put(rec.id, f.make_summary())
+        await uow.batches.add(rec.id, f.make_batch())
     async with compass_engine.begin() as conn:
+        for table in (
+            "compass_qa",
+            "compass_facts",
+            "compass_interview_summary",
+            "compass_batches",
+        ):
+            count = (await conn.execute(text(f"SELECT count(*) FROM {table}"))).scalar_one()  # noqa: S608
+            assert count == 1, table
+        # the fact guard lets the session cascade through (the session row is already gone)
         await conn.execute(text("DELETE FROM compass_sessions WHERE id = :sid"), {"sid": rec.id})
         for table in (
+            "compass_qa",
+            "compass_facts",
+            "compass_interview_summary",
+            "compass_batches",
             "compass_events",
             "compass_brief_versions",
             "compass_slots",
@@ -220,6 +237,123 @@ async def test_deleting_a_session_cascades_to_every_table(
             assert count == 0, table
 
 
+async def test_database_never_deletes_or_rewrites_a_fact_the_repository_wrote(
+    postgres_store: PostgresStore, compass_engine: AsyncEngine
+) -> None:
+    rec = f.make_session()
+    async with postgres_store.begin(f.TENANT_A) as uow:
+        await uow.sessions.create(rec)
+        await uow.facts.add(rec.id, f.make_fact("FCT-001"))
+        await uow.facts.add(rec.id, f.make_fact("FCT-002", status="superseded"))
+    for statement in (
+        "DELETE FROM compass_facts WHERE session_id = :sid",
+        "DELETE FROM compass_facts WHERE session_id = :sid AND fact_id = 'FCT-002'",
+    ):
+        with pytest.raises(DBAPIError, match="never deleted"):
+            async with compass_engine.begin() as conn:
+                await conn.execute(text(statement), {"sid": rec.id})
+    for statement in (
+        "UPDATE compass_facts SET statement = 'edited' WHERE session_id = :sid",
+        "UPDATE compass_facts SET quote = '' WHERE session_id = :sid",
+        "UPDATE compass_facts SET created_at = now() WHERE session_id = :sid",
+        "UPDATE compass_facts SET fact_id = 'FCT-009' WHERE session_id = :sid AND fact_id = 'FCT-001'",
+    ):
+        with pytest.raises(DBAPIError, match="immutable"):
+            async with compass_engine.begin() as conn:
+                await conn.execute(text(statement), {"sid": rec.id})
+    async with postgres_store.begin(f.TENANT_A) as uow:  # everything is exactly as written
+        facts = await uow.facts.list(rec.id)
+        assert [(x.id, x.status) for x in facts] == [
+            ("FCT-001", "active"),
+            ("FCT-002", "superseded"),
+        ]
+        assert facts[0].statement == f.make_fact().statement
+
+
+@pytest.mark.parametrize(
+    "statement",
+    [
+        "INSERT INTO compass_qa (session_id, card_id, version, tenant_id, status, card, input_mode) "
+        "VALUES (:sid, 'Q-9', 1, :tenant, 'open', '{}'::jsonb, 'tap')",
+        "INSERT INTO compass_interview_summary (session_id, tenant_id, version, payload, updated_at) "
+        "VALUES (:sid, :tenant, 1, '{}'::jsonb, now())",
+        "INSERT INTO compass_batches (session_id, batch_id, tenant_id, mode, inputs_hash, output, "
+        "accepted, rejected, verdicts, used_fallback, repaired, latency_ms, cost_micros, created_at) "
+        "VALUES (:sid, 'BAT-9', :tenant, 'initial', 'zz', '{}'::jsonb, '[]', '[]', '[]', false, false, "
+        "0, 0, now())",
+        "INSERT INTO compass_facts (session_id, fact_id, tenant_id, type, statement, topics, entities, "
+        "consumers, confidence, status, origin, source_ref, quote, unverified_quote, supersedes, "
+        "not_used_reason, effects, aspects, created_at, updated_at) VALUES (:sid, 'FCT-009', :tenant, "
+        "'goal', 's', '[]', '[]', '[]', 0.5, 'active', 'stated', '', 'q', false, '[]', '', '[]', '[]', "
+        "now(), now())",
+    ],
+)
+async def test_memory_tables_refuse_a_row_whose_tenant_differs_from_its_session(
+    statement: str, postgres_store: PostgresStore, compass_engine: AsyncEngine
+) -> None:
+    rec = f.make_session()
+    async with postgres_store.begin(f.TENANT_A) as uow:
+        await uow.sessions.create(rec)
+    with pytest.raises(DBAPIError, match="foreign key"):
+        async with compass_engine.begin() as conn:
+            await conn.execute(text(statement), {"sid": rec.id, "tenant": f.TENANT_B})
+    async with compass_engine.begin() as conn:  # the same row with the right tenant is fine
+        await conn.execute(text(statement), {"sid": rec.id, "tenant": f.TENANT_A})
+
+
+async def test_database_keeps_one_batch_per_mode_and_inputs_hash(
+    postgres_store: PostgresStore, compass_engine: AsyncEngine
+) -> None:
+    rec = f.make_session()
+    async with postgres_store.begin(f.TENANT_A) as uow:
+        await uow.sessions.create(rec)
+        await uow.batches.add(rec.id, f.make_batch("BAT-001", mode="initial", inputs_hash="h"))
+    twin = (
+        "INSERT INTO compass_batches (session_id, batch_id, tenant_id, mode, inputs_hash, output, "
+        "accepted, rejected, verdicts, used_fallback, repaired, latency_ms, cost_micros, created_at) "
+        "VALUES (:sid, 'BAT-002', :tenant, :mode, 'h', '{}'::jsonb, '[]', '[]', '[]', false, false, "
+        "0, 0, now())"
+    )
+    values = {"sid": rec.id, "tenant": f.TENANT_A}
+    with pytest.raises(DBAPIError, match="uq_compass_batches_session_mode_inputs"):
+        async with compass_engine.begin() as conn:
+            await conn.execute(text(twin), {**values, "mode": "initial"})
+    async with compass_engine.begin() as conn:
+        await conn.execute(text(twin), {**values, "mode": "replan"})
+
+
+async def test_fact_ids_are_distinct_across_independent_engines(
+    compass_database: URL, fake_clock: FakeClock
+) -> None:
+    """Two pools stand in for two processes: ``next_id`` + ``add`` never hands out an id twice."""
+    from mde_compass.store.postgres import create_store_engine
+
+    truncate_all(compass_database)
+    first, second = create_store_engine(compass_database), create_store_engine(compass_database)
+    try:
+        stores = [PostgresStore(first, clock=fake_clock), PostgresStore(second, clock=fake_clock)]
+        rec = f.make_session()
+        async with stores[0].begin(f.TENANT_A) as uow:
+            await uow.sessions.create(rec)
+
+        async def write(store: PostgresStore) -> tuple[str, str]:
+            async with store.begin(f.TENANT_A) as uow:
+                fact_id = await uow.facts.next_id(rec.id)
+                await uow.facts.add(rec.id, f.make_fact(fact_id))
+                batch_id = await uow.batches.next_id(rec.id)
+                await uow.batches.add(rec.id, f.make_batch(batch_id, inputs_hash=f"hash-{fact_id}"))
+                return fact_id, batch_id
+
+        results = await asyncio.gather(*(write(stores[i % 2]) for i in range(8)))
+        expected = [f"FCT-{n:03d}" for n in range(1, 9)]
+        assert sorted(r[0] for r in results) == expected
+        assert sorted(r[1] for r in results) == [f"BAT-{n:03d}" for n in range(1, 9)]
+    finally:
+        await first.dispose()
+        await second.dispose()
+    assert first.pool.checkedout() == 0 and second.pool.checkedout() == 0  # type: ignore[attr-defined]
+
+
 async def test_a_conflict_does_not_abort_the_transaction(postgres_store: PostgresStore) -> None:
     """Constraint violations are raised by the repository (ON CONFLICT), never by the database, so
     the unit of work keeps working afterwards."""
@@ -231,6 +365,12 @@ async def test_a_conflict_does_not_abort_the_transaction(postgres_store: Postgre
         await uow.change_sets.save(rec.id, f.make_change_set())
         with pytest.raises(Conflict):
             await uow.change_sets.save(rec.id, f.make_change_set())
+        await uow.facts.add(rec.id, f.make_fact())
+        with pytest.raises(Conflict):
+            await uow.facts.add(rec.id, f.make_fact())
+        await uow.batches.add(rec.id, f.make_batch())
+        with pytest.raises(Conflict):
+            await uow.batches.add(rec.id, f.make_batch("BAT-002", inputs_hash="hash-bat-001"))
         with pytest.raises(NotFound):
             await uow.briefs.get(rec.id)
         await uow.sessions.add_spend(rec.id, 5)  # still a healthy transaction
