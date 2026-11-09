@@ -88,6 +88,72 @@ async def test_returned_records_are_copies() -> None:
         assert (await uow.sessions.get(rec.id)).contributors == []
 
 
+async def test_memory_records_are_copies_and_input_is_not_aliased() -> None:
+    store = InMemoryStore(FakeClock())
+    async with store.begin(A) as uow:
+        rec = await uow.sessions.create(f.make_session())
+        fact = f.make_fact()
+        await uow.facts.add(rec.id, fact)
+        fact.topics.append("mutated after add")
+        got = await uow.facts.get(rec.id, "FCT-001")
+        assert got.topics == ["pricing"]
+        got.topics.append("mutated after get")
+        got.effects.clear()
+        again = await uow.facts.get(rec.id, "FCT-001")
+        assert again.topics == ["pricing"] and len(again.effects) == 1
+
+        qa = f.make_qa()
+        await uow.qa.upsert(rec.id, qa)
+        qa.card.options.clear()
+        (await uow.qa.get(rec.id, "Q-001")).card.options.clear()
+        assert len((await uow.qa.get(rec.id, "Q-001")).card.options) == 3
+
+        await uow.batches.add(rec.id, f.make_batch())
+        (await uow.batches.get(rec.id, "BAT-001")).output["groups"] = "mutated"
+        assert (await uow.batches.get(rec.id, "BAT-001")).output["groups"] != "mutated"
+
+
+async def test_next_id_waits_for_the_open_unit_and_follows_its_fact() -> None:
+    """``next_id`` takes the session's row lock: a second writer queues behind the first and then sees
+    the first one's fact (Postgres: ``SELECT ... FOR NO KEY UPDATE`` on the session row)."""
+    store = InMemoryStore(FakeClock())
+    async with store.begin(A) as uow:
+        rec = await uow.sessions.create(f.make_session())
+
+    async def second() -> str:
+        async with store.begin(A) as uow:
+            return await uow.facts.next_id(rec.id)
+
+    async with store.begin(A) as first:
+        assert await first.facts.next_id(rec.id) == "FCT-001"
+        task = asyncio.create_task(second())
+        await asyncio.sleep(0.05)
+        assert not task.done()  # queued behind the first unit's lock
+        await first.facts.add(rec.id, f.make_fact("FCT-001"))
+    assert await asyncio.wait_for(task, timeout=2) == "FCT-002"
+
+
+async def test_a_failed_memory_write_releases_the_lock_and_keeps_the_numbers() -> None:
+    store = InMemoryStore(FakeClock())
+    async with store.begin(A) as uow:
+        rec = await uow.sessions.create(f.make_session())
+
+    async def failing_writer() -> None:
+        async with store.begin(A) as uow:
+            await uow.facts.add(rec.id, f.make_fact("FCT-001"))
+            await uow.batches.add(rec.id, f.make_batch("BAT-001"))
+            raise RuntimeError("boom")
+
+    with pytest.raises(RuntimeError):
+        await failing_writer()
+
+    async def next_ids() -> tuple[str, str]:
+        async with store.begin(A) as uow:
+            return await uow.facts.next_id(rec.id), await uow.batches.next_id(rec.id)
+
+    assert await asyncio.wait_for(next_ids(), timeout=2) == ("FCT-001", "BAT-001")
+
+
 async def test_test_conveniences_bypass_tenant_scope() -> None:
     store = InMemoryStore(FakeClock())
     async with store.begin(A) as uow:

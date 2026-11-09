@@ -13,6 +13,9 @@ Rules every implementation keeps (prompt 5.8):
 * Errors: ``mde_core.errors.NotFound`` / ``Conflict`` / ``TenantViolation``.
 * Tables are prefixed ``compass_``; derived projections (slots, features, assumptions, research requests,
   glossary) are rewritten by ``BriefRepo.save_version`` and never read back.
+* Interview Memory (ADR 0015): ``qa``, ``facts``, ``summaries`` and ``batches``. Nothing in them is ever
+  deleted (no delete method exists): a correction adds a new Q&A version or a superseding fact. Every write
+  takes the session's row lock, so listing order (insertion order) equals commit order.
 """
 
 from __future__ import annotations
@@ -29,6 +32,14 @@ from mde_compass.domain.changes import ChangeSet
 from mde_compass.domain.claims import Chunk, Claim, SourceInfo
 from mde_compass.domain.common import Strict
 from mde_compass.domain.events import StoredEvent
+from mde_compass.domain.interview import (
+    BatchRecord,
+    Fact,
+    FactStatus,
+    InterviewSummary,
+    QaRecord,
+    QaStatus,
+)
 from mde_compass.domain.session import Contributor, SessionRecord, SessionState
 
 
@@ -209,6 +220,89 @@ class ContributorRepo(Protocol):
     async def list(self, session_id: str) -> list[Contributor]: ...
 
 
+class QaRepo(Protocol):
+    """The question and answer ledger, versioned by ``(card_id, version)``. An edit is a new version
+    (the engine marks the old one ``superseded``); rows are never deleted."""
+
+    async def upsert(self, session_id: str, record: QaRecord) -> None:
+        """Insert the record, or replace the row with the same ``(card_id, version)`` (it keeps its
+        place in the insertion order)."""
+        ...
+
+    async def get(self, session_id: str, card_id: str, version: int | None = None) -> QaRecord:
+        """The given version, or the newest one when ``version`` is None. ``NotFound`` if none."""
+        ...
+
+    async def list(
+        self,
+        session_id: str,
+        *,
+        status: QaStatus | None = None,
+        batch_id: str | None = None,
+        latest_only: bool = True,
+    ) -> list[QaRecord]:
+        """Insertion order. With ``latest_only`` (the default) each card contributes only its newest
+        version, and the filters then apply to that row ("the open questions" are the cards whose
+        current version is open). With ``latest_only=False`` every version is a candidate."""
+        ...
+
+
+class FactRepo(Protocol):
+    """The long-term memory. ``id``, ``created_at``, ``statement`` and ``quote`` of a stored fact never
+    change; there is no delete."""
+
+    async def add(self, session_id: str, fact: Fact) -> None:
+        """``Conflict`` if the id exists. ``created_at`` defaults to now; ``updated_at`` is now."""
+        ...
+
+    async def update(self, session_id: str, fact: Fact) -> None:
+        """Replace the mutable fields (status, links, metadata); ``updated_at`` becomes now.
+        ``NotFound`` if the fact is absent; ``Conflict`` if ``statement`` or ``quote`` differ from the
+        stored fact, or ``created_at`` is set and differs (``None`` means "unchanged")."""
+        ...
+
+    async def get(self, session_id: str, fact_id: str) -> Fact: ...
+    async def list(self, session_id: str, *, status: FactStatus | None = None) -> list[Fact]:
+        """Insertion order, optionally only the facts in one status."""
+        ...
+
+    async def next_id(self, session_id: str) -> str:
+        """``FCT-###``: the highest existing number plus one over ALL facts (superseded ones included), so
+        an id is never reused. It reads the stored state (it reserves nothing) after taking the session's
+        row lock, so concurrent writers get distinct ids as long as each adds its fact in the same unit
+        of work."""
+        ...
+
+
+class SummaryRepo(Protocol):
+    """The rolling interview summary: one row per session, replaced on each refresh."""
+
+    async def get(self, session_id: str) -> InterviewSummary | None: ...
+    async def put(self, session_id: str, summary: InterviewSummary) -> None:
+        """Replace the summary. ``updated_at`` is set to now by the store."""
+        ...
+
+
+class BatchRepo(Protocol):
+    """Planner runs. ``(mode, inputs_hash)`` is unique per session, so a replan with identical inputs is
+    found, not repeated."""
+
+    async def add(self, session_id: str, record: BatchRecord) -> None:
+        """``Conflict`` if the id exists or the same ``(mode, inputs_hash)`` was already recorded.
+        ``created_at`` defaults to now."""
+        ...
+
+    async def get(self, session_id: str, batch_id: str) -> BatchRecord: ...
+    async def find(self, session_id: str, mode: str, inputs_hash: str) -> BatchRecord | None: ...
+    async def list(self, session_id: str) -> list[BatchRecord]:
+        """Insertion order."""
+        ...
+
+    async def next_id(self, session_id: str) -> str:
+        """``BAT-###``: highest existing number plus one (same rules as ``FactRepo.next_id``)."""
+        ...
+
+
 class UnitOfWork(Protocol):
     sessions: SessionRepo
     events: EventRepo
@@ -218,6 +312,10 @@ class UnitOfWork(Protocol):
     call_log: CallLogRepo
     sources: SourceRepo
     contributors: ContributorRepo
+    qa: QaRepo
+    facts: FactRepo
+    summaries: SummaryRepo
+    batches: BatchRepo
 
     async def commit(self) -> None: ...
     async def rollback(self) -> None: ...

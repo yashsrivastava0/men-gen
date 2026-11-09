@@ -13,6 +13,11 @@ bound to that tenant; it commits on clean exit and rolls back on any exception. 
 * The outbound ``seq`` comes from ``UPDATE compass_sessions SET outbound_seq = outbound_seq + 1 ...
   RETURNING``: the row lock is held until commit, so ``seq`` order equals commit order.
 * Transactions never span a model call (ADR 0004).
+* Interview Memory (``qa``, ``facts``, ``summaries``, ``batches``): every write takes the session row lock
+  first, so insertion order (the identity column ``n``) equals commit order and ``next_id`` (a ``max``
+  over the stored ids) cannot hand the same id to two writers. Duplicates are found by ``ON CONFLICT DO
+  NOTHING`` or by a read under that lock, never by an error that would abort the transaction. There is no
+  delete anywhere; the database also refuses to delete a fact or change what it says (migration 0002).
 """
 
 from __future__ import annotations
@@ -23,7 +28,21 @@ from datetime import datetime
 from typing import Any, Literal, cast
 
 from pydantic import JsonValue
-from sqlalchemy import Table, and_, delete, func, literal, null, or_, select, text, update
+from sqlalchemy import (
+    Column,
+    Numeric,
+    Table,
+    and_,
+    delete,
+    exists,
+    func,
+    literal,
+    null,
+    or_,
+    select,
+    text,
+    update,
+)
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession
@@ -34,19 +53,34 @@ from mde_compass.domain.changes import ChangeSet
 from mde_compass.domain.claims import Chunk, Claim, SourceInfo
 from mde_compass.domain.events import StoredEvent
 from mde_compass.domain.hashing import brief_hash, section_hashes
+from mde_compass.domain.interview import (
+    BatchRecord,
+    Fact,
+    FactStatus,
+    InterviewSummary,
+    QaRecord,
+    QaStatus,
+)
 from mde_compass.domain.session import Contributor, SessionRecord, SessionState
 from mde_compass.store import models as m
 from mde_compass.store.common import (
+    BATCH_ID_PREFIX,
     DEFAULT_BASELINE_LABEL,
+    FACT_ID_PREFIX,
     STALE_TURN,
+    changed_fact_identity,
     clean_json,
     clean_text,
     dump_model,
+    fact_immutable,
+    format_id,
+    id_pattern,
     normalize,
     payload_text,
     turn_lock_key,
 )
 from mde_compass.store.ports import (
+    BatchRepo,
     BriefRepo,
     BriefVersionRecord,
     BriefVersionSummary,
@@ -55,11 +89,14 @@ from mde_compass.store.ports import (
     ChangeSetRepo,
     ContributorRepo,
     EventRepo,
+    FactRepo,
     HistoryPage,
+    QaRepo,
     QuestionRecord,
     QuestionRepo,
     SessionRepo,
     SourceRepo,
+    SummaryRepo,
 )
 from mde_core.clock import Clock, SystemClock
 from mde_core.errors import Conflict, NotFound, TenantViolation, ValidationFailed
@@ -94,6 +131,10 @@ GLOSSARY = tbl(m.GlossaryRow)
 CONTRIBUTOR = tbl(m.ContributorRow)
 CHANGE_SET = tbl(m.ChangeSetRow)
 CALL_LOG = tbl(m.CallLogRow)
+QA = tbl(m.QaRow)
+FACT = tbl(m.FactRow)
+SUMMARY = tbl(m.InterviewSummaryRow)
+BATCH = tbl(m.BatchRow)
 
 
 def _page_limit(limit: int) -> int:
@@ -140,6 +181,20 @@ class _Repo:
         if row is None:
             raise NotFound(f"session {session_id!r} not found")
         return row
+
+    async def next_numbered_id(self, session_id: str, column: Column[str], prefix: str) -> str:
+        """``<prefix><highest number + 1>`` over the session's ids of that shape, after taking the
+        session's row lock (so a writer that adds its row in the same unit of work cannot race another).
+        Only ids that are the prefix and ASCII digits count; the rest never break the numeric cast."""
+        await self.lock_session(session_id)
+        table = column.table
+        stmt = select(func.max(func.substr(column, len(prefix) + 1).cast(Numeric))).where(
+            table.c.session_id == session_id,
+            table.c.tenant_id == self.tenant,
+            column.op("~")(id_pattern(prefix)),
+        )
+        highest = (await self._s.execute(stmt)).scalar_one()
+        return format_id(prefix, int(highest or 0) + 1)
 
 
 # --------------------------------------------------------------------------- sessions
@@ -1030,6 +1085,354 @@ class PgContributorRepo(_Repo):
         return [Contributor.model_validate(p) for p in (await self._s.execute(stmt)).scalars()]
 
 
+# --------------------------------------------------------------------------- interview memory
+
+
+def _qa_record(row: Any) -> QaRecord:
+    return QaRecord(
+        card_id=row.card_id,
+        version=row.version,
+        batch_id=row.batch_id,
+        group_id=row.group_id,
+        mode=row.mode,
+        card=Card.model_validate(row.card),
+        status=row.status,
+        answer=row.answer,
+        custom_text=row.custom_text,
+        input_mode=row.input_mode,
+        parent_card_id=row.parent_card_id,
+        asked_at=utc(row.asked_at),
+        answered_at=utc(row.answered_at),
+    )
+
+
+class PgQaRepo(_Repo):
+    async def upsert(self, session_id: str, record: QaRecord) -> None:
+        await self.lock_session(session_id)
+        record = normalize(record)
+        values: dict[str, Any] = {
+            "batch_id": record.batch_id,
+            "group_id": record.group_id,
+            "mode": record.mode,
+            "status": record.status,
+            "card": dump_model(record.card),
+            "answer": null() if record.answer is None else record.answer,
+            "custom_text": record.custom_text,
+            "input_mode": record.input_mode,
+            "parent_card_id": record.parent_card_id,
+            "asked_at": utc(record.asked_at),
+            "answered_at": utc(record.answered_at),
+        }
+        ins = pg_insert(QA).values(
+            session_id=session_id,
+            card_id=record.card_id,
+            version=record.version,
+            tenant_id=self.tenant,
+            **values,
+        )
+        await self._s.execute(
+            ins.on_conflict_do_update(
+                index_elements=[QA.c.session_id, QA.c.card_id, QA.c.version], set_=values
+            )
+        )
+
+    async def get(self, session_id: str, card_id: str, version: int | None = None) -> QaRecord:
+        await self.require_session(session_id)
+        stmt = select(*QA.c).where(
+            QA.c.session_id == session_id,
+            QA.c.tenant_id == self.tenant,
+            QA.c.card_id == clean_text(card_id),
+        )
+        if version is None:
+            stmt = stmt.order_by(QA.c.version.desc()).limit(1)
+        else:
+            stmt = stmt.where(QA.c.version == version)
+        row = (await self._s.execute(stmt)).one_or_none()
+        if row is None:
+            what = card_id if version is None else f"{card_id} v{version}"
+            raise NotFound(f"question {what} of session {session_id} not found")
+        return _qa_record(row)
+
+    async def list(
+        self,
+        session_id: str,
+        *,
+        status: QaStatus | None = None,
+        batch_id: str | None = None,
+        latest_only: bool = True,
+    ) -> list[QaRecord]:
+        await self.require_session(session_id)
+        stmt = select(*QA.c).where(QA.c.session_id == session_id, QA.c.tenant_id == self.tenant)
+        if latest_only:  # keep a row only if no newer version of the same card exists
+            newer = QA.alias("newer")
+            stmt = stmt.where(
+                ~exists().where(
+                    newer.c.session_id == QA.c.session_id,
+                    newer.c.card_id == QA.c.card_id,
+                    newer.c.version > QA.c.version,
+                )
+            )
+        if status is not None:
+            stmt = stmt.where(QA.c.status == status)
+        if batch_id is not None:
+            stmt = stmt.where(QA.c.batch_id == clean_text(batch_id))
+        stmt = stmt.order_by(QA.c.n)
+        return [_qa_record(r) for r in (await self._s.execute(stmt)).all()]
+
+
+def _fact_values(fact: Fact) -> dict[str, Any]:
+    """The mutable columns of a fact (``statement`` and ``quote`` are inserted once, never updated)."""
+    data = dump_model(fact)
+    return {
+        "type": fact.type,
+        "topics": data["topics"],
+        "entities": data["entities"],
+        "consumers": data["consumers"],
+        "confidence": fact.confidence,
+        "status": fact.status,
+        "origin": fact.origin,
+        "source_ref": fact.source_ref,
+        "qa_card_id": fact.qa_card_id,
+        "claim_id": fact.claim_id,
+        "unverified_quote": fact.unverified_quote,
+        "supersedes": data["supersedes"],
+        "not_used_reason": fact.not_used_reason,
+        "effects": data["effects"],
+        "aspects": data["aspects"],
+    }
+
+
+def _fact_record(row: Any) -> Fact:
+    return Fact.model_validate(
+        {
+            "id": row.fact_id,
+            "type": row.type,
+            "statement": row.statement,
+            "topics": row.topics,
+            "entities": row.entities,
+            "consumers": row.consumers,
+            "confidence": row.confidence,
+            "status": row.status,
+            "origin": row.origin,
+            "source_ref": row.source_ref,
+            "qa_card_id": row.qa_card_id,
+            "claim_id": row.claim_id,
+            "quote": row.quote,
+            "unverified_quote": row.unverified_quote,
+            "supersedes": row.supersedes,
+            "not_used_reason": row.not_used_reason,
+            "effects": row.effects,
+            "aspects": row.aspects,
+            "created_at": utc(row.created_at),
+            "updated_at": utc(row.updated_at),
+        }
+    )
+
+
+class PgFactRepo(_Repo):
+    async def add(self, session_id: str, fact: Fact) -> None:
+        await self.lock_session(session_id)
+        fact = normalize(fact)
+        now = self.now()
+        stmt = (
+            pg_insert(FACT)
+            .values(
+                session_id=session_id,
+                fact_id=fact.id,
+                tenant_id=self.tenant,
+                statement=fact.statement,
+                quote=fact.quote,
+                created_at=utc(fact.created_at) or now,
+                updated_at=now,
+                **_fact_values(fact),
+            )
+            .on_conflict_do_nothing(index_elements=[FACT.c.session_id, FACT.c.fact_id])
+            .returning(FACT.c.fact_id)
+        )
+        if (await self._s.execute(stmt)).first() is None:
+            raise Conflict(
+                f"fact {fact.id} already exists (use update to change it)",
+                details={"session_id": session_id, "fact_id": fact.id},
+            )
+
+    async def update(self, session_id: str, fact: Fact) -> None:
+        await self.lock_session(session_id)
+        fact = normalize(fact)
+        current = await self._row(session_id, fact.id)  # NotFound if absent
+        changed = changed_fact_identity(_fact_record(current), fact)
+        if changed:
+            raise fact_immutable(session_id, fact.id, changed)
+        stmt = (
+            update(FACT)
+            .where(
+                FACT.c.session_id == session_id,
+                FACT.c.tenant_id == self.tenant,
+                FACT.c.fact_id == fact.id,
+            )
+            .values(updated_at=self.now(), **_fact_values(fact))
+            .returning(FACT.c.fact_id)
+        )
+        if (await self._s.execute(stmt)).first() is None:  # unreachable under the row lock
+            raise NotFound(f"fact {fact.id} of session {session_id} not found")
+
+    async def _row(self, session_id: str, fact_id: str) -> Any:
+        stmt = select(*FACT.c).where(
+            FACT.c.session_id == session_id,
+            FACT.c.tenant_id == self.tenant,
+            FACT.c.fact_id == clean_text(fact_id),
+        )
+        row = (await self._s.execute(stmt)).one_or_none()
+        if row is None:
+            raise NotFound(f"fact {fact_id} of session {session_id} not found")
+        return row
+
+    async def get(self, session_id: str, fact_id: str) -> Fact:
+        await self.require_session(session_id)
+        return _fact_record(await self._row(session_id, fact_id))
+
+    async def list(self, session_id: str, *, status: FactStatus | None = None) -> list[Fact]:
+        await self.require_session(session_id)
+        stmt = select(*FACT.c).where(
+            FACT.c.session_id == session_id, FACT.c.tenant_id == self.tenant
+        )
+        if status is not None:
+            stmt = stmt.where(FACT.c.status == status)
+        return [_fact_record(r) for r in (await self._s.execute(stmt.order_by(FACT.c.n))).all()]
+
+    async def next_id(self, session_id: str) -> str:
+        return await self.next_numbered_id(session_id, FACT.c.fact_id, FACT_ID_PREFIX)
+
+
+class PgSummaryRepo(_Repo):
+    async def get(self, session_id: str) -> InterviewSummary | None:
+        await self.require_session(session_id)
+        stmt = select(*SUMMARY.c).where(
+            SUMMARY.c.session_id == session_id, SUMMARY.c.tenant_id == self.tenant
+        )
+        row = (await self._s.execute(stmt)).one_or_none()
+        if row is None:
+            return None
+        data: dict[str, Any] = dict(row.payload)
+        data.update(version=row.version, updated_at=utc(row.updated_at))
+        return InterviewSummary.model_validate(data)
+
+    async def put(self, session_id: str, summary: InterviewSummary) -> None:
+        await self.lock_session(session_id)
+        now = self.now()
+        stored = normalize(summary).model_copy(update={"updated_at": now})
+        values: dict[str, Any] = {
+            "version": stored.version,
+            "payload": dump_model(stored),
+            "updated_at": now,
+        }
+        ins = pg_insert(SUMMARY).values(session_id=session_id, tenant_id=self.tenant, **values)
+        await self._s.execute(
+            ins.on_conflict_do_update(index_elements=[SUMMARY.c.session_id], set_=values)
+        )
+
+
+def _batch_record(row: Any) -> BatchRecord:
+    return BatchRecord.model_validate(
+        {
+            "id": row.batch_id,
+            "mode": row.mode,
+            "inputs_hash": row.inputs_hash,
+            "output": row.output,
+            "accepted": row.accepted,
+            "rejected": row.rejected,
+            "verdicts": row.verdicts,
+            "used_fallback": row.used_fallback,
+            "repaired": row.repaired,
+            "latency_ms": row.latency_ms,
+            "cost_micros": row.cost_micros,
+            "created_at": utc(row.created_at),
+        }
+    )
+
+
+class PgBatchRepo(_Repo):
+    async def add(self, session_id: str, record: BatchRecord) -> None:
+        await self.lock_session(session_id)
+        record = normalize(record)
+        data = dump_model(record)
+        stmt = (
+            pg_insert(BATCH)
+            .values(
+                session_id=session_id,
+                batch_id=record.id,
+                tenant_id=self.tenant,
+                mode=record.mode,
+                inputs_hash=record.inputs_hash,
+                output=data["output"],
+                accepted=data["accepted"],
+                rejected=data["rejected"],
+                verdicts=data["verdicts"],
+                used_fallback=record.used_fallback,
+                repaired=record.repaired,
+                latency_ms=record.latency_ms,
+                cost_micros=record.cost_micros,
+                created_at=utc(record.created_at) or self.now(),
+            )
+            .on_conflict_do_nothing()  # the primary key and the (mode, inputs_hash) unique index
+            .returning(BATCH.c.batch_id)
+        )
+        if (await self._s.execute(stmt)).first() is not None:
+            return
+        same_id = select(literal(1)).where(
+            BATCH.c.session_id == session_id, BATCH.c.batch_id == record.id
+        )
+        if (await self._s.execute(same_id)).first() is not None:
+            raise Conflict(
+                f"batch {record.id} already exists",
+                details={"session_id": session_id, "batch_id": record.id},
+            )
+        twin = select(BATCH.c.batch_id).where(
+            BATCH.c.session_id == session_id,
+            BATCH.c.mode == record.mode,
+            BATCH.c.inputs_hash == record.inputs_hash,
+        )
+        holder = (await self._s.execute(twin)).scalar_one_or_none()
+        raise Conflict(
+            f"batch {holder} already has mode {record.mode!r} and the same inputs hash",
+            details={"session_id": session_id, "batch_id": holder},
+        )
+
+    async def get(self, session_id: str, batch_id: str) -> BatchRecord:
+        await self.require_session(session_id)
+        stmt = select(*BATCH.c).where(
+            BATCH.c.session_id == session_id,
+            BATCH.c.tenant_id == self.tenant,
+            BATCH.c.batch_id == clean_text(batch_id),
+        )
+        row = (await self._s.execute(stmt)).one_or_none()
+        if row is None:
+            raise NotFound(f"batch {batch_id} of session {session_id} not found")
+        return _batch_record(row)
+
+    async def find(self, session_id: str, mode: str, inputs_hash: str) -> BatchRecord | None:
+        await self.require_session(session_id)
+        stmt = select(*BATCH.c).where(
+            BATCH.c.session_id == session_id,
+            BATCH.c.tenant_id == self.tenant,
+            BATCH.c.mode == clean_text(mode),
+            BATCH.c.inputs_hash == clean_text(inputs_hash),
+        )
+        row = (await self._s.execute(stmt)).one_or_none()
+        return None if row is None else _batch_record(row)
+
+    async def list(self, session_id: str) -> list[BatchRecord]:
+        await self.require_session(session_id)
+        stmt = (
+            select(*BATCH.c)
+            .where(BATCH.c.session_id == session_id, BATCH.c.tenant_id == self.tenant)
+            .order_by(BATCH.c.n)
+        )
+        return [_batch_record(r) for r in (await self._s.execute(stmt)).all()]
+
+    async def next_id(self, session_id: str) -> str:
+        return await self.next_numbered_id(session_id, BATCH.c.batch_id, BATCH_ID_PREFIX)
+
+
 # --------------------------------------------------------------------------- unit of work, store
 
 
@@ -1044,6 +1447,10 @@ class PgUnitOfWork:
     call_log: CallLogRepo
     sources: SourceRepo
     contributors: ContributorRepo
+    qa: QaRepo
+    facts: FactRepo
+    summaries: SummaryRepo
+    batches: BatchRepo
 
     def __init__(self, session: AsyncSession, tenant_id: str, clock: Clock) -> None:
         self._session = session
@@ -1056,6 +1463,10 @@ class PgUnitOfWork:
         self.call_log = PgCallLogRepo(session, tenant_id, clock)
         self.sources = PgSourceRepo(session, tenant_id, clock)
         self.contributors = PgContributorRepo(session, tenant_id, clock)
+        self.qa = PgQaRepo(session, tenant_id, clock)
+        self.facts = PgFactRepo(session, tenant_id, clock)
+        self.summaries = PgSummaryRepo(session, tenant_id, clock)
+        self.batches = PgBatchRepo(session, tenant_id, clock)
 
     async def commit(self) -> None:
         """Commit now; the unit of work stays usable (a new transaction starts on next use)."""
