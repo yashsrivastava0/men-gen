@@ -133,7 +133,7 @@ PLANNER_GOALS = {
     "questions_within_budget": (
         "BUG-19",
         "follow-ups planned while batch questions wait, and handoff-gap questions, are not charged to "
-        "the budget (Quick 6 of 5, Standard up to 18 of 12, Thorough 28 of 25)",
+        "the budget (Quick 6 of 5, Standard 13 to 16 of 12 and 28 for the answer-all expert, Thorough 27 of 25)",
     ),
     "zero_repeated_questions": (
         "BUG-24",
