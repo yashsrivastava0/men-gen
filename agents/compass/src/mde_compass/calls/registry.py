@@ -18,7 +18,6 @@ from mde_compass.engine.fallback_ports import (
     NoChunkReader,
     NoClaimMerger,
     UnavailableBriefCompiler,
-    UnavailableSummaryUpdater,
 )
 from mde_compass.engine.ports import Ports
 
@@ -48,7 +47,6 @@ PLACEHOLDERS: dict[str, Any] = {
     "claim_merger": NoClaimMerger,
     "ambiguity_scanner": NoAmbiguityScanner,
     # remove an entry when its call folder (spec + adapter) lands
-    "summary_updater": UnavailableSummaryUpdater,
     "brief_compiler": UnavailableBriefCompiler,
 }
 
