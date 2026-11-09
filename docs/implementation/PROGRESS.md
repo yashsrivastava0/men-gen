@@ -137,7 +137,7 @@ Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompt
 
 - [x] Phase 0. Diagnosis and "before" evidence (c9847b6): 30 questions, 9 distinct wordings, 93% shared across five ideas
 - [x] Phase 0a. GLOBAL_RULES (74482f4); doc 11 section 17, AD-29 amended, AD-30 to AD-32, ADR 0015, D-090, D-091
-- [ ] Phase 0b. Restructure `packages/compass` -> `agents/compass` (moves only), workspace, config, security-scan globs, docs paths
+- [x] Phase 0b. Restructure `packages/compass` -> `agents/compass` (08a1085 moves + config, e19d154 in-package paths, docs paths; D-092)
 - [ ] Phase 1. Interview Memory (models, ports, fake, Postgres, migration 0002, contract suite, quote check, projector); `apps/web` port of the UI
 - [ ] Phase 2. Needs Registry (`answer_spec` for all 44 needs, frame style guides, needs status)
 - [ ] Phase 3. Calls: `plan_questions`, `audit_questions`, `understand_turn` v2, `update_summary`, `compile_brief`, `rephrase_question`

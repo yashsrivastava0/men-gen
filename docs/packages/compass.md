@@ -1,13 +1,13 @@
 # mde_compass: Compass, the first agent
 
-`packages/compass/` (import `mde_compass`, call ids `cmp.*`, API prefix `/v1/compass`, dev port 8110). The agent a person meets first: it interviews them with question cards and free text (English, Hindi, Hinglish), fills a catalog of slots and writes the **Brief**, one `brief.json` that is hashed, versioned and evidence-tiered, then waits for Gate 1. Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md). Decisions: [ADR 0012](../adr/0012-compass-package-boundaries-and-layering.md) (boundaries), [0013](../adr/0013-brief-schema-v1-hashing-and-versioning.md) (Brief), [0014](../adr/0014-call-spec-registration-from-agent-packages.md) (calls), D-084 to D-086 in the [decision log](../implementation/DECISIONS.md). Companion pages: [call catalog](../prompts/compass-calls.md), [HTTP API](../api/compass.md), [runbook](../runbooks/compass.md), [package README](../../packages/compass/README.md).
+`agents/compass/` (import `mde_compass`, call ids `cmp.*`, API prefix `/v1/compass`, dev port 8110). The agent a person meets first: it interviews them with question cards and free text (English, Hindi, Hinglish), fills a catalog of slots and writes the **Brief**, one `brief.json` that is hashed, versioned and evidence-tiered, then waits for Gate 1. Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md). Decisions: [ADR 0012](../adr/0012-compass-package-boundaries-and-layering.md) (boundaries), [0013](../adr/0013-brief-schema-v1-hashing-and-versioning.md) (Brief), [0014](../adr/0014-call-spec-registration-from-agent-packages.md) (calls), D-084 to D-086 in the [decision log](../implementation/DECISIONS.md). Companion pages: [call catalog](../prompts/compass-calls.md), [HTTP API](../api/compass.md), [runbook](../runbooks/compass.md), [package README](../../agents/compass/README.md).
 
 Compass sits next to the older Discover engine ([discovery](discovery.md)), which it does not replace in the running system yet and does not import. Today Compass runs as its own app; nothing in `mde_flow` calls it, and the hand-off to a Research agent is a logging stub (see Limitations). It reads documents and links (PDF, Word, Excel, PowerPoint, CSV, text, Markdown, email, web pages) as well as taps and text, and carries 12 call folders, 46 named edge-case scenarios and 10 persona scripts that run offline.
 
 ```
-uv run pytest packages/compass -m "not integration and not live"   # offline, no database (just compass-test)
+uv run pytest agents/compass -m "not integration and not live"   # offline, no database (just compass-test)
 just compass-test-int                                               # store tests against the private PostgreSQL
-cd packages/compass && PYTHONPATH=src python -m evals.run_personas  # the ten persona scripts, offline, prints the metrics report
+cd agents/compass && PYTHONPATH=src python -m evals.run_personas  # the ten persona scripts, offline, prints the metrics report
 ```
 
 ## Boundaries
@@ -160,7 +160,7 @@ The rules below are code (`engine/service.py`, `engine/flows/*`, `engine/voi.py`
 ## Measured behaviour (mock mode)
 
 * **Scenarios.** `mde_compass.scenarios` (`models`, `runner`, `metrics`) runs a YAML script of user actions against the real `Service` in mock mode over the in-memory store through the `Conversation` driver, with `expect:` checks per step. 46 files in `tests/scenarios/data` (`SB-CHG` 4, `SB-DC` 15, `SB-EXPRESS` 1, `SB-GATE` 9, `SB-IN` 4, `SB-IV` 13), run by `tests/scenarios/test_scenarios.py`; plus `test_flows_service.py`, `test_intake_flow.py`, `test_personas.py`. `DEFERRED.yaml` still lists the document cases (IN-01, IN-02, IN-04 and others) as waiting for intake; intake has landed, so that list is out of date.
-* **Personas.** Ten scripts in `packages/compass/evals/personas` (adversarial, change-heavy, chatty, confused, enterprise, expert, hinglish, returns, silent, voice). Run `cd packages/compass && PYTHONPATH=src python -m evals.run_personas [--only silent,chatty] [--no-write]`: offline, free, on a fake clock; the report goes to `packages/compass/evals/reports/latest.json` (git-ignored) plus a dated copy. Targets are those of [doc 11](../architecture-v3/11-discovery-agent-design.md) section 14.
+* **Personas.** Ten scripts in `agents/compass/evals/personas` (adversarial, change-heavy, chatty, confused, enterprise, expert, hinglish, returns, silent, voice). Run `cd agents/compass && PYTHONPATH=src python -m evals.run_personas [--only silent,chatty] [--no-write]`: offline, free, on a fake clock; the report goes to `agents/compass/evals/reports/latest.json` (git-ignored) plus a dated copy. Targets are those of [doc 11](../architecture-v3/11-discovery-agent-design.md) section 14.
 
 | Measure | Target | Measured (10 personas) |
 | --- | --- | --- |
@@ -178,7 +178,7 @@ The rules below are code (`engine/service.py`, `engine/flows/*`, `engine/voi.py`
 
 8 of 9 targets are met. The open miss is the median: required, risk-high, must-confirm slots (`auth.methods`, `auth.account_model`) cannot be assumed or skipped, and the interview has to ask about them. The lever is a product decision in the catalog (for example a safe default for `auth.account_model`, or letting it be proposed in the playback and confirmed at Gate 1); it is not applied here. These numbers are from mock mode (deterministic fallbacks standing in for the model), so they measure the engine and the catalog, not the model's wording; the live smoke below is the first step toward measuring that.
 
-* **Live smoke (batch A).** `mde_compass.live_smoke` runs one real session plus one direct call of every call type and reports outcome, tokens, cost and latency per call, which calls fell back, spend and the cap; vision and streaming are reported as unsupported. `tests/live/test_live_smoke.py` (marker `live`, allowance USD 0.10 through `COMPASS_LIVE_BUDGET_USD`) writes `packages/compass/evals/reports/live-smoke.json`; `tests/test_smoke_driver_offline.py` runs the same driver in mock mode so it keeps working. The command is in the [runbook](../runbooks/compass.md#5-live-calls-lead-or-the-user-only). It is the lead's or the user's to run; this page has no live measurement.
+* **Live smoke (batch A).** `mde_compass.live_smoke` runs one real session plus one direct call of every call type and reports outcome, tokens, cost and latency per call, which calls fell back, spend and the cap; vision and streaming are reported as unsupported. `tests/live/test_live_smoke.py` (marker `live`, allowance USD 0.10 through `COMPASS_LIVE_BUDGET_USD`) writes `agents/compass/evals/reports/live-smoke.json`; `tests/test_smoke_driver_offline.py` runs the same driver in mock mode so it keeps working. The command is in the [runbook](../runbooks/compass.md#5-live-calls-lead-or-the-user-only). It is the lead's or the user's to run; this page has no live measurement.
 
 ## Gate 1
 

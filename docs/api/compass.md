@@ -1,6 +1,6 @@
 # Compass HTTP API (`/v1/compass`)
 
-The HTTP contract of [Compass](../packages/compass.md): sessions, events, the Brief, Gate 1 and the event stream. Hand-written from `packages/compass/src/mde_compass/api/` (`routes.py`, `schemas.py`, `auth.py`, `errors.py`, `middleware.py`, `sse.py`) and checked against the app running in mock mode with the in-memory store. The generated [openapi.json](openapi.json) describes the Context API only; Compass serves its own at `GET /v1/compass/openapi.json` (the interactive docs are off). There is no chat UI in the API: a client sends **inbound events** and renders **outbound events**. A test UI ships with it at `/ui/` ([runbook](../runbooks/compass.md)).
+The HTTP contract of [Compass](../packages/compass.md): sessions, events, the Brief, Gate 1 and the event stream. Hand-written from `agents/compass/src/mde_compass/api/` (`routes.py`, `schemas.py`, `auth.py`, `errors.py`, `middleware.py`, `sse.py`) and checked against the app running in mock mode with the in-memory store. The generated [openapi.json](openapi.json) describes the Context API only; Compass serves its own at `GET /v1/compass/openapi.json` (the interactive docs are off). There is no chat UI in the API: a client sends **inbound events** and renders **outbound events**. A test UI ships with it at `/ui/` ([runbook](../runbooks/compass.md)).
 
 Base URL in development: `http://127.0.0.1:8110`. Run: `just compass-dev` or `uv run python -m mde_compass --port 8110 [--memory]`.
 

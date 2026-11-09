@@ -9,7 +9,7 @@ just compass-dev                                        # API + test UI on http:
 uv run python -m mde_compass --port 8110 --memory       # the same with no database at all (nothing is kept)
 just compass-test                                       # offline unit tests, no database
 just compass-test-int                                   # store tests against the private PostgreSQL
-cd packages/compass && PYTHONPATH=src python -m evals.run_personas --no-write   # ten persona scripts, offline, prints the metrics
+cd agents/compass && PYTHONPATH=src python -m evals.run_personas --no-write   # ten persona scripts, offline, prints the metrics
 ```
 
 Open <http://127.0.0.1:8110/ui/>. Dev auth defaults are in the Settings dialog (`dev-token`, tenant `demo`, user `demo-user`).
@@ -64,10 +64,10 @@ Checks: `curl -s http://127.0.0.1:8110/healthz` returns `{"status":"ok"}`; `/rea
 ## 4. Run the tests
 
 ```bash
-just compass-test                                    # pytest packages/compass -m "not integration and not live" -q
-just compass-test-int                                # db-up, then pytest packages/compass -m integration -q
-uv run pytest packages/compass                       # everything except live (integration needs the database)
-uv run pytest packages/compass/tests/calls/write_card -q
+just compass-test                                    # pytest agents/compass -m "not integration and not live" -q
+just compass-test-int                                # db-up, then pytest agents/compass -m integration -q
+uv run pytest agents/compass                       # everything except live (integration needs the database)
+uv run pytest agents/compass/tests/calls/write_card -q
 just ci-fast                                         # lint, typecheck, layers, unit tests for the repo
 ```
 
@@ -76,7 +76,7 @@ just ci-fast                                         # lint, typecheck, layers, 
 * `tests/scenarios` drives a real `Service` end to end in mock mode (welcome, idea, cards, review, gate, changes, undo, hand-off). `tests/api` and `tests/ui_smoke` cover the HTTP layer and the static UI contract.
 * `tests/intake` covers the parsers, chunking, the SSRF-safe URL reader and the ingest pipeline; `tests/engine/flows` the targeted flows; `tests/scenarios` the 46 named `SB-*` scenarios (`data/*.yaml`), the flows, intake and the personas.
 * One test is marked `live`: `tests/live/test_live_smoke.py`. It skips itself unless `ALLOW_LIVE_LLM=1` is already in the outer environment (the root `conftest.py` guard), so `just compass-test` never runs it; its offline twin, `tests/test_smoke_driver_offline.py`, runs the same driver in mock mode. Nothing else here needs a key.
-* The persona eval prints the report and (without `--no-write`) writes `packages/compass/evals/reports/latest.json` and a dated copy; that folder is git-ignored. Measured results are on [the package page](../packages/compass.md#measured-behaviour-mock-mode).
+* The persona eval prints the report and (without `--no-write`) writes `agents/compass/evals/reports/latest.json` and a dated copy; that folder is git-ignored. Measured results are on [the package page](../packages/compass.md#measured-behaviour-mock-mode).
 * Layering: `just layers` must keep the `compass-isolated` contract.
 
 ## 5. Live calls (lead or the user only)
@@ -84,12 +84,12 @@ just ci-fast                                         # lint, typecheck, layers, 
 Subagents and everyday development stay in mock or replay. Compass has no `just` recipe for live work; it has one live test, the **smoke driver** (batch A of D-085): `mde_compass.live_smoke` runs one real session (idea, cards to the review, a question, a chat change, a disliked assumption) plus one direct call of each intake-side call, and reports per call the outcome, tokens, cost and latency, which calls fell back, the spend against the cap, and that vision and streaming are unsupported by the gateway. The one-line command, from the repository root, in the lead's or the user's own terminal:
 
 ```bash
-ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s
+ALLOW_LIVE_LLM=1 uv run pytest agents/compass/tests/live -m live -q -s
 ```
 
 * The allowance is USD 0.10: the test sets `COMPASS_LIVE_BUDGET_USD=0.10` for itself and asserts the spend stays under it. The test turns live mode on only when the second key is present (the root `conftest.py` sets the mode for `live`-marked tests); no other switch is needed on the command line.
 * `OPENAI_API_KEY` must be visible to the process (the test's docstring says it lives in `.env`; never print, paste or commit it). `MDE_FORBID_LIVE` must be unset.
-* The report is printed (`-s`) and written to `packages/compass/evals/reports/live-smoke.json` (git-ignored). Read it for `fallbacks` (a call that fell back is a call the model could not satisfy: fix the prompt or the validator offline), `errors` and `cost_usd`; then `just budget`, write the new total in `docs/implementation/PROGRESS.md` and take the second key away again.
+* The report is printed (`-s`) and written to `agents/compass/evals/reports/live-smoke.json` (git-ignored). Read it for `fallbacks` (a call that fell back is a call the model could not satisfy: fix the prompt or the validator offline), `errors` and `cost_usd`; then `just budget`, write the new total in `docs/implementation/PROGRESS.md` and take the second key away again.
 * The test passes only if the driver reports no errors, spend is at most 0.10 and the session ends in `BRIEF_REVIEW`, `INTERVIEWING` or `PROBING`.
 * **This page has no live result.** Nothing here says how fast, how costly or how well the real model does Compass's jobs; the numbers on [the package page](../packages/compass.md#measured-behaviour-mock-mode) are mock-mode numbers.
 
@@ -131,9 +131,9 @@ Known gap: the Compass spend counter (`CompassBudget`) is per process and starts
 
 | What | Where |
 | --- | --- |
-| Package and its README | `packages/compass/`, [README](../../packages/compass/README.md) |
-| Catalog data (slots, frames, families) | `packages/compass/src/mde_compass/catalog/` |
-| Call folders | `packages/compass/src/mde_compass/calls/<name>/`, [catalog page](../prompts/compass-calls.md) |
-| Migrations | `packages/compass/src/mde_compass/store/migrations/` |
-| Test UI | `packages/compass/src/mde_compass/static_ui/` |
+| Package and its README | `agents/compass/`, [README](../../agents/compass/README.md) |
+| Catalog data (slots, frames, families) | `agents/compass/src/mde_compass/catalog/` |
+| Call folders | `agents/compass/src/mde_compass/calls/<name>/`, [catalog page](../prompts/compass-calls.md) |
+| Migrations | `agents/compass/src/mde_compass/store/migrations/` |
+| Test UI | `agents/compass/src/mde_compass/static_ui/` |
 | Decisions | D-084 to D-086 in [DECISIONS.md](../implementation/DECISIONS.md); status in the Compass section of [PROGRESS.md](../implementation/PROGRESS.md) |
