@@ -824,19 +824,6 @@ class Service(FlowHooks):
                 chips.append(f"{self._label(turn, u.slot_id)}: {_text(u.value)}"[:80])
         return chips
 
-    def _add_reference(self, turn: _Turn, ref: str, text: str) -> None:
-        current = turn.slots.get("scope.references")
-        items = list(current.value) if current and isinstance(current.value, list) else []
-        if any(
-            isinstance(i, dict) and str(i.get("label", "")).lower() == ref.lower() for i in items
-        ):
-            return
-        items.append({"label": ref, "borrow": [], "avoid": []})
-        turn.slots.write(
-            "scope.references", items, state="volunteered", provenance=self._prov(turn, "user_text", ref),
-            confidence=0.6, turn_id=turn.turn_id,
-        )  # fmt: skip
-
     async def _decline(self, turn: _Turn, match: Any) -> None:
         turn.notice(
             "declined_category",

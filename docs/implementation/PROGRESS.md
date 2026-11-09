@@ -104,29 +104,29 @@ Live spend total (update after every live batch with `just budget`): USD 0.1984 
 - [ ] 9. Evals report committed with honest notes on where Luna was weak and what changed
 - [ ] 10. `PROGRESS.md` fully ticked, `DECISIONS.md` current, `REPORT.md` written
 
-## Compass (build prompt 01; started 2026-11-09 03:10, hard stop 04:40)
+## Compass (build prompt 01; started 2026-11-09 03:10)
 
-Offline vertical slice, time-boxed (D-085). If this section is the last thing you read: the last green commit on `main` is the deliverable; everything unticked below is not started or not merged.
+State at the end of the first working session (the 04:40 cutoff was a usage limit; work resumed 11:03). Everything below is merged on `main` and green offline; counts are from the last full run.
 
-- [x] Toolchain on macOS without Homebrew (uv, just, Python 3.13, PostgreSQL 16.2 private cluster on 54329), architecture docs copied to `docs/architecture-v3/` (d5bc0f3, D-084)
-- [x] Package skeleton, root wiring, import-linter layer + isolation contract (fc68145)
-- [x] Shared contracts commit: config, domain, store ports, engine ports (12 call ports + `CompassService` + `HandoffPort`), `CompassCallSpec`/`CallRunner`, `CompassBudget`, `BriefViewModel`, API schemas, ADR 0012 to 0014 (this checkpoint)
-- [x] Catalog data + loader: 44 slots, 17 frames, 16 families, 9 tier B + 8 declined, 135 en/hi strings (abe227f)
-- [x] Store: fake + PostgreSQL + Alembic + contract suite, merged at its last commit (52fb689); agent was cut off by the usage limit, so re-run `uv run pytest packages/compass -m integration` to confirm
-- [x] Calls A merged at its last commit (9105c54; agent cut off, check its uncommitted leftovers in `../wt-compass-callsa`)
-- [x] Calls B: compile_text, seed_research, probe_handoff (686be6e)
-- [x] Engine core: state machine, slots, tiers, VoI queue, card validators, assumptions, gate, patch + undo, safety (f222169, b365a24)
-- [x] Views: BriefViewModel builder, consumer views (no transcript), readiness, diffs, provenance (08a1b1f)
-- [x] API + SSE + static test UI merged (50bec94); not yet smoke-tested in a browser by the lead
-- [~] Engine service (turn loop) written (7ccd58a); end-to-end scenario tests are held back until the engine, calls and store branches merge (then `tests/scenarios` lands)
-- [~] Other six calls: answer, interpret_change, make_variants merged (c836103); read_chunk partly done in `../wt-compass-callsd` (1 commit, uncommitted rest); merge_claims and scan_ambiguity not started (placeholders in engine/fallback_ports.py)
-- [ ] Live batch A smoke (only if the API key and `ALLOW_LIVE_LLM=1` are already in the environment)
-- [ ] Deferred (exact next steps are written here at wrap-up): intake (parsers, URL reader, SSRF guard), batches B to D, eval harness and metrics, the full IN/IV/DC scenario list and ten personas, prefetch, enterprise extras, `ChainedRegistry` gateway hook
+- [x] Toolchain on macOS without Homebrew (uv, just, Python 3.13, PostgreSQL 16.2 private cluster on 54329) and `docs/architecture-v3/` copied (D-084)
+- [x] Package, import-linter layer + isolation contract, ADR 0012 to 0014, D-085
+- [x] Catalog as data: 44 slots, 17 frames, 16 families, 9 tier B + 8 declined capabilities, en/hi strings
+- [x] Store: in-memory fake + PostgreSQL + own Alembic dir + one shared contract suite (58 integration tests on the private Postgres)
+- [x] All 12 structured calls as folders with spec, schema, templates, examples, mock, fallback, adapter, tests: understand_turn, write_card, situate, compile_text, seed_research, probe_handoff, answer, interpret_change, make_variants, read_chunk, merge_claims, scan_ambiguity
+- [x] Engine: state machine, slot and tier rules, value-of-information queue, card validation, assumptions, Gate 1, patch engine with undo, safety, the turn-loop `Service`, targeted flows (priority card, references, voice read-back, phased apps, locked-edit preview, back-edge hook)
+- [x] Views: BriefViewModel, consumer views (no transcript), readiness, diffs, provenance
+- [x] API (SSE with replay, dev auth, CSP) and the static test UI (spent/cap meter, change panel, history drawer, real file upload)
+- [x] Document intake: parsers (PDF, DOCX, XLSX, PPTX, CSV, TXT, MD, EML), chunking, SSRF-safe URL reader, ingest pipeline, wired into the service and `POST /sessions/{id}/uploads` (D-086)
+- [x] 48+ named scenarios (`SB-*`), ten persona scripts and a metrics report (`cd packages/compass && PYTHONPATH=src python -m evals.run_personas`)
+- [x] Docs: README, `docs/packages/compass.md`, `docs/prompts/compass-calls.md`, `docs/api/compass.md`, `docs/runbooks/compass.md`
+- [x] Live smoke driver (`mde_compass.live_smoke`) with an offline twin test
+- [ ] **Live batch A (smoke, allowance USD 0.10): BLOCKED on the second key.** `ALLOW_LIVE_LLM=1` is not set in the environment (CLAUDE.md D-069: the user's decision). Run: `ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s` (report in `packages/compass/evals/reports/live-smoke.json`). Batches B to D were not authorized for this session.
 
+Measured offline in mock mode (ten personas): 8 of 9 targets met. Questions: Standard/Express median 8 (target 7: the one miss), max 10, Express 3; Large (enterprise) is budgeted per module and reported separately (18). Locked without evidence 0; assumptions unchanged at Gate 1 100%; all three handoff probes 100%; cards valid or fallback 100%; hidden instructions ignored 100%; turns with errors 0; all ten personas reach approval.
 
-### Next steps (written at the 04:40 cutoff; none of this was verified end to end)
-1. Run `uv run pytest packages/compass -q` and `-m integration`; the full run takes longer than 200 s, find the slow test (suspect `tests/api` or `tests/ui_smoke`).
-2. The end-to-end scenario tests (`tests/scenarios`, held aside in the session scratchpad: conftest + `test_service_flow.py`) were never run against the merged main; copy them in, fix `Service` integration breaks (the lead-written `engine/service.py` is untested).
-3. The scenarios agent (`feat/compass-scen`), the store agent and calls-A/D worktrees (`../wt-compass-*`) have uncommitted leftovers: inspect with `git status`, commit what is green, merge, then remove the worktrees (D-072).
-4. Smoke `uv run python -m mde_compass --port 8110` and open http://127.0.0.1:8110/ui/ in mock mode.
-5. Deferred: intake, live batches A to D (no key and no `ALLOW_LIVE_LLM=1` in this environment), eval harness, full scenario/persona lists, docs/packages/compass.md, `ChainedRegistry` hook.
+Open items and exact next steps:
+1. Median questions 8 against 7: the lever left is the policy of `auth.account_model` (risk high, must_confirm, asked as its own card): an owner decision (default `individual`, shown in "We assumed").
+2. Run live batch A once `ALLOW_LIVE_LLM=1` is set; read the report, tune `CALL_PROFILES` token caps, then record cassettes (secret-scanned) so the calls replay offline. Vision and streaming are unsupported by the gateway (no image input, no streaming).
+3. Intake scenarios still deferred (`tests/scenarios/data/DEFERRED.yaml`): huge document, scanned pages, contradictions across documents, mostly-vision PRD, sheets and decks. The intake tests cover duplicates, corrupt files, private links and the SSRF table.
+4. Not built: an HTTP route for `reopen_slot`, `ChainedRegistry` gateway hook, `CompassBudget.reconcile` against the ledger, per-language intake messages (English only), prefetch.
+5. Retiring `mde_discovery` is a later task (Compass does not import it; it is untouched and its suites pass).
