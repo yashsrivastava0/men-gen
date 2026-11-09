@@ -5,14 +5,14 @@ Audience: anyone who wants to run, test or debug [Compass](../packages/compass.m
 ## The short version
 
 ```bash
-just compass-dev                                        # API + test UI on http://127.0.0.1:8110/ (needs the database)
+just compass-dev                                        # API + test console on http://127.0.0.1:8110/ (needs the database)
 uv run python -m mde_compass --port 8110 --memory       # the same with no database at all (nothing is kept)
 just compass-test                                       # offline unit tests, no database
 just compass-test-int                                   # store tests against the private PostgreSQL
 cd agents/compass && PYTHONPATH=src python -m evals.run_personas --no-write   # ten persona scripts, offline, prints the metrics
 ```
 
-Open <http://127.0.0.1:8110/ui/>. Dev auth defaults are in the Settings dialog (`dev-token`, tenant `demo`, user `demo-user`).
+Open <http://127.0.0.1:8110/ui/>. The page is the global test console in `apps/web/console/` ([apps/web README](../../apps/web/README.md)); the server serves it from `MDE_WEB_DIR` (default `apps/web/console`; a relative path is resolved against the repository root) and refuses to start if that directory or its `index.html` is missing. Dev auth defaults are in the Settings dialog of the Compass screen (`dev-token`, tenant `demo`, user `demo-user`). UI smoke tests: `uv run pytest apps/web/tests -q`.
 
 ## 1. Start the private PostgreSQL
 
@@ -73,7 +73,7 @@ just ci-fast                                         # lint, typecheck, layers, 
 
 * The integration tests (`tests/store`) create an ephemeral database `mde_test_compass_<ulid>` inside the private cluster for the session, run Compass's own migrations in it and drop it afterwards; they cannot disturb `mde_persistence`'s tests (which assert a single head and an exact table set).
 * The same shared contract suite runs against the in-memory store (offline) and PostgreSQL (integration).
-* `tests/scenarios` drives a real `Service` end to end in mock mode (welcome, idea, cards, review, gate, changes, undo, hand-off). `tests/api` and `tests/ui_smoke` cover the HTTP layer and the static UI contract.
+* `tests/scenarios` drives a real `Service` end to end in mock mode (welcome, idea, cards, review, gate, changes, undo, hand-off). `tests/api` covers the HTTP layer; the console contract and smoke tests are in `apps/web/tests`.
 * `tests/intake` covers the parsers, chunking, the SSRF-safe URL reader and the ingest pipeline; `tests/engine/flows` the targeted flows; `tests/scenarios` the 46 named `SB-*` scenarios (`data/*.yaml`), the flows, intake and the personas.
 * One test is marked `live`: `tests/live/test_live_smoke.py`. It skips itself unless `ALLOW_LIVE_LLM=1` is already in the outer environment (the root `conftest.py` guard), so `just compass-test` never runs it; its offline twin, `tests/test_smoke_driver_offline.py`, runs the same driver in mock mode. Nothing else here needs a key.
 * The persona eval prints the report and (without `--no-write`) writes `agents/compass/evals/reports/latest.json` and a dated copy; that folder is git-ignored. Measured results are on [the package page](../packages/compass.md#measured-behaviour-mock-mode).
@@ -135,5 +135,5 @@ Known gap: the Compass spend counter (`CompassBudget`) is per process and starts
 | Catalog data (slots, frames, families) | `agents/compass/src/mde_compass/catalog/` |
 | Call folders | `agents/compass/src/mde_compass/calls/<name>/`, [catalog page](../prompts/compass-calls.md) |
 | Migrations | `agents/compass/src/mde_compass/store/migrations/` |
-| Test UI | `agents/compass/src/mde_compass/static_ui/` |
+| Test UI (global front end, not in the agent) | `apps/web/console/` (`agents/compass/` screens, `shared/`, `index.html` shell), [README](../../apps/web/README.md); tests in `apps/web/tests/` |
 | Decisions | D-084 to D-086 in [DECISIONS.md](../implementation/DECISIONS.md); status in the Compass section of [PROGRESS.md](../implementation/PROGRESS.md) |

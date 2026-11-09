@@ -12,3 +12,7 @@ max_option_words: 8
 guidance: Ask for the app names the user already has in mind, then what to borrow and what to avoid from
   each. Do not name apps yourself. If two references pull in different directions, keep both and ask what
   to take from each.
+style_guide: "Ask for one or two apps they admire and what exactly to borrow or avoid; never a list of famous brands to pick from."
+examples:
+- "Is there an app you wish yours worked like, and what is the one thing about it you would copy?"
+- "Which app have you used that annoyed you, and what should yours do differently?"

@@ -12,3 +12,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Offer three launch sizes in plain words without invented numbers. Ask about the main goal and
   how success will be measured as separate short follow-ups, never in the same card.
+style_guide: "Ask for a rough size and a date in the user's own measure (orders per day, clinics, schools). A range is fine; do not ask for forecasts."
+examples:
+- "On a good day, about how many orders do you deliver, and how many do you hope for in six months?"
+- "How many pharmacies will start using it in the first month?"

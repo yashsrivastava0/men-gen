@@ -1,0 +1,66 @@
+/* Mobigen console design tokens. Calm neutral palette, one accent, 8px grid. Light by default; dark via
+   prefers-color-scheme or the data-theme attribute on <html>. Shared by every agent screen. */
+:root {
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-2: #f0f2f5;
+  --border: #d9dde3;
+  --text: #1c2430;
+  --muted: #5b6676;
+  --accent: #2457d6;
+  --accent-text: #ffffff;
+  --accent-soft: #e6edff;
+  --ok: #1d7a46;
+  --ok-soft: #e2f4ea;
+  --warn: #8a5a00;
+  --warn-soft: #fdf0d5;
+  --danger: #b3261e;
+  --danger-soft: #fbe6e4;
+  --shadow: 0 1px 2px rgba(20, 30, 50, 0.08), 0 4px 16px rgba(20, 30, 50, 0.06);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --s1: 8px;
+  --s2: 16px;
+  --s3: 24px;
+  --s4: 32px;
+  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12161c;
+    --surface: #1a2028;
+    --surface-2: #222a35;
+    --border: #323c4a;
+    --text: #e8ecf2;
+    --muted: #a0abbb;
+    --accent: #7ea2ff;
+    --accent-text: #0d1526;
+    --accent-soft: #1f2c4a;
+    --ok: #6fd39a;
+    --ok-soft: #173325;
+    --warn: #f0c066;
+    --warn-soft: #3a2d12;
+    --danger: #ff9a92;
+    --danger-soft: #3d1f1d;
+    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12161c;
+  --surface: #1a2028;
+  --surface-2: #222a35;
+  --border: #323c4a;
+  --text: #e8ecf2;
+  --muted: #a0abbb;
+  --accent: #7ea2ff;
+  --accent-text: #0d1526;
+  --accent-soft: #1f2c4a;
+  --ok: #6fd39a;
+  --ok-soft: #173325;
+  --warn: #f0c066;
+  --warn-soft: #3a2d12;
+  --danger: #ff9a92;
+  --danger-soft: #3d1f1d;
+  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+}

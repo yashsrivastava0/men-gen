@@ -23,13 +23,15 @@ def test_module_imports(name: str) -> None:
     importlib.import_module(name)
 
 
-def test_all_twelve_calls_have_a_profile_and_a_port() -> None:
+def test_every_call_has_a_profile_and_a_port() -> None:
     from mde_compass.config import CALL_PROFILES
     from mde_compass.engine.ports import Ports
 
-    assert len(CALL_PROFILES) == 12
+    assert (
+        len(CALL_PROFILES) == 17
+    )  # twelve from the first build + five for the AI-planned interview
     assert all(cid.startswith("cmp.") for cid in CALL_PROFILES)
-    assert len(Ports.__dataclass_fields__) == 12  # type: ignore[attr-defined]
+    assert len(Ports.__dataclass_fields__) == 17  # type: ignore[attr-defined]
 
 
 def test_view_model_sections_match_the_prompt() -> None:

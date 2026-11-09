@@ -8,7 +8,8 @@ test-to-test imports).
   the pytest fixtures turn it into a FAILURE, never a skip.
 * ``temporary_postgres_store``: a ready ``PostgresStore`` over a throw-away database.
 * ``truncate_all``: empties the ``compass_*`` tables only.
-* Factories for test data (``TENANT_A``, ``make_session``, ``make_brief``, ...).
+* Factories for test data (``TENANT_A``, ``make_session``, ``make_brief``, ``make_fact``, ``make_qa``,
+  ``make_batch``, ``make_summary``, ...).
 """
 
 from __future__ import annotations
@@ -29,6 +30,16 @@ from mde_compass.domain.cards import Card, CardOption
 from mde_compass.domain.changes import ChangeSet, PatchOp
 from mde_compass.domain.claims import Chunk, Claim, SourceInfo, Statement
 from mde_compass.domain.common import BriefItem, Provenance
+from mde_compass.domain.interview import (
+    AuditVerdict,
+    BatchRecord,
+    Fact,
+    FactEffect,
+    InterviewSummary,
+    QaRecord,
+    RejectedQuestion,
+    SummaryTopic,
+)
 from mde_compass.domain.session import Contributor, SessionRecord
 from mde_compass.store.migrate import upgrade
 from mde_compass.store.models import Base
@@ -273,3 +284,75 @@ def make_call(call_id: str = "call_1", *, spec_id: str = "cmp.write_card") -> Ca
         cost_micros=1200,
         latency_ms=800,
     )
+
+
+def make_fact(fact_id: str = "FCT-001", **fields: Any) -> Fact:
+    """An active, user-stated fact with a quote, one slot effect and one need aspect (override any field)."""
+    base: dict[str, Any] = {
+        "id": fact_id,
+        "type": "requirement",
+        "statement": "Customers pay for a tiffin plan every month",
+        "topics": ["pricing"],
+        "entities": ["tiffin plan"],
+        "consumers": ["blueprint"],
+        "confidence": 0.8,
+        "origin": "stated",
+        "source_ref": "evt_1",
+        "quote": "they pay monthly for the tiffin plan",
+        "effects": [FactEffect(slot_id="idea.business_model", value_json='"subscription"')],
+        "aspects": ["business_model:who_pays"],
+    }
+    base.update(fields)
+    return Fact.model_validate(base)
+
+
+def make_qa(card_id: str = "Q-001", version: int = 1, **fields: Any) -> QaRecord:
+    """An open question (its full card) at ``version``; override any field, ``card`` included."""
+    base: dict[str, Any] = {
+        "card_id": card_id,
+        "version": version,
+        "card": make_card(card_id),
+        "batch_id": "BAT-001",
+        "group_id": "G1",
+        "mode": "initial",
+    }
+    base.update(fields)
+    return QaRecord.model_validate(base)
+
+
+def make_batch(batch_id: str = "BAT-001", **fields: Any) -> BatchRecord:
+    """A planner run; the inputs hash defaults to one derived from the id, so ids never collide."""
+    base: dict[str, Any] = {
+        "id": batch_id,
+        "mode": "initial",
+        "inputs_hash": f"hash-{batch_id.lower()}",
+        "output": {
+            "groups": [{"id": "G1", "title": "Who it is for"}],
+            "covered_needs": ["audience"],
+        },
+        "accepted": ["Q-001", "Q-002"],
+        "rejected": [RejectedQuestion(card_id="Q-003", source="code", reasons=["duplicate"])],
+        "verdicts": [AuditVerdict(card_id="Q-001", specific=4)],
+        "latency_ms": 1200,
+        "cost_micros": 3400,
+    }
+    base.update(fields)
+    return BatchRecord.model_validate(base)
+
+
+def make_summary(version: int = 1, **fields: Any) -> InterviewSummary:
+    base: dict[str, Any] = {
+        "version": version,
+        "topics": [
+            SummaryTopic(
+                topic="pricing",
+                decisions=["monthly tiffin plans"],
+                open_issues=["refund rules"],
+                vocabulary=["tiffin"],
+                fact_ids=["FCT-001"],
+            )
+        ],
+        "through_fact_id": "FCT-001",
+    }
+    base.update(fields)
+    return InterviewSummary.model_validate(base)

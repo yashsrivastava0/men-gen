@@ -1,0 +1,72 @@
+<!-- Compass screen markup: a fragment, not a page. The console shell (shared/shell.js) mounts it:
+     elements marked data-slot="topbar" go into the shared top bar, everything else into #agent-mount.
+     compass.js finds every element by id. No inline script, style or event handlers (strict CSP). -->
+<button id="brand" data-slot="topbar" class="brand" type="button" aria-label="Compass home">
+  <span class="brand-mark" aria-hidden="true">&#9678;</span>
+  <span class="brand-name">Compass</span>
+</button>
+<div id="topbar-session" data-slot="topbar" class="topbar-session"></div>
+<div id="meter" data-slot="topbar" class="meter" role="status" aria-live="polite"></div>
+<div class="topbar-actions" data-slot="topbar">
+  <label class="field-inline"><span id="lang-label" class="sr-only">Language</span>
+    <select id="lang-select" aria-labelledby="lang-label">
+      <option value="en">English</option>
+      <option value="hi">&#2361;&#2367;&#2344;&#2381;&#2342;&#2368;</option>
+    </select>
+  </label>
+  <button id="btn-settings" class="btn btn-quiet" type="button" aria-haspopup="dialog">Settings</button>
+  <button id="btn-theme" class="btn btn-quiet" type="button" aria-pressed="false">Theme</button>
+  <button id="btn-dev" class="btn btn-quiet" type="button" aria-pressed="false" aria-controls="dev-drawer">Developer</button>
+</div>
+
+<main id="main" class="main" tabindex="-1">
+  <section id="home" class="home" hidden></section>
+  <section id="workspace" class="workspace" data-pane="chat" hidden>
+    <div class="pane-switch" role="tablist" aria-label="Panes">
+      <button id="pane-chat" type="button" role="tab" aria-selected="true">Chat</button>
+      <button id="pane-brief" type="button" role="tab" aria-selected="false">Brief</button>
+    </div>
+    <div id="chat-pane" class="pane chat-pane" aria-label="Chat">
+      <div id="progressbar" class="progressbar" hidden></div>
+      <div id="chat-log" class="chat-log" role="log" aria-live="polite" aria-relevant="additions"></div>
+      <div id="typing" class="typing" hidden><span class="dot"></span><span class="dot"></span><span class="dot"></span><span id="typing-text" class="sr-only">Compass is thinking</span></div>
+      <form id="composer" class="composer" autocomplete="off">
+        <label class="sr-only" for="composer-input" id="composer-label">Type your answer here</label>
+        <textarea id="composer-input" rows="1" maxlength="20000" placeholder="Type your answer here"></textarea>
+        <button id="composer-mic" class="btn btn-quiet" type="button" hidden aria-label="Speak your answer">&#127908;</button>
+        <button id="composer-send" class="btn btn-primary" type="submit">Send</button>
+      </form>
+      <div id="chat-actions" class="chat-actions"></div>
+    </div>
+    <div id="brief-pane" class="pane brief-pane" aria-label="Brief">
+      <div id="tabs" class="tabs" role="tablist" aria-label="Brief tabs"></div>
+      <div id="tab-brief" class="tabpanel" role="tabpanel"></div>
+      <div id="tab-lookup" class="tabpanel" role="tabpanel" hidden></div>
+      <div id="tab-sources" class="tabpanel" role="tabpanel" hidden></div>
+      <div id="tab-history" class="tabpanel" role="tabpanel" hidden></div>
+    </div>
+  </section>
+</main>
+
+<aside id="history-drawer" class="drawer drawer-right" role="dialog" aria-modal="false" aria-labelledby="history-drawer-title" hidden>
+  <div class="drawer-head"><h2 id="history-drawer-title">Chat history</h2><button id="history-close" class="btn btn-quiet" type="button" aria-label="Close">&#10005;</button></div>
+  <div id="history-drawer-body" class="drawer-body"></div>
+</aside>
+
+<aside id="dev-drawer" class="drawer drawer-bottom" aria-label="Developer tools" hidden>
+  <div class="drawer-head"><h2 id="dev-title">Developer tools</h2><span id="dev-mode" class="pill"></span><button id="dev-close" class="btn btn-quiet" type="button" aria-label="Close">&#10005;</button></div>
+  <div id="dev-tabs" class="tabs" role="tablist" aria-label="Developer tabs"></div>
+  <div id="dev-body" class="drawer-body"></div>
+</aside>
+
+<div id="settings-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+  <form id="settings-form" class="dialog-card">
+    <h2 id="settings-title">Settings</h2>
+    <p class="muted">Development sign-in. Sent as headers with every request.</p>
+    <label class="field"><span>Token</span><input id="set-token" type="text" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><span>Tenant</span><input id="set-tenant" type="text" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><span>User</span><input id="set-user" type="text" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><span>Roles (comma separated, optional)</span><input id="set-roles" type="text" autocomplete="off" spellcheck="false"></label>
+    <div class="row-actions"><button class="btn btn-primary" type="submit">Save</button><button id="settings-cancel" class="btn" type="button">Cancel</button></div>
+  </form>
+</div>

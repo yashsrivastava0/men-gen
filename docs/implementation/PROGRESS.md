@@ -138,9 +138,9 @@ Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompt
 - [x] Phase 0. Diagnosis and "before" evidence (c9847b6): 30 questions, 9 distinct wordings, 93% shared across five ideas
 - [x] Phase 0a. GLOBAL_RULES (74482f4); doc 11 section 17, AD-29 amended, AD-30 to AD-32, ADR 0015, D-090, D-091
 - [x] Phase 0b. Restructure `packages/compass` -> `agents/compass` (08a1085 moves + config, e19d154 in-package paths, docs paths; D-092)
-- [ ] Phase 1. Interview Memory (models, ports, fake, Postgres, migration 0002, contract suite, quote check, projector); `apps/web` port of the UI
-- [ ] Phase 2. Needs Registry (`answer_spec` for all 44 needs, frame style guides, needs status)
-- [ ] Phase 3. Calls: `plan_questions`, `audit_questions`, `understand_turn` v2, `update_summary`, `compile_brief`, `rephrase_question`
+- [~] Phase 1. Interview Memory: models and events (bb42c5c), store with migration 0002 and the contract suite (096678e, 135 store tests, 77 integration), `apps/web` port of the UI (1964f73); pending: the pure engine modules (quotes, facts, projector, needs, terms, validators, context pack, policy) in `feat/compass-core`
+- [~] Phase 2. Needs Registry: `answer_spec` for all 44 needs, frame style guides and examples, loader enforcement (3573367); pending: needs status computation (`engine/needs.py`, in `feat/compass-core`)
+- [~] Phase 3. Calls: ports, profiles, placeholders and the per-spec scripted gateway (c27536b), `plan_questions` (db7a0a2); in progress: `audit_questions`, `rephrase_question`, `understand_turn` v2, `update_summary`; pending: `compile_brief`
 - [ ] Phase 4. Engine: fact ingestion under the legacy flow, planner path behind a flag, follow-ups, replan, stop, budgets, edit/pivot/upload, `domain_facts`, compile from the ledger
 - [ ] Phase 5. UI in `apps/web`: groups, answer-all, why-popover, Ask me more, Q&A editor, MOCK banner, fallback badge
 - [ ] Phase 6. Offline tests: scenario and persona migration, SB-QP-01..20, property tests, needle test, metrics

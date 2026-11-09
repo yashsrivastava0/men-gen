@@ -13,7 +13,15 @@ from typing import Any
 
 from mde_compass.calls.base import CallRunner, CompassCallSpec
 from mde_compass.catalog import Catalog
-from mde_compass.engine.fallback_ports import NoAmbiguityScanner, NoChunkReader, NoClaimMerger
+from mde_compass.engine.fallback_ports import (
+    NoAmbiguityScanner,
+    NoChunkReader,
+    NoClaimMerger,
+    UnavailableBriefCompiler,
+    UnavailableQuestionAuditor,
+    UnavailableQuestionRephraser,
+    UnavailableSummaryUpdater,
+)
 from mde_compass.engine.ports import Ports
 
 # call folder -> Ports attribute
@@ -30,11 +38,22 @@ PORT_BY_CALL: dict[str, str] = {
     "read_chunk": "chunk_reader",
     "merge_claims": "claim_merger",
     "scan_ambiguity": "ambiguity_scanner",
+    # the AI-planned interview (build prompt 02)
+    "plan_questions": "question_planner",
+    "audit_questions": "question_auditor",
+    "update_summary": "summary_updater",
+    "compile_brief": "brief_compiler",
+    "rephrase_question": "question_rephraser",
 }
 PLACEHOLDERS: dict[str, Any] = {
     "chunk_reader": NoChunkReader,
     "claim_merger": NoClaimMerger,
     "ambiguity_scanner": NoAmbiguityScanner,
+    # remove an entry when its call folder (spec + adapter) lands
+    "question_auditor": UnavailableQuestionAuditor,
+    "summary_updater": UnavailableSummaryUpdater,
+    "brief_compiler": UnavailableBriefCompiler,
+    "question_rephraser": UnavailableQuestionRephraser,
 }
 
 

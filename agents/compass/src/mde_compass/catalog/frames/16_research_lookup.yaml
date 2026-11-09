@@ -10,3 +10,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Show the planned research topics as removable chips written in plain words with the place they
   apply to. Allow adding a topic. Never promise results.
+style_guide: "Phrase each item as something that will be looked up for the user, so they can add or remove it. Keep items specific to the idea."
+examples:
+- "We will look up how other tiffin services in Indian cities handle daily menus and delivery slots."
+- "We will check how pharmacy inventory tools handle expiry dates and batch numbers."

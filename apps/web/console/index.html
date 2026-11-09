@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light dark">
+  <title>Mobigen console</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="shared/tokens.css">
+  <link rel="stylesheet" href="shared/shell.css">
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar" role="banner">
+    <label class="agent-switch"><span id="agent-label" class="sr-only">Agent</span>
+      <select id="agent-select" aria-labelledby="agent-label"></select>
+    </label>
+    <div id="agent-topbar" class="agent-topbar"></div>
+  </header>
+
+  <div id="agent-mount" class="agent-mount"></div>
+
+  <div id="toasts" class="toasts" role="status" aria-live="polite"></div>
+  <noscript><p class="shell-error">This console needs JavaScript.</p></noscript>
+  <script src="shared/registry.js" defer></script>
+  <script src="shared/components.js" defer></script>
+  <script src="shared/shell.js" defer></script>
+</body>
+</html>

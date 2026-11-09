@@ -10,3 +10,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Show the terms found in the user's words and documents with their synonyms as editable rows.
   Never invent terms. Merge duplicates and show the merge.
+style_guide: "Show the words you noticed and ask whether they are the right ones. Never invent vocabulary; only echo the user's own."
+examples:
+- "You say 'dabba' for a meal pack. Should the app use that word everywhere?"
+- "Do your clinic staff call them 'patients' or 'clients'?"

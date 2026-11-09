@@ -21,11 +21,22 @@ from mde_compass.domain.changes import PatchOp
 from mde_compass.domain.claims import Claim, Statement
 from mde_compass.domain.common import Basis, Status, Strict
 from mde_compass.domain.events import InboundEvent, StoredEvent
+from mde_compass.domain.interview import (
+    AuditVerdict,
+    FactEffect,
+    FactType,
+    InputMode,
+    InterviewSummary,
+    NeedState,
+    PlannedBatch,
+    PlannerMode,
+)
 from mde_compass.domain.research import ResearchRequest, SearchHints
 from mde_compass.domain.session import Mode, SessionRecord
 from mde_compass.domain.situation import (
     DepthProfile,
     DomainHypothesis,
+    GlossaryCandidate,
     SituationProfile,
 )
 
@@ -100,11 +111,71 @@ class TurnUnderstanding(Strict):
     )  # secret, injection, unsafe, declined_category
     ambiguous: list[str] = Field(default_factory=list)  # slot ids needing an either/or
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    # --- understand_turn v2 (build prompt 02): facts, coverage of the answer_spec, flags -----------------
+    facts: list[ExtractedFact] = Field(default_factory=list)
+    flags: list[UnderstandFlag] = Field(default_factory=list)
+    glossary_terms: list[GlossaryCandidate] = Field(default_factory=list)
+    contradicts: list[str] = Field(
+        default_factory=list
+    )  # ids of earlier facts a new fact conflicts with
+
+
+UnderstandFlag = Literal[
+    "vague", "new_topic", "contradiction", "off_topic", "pivot", "declined_category", "unsafe"
+]
+
+
+class ExtractedFact(Strict):
+    """One atomic statement the interpreter found, with the user's verbatim words. The engine verifies the quote
+    against the source text, assigns the FCT id and stores it; the model never decides what is trusted."""
+
+    type: FactType
+    statement: str
+    quote: str = ""
+    topics: list[str] = Field(default_factory=list)
+    entities: list[str] = Field(default_factory=list)
+    consumers: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    aspects: list[str] = Field(default_factory=list)  # "need_id:aspect" this statement answers
+    effects: list[FactEffect] = Field(default_factory=list)
+    corrects: str | None = None  # id of an earlier fact it clearly corrects (code checks the claim)
+
+
+class NeedBrief(Strict):
+    """A need as the planner and the interpreter see it: what a sufficient answer is and what is still missing."""
+
+    need_id: str
+    label: str
+    sufficient: str
+    aspects: list[str] = Field(default_factory=list)
+    state: NeedState = "missing"
+    missing_aspects: list[str] = Field(default_factory=list)
+    impact: int = Field(default=3, ge=1, le=5)
+    assumed_value: JsonValue = None
+
+
+class AnswerFocus(Strict):
+    """The exact question-and-answer pair being interpreted, planned around or rephrased."""
+
+    card_id: str
+    question: str
+    intent: str = ""
+    need_ids: list[str] = Field(default_factory=list)
+    selected_labels: list[str] = Field(default_factory=list)  # a tap's chosen option labels
+    answer_text: str = ""
+    input_mode: InputMode = "text"
 
 
 class Understander(Protocol):
     async def understand(
-        self, ctx: TurnContext, text: str, *, input_mode: Literal["text", "voice"] = "text"
+        self,
+        ctx: TurnContext,
+        text: str,
+        *,
+        input_mode: Literal["text", "voice"] = "text",
+        focus: AnswerFocus | None = None,
+        needs: list[NeedBrief] | None = None,
+        fact_digest: str = "",
     ) -> TurnUnderstanding: ...
 
 
@@ -319,9 +390,163 @@ class AmbiguityScanner(Protocol):
     async def scan(self, ctx: TurnContext, brief: Brief) -> list[AmbiguityFinding]: ...
 
 
+# --- the AI-planned interview (build prompt 02) -----------------------------------------------------
+
+
+class PlanContext(Strict):
+    """The working context of a planner call, already budgeted by ``engine.context_pack`` (never the transcript)."""
+
+    project_card: str = ""
+    fact_digest: str = ""
+    needs_table: str = ""  # compact text of the needs, for calls that take a table (audit, compile)
+    asked_list: str = ""
+    last_qa: str = ""
+
+
+class PlanRequest(Strict):
+    mode: PlannerMode
+    language: str = "en"
+    context: PlanContext
+    needs: list[NeedBrief] = Field(
+        default_factory=list
+    )  # open needs first; the planner serves these
+    # the project's own vocabulary: words from the idea, the facts and the glossary
+    project_terms: list[str] = Field(default_factory=list)
+    want_min: int = Field(
+        default=3, ge=0
+    )  # questions wanted in the batch (code decides the numbers)
+    want_max: int = Field(default=7, ge=0)
+    group_min: int = Field(default=2, ge=1)
+    group_max: int = Field(default=3, ge=1)
+    remaining_budget: int = Field(default=12, ge=0)
+    focus_needs: list[str] = Field(
+        default_factory=list
+    )  # replan / deepen / probe gaps: needs to work on
+    focus: AnswerFocus | None = None  # followup and simplify: the exact pair
+    missing_aspects: list[str] = Field(
+        default_factory=list
+    )  # followup: what the answer still lacks
+    pivot_from: str | None = None  # replan after a pivot: the old category
+    followup_depth: int = Field(default=1, ge=0)  # followup: the depth of the question to write
+    style_notes: list[str] = Field(
+        default_factory=list
+    )  # frame style guides and examples for the needs
+    next_card_n: int = Field(default=1, ge=1)  # the planner numbers its questions from here (Q-###)
+
+
+class PlanResult(Strict):
+    batch: PlannedBatch
+    used_fallback: bool = False  # a fallback is a failure: flagged, counted, zero in live batches
+    repaired: bool = False
+    reason: str = ""
+
+
+class QuestionPlanner(Protocol):
+    async def plan(self, ctx: TurnContext, request: PlanRequest) -> PlanResult: ...
+
+
+class AuditRequest(Strict):
+    language: str = "en"
+    cards: list[Card]
+    project_terms: list[str] = Field(default_factory=list)
+    needs_table: str = ""
+    asked_list: str = ""
+
+
+class AuditResult(Strict):
+    verdicts: list[AuditVerdict]
+    used_fallback: bool = False
+    reason: str = ""
+
+
+class QuestionAuditor(Protocol):
+    async def audit(self, ctx: TurnContext, request: AuditRequest) -> AuditResult: ...
+
+
+class SummaryRequest(Strict):
+    language: str = "en"
+    previous: InterviewSummary
+    new_facts_digest: str = ""  # one line per fact added since the summary was last refreshed
+    through_fact_id: str = ""
+
+
+class SummaryResult(Strict):
+    summary: InterviewSummary
+    used_fallback: bool = False
+
+
+class SummaryUpdater(Protocol):
+    async def update(self, ctx: TurnContext, request: SummaryRequest) -> SummaryResult: ...
+
+
+class CompiledItem(Strict):
+    """One Brief value the compiler derived from facts: a catalog path and the facts that support it."""
+
+    path: str  # a slot id (``audience.segments``) or a list-section record path
+    value: JsonValue
+    fact_ids: list[str] = Field(default_factory=list)
+    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+
+
+class FactPlacement(Strict):
+    fact_id: str
+    topic: str = ""
+    consumers: list[str] = Field(default_factory=list)
+
+
+class NotUsedFact(Strict):
+    fact_id: str
+    reason: str
+
+
+class CompileRequest(Strict):
+    language: str = "en"
+    ledger: str  # the ENTIRE active fact ledger (never truncated), one line per fact
+    needs_table: str = ""
+    assumptions: list[str] = Field(default_factory=list)
+    asked_list: str = ""
+    qa_compact: str = ""
+    sections: list[str] | None = (
+        None  # per-section compile above the ceiling; None = the whole Brief
+    )
+    draft: str | None = None  # consistency pass: the assembled draft to reconcile
+
+
+class BriefCompilation(Strict):
+    items: list[CompiledItem] = Field(default_factory=list)
+    placements: list[FactPlacement] = Field(default_factory=list)  # facts that go to domain_facts
+    not_used: list[NotUsedFact] = Field(default_factory=list)
+    summary: str = ""
+    pitch: str = ""
+    used_fallback: bool = False
+
+
+class BriefCompiler(Protocol):
+    async def compile_brief(
+        self, ctx: TurnContext, request: CompileRequest
+    ) -> BriefCompilation: ...
+
+
+class RephraseRequest(Strict):
+    card: Card
+    mode: Literal["rephrase", "simplify"] = "rephrase"
+    language: str = "en"
+
+
+class RephraseResult(Strict):
+    question: str
+    why_we_ask: str = ""
+    options: list[CardOption] = Field(default_factory=list)
+    used_fallback: bool = False
+
+
+class QuestionRephraser(Protocol):
+    async def rephrase(self, ctx: TurnContext, request: RephraseRequest) -> RephraseResult: ...
+
+
 @dataclass(frozen=True)
 class Ports:
-    """All twelve call ports, injected into the engine. Tests use the deterministic fallbacks."""
+    """All call ports, injected into the engine. Tests use the deterministic fallbacks."""
 
     understander: Understander
     card_writer: CardWriter
@@ -335,6 +560,12 @@ class Ports:
     chunk_reader: ChunkReader
     claim_merger: ClaimMerger
     ambiguity_scanner: AmbiguityScanner
+    # the AI-planned interview (build prompt 02)
+    question_planner: QuestionPlanner
+    question_auditor: QuestionAuditor
+    summary_updater: SummaryUpdater
+    brief_compiler: BriefCompiler
+    question_rephraser: QuestionRephraser
 
 
 # --- hand-off ---------------------------------------------------------------------------------------

@@ -48,7 +48,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.read_chunk", "high", 4000, "writer", "deep", 90),
         _p("cmp.merge_claims", "high", 6000, "writer", "deep", 120),
         _p("cmp.situate", "high", 6000, "writer", "deep", 90),
-        _p("cmp.understand_turn", "medium", 2500, "writer", "standard", 45),
+        _p("cmp.understand_turn", "medium", 3500, "writer", "standard", 45),
         _p("cmp.answer", "medium", 1500, "writer", "standard", 45),
         _p("cmp.write_card", "high", 2500, "writer", "deep", 60),
         _p("cmp.scan_ambiguity", "high", 3000, "critic", "deep", 60),
@@ -57,6 +57,12 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.compile_text", "high", 3500, "writer", "deep", 90),
         _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
         _p("cmp.make_variants", "high", 2500, "writer", "deep", 60),
+        # the AI-planned interview (build prompt 02): starting caps, measured in the live batches
+        _p("cmp.plan_questions", "high", 7000, "writer", "deep", 120),
+        _p("cmp.audit_questions", "medium", 3000, "critic", "standard", 60),
+        _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
+        _p("cmp.compile_brief", "high", 8000, "writer", "deep", 150),
+        _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
     )
 }
 

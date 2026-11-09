@@ -489,6 +489,7 @@ def _validate_slots(slots: dict[str, SlotDef]) -> None:
         if not slot.brief_path.strip():
             raise CatalogError(f"slot {slot.id!r}: brief_path is empty")
         _validate_card(slot)
+        _validate_answer_spec(slot)
         if slot.ask_if is not None:
             for ref in ask_if_slot_refs(slot.ask_if):
                 if ref not in slots:
@@ -497,8 +498,27 @@ def _validate_slots(slots: dict[str, SlotDef]) -> None:
                 raise CatalogError(f"slot {slot.id!r}: ask_if refers to the slot itself")
 
 
+def _validate_answer_spec(slot: SlotDef) -> None:
+    """Every need says what a sufficient answer contains (Needs Registry, build prompt 02)."""
+    spec = slot.answer_spec
+    if spec is None:
+        raise CatalogError(f"slot {slot.id!r}: answer_spec is missing")
+    if len(spec.sufficient.split()) < 5:
+        raise CatalogError(
+            f"slot {slot.id!r}: answer_spec.sufficient is too short to guide a question"
+        )
+    if not spec.aspects or len(set(spec.aspects)) != len(spec.aspects):
+        raise CatalogError(f"slot {slot.id!r}: answer_spec.aspects must be non-empty and distinct")
+    if any(not re.fullmatch(r"[a-z][a-z0-9_]*", a) for a in spec.aspects):
+        raise CatalogError(f"slot {slot.id!r}: answer_spec.aspects must be snake_case names")
+    if not spec.fact_types:
+        raise CatalogError(f"slot {slot.id!r}: answer_spec.fact_types must not be empty")
+
+
 def _validate_frames(frames: dict[str, FrameDef], slots: dict[str, SlotDef]) -> None:
     for frame in frames.values():
+        if not frame.style_guide or len(frame.examples) < 2:
+            raise CatalogError(f"frame {frame.id!r}: needs a style_guide and at least two examples")
         if not frame.slots:
             raise CatalogError(f"frame {frame.id!r}: no slots")
         for ref in frame.slots:

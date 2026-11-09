@@ -1,0 +1,595 @@
+{
+  "name": "en_clinic_booking_initial",
+  "input": {
+    "mode": "initial",
+    "language": "en",
+    "project_card": "Idea (user's words): An appointment booking app for my family clinic in Indore: patients pick a doctor and a time slot, and the receptionist manages the day's schedule.\nCategory guess: clinic appointment booking. Geography: Indore, India. Mode: guided. Language: en. Situation: owner, not technical.",
+    "fact_digest": "FCT-001 [context|location] The business is a family clinic in Indore (from the first message)\nFCT-002 [role|patients] Patients choose a doctor and a time slot (from the first message)\nFCT-003 [role|reception] The receptionist manages the day's schedule (from the first message)",
+    "asked_list": "(nothing asked yet)",
+    "last_qa": "",
+    "project_terms": [
+      "clinic",
+      "Indore",
+      "patients",
+      "doctor",
+      "time slot",
+      "receptionist",
+      "schedule",
+      "appointment"
+    ],
+    "needs": [
+      {
+        "need_id": "idea.business_model",
+        "label": "How it earns money",
+        "impact": 4,
+        "level": "must",
+        "state": "missing",
+        "sufficient": "Who pays whom for what, where the revenue comes from, and which parts are free versus paid.",
+        "aspects": [
+          "payer",
+          "payee",
+          "revenue_source",
+          "free_vs_paid"
+        ],
+        "missing_aspects": [
+          "payer",
+          "payee",
+          "revenue_source",
+          "free_vs_paid"
+        ],
+        "card_type": "choose_one",
+        "option_labels": [
+          "A small fee on each sale or booking",
+          "A monthly or yearly plan",
+          "Free to use; the business pays for it"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "audience.segments",
+        "label": "Who it is for",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "At least one named segment: who they are, their main goal, and where and how they use the app. Separate the paying customer from the end user when they differ.",
+        "aspects": [
+          "who",
+          "goal",
+          "where_how",
+          "payer_vs_user"
+        ],
+        "missing_aspects": [
+          "goal",
+          "where_how",
+          "payer_vs_user"
+        ],
+        "card_type": "open_prompt",
+        "option_labels": [],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change.",
+        "aspects": [
+          "role_name",
+          "top_goal",
+          "permissions"
+        ],
+        "missing_aspects": [
+          "top_goal",
+          "permissions"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Customer who uses the service",
+          "Staff who handle the requests",
+          "Manager who sees reports",
+          "Partner who offers a service"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release.",
+        "aspects": [
+          "feature",
+          "purpose",
+          "first_release"
+        ],
+        "missing_aspects": [
+          "purpose",
+          "first_release"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Sign-up and a profile page",
+          "Search and browse a list of items",
+          "Messages between people"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "data.sensitive",
+        "label": "Sensitive information",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "What sensitive information the app handles, such as health, financial, children's data or ID documents.",
+        "aspects": [
+          "data_kinds"
+        ],
+        "missing_aspects": [
+          "data_kinds"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Personal ID numbers or documents",
+          "Health records",
+          "Bank or payment details"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "auth.methods",
+        "label": "How people sign in",
+        "impact": 4,
+        "level": "must",
+        "state": "missing",
+        "sufficient": "How each kind of user signs in: phone number and code, email, a social account, or not at all.",
+        "aspects": [
+          "method",
+          "per_role"
+        ],
+        "missing_aspects": [
+          "method",
+          "per_role"
+        ],
+        "card_type": "choose_one",
+        "option_labels": [
+          "Phone number and a one-time code",
+          "Email address and password",
+          "No sign-in at first"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "integrations.wanted",
+        "label": "Services to connect",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "Which outside services to connect (payments, maps, SMS codes, push messages, email, identity checks) and what each is for.",
+        "aspects": [
+          "service",
+          "purpose"
+        ],
+        "missing_aspects": [
+          "service",
+          "purpose"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Online payments",
+          "Maps and location",
+          "SMS or email messages"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "look.tone_words",
+        "label": "Tone and mood",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "Two or three words for the mood and personality the app should have.",
+        "aspects": [
+          "tone_words"
+        ],
+        "missing_aspects": [
+          "tone_words"
+        ],
+        "card_type": "look_signals",
+        "option_labels": [
+          "Calm and simple",
+          "Friendly and playful",
+          "Serious and professional"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several.",
+        "aspects": [
+          "country",
+          "city_or_region",
+          "languages",
+          "single_or_multi_city"
+        ],
+        "missing_aspects": [
+          "languages",
+          "single_or_multi_city"
+        ],
+        "card_type": "quick_form",
+        "option_labels": [],
+        "assumed_value": ""
+      }
+    ],
+    "want_min": 5,
+    "want_max": 7,
+    "group_min": 2,
+    "group_max": 3,
+    "remaining_budget": 12,
+    "focus_needs": [],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_answer": "",
+    "missing_aspects": [],
+    "pivot_from": "",
+    "style_notes": [
+      "features: propose features as the job each one does, in the user's words.",
+      "roles: propose the roles you can already see and ask what each may approve or change."
+    ],
+    "next_card_n": 1
+  },
+  "output": {
+    "domain_hypothesis": {
+      "category": "clinic appointment booking",
+      "subcategory": "single family clinic scheduling",
+      "business_model_candidates": [
+        "the clinic carries the cost",
+        "a small booking fee per appointment",
+        "part of the consultation fee"
+      ],
+      "likely_roles": [
+        "Patient",
+        "Receptionist",
+        "Doctor"
+      ],
+      "likely_features": [
+        {
+          "name": "Book a slot with a chosen doctor",
+          "intent": "patients schedule without calling",
+          "custom": false
+        },
+        {
+          "name": "Daily schedule for the reception desk",
+          "intent": "see and move the day's appointments",
+          "custom": false
+        },
+        {
+          "name": "Appointment reminders",
+          "intent": "reduce no-shows",
+          "custom": false
+        }
+      ],
+      "hard_parts": [
+        "Health information privacy",
+        "No-shows and late cancellations"
+      ],
+      "glossary_candidates": [
+        {
+          "term": "slot",
+          "synonyms": [
+            "appointment",
+            "time"
+          ]
+        }
+      ],
+      "confidence": 0.85
+    },
+    "questions": [
+      {
+        "id": "Q-001",
+        "group_id": "G1",
+        "group_title": "How your clinic runs",
+        "intent": "learn how doctors' time is organised (fixed slots, walk-ins or both)",
+        "serves": [
+          "scope.features",
+          "domain:doctor_schedules"
+        ],
+        "unlocks": [
+          "Blueprint: slot rules and the reception view"
+        ],
+        "answer_spec": "Whether every doctor works on fixed slots, takes walk-ins, or both",
+        "depends_on": [],
+        "priority": 1,
+        "type": "choose_one",
+        "text": "Do all your doctors see patients on fixed time slots, or do some also take walk-ins?",
+        "why_we_ask": "This decides how the booking screen and the reception view must behave.",
+        "options": [
+          {
+            "label": "Fixed slots for every doctor",
+            "description": "Nobody is seen without a booking",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "A mix of booked slots and walk-ins",
+            "description": "Some time is kept free for walk-ins",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Mostly walk-ins; bookings are few",
+            "description": "The app would add a booking option",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "A mix of booked slots and walk-ins",
+        "skip_assumes": "A mix of booked slots and walk-ins",
+        "followup_hint": "Ask how many doctors and which days they sit",
+        "examples": []
+      },
+      {
+        "id": "Q-002",
+        "group_id": "G1",
+        "group_title": "How your clinic runs",
+        "intent": "learn what happens when a patient does not turn up or cancels late",
+        "serves": [
+          "domain:no_shows"
+        ],
+        "unlocks": [
+          "Blueprint: cancellation and reminder rules",
+          "Research: no-show handling in clinics"
+        ],
+        "answer_spec": "The rule for a missed or late-cancelled slot, and whether any fee applies",
+        "depends_on": [],
+        "priority": 2,
+        "type": "text",
+        "text": "When a patient does not turn up or cancels at the last minute, what should happen to that slot?",
+        "why_we_ask": "Clinics handle this very differently, and the app has to follow your rule.",
+        "options": [],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": [
+          "e.g. the slot reopens after 15 minutes and the patient is reminded",
+          "e.g. no fee, but a note on the patient's record"
+        ]
+      },
+      {
+        "id": "Q-003",
+        "group_id": "G1",
+        "group_title": "How your clinic runs",
+        "intent": "learn who pays for the app: the clinic, the patient or neither",
+        "serves": [
+          "idea.business_model"
+        ],
+        "unlocks": [
+          "Research: pricing of similar tools",
+          "Blueprint: whether payments are in scope"
+        ],
+        "answer_spec": "Who pays whom for what, and which parts are free",
+        "depends_on": [],
+        "priority": 2,
+        "type": "choose_one",
+        "text": "Who should pay for the booking side: the clinic, the patient, or is it just part of the consultation fee?",
+        "why_we_ask": "This decides whether the first version needs any payment screens.",
+        "options": [
+          {
+            "label": "The clinic pays; patients book free",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Patients pay a small booking fee",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "It is part of the consultation fee",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "The clinic pays; patients book free",
+        "skip_assumes": "The clinic pays; patients book free",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-004",
+        "group_id": "G2",
+        "group_title": "Who uses it",
+        "intent": "learn whether family members book on someone else's behalf",
+        "serves": [
+          "audience.segments"
+        ],
+        "unlocks": [
+          "Design: who the main screens are for",
+          "Research: user types"
+        ],
+        "answer_spec": "The kinds of people who book, their goal and where they do it, and who pays versus who is seen",
+        "depends_on": [],
+        "priority": 2,
+        "type": "text",
+        "text": "Do patients always book for themselves, or do family members also book for children or parents?",
+        "why_we_ask": "It changes how a booking is attached to a person.",
+        "options": [],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": [
+          "e.g. mostly parents booking for children",
+          "e.g. adult children booking for elderly parents"
+        ]
+      },
+      {
+        "id": "Q-005",
+        "group_id": "G2",
+        "group_title": "Who uses it",
+        "intent": "learn which other people need to sign in",
+        "serves": [
+          "roles.list"
+        ],
+        "unlocks": [
+          "Blueprint: roles and what each may change"
+        ],
+        "answer_spec": "Each kind of person who signs in, their goal and what they can approve or change",
+        "depends_on": [],
+        "priority": 2,
+        "type": "pick_many",
+        "text": "Besides you and the receptionist, who else needs to sign in?",
+        "why_we_ask": "Each kind of person gets their own view of the day.",
+        "options": [
+          {
+            "label": "Doctors, to see their own day",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "A nurse or assistant",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Someone for billing or accounts",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-006",
+        "group_id": "G3",
+        "group_title": "Patient information and feel",
+        "intent": "learn how much medical information the app will keep",
+        "serves": [
+          "data.sensitive"
+        ],
+        "unlocks": [
+          "Blueprint: data model and access rules",
+          "Verify: privacy checks"
+        ],
+        "answer_spec": "What sensitive information the app handles, such as health, financial or ID data",
+        "depends_on": [],
+        "priority": 1,
+        "type": "choose_one",
+        "text": "Will the app keep anything about the visit itself, or only names and times?",
+        "why_we_ask": "Keeping medical details raises how carefully the data must be protected.",
+        "options": [
+          {
+            "label": "Only name, phone number and time",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "The reason for the visit as well",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Records, reports or prescriptions",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Only name, phone number and time",
+        "skip_assumes": "Only name, phone number and time",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-007",
+        "group_id": "G3",
+        "group_title": "Patient information and feel",
+        "intent": "learn the mood the booking experience should have",
+        "serves": [
+          "look.tone_words"
+        ],
+        "unlocks": [
+          "Design: tone and direction"
+        ],
+        "answer_spec": "Two or three words for the mood and personality of the app",
+        "depends_on": [],
+        "priority": 3,
+        "type": "choose_one",
+        "text": "For your patients, should booking feel calm and reassuring, quick and efficient, or friendly and personal?",
+        "why_we_ask": "Design starts from this mood.",
+        "options": [
+          {
+            "label": "Calm and reassuring",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Quick and efficient",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Friendly and personal",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": []
+      }
+    ],
+    "covered_needs": [
+      "scope.features",
+      "idea.business_model",
+      "audience.segments",
+      "roles.list",
+      "data.sensitive",
+      "look.tone_words"
+    ],
+    "assumed_instead": [
+      {
+        "need_id": "auth.methods",
+        "assumption": "Patients sign in with their phone number and a one-time code",
+        "reason": "Low risk and usual for appointment booking; shown for approval"
+      },
+      {
+        "need_id": "integrations.wanted",
+        "assumption": "Appointment reminders by SMS",
+        "reason": "Follows from the no-show question; confirmed after Q-002"
+      }
+    ],
+    "expert_gaps": [
+      "Reminder timing and who sends them",
+      "What the receptionist can override on a doctor's schedule"
+    ],
+    "backlog": [
+      {
+        "topic": "How patients pay for the consultation today",
+        "intent": "see whether payment belongs in the app",
+        "serves": [
+          "integrations.wanted"
+        ]
+      }
+    ]
+  }
+}

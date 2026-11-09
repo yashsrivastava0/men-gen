@@ -13,3 +13,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Ask one open question in the user's language. Never suggest features or categories. Voice is
   welcome. Use this frame once, then absorb what the user wrote.
+style_guide: "Open and warm, one sentence of context at most. Ask for a typical day or one real customer, not for features. Use after a vague first message; never when the idea is already clear."
+examples:
+- "Picture one ordinary day: who opens your app first, and what do they want done in the next minute?"
+- "Think of the last customer you helped by hand: what did they ask you for?"
