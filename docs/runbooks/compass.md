@@ -96,7 +96,7 @@ ALLOW_LIVE_LLM=1 uv run pytest agents/compass/tests/live -m live -q -s
 The rules that apply to any live run:
 
 1. `ALLOW_LIVE_LLM=1` is the second key: the user's decision, never an agent's (D-069), and it must be in the environment of the process that makes the calls. Do not look for a way around the live-call hook.
-2. The Compass cap: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 2.00** (a larger, unparsable or non-positive value never widens it); calls stop at 95% of it (USD 1.90) and at USD 0.25 per session; the check fails closed and the call falls back to its deterministic fallback instead of spending.
+2. The Compass cap: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 3.00** (the owner's ceiling since 2026-11-09, D-093; a larger, unparsable or non-positive value never widens it; the aim is to finish all live batches under USD 2.00, `BudgetPolicy.target_usd`); calls stop at 95% of it (USD 2.85) and at USD 0.50 per session; the check fails closed and the call falls back to its deterministic fallback instead of spending.
 3. The repo-wide cap stays authoritative: total live spend never exceeds **USD 6.00**; the shared ledger is `data/.budget/ledger.jsonl` in the main checkout and `just budget` prints spend by scope (Compass calls book to `session:<id>`). Tripwires, the external dashboard backstop and the per-batch procedure are in [live-llm-budget.md](live-llm-budget.md).
 4. A recorded run needs `MDE_RECORD_CASSETTES=1`; replays are free (`LLM_MODE=replay`). No Compass cassettes exist yet, and a prompt edit invalidates older ones.
 

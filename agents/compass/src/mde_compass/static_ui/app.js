@@ -51,7 +51,7 @@ CONTRACT*/
   "use strict";
 
   var BASE = "/v1/compass";
-  var CAP_FALLBACK = "2.00";
+  var CAP_FALLBACK = "3.00";
 
   // ---- storage and small helpers -------------------------------------------------------------------
   var store = {

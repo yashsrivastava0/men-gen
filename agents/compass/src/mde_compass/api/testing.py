@@ -1015,13 +1015,13 @@ class ScriptedService:
         )
 
     async def budget(self) -> dict[str, JsonValue]:
-        cap = Decimal("2.00")
+        cap = Decimal("3.00")
         return {
             "mode": self._mode,
             "cap_usd": str(cap),
             "hard_cap_usd": str(cap),
-            "effective_stop_usd": "1.90",
-            "per_session_cap_usd": "0.25",
+            "effective_stop_usd": "2.85",
+            "per_session_cap_usd": "0.50",
             "spent_usd": str(self._spent),
             "remaining_usd": str(cap - self._spent),
             "calls": sum(len(s.calls) for s in self._sessions.values()),

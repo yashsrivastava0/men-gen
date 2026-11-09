@@ -243,7 +243,7 @@ async def test_calls_budget_strings_uploads(client: httpx.AsyncClient, session_i
     calls = (await client.get(f"{P}/sessions/{session_id}/calls")).json()["calls"]
     assert calls and {"spec_id", "tokens_in", "latency_ms"} <= set(calls[0])
     b = (await client.get(f"{P}/budget")).json()
-    assert b["cap_usd"] == "2.00" and b["mode"] == "mock"
+    assert b["cap_usd"] == "3.00" and b["mode"] == "mock"
     en = (await client.get(f"{P}/strings/en")).json()
     assert en["strings"]["ui.looks_right"] == "Looks right"
     hi = (await client.get(f"{P}/strings/hi")).json()

@@ -1,7 +1,7 @@
 """The Compass-only live-test budget (prompt 4): additive to the repo's global cap and ledger.
 
-* ``COMPASS_LIVE_BUDGET_USD`` is clamped to <= 2.00 (``config.load_budget_policy``); effective stop at 95%
-  of the cap (1.90); per-session cap 0.25; **fails closed**: when a check cannot prove the spend fits, it
+* ``COMPASS_LIVE_BUDGET_USD`` is clamped to <= 3.00 (``config.load_budget_policy``; the aim is to stay under
+  2.00, D-093); effective stop at 95% of the cap (2.85); per-session cap 0.50; **fails closed**: when a check cannot prove the spend fits, it
   raises ``BudgetExceeded`` and the call runner uses the deterministic fallback instead of calling the model.
 * Spend is tagged per session and in total here (a Compass-only counter); the gateway ledger remains the
   source of truth for the global USD 6.00 cap and is reconciled by ``reconcile`` (the larger number wins).

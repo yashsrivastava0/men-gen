@@ -109,13 +109,21 @@ class GatePolicy:
 
 @dataclass(frozen=True)
 class BudgetPolicy:
-    """The Compass-only live-test cap, additive to the repo's global cap and ledger (prompt 4)."""
+    """The Compass-only live-test cap, additive to the repo's global cap and ledger (prompt 4).
 
-    hard_cap_usd: Decimal = Decimal("2.00")
-    cap_usd: Decimal = Decimal("2.00")  # ``COMPASS_LIVE_BUDGET_USD`` clamped to <= hard_cap_usd
-    stop_fraction: Decimal = Decimal("0.95")  # effective stop at 95% of the cap (1.90)
-    per_session_cap_usd: Decimal = Decimal("0.25")
-    reserve_usd: Decimal = Decimal("0.50")  # kept unspent across the live batches
+    Owner decision 2026-11-09 (D-093): the hard ceiling is USD 3.00, the aim is to finish every live batch
+    under ``target_usd`` (USD 2.00), and cost is not to slow the work down. The guard enforces the ceiling;
+    the target is what the batch runner plans and reports against.
+    """
+
+    hard_cap_usd: Decimal = Decimal("3.00")
+    cap_usd: Decimal = Decimal("3.00")  # ``COMPASS_LIVE_BUDGET_USD`` clamped to <= hard_cap_usd
+    target_usd: Decimal = Decimal("2.00")  # plan and report against this; not enforced by the guard
+    stop_fraction: Decimal = Decimal("0.95")  # effective stop at 95% of the cap (2.85)
+    per_session_cap_usd: Decimal = Decimal("0.50")
+    reserve_usd: Decimal = Decimal(
+        "0.30"
+    )  # kept unspent across the live batches (owner manual sessions)
 
     @property
     def effective_stop_micros(self) -> int:
@@ -131,7 +139,7 @@ class BudgetPolicy:
 
 
 def load_budget_policy(env: Mapping[str, str] | None = None) -> BudgetPolicy:
-    """``COMPASS_LIVE_BUDGET_USD`` is clamped: unparsable, non-positive or above 2.00 never widens it."""
+    """``COMPASS_LIVE_BUDGET_USD`` is clamped: unparsable, non-positive or above 3.00 never widens it."""
     source = os.environ if env is None else env
     hard = BudgetPolicy().hard_cap_usd
     raw = source.get("COMPASS_LIVE_BUDGET_USD")

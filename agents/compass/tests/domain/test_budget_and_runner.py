@@ -17,13 +17,13 @@ from mde_core.errors import BudgetExceeded, ProviderError
 @pytest.mark.parametrize(
     ("raw", "expected"),
     [
-        (None, "2.00"),
-        ("5.00", "2.00"),
+        (None, "3.00"),
+        ("5.00", "3.00"),
         ("1.25", "1.25"),
-        ("-3", "2.00"),
-        ("abc", "2.00"),
-        ("NaN", "2.00"),
-        ("0", "2.00"),
+        ("-3", "3.00"),
+        ("abc", "3.00"),
+        ("NaN", "3.00"),
+        ("0", "3.00"),
     ],
 )
 def test_live_cap_is_clamped(raw: str | None, expected: str) -> None:
@@ -33,22 +33,22 @@ def test_live_cap_is_clamped(raw: str | None, expected: str) -> None:
 
 def test_effective_stop_and_per_session_cap_fail_closed() -> None:
     policy = BudgetPolicy()
-    assert policy.effective_stop_micros == 1_900_000 and policy.per_session_micros == 250_000
+    assert policy.effective_stop_micros == 2_850_000 and policy.per_session_micros == 500_000
     budget = CompassBudget(policy, mode="live")
     budget.check("ses_1", estimate_micros=100_000)
-    budget.record("ses_1", 240_000)
+    budget.record("ses_1", 490_000)
     with pytest.raises(BudgetExceeded):
-        budget.check("ses_1", estimate_micros=20_000)  # per-session 0.25 would be crossed
+        budget.check("ses_1", estimate_micros=20_000)  # per-session 0.50 would be crossed
     budget.check("ses_2", estimate_micros=100_000)  # another session is fine
-    budget.record("ses_2", 1_600_000)
+    budget.record("ses_2", 2_300_000)
     with pytest.raises(BudgetExceeded):
-        budget.check("ses_3", estimate_micros=300_000)  # total would pass 1.90
+        budget.check("ses_3", estimate_micros=300_000)  # total would pass 2.85
     with pytest.raises(BudgetExceeded):
         budget.check("ses_3", estimate_micros=-1)  # fail closed on nonsense
     snap = budget.snapshot()
-    assert snap["spent_usd"] == "1.8400" and snap["cap_usd"] == "2.00"
-    budget.reconcile(2_000_000)
-    assert budget.spent_micros == 2_000_000
+    assert snap["spent_usd"] == "2.7900" and snap["cap_usd"] == "3.00"
+    budget.reconcile(3_000_000)
+    assert budget.spent_micros == 3_000_000
 
 
 class In(BaseModel):

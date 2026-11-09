@@ -32,3 +32,7 @@ The gateway pipeline takes the spec object (`Gateway.run(spec, input, ctx)`); th
 
 Built and verified, all twelve calls: each `calls/<name>/` folder holds `spec.py`, `schema.py`, **two** templates (`system.jinja` and `user.jinja`, because the gateway renders a system and a user prompt; examples are inline in `system.jinja` and also in `examples/*.json`), `fallback.py` (the pure deterministic fallback, also the mock handler), `validate.py` or validators in the spec, `mock.py`, `adapter.py` (the class implementing the engine port, discovered by `calls/registry.py` by its `*Adapter` name), and a per-call data file (`rules.yaml` or `templates.yaml`). Tests live in `packages/compass/tests/calls/<name>/`, not in the folder. All twelve folders exist; the three intake-side calls (`read_chunk`, `merge_claims`, `scan_ambiguity`) are no longer placeholders.
 
+
+## Amendment, 2026-11-09 (D-093)
+
+Item 6 above gave Compass its own live cap of at most 2.00 with a per-session cap of 0.25. The owner raised it: the hard ceiling is now **USD 3.00** (stop at 95%, USD 2.85; per session 0.50), with the aim of finishing all live batches under USD 2.00. The gateway ledger and the global USD 6.00 cap are unchanged and still authoritative.
