@@ -47,6 +47,7 @@ def test_the_console_has_the_documented_layout() -> None:
         "shared/registry.js",
         "shared/shell.js",
         "agents/compass/compass.html",
+        "agents/compass/interview.js",
         "agents/compass/compass.js",
         "agents/compass/compass.css",
     }
@@ -81,9 +82,11 @@ async def test_every_asset_referenced_by_the_shell_and_registry_exists_and_is_se
     assert entries, "the registry lists at least one agent"
     for entry in entries:
         assets += [entry["markup"], entry["script"], entry["style"]]
+        assets += [entry["helper"]] if "helper" in entry else []
     assert {"shared/tokens.css", "shared/shell.css"} <= set(assets)
     assert {"shared/registry.js", "shared/components.js", "shared/shell.js"} <= set(assets)
     assert {"agents/compass/compass.html", "agents/compass/compass.js"} <= set(assets)
+    assert "agents/compass/interview.js" in assets, "the interview helpers are loaded by the shell"
     assert "agents/compass/compass.css" in assets
     for ref in assets:
         assert not re.match(r"^(https?:)?//", ref), f"external asset {ref}"

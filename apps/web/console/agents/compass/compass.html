@@ -20,6 +20,7 @@
 </div>
 
 <main id="main" class="main" tabindex="-1">
+  <div id="mock-banner" class="mock-banner" role="status" hidden>MOCK MODE: questions are canned</div>
   <section id="home" class="home" hidden></section>
   <section id="workspace" class="workspace" data-pane="chat" hidden>
     <div class="pane-switch" role="tablist" aria-label="Panes">
@@ -30,6 +31,11 @@
       <div id="progressbar" class="progressbar" hidden></div>
       <div id="chat-log" class="chat-log" role="log" aria-live="polite" aria-relevant="additions"></div>
       <div id="typing" class="typing" hidden><span class="dot"></span><span class="dot"></span><span class="dot"></span><span id="typing-text" class="sr-only">Compass is thinking</span></div>
+      <div id="interview-bar" class="interview-bar" role="group" aria-label="How questions are shown" hidden>
+        <button id="btn-mode-toggle" class="btn" type="button" aria-describedby="mode-note" hidden>Answer all at once</button>
+        <button id="btn-ask-more" class="btn" type="button" hidden>Ask me more</button>
+        <span id="mode-note" class="hint mode-note" role="status" hidden></span>
+      </div>
       <form id="composer" class="composer" autocomplete="off">
         <label class="sr-only" for="composer-input" id="composer-label">Type your answer here</label>
         <textarea id="composer-input" rows="1" maxlength="20000" placeholder="Type your answer here"></textarea>
@@ -43,7 +49,13 @@
       <div id="tab-brief" class="tabpanel" role="tabpanel"></div>
       <div id="tab-lookup" class="tabpanel" role="tabpanel" hidden></div>
       <div id="tab-sources" class="tabpanel" role="tabpanel" hidden></div>
-      <div id="tab-history" class="tabpanel" role="tabpanel" hidden></div>
+      <div id="tab-history" class="tabpanel" role="tabpanel" hidden>
+        <section id="qa-section" class="qa-section" aria-labelledby="qa-title">
+          <h3 id="qa-title">Questions and answers</h3>
+          <div id="qa-list" class="qa-list"></div>
+        </section>
+        <div id="history-chat" class="history-chat"></div>
+      </div>
     </div>
   </section>
 </main>
