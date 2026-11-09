@@ -1,0 +1,8 @@
+/* Mobigen console shell: the agent switcher and the two mount points. Agent screens style themselves;
+   everything here uses the tokens in tokens.css. */
+.agent-switch { display: inline-flex; align-items: center; }
+.agent-topbar, .agent-mount { display: contents; }
+.shell-error {
+  margin: var(--s3); padding: var(--s2); border: 1px solid var(--danger); border-radius: var(--radius-sm);
+  background: var(--danger-soft); color: var(--danger);
+}

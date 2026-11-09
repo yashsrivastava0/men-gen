@@ -50,7 +50,8 @@ CONTRACT*/
 (function () {
   "use strict";
 
-  var BASE = "/v1/compass";
+  var AGENT = window.MobigenAgent || {};  // the registry entry the shell mounted (shared/registry.js)
+  var BASE = AGENT.base || "/v1/compass";
   var CAP_FALLBACK = "3.00";
 
   // ---- shared helpers (shared/components.js) -------------------------------------------------------
