@@ -479,3 +479,18 @@ async def test_the_questions_and_answers_list_reads_the_ledger_for_the_history_t
     assert one["status"] == "answered" and LONG[:30] in one["answer"] and one["facts"]  # type: ignore[index,operator]
     assert one["origin"] == "planner" and one["question"] == first.question  # type: ignore[index]
     assert any(i["status"] == "skipped" for i in items)  # type: ignore[index,union-attr]
+
+
+async def test_a_scripted_gateway_can_replace_the_model_for_exact_behaviour_tests() -> None:
+    """The injection point the scenario fixtures use: hand-written model outputs per call, through the real
+    CallRunner, validators and engine. A call nobody scripted fails loudly (an error event), never silently."""
+    from mde_compass.calls.testing import ScriptedGateway
+
+    gateway = ScriptedGateway()
+    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    config = dataclasses.replace(DEFAULT_CONFIG, interview=interview)
+    svc = build_service(memory=True, clock=FakeClock(), compass_config=config, gateway=gateway)
+    conv = await Conversation.start(svc)
+    result = await conv.say(IDEA)
+    assert gateway.calls and gateway.calls[0][0] == "cmp.understand_turn"
+    assert any(e.type == "error" for e in result.events)

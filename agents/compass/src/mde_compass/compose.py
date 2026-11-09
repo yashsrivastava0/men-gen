@@ -19,6 +19,7 @@ from mde_compass.catalog import load_catalog
 from mde_compass.config import DEFAULT_CONFIG, CompassConfig, load_budget_policy
 from mde_compass.engine.handoff import LoggingHandoff
 from mde_compass.engine.service import Service
+from mde_contracts.gateway import GatewayClient
 from mde_core.clock import Clock, SystemClock
 from mde_core.settings import Settings, load_settings
 from mde_llm_gateway import (
@@ -47,8 +48,12 @@ def build_service(
     clock: Clock | None = None,
     migrate: bool = True,
     compass_config: CompassConfig | None = None,
+    gateway: GatewayClient | None = None,
 ) -> Service:
-    """``memory=True`` uses the in-memory store (no database); otherwise PostgreSQL (migrated on start)."""
+    """``memory=True`` uses the in-memory store (no database); otherwise PostgreSQL (migrated on start).
+
+    ``gateway`` replaces the real gateway client (tests inject a scripted one with hand-written model outputs);
+    ``compass_config`` replaces the default configuration (``COMPASS_INTERVIEW_ENGINE`` still overrides the engine)."""
     the_clock = clock or SystemClock()
     the_settings = settings or load_settings()
     catalog = load_catalog()
@@ -74,7 +79,7 @@ def build_service(
         if mode == "mock"
         else None
     )
-    gateway = InProcessGatewayClient(
+    gateway = gateway or InProcessGatewayClient(
         create_gateway(
             the_settings,
             StaticRegistry([cs.spec for cs in all_specs()]),
