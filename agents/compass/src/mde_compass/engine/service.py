@@ -277,6 +277,7 @@ class _Turn:
     reshow_pending: bool = (
         False  # a typed message (not an answer) arrived: the open question comes back
     )
+    situation: Any = None  # the idea turn reads the situation in parallel with the understanding (ADR 0016: speed)
 
     @property
     def turn_id(self) -> str:
@@ -827,7 +828,13 @@ class Service(FlowHooks):
         if await self._flow_voice_remove(turn, text):
             return
         ctx = self._ctx(turn)
-        if self.interview.active:
+        if self.interview.active and not has_draft:
+            # the idea turn: reading the message and reading the situation do not depend on each other
+            understood, turn.situation = await asyncio.gather(
+                self.interview.understand_text(turn, text, ev.input_mode),
+                self.ports.situator.situate(ctx, user_text=text),
+            )
+        elif self.interview.active:
             understood = await self.interview.understand_text(turn, text, ev.input_mode)
         else:
             understood = await self.ports.understander.understand(
@@ -925,7 +932,7 @@ class Service(FlowHooks):
         assert self.ports is not None
         self._rebuild(turn)
         ctx = self._ctx(turn)
-        situation = await self.ports.situator.situate(ctx, user_text=text)
+        situation = turn.situation or await self.ports.situator.situate(ctx, user_text=text)
         profile: SituationProfile = situation.profile
         turn.brief.meta.situation_profile = profile
         depth = (
