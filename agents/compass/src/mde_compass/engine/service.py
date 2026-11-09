@@ -2137,6 +2137,22 @@ class Service(FlowHooks):
                     self._t(turn, "notice.assumption_accepted", claim=asm.claim),
                 )
             return
+        if asm.slot_id is None and ev.value is not None and _text(ev.value).strip():
+            # a decision, correction or review row has no slot: the person's own words are read as a change request
+            # (they are not lost), and the row is marked changed
+            text = _text(ev.value)
+            ops = [PatchOp(op="set", path=f"assumptions.{ev.id}.decision", value="changed")]
+            await self._apply_change(turn, ops, source="assumption", what=asm.claim)
+            if self.interview.active:
+                # whatever the change flow can structure, the words themselves join the ledger like any message
+                understood = await self.interview.understand_text(turn, text, "text")
+                await self.interview.on_text(turn, understood, text, "text")
+            await self._change_from_text(turn, text, ResolvedTarget(kind="assumption", id=asm.id))
+            if self.interview.active:
+                await self._compile_brief(
+                    turn
+                )  # an unchanged part of the ledger makes no model call
+            return
         slot = self.catalog.slots.get(asm.slot_id or "")
         if ev.value is not None and slot is not None:
             ops = [

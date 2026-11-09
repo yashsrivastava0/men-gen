@@ -36,7 +36,6 @@ from mde_compass.domain.interview import (
     BatchGroup,
     BatchRecord,
     Fact,
-    FactType,
     InterviewBlock,
     InterviewSummary,
     NeedStatus,
@@ -45,9 +44,10 @@ from mde_compass.domain.interview import (
     QaRecord,
     stored_mode,
 )
+from mde_compass.engine import assumptions as assumptions_mod
 from mde_compass.engine import cards as cards_mod
 from mde_compass.engine import closing as closing_mod
-from mde_compass.engine import fact_projector, interview_policy
+from mde_compass.engine import document_facts, fact_projector, interview_policy, lock_guard
 from mde_compass.engine import facts as facts_mod
 from mde_compass.engine import needs as needs_mod
 from mde_compass.engine import terms as terms_mod
@@ -943,14 +943,7 @@ class InterviewController:
                 old2, new2 = facts_mod.supersede(old, winner, now=now)
                 mem.update_fact(old2)
                 mem.update_fact(new2)
-                fact_projector.reproject(
-                    slots_of([old2]),
-                    mem.facts,
-                    turn.slots,
-                    self.catalog,
-                    turn_id=turn.turn_id,
-                    now=now,
-                )
+                self._reproject(turn, [old2])
         self.svc._rebuild(turn)
         return new_ids, chips
 
@@ -1323,9 +1316,7 @@ class InterviewController:
         old_facts = [f for f in mem.facts if f.qa_card_id == card_id and f.status == "active"]
         for fact in old_facts:
             mem.update_fact(fact.model_copy(update={"status": "superseded", "updated_at": now}))
-        fact_projector.reproject(
-            slots_of(old_facts), mem.facts, turn.slots, self.catalog, turn_id=turn.turn_id, now=now
-        )
+        self._reproject(turn, old_facts)
         typed = bool(custom) and value in (None, "", [])
         item = AnswerItem(qa.card, "answer", value, custom, "text" if typed else "tap")
         new = qa.model_copy(
@@ -1366,6 +1357,22 @@ class InterviewController:
         if result.batch.cards():
             self._emit_batch(turn, result.batch)
 
+    def _reproject(self, turn: _Turn, gone: Sequence[Fact]) -> None:
+        """Rebuild the slots after facts stopped being active: the slots their effects wrote AND the slots the Brief
+        compile wrote from them (they cite the fact but carry no effect), then downgrade any Locked value whose
+        cited facts are no longer all active and verified (the Locked-after-pivot case)."""
+        mem = turn.memory
+        affected = slots_of(gone) | set(lock_guard.slots_citing(turn.slots, {f.id for f in gone}))
+        fact_projector.reproject(
+            affected,
+            mem.facts,
+            turn.slots,
+            self.catalog,
+            turn_id=turn.turn_id,
+            now=self._now(),
+        )
+        lock_guard.downgrade_unsupported_locks(turn.slots, mem.facts)
+
     async def on_pivot(self, turn: _Turn, text: str, new_fact_ids: list[str]) -> None:
         """ "Actually it is for clinics": the earlier facts about the idea and its audience are superseded (history
         kept), the hypothesis is made again, and what is still waiting is planned again for the new direction."""
@@ -1389,9 +1396,7 @@ class InterviewController:
             if set(fact.topics) & about_idea or slots_of([fact]) & feeds:
                 mem.update_fact(fact.model_copy(update={"status": "superseded", "updated_at": now}))
                 gone.append(fact)
-        fact_projector.reproject(
-            slots_of(gone), mem.facts, turn.slots, self.catalog, turn_id=turn.turn_id, now=now
-        )
+        self._reproject(turn, gone)
         situation = await self.svc.ports.situator.situate(self.svc._ctx(turn), user_text=text)
         turn.brief.meta.hypothesis = situation.hypothesis
         turn.notice(
@@ -1412,45 +1417,29 @@ class InterviewController:
         self.touch(turn)
 
     def after_ingest(self, turn: _Turn, claims: Sequence[Any], source_id: str) -> int:
-        """A document's claims become facts of the ledger (origin ``document``, the quote was verified against the
-        chunk by the intake). Returns how many facts were added."""
+        """A document's claims become facts of the ledger (origin ``document``; the quote was verified against the
+        chunk by the intake): typed with topics and a kind, duplicates folded, conflicting claims kept as DISPUTED
+        facts plus one assumption to decide, and claims that still need confirming below the confidence that may
+        lead to a Locked value (they come back as ONE confirm question). Returns how many facts were added."""
         mem = turn.memory
         now = self._now()
-        kinds: dict[str, FactType] = {
-            "requirement": "requirement", "constraint": "constraint", "business_context": "context",
-            "goal": "goal", "user_or_role": "role", "rule_or_number": "rule", "glossary_term": "glossary",
-            "example": "example", "open_issue": "context", "preference": "preference", "exclusion": "exclusion",
-        }  # fmt: skip
-        added = 0
-        for claim in claims:
-            if getattr(claim, "status", "") not in ("used", "needs_confirming"):
-                continue
-            st = claim.statement
-            fact = Fact(
-                id=mem.next_fact_id(),
-                type=kinds.get(st.type, "context"),
-                statement=st.text.strip()[:1000] or "(empty)",
-                topics=[],
-                consumers=["all"],
-                confidence=st.confidence,
-                origin="document",
-                source_ref=f"{source_id}:{st.pointer}" if st.pointer else source_id,
-                claim_id=claim.id,
-                quote=st.quote.strip()[:500],
-                unverified_quote=False,
-                # a claim that maps to a need answers it: the interview must not ask it again (GAP-7)
-                aspects=(
-                    [f"{claim.slot_hint}:*"]
-                    if claim.slot_hint in self.catalog.slots and claim.status == "used"
-                    else []
-                ),
-                created_at=now,
-                updated_at=now,
-            )
+        result = document_facts.facts_from_claims(
+            claims,
+            source_id=source_id,
+            start_number=facts_mod.fact_number(mem.next_fact_id()),
+            now=now,
+            slot_ids=self.catalog.slots,
+        )
+        for fact in result.facts:
             mem.add_fact(fact)
-            added += 1
+        if result.conflicts:
+            turn.brief = assumptions_mod.merge_derived(
+                turn.brief,
+                document_facts.conflict_assumptions(list(claims), self.catalog, turn.lang),
+                ("document",),
+            )
         self.touch(turn)
-        return added
+        return len(result.facts)
 
     async def ask_gap(self, turn: _Turn, slot_id: str) -> bool:
         """A handoff probe found a gap a consumer cannot work without: ask ONE planned question about it (at most
