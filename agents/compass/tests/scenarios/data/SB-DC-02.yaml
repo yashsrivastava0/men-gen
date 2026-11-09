@@ -1,5 +1,7 @@
 id: SB-DC-02
 title: Everything is a must, a priority card asks for the first-release five
+planner_known_issue: BUG-19
+planner_known_issue_note: "a follow-up planned while batch questions still wait is charged only against the questions already asked, so the Standard budget (12) is exceeded (13 asked); whether it shows depends on which questions fit the batch, so it comes and goes with unrelated changes until the budget is charged when a question is planned"
 tags: [interview, priority]
 steps:
   - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
