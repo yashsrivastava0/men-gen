@@ -118,7 +118,7 @@ async def test_ambiguity_findings_become_non_blocking_questions_and_change_no_va
     from mde_compass.engine.ports import AmbiguityFinding
 
     class Scanner:
-        async def scan(self, ctx, brief):  # noqa: ANN001
+        async def scan(self, ctx, brief):
             return [
                 AmbiguityFinding(
                     slot_id=None, text="What does 'fast delivery' mean for you?", kind="vague"
