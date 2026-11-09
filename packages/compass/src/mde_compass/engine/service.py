@@ -1290,12 +1290,36 @@ class Service(FlowHooks):
                     return False
         return True
 
+    async def _flag_ambiguity(self, turn: _Turn) -> None:
+        """cmp.scan_ambiguity: vague, conflicting or undefined statements become NON-BLOCKING open questions.
+        The scanner returns findings only (no values), so it can never change the Brief."""
+        assert self.ports is not None
+        findings = await self.ports.ambiguity_scanner.scan(self._ctx(turn), turn.brief)
+        known = {q.text.strip().lower() for q in turn.brief.open_questions}
+        added = 0
+        for finding in findings:
+            text = finding.text.strip()
+            if not text or text.lower() in known or added >= 3:
+                continue
+            turn.brief.open_questions.append(
+                OpenQuestion(
+                    id=turn.brief.ids.allocate("Q"),
+                    text=text[:200],
+                    blocking=False,
+                    owner="user",
+                    slot_id=finding.slot_id,
+                )
+            )
+            known.add(text.lower())
+            added += 1
+
     async def _open_review(self, turn: _Turn) -> None:
         assert self.ports is not None
         self._rebuild(turn)
         compiled = await self.ports.compiler.compile(self._ctx(turn), turn.brief)
         turn.brief.summary = compiled.summary
         turn.brief.pitch = compiled.pitch
+        await self._flag_ambiguity(turn)
         blockers = self._blockers(turn)
         lines = self._blocker_lines(turn, blockers)
         h = brief_hash(turn.brief)

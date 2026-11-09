@@ -108,3 +108,32 @@ async def test_declined_category_is_refused_early_with_an_alternative(service) -
     notices = [n.payload["text"] for n in conv.of_type("notice")]
     assert any("game" in t.lower() or "3d" in t.lower() for t in notices), notices
     assert await conv.state() in {"WELCOME", "UNDERSTANDING", "INTERVIEWING", "PLAYBACK"}
+
+
+async def test_ambiguity_findings_become_non_blocking_questions_and_change_no_value(
+    service,
+) -> None:
+    from dataclasses import replace
+
+    from mde_compass.engine.ports import AmbiguityFinding
+
+    class Scanner:
+        async def scan(self, ctx, brief):  # noqa: ANN001
+            return [
+                AmbiguityFinding(
+                    slot_id=None, text="What does 'fast delivery' mean for you?", kind="vague"
+                ),
+                AmbiguityFinding(
+                    slot_id=None, text="what does 'fast delivery' mean for you?", kind="vague"
+                ),
+            ]
+
+    service.bind_ports(replace(service.ports, ambiguity_scanner=Scanner()))
+    conv = await _to_review(service)
+    brief = await conv.brief()
+    questions = [q for q in brief["open_questions"] if "fast delivery" in q["text"]]
+    assert (
+        len(questions) == 1 and questions[0]["blocking"] is False
+    )  # de-duplicated, never blocking
+    ready = conv.of_type("brief_ready")[-1].payload
+    assert not any("fast delivery" in b for b in ready["blockers"])  # it cannot hold up Gate 1

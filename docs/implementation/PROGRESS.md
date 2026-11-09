@@ -117,7 +117,7 @@ State at the end of the first working session (the 04:40 cutoff was a usage limi
 - [x] Views: BriefViewModel, consumer views (no transcript), readiness, diffs, provenance
 - [x] API (SSE with replay, dev auth, CSP) and the static test UI (spent/cap meter, change panel, history drawer, real file upload)
 - [x] Document intake: parsers (PDF, DOCX, XLSX, PPTX, CSV, TXT, MD, EML), chunking, SSRF-safe URL reader, ingest pipeline, wired into the service and `POST /sessions/{id}/uploads` (D-086)
-- [x] 48+ named scenarios (`SB-*`), ten persona scripts and a metrics report (`cd packages/compass && PYTHONPATH=src python -m evals.run_personas`)
+- [x] 46 named scenarios (`SB-*`), ten persona scripts and a metrics report (`cd packages/compass && PYTHONPATH=src python -m evals.run_personas`)
 - [x] Docs: README, `docs/packages/compass.md`, `docs/prompts/compass-calls.md`, `docs/api/compass.md`, `docs/runbooks/compass.md`
 - [x] Live smoke driver (`mde_compass.live_smoke`) with an offline twin test
 - [ ] **Live batch A (smoke, allowance USD 0.10): BLOCKED on the second key.** `ALLOW_LIVE_LLM=1` is not set in the environment (CLAUDE.md D-069: the user's decision). Run: `ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s` (report in `packages/compass/evals/reports/live-smoke.json`). Batches B to D were not authorized for this session.
