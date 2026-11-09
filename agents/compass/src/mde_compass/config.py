@@ -45,7 +45,7 @@ def _p(
 CALL_PROFILES: dict[str, CallProfile] = {
     p.call_id: p
     for p in (
-        _p("cmp.read_chunk", "high", 4000, "writer", "deep", 90),
+        _p("cmp.read_chunk", "medium", 8000, "writer", "standard", 90),
         _p("cmp.merge_claims", "high", 6000, "writer", "deep", 120),
         _p("cmp.situate", "high", 6000, "writer", "deep", 90),
         _p("cmp.understand_turn", "low", 3500, "writer", "standard", 60),
@@ -61,7 +61,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.plan_questions", "low", 5000, "writer", "standard", 90),
         _p("cmp.audit_questions", "medium", 3000, "critic", "standard", 60),
         _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
-        _p("cmp.compile_brief", "low", 8000, "writer", "deep", 150),
+        _p("cmp.compile_brief", "low", 12000, "writer", "standard", 120),
         _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
     )
 }

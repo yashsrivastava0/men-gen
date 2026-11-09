@@ -45,6 +45,7 @@ class Statement(Strict):
     quote: str
     pointer: str = ""
     confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+    name: str = ""  # a short name for a feature or a role, when the statement has one
 
 
 class Claim(Strict):

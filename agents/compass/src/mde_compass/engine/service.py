@@ -89,6 +89,8 @@ from mde_compass.engine import cards as cards_mod
 from mde_compass.engine import document_flow as docflow
 from mde_compass.engine import gate as gate_mod
 from mde_compass.engine import patch as patch_mod
+from mde_compass.engine import probe_gaps as probe_gaps_mod
+from mde_compass.engine import review as review_mod
 from mde_compass.engine import state as state_mod
 from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.app_structure import expand_structure
@@ -580,7 +582,9 @@ class Service(FlowHooks):
         # The interview audit block is outside the hash by design, but a change to it (the presentation mode,
         # counts) must still be saved, so it also counts as a change here.
         changed = (
-            new_hash != turn.rec.hash or turn.brief.meta.interview != turn.rec.brief.meta.interview
+            new_hash != turn.rec.hash
+            or turn.brief.meta.interview != turn.rec.brief.meta.interview
+            or turn.brief.meta.compile_digests != turn.rec.brief.meta.compile_digests
         )
         async with self.store.begin(turn.tenant) as uow:
             version = turn.rec.version
@@ -1018,6 +1022,10 @@ class Service(FlowHooks):
             else:
                 self._go(turn, "queue_empty", "SEEDING")
         if turn.state == "SEEDING":
+            if self.interview.active:
+                await self._compile_brief(
+                    turn
+                )  # research seeding and the probes read the full Brief
             await self._seed(turn)
             self._go(turn, "research_seeded", "PROBING")
         if turn.state == "PROBING":
@@ -1431,6 +1439,12 @@ class Service(FlowHooks):
                 turn.brief.meta.degraded = False
                 return True
             if turn.brief.meta.probe_rounds >= self.config.gate.probe_repair_rounds:
+                turn.brief = probe_gaps_mod.record_gaps(
+                    turn.brief,
+                    [g for r in results.values() if not r.passed for g in r.gaps],
+                    self.catalog,
+                    language=turn.lang,
+                )  # the gaps nobody could fix are listed to approve, not hidden behind a warning
                 turn.brief.meta.degraded = True
                 turn.notice("degraded_probes", self._t(turn, "notice.degraded_probes"), warn=True)
                 return True
@@ -1479,29 +1493,15 @@ class Service(FlowHooks):
         return True
 
     async def _flag_ambiguity(self, turn: _Turn) -> None:
-        """cmp.scan_ambiguity: vague, conflicting or undefined statements become NON-BLOCKING open questions.
-        The scanner returns findings only (no values), so it can never change the Brief."""
-        assert self.ports is not None
-        findings = await self.ports.ambiguity_scanner.scan(self._ctx(turn), turn.brief)
-        known = {q.text.strip().lower() for q in turn.brief.open_questions}
-        added = 0
-        for finding in findings:
-            text = finding.text.strip()
-            if not text or text.lower() in known or added >= 3:
-                continue
-            turn.brief.open_questions.append(
-                OpenQuestion(
-                    id=turn.brief.ids.allocate("Q"),
-                    text=text[:200],
-                    blocking=False,
-                    owner="user",
-                    slot_id=finding.slot_id,
-                )
-            )
-            known.add(text.lower())
-            added += 1
+        """cmp.scan_ambiguity: vague, conflicting, undefined or implausible statements become NON-BLOCKING open
+        questions, and findings about a value the person gave become assumptions to review (the scan returns
+        findings only, so it can never change the Brief)."""
+        await review_mod.flag_review(self, turn)
 
-    async def _open_review(self, turn: _Turn) -> None:
+    async def _compile_brief(self, turn: _Turn) -> None:
+        """The Brief from the whole fact ledger and its summary. It runs before research is seeded and the probes run
+        (ADR 0016), and again when the review opens: an unchanged ledger makes no model call (digests are kept in the
+        Brief's meta), so the second run is a no-op."""
         assert self.ports is not None
         self._rebuild(turn)
         await self.interview.compile(
@@ -1514,6 +1514,10 @@ class Service(FlowHooks):
         compiled = await self.ports.compiler.compile(self._ctx(turn), turn.brief)
         turn.brief.summary = compiled.summary
         turn.brief.pitch = compiled.pitch
+
+    async def _open_review(self, turn: _Turn) -> None:
+        assert self.ports is not None
+        await self._compile_brief(turn)
         await self._flag_ambiguity(turn)
         blockers = self._blockers(turn)
         lines = self._blocker_lines(turn, blockers)

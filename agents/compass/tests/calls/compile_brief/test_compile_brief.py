@@ -114,8 +114,9 @@ def good(**changes: object) -> CompileOutput:
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
     assert s.id == "cmp.compile_brief" and s.version == 2
-    assert s.reasoning_effort == "low" and s.max_output_tokens == 8000 and s.route == "deep"
-    assert SPEC.lane == "writer" and SPEC.timeout_s == 150 and not s.tools and not s.cacheable
+    # the groups of one compile run in parallel, so the standard route (the deep one allows only 2 concurrent calls)
+    assert s.reasoning_effort == "low" and s.max_output_tokens == 12000 and s.route == "standard"
+    assert SPEC.lane == "writer" and SPEC.timeout_s == 120 and not s.tools and not s.cacheable
     assert set(s.untrusted_inputs) == {
         "ledger",
         "needs_table",
