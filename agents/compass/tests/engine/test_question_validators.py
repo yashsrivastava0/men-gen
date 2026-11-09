@@ -27,10 +27,10 @@ from mde_compass.engine.slots import SlotStore
 from mde_compass.engine.terms import project_terms
 from mde_core.clock import FakeClock
 
-BASE = load_catalog()
-_slots = dict(BASE.slots)
-_slots["locales"] = _slots["locales"].model_copy(update={"universal": True})
-CAT: Catalog = BASE.model_copy(update={"slots": _slots})
+REAL = load_catalog()
+# The tests set the universal flags themselves (only ``locales`` is universal) so they do not depend on the data.
+_slots = {k: v.model_copy(update={"universal": k == "locales"}) for k, v in REAL.slots.items()}
+CAT: Catalog = REAL.model_copy(update={"slots": _slots})
 IDEA = "I want an app for my tiffin delivery service in Pune"
 TERMS = project_terms(IDEA)
 
@@ -126,6 +126,16 @@ def test_universal_needs_and_confirmations_are_exempt() -> None:
     assert not is_universal(mixed, CAT) and "no_project_term" in codes(mixed)
     assert not is_universal(card(needs=["domain:pricing"]), CAT)
     assert not is_universal(card(needs=[]), CAT)
+
+
+def test_the_real_registry_flags_are_honoured() -> None:
+    universal = [sid for sid, slot in REAL.slots.items() if slot.universal]
+    assert "locales" in universal
+    asked = card(
+        question="Which languages should the app speak?", type="open_prompt", needs=["locales"]
+    )
+    assert is_universal(asked, REAL)
+    assert not is_universal(card(needs=["scope.features"]), REAL)
 
 
 def test_project_term_in_options_only_does_not_count() -> None:
