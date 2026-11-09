@@ -1141,9 +1141,17 @@ class _Runner:
             )  # fmt: skip
             return "other"
         if a == "accept_all":
-            brief = await conv.brief()
-            for asm in brief.get("assumptions", []):
-                if asm.get("decision", "proposed") == "proposed":
+            # a person keeps accepting until nothing is left: accepting one can re-run the probes and raise another
+            for _ in range(6):
+                brief = await conv.brief()
+                proposed = [
+                    asm
+                    for asm in brief.get("assumptions", [])
+                    if asm.get("decision", "proposed") == "proposed"
+                ]
+                if not proposed:
+                    break
+                for asm in proposed:
                     await conv.send(AssumptionDecision(event_id=self.eid(), id=asm["id"], decision="accept", contributor_id=who))  # fmt: skip
             return "other"
         if a == "fill_required":

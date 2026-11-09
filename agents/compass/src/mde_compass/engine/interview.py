@@ -21,7 +21,9 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 
 from pydantic import JsonValue
 
+from mde_compass.domain.brief import AssumptionRecord
 from mde_compass.domain.cards import Card, CardProgress
+from mde_compass.domain.common import Provenance
 from mde_compass.domain.events import (
     BatchProgress,
     CardEvent,
@@ -38,11 +40,13 @@ from mde_compass.domain.interview import (
     InterviewBlock,
     InterviewSummary,
     NeedStatus,
+    PlanMode,
     PlannedBatch,
-    PlannerMode,
     QaRecord,
+    stored_mode,
 )
 from mde_compass.engine import cards as cards_mod
+from mde_compass.engine import closing as closing_mod
 from mde_compass.engine import fact_projector, interview_policy
 from mde_compass.engine import facts as facts_mod
 from mde_compass.engine import needs as needs_mod
@@ -63,6 +67,7 @@ from mde_compass.engine.interview_support import (
 )
 from mde_compass.engine.ports import (
     AnswerFocus,
+    ClosingContext,
     ExtractedFact,
     PlanContext,
     PlanRequest,
@@ -146,7 +151,10 @@ class InterviewController:
     def room(self, turn: _Turn) -> interview_policy.Room:
         """What is left of the tier's budget. Questions are charged when PLANNED (asked plus waiting)."""
         return interview_policy.Room.of(
-            turn.memory.qa, target=self.budget_max(turn), hard_cap=self.hard_cap(turn)
+            turn.memory.qa,
+            target=self.budget_max(turn),
+            hard_cap=self.hard_cap(turn),
+            reopened=self.block(turn).reopened,
         )
 
     def ui_mode(self, turn: _Turn) -> Literal["one_at_a_time", "answer_all"]:
@@ -227,9 +235,10 @@ class InterviewController:
     def _request(
         self,
         turn: _Turn,
-        mode: PlannerMode,
+        mode: PlanMode,
         statuses: dict[str, NeedStatus],
         *,
+        closing: ClosingContext | None = None,
         focus: AnswerFocus | None = None,
         focus_needs: list[str] | None = None,
         missing_aspects: list[str] | None = None,
@@ -281,6 +290,7 @@ class InterviewController:
             followup_depth=depth,
             style_notes=notes[:8],
             next_card_n=next_card_number(turn.asked_cards(), turn.memory.qa),
+            closing=closing,
         )
 
     def _grounding(self, turn: _Turn) -> tuple[list[str], list[str]]:
@@ -329,7 +339,7 @@ class InterviewController:
 
     # -------------------------------------------------------------------------------------- planning
     async def plan(
-        self, turn: _Turn, mode: PlannerMode, statuses: dict[str, NeedStatus], **kw: Any
+        self, turn: _Turn, mode: PlanMode, statuses: dict[str, NeedStatus], **kw: Any
     ) -> tuple[PipelineResult, str | None]:
         """Plan one batch through the pipeline; returns the result and the id of the stored batch (None when a
         retried turn found its earlier answer)."""
@@ -337,7 +347,7 @@ class InterviewController:
         ports = self.svc.ports
         request = self._request(turn, mode, statuses, **kw)
         digest = inputs_hash(request)
-        stored = turn.memory.find_batch(mode, digest)
+        stored = turn.memory.find_batch(stored_mode(mode), digest)
         if stored is not None:
             batch = PlannedBatch.model_validate(stored.output)
             return PipelineResult(batch=batch), None
@@ -357,16 +367,22 @@ class InterviewController:
             asked_list=request.context.asked_list,
         )
         batch_id = turn.memory.next_batch_id()
-        cards = [c.model_copy(update={"batch_id": batch_id}) for c in result.batch.cards()]
+        planned = result.batch.cards()
+        if mode == "closing":  # exactly one question, and it is marked: it is always the last one
+            planned = [c.model_copy(update={"origin": "closing"}) for c in planned[:1]]
+        cards = [c.model_copy(update={"batch_id": batch_id}) for c in planned]
         by_id = {c.id: c for c in cards}
         groups = [
-            BatchGroup(id=g.id, title=g.title, cards=[by_id[c.id] for c in g.cards])
+            BatchGroup(
+                id=g.id, title=g.title, cards=[by_id[c.id] for c in g.cards if c.id in by_id]
+            )
             for g in result.batch.groups
         ]
+        groups = [g for g in groups if g.cards]  # a closing batch keeps only its one question
         result.batch = result.batch.model_copy(update={"batch_id": batch_id, "groups": groups})
         record = BatchRecord(
             id=batch_id,
-            mode=mode,
+            mode=stored_mode(mode),
             inputs_hash=digest,
             output=cast(dict[str, JsonValue], result.batch.model_dump(mode="json")),
             accepted=[c.id for c in cards],
@@ -389,7 +405,7 @@ class InterviewController:
                     card_id=card.id,
                     batch_id=batch_id,
                     group_id=card.group_id,
-                    mode=mode,
+                    mode=stored_mode(mode),
                     card=card,
                     status="open",
                     parent_card_id=card.parent_card_id,
@@ -547,6 +563,11 @@ class InterviewController:
         self, turn: _Turn, statuses: dict[str, NeedStatus], *, said_enough: bool = False
     ) -> Literal["asked", "done"]:
         mem = turn.memory
+        if self.room(turn).closing_committed:
+            # the closing question was answered, skipped or decided: it is always last, the interview is over
+            block = self.block(turn)
+            self.finish(turn, block.stop_reason or "closing_answered", [])
+            return "done"
         await self.refresh_summary(turn)
         new_facts = sum(1 for f in mem.facts if f.id in mem.new_fact_ids)
         decision = interview_policy.stop_decision(
@@ -560,16 +581,125 @@ class InterviewController:
             room=self.room(turn),
         )
         if decision.stop:
-            self.finish(turn, decision.reason, decision.remaining_needs_to_assume)
-            return "done"
+            return await self._close_out(turn, statuses, decision)
         result, _ = await self.plan(turn, "replan", statuses)
         if not result.batch.cards():
-            self.finish(turn, "the planner has nothing important left to ask", [])
-            return "done"
+            nothing = interview_policy.StopDecision(
+                True,
+                "the planner has nothing important left to ask",
+                interview_policy._remaining(statuses),
+            )
+            return await self._close_out(turn, statuses, nothing)
         self._emit_batch(turn, result.batch)
         self.show_next(turn)
         self.touch(turn)
         return "asked"
+
+    # --------------------------------------------------------------------------------- the closing question
+    async def _close_out(
+        self,
+        turn: _Turn,
+        statuses: dict[str, NeedStatus],
+        decision: interview_policy.StopDecision,
+    ) -> Literal["asked", "done"]:
+        """The questions are over: ask the ONE closing question (always last), unless the person is done answering
+        (they said enough, or they are tired): then it is decided from what they told us and listed to approve."""
+        if decision.reason in ("user_enough", "fatigue"):
+            self.finish(turn, decision.reason, decision.remaining_needs_to_assume)
+            return "done"
+        block = self.block(turn)
+        turn.brief.meta.interview = block.model_copy(update={"stop_reason": decision.reason})
+        if await self.ask_closing(turn, statuses):
+            return "asked"
+        self.finish(turn, decision.reason, decision.remaining_needs_to_assume)
+        return "done"
+
+    def closing_context(self, turn: _Turn) -> ClosingContext:
+        """What the last question is written from: the person's features, roles, goals, constraints, the visible
+        assumptions, and the hypothesis' features as labelled suggestions."""
+        slots = turn.slots
+
+        def value(slot_id: str) -> JsonValue:
+            rec = slots.get(slot_id)
+            return rec.value if rec is not None else None
+
+        hyp = turn.brief.meta.hypothesis
+        suggested = [f.name for f in hyp.likely_features if not f.custom] if hyp is not None else []
+        constraints = [
+            rec.value
+            for slot_id, rec in slots.all().items()
+            if slot_id.startswith("constraints.") and rec.value not in (None, "", [], {})
+        ]
+        return closing_mod.build_context(
+            features=value("scope.features"),
+            suggested_features=suggested,
+            roles=value("roles.list"),
+            goals=[value("goals.primary"), value("goals.success_measures")],
+            constraints=constraints,
+            assumptions=[a.claim for a in turn.brief.assumptions if a.decision != "rejected"],
+        )
+
+    async def ask_closing(self, turn: _Turn, statuses: dict[str, NeedStatus]) -> bool:
+        """Plan and show the closing question. False when the planner could not write one (the interview then
+        ends with the closing decided from the ledger)."""
+        result, _ = await self.plan(
+            turn, "closing", statuses, closing=self.closing_context(turn), want=(1, 1)
+        )
+        if not result.batch.cards():
+            return False
+        block = self.block(turn)
+        turn.brief.meta.interview = block.model_copy(update={"closing": "asked"})
+        self._emit_batch(turn, result.batch)
+        self.show_next(turn)
+        self.touch(turn)
+        return True
+
+    def auto_close(self, turn: _Turn) -> None:
+        """Nobody answered the closing question (they said enough, skipped it or said "you decide"): the first
+        features they named are listed as what matters most, as a visible assumption to approve. Never written
+        into the features themselves (those are the person's words)."""
+        block = self.block(turn)
+        if block.closing in ("answered", "auto"):
+            return
+        names = self.closing_context(turn).features[: closing_mod.MAX_MUST]
+        if names:
+            turn.brief.assumptions.append(
+                AssumptionRecord(
+                    id=turn.brief.ids.allocate("ASM"),
+                    claim=self.svc._t(turn, "closing.auto_claim", features=", ".join(names)),
+                    reason=self.svc._t(turn, "closing.auto_reason"),
+                    basis="model_knowledge",
+                    impact="low",
+                    what_changes=self.svc._t(turn, "closing.auto_changes"),
+                    tier="Default",
+                    provenance=[Provenance(type="model_knowledge", ref="closing")],
+                    confidence=0.5,
+                    status="assumed",
+                )
+            )
+        turn.brief.meta.interview = block.model_copy(update={"closing": "auto"})
+
+    def _apply_closing_answer(self, turn: _Turn, item: AnswerItem) -> None:
+        """The closing answer: the picks become ``must`` and the card's other options ``nice`` on the person's own
+        features (by name); the words themselves were read like any answer. Skipped, "none" and "you decide" are
+        decided from the ledger instead."""
+        placed = closing_mod.placement(item.card, item.value) if item.action == "answer" else None
+        if placed is None and not (item.action == "answer" and item.custom_text):
+            self.auto_close(turn)
+            return
+        if placed is not None:
+            rec = turn.slots.get("scope.features")
+            if rec is not None and rec.value:
+                turn.slots.write(
+                    "scope.features",
+                    closing_mod.apply_to_features(rec.value, placed),
+                    state="confirmed",
+                    provenance=self.svc._prov(turn, "user_tap", ""),
+                    confidence=0.9,
+                    turn_id=turn.turn_id,
+                )
+        block = self.block(turn)
+        turn.brief.meta.interview = block.model_copy(update={"closing": "answered"})
 
     def person_finished(self, turn: _Turn) -> bool:
         """The person asked to stop and use defaults: no further question may be put to them (probe gaps are assumed)."""
@@ -580,6 +710,9 @@ class InterviewController:
         """Stop asking: what is still open becomes visible assumptions (never silence)."""
         for qa in turn.memory.open_qa():
             turn.memory.put_qa(qa.model_copy(update={"status": "dropped"}))
+        self.auto_close(
+            turn
+        )  # the closing question is always the last: nobody answered it, so it is decided
         block = self.block(turn)
         turn.brief.meta.interview = block.model_copy(update={"stop_reason": reason})
         self.touch(turn)
@@ -846,7 +979,9 @@ class InterviewController:
             )  # type: ignore[arg-type]
             if item.action == "you_decide":
                 self._assume_for(turn, card)
-            if item.action == "none":
+            if card.origin == "closing":
+                self._apply_closing_answer(turn, item)
+            elif item.action == "none":
                 flags[card.id] = [
                     "vague"
                 ]  # nothing fit: the policy decides a follow-up or a visible assumption
@@ -1010,9 +1145,16 @@ class InterviewController:
             turn.brief.meta.plan = self.svc._plan(turn).model_copy(
                 update={"interview_budget": "thorough"}
             )
-        turn.brief.meta.interview = block.model_copy(
-            update={"budget": "thorough", "stop_reason": ""}
-        )
+        update: dict[str, Any] = {"budget": "thorough", "stop_reason": ""}
+        if block.closing != "none":
+            # the longer interview ends with its own closing question; the earlier one now counts as a base question
+            update["closing"] = "none"
+            update["reopened"] = sum(
+                1
+                for q in turn.memory.qa
+                if q.card.origin == "closing" and q.status not in ("dropped", "superseded")
+            )
+        turn.brief.meta.interview = block.model_copy(update=update)
         result, _ = await self.plan(turn, "deepen", statuses)
         self._emit_batch(turn, result.batch)
         if not self.show_next(turn):
@@ -1210,8 +1352,10 @@ class InterviewController:
         """A handoff probe found a gap a consumer cannot work without: ask ONE planned question about it (at most
         two per need, so the Brief is never held hostage). Returns True when a question is on screen."""
         mem = turn.memory
-        if counts_by_need(mem.qa).get(slot_id, 0) >= 2:
-            return False
+        if self.block(turn).closing != "none" or counts_by_need(mem.qa).get(slot_id, 0) >= 2:
+            return (
+                False  # nothing follows the closing question; the gap becomes a visible assumption
+            )
         statuses = self.statuses(turn)
         result, _ = await self.plan(turn, "replan", statuses, focus_needs=[slot_id], want=(1, 1))
         if not result.batch.cards():

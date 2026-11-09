@@ -245,8 +245,11 @@ def fallback_count(data: SessionData) -> int:
 
 
 def question_count(data: SessionData) -> int:
-    """Questions the person was shown (the budget's unit; follow-ups included)."""
-    return len(data.shown_cards())
+    """Questions the person was asked (the budget's unit; follow-ups and the closing question included). A question
+    that was shown and then dropped (its need was settled by something else they said) is not counted, as in
+    ``Room``: they never had to answer it."""
+    dropped = {q.card_id for q in data.qa if q.status == "dropped"}
+    return len([c for c in data.shown_cards() if c.id not in dropped])
 
 
 def needle_in_brief(brief: Brief, needle: str) -> bool:

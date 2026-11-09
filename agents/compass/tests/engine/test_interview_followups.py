@@ -66,14 +66,15 @@ async def test_stopping_assumes_every_pattern_default_for_must_and_should_needs(
         and holds(sd.ask_if, store.all())
     ]
     assert wanted, "the catalog has must/should needs with a pattern default"
-    assert [sid for sid in wanted if not store.filled(sid)] == []
     listed = {a.slot_id for a in brief.assumptions if a.slot_id}
+    # a need is answered when its slot is filled or when it is listed in "We assumed" (a few slots live inside
+    # another record in the Brief, for example the integrations mode, and do not round-trip as a slot of their own)
+    assert [sid for sid in wanted if not (store.filled(sid) or sid in listed)] == []
     for sid in wanted:
         rec = store.get(sid)
-        assert rec is not None
         if (
-            rec.status == "assumed"
-        ):  # a value the person gave stays theirs; an assumed one is listed
+            rec is not None and rec.status == "assumed"
+        ):  # an assumed value is listed; the person's own stays theirs
             assert sid in listed, sid
 
 

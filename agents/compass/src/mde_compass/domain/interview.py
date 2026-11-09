@@ -297,6 +297,9 @@ class InterviewBlock(Strict):
     hard_cap: int = Field(default=0, ge=0)
     tier_set: bool = False
     closing: Literal["none", "asked", "answered", "auto"] = "none"
+    # "Ask me more" after the closing question: how many closing questions were already asked when it was reopened
+    # (they count as base questions; a new closing question ends the longer interview)
+    reopened: int = Field(default=0, ge=0)
 
 
 class BatchRecord(Strict):

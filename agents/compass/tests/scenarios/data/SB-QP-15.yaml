@@ -10,8 +10,8 @@ steps:
     expect:
       state: BRIEF_REVIEW
       qa:
-        shown_min: 5
-        statuses: {Q-002: skipped, Q-003: skipped, Q-004: skipped, Q-005: skipped, Q-006: skipped}
+        shown_min: 4
+        statuses: {Q-002: skipped, Q-003: skipped, Q-004: skipped, Q-005: skipped}
       interview: {stop_reason: fatigue, fallback_count: 0}
       assumptions_min: 5
       blockers_contain: [assumptions]

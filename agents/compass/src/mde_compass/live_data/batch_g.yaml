@@ -19,7 +19,7 @@ sessions:
     idea: ""
     budget: standard
     start_locale: en
-    max_actions: 14
+    max_actions: 20  # a Standard interview now ends with the closing question and may use follow-up slack
     text_on_choice_every: 0
     answer_cycle: [specific, specific, vague, specific]
     skip_turns: []

@@ -243,16 +243,23 @@ class Room:
         )
 
     @classmethod
-    def of(cls, qa: Sequence[QaRecord], *, target: int, hard_cap: int) -> Room:
-        """Count what the ledger already holds: every question that was planned and neither dropped nor superseded."""
+    def of(cls, qa: Sequence[QaRecord], *, target: int, hard_cap: int, reopened: int = 0) -> Room:
+        """Count what the ledger already holds: every question that was planned and neither dropped nor superseded.
+        After "Ask me more" the first ``reopened`` closing questions count as base questions; the next one is the
+        closing question of the longer interview."""
         base = followups = 0
+        closing_seen = 0
         closing = False
         for q in qa:
             if q.status in ("dropped", "superseded"):
                 continue
             origin = q.card.origin
             if origin == "closing":
-                closing = True
+                closing_seen += 1
+                if closing_seen > reopened:
+                    closing = True
+                else:
+                    base += 1
             elif origin == "followup":
                 followups += 1
             else:

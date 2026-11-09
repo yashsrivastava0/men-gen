@@ -1456,6 +1456,10 @@ class Service(FlowHooks):
             elif ask_gap is not None and self.interview.active:
                 if await self.interview.ask_gap(turn, ask_gap.slot_id):
                     return False
+                # no question may follow the closing one (or the gap was already asked twice): assume it, visibly
+                self._assume_slot(turn, ask_gap.slot_id, ref="probe")
+                self._assume_defaults(turn)  # an assumed slot can make another need apply (ask_if)
+                self._rebuild(turn)
             elif ask_gap is not None:
                 frame = next(
                     (f for f in self.catalog.frames.values() if ask_gap.slot_id in f.slots), None
@@ -1503,6 +1507,10 @@ class Service(FlowHooks):
         await self.interview.compile(
             turn
         )  # the Brief from the whole fact ledger (planner engine only)
+        if self.interview.active:
+            self._assume_defaults(
+                turn
+            )  # compile fills slots from the facts: a need that now applies gets its default
         compiled = await self.ports.compiler.compile(self._ctx(turn), turn.brief)
         turn.brief.summary = compiled.summary
         turn.brief.pitch = compiled.pitch
