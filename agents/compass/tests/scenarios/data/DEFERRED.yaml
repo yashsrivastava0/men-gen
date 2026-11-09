@@ -1,5 +1,5 @@
 # Named edge-case scenarios that need document or link intake (a deferred phase; docs/architecture-v3/05 and 11).
-# Intake is built (packages/compass/src/mde_compass/intake, wired into the service). IN-10 (private links), IN-14
+# Intake is built (agents/compass/src/mde_compass/intake, wired into the service). IN-10 (private links), IN-14
 # (corrupt or password-protected files) and IN-15 (duplicate uploads) are covered by tests/scenarios/test_intake_flow.py
 # and tests/intake; the rest still need an upload step in the YAML runner and a live-quality reader.
 deferred:

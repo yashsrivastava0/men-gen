@@ -1,6 +1,6 @@
 """``python -m mde_compass [--host H] [--port P] [--memory]``: run the Compass API with uvicorn.
 
-Dev start: ``PYTHONPATH=packages/compass/src python -m mde_compass --port 8110 --memory`` and open
+Dev start: ``PYTHONPATH=agents/compass/src python -m mde_compass --port 8110 --memory`` and open
 ``http://127.0.0.1:8110/ui/``.
 
 It will not put dev authentication on a network: without ``COMPASS_API_TOKENS`` the caller's identity

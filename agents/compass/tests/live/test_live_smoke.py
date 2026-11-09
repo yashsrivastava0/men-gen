@@ -1,7 +1,7 @@
 """Live batch A (smoke): needs ALLOW_LIVE_LLM=1 in the OUTER environment (the root conftest skips it
 otherwise) and OPENAI_API_KEY in .env. Allowance USD 0.10; the Compass budget guard enforces it.
 
-Run (one line, from the repo root):  ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s
+Run (one line, from the repo root):  ALLOW_LIVE_LLM=1 uv run pytest agents/compass/tests/live -m live -q -s
 """
 
 from __future__ import annotations

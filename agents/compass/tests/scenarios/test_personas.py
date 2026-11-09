@@ -1,4 +1,4 @@
-"""The ten persona scripts (packages/compass/evals/personas) run offline, and the metric targets they measure.
+"""The ten persona scripts (agents/compass/evals/personas) run offline, and the metric targets they measure.
 
 The hard targets must hold today. The goal targets that the product does not meet yet are strict xfails that
 name the bug, so they turn red (and must be un-marked) the day the product meets them.

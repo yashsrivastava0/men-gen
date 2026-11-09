@@ -1,9 +1,9 @@
 """Run the ten persona scripts against the real Compass service (mock mode, in-memory store) and print a JSON report.
 
-    cd packages/compass && PYTHONPATH=src python -m evals.run_personas [--only silent,chatty] [--no-write]
+    cd agents/compass && PYTHONPATH=src python -m evals.run_personas [--only silent,chatty] [--no-write]
 
 Offline and free: every call runs its mock handler (``LLM_MODE=mock`` is forced), on a fake clock. The report is
-written to ``packages/compass/evals/reports/`` (git-ignored) as ``personas-<UTC time>.json`` and ``latest.json``.
+written to ``agents/compass/evals/reports/`` (git-ignored) as ``personas-<UTC time>.json`` and ``latest.json``.
 """
 
 from __future__ import annotations

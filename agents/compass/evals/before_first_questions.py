@@ -1,7 +1,7 @@
 """Phase 0 "before" evidence for build prompt 02: the first questions the CURRENT (frame-driven) engine asks for
 five very different ideas, in mock mode, side by side.
 
-    cd packages/compass && PYTHONPATH=src python -m evals.before_first_questions [--cards 6] [--no-write]
+    cd agents/compass && PYTHONPATH=src python -m evals.before_first_questions [--cards 6] [--no-write]
 
 Offline and free (``LLM_MODE=mock`` is forced; every call runs its mock handler on a fake clock). The result is
 written to ``docs/compass/evidence/before-first-questions.json`` of the repository and a short side-by-side table is

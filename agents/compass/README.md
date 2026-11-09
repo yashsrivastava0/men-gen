@@ -33,15 +33,15 @@ uv run python -m mde_compass --port 8110 --memory  # in-memory store: no databas
 | `LLM_MODE=replay` | answers from cassettes; a cassette per rendered request is needed (none are recorded for Compass yet) |
 | `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1` **and** `OPENAI_API_KEY` in the process environment | live calls through the gateway. `ALLOW_LIVE_LLM=1` is the user's decision, never an agent's |
 
-The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smoke.py`, USD 0.10 allowance) is the lead's or the user's to run: `ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s` ([runbook](../../docs/runbooks/compass.md#5-live-calls-lead-or-the-user-only)); it writes `evals/reports/live-smoke.json`. Live spend has two caps. The repo-wide USD 6.00 cap and ledger stay authoritative ([runbook](../../docs/runbooks/live-llm-budget.md)). Compass adds its own: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 2.00** (unparsable, non-positive or larger values never widen it), stop at 95% of it (1.90), per session 0.25. When a check cannot prove the spend fits, the call is not made and the deterministic fallback runs instead (fails closed). Never paste, print or commit a key; `uv run mde doctor` reports presence only.
+The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smoke.py`, USD 0.10 allowance) is the lead's or the user's to run: `ALLOW_LIVE_LLM=1 uv run pytest agents/compass/tests/live -m live -q -s` ([runbook](../../docs/runbooks/compass.md#5-live-calls-lead-or-the-user-only)); it writes `evals/reports/live-smoke.json`. Live spend has two caps. The repo-wide USD 6.00 cap and ledger stay authoritative ([runbook](../../docs/runbooks/live-llm-budget.md)). Compass adds its own: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 2.00** (unparsable, non-positive or larger values never widen it), stop at 95% of it (1.90), per session 0.25. When a check cannot prove the spend fits, the call is not made and the deterministic fallback runs instead (fails closed). Never paste, print or commit a key; `uv run mde doctor` reports presence only.
 
 ## Test it
 
 ```bash
-just compass-test           # uv run pytest packages/compass -m "not integration and not live" -q   (offline, no database)
-just compass-test-int       # starts the private PostgreSQL on 54329, then pytest packages/compass -m integration
-uv run pytest packages/compass                                  # everything that is not marked live
-uv run pytest packages/compass/tests/calls/write_card           # one call
+just compass-test           # uv run pytest agents/compass -m "not integration and not live" -q   (offline, no database)
+just compass-test-int       # starts the private PostgreSQL on 54329, then pytest agents/compass -m integration
+uv run pytest agents/compass                                  # everything that is not marked live
+uv run pytest agents/compass/tests/calls/write_card           # one call
 ```
 
 Integration tests (`tests/store`) create their own ephemeral database `mde_test_compass_<ulid>` inside the private cluster. The one `live` test skips itself unless `ALLOW_LIVE_LLM=1` is in the outer environment; its offline twin (`tests/test_smoke_driver_offline.py`) keeps the driver working.
@@ -49,7 +49,7 @@ Integration tests (`tests/store`) create their own ephemeral database `mde_test_
 **Scenarios and personas** (offline, mock mode, in-memory store): 46 named `SB-*` edge-case scripts in `tests/scenarios/data/*.yaml`, run by `mde_compass.scenarios` through `tests/scenarios`; ten persona scripts in `evals/personas/`:
 
 ```bash
-cd packages/compass && PYTHONPATH=src python -m evals.run_personas [--only silent,chatty] [--no-write]
+cd agents/compass && PYTHONPATH=src python -m evals.run_personas [--only silent,chatty] [--no-write]
 ```
 
 The report goes to `evals/reports/latest.json` (git-ignored). Measured results (8 of 9 targets, the median of 8 questions against 7 is the open miss) are on [the package page](../../docs/packages/compass.md#measured-behaviour-mock-mode).
@@ -57,7 +57,7 @@ The report goes to `evals/reports/latest.json` (git-ignored). Measured results (
 ## Folder map
 
 ```
-packages/compass/
+agents/compass/
   pyproject.toml
   src/mde_compass/
     __init__.py    AGENT_NAME ("Compass"), CALL_PREFIX ("cmp."), API_PREFIX ("/v1/compass"), DEFAULT_PORT (8110)
