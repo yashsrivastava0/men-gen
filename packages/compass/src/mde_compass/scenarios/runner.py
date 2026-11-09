@@ -53,7 +53,9 @@ class StepRecord:
     state_after: str
     version_before: int
     version_after: int
-    answers: list[tuple[str, Card]] = field(default_factory=list)  # (tap | custom | you_decide | skip, card)
+    answers: list[tuple[str, Card]] = field(
+        default_factory=list
+    )  # (tap | custom | you_decide | skip, card)
 
 
 @dataclass
@@ -156,7 +158,9 @@ def locked_without_evidence(node: Any, path: str = "") -> list[str]:
         if node.get("tier") == "Locked":
             prov = node.get("provenance") or []
             if not any(
-                isinstance(p, dict) and p.get("type") in EVIDENCE_TYPES and str(p.get("ref", "")).strip()
+                isinstance(p, dict)
+                and p.get("type") in EVIDENCE_TYPES
+                and str(p.get("ref", "")).strip()
                 for p in prov
             ):
                 found.append(path or "<root>")
@@ -227,7 +231,9 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
         if not any(str(needle).lower() in t for t in texts):
             errs.append(f"slot {path}: value should contain {needle!r}; got {texts[0][:200]}")
     if exp.contains_any and not any(str(n).lower() in t for n in exp.contains_any for t in texts):
-        errs.append(f"slot {path}: value should contain any of {exp.contains_any}; got {texts[0][:200]}")
+        errs.append(
+            f"slot {path}: value should contain any of {exp.contains_any}; got {texts[0][:200]}"
+        )
     for needle in _as_list(exp.not_contains):
         if any(str(needle).lower() in t for t in texts):
             errs.append(f"slot {path}: value should NOT contain {needle!r}; got {texts[0][:200]}")
@@ -235,12 +241,18 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
         errs.append(f"slot {path}: value should equal {exp.equals!r}; got {_value_of(nodes[0])!r}")
     metas = [n for n in nodes if isinstance(n, dict)]
     if exp.status and not any(m.get("status") in exp.status for m in metas):
-        errs.append(f"slot {path}: status should be {exp.status}; got {[m.get('status') for m in metas]}")
+        errs.append(
+            f"slot {path}: status should be {exp.status}; got {[m.get('status') for m in metas]}"
+        )
     if exp.tier and not any(m.get("tier") in exp.tier for m in metas):
         errs.append(f"slot {path}: tier should be {exp.tier}; got {[m.get('tier') for m in metas]}")
     if exp.not_tier and any(m.get("tier") in exp.not_tier for m in metas):
-        errs.append(f"slot {path}: tier must not be {exp.not_tier}; got {[m.get('tier') for m in metas]}")
-    if exp.history_min is not None and not any(len(m.get("history", [])) >= exp.history_min for m in metas):
+        errs.append(
+            f"slot {path}: tier must not be {exp.not_tier}; got {[m.get('tier') for m in metas]}"
+        )
+    if exp.history_min is not None and not any(
+        len(m.get("history", [])) >= exp.history_min for m in metas
+    ):
         errs.append(f"slot {path}: history should keep >= {exp.history_min} earlier values")
     if exp.provenance and not any(
         p.get("type") in exp.provenance for m in metas for p in m.get("provenance", [])
@@ -255,9 +267,13 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     if exp.match is not None:
         n_match = sum(1 for t in texts if exp.match.lower() in t)
         if exp.match_min is not None and n_match < exp.match_min:
-            errs.append(f"slot {path}: at least {exp.match_min} entries should contain {exp.match!r}; got {n_match}")
+            errs.append(
+                f"slot {path}: at least {exp.match_min} entries should contain {exp.match!r}; got {n_match}"
+            )
         if exp.match_max is not None and n_match > exp.match_max:
-            errs.append(f"slot {path}: at most {exp.match_max} entries should contain {exp.match!r}; got {n_match}: {texts}")
+            errs.append(
+                f"slot {path}: at most {exp.match_max} entries should contain {exp.match!r}; got {n_match}: {texts}"
+            )
     return errs
 
 
@@ -277,7 +293,9 @@ async def check_expect(
     types = [e.type for e in events]
     if exp.no_error is not False and "error" in types:
         err = next(e for e in events if e.type == "error")
-        errs.append(f"an error event was emitted: {err.payload.get('code')} {err.payload.get('message')}")
+        errs.append(
+            f"an error event was emitted: {err.payload.get('code')} {err.payload.get('message')}"
+        )
     if exp.state and state_after not in exp.state:
         errs.append(f"state should be one of {exp.state}; got {state_after}")
     texts_joined = "\n".join(_texts(events)).lower()
@@ -308,14 +326,18 @@ async def check_expect(
     last = _last_card_in(events) or card_on_screen
     if exp.no_card and last is not None:
         errs.append(f"no card expected, but card {last.id} ({last.frame}) was shown")
-    if exp.card_frame:
-        if last is None or last.frame not in exp.card_frame:
-            errs.append(f"last card frame should be one of {exp.card_frame}; got {last.frame if last else None}")
-    if exp.card_type:
-        if last is None or last.type not in exp.card_type:
-            errs.append(f"last card type should be one of {exp.card_type}; got {last.type if last else None}")
+    if exp.card_frame and (last is None or last.frame not in exp.card_frame):
+        errs.append(
+            f"last card frame should be one of {exp.card_frame}; got {last.frame if last else None}"
+        )
+    if exp.card_type and (last is None or last.type not in exp.card_type):
+        errs.append(
+            f"last card type should be one of {exp.card_type}; got {last.type if last else None}"
+        )
     if exp.card_language and (last is None or last.language not in exp.card_language):
-        errs.append(f"last card language should be one of {exp.card_language}; got {last.language if last else None}")
+        errs.append(
+            f"last card language should be one of {exp.card_language}; got {last.language if last else None}"
+        )
     if exp.card_text_contains or exp.card_text_not_contains:
         ctext = _card_text(last).lower() if last else ""
         for needle in _as_list(exp.card_text_contains):
@@ -340,7 +362,9 @@ async def check_expect(
         if c in codes:
             errs.append(f"notice code {c!r} should NOT be present")
     if exp.max_cards is not None and len(question_cards(events)) > exp.max_cards:
-        errs.append(f"at most {exp.max_cards} question cards expected in this step; got {len(question_cards(events))}")
+        errs.append(
+            f"at most {exp.max_cards} question cards expected in this step; got {len(question_cards(events))}"
+        )
     if exp.questions_max is not None:
         total = len(question_cards(conv.events))
         if total > exp.questions_max:
@@ -357,7 +381,9 @@ async def check_expect(
                 latest[str(e.payload.get("kind"))] = bool(e.payload.get("passed"))
         ok = {"research", "blueprint", "design"} <= set(latest) and all(latest.values())
         if ok != exp.probes_passed:
-            errs.append(f"the latest probe results should {'all pass' if exp.probes_passed else 'not all pass'}; got {latest}")
+            errs.append(
+                f"the latest probe results should {'all pass' if exp.probes_passed else 'not all pass'}; got {latest}"
+            )
     if exp.approved is not None:
         approved_now = "brief_approved" in types or state_after == "APPROVED"
         if exp.approved and not approved_now:
@@ -381,7 +407,9 @@ class _Runner:
         self.conv = conv
         self.scn = scenario
         self._n = 0
-        self.answers: list[tuple[str, Card]] = []  # every card answer given so far (for the persona metrics)
+        self.answers: list[
+            tuple[str, Card]
+        ] = []  # every card answer given so far (for the persona metrics)
 
     def eid(self) -> str:
         self._n += 1
@@ -398,7 +426,13 @@ class _Runner:
         card = await self._card()
         self.answers.append(("custom" if custom else "tap", card))
         await self.conv.send(
-            CardAnswer(event_id=self.eid(), card_id=card.id, value=value, custom_text=custom, contributor_id=who)
+            CardAnswer(
+                event_id=self.eid(),
+                card_id=card.id,
+                value=value,
+                custom_text=custom,
+                contributor_id=who,
+            )
         )
 
     async def _slot_store(self) -> Any:
@@ -464,7 +498,11 @@ class _Runner:
             for sid in missing:
                 slot = catalog.slots[sid]
                 opts = slot.value_schema.options
-                value: Any = slot.default if slot.default is not None else (opts[0] if opts else "to be decided")
+                value: Any = (
+                    slot.default
+                    if slot.default is not None
+                    else (opts[0] if opts else "to be decided")
+                )
                 await self.conv.send(BriefEdit(event_id=self.eid(), item_id=slot.brief_path, value=value, contributor_id=who))  # fmt: skip
 
     async def execute(self, step: Step) -> str:
@@ -488,8 +526,12 @@ class _Runner:
             opt = next((o for o in card.options if needle in o.label.lower()), None)
             if opt is None:
                 labels = [o.label for o in card.options]
-                raise ScenarioFailure(f"no option on card {card.id} has a label containing {arg!r}: {labels}")
-            await self._answer([opt.id] if card.type == "pick_many" else opt.id, custom=None, who=who)
+                raise ScenarioFailure(
+                    f"no option on card {card.id} has a label containing {arg!r}: {labels}"
+                )
+            await self._answer(
+                [opt.id] if card.type == "pick_many" else opt.id, custom=None, who=who
+            )
             return "tap"
         if a == "tap_recommended":
             card = await self._card()
@@ -520,7 +562,11 @@ class _Runner:
                 opt_id = opt.id
             else:
                 opt_id = str(spec["option"])
-            await self._answer([opt_id] if card.type == "pick_many" else opt_id, custom=str(spec["custom"]), who=who)
+            await self._answer(
+                [opt_id] if card.type == "pick_many" else opt_id,
+                custom=str(spec["custom"]),
+                who=who,
+            )
             return "custom"
         if a in ("tap_all", "tap_first"):
             card = await self._card()
@@ -532,9 +578,16 @@ class _Runner:
         if a == "back_edge":
             hook = getattr(self.conv.service, "reopen_slot", None)
             if hook is None:
-                raise ScenarioFailure("the service has no typed back-edge hook (reopen_slot): not implemented")
+                raise ScenarioFailure(
+                    "the service has no typed back-edge hook (reopen_slot): not implemented"
+                )
             spec = arg if isinstance(arg, dict) else {}
-            await hook(self.conv.caller, self.conv.session_id, str(spec.get("slot")), str(spec.get("reason", "")))
+            await hook(
+                self.conv.caller,
+                self.conv.session_id,
+                str(spec.get("slot")),
+                str(spec.get("reason", "")),
+            )
             return "other"
         if a == "you_decide":
             card = await self._card()
@@ -583,7 +636,9 @@ class _Runner:
             return "other"
         if a == "lookup_add":
             text = arg["text"] if isinstance(arg, dict) else str(arg)
-            await conv.send(LookupEdit(event_id=self.eid(), action="add", text=text, contributor_id=who))
+            await conv.send(
+                LookupEdit(event_id=self.eid(), action="add", text=text, contributor_id=who)
+            )
             return "other"
         if a == "lookup_remove":
             brief = await conv.brief()
@@ -592,20 +647,37 @@ class _Runner:
                 rid = str(arg["request_id"])
             else:
                 needle = (arg.get("text", "") if isinstance(arg, dict) else str(arg or "")).lower()
-                pick = next((r for r in reqs if needle in json.dumps(r, ensure_ascii=False).lower()), None)
+                pick = next(
+                    (r for r in reqs if needle in json.dumps(r, ensure_ascii=False).lower()), None
+                )
                 if pick is None:
-                    raise ScenarioFailure(f"no research request matches {needle!r} (have {len(reqs)})")
+                    raise ScenarioFailure(
+                        f"no research request matches {needle!r} (have {len(reqs)})"
+                    )
                 rid = pick["id"]
-            await conv.send(LookupEdit(event_id=self.eid(), action="remove", request_id=rid, contributor_id=who))
+            await conv.send(
+                LookupEdit(event_id=self.eid(), action="remove", request_id=rid, contributor_id=who)
+            )
             return "other"
         if a in ("approve", "approve_stale"):
             brief = await conv.brief()
             stale = a == "approve_stale"
             version = int(brief["version"]) - (1 if stale else 0)
             hashed = ("0" * 64) if stale else str(brief["_hash"])
-            sections = {k: "0" * 64 for k in brief["_section_hashes"]} if stale else dict(brief["_section_hashes"])
+            sections = (
+                dict.fromkeys(brief["_section_hashes"], "0" * 64)
+                if stale
+                else dict(brief["_section_hashes"])
+            )
             await conv.send(
-                GateDecision(event_id=self.eid(), contributor_id=who, decision="approve", version=version, brief_hash=hashed, section_hashes=sections)  # fmt: skip
+                GateDecision(
+                    event_id=self.eid(),
+                    contributor_id=who,
+                    decision="approve",
+                    version=version,
+                    brief_hash=hashed,
+                    section_hashes=sections,
+                )  # fmt: skip
             )
             return "other"
         if a == "switch":
@@ -632,7 +704,12 @@ class _Runner:
 
 
 def _format_failure(
-    scn: Scenario, i: int, step: Step, errors: list[str], events: Sequence[StoredEvent], all_events: Sequence[StoredEvent]
+    scn: Scenario,
+    i: int,
+    step: Step,
+    errors: list[str],
+    events: Sequence[StoredEvent],
+    all_events: Sequence[StoredEvent],
 ) -> str:
     shown = list(events) or list(all_events[-6:])
     lines = [
@@ -712,7 +789,10 @@ async def run_scenario(
 
 async def _register_contributors(service: Any, conv: Conversation, scn: Scenario) -> None:
     """Add the scenario's contributors to the session (enterprise mode); the creator stays the decision-owner."""
-    wanted = [Contributor(id=c.id, name=c.name or c.id, role=c.role, decision_owner=c.decision_owner) for c in scn.contributors]  # type: ignore[arg-type]
+    wanted = [
+        Contributor(id=c.id, name=c.name or c.id, role=c.role, decision_owner=c.decision_owner)
+        for c in scn.contributors
+    ]  # type: ignore[arg-type]
     async with service.store.begin(conv.caller.tenant_id) as uow:
         rec = await uow.sessions.get(conv.session_id)
         by_id = {c.id: c for c in rec.contributors}

@@ -56,7 +56,9 @@ class SlotExpect(BaseModel):
     provenance: list[str] | str | None = None  # at least one provenance entry of this type
     count_min: int | None = None  # list sections: at least this many entries
     count_max: int | None = None
-    match: str | None = None  # with match_min / match_max: how many resolved nodes contain this text
+    match: str | None = (
+        None  # with match_min / match_max: how many resolved nodes contain this text
+    )
     match_min: int | None = None
     match_max: int | None = None
 
@@ -79,10 +81,16 @@ class Expect(BaseModel):
     text_contains: list[str] | str | None = None
     text_not_contains: list[str] | str | None = None
     text_any: list[str] | None = None  # at least one of these appears
-    text_not_matches: list[str] = Field(default_factory=list)  # regexes that must not match (case-insensitive)
-    voided_includes: list[str] = Field(default_factory=list)  # brief_patch.voided_sections must include these
+    text_not_matches: list[str] = Field(
+        default_factory=list
+    )  # regexes that must not match (case-insensitive)
+    voided_includes: list[str] = Field(
+        default_factory=list
+    )  # brief_patch.voided_sections must include these
     voided_excludes: list[str] = Field(default_factory=list)  # ... and must not include these
-    card_text_contains: list[str] | str | None = None  # in the last card's question and option labels
+    card_text_contains: list[str] | str | None = (
+        None  # in the last card's question and option labels
+    )
     card_text_not_contains: list[str] | str | None = None
     event_types: list[str] | None = None  # must all be present among this step's outbound events
     no_event_types: list[str] | None = None
@@ -92,7 +100,9 @@ class Expect(BaseModel):
     max_cards: int | None = None  # question cards shown in this step
     questions_max: int | None = None  # question cards shown in the whole session so far
     approvable: bool | None = None  # the last brief_ready of this step says approvable (or not)
-    probes_passed: bool | None = None  # the latest probe_result of research, blueprint and design all passed
+    probes_passed: bool | None = (
+        None  # the latest probe_result of research, blueprint and design all passed
+    )
     approved: bool | None = None  # a brief_approved event in this step / state APPROVED
     version_increased: bool | None = None  # the Brief version went up during this step
     version_unchanged: bool | None = None
@@ -192,7 +202,5 @@ class Scenario(BaseModel):
     def _steps(cls, data: Any) -> Any:
         if isinstance(data, dict) and isinstance(data.get("steps"), list):
             data = dict(data)
-            data["steps"] = [
-                s if isinstance(s, Step) else Step.from_raw(s) for s in data["steps"]
-            ]
+            data["steps"] = [s if isinstance(s, Step) else Step.from_raw(s) for s in data["steps"]]
         return data

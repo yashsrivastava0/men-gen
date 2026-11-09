@@ -1,8 +1,6 @@
 id: SB-GATE-00
 title: Gate 1 opens for approval after the interview and one round of assumption decisions
 tags: [gate, interview]
-known_issue: BUG-1
-known_issue_note: "the interview opens the review with a required must-confirm slot never asked (auth.account_model, because of the question budget spent on probe re-asks): gate_blocked 'required answers are still empty' and no card exists to fill it"
 steps:
   - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
   - drive: {}

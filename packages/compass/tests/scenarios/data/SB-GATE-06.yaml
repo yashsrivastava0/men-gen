@@ -8,7 +8,6 @@ steps:
   - say: "We need an internal field service app for our technicians in Pune, in English"
   - drive: {}
     expect: {state: BRIEF_REVIEW}
-  - fill_required: true
   - accept_all: true
   - approve: true
     as: approver

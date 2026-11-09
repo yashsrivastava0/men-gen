@@ -2,7 +2,7 @@ id: SB-GATE-07
 title: All three handoff probes (Research, Blueprint, Design) pass before Gate 1 opens
 tags: [gate, probes, handoff]
 known_issue: BUG-4
-known_issue_note: "the blueprint and design probes fail in all three rounds on the standard idea (gaps: what each feature lets people do; which words describe the look); the repair re-asks the same features card, which cannot close either gap, so every Brief opens degraded (round 3 although the repair limit is 2)"
+known_issue_note: "the blueprint and design probes fail in every round on the standard idea (gaps: what each feature lets people do; which words describe the look), so the Brief opens degraded (degraded_probes) and the all-three-probes-pass target is never met"
 steps:
   - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
   - drive: {}

@@ -46,5 +46,15 @@ def test_every_named_scenario_is_implemented_or_deferred() -> None:
     have = {p.stem.removeprefix("SB-") for p in DATA.glob("SB-*.yaml")}
     deferred = {d["id"] for d in yaml.safe_load((DATA / "DEFERRED.yaml").read_text())["deferred"]}
     assert wanted <= have, f"missing scenario files: {sorted(wanted - have)}"
-    assert {"IN-01", "IN-02", "IN-04", "IN-05", "IN-07", "IN-08", "IN-10", "IN-14", "IN-15"} <= deferred
+    assert {
+        "IN-01",
+        "IN-02",
+        "IN-04",
+        "IN-05",
+        "IN-07",
+        "IN-08",
+        "IN-10",
+        "IN-14",
+        "IN-15",
+    } <= deferred
     assert not (deferred & have), "a deferred id also has a scenario file"

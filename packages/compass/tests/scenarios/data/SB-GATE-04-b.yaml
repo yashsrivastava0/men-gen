@@ -1,0 +1,12 @@
+id: SB-GATE-04-b
+title: A bare "yes" before any idea has nothing to approve and is not taken as the idea
+tags: [gate, typed-yes]
+known_issue: BUG-17
+known_issue_note: 'a first message of "yes" becomes the idea summary (playback says "yes"); the following real idea is then consumed as an answer to the kind-of-app card, the interview re-asks confirm_kind_of_app and business_model, and the Brief reaches review with the required idea.subcategory empty and no way to fill it'
+steps:
+  - say: "yes"
+    expect:
+      no_event_types: [brief_approved]
+      approved: false
+      slots:
+        idea.summary: {filled: false}

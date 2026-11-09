@@ -7,8 +7,6 @@ steps:
     expect:
       state: BRIEF_REVIEW
       event_types: [brief_ready]
-  - fill_required: true
-    note: workaround for BUG-1 (a required must-confirm slot is never asked), so this scenario tests the gate
   - accept_all: true
   - approve: true
     expect:
