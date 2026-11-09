@@ -11,6 +11,9 @@ SlotStore rules keep applying: an assumption never replaces a user value, a corr
   ``user_tap``, ``document`` is ``document``, ``assumption`` is ``assumed``.
 * A fact whose quote was not found in its source (``unverified_quote``), or that has no quote, is written as
   ``model_knowledge``: ``max_tier`` yields Default and the slot can never be Locked by it.
+* Enterprise: an effect stamped with the speaker (``FactEffect.contributor_id``, see ``facts.with_contributor``)
+  passes it to the slot store, so a second contributor's conflicting value marks the slot ``disputed`` (never an
+  automatic merge) instead of replacing the first value; replays after a supersession use the same stamp.
 * ``FactEffect.value_json`` is JSON text. It is parsed with ``json`` and checked against the slot's ``value_schema``
   (the same check card options use). A bad value never raises: it comes back in ``ProjectionResult.rejected``.
 * ``reproject`` rebuilds slots after a fact was superseded or disputed: a slot whose provenance still points at a
@@ -99,9 +102,17 @@ def provenance_type(fact: Fact, input_mode: str = "text") -> ProvenanceType:
     return "voice" if input_mode == "voice" else "user_text"
 
 
-def provenance_for(fact: Fact, *, now: datetime, input_mode: str = "text") -> Provenance:
+def provenance_for(
+    fact: Fact, *, now: datetime, input_mode: str = "text", contributor_id: str | None = None
+) -> Provenance:
     quote = "" if fact.origin == "assumption" else _quote_of(fact)
-    return Provenance(type=provenance_type(fact, input_mode), ref=fact.id, quote=quote, date=now)
+    return Provenance(
+        type=provenance_type(fact, input_mode),
+        ref=fact.id,
+        quote=quote,
+        date=now,
+        contributor_id=contributor_id,
+    )
 
 
 def _state_for(fact: Fact) -> Status:
@@ -164,6 +175,7 @@ def _store_write(
     turn_id: str | None,
     *,
     remove: bool = False,
+    contributor_id: str | None = None,
 ) -> WriteResult:
     """The one place this module calls ``SlotStore.write``."""
     return slots.write(
@@ -174,6 +186,7 @@ def _store_write(
         confidence=fact.confidence,
         turn_id=turn_id,
         remove=remove,
+        contributor_id=contributor_id,
     )
 
 
@@ -205,6 +218,7 @@ def _apply_effect(
     now: datetime,
     input_mode: str,
     result: ProjectionResult,
+    contributor_id: str | None = None,
 ) -> None:
     slot = catalog.slots.get(effect.slot_id)
     if slot is None:
@@ -214,7 +228,8 @@ def _apply_effect(
     if error:
         _reject(result, fact, effect, error)
         return
-    provenance = provenance_for(fact, now=now, input_mode=input_mode)
+    who = effect.contributor_id or contributor_id
+    provenance = provenance_for(fact, now=now, input_mode=input_mode, contributor_id=who)
     kind = slot.value_schema.kind
 
     if effect.mode == "remove":
@@ -228,7 +243,14 @@ def _apply_effect(
                     _reject(result, fact, effect, "remove_value_mismatch")
                     return
         res = _store_write(
-            slots, effect.slot_id, remove_value, fact, provenance, turn_id, remove=True
+            slots,
+            effect.slot_id,
+            remove_value,
+            fact,
+            provenance,
+            turn_id,
+            remove=True,
+            contributor_id=who,
         )
         _outcome(result, effect, fact.id, res)
         return
@@ -252,7 +274,7 @@ def _apply_effect(
             else None
         )
         value = _merge(user_list, value)
-    res = _store_write(slots, effect.slot_id, value, fact, provenance, turn_id)
+    res = _store_write(slots, effect.slot_id, value, fact, provenance, turn_id, contributor_id=who)
     _outcome(result, effect, fact.id, res)
 
 
@@ -265,8 +287,10 @@ def project(
     turn_id: str | None,
     now: datetime,
     input_mode: str = "text",
+    contributor_id: str | None = None,
 ) -> ProjectionResult:
-    """Apply each effect of ``fact`` through the slot store. Only an ACTIVE fact projects."""
+    """Apply each effect of ``fact`` through the slot store. Only an ACTIVE fact projects. ``contributor_id``
+    is the speaker when the effects are not stamped already (enterprise)."""
     result = ProjectionResult()
     if fact.status != "active":
         for effect in fact.effects:
@@ -282,6 +306,7 @@ def project(
             now=now,
             input_mode=input_mode,
             result=result,
+            contributor_id=contributor_id,
         )
     return result
 

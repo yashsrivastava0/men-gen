@@ -41,6 +41,19 @@ def _one_line(text: str) -> str:
 
 
 # ------------------------------------------------------------------------------------- status changes
+def with_contributor(fact: Fact, contributor_id: str | None) -> Fact:
+    """``fact`` with every effect stamped with who said it (enterprise sessions). No contributor: unchanged."""
+    if not contributor_id or not fact.effects:
+        return fact
+    effects = [e.model_copy(update={"contributor_id": contributor_id}) for e in fact.effects]
+    return fact.model_copy(update={"effects": effects})
+
+
+def contributor_of(fact: Fact) -> str | None:
+    """Who said it: the contributor id stamped on the fact's effects, if any."""
+    return next((e.contributor_id for e in fact.effects if e.contributor_id), None)
+
+
 def supersede(old: Fact, new: Fact, *, now: datetime) -> tuple[Fact, Fact]:
     """``old`` becomes ``superseded``; ``new.supersedes`` gains ``old.id``. Both are copies; nothing is deleted."""
     if old.id == new.id:
