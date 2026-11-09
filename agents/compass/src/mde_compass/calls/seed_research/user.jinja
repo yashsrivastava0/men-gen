@@ -28,6 +28,10 @@ Features (data):
 {% for f in features %}
 - {{ f }}
 {% endfor %}
+Details the person gave: rules, numbers, compliance duties, systems to connect (data):
+{% for d in details %}
+- {{ d }}
+{% endfor %}
 Likely families: {{ families | join(", ") }}
 Languages of the app: {{ languages | join(", ") }}
 

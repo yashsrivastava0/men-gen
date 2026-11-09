@@ -33,6 +33,13 @@ from mde_core.redact import redact_text
 from pydantic import Field  # isort: skip
 
 
+READER_WINDOW_TOKENS: tuple[int, int] = (1500, 2500)
+"""The most a chunk may hold for ``cmp.read_chunk`` (the configured window is clamped to it): a dense chunk of
+about 10,000 characters is at most ~60 statements, which the reader's output budget can carry."""
+READER_MAX_TABLE_ROWS = 40
+"""Table rows per chunk (header repeated): one statement per row stays inside the reader's statement cap."""
+
+
 class IntakePorts(Protocol):
     """The two ports intake needs; the engine's ``Ports`` satisfies this."""
 
@@ -150,8 +157,13 @@ async def ingest_parsed(
     limits: IntakeLimits,
 ) -> IngestResult:
     """Chunk, redact, read and merge an already parsed document."""
+    low, high = limits.chunk_target_tokens
     raw_chunks = chunk_sections(
-        parsed.sections, source_id=source_id, target_tokens=limits.chunk_target_tokens
+        parsed.sections,
+        source_id=source_id,
+        # small enough that the reader can return a statement for every row or sentence within its output budget
+        target_tokens=(min(low, READER_WINDOW_TOKENS[0]), min(high, READER_WINDOW_TOKENS[1])),
+        max_table_rows=READER_MAX_TABLE_ROWS,
     )
     chunks: list[Chunk] = []
     injection_notes: list[str] = []

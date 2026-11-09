@@ -62,6 +62,8 @@ a default or a model proposal (no quote, never Locked); ``document``: a statemen
 EffectMode = Literal["set", "add", "remove"]
 
 FACT_ID_RE = re.compile(r"^FCT-\d{3,}$")
+DOCUMENT_LOCK_CONFIDENCE = 0.7
+"""A document fact below this confidence is a claim to confirm: it can never support a Locked item."""
 
 
 class FactEffect(Strict):
@@ -113,12 +115,15 @@ class Fact(Strict):
         return value
 
     def supports_locked(self) -> bool:
-        """A fact may lead to a Locked slot only with a verified, user-sourced quote."""
+        """A fact may lead to a Locked slot only with a verified, user-sourced quote. A statement read from a document
+        that still needs confirming (confidence below ``DOCUMENT_LOCK_CONFIDENCE``) never does: the person has not
+        said it is right (ADR 0016)."""
         return (
             self.status == "active"
             and self.origin in ("stated", "tap", "document")
             and bool(self.quote.strip())
             and not self.unverified_quote
+            and not (self.origin == "document" and self.confidence < DOCUMENT_LOCK_CONFIDENCE)
         )
 
 

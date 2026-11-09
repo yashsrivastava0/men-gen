@@ -36,8 +36,23 @@ class ReadChunkAdapter:
         return to_statements(chunk_text, pointer, keep_valid(chunk_text, res.output.statements))
 
 
+def _short_name(w: WireStatement, limit: int) -> str:
+    """The model's short name for a requirement or role, cut at a word boundary; empty for every other type."""
+    if w.type not in ("requirement", "user_or_role"):
+        return ""
+    text = " ".join(w.name.split())
+    if len(text) <= limit:
+        return text
+    cut = text[:limit]
+    if text[limit] != " ":  # the cut falls inside a word: back up to the last space
+        cut = cut.rsplit(" ", 1)[0] or cut
+    return cut.rstrip()
+
+
 def to_statements(chunk_text: str, pointer: str, wire: list[WireStatement]) -> list[Statement]:
     rules = load_rules()
+    # ``Statement.name`` (the short name) exists once the lead adds it to the domain model; until then it is dropped
+    named = "name" in Statement.model_fields
     return [
         Statement(
             type=w.type,
@@ -45,6 +60,7 @@ def to_statements(chunk_text: str, pointer: str, wire: list[WireStatement]) -> l
             quote=w.quote,
             pointer=pointer,
             confidence=CONFIDENCE[w.confidence],
+            **({"name": _short_name(w, rules.max_name_chars)} if named else {}),
         )
         for w in wire
         if w.quote in chunk_text

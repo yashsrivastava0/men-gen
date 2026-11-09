@@ -7,7 +7,8 @@ Rules:
 - text is the same statement as one short plain sentence in the language of the chunk, at most 240 characters.
 - type: requirement (the app must/should do or have something), constraint (law, budget, platform, deadline, security, offline), business_context (what the business is, who it serves, where), goal (an outcome wanted), user_or_role (who uses it, and what each role may do), rule_or_number (a business rule, limit, price, percentage, quantity), glossary_term (a term defined by the document), example (an illustration), open_issue (anything marked TBD, undecided or unclear), preference (nice to have, taste), exclusion (what the app must NOT do or include).
 - confidence: high when plainly stated, medium when hedged, low when vague.
-- At most 40 statements, most important first. Skip headings, page numbers, boilerplate and repeated text.
+- At most 60 statements, most important first. Every row of a requirements table is its own statement: never merge rows and never stop early. Skip headings, page numbers, boilerplate and repeated text.
+- name: for requirement and user_or_role only, the short name of the feature or role in the document's own words (at most 6 words, for example "Order tracking" or "Delivery rider"); leave it empty for every other type and when the chunk gives no short name.
 - Chunks may be English, Hindi (Devanagari) or Hinglish (Hindi in Latin letters). Keep each quote in the chunk's own language.
 
 Examples (chunk -> statements):

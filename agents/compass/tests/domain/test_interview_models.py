@@ -68,7 +68,10 @@ def test_fact_rejects_unknown_fields_and_empty_statement() -> None:
     [
         ({}, True),
         ({"origin": "tap", "quote": "Monthly plan"}, True),
-        ({"origin": "document"}, True),
+        ({"origin": "document", "confidence": 0.9}, True),
+        ({"origin": "document", "confidence": 0.7}, True),
+        ({"origin": "document", "confidence": 0.69}, False),  # a claim still to confirm (ADR 0016)
+        ({"origin": "stated", "confidence": 0.1}, True),  # only documents are held to a confidence
         ({"origin": "assumption", "quote": ""}, False),  # an assumption is never Locked-capable
         ({"unverified_quote": True}, False),  # the quote was not found in its source
         ({"quote": "   "}, False),

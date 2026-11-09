@@ -65,6 +65,7 @@ def _values(inp: SeedResearchInput, table: dict[str, Any]) -> dict[str, str]:
     category = _short(inp.category) or subcategory or d["category"]
     geo = geography_text(inp)
     first_feature = next((f.name for f in inp.features if f.name.strip()), "")
+    duty = next((d.text for d in inp.details if d.kind == "compliance"), "")
     return {
         "category": category,
         "subcategory": subcategory if subcategory.casefold() != category.casefold() else "",
@@ -72,6 +73,7 @@ def _values(inp: SeedResearchInput, table: dict[str, Any]) -> dict[str, str]:
         "geo": _short(geo) if geo != GLOBAL_WORD else d["global"],
         "business_model": _short(inp.business_model),
         "flow": _short(first_feature) or d["flow"],
+        "compliance": _short(duty),
     }
 
 

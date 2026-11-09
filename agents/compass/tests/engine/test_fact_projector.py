@@ -74,7 +74,12 @@ def test_voice_tap_document_assumption_types() -> None:
     assert provenance_for(f, now=NOW, input_mode="voice").type == "voice"
     assert provenance_for(f, now=NOW).type == "user_text"
     assert provenance_for(mk(1, [], origin="tap"), now=NOW).type == "user_tap"
-    assert provenance_for(mk(1, [], origin="document"), now=NOW).type == "document"
+    assert provenance_for(mk(1, [], origin="document", confidence=0.9), now=NOW).type == "document"
+    # a document claim still waiting for the person's confirmation is not evidence (ADR 0016)
+    assert (
+        provenance_for(mk(1, [], origin="document", confidence=0.6), now=NOW).type
+        == "model_knowledge"
+    )
     a = provenance_for(mk(1, [], origin="assumption", quote=""), now=NOW)
     assert a.type == "assumed" and a.quote == "" and a.ref == "FCT-001"
     # voice only changes a stated fact

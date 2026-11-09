@@ -56,14 +56,16 @@
         "label": "Your idea in one line",
         "value_kind": "text",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "audience.segments",
         "label": "Who it is for",
         "value_kind": "text_list",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "roles.list",
@@ -74,14 +76,16 @@
           "name",
           "goal",
           "permissions"
-        ]
+        ],
+        "filled": ""
       },
       {
         "path": "scope.must_not",
         "label": "What it must not do",
         "value_kind": "text_list",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "devices.profile",
@@ -92,7 +96,8 @@
           "phones_tablets",
           "low_end"
         ],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "look.tone_words",
@@ -103,7 +108,8 @@
           "friendly_playful",
           "professional"
         ],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "context.geo",
@@ -114,7 +120,69 @@
           "country",
           "city",
           "region"
-        ]
+        ],
+        "filled": ""
+      }
+    ],
+    "task": "fill",
+    "project": [],
+    "existing": [],
+    "kinds": [
+      {
+        "key": "rule",
+        "description": "A business rule, policy or functional requirement the app must follow or enforce."
+      },
+      {
+        "key": "number",
+        "description": "A quantity, limit, price, percentage, duration or other figure the app depends on."
+      },
+      {
+        "key": "acceptance",
+        "description": "A condition that must hold for a feature to count as done."
+      },
+      {
+        "key": "screen",
+        "description": "A screen, page or view and what it shows or lets the person do."
+      },
+      {
+        "key": "flow",
+        "description": "A sequence of steps a person goes through to get something done."
+      },
+      {
+        "key": "entity",
+        "description": "A thing the app keeps track of (a record, a document, an item) and what is known about it."
+      },
+      {
+        "key": "compliance",
+        "description": "A law, regulation, consent, privacy or certification requirement."
+      },
+      {
+        "key": "nfr",
+        "description": "A quality the app must have (speed, offline use, security, accessibility, reliability, scale)."
+      },
+      {
+        "key": "integration_detail",
+        "description": "An outside system, service or interface and how the app uses it."
+      },
+      {
+        "key": "constraint",
+        "description": "A limit on how the app is built or run (budget, deadline, platform, must use, must not)."
+      },
+      {
+        "key": "example",
+        "description": "A sample case, number or situation that illustrates how something should work."
+      },
+      {
+        "key": "preference",
+        "description": "A taste, style or wish that is not a hard requirement."
+      },
+      {
+        "key": "context",
+        "description": "Background about the business, the people, the place or the goal."
+      },
+      {
+        "key": "other",
+        "description": "A detail that fits none of the kinds above; every agent may need it."
       }
     ]
   },
@@ -188,7 +256,9 @@
           "blueprint",
           "qa",
           "verify"
-        ]
+        ],
+        "kind": "constraint",
+        "refs": []
       },
       {
         "fact_id": "FCT-006",
@@ -198,7 +268,9 @@
           "design",
           "frontend",
           "qa"
-        ]
+        ],
+        "kind": "screen",
+        "refs": []
       },
       {
         "fact_id": "FCT-008",
@@ -207,7 +279,9 @@
           "research",
           "blueprint",
           "backend"
-        ]
+        ],
+        "kind": "number",
+        "refs": []
       }
     ],
     "not_used": [
@@ -217,6 +291,8 @@
       }
     ],
     "summary": "Bachchon (5 se 10 saal) ke liye games se English seekhne ki app, Jaipur se shuruat.",
-    "pitch": "Bachche games khelke English seekhte hain aur parents unka progress dekhte hain. App mein koi ads ya bahar ke links nahi honge, ek din mein 15 minute se zyada khel nahi hoga, aur pehla mahina free rahega."
+    "pitch": "Bachche games khelke English seekhte hain aur parents unka progress dekhte hain. App mein koi ads ya bahar ke links nahi honge, ek din mein 15 minute se zyada khel nahi hoga, aur pehla mahina free rahega.",
+    "additions": [],
+    "typical": []
   }
 }

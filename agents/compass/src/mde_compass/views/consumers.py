@@ -11,8 +11,11 @@ from collections.abc import Iterable, Mapping
 
 from pydantic import BaseModel, JsonValue
 
-from mde_compass.domain.brief import AssetRecord, Brief, FeatureRecord
+from mde_compass.catalog.fact_kinds import default_consumers, kind_for, views_of
+from mde_compass.catalog.loader import load_catalog
+from mde_compass.domain.brief import AssetRecord, Brief, DomainFact, FeatureRecord
 from mde_compass.domain.common import BriefItem
+from mde_compass.engine.brief_builder import target_of
 from mde_compass.views.paths import is_empty_value, json_dump
 
 JsonDict = dict[str, JsonValue]
@@ -112,15 +115,99 @@ def _declined(brief: Brief) -> list[JsonValue]:
     return [_record(d, "what", "reason", "alternative") for d in brief.declined]
 
 
+def _reaches(fact: DomainFact, view: str) -> bool:
+    """Whether a fact reaches ``view``: any consumer tag it carries maps onto the view (``qa`` and
+    ``change_control`` to verify, ``screens`` to design and blueprint, ``frontend`` and ``backend`` to blueprint,
+    ``all`` to every view); a fact with no tag gets the default consumers of its kind."""
+    tags = fact.consumers or default_consumers(fact.kind or kind_for(fact.type, fact.topics))
+    return view in views_of(tags)
+
+
+def _fact_row(fact: DomainFact) -> JsonDict:
+    """A domain fact as values only: never the quote, the provenance or any chat text. ``kind`` and ``refs``
+    appear only when the fact has them, so views of a Brief without them do not change."""
+    row = _record(fact, "id", "type", "statement", "topics", "entities")
+    if fact.kind:
+        row["kind"] = fact.kind
+    if fact.refs:
+        row["refs"] = list(fact.refs)
+    return row
+
+
 def _facts(brief: Brief, consumer: str) -> JsonDict:
-    """The domain facts tagged for ``consumer`` (or for everyone): values only, never the quote, the provenance
-    or any chat text. Absent while there are none, so views of a Brief without facts do not change."""
-    rows: list[JsonValue] = [
-        _record(f, "id", "type", "statement", "topics", "entities")
-        for f in brief.domain_facts
-        if consumer in f.consumers or "all" in f.consumers
-    ]
+    """The domain facts that reach the ``consumer`` view. Absent while there are none, so views of a Brief
+    without facts do not change."""
+    rows: list[JsonValue] = [_fact_row(f) for f in brief.domain_facts if _reaches(f, consumer)]
     return {"domain_facts": rows} if rows else {}
+
+
+def _detail_row(fact: DomainFact) -> JsonDict:
+    return {"id": fact.id, "statement": fact.statement}
+
+
+def _by_kind(facts: Iterable[DomainFact]) -> JsonDict:
+    """Facts grouped by kind (``rule``, ``number``, ... ``other`` for an untyped one), kinds in first-seen order."""
+    grouped: dict[str, list[JsonValue]] = {}
+    for f in facts:
+        grouped.setdefault(f.kind or kind_for(f.type, f.topics), []).append(_detail_row(f))
+    return dict(grouped)
+
+
+def _linked_details(brief: Brief, view: str) -> tuple[dict[str, JsonDict], JsonDict]:
+    """(details by record id, unlinked details): the facts of ``view`` split by the app, role and feature ids their
+    ``refs`` resolve to. A fact with no resolving ref is unlinked, never dropped."""
+    live = {r.id for r in (*brief.apps, *brief.roles, *brief.scope)}
+    linked: dict[str, list[DomainFact]] = {}
+    loose: list[DomainFact] = []
+    for fact in brief.domain_facts:
+        if not _reaches(fact, view):
+            continue
+        hits = [r for r in dict.fromkeys(fact.refs) if r in live]
+        for ref in hits:
+            linked.setdefault(ref, []).append(fact)
+        if not hits:
+            loose.append(fact)
+    return {k: _by_kind(v) for k, v in linked.items()}, _by_kind(loose)
+
+
+def _with_details(row: JsonDict, details: Mapping[str, JsonDict]) -> JsonDict:
+    found = details.get(str(row.get("id")))
+    return {**row, "details": found} if found else row
+
+
+def _org(brief: Brief, view: str) -> JsonDict:
+    """The company (``org.*``) slots that belong to ``view``, by the consumers the catalog gives each slot."""
+    out: JsonDict = {}
+    for slot in load_catalog().slots.values():
+        if slot.group != "org" or view not in views_of(slot.consumers):
+            continue
+        target = target_of(slot)
+        if target.kind != "dict":
+            continue
+        item = getattr(brief, target.section).get(target.key)
+        if item is not None and item.has_value():
+            out[slot.id.split(".", 1)[1]] = item.value
+    return {"org": out} if out else {}
+
+
+_ASSUMED_BASES = {
+    "typical": ("blueprint", "verify"),
+    "correction": ("verify",),
+    "review": ("verify",),
+    "document": ("verify",),
+    "gap": ("verify",),
+}
+
+
+def _assumed_details(brief: Brief, view: str) -> JsonDict:
+    """Drafted details and corrections that are not tied to a slot (typical for this kind of app, a correction
+    we made, a review finding), unless the person rejected them. Values only."""
+    rows: list[JsonValue] = [
+        {"id": a.id, "claim": a.claim, "basis": a.basis, "decision": a.decision}
+        for a in brief.assumptions
+        if not a.slot_id and view in _ASSUMED_BASES.get(a.basis, ()) and a.decision != "rejected"
+    ]
+    return {"assumed_details": rows} if rows else {}
 
 
 def research_view(brief: Brief) -> dict[str, JsonValue]:
@@ -141,24 +228,36 @@ def research_view(brief: Brief) -> dict[str, JsonValue]:
         "research_requests": [json_dump(r) for r in brief.research_requests],
         "search_hints": json_dump(brief.search_hints),
         "declined": _declined(brief),
+        **_org(brief, "research"),
         **_facts(brief, "research"),
     }
 
 
 def blueprint_view(brief: Brief) -> dict[str, JsonValue]:
     """Apps, roles, features with priority/size/tier, rules and numbers, existing systems, scale and
-    launch, success measures, integrations, access and the assets routed to Blueprint."""
+    launch, success measures, integrations, access and the assets routed to Blueprint. Apps, roles and features carry
+    ``details`` (the facts that refer to them, grouped by kind); the facts that refer to none are ``unlinked_details``."""
+    details, unlinked = _linked_details(brief, "blueprint")
     return {
         "idea": _idea(brief),
         "geography": _get(brief.context, "geo"),
         "audience": _audience(brief),
         "apps": [
-            _record(a, "id", "name", "purpose", "surface", "audience", "roles") for a in brief.apps
+            _with_details(
+                _record(a, "id", "name", "purpose", "surface", "audience", "roles"), details
+            )
+            for a in brief.apps
         ],
         "roles": [
-            _record(r, "id", "name_in_user_words", "goal", "rough_permissions") for r in brief.roles
+            _with_details(
+                _record(r, "id", "name_in_user_words", "goal", "rough_permissions"), details
+            )
+            for r in brief.roles
         ],
-        "features": _features(brief, _LATER_OR_IN),
+        "features": [
+            _with_details(f, details)  # type: ignore[arg-type]
+            for f in _features(brief, _LATER_OR_IN)
+        ],
         "rules_and_numbers": _compact(
             {
                 "constraints": {k: v.value for k, v in brief.constraints.items() if v.has_value()},
@@ -173,6 +272,9 @@ def blueprint_view(brief: Brief) -> dict[str, JsonValue]:
         "access": {k: v.value for k, v in brief.access.items() if v.has_value()},
         "glossary": _glossary(brief),
         "assets": _assets_for(brief, "blueprint"),
+        **_org(brief, "blueprint"),
+        **({"unlinked_details": unlinked} if unlinked else {}),
+        **_assumed_details(brief, "blueprint"),
         **_facts(brief, "blueprint"),
     }
 
@@ -204,6 +306,7 @@ def design_view(brief: Brief) -> dict[str, JsonValue]:
         "accessibility": _get(brief.constraints, "accessibility"),
         "references": _references(brief),
         "assets": _assets_for(brief, "design"),
+        **_org(brief, "design"),
         **_facts(brief, "design"),
     }
 
@@ -224,6 +327,8 @@ def verify_view(brief: Brief) -> dict[str, JsonValue]:
         "scope_ledger": _features(brief, None),
         "must_not": must_not,
         "declined": _declined(brief),
+        **_org(brief, "verify"),
+        **_assumed_details(brief, "verify"),
         **_facts(brief, "verify"),
     }
 

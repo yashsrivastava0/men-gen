@@ -11,7 +11,13 @@ import re
 from typing import Any
 
 from mde_compass.calls.compile_text.text_utils import clip
-from mde_compass.calls.probe_handoff.rules import digest_gaps, live_features, table_for
+from mde_compass.calls.probe_handoff.rules import (
+    LOOK_KINDS,
+    details_of,
+    digest_gaps,
+    live_features,
+    table_for,
+)
 from mde_compass.calls.probe_handoff.schema import (
     Digest,
     Journey,
@@ -46,13 +52,14 @@ def _join(items: list[str]) -> str:
 
 
 def _values(d: Digest) -> dict[str, str]:
+    look = details_of(d, *LOOK_KINDS)
     return {
         "category": clip(d.category or d.idea, PART_CHARS),
         "geo": clip(d.geography, PART_CHARS),
         "audience": _join(d.audience),
         "business_model": clip(d.business_model, PART_CHARS),
         "locales": _join(d.locales),
-        "tone": _join(d.tone_words),
+        "tone": _join(d.tone_words) or (clip(look[0], PART_CHARS) if look else ""),
     }
 
 
@@ -122,6 +129,16 @@ def blueprint_plan(inp: ProbeHandoffInput) -> tuple[list[Journey], list[Screen]]
         Screen(name=clip(f.name, PART_CHARS), journey=first, first_release=True)
         for f in live_features(d)
     ]
+    # a screen the person described is a first-release screen; a typical one we proposed is not (yet)
+    screens += [
+        Screen(name=clip(text, PART_CHARS), journey=first, first_release=True)
+        for text in details_of(d, "screen")
+    ]
+    screens += [
+        Screen(name=clip(x.text, PART_CHARS), journey=first, first_release=False)
+        for x in d.details
+        if x.kind == "typical" and x.text.strip()
+    ][:4]
     return journeys, screens
 
 

@@ -459,3 +459,107 @@ def test_research_verdict_ignores_the_claim(
     out = _out(can_start=claim, plan_queries=queries)
     assert evaluate(inp, out, SLOTS).passed is expected
     assert evaluate(inp, out.model_copy(update={"can_start": not claim}), SLOTS).passed is expected
+
+
+# ------------------------------------------------------------------------------ v2 (ADR 0016): facts
+def _details(*pairs: tuple[str, str]) -> list:
+    from mde_compass.calls.probe_handoff.schema import DigestDetail
+
+    return [DigestDetail(kind=k, text=t) for k, t in pairs]
+
+
+def test_the_digest_carries_the_details_by_kind_and_the_typical_ones_but_not_rejected_ones() -> (
+    None
+):
+    from mde_compass.domain.brief import AssumptionRecord, DomainFact
+
+    brief = _brief()
+    brief.domain_facts = [
+        DomainFact(id="FCT-001", type="rule", statement="Orders close at 9 pm", kind="rule"),
+        DomainFact(
+            id="FCT-002", type="preference", statement="Bright cheerful colours", kind="preference"
+        ),
+        DomainFact(
+            id="FCT-003",
+            type="requirement",
+            statement="A home screen with today's menu",
+            kind="screen",
+        ),
+        DomainFact(
+            id="FCT-004", type="number", statement="Delivery costs 20 rupees"
+        ),  # no kind yet: derived
+    ]
+    brief.assumptions = [
+        AssumptionRecord(id="ASM-001", claim="Customers get a receipt", basis="typical"),
+        AssumptionRecord(id="ASM-002", claim="Rejected idea", basis="typical", decision="rejected"),
+        AssumptionRecord(
+            id="ASM-003", claim="A slot guess", basis="pattern", slot_id="audience.segments"
+        ),
+    ]
+    digest = build_digest(TurnContext(session_id="s", tenant_id="t"), brief, load_catalog())
+    assert [(d.kind, d.text) for d in digest.details] == [
+        ("screen", "A home screen with today's menu"),
+        ("preference", "Bright cheerful colours"),
+        ("rule", "Orders close at 9 pm"),
+        ("number", "Delivery costs 20 rupees"),
+        ("typical", "Customers get a receipt"),
+    ]
+
+
+def test_a_design_probe_passes_on_a_look_fact_when_there_are_no_tone_slots() -> None:
+    bare = _inp("design", tone_words=[], brand_signals=[])
+    assert [g.slot_id for g in evaluate(bare, fallback(bare), SLOTS).gaps] == ["look.tone_words"]
+    with_fact = _inp(
+        "design",
+        tone_words=[],
+        brand_signals=[],
+        details=_details(("preference", "Bright cheerful colours")),
+    )
+    verdict = evaluate(with_fact, fallback(with_fact), SLOTS)
+    assert verdict.passed and verdict.gaps == []
+    assert "Bright cheerful colours" in fallback(with_fact).tone
+    # a typical detail we proposed is not something the person said: it does not open the gate
+    typical = _inp(
+        "design", tone_words=[], brand_signals=[], details=_details(("typical", "A calm look"))
+    )
+    assert not evaluate(typical, fallback(typical), SLOTS).passed
+
+
+def test_a_feature_a_detail_talks_about_is_not_left_without_an_intent_and_screens_come_from_facts() -> (
+    None
+):
+    features = [DigestFeature(name="Order tracking", intent="", priority="must", status="in")]
+    bare = _inp("blueprint", features=features, apps=[], roles=_digest().roles[:1])
+    assert any(
+        g.slot_id == "scope.features" and "Order tracking" in g.question
+        for g in evaluate(bare, fallback(bare), SLOTS).gaps
+    )
+    said = _inp(
+        "blueprint",
+        features=features,
+        apps=[],
+        roles=_digest().roles[:1],
+        details=_details(
+            ("flow", "Order tracking shows the rider on a map"),
+            ("screen", "A map screen"),
+            ("screen", "The history screen"),
+            ("typical", "A receipt screen"),
+        ),
+    )
+    out = fallback(said)
+    screens = {s.name: s.first_release for s in out.screens}
+    assert (
+        screens["A map screen"]
+        and screens["The history screen"]
+        and screens["A receipt screen"] is False
+    )
+    verdict = evaluate(said, out, SLOTS)
+    assert verdict.passed, verdict.reasons  # intent covered by the flow detail, screens from facts
+
+
+def test_the_v2_probe_prompt_tells_the_planner_what_typical_means() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = _inp("design", details=_details(("typical", "A calm look")))
+    prompt = PromptRenderer().render(SPEC.spec, inp)
+    assert "A calm look" in prompt.user and 'kind "typical"' in prompt.system

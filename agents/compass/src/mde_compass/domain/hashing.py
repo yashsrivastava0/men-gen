@@ -48,6 +48,9 @@ def brief_hash(brief: Brief) -> str:
     if isinstance(meta, dict):
         meta.pop("approvals", None)
         meta.pop("interview", None)  # audit counts about the interview, never content (ADR 0015)
+        meta.pop(
+            "compile_digests", None
+        )  # what the compile was last run on: bookkeeping (ADR 0016)
         plan = meta.get("plan")
         if isinstance(plan, dict) and plan.get("interview_budget") is None:
             plan.pop(

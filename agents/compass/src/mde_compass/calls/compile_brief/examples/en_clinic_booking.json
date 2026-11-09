@@ -56,14 +56,16 @@
         "label": "Your idea in one line",
         "value_kind": "text",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "idea.problem_value",
         "label": "The problem it solves",
         "value_kind": "text",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "context.geo",
@@ -74,7 +76,8 @@
           "country",
           "city",
           "region"
-        ]
+        ],
+        "filled": ""
       },
       {
         "path": "roles.list",
@@ -85,14 +88,16 @@
           "name",
           "goal",
           "permissions"
-        ]
+        ],
+        "filled": ""
       },
       {
         "path": "scope.must_not",
         "label": "What it must not do",
         "value_kind": "text_list",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "data.sensitive",
@@ -104,14 +109,77 @@
           "financial",
           "none"
         ],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "locales",
         "label": "Languages",
         "value_kind": "locales",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
+      }
+    ],
+    "task": "fill",
+    "project": [],
+    "existing": [],
+    "kinds": [
+      {
+        "key": "rule",
+        "description": "A business rule, policy or functional requirement the app must follow or enforce."
+      },
+      {
+        "key": "number",
+        "description": "A quantity, limit, price, percentage, duration or other figure the app depends on."
+      },
+      {
+        "key": "acceptance",
+        "description": "A condition that must hold for a feature to count as done."
+      },
+      {
+        "key": "screen",
+        "description": "A screen, page or view and what it shows or lets the person do."
+      },
+      {
+        "key": "flow",
+        "description": "A sequence of steps a person goes through to get something done."
+      },
+      {
+        "key": "entity",
+        "description": "A thing the app keeps track of (a record, a document, an item) and what is known about it."
+      },
+      {
+        "key": "compliance",
+        "description": "A law, regulation, consent, privacy or certification requirement."
+      },
+      {
+        "key": "nfr",
+        "description": "A quality the app must have (speed, offline use, security, accessibility, reliability, scale)."
+      },
+      {
+        "key": "integration_detail",
+        "description": "An outside system, service or interface and how the app uses it."
+      },
+      {
+        "key": "constraint",
+        "description": "A limit on how the app is built or run (budget, deadline, platform, must use, must not)."
+      },
+      {
+        "key": "example",
+        "description": "A sample case, number or situation that illustrates how something should work."
+      },
+      {
+        "key": "preference",
+        "description": "A taste, style or wish that is not a hard requirement."
+      },
+      {
+        "key": "context",
+        "description": "Background about the business, the people, the place or the goal."
+      },
+      {
+        "key": "other",
+        "description": "A detail that fits none of the kinds above; every agent may need it."
       }
     ]
   },
@@ -183,7 +251,9 @@
         "consumers": [
           "blueprint",
           "qa"
-        ]
+        ],
+        "kind": "rule",
+        "refs": []
       },
       {
         "fact_id": "FCT-007",
@@ -191,7 +261,9 @@
         "consumers": [
           "backend",
           "verify"
-        ]
+        ],
+        "kind": "entity",
+        "refs": []
       },
       {
         "fact_id": "FCT-008",
@@ -199,7 +271,9 @@
         "consumers": [
           "blueprint",
           "screens"
-        ]
+        ],
+        "kind": "number",
+        "refs": []
       }
     ],
     "not_used": [
@@ -209,6 +283,8 @@
       }
     ],
     "summary": "A booking app for a family clinic in Indore: patients pick a doctor and a time slot.",
-    "pitch": "Patients of your family clinic pick a doctor and a time slot on their phone, and the receptionist manages the day's schedule in one place. Missed slots are freed after ten minutes, visit notes stay private, and there is no online payment in the first version."
+    "pitch": "Patients of your family clinic pick a doctor and a time slot on their phone, and the receptionist manages the day's schedule in one place. Missed slots are freed after ten minutes, visit notes stay private, and there is no online payment in the first version.",
+    "additions": [],
+    "typical": []
   }
 }

@@ -67,7 +67,7 @@ def test_spec_shape() -> None:
     assert isinstance(SPEC.spec, CallSpec)
     assert SPEC.id == "cmp.scan_ambiguity"
     assert SPEC.spec.tools == ()
-    assert set(SPEC.spec.untrusted_inputs) == {"items", "glossary_terms"}
+    assert set(SPEC.spec.untrusted_inputs) == {"items", "glossary_terms", "facts"}
     assert SPEC.spec.fallback == "compass.scan_ambiguity"
 
 
@@ -233,3 +233,173 @@ def test_many_items_are_capped() -> None:
     items = [("s", f"line {i} is fast") for i in range(500)]
     out = fb.fallback(_inp(*items))
     assert len(out.findings) <= load_rules().max_findings
+
+
+# ------------------------------------------------------------------------------------ v2 (ADR 0016)
+def _brief_with_details() -> Brief:
+    from mde_compass.domain.brief import AssumptionRecord, DomainFact
+
+    b = _brief()
+    b.domain_facts = [
+        DomainFact(
+            id="FCT-003", type="rule", statement="Delivery is free", kind="rule", quote="MY QUOTE"
+        ),
+        DomainFact(
+            id="FCT-007",
+            type="number",
+            statement="150% of customers reorder every week",
+            kind="number",
+        ),
+        DomainFact(
+            id="FCT-009", type="number", statement="Delivery costs 30 rupees", kind="number"
+        ),
+    ]
+    b.assumptions = [
+        AssumptionRecord(id="ASM-001", claim="Customers get a receipt", basis="typical"),
+        AssumptionRecord(id="ASM-002", claim="We used 30; you first said 20", basis="correction"),
+        AssumptionRecord(id="ASM-003", claim="This does not add up: x", basis="review"),
+    ]
+    return b
+
+
+def test_the_digest_carries_the_details_without_quotes_and_not_our_own_findings() -> None:
+    from mde_compass.calls.scan_ambiguity.digest import fact_lines
+
+    brief = _brief_with_details()
+    lines = [(f.slot_id, f.text) for f in fact_lines(brief)]
+    assert lines[0] == (None, "FCT-003 [rule] Delivery is free")
+    assert all("MY QUOTE" not in text for _, text in lines)
+    items, _ = build_digest(CTX, brief, CATALOG)
+    texts = [i.text for i in items]
+    assert "Customers get a receipt" in texts  # a typical detail is part of the plan
+    assert not any("you first said" in t or "does not add up" in t for t in texts)
+
+
+def test_the_floor_flags_a_share_above_one_hundred_percent_and_conflicts_between_details() -> None:
+    inp = ScanInput(
+        language="en",
+        items=[DigestLine(slot_id="constraints.offline", text="The app works offline")],
+        glossary_terms=[],
+        facts=[
+            DigestLine(slot_id=None, text="FCT-003 [rule] Delivery is free for every order"),
+            DigestLine(slot_id=None, text="FCT-004 [rule] Delivery is not free for every order"),
+            DigestLine(slot_id=None, text="FCT-007 [number] 150% of customers reorder every week"),
+            DigestLine(slot_id=None, text="FCT-008 [number] 40% of customers reorder every week"),
+        ],
+    )
+    out = fb.fallback(inp)
+    kinds = [(f.kind, f.text) for f in out.findings]
+    assert any(k == "conflicting" and "FCT-003" in t and "FCT-004" in t for k, t in kinds)
+    assert any(k == "unrealistic" and "150%" in t for k, t in kinds)
+    assert not any("40%" in t and k == "unrealistic" for k, t in kinds)
+    assert len(out.findings) <= 5
+    # an id is a number: two details that merely have different ids are not a number conflict
+    twin = ScanInput(
+        language="en",
+        items=[],
+        glossary_terms=[],
+        facts=[
+            DigestLine(slot_id=None, text="FCT-010 [rule] Riders wear a helmet on every trip"),
+            DigestLine(slot_id=None, text="FCT-011 [rule] Riders wear a helmet on every trip"),
+        ],
+    )
+    assert fb.fallback(twin).findings == []
+
+
+def test_findings_are_capped_at_five() -> None:
+    inp = ScanInput(
+        language="en",
+        items=[],
+        glossary_terms=[],
+        facts=[
+            DigestLine(slot_id=None, text=f"FCT-{i:03d} [number] {100 + i}% of users stay")
+            for i in range(10)
+        ],
+    )
+    assert len(fb.fallback(inp).findings) == 5 == load_rules().max_findings
+
+
+def test_new_free_text_kinds_must_share_two_real_tokens_with_the_digest() -> None:
+    inp = ScanInput(
+        language="en",
+        items=[DigestLine(slot_id="idea.summary", text="Launch next week with ten riders")],
+        glossary_terms=[],
+        facts=[DigestLine(slot_id=None, text="FCT-001 [number] The rider team is not hired yet")],
+    )
+    good = _finding("plausibility", "ten riders but the rider team is not hired")
+    weak = _finding("plausibility", "this does not add up at all")  # no digest word at all
+    one = _finding(
+        "dependency", "riders unrelated stuff"
+    )  # a single shared token is not enough for a new kind
+    kept = keep_valid(inp, [good, weak, one])
+    assert [f.text for f in kept] == [good.text]
+    assert keep_valid(
+        inp, [_finding("conflicting", "riders vs something")]
+    )  # the old kind keeps its old bar
+
+
+async def test_the_adapter_reads_details_and_maps_new_kinds_for_the_basic_port() -> None:
+    from mde_compass.calls.scan_ambiguity.schema import ScanOutput
+
+    brief = _brief_with_details()
+    out = ScanOutput(
+        findings=[
+            _finding("unrealistic", "150% of customers reorder every week"),
+            _finding("vague", "fast", "idea.summary"),
+            _finding("dependency", "Delivery is free but costs 30 rupees"),
+        ]
+    )
+    gateway = ScriptedGateway(out, out)
+    adapter = ScanAmbiguityAdapter(CallRunner(gateway), CATALOG)
+    rich = await adapter.scan_review(CTX, brief)
+    assert [(f.kind, f.slot_id) for f in rich] == [
+        ("unrealistic", None),
+        ("vague", "idea.summary"),
+        ("dependency", None),
+    ]
+    sent = gateway.calls[0][1]
+    assert isinstance(sent, ScanInput) and next(f.text for f in sent.facts).startswith(
+        "FCT-003 [rule]"
+    )
+    basic = await adapter.scan(CTX, brief)
+    assert [f.kind for f in basic] == [
+        "conflicting",
+        "vague",
+        "conflicting",
+    ]  # the port has three kinds
+
+
+async def test_a_brief_with_only_details_is_still_scanned_and_an_empty_one_is_not() -> None:
+    from mde_compass.domain.brief import DomainFact
+
+    empty = ScanAmbiguityAdapter(CallRunner(ScriptedGateway()), CATALOG)
+    assert await empty.scan_review(CTX, Brief()) == []  # no call is spent
+    only = Brief()
+    only.domain_facts = [
+        DomainFact(id="FCT-001", type="number", statement="150% of customers stay")
+    ]
+    adapter = ScanAmbiguityAdapter(CallRunner(ScriptedGateway(ProviderError("x"))), CATALOG)
+    found = await adapter.scan_review(
+        CTX, only
+    )  # the provider failed: the floor still finds the share
+    assert [f.kind for f in found] == ["unrealistic"]
+
+
+def test_the_v2_prompt_renders_the_details_and_the_new_kinds() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = ScanInput(
+        language="en",
+        items=[DigestLine(slot_id="idea.summary", text="A food app")],
+        glossary_terms=[],
+        facts=[DigestLine(slot_id=None, text="FCT-001 [number] 150% of customers stay")],
+    )
+    prompt = PromptRenderer().render(SPEC.spec, inp)
+    assert "FCT-001 [number] 150% of customers stay" in prompt.user
+    assert (
+        "unrealistic" in prompt.system
+        and "dependency" in prompt.system
+        and "plausibility" in prompt.system
+    )
+    assert "at most 5" in prompt.system
+    assert prompt.user.count("<untrusted_content") >= 2

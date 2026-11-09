@@ -349,7 +349,9 @@ def _assumption_row(ctx: _Ctx, a: AssumptionRecord) -> ViewRow:
                 field_line(ctx.labels, "what_changes", a.what_changes),
             ]
         ),
-        badges=badges_for(a, ctx.labels, extra=["assumed"]),
+        badges=badges_for(
+            a, ctx.labels, extra=["assumed", *(["typical"] if a.basis == "typical" else [])]
+        ),
         tier=a.tier,
         history_available=_has_history(a),
         needs_review=a.impact == "high" and a.decision == "proposed",

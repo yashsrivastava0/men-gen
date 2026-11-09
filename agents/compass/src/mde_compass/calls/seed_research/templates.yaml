@@ -1,5 +1,5 @@
 # Wording of the deterministic fallback of cmp.seed_research, per language (data, not logic; hard rule 8).
-# Placeholders: {category} {subcategory} {audience} {geo} {business_model} {reference} {flow}.
+# Placeholders: {category} {subcategory} {audience} {geo} {business_model} {reference} {flow} {compliance}.
 # A term template whose placeholder has no value is skipped; the other texts use the defaults below.
 en:
   defaults:
@@ -57,7 +57,7 @@ en:
       question: "Which rules, licences or privacy requirements apply to {category} apps in {geo}?"
       decision_unlocked: "Which compliance needs to plan for"
       entity: "regulation"
-      terms: ["rules", "privacy", "{category}", "{geo}"]
+      terms: ["rules", "privacy", "{compliance}", "{category}", "{geo}"]
       prefer_sources: [government websites, official websites]
       depth: standard
       priority: medium
@@ -128,7 +128,7 @@ hi:
       question: "{geo} में {category} ऐप पर कौन से नियम, लाइसेंस या गोपनीयता की ज़रूरतें लागू होती हैं?"
       decision_unlocked: "किन नियमों की योजना बनानी है"
       entity: "नियम"
-      terms: ["नियम", "गोपनीयता", "{category}", "{geo}"]
+      terms: ["नियम", "गोपनीयता", "{compliance}", "{category}", "{geo}"]
       prefer_sources: [सरकारी वेबसाइट, आधिकारिक वेबसाइट]
       depth: standard
       priority: medium

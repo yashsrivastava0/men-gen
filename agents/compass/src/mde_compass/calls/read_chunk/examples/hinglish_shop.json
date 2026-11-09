@@ -12,25 +12,29 @@
         "type": "goal",
         "text": "Hamare dukaan ka goal hai online orders badhana.",
         "quote": "Hamare dukaan ka goal hai online orders badhana.",
-        "confidence": "high"
+        "confidence": "high",
+        "name": ""
       },
       {
         "type": "open_issue",
         "text": "Delivery sirf Pune mein hogi, TBD for other cities.",
         "quote": "Delivery sirf Pune mein hogi, TBD for other cities.",
-        "confidence": "high"
+        "confidence": "high",
+        "name": ""
       },
       {
         "type": "exclusion",
         "text": "App mein login nahi chahiye.",
         "quote": "App mein login nahi chahiye.",
-        "confidence": "high"
+        "confidence": "high",
+        "name": ""
       },
       {
         "type": "glossary_term",
         "text": "Order ka matlab hai customer ka kharida hua saman.",
         "quote": "Order ka matlab hai customer ka kharida hua saman.",
-        "confidence": "high"
+        "confidence": "high",
+        "name": ""
       }
     ],
     "injection_suspected": false

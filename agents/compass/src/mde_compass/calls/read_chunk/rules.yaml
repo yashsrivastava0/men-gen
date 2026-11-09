@@ -3,7 +3,8 @@
 # Languages: en, hi (Devanagari), hinglish (Hindi in Latin letters). The first matching type wins.
 version: 1
 limits:
-  max_statements: 40
+  max_statements: 60   # dense requirement tables: the chunker keeps a table chunk to 40 rows so this is never the limit
+  max_name_chars: 80
   max_text_chars: 240
   max_quote_chars: 300
   min_quote_chars: 4

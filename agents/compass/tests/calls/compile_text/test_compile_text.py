@@ -288,3 +288,67 @@ def test_linear_time_on_hostile_input(hostile: str) -> None:
     validate(inp, out2)
     assert time.monotonic() - started < 3.0
     assert errors == [] and len(out.summary) <= 160
+
+
+# ------------------------------------------------------------------------------ v2 (ADR 0016)
+async def test_unchanged_slots_skip_the_call_and_keep_the_text_so_the_hash_does_not_churn() -> None:
+    from mde_compass.domain.hashing import brief_hash
+
+    brief = _brief()
+    out = CompileTextOutput(
+        summary="A food app", pitch="It helps people order food.", descriptions=[]
+    )
+    gateway = ScriptedGateway(out)
+    adapter = CompileTextAdapter(CallRunner(gateway), load_catalog())
+    first = await adapter.compile(_ctx(), brief)
+    brief.summary, brief.pitch = first.summary, first.pitch
+    assert len(gateway.calls) == 1 and brief.meta.compile_digests["text"]
+    hash_before = brief_hash(brief)
+    again = await adapter.compile(_ctx(), brief)  # nothing to script: a second call would raise
+    assert (again.summary, again.pitch) == (first.summary, first.pitch) and len(gateway.calls) == 1
+    assert brief_hash(brief) == hash_before
+
+
+async def test_a_changed_slot_or_detail_writes_new_text() -> None:
+    from mde_compass.domain.brief import DomainFact
+
+    brief = _brief()
+    one = CompileTextOutput(
+        summary="A food app", pitch="It helps people order food.", descriptions=[]
+    )
+    two = CompileTextOutput(
+        summary="A food app", pitch="It helps people order food today.", descriptions=[]
+    )
+    gateway = ScriptedGateway(one, two)
+    adapter = CompileTextAdapter(CallRunner(gateway), load_catalog())
+    first = await adapter.compile(_ctx(), brief)
+    brief.summary, brief.pitch = first.summary, first.pitch
+    brief.domain_facts = [
+        DomainFact(id="FCT-001", type="rule", statement="Orders close at 9 pm", kind="rule")
+    ]
+    second = await adapter.compile(_ctx(), brief)
+    assert second.pitch == "It helps people order food today." and len(gateway.calls) == 2
+    assert "Orders close at 9 pm" in build_input(_ctx(), brief, load_catalog()).details
+
+
+async def test_a_flagged_fallback_is_not_remembered_so_it_is_tried_again() -> None:
+    brief = _brief()
+    adapter = CompileTextAdapter(CallRunner(ScriptedGateway(ProviderError("boom"))), load_catalog())
+    text = await adapter.compile(_ctx(), brief)
+    assert text.summary and "text" not in brief.meta.compile_digests
+
+
+def test_details_are_part_of_what_the_pitch_may_repeat() -> None:
+    inp = CompileTextInput(
+        language="en",
+        slots=[],
+        app_count=0,
+        role_count=0,
+        feature_count=0,
+        items=[],
+        details=["Orders close at 9 pm"],
+    )
+    out = CompileTextOutput(summary="An app", pitch="Orders close at 9 pm.", descriptions=[])
+    assert ungrounded_terms(inp, out) == []
+    bare = inp.model_copy(update={"details": []})
+    assert ungrounded_terms(bare, out) == ["9", "Orders"]

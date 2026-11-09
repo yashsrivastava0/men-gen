@@ -25,6 +25,7 @@ class TypeRule:
 @dataclass(frozen=True)
 class Rules:
     max_statements: int
+    max_name_chars: int
     max_text_chars: int
     max_quote_chars: int
     min_quote_chars: int
@@ -60,6 +61,7 @@ def load_rules() -> Rules:
     nu = raw["number_units"]
     return Rules(
         max_statements=int(lim["max_statements"]),
+        max_name_chars=int(lim["max_name_chars"]),
         max_text_chars=int(lim["max_text_chars"]),
         max_quote_chars=int(lim["max_quote_chars"]),
         min_quote_chars=int(lim["min_quote_chars"]),

@@ -1,0 +1,119 @@
+{
+  "name": "en_typical_details",
+  "input": {
+    "language": "en",
+    "ledger": [
+      "# general\nFCT-001 [context|business] A yoga studio with three teachers and evening classes (from evt_001)\nFCT-002 [role|students] Students book a place in a class and pay for a monthly pass (from evt_002)\nFCT-003 [role|teachers] Teachers mark who came to the class (from evt_003)"
+    ],
+    "needs_table": [],
+    "needs": [],
+    "assumptions": [
+      "Classes run in the evening (assumed)"
+    ],
+    "asked_list": [],
+    "qa_compact": [],
+    "sections": [
+      "typical"
+    ],
+    "draft": [],
+    "targets": [],
+    "task": "typical",
+    "project": [
+      "idea.summary: A booking app for a yoga studio"
+    ],
+    "existing": [
+      "ROL-001 | roles | Student",
+      "ROL-002 | roles | Teacher",
+      "FTR-001 | scope | Book a class"
+    ],
+    "kinds": [
+      {
+        "key": "rule",
+        "description": "A business rule, policy or functional requirement the app must follow or enforce."
+      },
+      {
+        "key": "number",
+        "description": "A quantity, limit, price, percentage, duration or other figure the app depends on."
+      },
+      {
+        "key": "acceptance",
+        "description": "A condition that must hold for a feature to count as done."
+      },
+      {
+        "key": "screen",
+        "description": "A screen, page or view and what it shows or lets the person do."
+      },
+      {
+        "key": "flow",
+        "description": "A sequence of steps a person goes through to get something done."
+      },
+      {
+        "key": "entity",
+        "description": "A thing the app keeps track of (a record, a document, an item) and what is known about it."
+      },
+      {
+        "key": "compliance",
+        "description": "A law, regulation, consent, privacy or certification requirement."
+      },
+      {
+        "key": "nfr",
+        "description": "A quality the app must have (speed, offline use, security, accessibility, reliability, scale)."
+      },
+      {
+        "key": "integration_detail",
+        "description": "An outside system, service or interface and how the app uses it."
+      },
+      {
+        "key": "constraint",
+        "description": "A limit on how the app is built or run (budget, deadline, platform, must use, must not)."
+      },
+      {
+        "key": "example",
+        "description": "A sample case, number or situation that illustrates how something should work."
+      },
+      {
+        "key": "preference",
+        "description": "A taste, style or wish that is not a hard requirement."
+      },
+      {
+        "key": "context",
+        "description": "Background about the business, the people, the place or the goal."
+      },
+      {
+        "key": "other",
+        "description": "A detail that fits none of the kinds above; every agent may need it."
+      }
+    ]
+  },
+  "output": {
+    "items": [],
+    "additions": [],
+    "placements": [],
+    "not_used": [],
+    "summary": "",
+    "pitch": "",
+    "typical": [
+      {
+        "claim": "Students get a reminder before their class",
+        "reason": "Class apps usually remind people so fewer places go unused",
+        "kind": "flow",
+        "risky": false,
+        "what_changes": "No reminder is sent; students must remember the class"
+      },
+      {
+        "claim": "A student can see their pass and how many classes are left",
+        "reason": "People expect to check what they have paid for",
+        "kind": "screen",
+        "risky": false,
+        "what_changes": "There is no pass screen"
+      },
+      {
+        "claim": "Payment details are handled by a payment provider and never stored by the app",
+        "reason": "Handling card data yourself is a legal and security risk",
+        "kind": "compliance",
+        "risky": true,
+        "what_changes": "The app would have to store and protect payment details itself"
+      }
+    ]
+  }
+}

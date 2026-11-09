@@ -113,7 +113,7 @@ def good(**changes: object) -> CompileOutput:
 # ------------------------------------------------------------------------------------------- spec
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.compile_brief" and s.version == 1
+    assert s.id == "cmp.compile_brief" and s.version == 2
     assert s.reasoning_effort == "low" and s.max_output_tokens == 8000 and s.route == "deep"
     assert SPEC.lane == "writer" and SPEC.timeout_s == 150 and not s.tools and not s.cacheable
     assert set(s.untrusted_inputs) == {
@@ -123,6 +123,8 @@ def test_spec_matches_profile() -> None:
         "asked_list",
         "qa_compact",
         "draft",
+        "project",
+        "existing",
     }
     assert set(s.untrusted_inputs) <= set(CompileInput.model_fields)
     assert s.mock_handler == "mde_compass.calls.compile_brief.mock:handle"
@@ -134,34 +136,44 @@ def test_wire_models_convert_to_the_gateways_strict_schema() -> None:
 
 
 # ---------------------------------------------------------------------------------------- examples
-def test_there_are_three_diverse_examples_that_pass_the_validator() -> None:
-    assert len(EXAMPLES) >= 3
+FILL = [e for e in EXAMPLES if e["input"].get("task", "fill") == "fill"]
+TYPICAL = [e for e in EXAMPLES if e["input"].get("task") == "typical"]
+
+
+def test_there_are_diverse_examples_that_pass_the_validator() -> None:
+    assert len(FILL) >= 4 and len(TYPICAL) >= 1
     assert len({e["name"] for e in EXAMPLES}) == len(EXAMPLES)
     assert {e["input"]["language"] for e in EXAMPLES} >= {"en", "hi-Latn"}
     assert any(e["input"]["draft"] for e in EXAMPLES), "one example is a consistency pass"
-    for e in EXAMPLES:
+    assert any(e["output"]["additions"] for e in FILL), "one example adds list elements"
+    for e in FILL:
         inp, out = _input(e), _output(e)
         assert structural(inp, out) == [], e["name"]
         ids = ledger_ids("\n".join(inp.ledger))
-        assert len(ids) >= 6 and out.items and out.summary
+        assert len(ids) >= 6 and (out.items or out.additions)
         # every active fact is accounted for by the example itself, none twice as placed and not used
         seen = (
-            {f for i in out.items for f in i.fact_ids}
+            {f for i in (*out.items, *out.additions) for f in i.fact_ids}
             | {p.fact_id for p in out.placements}
             | {n.fact_id for n in out.not_used}
         )
         assert seen == set(ids), e["name"]
+        assert all(p.kind for p in out.placements), e["name"]
+    for e in TYPICAL:
+        inp, out = _input(e), _output(e)
+        assert structural(inp, out) == [] and 1 <= len(out.typical) <= 12
+        assert not (out.items or out.additions or out.placements or out.not_used)
 
 
 def test_examples_do_not_share_wording() -> None:
-    summaries = [_output(e).summary for e in EXAMPLES]
-    ledgers = ["\n".join(_input(e).ledger) for e in EXAMPLES]
+    summaries = [_output(e).summary for e in FILL if _output(e).summary]
     assert len(set(summaries)) == len(summaries)
+    ledgers = ["\n".join(_input(e).ledger) for e in EXAMPLES]
     statements = [f.statement for ledger in ledgers for f in parse_ledger(ledger)]
     assert len(statements) == len(set(statements))
 
 
-@pytest.mark.parametrize("raw", EXAMPLES, ids=lambda e: e["name"])
+@pytest.mark.parametrize("raw", FILL, ids=lambda e: e["name"])
 async def test_templates_render_and_the_mock_runs_through_the_real_pipeline(
     raw: dict[str, object],
 ) -> None:
@@ -170,7 +182,11 @@ async def test_templates_render_and_the_mock_runs_through_the_real_pipeline(
     assert not res.used_fallback, res.reason
     ids = ledger_ids("\n".join(inp.ledger))
     assert [p.fact_id for p in res.output.placements] == ids
+    assert all(
+        p.kind for p in res.output.placements
+    )  # the floor types every fact by the kinds file
     assert res.output.items == [] and res.output.not_used == [] and res.output.pitch == ""
+    assert res.output.additions == [] and res.output.typical == []
     prompt = PromptRenderer().render(SPEC.spec, inp)
     assert all(fid in prompt.user for fid in ids)
     assert "None" not in prompt.user and inp.language in prompt.user
@@ -179,6 +195,21 @@ async def test_templates_render_and_the_mock_runs_through_the_real_pipeline(
     assert "hi-Latn" in prompt.system and "Language en." in prompt.system  # worked examples
     assert prompt.user.count("<untrusted_content") >= 1
     assert ("Draft to reconcile" in prompt.user) == bool(inp.draft)
+    assert all(k.key in prompt.user for k in inp.kinds)  # the offered kinds reach the prompt
+    assert all(line.split(" | ")[0] in prompt.user for line in inp.existing)
+
+
+@pytest.mark.parametrize("raw", TYPICAL, ids=lambda e: e["name"])
+async def test_the_typical_task_renders_its_own_prompt_and_the_mock_proposes_nothing(
+    raw: dict[str, object],
+) -> None:
+    inp = _input(raw)
+    res = await CallRunner(make_client([SPEC])).run(SPEC, inp, session_id="ses_1", tenant_id="t1")
+    assert not res.used_fallback, res.reason
+    assert res.output.typical == [] and res.output.placements == [] and res.output.items == []
+    prompt = PromptRenderer().render(SPEC.spec, inp)
+    assert "TYPICAL DETAILS" in prompt.system and "Task: typical details" in prompt.user
+    assert "Targets you may fill" not in prompt.user and "Needs status table" not in prompt.user
 
 
 def test_hostile_ledger_text_cannot_close_the_data_wrapper() -> None:

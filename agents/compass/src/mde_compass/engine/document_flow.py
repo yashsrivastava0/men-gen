@@ -17,6 +17,7 @@ from pydantic import JsonValue
 
 from mde_compass.domain.claims import Claim
 from mde_compass.domain.common import Provenance
+from mde_compass.engine.document_facts import claim_name
 
 
 @lru_cache(maxsize=1)
@@ -76,7 +77,8 @@ def plan_from_claims(
         rule = _map().get(st.type)
         if rule is None:
             continue
-        slot_id, shape, limit = rule["slot"], rule["shape"], int(rule["max_words"])
+        slot_id, shape = rule["slot"], rule["shape"]
+        limit = int(rule.get("max_words", 0))
         prov = Provenance(
             type="document",
             ref=f"{claim.source_id} {st.pointer}".strip(),
@@ -84,9 +86,10 @@ def plan_from_claims(
         )
         item: JsonValue
         if shape == "named_item":
-            item = {"name": _short(st.text, limit), "intent": st.text.strip()[:200]}
+            # the model's short name when the claim has one, else the statement cut at a word boundary (ADR 0016)
+            item = {"name": claim_name(st), "intent": st.text.strip()[:200]}
             if slot_id == "roles.list":
-                item = {"name": _short(st.text, limit)}
+                item = {"name": claim_name(st)}
         elif shape == "glossary":
             gloss = _glossary(st.text)
             if gloss is None:

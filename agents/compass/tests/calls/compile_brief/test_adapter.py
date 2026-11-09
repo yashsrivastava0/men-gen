@@ -139,7 +139,9 @@ def test_the_rendered_prompt_says_which_sections_and_lists_only_their_targets() 
     wire = build_input(CATALOG, req(sections=["roles"]))
     user = PromptRenderer().render(SPEC.spec, wire).user
     assert "Per-section compile. Sections: roles" in user
-    assert "- roles.list | Roles | object_list | keys: name, goal, permissions" in user
+    assert (
+        "- roles.list | Roles | object_list | filled: empty | keys: name, goal, permissions" in user
+    )
     assert "- idea.summary" not in user
     whole = PromptRenderer().render(SPEC.spec, build_input(CATALOG, req())).user
     assert (
@@ -204,7 +206,10 @@ async def test_the_examples_compile_with_full_coverage_and_nothing_dropped(
     assert result.summary == expected.summary and result.pitch == expected.pitch
 
 
-@pytest.mark.parametrize("raw", EXAMPLES, ids=lambda e: e["name"])
+LEGACY = [e for e in EXAMPLES if e["input"].get("task", "fill") == "fill" and e["output"]["items"]]
+
+
+@pytest.mark.parametrize("raw", LEGACY, ids=lambda e: e["name"])
 def test_examples_have_no_leftovers_for_the_adapter_to_complete(raw: dict[str, object]) -> None:
     request = example_request(raw)
     compilation, leftovers = to_compilation(

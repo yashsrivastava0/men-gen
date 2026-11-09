@@ -300,3 +300,35 @@ def test_details_we_captured_is_a_read_only_section_grouped_by_topic() -> None:
     assert next(s for s in hi.sections if s.id == "details").title == CATALOG.t(
         "section.details", "hi"
     )
+
+
+def test_slot_less_assumptions_render_with_a_typical_badge_and_a_review_flag_when_high() -> None:
+    """ADR 0016: typical details, corrections, review findings, document conflicts and probe gaps have no slot; the
+    page still shows them like any assumption, and a high-impact one needs the person's decision."""
+    from mde_compass.domain.brief import AssumptionRecord
+
+    brief = rich_brief()
+    brief.assumptions += [
+        AssumptionRecord(
+            id="ASM-090",
+            claim="Customers get a receipt",
+            basis="typical",
+            reason="r",
+            what_changes="w",
+            theme="Features",
+        ),
+        AssumptionRecord(
+            id="ASM-091",
+            claim="We used 30; you first said 20",
+            basis="correction",
+            impact="high",
+            theme="Business",
+        ),
+    ]
+    rows = _rows(_build(brief))
+    typical, correction = rows["assumptions.ASM-090"], rows["assumptions.ASM-091"]
+    assert "typical" in {b.kind for b in typical.badges} and "assumed" in {
+        b.kind for b in typical.badges
+    }
+    assert not typical.needs_review and correction.needs_review
+    assert len(typical.value.items) == 2  # the reason and what changes

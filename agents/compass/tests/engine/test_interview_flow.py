@@ -354,27 +354,32 @@ def small_budget_service() -> Service:
     return build_service(memory=True, clock=FakeClock(), compass_config=config)
 
 
-async def test_an_oversized_ledger_is_compiled_in_chunks_then_reconciled_and_nothing_is_lost() -> (
+async def test_an_oversized_ledger_is_compiled_per_group_in_small_batches_and_nothing_is_lost() -> (
     None
 ):
+    """v2 (ADR 0016): one call per group of facts, cut into batches of ``compile_chunk_facts``; no whole-ledger
+    consistency pass; every active fact still ends up as a detail, the evidence of a value, or not used."""
     svc = small_budget_service()
     assert svc.ports is not None
-    calls: list[tuple[int, bool]] = []
-    real = svc.ports.brief_compiler.compile_brief
+    calls: list[tuple[str, str, int]] = []
+    real = svc.ports.brief_compiler.compile_section  # type: ignore[attr-defined]
 
     async def spy(ctx, request):  # type: ignore[no-untyped-def]
-        calls.append((request.ledger.count("FCT-"), request.draft is not None))
+        calls.append((request.group, request.task, request.ledger.count("FCT-")))
         return await real(ctx, request)
 
     object.__setattr__(
-        svc.ports, "brief_compiler", type("Spy", (), {"compile_brief": staticmethod(spy)})()
+        svc.ports, "brief_compiler", type("Spy", (), {"compile_section": staticmethod(spy)})()
     )
     conv = await Conversation.start(svc)
     await conv.say(IDEA)
     assert await finish(conv, svc) == "BRIEF_REVIEW"
-    assert len(calls) >= 3 and calls[-1][1] is True and not any(draft for _, draft in calls[:-1])
-    assert all(n <= 4 for n, _ in calls[:-1])  # chunks of at most four facts
-    assert calls[-1][0] == max(n for n, _ in calls)  # the consistency pass sees the whole ledger
+    fills = [c for c in calls if c[1] == "fill" and c[0] != "place"]
+    assert len(fills) >= 3 and len({g for g, *_ in fills}) >= 2  # several groups, several batches
+    assert all(n <= 4 for _, _, n in fills)  # batches of at most four facts
+    assert (
+        sum(1 for c in calls if c[1] == "typical") == 1
+    )  # one extra call drafts the typical details
     async with svc.store.begin("t1") as uow:
         brief = (await uow.briefs.get(conv.session_id)).brief
         facts = [f for f in await uow.facts.list(conv.session_id) if f.status == "active"]
@@ -384,6 +389,7 @@ async def test_an_oversized_ledger_is_compiled_in_chunks_then_reconciled_and_not
         for item in sec.values()
         for p in item.provenance
     }
+    assert all(d.kind for d in brief.domain_facts)  # every row is typed by the kinds file
 
 
 async def test_the_rolling_summary_is_kept_once_the_ledger_outgrows_the_digest_budget() -> None:

@@ -12,7 +12,7 @@ ledger); a decided one is kept as the audit trail of the decision.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Iterable, Mapping, Sequence
 from datetime import datetime
 from functools import lru_cache
 from pathlib import Path
@@ -158,6 +158,65 @@ def sync_assumptions(
         if slot_id not in seen and existing not in kept and slot_id not in store_records:
             kept.append(existing)  # a slot not in the store snapshot: leave its assumption alone
     out.assumptions = sorted(kept, key=lambda a: a.id)
+    return out
+
+
+DERIVED_BASES: tuple[str, ...] = ("typical", "correction", "review")
+"""Bases of assumptions that stand for no slot (ADR 0016): a typical detail nobody asked about, a correction we
+made, a review finding. Code rebuilds the ``proposed`` ones at every compile; decided ones are kept."""
+
+
+def claim_key(claim: str) -> str:
+    return " ".join(claim.casefold().split())
+
+
+def merge_derived(
+    brief: Brief, fresh: Sequence[AssumptionRecord], bases: Iterable[str] = DERIVED_BASES
+) -> Brief:
+    """A copy of ``brief`` whose slot-less assumptions of ``bases`` are exactly ``fresh``, matched by claim text.
+
+    A claim that is already there keeps its ``ASM-###`` id and its decision (a rejected typical detail is not
+    proposed again; a still-``proposed`` one gets the fresh wording); a new claim gets a new id; a ``proposed``
+    one that no longer applies is tombstoned; a decided one that no longer applies stays as the audit trail.
+    Slot assumptions and assumptions of other bases are untouched.
+    """
+    wanted = set(bases)
+    out = brief.model_copy(deep=True)
+    mine = [a for a in out.assumptions if not a.slot_id and a.basis in wanted]
+    others = [a for a in out.assumptions if a.slot_id or a.basis not in wanted]
+    by_key = {claim_key(a.claim): a for a in mine}
+    kept: list[AssumptionRecord] = []
+    seen: set[str] = set()
+    for item in fresh:
+        key = claim_key(item.claim)
+        if key in seen:
+            continue
+        seen.add(key)
+        old = by_key.get(key)
+        if old is None:
+            kept.append(item.model_copy(update={"id": out.ids.allocate("ASM")}))
+        elif old.decision == "proposed":
+            kept.append(
+                old.model_copy(
+                    update={
+                        "reason": item.reason,
+                        "impact": item.impact,
+                        "theme": item.theme,
+                        "what_changes": item.what_changes,
+                        "confidence": item.confidence,
+                    }
+                )
+            )
+        else:
+            kept.append(old)
+    for key, old in by_key.items():
+        if key in seen:
+            continue
+        if old.decision == "proposed":
+            out.ids.tombstone(old.id)
+        else:
+            kept.append(old)  # decided: stays as the audit trail
+    out.assumptions = sorted([*others, *kept], key=lambda a: a.id)
     return out
 
 

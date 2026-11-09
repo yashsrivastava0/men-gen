@@ -79,14 +79,24 @@ def live_features(digest: Digest) -> list[Any]:
     return [f for f in digest.features if f.status.strip() == "in" and f.name.strip()]
 
 
+LOOK_KINDS = ("preference", "screen")
+"""Detail kinds that say something about the look and feel (a design probe may start from them)."""
+
+
+def details_of(digest: Digest, *kinds: str) -> list[str]:
+    """Texts of the details of these kinds (``typical`` details never count as something the person said)."""
+    return [d.text.strip() for d in digest.details if d.kind in kinds and d.text.strip()]
+
+
 def digest_gaps(inp: ProbeHandoffInput) -> list[BlockingQuestion]:
-    """What the digest lacks for this probe (each one makes the probe fail: the planner would have to guess)."""
+    """What the digest lacks for this probe (each one makes the probe fail: the planner would have to guess). Details
+    the person gave count: a probe passes on facts, not only on slots (ADR 0016)."""
     d, table = inp.digest, table_for(inp.language)
     gaps: list[BlockingQuestion] = []
     if inp.kind == "research":
         if _blank(d.geography):
             gaps.append(_ask(table, "geography", "context.geo"))
-        if _blank(d.category) and _blank(d.idea):
+        if _blank(d.category) and _blank(d.idea) and not details_of(d, "context"):
             gaps.append(_ask(table, "category", "idea.category"))
     elif inp.kind == "blueprint":
         if not [r for r in d.roles if r.name.strip()]:
@@ -94,7 +104,15 @@ def digest_gaps(inp: ProbeHandoffInput) -> list[BlockingQuestion]:
         live = live_features(d)
         if not live:
             gaps.append(_ask(table, "features", "scope.features"))
-        missing = [f.name.strip() for f in live if _blank(f.intent)]
+        said = [
+            t.casefold()
+            for t in details_of(d, "rule", "flow", "screen", "acceptance", "entity", "number")
+        ]
+        missing = [
+            f.name.strip()
+            for f in live
+            if _blank(f.intent) and not any(f.name.strip().casefold() in t for t in said)
+        ]  # a feature a detail talks about is not left without an intent
         if missing:
             names = ", ".join(clip(n, 40) for n in missing[:5])
             gaps.append(_ask(table, "intents", "scope.features", names=names))
@@ -103,7 +121,11 @@ def digest_gaps(inp: ProbeHandoffInput) -> list[BlockingQuestion]:
             gaps.append(_ask(table, "audience", "audience.segments"))
         if not _non_blank(d.locales):
             gaps.append(_ask(table, "locales", "locales"))
-        if not _non_blank(d.tone_words) and not _non_blank(d.brand_signals):
+        if (
+            not _non_blank(d.tone_words)
+            and not _non_blank(d.brand_signals)
+            and not details_of(d, *LOOK_KINDS)
+        ):
             gaps.append(_ask(table, "tone", "look.tone_words"))
     return gaps
 

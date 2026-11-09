@@ -7,6 +7,8 @@
 * A table row (one line) is never split. When a table has to continue in the next chunk its header row is
   repeated. A single table row longer than the window keeps its own, oversize chunk rather than being cut.
 * Pointers survive: ``page 3``, ``pages 3-9``, ``heading: Payments``, ``sheet Roles!A1:D9``, ``rows 2-40``.
+* ``max_table_rows`` (when given) also closes a chunk after that many table rows, header repeated: a dense requirements
+  table is cut small enough that the reader can return one statement per row within its output budget.
 * An unreadable page becomes its own chunk with ``unreadable=True`` and EMPTY text (coverage counts it).
 * Ids are deterministic: ``CHK-<source id>-<n>`` with ``n`` counting from 1 in document order.
 * No regex touches document text.
@@ -123,6 +125,7 @@ def chunk_sections(
     *,
     source_id: str,
     target_tokens: tuple[int, int] = (3000, 4000),
+    max_table_rows: int | None = None,
 ) -> list[Chunk]:
     """Turn sections into chunks of about ``target_tokens`` tokens. See the module docstring for the rules."""
     low = target_tokens[0] * CHARS_PER_TOKEN
@@ -131,6 +134,7 @@ def chunk_sections(
     lines: list[str] = []
     refs: list[_Ref] = []
     size = 0
+    rows = 0  # table body rows in the chunk being built
 
     def emit(text: str, pointer: str, *, unreadable: bool = False) -> None:
         n = len(chunks)
@@ -146,15 +150,16 @@ def chunk_sections(
         )
 
     def flush() -> None:
-        nonlocal lines, refs, size
+        nonlocal lines, refs, size, rows
         if lines:
             emit("\n".join(lines), merge_pointers([_ref_label(r) for r in refs]))
-        lines, refs, size = [], [], 0
+        lines, refs, size, rows = [], [], 0, 0
 
-    def add(line: str, ref: _Ref, idx: int) -> None:
-        nonlocal size
+    def add(line: str, ref: _Ref, idx: int, *, row: bool = False) -> None:
+        nonlocal size, rows
         cost = len(line) + 1
-        if lines and size + cost > high:
+        full = row and max_table_rows is not None and rows >= max_table_rows
+        if lines and (size + cost > high or full):
             flush()
             repeat = ref.section.header if ref.section.table else ""
             if (
@@ -165,6 +170,7 @@ def chunk_sections(
                 size += len(repeat) + 1
         lines.append(line)
         size += cost
+        rows += 1 if row else 0
         if refs and refs[-1].section is ref.section and refs[-1].last <= idx:
             refs[-1].last = idx
         else:
@@ -195,6 +201,6 @@ def chunk_sections(
         for i, ln in enumerate(body):
             pieces = [ln] if sec.table else _split_long(ln, high)
             for piece in pieces:
-                add(piece, ref, i)
+                add(piece, ref, i, row=sec.table)
     flush()
     return chunks

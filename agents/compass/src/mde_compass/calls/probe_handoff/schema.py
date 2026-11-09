@@ -8,11 +8,13 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 MAX_ITEMS = 40
 MIN_QUERIES = 8
 MIN_SCREENS = 3
+MAX_DETAILS = 60
+DETAIL_CHARS = 200
 
 
 class Wire(BaseModel):
@@ -36,6 +38,13 @@ class DigestFeature(Wire):
     status: str  # in | later | out | unsupported | needs-engineering
 
 
+class DigestDetail(Wire):
+    """A detail the person gave (a fact of the Brief, with its kind) or one we proposed as typical (kind ``typical``)."""
+
+    kind: str
+    text: str
+
+
 class Digest(Wire):
     """The Brief reduced to what a downstream planner would be handed (no chat, no provenance)."""
 
@@ -53,6 +62,9 @@ class Digest(Wire):
     brand_signals: list[str]
     locales: list[str]
     constraints: list[str]
+    # v2 (ADR 0016): the typed details of the Brief and the typical details proposed for approval, so a probe can pass on
+    # facts and not only on slots
+    details: list[DigestDetail] = Field(default_factory=list)
 
 
 class ProbeHandoffInput(Wire):

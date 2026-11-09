@@ -36,7 +36,7 @@ from pydantic import JsonValue
 
 from mde_compass.catalog.loader import Catalog, SlotDef
 from mde_compass.domain.common import Provenance, ProvenanceType, Status
-from mde_compass.domain.interview import Fact, FactEffect
+from mde_compass.domain.interview import DOCUMENT_LOCK_CONFIDENCE, Fact, FactEffect
 from mde_compass.domain.slots import SlotRecord
 from mde_compass.engine.cards import value_fits_slot as value_fits_schema
 from mde_compass.engine.facts import fact_number
@@ -95,6 +95,8 @@ def provenance_type(fact: Fact, input_mode: str = "text") -> ProvenanceType:
         return "assumed"
     if fact.unverified_quote or not fact.quote.strip():
         return "model_knowledge"
+    if fact.origin == "document" and fact.confidence < DOCUMENT_LOCK_CONFIDENCE:
+        return "model_knowledge"  # a claim still waiting for the person to confirm it is not evidence (ADR 0016)
     if fact.origin == "tap":
         return "user_tap"
     if fact.origin == "document":

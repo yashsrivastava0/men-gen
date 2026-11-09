@@ -2,12 +2,14 @@
 
 from __future__ import annotations
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 MAX_ITEMS = 40
 MAX_SUMMARY_CHARS = 160
 MAX_PITCH_CHARS = 400
 MAX_DESCRIPTION_CHARS = 240
+MAX_DETAILS = 12
+DETAIL_CHARS = 160
 
 
 class Wire(BaseModel):
@@ -38,6 +40,9 @@ class CompileTextInput(Wire):
     role_count: int
     feature_count: int
     items: list[ItemRef]  # at most MAX_ITEMS
+    # v2 (ADR 0016): the rules, numbers and duties the person gave, so the pitch can say what matters most and every
+    # figure it mentions is grounded in the input (at most MAX_DETAILS)
+    details: list[str] = Field(default_factory=list)
 
 
 class ItemText(Wire):

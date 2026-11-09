@@ -1,12 +1,32 @@
 Language: {{ language }}
-{% if sections %}Per-section compile. Sections: {{ sections | join(", ") }}. The ledger holds the facts of these sections: account for every one of them.
+{% if task == "typical" %}Task: typical details. Nothing is filled and no fact is placed; return only "typical" (rules 1 to 7).
+{% elif sections %}Per-section compile. Sections: {{ sections | join(", ") }}. The ledger holds the facts of these sections: account for every one of them.
 {% else %}Whole Brief: every target below, and every fact of the ledger accounted for.
 {% endif %}
 {% if draft %}Consistency pass: reconcile the draft below with the ledger (rule 10).
 {% endif %}
 
-Targets you may fill (path | label | value_kind | offered options or keys):
-{% for t in targets %}- {{ t.path }} | {{ t.label }} | {{ t.value_kind }}{% if t.options %} | options: {{ t.options | join(", ") }}{% endif %}{% if t.fields %} | keys: {{ t.fields | join(", ") }}{% endif %}
+The project so far:
+{% for part in project %}{{ part }}
+{% endfor %}
+{% if not project %}(nothing yet)
+{% endif %}
+
+Already in the Brief (id | section | name):
+{% for part in existing %}{{ part }}
+{% endfor %}
+{% if not existing %}(nothing yet)
+{% endif %}
+
+{% if task != "typical" %}
+Fact kinds a placement may use (exactly one of these keys):
+{% for k in kinds %}- {{ k.key }}: {{ k.description }}
+{% endfor %}
+{% if not kinds %}(none offered: leave kind empty)
+{% endif %}
+
+Targets you may fill (path | label | value_kind | filled | offered options or keys):
+{% for t in targets %}- {{ t.path }} | {{ t.label }} | {{ t.value_kind }} | filled: {{ t.filled or "empty" }}{% if t.options %} | options: {{ t.options | join(", ") }}{% endif %}{% if t.fields %} | keys: {{ t.fields | join(", ") }}{% endif %}
 
 {% endfor %}
 {% if not targets %}(none: only placements and not_used apply)
@@ -15,19 +35,25 @@ Targets you may fill (path | label | value_kind | offered options or keys):
 What a sufficient value contains:
 {% for n in needs %}- {{ n.need_id }} ({{ n.label }}): {{ n.sufficient }}
 {% endfor %}
+{% else %}
+Fact kinds a typical detail may use (exactly one of these keys):
+{% for k in kinds %}- {{ k.key }}: {{ k.description }}
+{% endfor %}
+{% endif %}
 
-Fact ledger (every active fact, none left out; the line starts with the fact id):
+Fact ledger ({% if task == "typical" %}what the person already told us: do not repeat it{% else %}every fact of this call, none left out{% endif %}; the line starts with the fact id):
 {% for part in ledger %}{{ part }}
 {% endfor %}
 {% if not ledger %}(no facts)
 {% endif %}
 
-Assumptions made on the person's behalf (guesses, not facts):
+Assumptions made on the person's behalf (guesses, not facts{% if task == "typical" %}; do not repeat them{% endif %}):
 {% for a in assumptions %}- {{ a }}
 {% endfor %}
 {% if not assumptions %}(none)
 {% endif %}
 
+{% if task != "typical" %}
 Needs status table:
 {% for part in needs_table %}{{ part }}
 {% endfor %}
@@ -44,6 +70,7 @@ The answers in compact form:
 {% for part in qa_compact %}{{ part }}
 {% endfor %}
 {% if not qa_compact %}(none)
+{% endif %}
 {% endif %}
 {% if draft %}
 
