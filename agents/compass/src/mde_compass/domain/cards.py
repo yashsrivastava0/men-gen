@@ -19,6 +19,8 @@ CardType = Literal[
     "upload_or_link",
     "open_prompt",
 ]
+QuestionOrigin = Literal["planner", "followup", "fallback", "frame"]
+"""Where a question came from: the planner, a follow-up, a flagged fallback, or the legacy frame path."""
 CARD_TYPES: tuple[str, ...] = (
     "choose_one",
     "pick_many",
@@ -39,6 +41,7 @@ class CardOption(Strict):
     reason: str = ""
     sets: dict[str, JsonValue] = Field(default_factory=dict)
     ticked: bool = False  # pick_many: conservatively pre-ticked only when strongly typical
+    description: str = ""  # planner questions: a short line under the label
 
 
 class CustomInput(Strict):
@@ -76,6 +79,22 @@ class Card(Strict):
     language: str = "en"
     must_confirm: bool = False  # risky slots: "You decide" and Skip are refused
     fallback: bool = False  # the deterministic fallback card was used
+    # --- planned questions (build prompt 02): all optional, so every older card still validates ---------
+    batch_id: str | None = None
+    group_id: str | None = None
+    need_ids: list[str] = Field(
+        default_factory=list
+    )  # the needs it serves: a slot id or "domain:<topic>"
+    intent: str = ""  # what we want to learn, in plain words
+    unlocks: list[str] = Field(
+        default_factory=list
+    )  # downstream decisions it feeds (Research query, roles...)
+    answer_spec: str = ""  # what a good answer contains
+    followup_hint: str = ""  # what to ask if the answer is vague
+    examples: list[str] = Field(default_factory=list)  # placeholder hints for text questions
+    parent_card_id: str | None = None  # a follow-up points at the question it refines
+    depth: int = Field(default=0, ge=0)  # follow-up depth (0 = a base question)
+    origin: QuestionOrigin = "frame"
 
     def recommended_option(self) -> CardOption | None:
         for option in self.options:

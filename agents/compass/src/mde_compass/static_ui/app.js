@@ -30,10 +30,10 @@
   "inbound_events": [
     "user_message", "card_answer", "card_skip", "card_you_decide", "card_back", "upload_added", "link_added",
     "command", "brief_edit", "brief_feedback", "assumption_decision", "lookup_edit", "contributor_switch",
-    "gate_decision"
+    "gate_decision", "batch_answer", "answer_edit"
   ],
   "outbound_events": [
-    "assistant_message", "assistant_delta", "card", "playback", "notice", "progress", "brief_patch",
+    "assistant_message", "assistant_delta", "card", "question_batch", "playback", "notice", "progress", "brief_patch",
     "brief_ready", "brief_approved", "lookup_preview", "probe_result", "budget_warning", "error"
   ]
 }
@@ -153,7 +153,7 @@ CONTRACT*/
     sessionId: null, session: null, lastSeq: 0, seen: {}, devEvents: [], devTab: "events", devOpen: false,
     view: null, viewJson: "", lookups: [], progress: null, tab: "brief", streamAbort: null, streamOk: false,
     activeCard: null, typingCount: 0, loadingView: false, viewTimer: null, budget: null, calls: [],
-    ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: ""
+    ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null
   };
 
   function t(key, vars) {
@@ -266,6 +266,17 @@ CONTRACT*/
     if (custom) { body.custom_text = custom; }
     sendEvent(body);
   }
+  // "Answer all at once": one event with the answers of a whole batch form (phase 5 renders the form).
+  function sendBatchAnswer(batchId, answers) {
+    return sendEvent({ type: "batch_answer", batch_id: batchId, answers: answers });
+  }
+  // Edit an earlier answer from the Questions-and-answers list (phase 5): a new answer version and a replan.
+  function sendAnswerEdit(cardId, value, custom) {
+    var body = { type: "answer_edit", card_id: cardId, value: value === undefined ? null : value };
+    if (custom) { body.custom_text = custom; }
+    return sendEvent(body);
+  }
+  window.compassSend = { batchAnswer: sendBatchAnswer, answerEdit: sendAnswerEdit };
   function micSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
   function startDictation(target, done) {
     var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -506,6 +517,7 @@ CONTRACT*/
       log().appendChild(el);
       scrollChat();
     },
+    question_batch: function (p) { state.batch = p; },
     notice: function (p) {
       addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
     },

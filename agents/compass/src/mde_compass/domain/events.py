@@ -14,6 +14,7 @@ from pydantic import Field, JsonValue, TypeAdapter, model_validator
 from mde_compass.domain.cards import Card
 from mde_compass.domain.changes import FeedbackReason, PatchOp
 from mde_compass.domain.common import Strict
+from mde_compass.domain.interview import BatchGroup, PlannerMode
 from mde_compass.domain.research import ResearchRequest
 
 EVENT_ID_PATTERN = r"^[A-Za-z0-9_.:-]{1,64}$"
@@ -54,6 +55,30 @@ class CardBack(_InboundBase):
     type: Literal["card_back"] = "card_back"
 
 
+class BatchAnswerItem(Strict):
+    card_id: str
+    action: Literal["answer", "skip", "you_decide"] = "answer"
+    value: JsonValue = None
+    custom_text: str | None = None
+
+
+class BatchAnswer(_InboundBase):
+    """ "Answer all at once": the answers of one batch form, applied in a single turn."""
+
+    type: Literal["batch_answer"] = "batch_answer"
+    batch_id: str
+    answers: list[BatchAnswerItem] = Field(max_length=12)
+
+
+class AnswerEdit(_InboundBase):
+    """Edit an earlier answer from the Questions-and-answers list: a new answer version, new facts, a replan."""
+
+    type: Literal["answer_edit"] = "answer_edit"
+    card_id: str
+    value: JsonValue = None
+    custom_text: str | None = None
+
+
 class UploadAdded(_InboundBase):
     type: Literal["upload_added"] = "upload_added"
     source_id: str
@@ -65,7 +90,15 @@ class LinkAdded(_InboundBase):
 
 
 CommandName = Literal[
-    "undo", "back", "pause", "resume", "start_over", "finish_with_defaults", "show_what_you_know"
+    "undo",
+    "back",
+    "pause",
+    "resume",
+    "start_over",
+    "finish_with_defaults",
+    "show_what_you_know",
+    "ask_more",  # "Ask me more": the planner's deepen mode (build prompt 02)
+    "prepare_questions",  # the UI asks for the first batch while the playback card is read
 ]
 
 
@@ -127,6 +160,8 @@ InboundEvent = Annotated[
     | CardSkip
     | CardYouDecide
     | CardBack
+    | BatchAnswer
+    | AnswerEdit
     | UploadAdded
     | LinkAdded
     | Command
@@ -161,6 +196,19 @@ class AssistantDelta(Strict):
 class CardEvent(Strict):
     type: Literal["card"] = "card"
     card: Card
+
+
+class QuestionBatch(Strict):
+    """A planned batch: 2 to 3 themed groups. In one-at-a-time mode the engine also emits a normal ``card``
+    event for the current question, so older clients keep working."""
+
+    type: Literal["question_batch"] = "question_batch"
+    batch_id: str
+    mode: PlannerMode
+    ui_mode: Literal["one_at_a_time", "answer_all"] = "one_at_a_time"
+    groups: list[BatchGroup]
+    total: int = 0  # questions in the batch
+    answered: int = 0
 
 
 class PlaybackItem(Strict):
@@ -250,6 +298,7 @@ OutboundEvent = Annotated[
     AssistantMessage
     | AssistantDelta
     | CardEvent
+    | QuestionBatch
     | Playback
     | Notice
     | Progress

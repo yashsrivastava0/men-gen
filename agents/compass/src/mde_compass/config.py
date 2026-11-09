@@ -83,6 +83,83 @@ class QuestionPolicy:
     card_validation_retries: int = 2  # two validation failures in a row -> fallback card
 
 
+InterviewEngine = Literal["legacy", "planner"]
+InterviewBudget = Literal["quick", "standard", "thorough"]
+
+
+@dataclass(frozen=True)
+class InterviewPolicy:
+    """The AI-planned interview (build prompt 02): budgets, follow-up rules, thresholds. Code decides all of these;
+    the model only proposes questions. Numbers marked *calibrate* are set from the live planner-quality batch."""
+
+    # ``legacy`` is the frame-driven path kept only while the planner path is built (D-090); removed in phase 8.
+    engine: InterviewEngine = "legacy"
+    # question budgets (follow-ups included)
+    quick_max: int = 5
+    standard_max: int = 12
+    thorough_max: int = 25
+    # first batch sizes (min, max) by budget; later batches of the thorough budget are 6 to 8
+    quick_first_batch: tuple[int, int] = (4, 5)
+    standard_first_batch: tuple[int, int] = (5, 7)
+    thorough_batch: tuple[int, int] = (6, 8)
+    groups_per_batch: tuple[int, int] = (2, 3)
+    questions_per_group: tuple[int, int] = (3, 4)
+    # follow-ups
+    followup_max_depth: int = 2  # per need
+    followup_max_fraction: float = 0.4  # follow-ups at most this share of the base questions
+    # stopping
+    fatigue_streak: int = 2  # consecutive skips / "you decide" / very short answers
+    fatigue_short_chars: int = 2
+    marginal_new_facts_min: int = (
+        1  # a batch that adds fewer facts than this counts as low marginal value
+    )
+    # validators and auditor
+    audit_min_specificity: int = 3  # reject below this, or any flag
+    repair_attempts: int = 1  # one repair call for rejected questions, then drop
+    min_accepted_share: float = (
+        0.5  # fewer accepted than this share of a batch triggers the repair call
+    )
+    project_term_share_min: float = (
+        0.9  # target: share of non-universal questions with a project term
+    )
+    cross_idea_overlap_max: float = (
+        0.5  # calibrate: pairwise Jaccard of question terms across ideas
+    )
+    duplicate_similarity_min: float = (
+        0.8  # calibrate: normalized-text similarity that counts as a repeat
+    )
+    # facts and quotes
+    min_quote_chars: int = 3
+    high_confidence_closes_need: float = (
+        0.8  # a fact at or above this closes its need (becomes a confirmation)
+    )
+    understand_concurrency: int = 4  # answer-all form: parallel understand_turn calls
+
+    def budget_max(self, budget: InterviewBudget) -> int:
+        return {
+            "quick": self.quick_max,
+            "standard": self.standard_max,
+            "thorough": self.thorough_max,
+        }[budget]
+
+
+@dataclass(frozen=True)
+class ContextBudgets:
+    """Token budgets of the working context sent with each interview call (build prompt 02, section 3.3).
+    Tokens are estimated as characters / ``chars_per_token`` (no tokenizer dependency); measure and adjust."""
+
+    project_card: int = 1500
+    fact_digest: int = 6000
+    needs_table: int = 2000
+    asked_list: int = 1500
+    last_qa: int = 1500
+    last_qa_count: int = 4
+    compile_ceiling: int = (
+        60_000  # above this, compile_brief works per section, then one consistency pass
+    )
+    chars_per_token: int = 4
+
+
 @dataclass(frozen=True)
 class IntakeLimits:
     max_file_bytes: int = 15 * 1024 * 1024
@@ -157,6 +234,8 @@ def load_budget_policy(env: Mapping[str, str] | None = None) -> BudgetPolicy:
 @dataclass(frozen=True)
 class CompassConfig:
     questions: QuestionPolicy = field(default_factory=QuestionPolicy)
+    interview: InterviewPolicy = field(default_factory=InterviewPolicy)
+    context: ContextBudgets = field(default_factory=ContextBudgets)
     intake: IntakeLimits = field(default_factory=IntakeLimits)
     gate: GatePolicy = field(default_factory=GatePolicy)
     budget: BudgetPolicy = field(default_factory=BudgetPolicy)
