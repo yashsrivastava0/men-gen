@@ -24,6 +24,8 @@ from mde_core.hashing import sha256_hex
 
 FAKE_KEY = "sk-" + "abcdefghijklmnopqrstuvwxyz0123456789"
 
+_KEY_MARKER = "-----BEGIN PRIVATE KEY-----"  # secret-scan: allow (hostile-input fixture, not a key)
+
 
 class RecordingReader:
     """Returns two statements per chunk and remembers exactly what it was given."""
@@ -390,8 +392,7 @@ async def test_ingest_url_end_to_end_with_injected_network(ctx) -> None:
         "1234-" * 10_000,
         "password=" * 5_000,
         "Bearer " * 7_000,
-        "-----BEGIN PRIVATE KEY-----"
-        * 2_000,  # secret-scan: allow (a hostile-input fixture, not a key)
+        _KEY_MARKER * 2_000,
         "<system>" * 6_000,
         "eyJ" + "a." * 25_000,
         "https://" + "a:" * 20_000 + "@",
