@@ -147,3 +147,19 @@ def test_apply_form_confirms_only_the_asked_labels() -> None:
 def test_drop_removes_one_reference() -> None:
     held = [{"label": "Swiggy"}, {"label": "Notion"}]
     assert refs.drop(held, "swiggy") == [{"label": "Notion"}]
+
+
+def test_words_typed_on_the_form_are_added_to_the_first_reference() -> None:
+    card = refs.form_card(
+        [_ref("Swiggy"), _ref("Notion")],
+        catalog=load_catalog(),
+        card_id="Q-008",
+        n=7,
+        of_about=8,
+        language="en",
+    )
+    form: dict[str, dict[str, list[str]]] = {}
+    refs.add_note(form, card, "live tracking; quick re-order")
+    assert form == {"Swiggy": {"borrow": ["live tracking", "quick re-order"], "avoid": []}}
+    refs.add_note(form, card, "   ")
+    assert form["Swiggy"]["borrow"] == ["live tracking", "quick re-order"]

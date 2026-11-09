@@ -80,6 +80,20 @@ async def test_the_ranking_card_cannot_be_skipped(service) -> None:
     assert not conv.of_type("error")
 
 
+async def test_a_junk_answer_to_the_ranking_changes_nothing_and_asks_again(service) -> None:
+    conv = await Conversation.start(service)
+    await conv.say(DELIVERY + ". everything is a must")
+    await _until(conv, "features")
+    await conv.tap_recommended()
+    ranking = conv.last_card()
+    assert ranking.frame == "priorities"
+    before = (await conv.brief())["scope"]
+    await conv.answer([])  # nothing ranked
+    assert conv.last_card().id == ranking.id and _notices(conv, "not_understood")
+    assert (await conv.brief())["scope"] == before  # nobody was pushed to "later"
+    assert not conv.of_type("error")
+
+
 # --------------------------------------------------------------------------------------- BUG-6
 
 
@@ -97,6 +111,24 @@ async def test_a_named_business_is_not_a_reference_until_confirmed(service) -> N
     assert _notices(conv, "reference_check")
     card = conv.last_card()
     assert [o.id for o in card.options] == ["own", "like"] and "Swiggy" in card.question
+
+
+async def test_typed_words_on_the_confirm_card_never_make_it_a_reference(service) -> None:
+    conv = await _own_business_conversation(service)
+    card = conv.last_card()
+    await conv.answer(None, custom="it is a competitor of mine")
+    assert conv.last_card().id == card.id and _notices(conv, "not_understood")
+    assert (await conv.brief())["references"][0]["status"] != "confirmed"
+
+
+async def test_words_typed_on_the_form_count_as_what_to_borrow(service) -> None:
+    conv = await Conversation.start(service)
+    await conv.say("I want a food delivery app in Pune, like Swiggy")
+    form = await _until(conv, "apps_you_like")
+    await conv.answer({}, custom="live tracking, quick re-order")
+    ref = (await conv.brief())["references"][0]
+    assert ref["borrow"] == ["live tracking", "quick re-order"] and ref["status"] == "confirmed"
+    assert form.type == "quick_form"
 
 
 async def test_answering_it_is_my_own_business_drops_the_reference(service) -> None:

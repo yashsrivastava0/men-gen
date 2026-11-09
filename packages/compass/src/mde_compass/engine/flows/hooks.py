@@ -258,19 +258,26 @@ class FlowHooks:
 
     # ------------------------------------------------------------------ answers to those cards
     async def _flow_card_answer(self, turn: _Turn, card: Card, ev: Any) -> bool:
-        """Apply the answer to a ranking or reference card built here; False leaves it to the generic path."""
+        """Apply the answer to a ranking or reference card built here; False leaves it to the generic path.
+        An answer that says nothing usable (no option, no ranked feature) shows the same card again."""
         if priorities.flow_card(card):
-            self._flow_priority_answer(turn, card, ev)
+            applied = self._flow_priority_answer(turn, card, ev)
         elif references.flow_card(card):
-            self._flow_reference_answer(turn, card, ev)
+            applied = self._flow_reference_answer(turn, card, ev)
         else:
             return False
+        if not applied:
+            turn.notice("not_understood", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
+            turn.out.append(CardEvent(card=card))
+            return True
         self._rebuild(turn)
         await self._advance(turn)
         return True
 
-    def _flow_priority_answer(self, turn: _Turn, card: Card, ev: Any) -> None:
+    def _flow_priority_answer(self, turn: _Turn, card: Card, ev: Any) -> bool:
         placement = priorities.place(card, ev.value)
+        if not placement.names(priorities.MUST):
+            return False  # nothing chosen: never turn the whole list into "later" on a junk answer
         feats, _ = self._flow_slot(turn, priorities.FEATURES_SLOT)
         prov = self._prov(turn, "user_tap", "")
         turn.slots.write(
@@ -295,17 +302,20 @@ class FlowHooks:
                 {"value": ev.value, "slots": [priorities.SLOT, priorities.FEATURES_SLOT]},
             )
         )  # type: ignore[arg-type]
+        return True
 
-    def _flow_reference_answer(self, turn: _Turn, card: Card, ev: Any) -> None:
+    def _flow_reference_answer(self, turn: _Turn, card: Card, ev: Any) -> bool:
         value, _ = self._flow_slot(turn, references.SLOT)
         prov = self._prov(turn, "user_tap", "")
         answered: dict[str, JsonValue] = {"value": ev.value, "slots": [references.SLOT]}
         if card.type == "choose_one":
             label = references.confirm_label(card, str(ev.value))
-            if label and str(ev.value) == references.OWN_ID:
+            if label is None:
+                return False  # typed words or an unknown option: a business is never assumed to be a reference
+            if str(ev.value) == references.OWN_ID:
                 turn.slots.write(references.SLOT, [{"label": label}], state="volunteered", provenance=prov, remove=True, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
                 turn.notice("reference_own", self._t(turn, "flows.reference.own_noted", name=label))
-            elif label:
+            else:
                 new = references.apply_form(value, {}, labels={label.casefold()})
                 turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
                 turn.notice(
@@ -313,10 +323,13 @@ class FlowHooks:
                 )
         else:
             form = references.parse_form(card, ev.value)
+            if ev.custom_text:
+                references.add_note(form, card, ev.custom_text)
             asked = {lab.casefold() for o in card.options if (lab := references.option_label(o))}
             new = references.apply_form(value, form, labels=asked)
             turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
         turn.answered.append((card.id, "answered", answered))  # type: ignore[arg-type]
+        return True
 
     # ------------------------------------------------------------------ messages
     async def _flow_on_message(self, turn: _Turn, ev: Any, text: str, understood: Any) -> bool:

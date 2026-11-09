@@ -132,7 +132,7 @@ def _card(
     return Card(
         id=card_id, frame=FRAME, slots=[slot], type=card_type,  # type: ignore[arg-type]
         question=question, why_we_ask=why, options=kind_options,
-        custom_input=CustomInput(enabled=False), you_decide=YouDecide(enabled=not must_confirm),
+        custom_input=CustomInput(enabled=True), you_decide=YouDecide(enabled=not must_confirm),
         skip=SkipSpec(enabled=not must_confirm), progress=CardProgress(n=n, of_about=max(of_about, n)),
         language=language, must_confirm=must_confirm,
     )  # fmt: skip
@@ -202,6 +202,15 @@ def parse_form(card: Card, answer: JsonValue) -> dict[str, dict[str, list[str]]]
         slot = out.setdefault(str(ref["label"]), {"borrow": [], "avoid": []})
         slot[kind] = items
     return out
+
+
+def add_note(form: dict[str, dict[str, list[str]]], card: Card, text: str) -> None:
+    """Words typed on the form card ("something else") count as what to borrow from the first reference."""
+    first = next((lab for o in card.options if (lab := option_label(o))), None)
+    items = _items(text)
+    if first is not None and items:
+        entry = form.setdefault(first, {"borrow": [], "avoid": []})
+        entry["borrow"] = [*entry["borrow"], *items][:MAX_ITEMS]
 
 
 def apply_form(
