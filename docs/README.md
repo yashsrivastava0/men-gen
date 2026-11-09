@@ -86,6 +86,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [implementation/DECISIONS.md](implementation/DECISIONS.md): decision log (D-001 onward)
 - [implementation/HANDOFF.md](implementation/HANDOFF.md): **start here when resuming**: exact state, open decision, resume checklist, environment facts, lessons
 - [implementation/HANDOFF-compass-ai-interview.md](implementation/HANDOFF-compass-ai-interview.md): handoff for the Compass AI-planned interview task (state, live findings, open items, how to run)
+- [implementation/COMPASS-STATUS-2026-11-09.md](implementation/COMPASS-STATUS-2026-11-09.md): long record of the Compass AI-planned interview session (chronology, live results, open defects, config values)
 - [implementation/REPORT.md](implementation/REPORT.md): the final report (draft; live evidence and the last fix branch are pending)
 
 ## Where the agent tooling lives
