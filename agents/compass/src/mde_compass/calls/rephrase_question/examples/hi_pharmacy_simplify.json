@@ -1,0 +1,29 @@
+{
+  "name": "hi_pharmacy_simplify",
+  "input": {
+    "language": "hi",
+    "mode": "simplify",
+    "intent": "learn what happens when stock is close to expiry",
+    "answer_spec": "Whether the tool only warns, prepares a return to the wholesaler, or also blocks selling",
+    "question": "जब किसी दवा की एक्सपायरी नज़दीक हो, तो क्या सिस्टम केवल अलर्ट दे या होलसेलर को वापसी का प्रस्ताव भी तैयार करे?",
+    "why_we_ask": "इससे तय होता है कि पहले संस्करण में वापसी का हिस्सा चाहिए या नहीं।",
+    "type": "choose_one",
+    "options": [
+      { "label": "केवल अलर्ट", "description": "" },
+      { "label": "अलर्ट और वापसी का प्रस्ताव", "description": "" },
+      { "label": "अलर्ट और बिक्री पर रोक", "description": "" }
+    ],
+    "project_terms": ["फार्मेसी", "स्टॉक", "होलसेलर", "दवा"],
+    "recent_user_words": "अलर्ट और प्रस्ताव का मतलब समझ नहीं आया"
+  },
+  "output": {
+    "question": "जब किसी दवा की एक्सपायरी पास आए, तो ऐप क्या करे?",
+    "why_we_ask": "इससे तय होता है कि पहली बार में दवा लौटाने का हिस्सा चाहिए या नहीं।",
+    "options": [
+      { "label": "सिर्फ़ दुकान को बताए", "description": "" },
+      { "label": "बताए और होलसेलर को लौटाने की तैयारी करे", "description": "जैसे: लौटाने वाली दवाओं की सूची बन जाए" },
+      { "label": "बताए और काउंटर पर बेचना रोक दे", "description": "" }
+    ],
+    "examples": []
+  }
+}

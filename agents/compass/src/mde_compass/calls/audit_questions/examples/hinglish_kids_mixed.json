@@ -1,0 +1,124 @@
+{
+  "name": "hinglish_kids_mixed",
+  "input": {
+    "language": "hi-Latn",
+    "project_terms": ["bachche", "kahaniyan", "games", "parents", "language", "progress"],
+    "needs": [
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release."
+      },
+      {
+        "need_id": "goals.success_measures",
+        "label": "How success is measured",
+        "sufficient": "Two or three signs, in the owner's words, that the app is working."
+      },
+      {
+        "need_id": "locales",
+        "label": "Languages of the app",
+        "sufficient": "Which languages the app is shown in."
+      },
+      {
+        "need_id": "data.sensitive",
+        "label": "Sensitive information",
+        "sufficient": "What sensitive information the app handles, such as health, financial, children's data or ID documents."
+      }
+    ],
+    "asked_list": "Q-001 typical day of a child using the app (answered)\nQ-002 who pays for the app (answered)\nQ-003 age range of the children (answered)",
+    "questions": [
+      {
+        "card_id": "Q-004",
+        "text": "Parents ko bachche ki progress kitni detail mein dekhni hai: sirf kitne games khele, ya har kahani ke baad score bhi?",
+        "intent": "learn how much progress detail parents see",
+        "serves": ["scope.features", "domain:parent_progress"],
+        "type": "choose_one",
+        "option_labels": ["Sirf khele hue games", "Games aur har kahani ka score", "Hafte ka chhota summary"],
+        "recommended": "Hafte ka chhota summary",
+        "why_we_ask": "Isse pata chalta hai ki parents ki screen kitni bhari honi chahiye."
+      },
+      {
+        "card_id": "Q-005",
+        "text": "Pehle 6 mahine mein daily active users, retention rate aur churn kitna expect karte ho?",
+        "intent": "learn the retention target",
+        "serves": ["goals.success_measures"],
+        "type": "open_prompt",
+        "option_labels": [],
+        "recommended": "",
+        "why_we_ask": "Isse success ka target tay hota hai."
+      },
+      {
+        "card_id": "Q-006",
+        "text": "Bachchon ke liye app ke mascot ka naam kya hona chahiye?",
+        "intent": "learn the name of the mascot",
+        "serves": ["growth.mascot"],
+        "type": "open_prompt",
+        "option_labels": [],
+        "recommended": "",
+        "why_we_ask": "Design mein mascot ki jagah chahiye."
+      },
+      {
+        "card_id": "Q-007",
+        "text": "Aapka app kin languages mein hona chahiye: sirf Hindi, sirf English, ya dono?",
+        "intent": "learn the languages of the app",
+        "serves": ["locales"],
+        "type": "choose_one",
+        "option_labels": ["Sirf Hindi", "Sirf English", "Hindi aur English dono"],
+        "recommended": "",
+        "why_we_ask": "Isse screens ke text ki language tay hoti hai."
+      }
+    ]
+  },
+  "output": {
+    "verdicts": [
+      {
+        "card_id": "Q-004",
+        "specific": 5,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [],
+        "fix": ""
+      },
+      {
+        "card_id": "Q-005",
+        "specific": 2,
+        "leading": false,
+        "jargon": true,
+        "duplicate_of": "",
+        "answerable": false,
+        "maps_to_need": true,
+        "issues": [
+          "Business jargon: 'retention rate' and 'churn'.",
+          "A parent entrepreneur cannot know these numbers before launch.",
+          "Reads the same for any app."
+        ],
+        "fix": "Ask what a good first month looks like, in plain words about the children."
+      },
+      {
+        "card_id": "Q-006",
+        "specific": 3,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": false,
+        "issues": ["Serves 'growth.mascot', which is neither a listed need nor a domain topic."],
+        "fix": "Tie it to a listed need or to a domain topic such as the app's characters."
+      },
+      {
+        "card_id": "Q-007",
+        "specific": 3,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [],
+        "fix": ""
+      }
+    ]
+  }
+}

@@ -1,0 +1,23 @@
+Language of the questions: {{ language }}
+
+Project terms (the project's own words): {{ project_terms | join(", ") or "(none)" }}
+
+Needs the questions may serve (a question may also serve "domain:<topic>"):
+{% for n in needs %}- {{ n.need_id }}: {{ n.label }}{% if n.sufficient %} - a sufficient answer contains: {{ n.sufficient }}{% endif %}
+
+{% endfor %}
+
+Questions already asked (earlier in the interview; id, intent, status):
+{{ asked_list }}
+
+Questions to review ({{ questions | length }}):
+{% for q in questions %}
+[{{ q.card_id }}] ({{ q.type }}) {{ q.text }}
+  intent: {{ q.intent or "(none)" }}
+  serves: {{ q.serves | join(", ") or "(nothing)" }}
+  options: {{ q.option_labels | join(" / ") or "(none)" }}{% if q.recommended %}  recommended: {{ q.recommended }}{% endif %}
+
+  why we ask: {{ q.why_we_ask or "(none)" }}
+{% endfor %}
+
+Return exactly one verdict for each of the {{ questions | length }} questions above, in the same order, with the same card_id.
