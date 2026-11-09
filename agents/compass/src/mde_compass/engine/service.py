@@ -1684,6 +1684,10 @@ class Service(FlowHooks):
         if not self.interview.active:
             return
         mem = turn.memory
+        if not any(b.id == ev.batch_id for b in mem.batches):
+            raise NotFound(
+                f"batch {ev.batch_id}"
+            )  # the page shows "the questions changed" and offers to retry
         items: list[AnswerItem] = []
         closed: set[str] = set()
         for a in ev.answers:

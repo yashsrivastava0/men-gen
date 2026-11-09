@@ -6,12 +6,15 @@ content."""
 
 from __future__ import annotations
 
+import pytest
+
 from mde_compass.compose import build_service
 from mde_compass.domain import Card
 from mde_compass.domain.events import BatchAnswer, BatchAnswerItem
 from mde_compass.engine.service import Service
 from mde_compass.testing import Conversation
 from mde_core.clock import FakeClock
+from mde_core.errors import NotFound
 
 IDEA = "I want an app for my tiffin delivery service in Pune. Office workers order a daily lunch."
 LONG = "We deliver 200 lunch boxes a day to offices, mostly in Baner and Hinjewadi, and riders are independent"
@@ -157,3 +160,11 @@ async def test_the_follow_ups_of_one_submit_arrive_as_one_form() -> None:
     assert len(follow_cards) >= 2 and all(c.origin == "followup" for c in follow_cards)
     open_now = {k for k, v in (await qa_status(svc, conv)).items() if v == "open"}
     assert open_now == {c.id for c in follow_cards}  # every open question is on that one form
+
+
+async def test_a_submit_for_a_batch_that_was_never_planned_is_a_not_found_error() -> None:
+    svc, conv = await started()
+    _, cards = form(conv)
+    with pytest.raises(NotFound):  # the API answers 404 and the page offers to retry
+        await submit(conv, "BAT-999", [item(cards[0])])
+    assert (await qa_status(svc, conv))[cards[0].id] == "open"  # nothing was recorded

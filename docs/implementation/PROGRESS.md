@@ -154,11 +154,11 @@ Owner's list: a detailed, correct Brief; one batch at a time answered and submit
 
 - [x] P0. Follow-up fixes landed and merged (390c9e6): BUG-27, defaults at stop, settled-assumption notice, label codes, BUG-28, BUG-22, GAP-5, GAP-1 partial; offline 2641 passed / 11 xfailed, integration 77, security 220
 - [x] P1. Interface freeze (eeedcde, tag `compass/v2-p1`): `Room`, hard caps, closing card origin + call mode (stored as replan), wire fields, `DomainFact.kind/refs` (hash-stable), decide port, ADR 0016; `plan_compute`/`plan_apply` moves to P3
-- [ ] P2. Engine: tier-first, budget charged when planned, submit-once, closing question
-- [ ] P3. Latency: parallel idea turn, planner prefetch, audit policy, slim planner, gateway limits, read-preview
+- [x] P2. Engine (tag `compass/v2-p2`): tiers and `Room` accounting, BUG-19 fixed (4311f6a); the batch form as default, submit once (ecd30f1); the closing question, always last, decided when nobody answers, reopened by Ask me more (12c4911, 47c0b9a); D-108
+- [~] P3. Latency: the idea turn runs understand and situate together (e4fe865). Left: planner prefetch, audit policy, slim planner, gateway limits, read-preview
 - [ ] P4. Auto-answer: you-decide order, `cmp.decide_answers`, decide the rest
-- [ ] CALLS: planner type rules and `type_fit`, necessity validator, closing mode, tap facts, `scan_ambiguity` v2
+- [~] CALLS (branch `feat/compass-v2-calls`, still running): closing mode and `suggested_features` merged (8d2b25f, 9753fb8); in progress: planner type rules, `type_fit`, necessity validator, follow-up folding, `decide_answers`
 - [ ] BRIEF: `kind`/`refs`, per-section compile, corrections as assumptions, probes after compile, documents
-- [ ] WEB: tier-first welcome, form for all batches, select-all / none / custom, decide the rest, retry
+- [x] WEB (merged c79cb76, D-109): tier-first welcome, form for every batch, select-all / none of these / picks plus custom, You decide and Decide the rest, retry, phase-aware waiting, upload checks; 2789 offline tests green
 - [ ] P6. User changes write facts; section-level recompile
 - [ ] P7. Live verification (the owner enables the second key; USD 3.00 ceiling), docs, ADR 0016
