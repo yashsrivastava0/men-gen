@@ -10,3 +10,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Offer three concrete ways to split the product into apps, using the roles already known. Name
   each app by who uses it. If five or more apps are implied, suggest a first release with fewer.
+style_guide: "Ask who needs their own screen, not how many apps. Name the people from the idea and let the user group them."
+examples:
+- "Do your riders need their own app, or do they only receive orders from the office?"
+- "Will the receptionist use the same app as patients, or a separate one?"

@@ -16,3 +16,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Mostly assumed from the audience and kept out of the interview. Ask only when the audience or
   usage context makes a limit important. One short checklist, plain words.
+style_guide: "Ask about conditions of use that change the build: poor network, old phones, accessibility. Offer them as things to tick, with examples from the user's setting."
+examples:
+- "Will riders often be out of network range while delivering?"
+- "Do any of the seniors need very large text or voice help?"

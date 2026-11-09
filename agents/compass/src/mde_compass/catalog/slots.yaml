@@ -17,6 +17,12 @@ slots:
     kind: text
   brief_path: idea.summary
   order: 1
+  answer_spec:
+    sufficient: "One or two sentences that say what the app does and for whom, in the user's own words."
+    aspects: [what_it_does, for_whom]
+    fact_types: [goal, requirement, context]
+    min_facts: 1
+  universal: true
   fallback_card:
     type: open_prompt
     question:
@@ -48,6 +54,11 @@ slots:
   ask_if: filled('idea.summary')
   brief_path: idea.category
   order: 1
+  answer_spec:
+    sufficient: "The kind of app, specific enough to choose which similar apps to study (a multi-restaurant delivery marketplace, not just 'commerce')."
+    aspects: [category, sub_kind]
+    fact_types: [context, requirement]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -91,6 +102,12 @@ slots:
   ask_if: filled('idea.category')
   brief_path: idea.subcategory
   order: 1
+  answer_spec:
+    sufficient: "A more specific description of the sub-kind: who sells or provides what to whom, and how it is delivered or used."
+    aspects: [provides_what, to_whom, how_delivered]
+    fact_types: [context, requirement]
+    min_facts: 1
+  domain_topics: ["how it is delivered", "who provides it"]
   fallback_card:
     type: open_prompt
     question:
@@ -123,6 +140,12 @@ slots:
   ask_if: filled('idea.category') and value('idea.category') != 'internal_tool'
   brief_path: idea.business_model
   order: 1
+  answer_spec:
+    sufficient: "Who pays whom for what, where the revenue comes from, and which parts are free versus paid."
+    aspects: [payer, payee, revenue_source, free_vs_paid]
+    fact_types: [rule, requirement, context]
+    min_facts: 1
+  domain_topics: ["pricing", "commission or fees", "payouts", "subscriptions"]
   fallback_card:
     type: choose_one
     question:
@@ -167,6 +190,12 @@ slots:
   ask_if: filled('idea.category')
   brief_path: idea.problem_value
   order: 1
+  answer_spec:
+    sufficient: "The problem the app solves, for whom, and what is painful about how they cope today."
+    aspects: [problem, who_has_it, current_workaround]
+    fact_types: [goal, context]
+    min_facts: 1
+  domain_topics: ["current workaround"]
   fallback_card:
     type: open_prompt
     question:
@@ -199,6 +228,11 @@ slots:
   ask_if: filled('idea.category')
   brief_path: idea.differentiator
   order: 1
+  answer_spec:
+    sufficient: "What makes this idea different from existing apps or from the way people do it today."
+    aspects: [difference]
+    fact_types: [preference, context, requirement]
+    min_facts: 1
   fallback_card:
     type: open_prompt
     question:
@@ -236,6 +270,13 @@ slots:
   ask_if: filled('idea.summary')
   brief_path: context.geo
   order: 1
+  answer_spec:
+    sufficient: "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several."
+    aspects: [country, city_or_region, languages, single_or_multi_city]
+    fact_types: [context, constraint]
+    min_facts: 1
+  universal: true
+  domain_topics: ["service area", "regional languages"]
   fallback_card:
     type: quick_form
     question:
@@ -273,6 +314,12 @@ slots:
   default: pilot_small
   brief_path: context.scale_launch
   order: 8
+  answer_spec:
+    sufficient: "Expected size at launch (users, locations or orders per day), the target launch timing, and whether it starts as a pilot."
+    aspects: [size, timing, pilot]
+    fact_types: [number, constraint, goal]
+    min_facts: 1
+  domain_topics: ["peak periods"]
   fallback_card:
     type: choose_one
     question:
@@ -322,6 +369,11 @@ slots:
   ask_if: filled('scope.features')
   brief_path: context.goals
   order: 4
+  answer_spec:
+    sufficient: "The single main goal the app must achieve for the business."
+    aspects: [main_goal]
+    fact_types: [goal]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -371,6 +423,11 @@ slots:
   ask_if: filled('goals.primary')
   brief_path: context.success_measures
   order: 8
+  answer_spec:
+    sufficient: "How the owner will know it works: one to three measures, with a rough target if known."
+    aspects: [measure, target]
+    fact_types: [goal, number]
+    min_facts: 1
   fallback_card:
     type: pick_many
     question:
@@ -420,6 +477,12 @@ slots:
   - everyday users
   brief_path: audience.segments
   order: 2
+  answer_spec:
+    sufficient: "At least one named segment: who they are, their main goal, and where and how they use the app. Separate the paying customer from the end user when they differ."
+    aspects: [who, goal, where_how, payer_vs_user]
+    fact_types: [role, context, goal]
+    min_facts: 1
+  domain_topics: ["how often they use it", "buyer versus user"]
   fallback_card:
     type: open_prompt
     question:
@@ -457,6 +520,11 @@ slots:
   ask_if: filled('audience.segments')
   brief_path: audience.traits
   order: 2
+  answer_spec:
+    sufficient: "Age range, comfort with technology, languages and any accessibility needs of the main users."
+    aspects: [age, tech_comfort, languages, accessibility]
+    fact_types: [context, constraint, preference]
+    min_facts: 1
   fallback_card:
     type: pick_many
     question:
@@ -513,6 +581,11 @@ slots:
   ask_if: filled('audience.segments')
   brief_path: audience.usage_context
   order: 2
+  answer_spec:
+    sufficient: "Where and how the app is used: on the go, low network, a shared device, one hand."
+    aspects: [where, network, device_sharing]
+    fact_types: [context, constraint]
+    min_facts: 1
   fallback_card:
     type: pick_many
     question:
@@ -564,6 +637,12 @@ slots:
   ask_if: filled('audience.segments')
   brief_path: apps
   order: 3
+  answer_spec:
+    sufficient: "Each app needed (for example a customer app, a staff app, an admin panel): its purpose, who uses it, and whether it is mobile, web or both."
+    aspects: [name, purpose, who_uses, surface]
+    fact_types: [requirement, role]
+    min_facts: 1
+  domain_topics: ["who operates the back office"]
   fallback_card:
     type: choose_one
     question:
@@ -611,6 +690,12 @@ slots:
   ask_if: filled('apps.list')
   brief_path: roles
   order: 3
+  answer_spec:
+    sufficient: "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+    aspects: [role_name, top_goal, permissions]
+    fact_types: [role, rule]
+    min_facts: 1
+  domain_topics: ["who approves", "who operates", "outside partners"]
   fallback_card:
     type: pick_many
     question:
@@ -671,6 +756,12 @@ slots:
   ask_if: filled('roles.list')
   brief_path: scope
   order: 4
+  answer_spec:
+    sufficient: "What each feature is for (the job it does) and what must be in the first release."
+    aspects: [feature, purpose, first_release]
+    fact_types: [requirement, goal, preference]
+    min_facts: 1
+  domain_topics: ["the core journey", "exceptions and edge cases"]
   fallback_card:
     type: pick_many
     question:
@@ -720,6 +811,11 @@ slots:
   ask_if: filled('scope.features')
   brief_path: scope.priority
   order: 4
+  answer_spec:
+    sufficient: "Which features define the first version and which can wait, when everything cannot fit."
+    aspects: [must_have, can_wait]
+    fact_types: [preference, requirement]
+    min_facts: 1
   fallback_card:
     type: priority
     question:
@@ -764,6 +860,11 @@ slots:
   ask_if: filled('scope.features')
   brief_path: scope.must_not
   order: 4
+  answer_spec:
+    sufficient: "Anything the app must explicitly not do or include."
+    aspects: [exclusion]
+    fact_types: [exclusion, constraint]
+    min_facts: 1
   fallback_card:
     type: open_prompt
     question:
@@ -798,6 +899,11 @@ slots:
     - avoid
   brief_path: references
   order: 4
+  answer_spec:
+    sufficient: "Apps the user likes or dislikes, and what to borrow or avoid from each."
+    aspects: [app_name, borrow, avoid]
+    fact_types: [reference, preference]
+    min_facts: 1
   fallback_card:
     type: open_prompt
     question:
@@ -834,6 +940,11 @@ slots:
   brief_path: access.auth_methods
   order: 5
   must_confirm: true
+  answer_spec:
+    sufficient: "How each kind of user signs in: phone number and code, email, a social account, or not at all."
+    aspects: [method, per_role]
+    fact_types: [requirement, constraint, preference]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -882,6 +993,11 @@ slots:
   brief_path: access.account_model
   order: 5
   must_confirm: true
+  answer_spec:
+    sufficient: "Whether people have individual accounts, shared team or business accounts, or can use the app as a guest."
+    aspects: [account_model]
+    fact_types: [requirement, rule]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -930,6 +1046,11 @@ slots:
   ask_if: filled('auth.account_model')
   brief_path: access.onboarding_approvals
   order: 5
+  answer_spec:
+    sufficient: "Whether new people can join freely, need approval, or are invited, and who approves them."
+    aspects: [join_rule, approver]
+    fact_types: [rule]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -970,6 +1091,12 @@ slots:
   value_schema: *id001
   brief_path: experience.brand.name
   order: 6
+  answer_spec:
+    sufficient: "The name of the app or the business."
+    aspects: [name]
+    fact_types: [context, reference]
+    min_facts: 1
+  universal: true
   fallback_card:
     type: quick_form
     question:
@@ -999,6 +1126,12 @@ slots:
     kind: text_list
   brief_path: experience.brand.assets
   order: 6
+  answer_spec:
+    sufficient: "Whether a logo, colors or brand files exist, and where to find them."
+    aspects: [logo, colors, files]
+    fact_types: [reference, context]
+    min_facts: 1
+  universal: true
   fallback_card:
     type: upload_or_link
     question:
@@ -1050,6 +1183,11 @@ slots:
   - calm_simple
   brief_path: experience.tone_words
   order: 6
+  answer_spec:
+    sufficient: "Two or three words for the mood and personality the app should have."
+    aspects: [tone_words]
+    fact_types: [preference]
+    min_facts: 1
   fallback_card:
     type: look_signals
     question:
@@ -1095,6 +1233,11 @@ slots:
   ask_if: filled('look.tone_words')
   brief_path: experience.visual_references
   order: 6
+  answer_spec:
+    sufficient: "Apps or sites whose look the user likes."
+    aspects: [reference]
+    fact_types: [reference, preference]
+    min_facts: 1
   fallback_card:
     type: upload_or_link
     question:
@@ -1132,6 +1275,11 @@ slots:
   ask_if: filled('look.tone_words')
   brief_path: experience.density_mode
   order: 6
+  answer_spec:
+    sufficient: "Whether screens should feel spacious and simple or compact and rich in information."
+    aspects: [density]
+    fact_types: [preference]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -1184,6 +1332,12 @@ slots:
   - en
   brief_path: experience.locales
   order: 2
+  answer_spec:
+    sufficient: "The language the chat uses and the languages the app itself must support, including any right-to-left language."
+    aspects: [chat_language, app_languages, right_to_left]
+    fact_types: [constraint, preference, context]
+    min_facts: 1
+  universal: true
   fallback_card:
     type: pick_many
     question:
@@ -1235,6 +1389,11 @@ slots:
   default: phones
   brief_path: experience.devices
   order: 6
+  answer_spec:
+    sufficient: "Which devices the users have: phone only, phone and tablet, low-end phones."
+    aspects: [device_types, low_end]
+    fact_types: [context, constraint]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -1286,6 +1445,12 @@ slots:
   brief_path: integrations
   order: 7
   must_confirm: true
+  answer_spec:
+    sufficient: "Which outside services to connect (payments, maps, SMS codes, push messages, email, identity checks) and what each is for."
+    aspects: [service, purpose]
+    fact_types: [requirement, preference]
+    min_facts: 1
+  domain_topics: ["payment providers", "local services"]
   fallback_card:
     type: pick_many
     question:
@@ -1338,6 +1503,11 @@ slots:
   ask_if: filled('integrations.wanted')
   brief_path: integrations.preference
   order: 7
+  answer_spec:
+    sufficient: "Whether connections should be real from the start or use sample data for now."
+    aspects: [mode]
+    fact_types: [preference, constraint]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -1386,6 +1556,11 @@ slots:
   ask_if: filled('scope.features')
   brief_path: data.existing_systems
   order: 7
+  answer_spec:
+    sufficient: "Existing systems, databases, spreadsheets or APIs to connect to, and what each holds."
+    aspects: [system, data_held, access]
+    fact_types: [reference, constraint, context]
+    min_facts: 1
   fallback_card:
     type: upload_or_link
     question:
@@ -1440,6 +1615,12 @@ slots:
   brief_path: data.sensitive
   order: 7
   must_confirm: true
+  answer_spec:
+    sufficient: "What sensitive information the app handles, such as health, financial, children's data or ID documents."
+    aspects: [data_kinds]
+    fact_types: [constraint, context]
+    min_facts: 1
+  domain_topics: ["regulation", "how long data is kept"]
   fallback_card:
     type: pick_many
     question:
@@ -1491,6 +1672,11 @@ slots:
   default: online_only
   brief_path: constraints.offline
   order: 8
+  answer_spec:
+    sufficient: "Whether the app must work without internet, and which parts."
+    aspects: [offline_need, parts]
+    fact_types: [constraint]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -1539,6 +1725,11 @@ slots:
   default: normal
   brief_path: constraints.performance
   order: 8
+  answer_spec:
+    sufficient: "Expected load or speed needs, such as peak users or acceptable waiting time."
+    aspects: [peak_load, speed]
+    fact_types: [constraint, number]
+    min_facts: 1
   fallback_card:
     type: choose_one
     question:
@@ -1588,6 +1779,11 @@ slots:
   - large_text
   brief_path: constraints.accessibility
   order: 8
+  answer_spec:
+    sufficient: "Accessibility needs such as large text, a screen reader, strong color contrast or a right-to-left layout."
+    aspects: [needs]
+    fact_types: [constraint]
+    min_facts: 1
   fallback_card:
     type: pick_many
     question:
@@ -1634,6 +1830,11 @@ slots:
     kind: text_list
   brief_path: constraints.must_use
   order: 8
+  answer_spec:
+    sufficient: "Services or components that must be used, and why."
+    aspects: [item, reason]
+    fact_types: [constraint, requirement]
+    min_facts: 1
   fallback_card:
     type: open_prompt
     question:
@@ -1665,6 +1866,11 @@ slots:
     kind: text_list
   brief_path: constraints.must_not
   order: 8
+  answer_spec:
+    sufficient: "Things the app must avoid: data, behaviours or services."
+    aspects: [item]
+    fact_types: [exclusion, constraint]
+    min_facts: 1
   fallback_card:
     type: open_prompt
     question:
@@ -1703,6 +1909,11 @@ slots:
   ask_if: filled('scope.features')
   brief_path: glossary
   order: 8
+  answer_spec:
+    sufficient: "The user's own words for the key things in their business, with synonyms and any words to avoid."
+    aspects: [term, synonyms, avoid]
+    fact_types: [glossary]
+    min_facts: 1
   fallback_card:
     type: confirm
     question:
@@ -1747,6 +1958,11 @@ slots:
     kind: text_list
   brief_path: research_requests
   order: 8
+  answer_spec:
+    sufficient: "Specific things the user wants looked up, such as competitors, regulations or typical prices."
+    aspects: [topic]
+    fact_types: [requirement, reference]
+    min_facts: 1
   fallback_card:
     type: confirm
     question:
@@ -1792,6 +2008,11 @@ slots:
     kind: object
   brief_path: meta.org.profile
   order: 1
+  answer_spec:
+    sufficient: "Company name, industry, size and brand direction."
+    aspects: [name, industry, size]
+    fact_types: [context]
+    min_facts: 1
   fallback_card:
     type: upload_or_link
     question:
@@ -1825,6 +2046,11 @@ slots:
     - role
   brief_path: meta.org.approvers
   order: 1
+  answer_spec:
+    sufficient: "Who must approve the Brief and the spec, by role or name."
+    aspects: [approver, scope]
+    fact_types: [role, rule]
+    min_facts: 1
   fallback_card:
     type: quick_form
     question:
@@ -1856,6 +2082,11 @@ slots:
     kind: text_list
   brief_path: meta.org.design_system
   order: 6
+  answer_spec:
+    sufficient: "Whether a company design system or brand guidelines exist, and where they live."
+    aspects: [exists, location]
+    fact_types: [reference, constraint]
+    min_facts: 1
   fallback_card:
     type: upload_or_link
     question:
@@ -1887,6 +2118,11 @@ slots:
     kind: text_list
   brief_path: meta.org.api_catalog
   order: 7
+  answer_spec:
+    sufficient: "Company APIs or systems the app must use, and where their documentation is."
+    aspects: [system, docs_location]
+    fact_types: [reference, constraint]
+    min_facts: 1
   fallback_card:
     type: upload_or_link
     question:

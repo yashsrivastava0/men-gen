@@ -13,3 +13,7 @@ max_question_words: 20
 max_option_words: 8
 guidance: Offer three mood descriptions made of plain words, never colours or hex codes. Ask for the name
   and any logo or brand file as optional extras. Do not describe full designs.
+style_guide: "Ask for mood in plain words and a reference, not colors or fonts. Keep it light; this is not a design review."
+examples:
+- "Should the app feel calm and trustworthy, quick and playful, or something else?"
+- "Is there a shop, school or clinic whose look you would like yours to resemble?"
