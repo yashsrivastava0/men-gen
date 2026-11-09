@@ -46,14 +46,9 @@ def test_pdf_corrupt_random_bytes(build) -> None:
     assert _code("broken.pdf", build.corrupt_bytes()) == "corrupt"
 
 
-def test_pdf_truncated_header_only_is_not_a_crash() -> None:
-    data = b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog"
-    try:
-        doc = parse_document("cut.pdf", data, limits=LIMITS)
-    except IntakeError as exc:
-        assert exc.code == "corrupt"
-    else:
-        assert doc.sections == [] and "no_readable_text" in doc.notes
+def test_pdf_truncated_is_corrupt() -> None:
+    assert _code("cut.pdf", b"%PDF-1.4\n1 0 obj\n<< /Type /Catalog") == "corrupt"
+    assert _code("cut.pdf", b"%PDF-" + b"x" * 5000) == "corrupt"
 
 
 def test_pdf_too_many_pages(build, make_limits) -> None:
@@ -294,14 +289,8 @@ def test_text_and_markdown_parsers_are_linear(hostile: str) -> None:
 @pytest.mark.parametrize(
     "hostile", [",\n" * 25_000, '"' * 50_000, ("a," * 100 + "\n") * 500, "|" * 50_000]
 )
-def test_csv_parser_is_linear_and_typed(hostile: str) -> None:
-    def run() -> None:
-        try:
-            parse_document("x.csv", hostile.encode(), limits=LIMITS)
-        except IntakeError as exc:
-            assert exc.code == "corrupt"
-
-    _fast(run)
+def test_csv_parser_is_linear(hostile: str) -> None:
+    _fast(parse_document, "x.csv", hostile.encode(), limits=LIMITS)
 
 
 def test_eml_parser_hostile_headers() -> None:

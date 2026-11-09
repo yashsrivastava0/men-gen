@@ -51,7 +51,7 @@ def make_pdf(pages: list[str | None]) -> bytes:
     return bytes(out)
 
 
-def make_encrypted_pdf(password: str = "secret") -> bytes:
+def make_encrypted_pdf(password: str = "secret") -> bytes:  # noqa: S107
     from pypdf import PdfReader, PdfWriter
 
     writer = PdfWriter(clone_from=PdfReader(io.BytesIO(make_pdf(["top secret"]))))
