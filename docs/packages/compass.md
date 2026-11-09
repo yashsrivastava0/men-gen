@@ -143,11 +143,13 @@ If the planner fails validation after the gateway's one repair, or the call fail
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `engine` | `legacy` | `legacy` or `planner` (`COMPASS_INTERVIEW_ENGINE` overrides) |
-| `quick_max`, `standard_max`, `thorough_max` | 5, 12, 25 | question budgets, follow-ups included |
-| `quick_first_batch`, `standard_first_batch`, `thorough_batch` | (4, 5), (5, 7), (6, 8) | batch size range per budget, clipped to what is left |
-| `groups_per_batch`, `questions_per_group` | (2, 3), (3, 4) | groups in a batch, questions in a group |
-| `followup_max_depth`, `followup_max_fraction` | 2, 0.4 | follow-up depth per need; follow-ups at most this share of base questions |
+| `engine` | `planner` | `legacy` (a rollback) or `planner` (`COMPASS_INTERVIEW_ENGINE` overrides) |
+| `default_ui_mode` | `answer_all` | the layout of a planned batch: one form submitted once; `one_at_a_time` for clients that answer card by card (ADR 0016) |
+| `quick_max`, `standard_max`, `thorough_max` | 7, 12, 25 | the tier targets (they count the closing question) |
+| `quick_hard`, `standard_hard`, `thorough_hard` | 10, 15, 30 | the hard caps: the most questions an interview ever asks, follow-ups, gap and closing question included |
+| `quick_first_batch`, `standard_first_batch`, `thorough_batch` | (3, 3), (4, 4), (5, 5) | batch size per tier, clipped to the room that is left |
+| `groups_per_batch`, `questions_per_group` | (1, 2), (3, 4) | groups in a batch, questions in a group |
+| `followup_max_depth`, `followup_max_fraction` | 1, 0.4 | a follow-up is never followed up; follow-ups at most this share of base questions, and only in the slack above the target |
 | `fatigue_streak`, `fatigue_short_chars` | 2, 2 | consecutive skips, "You decide" or answers of at most this many characters |
 | `marginal_new_facts_min` | 1 | a finishing turn that adds fewer facts is "low marginal value" |
 | `audit_min_specificity`, `repair_attempts` | 3, 1 | auditor threshold; one repair call, then drop |
