@@ -19,6 +19,7 @@ from mde_compass.catalog import load_catalog
 from mde_compass.config import DEFAULT_CONFIG, CompassConfig, load_budget_policy
 from mde_compass.engine.handoff import LoggingHandoff
 from mde_compass.engine.service import Service
+from mde_compass.ledger_spend import compass_spent_micros
 from mde_contracts.gateway import GatewayClient
 from mde_core.clock import Clock, SystemClock
 from mde_core.settings import Settings, load_settings
@@ -59,6 +60,10 @@ def build_service(
     catalog = load_catalog()
     mode = "live" if the_settings.llm_mode == "live" else "mock"
     budget = CompassBudget(load_budget_policy(), mode=mode)  # type: ignore[arg-type]
+    if (
+        mode == "live"
+    ):  # the counter is per process; the ledger remembers what earlier batches spent
+        budget.reconcile(compass_spent_micros(the_settings.llm_budget_ledger))
 
     if memory:
         from mde_compass.store import InMemoryStore
