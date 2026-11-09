@@ -258,6 +258,21 @@ async def test_an_edit_of_a_value_that_is_not_locked_applies_at_once(service) ->
     assert conv.of_type("brief_patch")
 
 
+async def test_editing_words_you_typed_yourself_twice_is_never_asked_about(service) -> None:
+    conv = await _review(service)
+    v = (await conv.brief())["version"]
+    await conv.edit("idea.summary", "A food delivery app for Pune restaurants")
+    await conv.edit("idea.summary", "A food delivery and pre-order app for Pune restaurants")
+    assert (await conv.brief())[
+        "version"
+    ] == v + 2  # the typed edit is confirmed but not tap-confirmed
+    assert not [
+        e
+        for e in conv.events
+        if e.type == "card" and e.payload["card"]["frame"] == "change_variants"
+    ]
+
+
 class _LockedChange:
     """A change interpreter that rewrites the Locked business model (what the model would propose)."""
 
