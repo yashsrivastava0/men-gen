@@ -111,7 +111,11 @@ def test_event_types_cover_domain_events() -> None:
     assert set(contract["outbound_events"]) == outbound
     for name in outbound:  # a handler for each outbound event
         assert re.search(rf"\b{name}:\s*function", APP_JS), f"no OUT handler for {name}"
-    for name in inbound:  # the UI can send each inbound event
+    server_made = {
+        "upload_added"
+    }  # the upload endpoint (multipart) makes this event, the UI sends the file
+    assert "/uploads" in APP_JS and "FormData" in APP_JS
+    for name in inbound - server_made:  # the UI can send each other inbound event
         assert re.search(rf"""type:\s*["']{name}["']""", APP_JS), f"the UI never sends {name}"
     assert INBOUND_ADAPTER and OUTBOUND_ADAPTER and TypeAdapter(InboundEvent)
 

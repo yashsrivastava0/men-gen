@@ -134,7 +134,7 @@ CONTRACT*/
     "x.not_decided": "Not decided yet", "x.needs_decision": "Needs your decision",
     "x.reviewed_n_of_m": "Reviewed {n} of {m} sections", "x.version": "Version {n}",
     "x.send_feedback": "Send", "x.no_history": "No messages yet.", "x.search": "Search the chat",
-    "x.upload_unavailable": "Uploading documents is not available yet. You can describe it in your own words or add a link.",
+    "x.upload_unavailable": "That file could not be read. You can describe it in your own words or add a link.",
     "x.add_link": "Add link", "x.link_placeholder": "https://", "x.move_up": "Move up", "x.move_down": "Move down",
     "x.lookup_add_placeholder": "Something else to look up", "x.add": "Add", "x.open": "Open",
     "x.edit_hint": "One item per line", "x.approved_toast": "Approved. Thank you.",
@@ -419,18 +419,7 @@ CONTRACT*/
     var note = h("p", { class: "hint", role: "status" });
     var file = h("input", { type: "file", class: "sr-only", "aria-label": t("ui.upload"), tabindex: "-1" });
     file.addEventListener("change", function () {
-      if (!file.files || !file.files.length) { return; }
-      var fd = new FormData();
-      fd.append("file", file.files[0]);
-      fetch(BASE + "/sessions/" + state.sessionId + "/uploads", { method: "POST", headers: authHeaders(), body: fd })
-        .then(function (res) {
-          if (res.status === 501 || !res.ok) { note.textContent = t("x.upload_unavailable"); return null; }
-          return res.json();
-        })
-        .then(function (data) {
-          if (data && data.source_id) { sendEvent({ type: "upload_added", source_id: data.source_id }); }
-        })
-        .catch(function () { note.textContent = t("x.upload_unavailable"); });
+      if (file.files && file.files.length) { uploadFile(file.files[0], note); }
     });
     var link = h("input", { type: "url", placeholder: t("x.link_placeholder"), "aria-label": t("x.add_link") });
     body.appendChild(h("div", { class: "row-actions" },
@@ -584,6 +573,37 @@ CONTRACT*/
       var el = addMsg("error", friendly(err));
       el.setAttribute("role", "alert");
     }).then(function () { IN_FLIGHT -= 1; setTyping(false); });
+  }
+
+  // ---- upload: one multipart request; the reply is an EventAck, handled like any other event -------------
+  function uploadFile(file, note) {
+    if (!state.sessionId || !file) { return Promise.resolve(); }
+    var fd = new FormData();
+    fd.append("file", file);
+    IN_FLIGHT += 1;
+    setTyping(true);
+    if (note) { note.textContent = file.name; }
+    addMsg("user", file.name);
+    return fetch(BASE + "/sessions/" + state.sessionId + "/uploads", { method: "POST", headers: authHeaders(), body: fd })
+      .then(function (res) {
+        return res.json().then(function (data) {
+          if (!res.ok) { throw ApiProblem(res.status, data && data.code, data && data.message); }
+          return data;
+        });
+      })
+      .then(processAck)
+      .catch(function (err) {
+        var el = addMsg("error", err && err.apiMessage ? err.apiMessage : t("x.upload_unavailable"));
+        el.setAttribute("role", "alert");
+      })
+      .then(function () { IN_FLIGHT -= 1; setTyping(false); });
+  }
+  function pickFile() {
+    var input = h("input", { type: "file", class: "sr-only", tabindex: "-1", "aria-label": t("ui.upload") });
+    input.addEventListener("change", function () { if (input.files && input.files.length) { uploadFile(input.files[0], null); } });
+    document.body.appendChild(input);
+    input.click();
+    setTimeout(function () { if (input.parentNode) { input.parentNode.removeChild(input); } }, 60000);
   }
 
   // ---- stream (fetch + reader: EventSource cannot set headers) ------------------------------------------
@@ -945,7 +965,7 @@ CONTRACT*/
     rows.forEach(function (r) { host.appendChild(rowEl(sec, r)); });
     var note = h("p", { class: "hint", role: "status" });
     var file = h("input", { type: "file", class: "sr-only", tabindex: "-1", "aria-label": t("ui.upload") });
-    file.addEventListener("change", function () { note.textContent = t("x.upload_unavailable"); });
+    file.addEventListener("change", function () { if (file.files && file.files.length) { uploadFile(file.files[0], note); } });
     var link = h("input", { type: "url", placeholder: t("x.link_placeholder"), "aria-label": t("x.add_link") });
     host.appendChild(h("div", { class: "row-actions" }, h("button", { class: "btn", type: "button", text: t("ui.upload"), on: { click: function () { file.click(); } } }), file));
     host.appendChild(h("div", { class: "custom-row" }, link, h("button", { class: "btn", type: "button", text: t("x.add_link"), on: { click: function () {
@@ -1205,7 +1225,7 @@ CONTRACT*/
     var wrap = h("div", { class: "row-actions" });
     function b(key, fn) { wrap.appendChild(h("button", { class: "btn", type: "button", text: t(key), on: { click: fn } })); }
     b("welcome.start_describe", function () { $("composer-input").focus(); });
-    b("welcome.start_upload", function () { addMsg("assistant", t("x.upload_unavailable")); });
+    b("welcome.start_upload", function () { pickFile(); });
     b("welcome.start_like_app", function () { $("composer-input").focus(); });
     b("welcome.start_just_build", function () { postUser(t("welcome.start_just_build")); });
     return wrap;
