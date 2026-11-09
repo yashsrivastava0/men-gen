@@ -147,6 +147,9 @@ def tenant_scope(tenant: str) -> Iterator[None]:
         _TENANT.reset(token)
 
 
+# Frames whose answer is PROPOSED, not asked, once the engine has a value: the playback card shows it for
+# correction and "We assumed" lists it for approval (docs 11: propose, then correct; fewer questions).
+PROPOSED_NOT_ASKED = frozenset({"confirm_kind_of_app", "roles"})
 WELCOME_FRAME = "welcome"
 VARIANTS_FRAME = "change_variants"
 SECTION_STRING = {
@@ -945,7 +948,9 @@ class Service:
         """A required slot with no default that is still empty after its frame was asked (a frame batches
         several slots but one card settles one) gets ONE follow-up card; never more than twice per slot."""
         self._derive_subcategory(turn)
-        over_cap = self._question_n(turn) >= self.config.questions.hard_cap
+        plan = self._plan(turn)
+        cap = plan.question_budget if plan.depth == "express" else self.config.questions.hard_cap
+        over_cap = self._question_n(turn) >= cap
         counts: dict[str, int] = {}
         for card in turn.asked_cards():
             for sid in card.slots:
@@ -982,10 +987,43 @@ class Service:
         asked = [
             c.frame for c in turn.asked_cards() if c.frame not in (WELCOME_FRAME, VARIANTS_FRAME)
         ]
-        return voi_mod.plan_queue(
+        self._propose_from_hypothesis(turn)
+        queue = voi_mod.plan_queue(
             turn.slots.all(), self.catalog, profile=turn.brief.meta.situation_profile, depth=self._plan(turn).depth,
             asked_frames=asked, inferability=self._inferability(turn), config=self.config.questions, mode=turn.session.mode,
         )  # fmt: skip
+        hyp = turn.brief.meta.hypothesis
+        hybrid = (
+            hyp is not None and len(hyp.likely_families) >= 2
+        )  # which kind is primary is a real question
+        return [
+            item
+            for item in queue
+            if not (
+                item.frame_id in PROPOSED_NOT_ASKED
+                and item.action in ("ask", "propose")
+                and any(turn.slots.filled(sid) for sid in item.slots)
+                and not (hybrid and item.frame_id == "confirm_kind_of_app")
+            )
+        ]
+
+    def _propose_from_hypothesis(self, turn: _Turn) -> None:
+        """Roles the hypothesis names are proposed (assumed, listed for approval), not asked."""
+        hyp = turn.brief.meta.hypothesis
+        if hyp is None or not hyp.likely_roles or turn.slots.filled("roles.list"):
+            return
+        roles = [{"name": role} for role in hyp.likely_roles[:3] if role.strip()]
+        if roles:
+            turn.slots.write(
+                "roles.list",
+                cast(JsonValue, roles),
+                state="assumed",
+                provenance=Provenance(
+                    type="model_knowledge", ref="hypothesis", date=self.clock.now()
+                ),
+                confidence=hyp.confidence or 0.5,
+                turn_id=turn.turn_id,
+            )
 
     async def _ask_next(self, turn: _Turn, forced: voi_mod.QueueItem | None = None) -> bool:
         queue = self._queue(turn)
