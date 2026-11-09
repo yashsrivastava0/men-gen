@@ -1235,7 +1235,9 @@ class Service:
             self._rebuild(turn)
             await self._advance(turn)
             return
-        applied = self._apply_card_writes(turn, writes, state="confirmed", from_tap=True)
+        applied = self._apply_card_writes(
+            turn, writes, state="confirmed", from_tap=True, merge=self._follow_up_slots(turn, card)
+        )
         turn.answered.append(
             (
                 card.id,
@@ -1276,8 +1278,39 @@ class Service:
                 ),
             )
 
+    def _follow_up_slots(self, turn: _Turn, card: Card) -> set[str]:
+        """Slots of this card that an EARLIER answered card already wrote: a follow-up adds to them."""
+        earlier: set[str] = set()
+        for q in turn.questions:
+            if q.card.id != card.id and q.outcome == "answered":
+                earlier.update(q.card.slots)
+        for card_id, outcome, _ in turn.answered:
+            other = self._find_question(turn, card_id)
+            if other is not None and card_id != card.id and outcome == "answered":
+                earlier.update(other.slots)
+        return {sid for sid in card.slots if sid in earlier}
+
+    @staticmethod
+    def _merge_items(existing: JsonValue, new: JsonValue) -> JsonValue:
+        """Extend a list value with new items (de-duplicated by name, case-insensitive)."""
+        if not isinstance(existing, list) or not isinstance(new, list):
+            return new
+
+        def key(v: JsonValue) -> str:
+            name = v.get("name") or v.get("term") if isinstance(v, dict) else v
+            return str(name).lower()
+
+        seen = {key(v) for v in existing}
+        return [*existing, *[v for v in new if key(v) not in seen]]
+
     def _apply_card_writes(
-        self, turn: _Turn, writes: Sequence[Any], *, state: str, from_tap: bool
+        self,
+        turn: _Turn,
+        writes: Sequence[Any],
+        *,
+        state: str,
+        from_tap: bool,
+        merge: set[str] | None = None,
     ) -> list[str]:
         chips: list[str] = []
         for w in writes:
@@ -1287,6 +1320,10 @@ class Service:
                 if w.slot_id == "apps.list"
                 else self._label_codes(w.slot_id, w.value, turn.lang)
             )
+            if merge and w.slot_id in merge:
+                current = turn.slots.get(w.slot_id)
+                if current is not None:
+                    value = self._merge_items(current.value, value)
             res = turn.slots.write(
                 w.slot_id, value, state=state,  # type: ignore[arg-type]
                 provenance=self._prov(turn, kind, w.custom_text or ""), confidence=0.9 if state == "confirmed" else 0.5,
