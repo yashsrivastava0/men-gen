@@ -73,7 +73,7 @@ def _clean(value: JsonValue) -> JsonValue:
     return value
 
 
-def _item_name(item: Any) -> str:
+def item_name(item: Any) -> str:
     if isinstance(item, dict):
         for k in ("name", "term", "label", "name_in_user_words", "id"):
             if isinstance(item.get(k), str):
@@ -268,8 +268,8 @@ class SlotStore:
         if prev is None or not prev_filled:
             return WriteResult(False, "nothing_to_remove", prev, prev)
         if isinstance(prev.value, list) and isinstance(value, list) and value:
-            drop = {_item_name(v) for v in value}
-            kept = [v for v in prev.value if _item_name(v) not in drop]
+            drop = {item_name(v) for v in value}
+            kept = [v for v in prev.value if item_name(v) not in drop]
             if kept == prev.value:
                 return WriteResult(False, "nothing_to_remove", prev, prev)
             if kept:

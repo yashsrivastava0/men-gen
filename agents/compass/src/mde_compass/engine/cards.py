@@ -181,7 +181,7 @@ def _matches_hint(label: str, hints: Sequence[str]) -> bool:
     return False
 
 
-def _value_ok(slot: SlotDef, value: JsonValue) -> bool:
+def value_fits_slot(slot: SlotDef, value: JsonValue) -> bool:
     kind = slot.value_schema.kind
     allowed = slot.value_schema.options
     if value is None or value == "" or value == [] or value == {}:
@@ -289,14 +289,12 @@ def _check_options(
                 f"ticked.basis: {option.id} is pre-ticked on a suggestion, not on evidence"
             )
         errors.extend(
-            _check_sets(
-                option, request, catalog, needs_sets=ctype in ("choose_one", "look_signals")
-            )
+            check_sets(option, request, catalog, needs_sets=ctype in ("choose_one", "look_signals"))
         )
     return errors
 
 
-def _check_sets(
+def check_sets(
     option: CardOption, request: CardRequest, catalog: Catalog, *, needs_sets: bool
 ) -> list[str]:
     errors: list[str] = []
@@ -306,14 +304,14 @@ def _check_sets(
         slot = catalog.slots.get(slot_id)
         if slot is None or slot_id not in request.slots:
             errors.append(f"sets.slot: {option.id} sets {slot_id}, not a slot of this card")
-        elif not _value_ok(slot, value):
+        elif not value_fits_slot(slot, value):
             errors.append(
                 f"sets.value: {option.id} value for {slot_id} is not valid for {slot.value_schema.kind}"
             )
     return errors
 
 
-def _check_wording(
+def check_wording(
     draft: CardDraft, user_text: str, request: CardRequest, language: str
 ) -> list[str]:
     rules = load_rules()
@@ -355,7 +353,7 @@ def _brand_tokens(text: str) -> list[str]:
     return out
 
 
-def _check_language(draft: CardDraft, language: str, user_text: str) -> list[str]:
+def check_language(draft: CardDraft, language: str, user_text: str) -> list[str]:
     errors: list[str] = []
     if draft.language != language:
         errors.append(f"language.declared: draft says {draft.language}, expected {language}")
@@ -372,7 +370,7 @@ def _check_language(draft: CardDraft, language: str, user_text: str) -> list[str
     return errors
 
 
-def _check_grounding(draft: CardDraft, request: CardRequest, user_text: str) -> list[str]:
+def check_grounding(draft: CardDraft, request: CardRequest, user_text: str) -> list[str]:
     errors: list[str] = []
     hints = request.hints
     evidence = [user_text, *request.evidence]
@@ -423,9 +421,9 @@ def validate_card(
     elif _words(draft.question) > max_q:
         errors.append(f"question.long: more than {max_q} words")
     errors.extend(_check_options(language, draft, request, catalog, frame, cfg))
-    errors.extend(_check_wording(draft, user_text, request, language))
-    errors.extend(_check_language(draft, language, user_text))
-    errors.extend(_check_grounding(draft, request, user_text))
+    errors.extend(check_wording(draft, user_text, request, language))
+    errors.extend(check_language(draft, language, user_text))
+    errors.extend(check_grounding(draft, request, user_text))
     seen_decl: set[str] = set()
     for text in [*_texts(draft), *(v for o in draft.options for v in _option_values(o))]:
         match = declined_category(text, catalog, language=language)

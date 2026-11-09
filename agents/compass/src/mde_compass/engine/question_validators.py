@@ -508,15 +508,15 @@ def _check_wording_and_basis(card: Card, ctx: ValidationContext) -> list[Issue]:
     draft = _draft(card)
     wording_evidence = [*ctx.evidence, *sorted(ctx.terms)]
     errors = [
-        *card_rules._check_wording(
+        *card_rules.check_wording(
             draft, ctx.user_text, _request(card, ctx, wording_evidence), ctx.language
         ),
-        *card_rules._check_language(draft, ctx.language, ctx.user_text),
-        *card_rules._check_grounding(draft, _request(card, ctx, ctx.evidence), ctx.user_text),
+        *card_rules.check_language(draft, ctx.language, ctx.user_text),
+        *card_rules.check_grounding(draft, _request(card, ctx, ctx.evidence), ctx.user_text),
     ]
     request = _request(card, ctx, ctx.evidence)
     for option in card.options:
-        errors.extend(card_rules._check_sets(option, request, ctx.catalog, needs_sets=False))
+        errors.extend(card_rules.check_sets(option, request, ctx.catalog, needs_sets=False))
         if option.ticked and option.basis == "suggestion":
             errors.append(
                 f"ticked.basis: {option.id} is pre-ticked on a suggestion, not on evidence"

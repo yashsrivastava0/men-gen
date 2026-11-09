@@ -35,10 +35,10 @@ from mde_compass.catalog.loader import Catalog, SlotDef
 from mde_compass.domain.common import Provenance, ProvenanceType, Status
 from mde_compass.domain.interview import Fact, FactEffect
 from mde_compass.domain.slots import SlotRecord
-from mde_compass.engine.cards import _value_ok as value_fits_schema
+from mde_compass.engine.cards import value_fits_slot as value_fits_schema
 from mde_compass.engine.facts import fact_number
 from mde_compass.engine.slots import USER_GIVEN, SlotStore, WriteResult, is_blank
-from mde_compass.engine.slots import _item_name as item_name
+from mde_compass.engine.slots import item_name as item_name
 
 QUOTE_MAX_CHARS = 300
 VALUE_JSON_MAX_CHARS = 20_000
