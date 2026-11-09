@@ -141,6 +141,9 @@ voice:
     en: [remove, drop, delete, discard, scratch, ignore, "take out", "get rid of", "not needed", "leave out"]
     hinglish: [hatao, hata, nikalo, nikal do, "hata do", mat]
     hi: [हटाओ, हटा, निकालो, "हटा दो"]
+  remove_fillers:                  # words allowed around a removal request ("please remove number 2 and 4")
+    [number, no, item, items, line, lines, point, points, statement, statements, thing, one, please, pls, the, and,
+     aur, also, kar, do, karo, dena, "और", "नंबर", "कृपया", "को", "करो"]
   fillers:                         # dictation noise dropped from the start of a statement
     en: [so, um, uh, you know, basically, i mean]
     hinglish: [toh, matlab, haan, accha]
