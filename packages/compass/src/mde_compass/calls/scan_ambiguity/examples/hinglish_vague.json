@@ -1,0 +1,31 @@
+{
+  "name": "hinglish_vague",
+  "input": {
+    "language": "hi-Latn",
+    "items": [
+      {
+        "slot_id": "idea.problem_value",
+        "text": "bahut saare log, jaldi delivery chahiye"
+      },
+      {
+        "slot_id": "context.geo",
+        "text": "Pune"
+      }
+    ],
+    "glossary_terms": []
+  },
+  "output": {
+    "findings": [
+      {
+        "slot_id": "idea.problem_value",
+        "text": "jaldi",
+        "kind": "vague"
+      },
+      {
+        "slot_id": "idea.problem_value",
+        "text": "bahut saare",
+        "kind": "vague"
+      }
+    ]
+  }
+}

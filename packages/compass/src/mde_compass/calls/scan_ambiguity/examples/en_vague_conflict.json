@@ -1,0 +1,50 @@
+{
+  "name": "en_vague_conflict",
+  "input": {
+    "language": "en",
+    "items": [
+      {
+        "slot_id": "idea.summary",
+        "text": "A fast app for ordering food"
+      },
+      {
+        "slot_id": "constraints.offline",
+        "text": "The app works offline"
+      },
+      {
+        "slot_id": "access.auth_methods",
+        "text": "The app works online only"
+      },
+      {
+        "slot_id": "integrations.wanted",
+        "text": "Sync with the SAP module and Razorpay"
+      },
+      {
+        "slot_id": "constraints.performance",
+        "text": "Pages load in under 2 seconds, fast"
+      }
+    ],
+    "glossary_terms": [
+      "Razorpay"
+    ]
+  },
+  "output": {
+    "findings": [
+      {
+        "slot_id": "constraints.offline",
+        "text": "The app works offline / The app works online only",
+        "kind": "conflicting"
+      },
+      {
+        "slot_id": "integrations.wanted",
+        "text": "SAP",
+        "kind": "undefined"
+      },
+      {
+        "slot_id": "idea.summary",
+        "text": "fast",
+        "kind": "vague"
+      }
+    ]
+  }
+}

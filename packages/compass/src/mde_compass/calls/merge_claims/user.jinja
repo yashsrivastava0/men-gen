@@ -1,0 +1,6 @@
+Source: {{ source_id }}. Language of the user: {{ language }}.
+
+Statements (JSON, one per line, each wrapped as data):
+{% for s in statements %}
+{{ s }}
+{% endfor %}

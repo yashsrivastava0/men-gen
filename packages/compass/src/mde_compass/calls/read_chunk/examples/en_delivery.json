@@ -1,0 +1,62 @@
+{
+  "name": "en_delivery",
+  "input": {
+    "chunk_text": "# Delivery rules\nThe app must let riders accept orders.\n- Customers should pay by UPI or card.\n- Refunds are processed within 7 days.\n- Delivery fee is TBD.\n| Role | Can do |\n|---|---|\n| Admin | manage vendors |\nOTP means one-time password.\nWe do not want a web version. Our goal is to grow orders by 30% in a year.",
+    "pointer": "page 2",
+    "language": "en",
+    "idea_hint": "A delivery app for local grocers"
+  },
+  "output": {
+    "statements": [
+      {
+        "type": "requirement",
+        "text": "The app must let riders accept orders.",
+        "quote": "The app must let riders accept orders.",
+        "confidence": "high"
+      },
+      {
+        "type": "requirement",
+        "text": "Customers should pay by UPI or card.",
+        "quote": "Customers should pay by UPI or card.",
+        "confidence": "high"
+      },
+      {
+        "type": "rule_or_number",
+        "text": "Refunds are processed within 7 days.",
+        "quote": "Refunds are processed within 7 days.",
+        "confidence": "high"
+      },
+      {
+        "type": "open_issue",
+        "text": "Delivery fee is TBD.",
+        "quote": "Delivery fee is TBD.",
+        "confidence": "high"
+      },
+      {
+        "type": "user_or_role",
+        "text": "Admin | manage vendors",
+        "quote": "Admin | manage vendors",
+        "confidence": "high"
+      },
+      {
+        "type": "glossary_term",
+        "text": "OTP means one-time password.",
+        "quote": "OTP means one-time password.",
+        "confidence": "high"
+      },
+      {
+        "type": "exclusion",
+        "text": "We do not want a web version.",
+        "quote": "We do not want a web version.",
+        "confidence": "high"
+      },
+      {
+        "type": "goal",
+        "text": "Our goal is to grow orders by 30% in a year.",
+        "quote": "Our goal is to grow orders by 30% in a year.",
+        "confidence": "high"
+      }
+    ],
+    "injection_suspected": false
+  }
+}
