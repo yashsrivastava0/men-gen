@@ -15,7 +15,7 @@ from __future__ import annotations
 import asyncio
 import hashlib
 import time
-from collections.abc import Sequence
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any, Literal, cast
 
@@ -1104,9 +1104,70 @@ class InterviewController:
             self.count_fallback(turn)
 
     def set_ui_mode(self, turn: _Turn, mode: Literal["one_at_a_time", "answer_all"]) -> None:
+        changed = self.ui_mode(turn) != mode
         block = self.block(turn)
         turn.brief.meta.interview = block.model_copy(update={"ui_mode": mode, "ui_mode_set": True})
+        if changed:
+            self._relayout(turn, mode)
+
+    def _relayout(self, turn: _Turn, mode: Literal["one_at_a_time", "answer_all"]) -> None:
+        """A layout switch applies at once: the unanswered questions of the batch on screen are shown again,
+        as a form (answer-all) or one by one. No question is added, dropped or reworded."""
+        open_qa = turn.memory.open_qa()
+        shown = [q for q in open_qa if q.asked_at is not None]
+        if not open_qa or not (shown or mode == "answer_all"):
+            return
+        lead = (shown or open_qa)[0]
+        if lead.batch_id is None:
+            return
+        batch_id = lead.batch_id
+        same = [q for q in open_qa if q.batch_id == batch_id]
+        record = next((b for b in turn.memory.batches if b.id == batch_id), None)
+        titles = _group_titles(record.output if record is not None else {})
+        groups: list[BatchGroup] = []
+        for qa in same:
+            gid = qa.card.group_id or ""
+            group = next((g for g in groups if g.id == gid), None)
+            if group is None:
+                group = BatchGroup(id=gid, title=titles.get(gid, ""), cards=[])
+                groups.append(group)
+            group.cards.append(qa.card)
+        in_batch = [q for q in turn.memory.qa if q.batch_id == batch_id]
+        turn.out.append(
+            QuestionBatch(
+                batch_id=batch_id,
+                mode=record.mode if record is not None else (lead.mode or "initial"),
+                ui_mode=mode,
+                groups=groups,
+                total=len(in_batch),
+                answered=sum(1 for q in in_batch if q.status not in ("open", "dropped")),
+            )
+        )
+        if mode == "answer_all":
+            for i, qa in enumerate(same):
+                self._show(turn, qa, emit_card=i == 0)
+            return
+        for qa in same[1:]:  # they wait their turn again, and no longer count as open on screen
+            if qa.asked_at is not None:
+                turn.memory.put_qa(qa.model_copy(update={"asked_at": None}))
+                turn.answered.append((qa.card_id, "back", None))
+        self._show(turn, same[0])
 
     def set_budget(self, turn: _Turn, name: BudgetName) -> None:
         turn.brief.meta.plan = self.svc._plan(turn).model_copy(update={"interview_budget": name})
         self.touch(turn)
+
+
+def _group_titles(output: Mapping[str, object]) -> dict[str, str]:
+    """Group id -> title from a stored planner output (empty when the shape is not what is expected)."""
+    titles: dict[str, str] = {}
+    groups = output.get("groups")
+    if isinstance(groups, list):
+        for g in groups:
+            if (
+                isinstance(g, dict)
+                and isinstance(g.get("id"), str)
+                and isinstance(g.get("title"), str)
+            ):
+                titles[g["id"]] = g["title"]
+    return titles

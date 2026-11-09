@@ -755,8 +755,8 @@ CONTRACT*/
     $("mode-note").textContent = t("ui.interview.mode_note");
   }
 
-  /** Switch between one-at-a-time and the answer-all form. The server applies it to the questions it shows
-      next, so a question already on screen stays as it is (a note says so). */
+  /** Switch between one-at-a-time and the answer-all form. The server applies it at once: it re-sends the
+      unanswered questions of the current batch (a `question_batch` event, then the card events). */
   function toggleMode() {
     var next = I.otherMode(state.uiMode);
     state.modePending = true;
@@ -765,11 +765,6 @@ CONTRACT*/
       state.modePending = false;
       if (ack) {
         state.uiMode = next;
-        if (state.activeCard) {
-          var note = $("mode-note");
-          note.hidden = false;
-          window.setTimeout(function () { note.hidden = true; }, 8000);
-        }
       }
       renderInterviewBar();
     });

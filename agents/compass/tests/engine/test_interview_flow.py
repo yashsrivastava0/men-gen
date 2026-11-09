@@ -187,6 +187,40 @@ async def test_answer_all_mode_shows_the_whole_batch_and_one_event_answers_it() 
     )  # the turn produced events (a follow-up, the next batch or the review)
 
 
+async def test_switching_the_layout_mid_batch_shows_the_rest_of_the_batch_again() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None
+    await conv.tap_recommended()  # one question answered, the rest of the batch is waiting
+    before = len(conv.events)
+    await conv.command("mode_answer_all")
+    batch = next(e for e in conv.events[before:] if e.type == "question_batch")
+    shown = [c["id"] for g in batch.payload["groups"] for c in g["cards"]]
+    assert batch.payload["ui_mode"] == "answer_all"
+    assert len(shown) >= 2 and first.id not in shown  # only what is still unanswered
+    assert batch.payload["answered"] >= 1
+    assert all(g["title"] for g in batch.payload["groups"] if g["id"])
+    async with svc.store.begin("t1") as uow:
+        qa = {q.card_id: q for q in await uow.qa.list(conv.session_id)}
+    assert all(qa[i].status == "open" for i in shown)  # nothing was answered, dropped or reworded
+    # and back again: one at a time, the first of them is on screen and the others wait their turn
+    before = len(conv.events)
+    await conv.command("mode_one_at_a_time")
+    batch = next(e for e in conv.events[before:] if e.type == "question_batch")
+    assert batch.payload["ui_mode"] == "one_at_a_time"
+    cards = [e for e in conv.events[before:] if e.type == "card"]
+    assert [c.payload["card"]["id"] for c in cards] == [shown[0]]
+    before = len(conv.events)
+    await conv.tap_recommended()
+    assert conv.last_card() is not None and conv.last_card().id == shown[1]  # type: ignore[union-attr]
+    # a second switch to the same layout changes nothing
+    before = len(conv.events)
+    await conv.command("mode_one_at_a_time")
+    assert not [e for e in conv.events[before:] if e.type in ("question_batch", "card")]
+
+
 async def test_resending_an_event_is_acknowledged_and_ignored() -> None:
     svc = planner_service()
     conv = await Conversation.start(svc)
