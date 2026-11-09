@@ -574,3 +574,41 @@ async def test_big_groups_are_cut_into_batches_that_run_in_parallel(size: int) -
     per_call = [len(parse_ledger(c.ledger)) for c in script.fills()]
     assert max(per_call) <= size and sum(per_call) >= 7
     assert {c.group for c in script.fills()} >= {"people_and_scope"}
+
+
+# ------------------------------------------------------------------------------ Locked after a pivot
+async def test_a_locked_value_citing_a_superseded_fact_is_downgraded_by_the_compile() -> None:
+    svc = planner_service()
+    old = fact(1, "context", "A tiffin service in Pune", "idea", status="superseded")
+    new = fact(2, "context", "A clinic booking app in Indore", "idea")
+    turn = await make_turn(svc, [old, new])
+    user_slot(turn, "idea.summary", "A tiffin service in Pune", "FCT-001", state="volunteered")
+    assert turn.slots.get("idea.summary").tier == "Locked"  # type: ignore[union-attr]
+    install(svc, Script())  # the compile writes nothing: the downgrade alone must show
+    await compile_ledger(svc.interview, turn)
+    rec = turn.slots.get("idea.summary")
+    assert rec is not None and (rec.tier, rec.status) == ("Default", "assumed")
+    item = turn.brief.idea["summary"]
+    assert item.tier == "Default" and item.status == "assumed"
+    assert any(
+        a.slot_id == "idea.summary" for a in turn.brief.assumptions
+    )  # the person sees it as an assumption
+
+
+async def test_the_downgraded_guess_is_replaced_by_verified_evidence_in_the_same_compile() -> None:
+    svc = planner_service()
+    old = fact(1, "context", "A tiffin service in Pune", "idea", status="superseded")
+    new = fact(2, "context", "A clinic booking app in Indore", "idea")
+    turn = await make_turn(svc, [old, new])
+    user_slot(turn, "idea.summary", "A tiffin service in Pune", "FCT-001", state="volunteered")
+    install(
+        svc,
+        Script(
+            lambda request, ids: placed(
+                ids, items=[item("idea.summary", "A clinic booking app in Indore", "FCT-002")]
+            )
+        ),
+    )
+    await compile_ledger(svc.interview, turn)
+    assert turn.brief.idea["summary"].value == "A clinic booking app in Indore"
+    assert turn.brief.idea["summary"].tier == "Locked"

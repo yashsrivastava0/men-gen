@@ -7,7 +7,8 @@ typical details. In code, whatever the model said:
 
 * a value never overwrites what the person gave; a guess is replaced only by verified evidence; a list slot is EXTENDED
   with elements that cite an active fact, share a real word with it and are new by name (``engine.compile_apply``);
-* a Locked item needs verified quotes (``Fact.supports_locked``); anything else is Default;
+* a Locked item needs verified quotes (``Fact.supports_locked``); anything else is Default; a Locked value that cites a
+  fact that is gone is downgraded first (``engine.lock_guard``), so nothing Locked rests on a superseded fact;
 * every active fact ends up in ``domain_facts`` (typed, with the records it belongs to), is the evidence of a written
   value, or is marked ``not_used`` with a reason. A fact nobody accounted for is UNPLACED: the engine asks once more,
   then places it itself and counts it (``meta.interview.facts_unreferenced``), so the coverage metric is honest;
@@ -63,6 +64,7 @@ from mde_compass.engine.compile_types import (
 from mde_compass.engine.context_pack import full_ledger
 from mde_compass.engine.derived_assumptions import corrections_from_facts, typical_assumptions
 from mde_compass.engine.facts import digest_line
+from mde_compass.engine.lock_guard import downgrade_unsupported_locks
 from mde_compass.engine.ports import BriefCompiler, CompileRequest, TurnContext
 from mde_core.logging import get_logger
 
@@ -140,6 +142,16 @@ async def compile_ledger(ctl: InterviewController, turn: _Turn) -> None:
     ctx = svc._ctx(turn)
     compiler = svc.ports.brief_compiler
     digests = dict(turn.brief.meta.compile_digests)
+
+    # 0. nothing Locked may rest on a fact that is gone (a pivot or an edited answer superseded it): downgrade first, so a
+    # compile with verified evidence can replace the guess
+    for change in downgrade_unsupported_locks(turn.slots, mem.facts):
+        log.info(
+            "lock_downgraded",
+            slot=change.slot_id,
+            facts=list(change.unsupported),
+            records=change.records,
+        )
 
     # 1. what each call is told: the facts of its group, the project card, what the Brief already holds
     project = project_card(turn.slots, catalog)
