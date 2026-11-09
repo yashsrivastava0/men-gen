@@ -93,6 +93,7 @@ from mde_compass.engine import state as state_mod
 from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
+from mde_compass.engine.expr import holds
 from mde_compass.engine.flows.hooks import FlowHooks
 from mde_compass.engine.interview import FINISHED_BY_PERSON, AnswerItem, InterviewController
 from mde_compass.engine.interview_state import InterviewMemory
@@ -998,6 +999,10 @@ class Service(FlowHooks):
                     return
                 if outcome == "scheduled":  # round 0 continues in an internal turn
                     return
+                self._derive_subcategory(turn)  # required, written by no card: derived and listed
+                self._assume_defaults(
+                    turn
+                )  # optional needs with a pattern default, listed for approval
                 self._assume_required(turn)  # what is still open becomes a visible assumption
                 self._go(turn, "queue_empty", "SEEDING")
             elif await self._ask_next(turn) or await self._ask_missing_must(turn):
@@ -1044,6 +1049,29 @@ class Service(FlowHooks):
                 turn_id=turn.turn_id,
             )
             self._rebuild(turn)
+
+    def _assume_defaults_once(self, turn: _Turn) -> int:
+        written = 0
+        for sid, sd in self.catalog.slots.items():
+            if sd.default is None or sd.level not in ("must", "should") or turn.slots.filled(sid):
+                continue
+            if sd.group == "org" and turn.session.mode != "enterprise":
+                continue
+            if not holds(sd.ask_if, turn.slots.all()):
+                continue
+            written += 1 if self._assume_slot(turn, sid, ref="interview") else 0
+        return written
+
+    def _assume_defaults(self, turn: _Turn) -> None:
+        """When the interview stops, every required or optional need that still has no value but has a catalog
+        pattern default (neutral, never Locked) is assumed and listed in "We assumed" for approval. The planner
+        decides what to ask; it never leaves a downstream consumer (design: tone) without a visible answer.
+        Filling one slot can make another apply (``ask_if``), and a required slot can unlock an optional one, so
+        the two passes repeat together until a round adds nothing."""
+        for _ in range(6):
+            if self._assume_defaults_once(turn) + self._assume_required_once(turn) == 0:
+                break
+        self._rebuild(turn)
 
     def _assume_required(self, turn: _Turn) -> None:
         """Express: every required slot still empty is assumed (catalog default, else the hypothesis, else the
