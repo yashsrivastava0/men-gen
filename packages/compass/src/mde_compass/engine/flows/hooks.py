@@ -406,12 +406,16 @@ class FlowHooks:
                 quotes = [
                     normalize(p.quote) for p in rec.provenance if p.type == "voice" and p.quote
                 ]
-                if any(q and q in norm for q in quotes):
-                    res = turn.slots.write(
-                        slot_id, rec.value, state="volunteered", provenance=self._prov(turn, "voice", statement),
-                        remove=True, turn_id=turn.turn_id,
-                    )  # fmt: skip
-                    cleared += 1 if res.applied else 0
+                if not any(q and q in norm for q in quotes):
+                    continue
+                part = voice.removable(rec.value, norm)
+                if part is None:
+                    continue  # several items and none named: say so rather than clear what we cannot tell
+                res = turn.slots.write(
+                    slot_id, part, state="volunteered", provenance=self._prov(turn, "voice", statement),
+                    remove=True, turn_id=turn.turn_id,
+                )  # fmt: skip
+                cleared += 1 if res.applied else 0
         listed = ", ".join(gone)
         turn.say(
             self._t(

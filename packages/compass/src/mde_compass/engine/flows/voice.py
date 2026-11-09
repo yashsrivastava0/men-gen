@@ -23,7 +23,11 @@ _SENTENCE_END = re.compile(r"(?<=[.!?;])\s{1,5}|\n+")
 _NUMBER = re.compile(r"(?<![\w.])\d[\d,]*(?:\.\d+)?(?![\w])")
 _LIST_LINE = re.compile(r"^\s{0,3}(\d{1,2})[.)]\s{1,3}(.{1,400})$")
 _REMOVE_NUMBERS = re.compile(r"\d{1,2}")
-_JOIN = "⁠"  # word joiner: protects "a and b" from the splitter
+_HIDDEN = {
+    "and": "\ue001",
+    "aur": "\ue002",
+    "और": "\ue003",
+}  # joiner words kept inside one statement
 
 
 @dataclass(frozen=True)
@@ -64,18 +68,20 @@ def _language_names() -> tuple[str, ...]:
 
 
 def _protect_lists(text: str) -> str:
-    """Keep "hindi and english" (a list of language names) in one piece."""
+    """Keep "hindi and english" (a list of language names) in one piece: the joiner word is swapped for a
+    private-use character while the text is split, and restored by ``_clean``."""
     alt = "|".join(re.escape(n) for n in _language_names())
-    pat = re.compile(
-        rf"(?<!\w)({alt})(\s{{1,3}}(?:and|aur|और)\s{{1,3}})({alt})(?!\w)", re.IGNORECASE
-    )
-    return pat.sub(
-        lambda m: m.group(1) + _JOIN + m.group(2).replace(" ", _JOIN) + _JOIN + m.group(3), text
-    )
+    pat = re.compile(rf"(?<!\w)({alt})\s{{1,3}}(and|aur|और)\s{{1,3}}({alt})(?!\w)", re.IGNORECASE)
+
+    def hide(m: re.Match[str]) -> str:
+        return f"{m.group(1)}{_HIDDEN[m.group(2).casefold()]}{m.group(3)}"
+
+    return pat.sub(hide, text)
 
 
 def _clean(piece: str) -> str:
-    piece = piece.replace(_JOIN, " ")
+    for word, mark in _HIDDEN.items():
+        piece = piece.replace(mark, f" {word} ")
     piece = re.sub(r"\s+", " ", piece).strip(" \t,.;:!?-")
     piece = _filler_regex().sub("", piece).strip(" ,.;:-")
     return piece
@@ -177,6 +183,27 @@ def last_list(lines: Sequence[str]) -> list[str]:
         if items:
             return items
     return []
+
+
+def item_text(item: JsonValue) -> str:
+    """The words of one list item (a name or label for records, the text itself otherwise)."""
+    if isinstance(item, Mapping):
+        for key in ("name", "label", "term", "name_in_user_words"):
+            if isinstance(item.get(key), str):
+                return str(item[key])
+        return ""
+    return item if isinstance(item, str) else ""
+
+
+def removable(value: JsonValue, statement_norm: str) -> JsonValue:
+    """What to clear from a slot when its supporting words sit in a removed statement: a single value goes
+    whole; of a list only the items the statement names (never the others); None when nothing is certain."""
+    if not isinstance(value, list):
+        return value
+    if len(value) == 1:
+        return value
+    named = [i for i in value if (t := lx.normalize(item_text(i))) and t in statement_norm]
+    return named or None
 
 
 def removal_request(text: str, count: int) -> list[int]:
