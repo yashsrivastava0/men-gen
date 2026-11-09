@@ -128,7 +128,7 @@ def _card(
         custom_input=CustomInput(enabled=True, placeholder=q.examples[0] if q.examples else ""),
         you_decide=YouDecide(enabled=True, assumes=recommended.id if recommended else None),
         progress=None,
-        language=_lang(request),
+        language=request.language,
         group_id=group_id,
         need_ids=list(q.serves),
         intent=q.intent,
