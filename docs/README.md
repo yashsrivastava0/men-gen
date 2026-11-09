@@ -57,6 +57,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [0013 Brief schema v1, hashing and versioning](adr/0013-brief-schema-v1-hashing-and-versioning.md)
 - [0014 Call specs live in the agent package](adr/0014-call-spec-registration-from-agent-packages.md)
 - [0015 AI-planned interview, Interview Memory and the domain_facts section](adr/0015-ai-planned-interview-and-interview-memory.md)
+- [0016 Compass v2 interview mechanics: tiers with hard caps, closing question, submit-once](adr/0016-compass-v2-interview-mechanics.md)
 
 ## Evals
 
