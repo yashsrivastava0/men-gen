@@ -127,6 +127,15 @@ QaStatus = Literal["open", "answered", "skipped", "you_decide", "assumed", "supe
 InputMode = Literal["tap", "text", "voice"]
 PlannerMode = Literal["initial", "followup", "replan", "deepen", "simplify"]
 PLANNER_MODES: tuple[str, ...] = ("initial", "followup", "replan", "deepen", "simplify")
+# What a planner CALL may be asked for. ``closing`` (the reserved last question, ADR 0016) is a call mode only:
+# what is stored (``QaRecord.mode``, ``BatchRecord.mode``, the database CHECK) stays a ``PlannerMode`` and the
+# closing question is recorded as mode ``replan`` with ``Card.origin == "closing"``.
+PlanMode = Literal["initial", "followup", "replan", "deepen", "simplify", "closing"]
+
+
+def stored_mode(mode: PlanMode) -> PlannerMode:
+    """The mode a planned batch and its questions are STORED with: ``closing`` is recorded as ``replan``."""
+    return "replan" if mode == "closing" else mode
 
 
 class QaRecord(Strict):
@@ -282,6 +291,12 @@ class InterviewBlock(Strict):
     fallback_count: int = 0  # a fallback is a failure: counted (live batches must show 0)
     question_ids: list[str] = Field(default_factory=list)
     stop_reason: str = ""
+    # ADR 0016: the tier's numbers as they were when the interview ran (0 = not recorded), whether the person chose
+    # the tier before the idea, and the state of the reserved last question
+    target: int = Field(default=0, ge=0)
+    hard_cap: int = Field(default=0, ge=0)
+    tier_set: bool = False
+    closing: Literal["none", "asked", "answered", "auto"] = "none"
 
 
 class BatchRecord(Strict):

@@ -23,6 +23,7 @@ from mde_compass.domain.interview import (
     PlannedBatch,
     PlannerMode,
     QaRecord,
+    stored_mode,
 )
 from mde_compass.engine.ports import (
     AuditRequest,
@@ -192,7 +193,8 @@ class StubPlanner:
     async def fallback(self, ctx: TurnContext, request: PlanRequest) -> PlanResult:
         self.fallback_requests.append(request)
         return self.fallback_result or PlanResult(
-            batch=PlannedBatch(batch_id="BAT-000", mode=request.mode), used_fallback=True
+            batch=PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode)),
+            used_fallback=True,
         )
 
 

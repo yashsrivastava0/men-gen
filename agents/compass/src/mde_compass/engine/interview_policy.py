@@ -182,6 +182,79 @@ def stop_decision(
     return StopDecision(True, reason, _remaining(statuses))
 
 
+# ------------------------------------------------------------------------------------------------- room
+@dataclass(frozen=True)
+class Room:
+    """What is left of a tier's question budget (ADR 0016): the one place the arithmetic lives.
+
+    ``target`` is the tier's number (7, 12 or 25) and counts the closing question; ``hard_cap`` is the most the person
+    is ever asked. Questions are counted when they are PLANNED (asked plus waiting), so a batch that is still on screen
+    already uses its places. Base questions stop at ``target - 1``: one place is always kept for the closing question.
+    Follow-ups use only the slack (``hard_cap - target``) and never take a base place, and base plus follow-ups never
+    pass ``hard_cap - 1``. Once the closing question is committed nothing else may be added: it is always last."""
+
+    target: int
+    hard_cap: int
+    base: int = 0  # planner, fallback and frame questions committed so far
+    followups: int = 0  # follow-ups committed so far
+    closing_committed: bool = False
+
+    @property
+    def committed(self) -> int:
+        return self.base + self.followups + (1 if self.closing_committed else 0)
+
+    @property
+    def base_room(self) -> int:
+        """Base questions the planner may still add (the closing place is never offered)."""
+        if self.closing_committed:
+            return 0
+        return max(0, self.target - 1 - self.base)
+
+    @property
+    def followup_room(self) -> int:
+        """Follow-ups that may still be added: the slack above the target, and never past ``hard_cap - 1`` overall."""
+        if self.closing_committed:
+            return 0
+        slack = max(0, self.hard_cap - self.target - self.followups)
+        return max(0, min(slack, self.hard_cap - 1 - self.base - self.followups))
+
+    @property
+    def closing_due(self) -> bool:
+        """Only the closing question is left to ask (it is asked once and nothing follows it)."""
+        return not self.closing_committed and self.base_room == 0
+
+    def batch_size(self, wanted: int) -> int:
+        """How many base questions to ask the planner for: ``wanted``, never past the room."""
+        return max(0, min(wanted, self.base_room))
+
+    def add(self, *, base: int = 0, followups: int = 0, closing: bool = False) -> Room:
+        """The room after committing more questions (a copy; ``Room`` is immutable)."""
+        return Room(
+            self.target,
+            self.hard_cap,
+            self.base + base,
+            self.followups + followups,
+            self.closing_committed or closing,
+        )
+
+    @classmethod
+    def of(cls, qa: Sequence[QaRecord], *, target: int, hard_cap: int) -> Room:
+        """Count what the ledger already holds: every question that was planned and neither dropped nor superseded."""
+        base = followups = 0
+        closing = False
+        for q in qa:
+            if q.status in ("dropped", "superseded"):
+                continue
+            origin = q.card.origin
+            if origin == "closing":
+                closing = True
+            elif origin == "followup":
+                followups += 1
+            else:
+                base += 1
+        return cls(target, hard_cap, base, followups, closing)
+
+
 # --------------------------------------------------------------------------------------------- batch size
 def batch_size_range(
     budget_name: str, asked_total: int, policy: InterviewPolicy

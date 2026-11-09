@@ -57,17 +57,20 @@ class CardBack(_InboundBase):
 
 class BatchAnswerItem(Strict):
     card_id: str
-    action: Literal["answer", "skip", "you_decide"] = "answer"
+    # ``none``: "none of these" (nothing fits): recorded as answered with no content and a follow-up candidate
+    action: Literal["answer", "skip", "you_decide", "none"] = "answer"
     value: JsonValue = None
     custom_text: str | None = None
 
 
 class BatchAnswer(_InboundBase):
-    """ "Answer all at once": the answers of one batch form, applied in a single turn."""
+    """ "Answer all at once": the answers of one batch form, applied in a single turn. ``decide_rest`` also asks the
+    engine to decide every other open question for the person (ADR 0016)."""
 
     type: Literal["batch_answer"] = "batch_answer"
     batch_id: str
     answers: list[BatchAnswerItem] = Field(max_length=12)
+    decide_rest: bool = False
 
 
 class AnswerEdit(_InboundBase):
@@ -203,6 +206,17 @@ class CardEvent(Strict):
     card: Card
 
 
+class BatchProgress(Strict):
+    """Where the interview stands against its tier, so the page can say "question 4 of about 7" (ADR 0016).
+    ``committed`` counts every question planned so far (asked plus waiting); ``hard_cap`` is never exceeded."""
+
+    tier: Literal["quick", "standard", "thorough"] = "standard"
+    target: int = Field(default=0, ge=0)
+    hard_cap: int = Field(default=0, ge=0)
+    committed: int = Field(default=0, ge=0)
+    closing: bool = False  # this batch is the reserved last question
+
+
 class QuestionBatch(Strict):
     """A planned batch: 2 to 3 themed groups. In one-at-a-time mode the engine also emits a normal ``card``
     event for the current question, so older clients keep working."""
@@ -214,6 +228,9 @@ class QuestionBatch(Strict):
     groups: list[BatchGroup]
     total: int = 0  # questions in the batch
     answered: int = 0
+    progress: BatchProgress | None = (
+        None  # ADR 0016; absent from batches built before the tier numbers existed
+    )
 
 
 class PlaybackItem(Strict):

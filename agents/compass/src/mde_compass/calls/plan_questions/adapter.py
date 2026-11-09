@@ -20,6 +20,7 @@ from mde_compass.domain.interview import (
     BacklogItem,
     BatchGroup,
     PlannedBatch,
+    stored_mode,
 )
 from mde_compass.domain.situation import DomainHypothesis, GlossaryCandidate, HypothesisFeature
 from mde_compass.engine.ports import NeedBrief, PlanRequest, PlanResult, TurnContext
@@ -76,6 +77,8 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
     answer = ""
     if focus is not None:
         answer = " | ".join([*focus.selected_labels, focus.answer_text]).strip(" |")
+    if request.mode == "closing":
+        raise NotImplementedError("planner mode 'closing' is built by the calls stream (ADR 0016)")
     return PlanInput(
         mode=request.mode,
         language=request.language,
@@ -192,7 +195,7 @@ def to_batch(
         )
     return PlannedBatch(
         batch_id=batch_id,
-        mode=request.mode,
+        mode=stored_mode(request.mode),
         groups=groups,
         covered_needs=list(out.covered_needs),
         assumed_instead=[

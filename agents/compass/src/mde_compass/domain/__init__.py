@@ -79,11 +79,13 @@ from mde_compass.domain.interview import (
     InterviewBlock,
     InterviewSummary,
     NeedStatus,
+    PlanMode,
     PlannedBatch,
     PlannerMode,
     QaRecord,
     RejectedQuestion,
     SummaryTopic,
+    stored_mode,
 )
 from mde_compass.domain.research import ResearchRequest, SearchHints
 from mde_compass.domain.session import (
@@ -156,6 +158,7 @@ __all__ = [
     "OpenQuestion",
     "OutboundEvent",
     "PatchOp",
+    "PlanMode",
     "PlannedBatch",
     "PlannerMode",
     "Provenance",
@@ -189,5 +192,6 @@ __all__ = [
     "parse_id",
     "section_hashes",
     "sha256_hex",
+    "stored_mode",
     "tier_errors",
 ]

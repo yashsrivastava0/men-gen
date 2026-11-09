@@ -1672,7 +1672,15 @@ class Service(FlowHooks):
                 raise NotFound(f"card {a.card_id}")
             typed = bool(a.custom_text) and a.value in (None, "", [])
             items.append(
-                AnswerItem(card, a.action, a.value, a.custom_text, "text" if typed else "tap")
+                AnswerItem(
+                    card,
+                    "skip"
+                    if a.action == "none"
+                    else a.action,  # "none of these" is built in the engine phase (ADR 0016)
+                    a.value,
+                    a.custom_text,
+                    "text" if typed else "tap",
+                )
             )
         await self.interview.on_answers(turn, items)
         self._rebuild(turn)

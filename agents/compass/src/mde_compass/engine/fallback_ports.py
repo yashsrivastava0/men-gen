@@ -8,7 +8,7 @@ from __future__ import annotations
 
 from mde_compass.domain.brief import Brief
 from mde_compass.domain.claims import Statement
-from mde_compass.domain.interview import PlannedBatch
+from mde_compass.domain.interview import PlannedBatch, stored_mode
 from mde_compass.engine.ports import (
     AmbiguityFinding,
     AuditRequest,
@@ -52,7 +52,7 @@ class NoAmbiguityScanner:
 
 class UnavailableQuestionPlanner:
     async def plan(self, ctx: TurnContext, request: PlanRequest) -> PlanResult:
-        batch = PlannedBatch(batch_id="BAT-000", mode=request.mode)
+        batch = PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode))
         return PlanResult(
             batch=batch, used_fallback=True, reason="cmp.plan_questions is not built yet"
         )

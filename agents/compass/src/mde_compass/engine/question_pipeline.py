@@ -31,6 +31,7 @@ from mde_compass.domain.interview import (
     NeedStatus,
     PlannedBatch,
     RejectedQuestion,
+    stored_mode,
 )
 from mde_compass.engine.ports import (
     AuditRequest,
@@ -191,7 +192,7 @@ async def plan_validated(
     needs_table: str,
     asked_list: str,
 ) -> PipelineResult:
-    result = PipelineResult(batch=PlannedBatch(batch_id="BAT-000", mode=request.mode))
+    result = PipelineResult(batch=PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode)))
     first = await planner.plan(ctx, request)
     result.planner_calls = 1
     if first.used_fallback:

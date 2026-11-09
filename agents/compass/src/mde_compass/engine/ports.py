@@ -28,8 +28,8 @@ from mde_compass.domain.interview import (
     InputMode,
     InterviewSummary,
     NeedState,
+    PlanMode,
     PlannedBatch,
-    PlannerMode,
 )
 from mde_compass.domain.research import ResearchRequest, SearchHints
 from mde_compass.domain.session import Mode, SessionRecord
@@ -403,8 +403,19 @@ class PlanContext(Strict):
     last_qa: str = ""
 
 
+class ClosingContext(Strict):
+    """What the closing planner mode is built from (ADR 0016): short statements taken from the slots and the
+    ledger, so the last question can offer this project's own candidates, not a generic list."""
+
+    features: list[str] = Field(default_factory=list)  # names, stated first and suggested after
+    roles: list[str] = Field(default_factory=list)
+    goals: list[str] = Field(default_factory=list)
+    constraints: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)
+
+
 class PlanRequest(Strict):
-    mode: PlannerMode
+    mode: PlanMode
     language: str = "en"
     context: PlanContext
     needs: list[NeedBrief] = Field(
@@ -432,6 +443,9 @@ class PlanRequest(Strict):
         default_factory=list
     )  # frame style guides and examples for the needs
     next_card_n: int = Field(default=1, ge=1)  # the planner numbers its questions from here (Q-###)
+    # ADR 0016: needs whose last answer was thin; the next batch's single call may fold a follow-up for them in
+    followup_candidates: list[str] = Field(default_factory=list)
+    closing: ClosingContext | None = None  # mode "closing" only
 
 
 class PlanResult(Strict):
@@ -466,6 +480,55 @@ class AuditResult(Strict):
 
 class QuestionAuditor(Protocol):
     async def audit(self, ctx: TurnContext, request: AuditRequest) -> AuditResult: ...
+
+
+# --- decide_answers (ADR 0016): "you decide" for questions without a usable recommendation --------------------
+
+
+class DecideOption(Strict):
+    id: str
+    label: str
+
+
+class DecideItem(Strict):
+    card_id: str
+    question: str
+    card_type: str
+    need_ids: list[str] = Field(default_factory=list)
+    answer_spec: str = ""
+    options: list[DecideOption] = Field(default_factory=list)
+    recommended_id: str = ""  # the planner's own recommendation, when it made one
+    must_confirm: bool = (
+        False  # a risky need: the answer is listed for approval, never silently kept
+    )
+
+
+class DecideRequest(Strict):
+    language: str = "en"
+    project_card: str = ""
+    fact_digest: str = ""
+    hypothesis: str = ""
+    items: list[DecideItem] = Field(max_length=12)
+
+
+class Decision(Strict):
+    card_id: str
+    option_ids: list[str] = Field(default_factory=list)  # empty for an open question
+    answer_text: str = ""  # open questions: the proposed answer in the person's language
+    rationale: str = ""  # one line, shown in "We assumed"
+    confidence: float = Field(default=0.5, ge=0.0, le=1.0)
+
+
+class DecideResult(Strict):
+    decisions: list[Decision]
+    used_fallback: bool = (
+        False  # recommended option, first typical option, catalog default or hypothesis
+    )
+    reason: str = ""
+
+
+class AnswerDecider(Protocol):
+    async def decide(self, ctx: TurnContext, request: DecideRequest) -> DecideResult: ...
 
 
 class SummaryRequest(Strict):

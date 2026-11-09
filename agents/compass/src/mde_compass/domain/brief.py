@@ -8,9 +8,9 @@ records, each carrying tier, provenance, confidence, status and history through 
 
 from __future__ import annotations
 
-from typing import Literal
+from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, SerializerFunctionWrapHandler, model_serializer
 
 from mde_compass.domain.common import BriefItem, ItemMeta, Strict
 from mde_compass.domain.ids import IdLedger
@@ -159,6 +159,19 @@ class DomainFact(ItemMeta):
     consumers: list[str] = Field(default_factory=list)
     source: str = ""  # the question or source it came from (Q-###, SRC-###, evt_...)
     quote: str = ""  # the user's verbatim words
+    # ADR 0016: what kind of detail it is (a ``catalog/fact_kinds.yaml`` key: rule, number, acceptance, screen,
+    # flow, entity, compliance, nfr, ...) and which feature, role or app ids it belongs to. Both are omitted from the
+    # dump while empty, so the hash of every Brief written before they existed is unchanged.
+    kind: str = ""
+    refs: list[str] = Field(default_factory=list)
+
+    @model_serializer(mode="wrap")
+    def _omit_empty_detail(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        data = handler(self)
+        for key in ("kind", "refs"):
+            if not data.get(key):
+                data.pop(key, None)
+        return data
 
 
 class AssumptionRecord(ItemMeta):

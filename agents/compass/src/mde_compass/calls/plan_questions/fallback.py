@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from mde_compass.calls.plan_questions.schema import HypothesisWire, PlanInput, PlanOutput
 from mde_compass.catalog.loader import Catalog
-from mde_compass.domain.interview import BatchGroup, PlannedBatch
+from mde_compass.domain.interview import BatchGroup, PlannedBatch, stored_mode
 from mde_compass.engine.cards import fallback_card
 from mde_compass.engine.ports import NeedBrief, PlanRequest
 
@@ -93,4 +93,4 @@ def fallback_batch(
             )
         )
     groups = [BatchGroup(id="G1", title=group_title, cards=cards)] if cards else []
-    return PlannedBatch(batch_id=batch_id, mode=request.mode, groups=groups)
+    return PlannedBatch(batch_id=batch_id, mode=stored_mode(request.mode), groups=groups)

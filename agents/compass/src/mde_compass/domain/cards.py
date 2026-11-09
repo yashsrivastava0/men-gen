@@ -19,7 +19,8 @@ CardType = Literal[
     "upload_or_link",
     "open_prompt",
 ]
-QuestionOrigin = Literal["planner", "followup", "fallback", "frame"]
+# ``closing`` is the one reserved last question of an interview (ADR 0016); it is stored with mode ``replan``
+QuestionOrigin = Literal["planner", "followup", "fallback", "frame", "closing"]
 """Where a question came from: the planner, a follow-up, a flagged fallback, or the legacy frame path."""
 CARD_TYPES: tuple[str, ...] = (
     "choose_one",

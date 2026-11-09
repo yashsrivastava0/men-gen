@@ -104,6 +104,12 @@ class InterviewPolicy:
     quick_max: int = 5
     standard_max: int = 12
     thorough_max: int = 25
+    # hard caps (ADR 0016): never exceeded, counting follow-ups, the gap question and the closing question. The
+    # ``*_max`` numbers above are the tier TARGETS (they become 7 / 12 / 25 with the engine change); the slack
+    # between target and hard cap is what follow-ups may use. Not read by the engine yet.
+    quick_hard: int = 10
+    standard_hard: int = 15
+    thorough_hard: int = 30
     # first batch sizes (min, max) by budget; later batches of the thorough budget are 6 to 8
     quick_first_batch: tuple[int, int] = (4, 5)
     standard_first_batch: tuple[int, int] = (5, 7)
@@ -150,6 +156,14 @@ class InterviewPolicy:
             "quick": self.quick_max,
             "standard": self.standard_max,
             "thorough": self.thorough_max,
+        }[budget]
+
+    def hard_cap(self, budget: InterviewBudget) -> int:
+        """The most questions an interview of this tier may ever put to the person (ADR 0016)."""
+        return {
+            "quick": self.quick_hard,
+            "standard": self.standard_hard,
+            "thorough": self.thorough_hard,
         }[budget]
 
 
