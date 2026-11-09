@@ -81,6 +81,10 @@ class FlowHooks:
         async def _commit(self, turn: _Turn) -> None: ...
 
     # ------------------------------------------------------------------ small helpers
+    def _flow_who(self, turn: _Turn) -> str | None:
+        """The contributor speaking (enterprise), so a second contributor's different value is disputed."""
+        return getattr(turn.event, "contributor_id", None)
+
     def _flow_card_id(self, turn: _Turn) -> str:
         return f"Q-{len(turn.asked_cards()) + 1:03d}"
 
@@ -146,7 +150,7 @@ class FlowHooks:
             return
         turn.slots.write(
             references.SLOT, items, state="assumed", provenance=self._prov(turn, "user_text", text[:300]),
-            confidence=0.5, turn_id=turn.turn_id,
+            confidence=0.5, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         for label, quote in new:
             claimed = references.own_business(quote) is not None or (
@@ -271,10 +275,11 @@ class FlowHooks:
         prov = self._prov(turn, "user_tap", "")
         turn.slots.write(
             priorities.FEATURES_SLOT, priorities.apply_placement(feats, placement), state="confirmed",
-            provenance=prov, confidence=0.9, turn_id=turn.turn_id,
+            provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         turn.slots.write(
-            priorities.SLOT, priorities.SIGNAL_VALUE, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id
+            priorities.SLOT, priorities.SIGNAL_VALUE, state="confirmed", provenance=prov, confidence=0.9,
+            turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         must, later = placement.names(priorities.MUST), placement.names(priorities.LATER)
         key = "flows.priority.done" if later else "flows.priority.done_all"
@@ -298,11 +303,11 @@ class FlowHooks:
         if card.type == "choose_one":
             label = references.confirm_label(card, str(ev.value))
             if label and str(ev.value) == references.OWN_ID:
-                turn.slots.write(references.SLOT, [{"label": label}], state="volunteered", provenance=prov, remove=True, turn_id=turn.turn_id)  # fmt: skip
+                turn.slots.write(references.SLOT, [{"label": label}], state="volunteered", provenance=prov, remove=True, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
                 turn.notice("reference_own", self._t(turn, "flows.reference.own_noted", name=label))
             elif label:
                 new = references.apply_form(value, {}, labels={label.casefold()})
-                turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id)  # fmt: skip
+                turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
                 turn.notice(
                     "reference_confirmed", self._t(turn, "flows.reference.confirmed", name=label)
                 )
@@ -310,7 +315,7 @@ class FlowHooks:
             form = references.parse_form(card, ev.value)
             asked = {lab.casefold() for o in card.options if (lab := references.option_label(o))}
             new = references.apply_form(value, form, labels=asked)
-            turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id)  # fmt: skip
+            turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
         turn.answered.append((card.id, "answered", answered))  # type: ignore[arg-type]
 
     # ------------------------------------------------------------------ messages
@@ -324,7 +329,7 @@ class FlowHooks:
                 turn.slots.write(
                     priorities.SLOT, priorities.SIGNAL_VALUE, state="volunteered",
                     provenance=self._prov(turn, "voice" if ev.input_mode == "voice" else "user_text", quote),
-                    confidence=0.8, turn_id=turn.turn_id,
+                    confidence=0.8, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
                 )  # fmt: skip
         self._flow_phase_apps(turn, text)
         if ev.input_mode == "voice":
@@ -338,28 +343,25 @@ class FlowHooks:
         return False
 
     def _flow_phase_apps(self, turn: _Turn, text: str) -> None:
+        """Five or more apps listed in THIS message: the main two now, the rest as later scope records."""
         held, status = self._flow_slot(turn, apps_scope.APPS_SLOT)
         named = apps_scope.named_apps(text)
-        if len(named) < data.policy().apps_phase_at and status not in ("volunteered", "confirmed"):
+        if len(named) < data.policy().apps_phase_at:
             return
         plan = apps_scope.phase_plan(cast(JsonValue, apps_scope.union(named, held)))
-        if plan is None or not named:  # only when THIS message lists the apps
+        if plan is None:
             return
         status = status if status in ("volunteered", "confirmed") else "volunteered"
         prov = self._prov(turn, "user_text", text[:300])
         turn.slots.write(
-            apps_scope.APPS_SLOT,
-            cast(JsonValue, plan.now),
-            state=status,
-            provenance=prov,
-            confidence=0.7,
-            turn_id=turn.turn_id,
-        )  # type: ignore[arg-type]
+            apps_scope.APPS_SLOT, cast(JsonValue, plan.now), state=status, provenance=prov,  # type: ignore[arg-type]
+            confidence=0.7, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
+        )  # fmt: skip
         feats, _ = self._flow_slot(turn, apps_scope.FEATURES_SLOT)
         records = apps_scope.later_records(plan.later, self._t(turn, "flows.apps.later_intent"))
         turn.slots.write(
             apps_scope.FEATURES_SLOT, apps_scope.merge_features(feats, records), state="volunteered",
-            provenance=prov, confidence=0.7, turn_id=turn.turn_id,
+            provenance=prov, confidence=0.7, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         pol = data.policy()
         turn.out.append(
