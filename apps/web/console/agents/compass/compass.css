@@ -338,3 +338,63 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
 .status-err { background: var(--danger-soft); color: var(--danger); }
 .status-warn { background: var(--warn-soft); color: var(--warn); }
 
+
+/* Welcome: the tier first (three large cards), then the idea */
+.tier { display: grid; gap: var(--s1); }
+.tier-title { font-size: 17px; font-weight: 650; }
+.tier-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: var(--s1); }
+.tier-card {
+  display: grid; gap: 4px; align-content: start; text-align: left; font: inherit; color: var(--text);
+  background: var(--surface); border: 2px solid var(--border); border-radius: var(--radius); padding: var(--s2);
+  cursor: pointer; min-height: 120px; box-shadow: var(--shadow);
+}
+.tier-card:hover { background: var(--surface-2); }
+.tier-card[aria-pressed="true"] { border-color: var(--accent); background: var(--accent-soft); }
+.tier-name { font-size: 18px; font-weight: 700; }
+.tier-count { font-size: 14px; font-weight: 650; color: var(--accent); }
+.tier-desc { font-size: 13px; color: var(--muted); overflow-wrap: anywhere; }
+.tier-chosen { display: flex; flex-wrap: wrap; gap: var(--s1); align-items: center; }
+.tier-chip { font-size: 14px; font-weight: 650; padding: 4px 16px; border-radius: 999px; background: var(--accent-soft); border: 1px solid var(--accent); color: var(--text); overflow-wrap: anywhere; }
+.start-buttons .btn:disabled { cursor: not-allowed; }
+.composer-gate { padding: var(--s1) var(--s2) 0; font-size: 13px; color: var(--warn); }
+.composer textarea:disabled { opacity: 0.6; cursor: not-allowed; }
+
+@media (max-width: 520px) {
+  .tier-cards { grid-template-columns: minmax(0, 1fr); }
+  .tier-card { min-height: 0; }
+}
+
+/* The batch form (Compass v2): numbered questions, one send at the end, a sticky action bar */
+.qnum { font-size: 12px; font-weight: 700; color: var(--muted); flex-basis: 100%; }
+.qitem-head .q { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.qitem-closing { border-color: var(--accent); background: var(--accent-soft); }
+.closing-note { margin: 0; font-size: 14px; color: var(--text); }
+.form-updated { margin: 0; color: var(--warn); }
+.form-helper { margin: 0; }
+.form-notes { display: grid; gap: var(--s1); }
+.form-notes .hint:empty { display: none; }
+.form-actions { position: sticky; bottom: calc(var(--s2) * -1); z-index: 2; display: grid; gap: var(--s1); padding: var(--s1) 0; background: var(--surface); border-top: 1px solid var(--border); }
+.form-summary { color: var(--text); font-size: 13px; }
+.form-error { display: flex; flex-wrap: wrap; gap: var(--s1); align-items: center; padding: var(--s1) var(--s2); border-radius: var(--radius-sm); background: var(--danger-soft); color: var(--danger); font-size: 14px; }
+.form-error-text { flex: 1; min-width: 180px; }
+.batch-form.is-sending { opacity: 0.85; }
+.batch-form.is-sending .send-all { cursor: progress; }
+.form-other.is-idle { opacity: 0.6; }
+.qgroup:disabled .why-btn { cursor: not-allowed; }
+
+/* Several answers can be true: select all, none of these, a typed answer next to the ticks, a ranking */
+.pick-tools { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.form-other .form-other-label { font-size: 13px; color: var(--muted); }
+.rank-box { display: grid; gap: 4px; }
+.rank-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.rank-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto auto; gap: 4px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 8px; }
+
+/* "You decide" and "Decide the rest for me" */
+.you-decide-note { align-self: center; }
+.decide-confirm { display: grid; gap: var(--s1); padding: var(--s1) var(--s2); border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); font-size: 14px; }
+.decide-confirm p { margin: 0; }
+
+@media (max-width: 520px) {
+  .form-actions .row-actions { flex-wrap: nowrap; }
+  .form-actions .btn { flex: 1 1 auto; min-width: 0; white-space: normal; padding: 8px; }
+}

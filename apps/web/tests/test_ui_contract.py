@@ -16,10 +16,12 @@ import httpx
 from pydantic import TypeAdapter
 
 from mde_compass.catalog.loader import load_catalog
-from mde_compass.domain.cards import CARD_TYPES, Card
+from mde_compass.domain.cards import CARD_TYPES, Card, QuestionOrigin
 from mde_compass.domain.events import (
     INBOUND_ADAPTER,
     OUTBOUND_ADAPTER,
+    BatchAnswer,
+    BatchAnswerItem,
     CommandName,
     InboundEvent,
     OutboundEvent,
@@ -94,6 +96,41 @@ def test_batch_keys_exist_in_the_question_batch_schema() -> None:
     assert [k for k in keys if not _resolve(schema, k)] == []
 
 
+def test_batch_progress_is_optional_and_the_page_never_names_the_cap() -> None:
+    """``progress`` arrives with the v2 engine; the page reads tier, target, committed and closing, never the cap."""
+    schema = QuestionBatch.model_json_schema()
+    keys = _contract()["batch_keys"]
+    assert {
+        "progress",
+        "progress.tier",
+        "progress.target",
+        "progress.committed",
+        "progress.closing",
+    } <= set(keys)
+    assert "progress.hard_cap" not in keys
+    assert "progress" not in schema.get("required", []), "older servers omit it"
+    assert "progress" in schema["properties"]
+
+
+def test_the_batch_answer_the_form_sends_is_the_servers_batch_answer() -> None:
+    """Every key and action the form puts in a ``batch_answer`` exists on the server model (ADR 0016)."""
+    contract = _contract()
+    schema = BatchAnswer.model_json_schema()
+    assert [k for k in contract["batch_answer_keys"] if not _resolve(schema, k)] == []
+    assert "decide_rest" in contract["batch_answer_keys"]
+    assert set(contract["batch_answer_actions"]) == set(
+        get_args(BatchAnswerItem.model_fields["action"].annotation)
+    )
+    body = APP_JS.split("CONTRACT*/", 1)[1] + HELPER_JS
+    for action in contract["batch_answer_actions"]:
+        assert re.search(rf"""["']{action}["']""", body), (
+            f"the form never sends the {action} action"
+        )
+    # "decide_rest" is only put in the body when asked for, so an older server never sees it
+    assert "if (o.decideRest) { body.decide_rest = true; }" in body
+    assert "if (decideRest) { body.decide_rest = true; }" in body
+
+
 def test_qa_item_keys_are_the_ones_the_service_puts_in_the_list() -> None:
     """GET /qa is a plain dict (no model), so its keys are pinned to the code that builds it."""
     source = inspect.getsource(Service.qa_list)
@@ -110,7 +147,9 @@ def test_qa_item_keys_are_the_ones_the_service_puts_in_the_list() -> None:
 def test_command_names_the_ui_sends_are_server_commands() -> None:
     names = _contract()["command_names"]
     assert set(names) <= set(get_args(CommandName))
-    assert {"ask_more", "mode_answer_all", "mode_one_at_a_time"} <= set(names)
+    assert {"ask_more", "mode_answer_all"} <= set(names), (
+        "the form layout is the only one the page asks for"
+    )
     assert {"budget_quick", "budget_standard", "budget_thorough"} <= set(names)
     for name in names:
         assert re.search(rf"""["']{name}["']""", ALL_JS.split("CONTRACT*/", 1)[1]), (
@@ -126,11 +165,20 @@ def test_every_contract_key_is_actually_read_by_the_code() -> None:
         + contract["card_keys"]
         + contract["stored_event_keys"]
         + contract["batch_keys"]
+        + contract["batch_answer_keys"]
         + contract["qa_item_keys"]
     )
     for key in keys:
         leaf = key.split(".")[-1].removesuffix("[]")
         assert re.search(rf"\.{leaf}\b|[\"']{leaf}[\"']", body), f"{key} is listed but never read"
+
+
+def test_card_origins_include_the_closing_question_and_the_page_reads_it() -> None:
+    contract = _contract()
+    assert set(contract["card_origins"]) == set(get_args(QuestionOrigin))
+    assert "closing" in contract["card_origins"]
+    for origin in ("followup", "closing"):  # the origins the page branches on
+        assert re.search(rf"""origin\s*===?\s*["']{origin}["']""", ALL_JS), origin
 
 
 def test_card_types_cover_card_types_constant() -> None:
@@ -169,13 +217,13 @@ def test_event_types_cover_domain_events() -> None:
 
 def _fallback_keys() -> set[str]:
     block = APP_JS.split("var FALLBACK = {", 1)[1].split("};", 1)[0]
-    return set(re.findall(r'"([a-z_]+(?:\.[a-z_]+)+)":', block))
+    return set(re.findall(r'"([a-z_]+(?:\.[a-z0-9_]+)+)":', block))
 
 
 def test_strings_used_by_the_ui_exist() -> None:
     strings = load_catalog().strings
     known = set(strings["en"]) | _fallback_keys()
-    used = set(re.findall(r"\bt\(\s*\"([a-z_]+\.[a-z_]+(?:\.[a-z_]+)*)\"", ALL_JS))
+    used = set(re.findall(r"\bt\(\s*\"([a-z_]+\.[a-z0-9_]+(?:\.[a-z0-9_]+)*)\"", ALL_JS))
     assert len(used) > 40
     assert sorted(used - known) == []
     assert set(strings["hi"]) == set(strings["en"])
@@ -189,7 +237,7 @@ def test_strings_used_by_the_ui_exist() -> None:
 
 def _fallback_strings() -> dict[str, str]:
     block = APP_JS.split("var FALLBACK = {", 1)[1].split("};", 1)[0]
-    return dict(re.findall(r'"([a-z_]+(?:\.[a-z_]+)+)":\s*"((?:[^"\\]|\\.)*)"', block))
+    return dict(re.findall(r'"([a-z_]+(?:\.[a-z0-9_]+)+)":\s*"((?:[^"\\]|\\.)*)"', block))
 
 
 def test_every_interview_string_exists_in_both_languages_and_the_embedded_english() -> None:
@@ -212,9 +260,29 @@ def test_every_interview_string_exists_in_both_languages_and_the_embedded_englis
             assert f"ui.interview.fact_{status}" in keys
 
 
+def test_every_v2_string_exists_in_both_languages_and_the_embedded_english() -> None:
+    """Compass v2 copy (``ui.v2.*``) is new-keys-only: en, hi and the page's embedded English stay equal, and a
+    key nothing uses is dead copy."""
+    strings = load_catalog().strings
+    embedded = _fallback_strings()
+    keys = {k for k in strings["en"] if k.startswith("ui.v2.")}
+    assert len(keys) >= 10
+    assert keys == {k for k in strings["hi"] if k.startswith("ui.v2.")}
+    assert keys == {k for k in embedded if k.startswith("ui.v2.")}
+    for key in keys:
+        assert embedded[key] == strings["en"][key], f"{key}: the embedded copy drifted from en.json"
+        assert strings["hi"][key] != strings["en"][key], f"{key}: not translated"
+        assert set(re.findall(r"\{(\w+)\}", strings["hi"][key])) == set(
+            re.findall(r"\{(\w+)\}", strings["en"][key])
+        ), f"{key}: placeholders differ between en and hi"
+    named = set(re.findall(r"[\"'](ui\.v2\.[a-z0-9_]+)[\"']", ALL_JS))
+    assert sorted(named - keys) == [], "the code names a ui.v2 string that does not exist"
+    assert sorted(keys - named) == [], "a ui.v2 string nothing uses"
+
+
 def test_t_calls_fill_exactly_the_placeholders_of_their_strings() -> None:
     pool = {**_fallback_strings(), **load_catalog().strings["en"]}
-    call = re.compile(r"""\bt\(\s*"([a-z_]+(?:\.[a-z_]+)+)"\s*,\s*\{(.*?)\}\s*\)""", re.S)
+    call = re.compile(r"""\bt\(\s*"([a-z_]+(?:\.[a-z0-9_]+)+)"\s*,\s*\{(.*?)\}\s*\)""", re.S)
     seen = 0
     for key, inner in call.findall(ALL_JS):
         names = set(re.findall(r"(?:^|,)\s*(\w+)\s*:", inner))
