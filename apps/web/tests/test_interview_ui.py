@@ -236,6 +236,9 @@ def test_a_batch_that_changes_while_the_form_is_open_keeps_what_was_typed() -> N
     )
     replay = function_body("replayHistory")
     assert "showForm(last, true)" in replay and "state.submitted = summary.submitted" in replay
+    assert "ensureFormLayout(last)" in replay, (
+        "a reopened project on an older server is asked for the form too"
+    )
 
 
 def test_an_older_server_that_still_shows_one_at_a_time_is_asked_for_the_form_once() -> None:
@@ -464,7 +467,9 @@ def test_the_welcome_block_asks_for_the_tier_before_the_idea() -> None:
     # the choice becomes a chip with a Change link, until the first batch arrives
     welcome = function_body("renderWelcome")
     assert 'class: "tier-chip"' in welcome and "ui.v2.tier_chosen" in welcome
-    assert "if (!state.batches.length)" in welcome and "tier-change" in welcome
+    assert (
+        "if (!state.batches.length && state.awaitingTier)" in welcome and "tier-change" in welcome
+    )
     assert "ui.v2.tier_change_label" in welcome
     assert (
         "renderWelcome();"
@@ -642,7 +647,6 @@ def test_the_readme_documents_the_interview_screens() -> None:
         "compassInterview",
         "mock-banner",
         "interview-bar",
-        "btn-mode-toggle",
         "btn-ask-more",
         "qa-list",
         "history-chat",
@@ -651,5 +655,15 @@ def test_the_readme_documents_the_interview_screens() -> None:
         "depth-chip",
         "fallback-badge",
         "row-pulse",
+        "tier-card",
+        "composer-gate",
+        "send-all",
+        "decide-rest",
+        "select-all",
+        "rank-list",
+        "form-actions",
+        "ui.v2",
+        "WAIT",
+        "fileInput",
     ):
         assert token in README, f"apps/web/README.md does not mention {token}"

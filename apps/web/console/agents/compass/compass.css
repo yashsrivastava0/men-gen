@@ -371,8 +371,9 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
 .closing-note { margin: 0; font-size: 14px; color: var(--text); }
 .form-updated { margin: 0; color: var(--warn); }
 .form-helper { margin: 0; }
-.form-actions { position: sticky; bottom: calc(var(--s2) * -1); z-index: 2; display: grid; gap: var(--s1); padding: var(--s1) 0 var(--s1); background: var(--surface); border-top: 1px solid var(--border); }
-.form-actions .hint:empty { display: none; }
+.form-notes { display: grid; gap: var(--s1); }
+.form-notes .hint:empty { display: none; }
+.form-actions { position: sticky; bottom: calc(var(--s2) * -1); z-index: 2; display: grid; gap: var(--s1); padding: var(--s1) 0; background: var(--surface); border-top: 1px solid var(--border); }
 .form-summary { color: var(--text); font-size: 13px; }
 .form-error { display: flex; flex-wrap: wrap; gap: var(--s1); align-items: center; padding: var(--s1) var(--s2); border-radius: var(--radius-sm); background: var(--danger-soft); color: var(--danger); font-size: 14px; }
 .form-error-text { flex: 1; min-width: 180px; }
@@ -392,3 +393,8 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
 .you-decide-note { align-self: center; }
 .decide-confirm { display: grid; gap: var(--s1); padding: var(--s1) var(--s2); border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); font-size: 14px; }
 .decide-confirm p { margin: 0; }
+
+@media (max-width: 520px) {
+  .form-actions .row-actions { flex-wrap: nowrap; }
+  .form-actions .btn { flex: 1 1 auto; min-width: 0; white-space: normal; padding: 8px; }
+}

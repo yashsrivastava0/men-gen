@@ -16,7 +16,7 @@ import httpx
 from pydantic import TypeAdapter
 
 from mde_compass.catalog.loader import load_catalog
-from mde_compass.domain.cards import CARD_TYPES, Card
+from mde_compass.domain.cards import CARD_TYPES, Card, QuestionOrigin
 from mde_compass.domain.events import (
     INBOUND_ADAPTER,
     OUTBOUND_ADAPTER,
@@ -171,6 +171,14 @@ def test_every_contract_key_is_actually_read_by_the_code() -> None:
     for key in keys:
         leaf = key.split(".")[-1].removesuffix("[]")
         assert re.search(rf"\.{leaf}\b|[\"']{leaf}[\"']", body), f"{key} is listed but never read"
+
+
+def test_card_origins_include_the_closing_question_and_the_page_reads_it() -> None:
+    contract = _contract()
+    assert set(contract["card_origins"]) == set(get_args(QuestionOrigin))
+    assert "closing" in contract["card_origins"]
+    for origin in ("followup", "closing"):  # the origins the page branches on
+        assert re.search(rf"""origin\s*===?\s*["']{origin}["']""", ALL_JS), origin
 
 
 def test_card_types_cover_card_types_constant() -> None:

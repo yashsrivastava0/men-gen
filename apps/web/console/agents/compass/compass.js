@@ -40,6 +40,7 @@
     "ask_more", "mode_answer_all", "budget_quick", "budget_standard", "budget_thorough"
   ],
   "stored_event_keys": ["direction", "type", "event_id", "turn_id", "seq", "payload"],
+  "card_origins": ["planner", "followup", "fallback", "frame", "closing"],
   "card_types": [
     "choose_one", "pick_many", "priority", "confirm", "look_signals", "quick_form", "upload_or_link",
     "open_prompt"
@@ -950,9 +951,11 @@ CONTRACT*/
     confirmBox.addEventListener("keydown", function (e) {
       if (e.key === "Escape") { e.stopPropagation(); toggleDecideConfirm(f, false); decide.focus(); }
     });
-    var bar = h("div", { class: "form-actions" }, summary, status, error, confirmBox,
-      h("div", { class: "row-actions" }, send, decide));
+    // the notes (what happens to blank questions, progress, a failed send) sit above the buttons; only the buttons (and
+    // the one-line question "Decide the rest?") stay in view while the questions scroll, so a phone keeps its room
+    var bar = h("div", { class: "form-actions" }, confirmBox, h("div", { class: "row-actions" }, send, decide));
     el.appendChild(h("p", { class: "hint form-helper", text: t("ui.v2.form_helper") }));
+    el.appendChild(h("div", { class: "form-notes" }, summary, status, error));
     el.appendChild(bar);
     f.ui = { count: count, summary: summary, status: status, error: error, errText: errText, retry: retry, send: send, title: title, bar: bar,
       decide: decide, confirm: confirmBox, yes: yes };
@@ -1021,6 +1024,7 @@ CONTRACT*/
     if (!f || f.confirmed) { return; }
     f.confirmed = true;
     f.sending = false;
+    if (f.sid !== state.sessionId) { return; }   // another project is open now: nothing of this one belongs in its chat
     f.cards.forEach(function (c) { markAnswered(c.id); });   // a question left out of the form is dropped by the server
     state.submitted[f.batchId] = true;
     var byId = {};
@@ -1079,7 +1083,7 @@ CONTRACT*/
     }
     if (state.activeCard && !state.activeCard.form) { collapseActive(); }   // a single card is replaced by the form
     var kept = I.carryDraft(carried, cards);
-    var f = { batch: batch, batchId: batch.batch_id, groups: groups, cards: cards, draft: kept.draft, nums: I.batchNumbers(batch, cards.length),
+    var f = { sid: state.sessionId, batch: batch, batchId: batch.batch_id, groups: groups, cards: cards, draft: kept.draft, nums: I.batchNumbers(batch, cards.length),
       closing: I.isClosingBatch(batch), sending: false, confirmed: false, failed: null, answers: [], lastDecideRest: false, items: {}, ui: null, el: null };
     f.el = buildForm(f, carried && kept.kept > 0 ? t("ui.v2.updated_kept") : "");
     if (old && !old.confirmed && old.el.parentNode && old.batchId === batch.batch_id) {
@@ -1253,7 +1257,7 @@ CONTRACT*/
       var lab = depthLabels(state.depth);
       var row = h("div", { class: "tier-chosen" },
         h("span", { class: "tier-chip", text: t("ui.v2.tier_chosen", { name: lab.name, count: lab.hint }) }));
-      if (!state.batches.length) {
+      if (!state.batches.length && state.awaitingTier) {   // once the idea is sent the first questions are being planned: too late to change
         row.appendChild(h("button", { class: "btn-link tier-change", type: "button", "aria-label": t("ui.v2.tier_change_label"),
           text: t("ui.v2.tier_change"), on: { click: function () {
             state.tierEditing = true;
@@ -1272,7 +1276,7 @@ CONTRACT*/
     state.welcomeEl = h("div", { class: "welcome-actions" });
     log().appendChild(state.welcomeEl);
     renderWelcome();
-    scrollChat();
+    state.welcomeEl.scrollIntoView({ block: "start" });   // the question comes first, not the buttons below it
   }
 
   /** A mock session must never be mistaken for the product: a banner the user cannot dismiss. */
@@ -1431,11 +1435,13 @@ CONTRACT*/
     if (!o.quiet) { setTyping(true, I.phaseFor(ev, I.phaseContext(state.batches, ev))); }
     return api("POST", "/sessions/" + sid + "/events", ev).then(function (ack) {
       acked = ack;   // the server has the event: a page error while showing its answer must not look like a failed send
+      if (sid !== state.sessionId) { return; }   // another project was opened meanwhile: its chat is not the place for this reply
       try {
         if (o.onAck) { o.onAck(ack); }   // before its answer is drawn, so a form closes above the new questions
         processAck(ack);
       } catch (e) { noteRenderError(e); }
     }).catch(function (err) {
+      if (sid !== state.sessionId) { return; }
       if (o.onError) { o.onError(err); return; }
       var el = addMsg("error", friendly(err));
       el.setAttribute("role", "alert");
@@ -1476,9 +1482,11 @@ CONTRACT*/
       IN_FLIGHT += 1;
       setTyping(true, "document");   // "Reading your document…", visible and announced
       return api("POST", "/sessions/" + sid + "/uploads", fd).then(function (ack) {
+        if (sid !== state.sessionId) { return; }
         try { processAck(ack); } catch (e) { noteRenderError(e); }
         if (note) { note.textContent = ""; }
       }).catch(function (err) {   // 413 and 415 included: the page keeps working
+        if (sid !== state.sessionId) { return; }
         var text = uploadErrorText(err);
         if (note) { note.textContent = text; }
         var el = addMsg("error", text);
@@ -2451,7 +2459,7 @@ CONTRACT*/
         if (ev.type === "card") { lastCard = ev; }
       });
       var last = state.batches[state.batches.length - 1];
-      if (last && !state.submitted[last.batch_id]) { showForm(last, true); }   // the form that was still open, drawn once
+      if (last && !state.submitted[last.batch_id]) { showForm(last, true); ensureFormLayout(last); }   // the form that was still open, drawn once
       return lastCard;
     }).catch(function () { return null; });
   }
