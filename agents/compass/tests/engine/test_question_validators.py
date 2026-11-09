@@ -11,10 +11,14 @@ from mde_compass.config import CompassConfig, InterviewPolicy, QuestionPolicy
 from mde_compass.domain.cards import Card, CardOption, CardType
 from mde_compass.domain.interview import AssumedInstead, NeedStatus
 from mde_compass.engine.needs import compute
+from mde_compass.engine.ports import ClosingContext
 from mde_compass.engine.question_validators import (
+    CLOSING_NEEDS,
     Issue,
     LedgerEntry,
     ValidationContext,
+    candidate_match,
+    closing_candidates,
     coverage_issues,
     cross_idea_overlap,
     cross_idea_overlap_pairs,
@@ -775,3 +779,163 @@ def test_accepted_questions_never_repeat_an_intent(intents: list[str]) -> None:
 
 def test_issue_string_form() -> None:
     assert str(Issue("no_project_term", "msg")) == "no_project_term: msg"
+
+
+# ------------------------------------------------------------------------------- the closing question
+CLOSING_CTX = ClosingContext(
+    features=["weekly meal plans", "daily menu", "pause a delivery", "morning delivery routes"],
+    roles=["customer", "cook"],
+    goals=["first 100 subscribers"],
+    constraints=["works on low-cost phones"],
+    assumptions=["payments are collected outside the app"],
+)
+OWN = [
+    "Weekly meal plans",
+    "Daily menu and ordering",
+    "Pausing a delivery",
+    "Reaching your first 100 subscribers",
+]
+
+
+def closing_card(
+    labels: list[str] | None = None,
+    *,
+    suggested: tuple[str, ...] = ("Launching quickly",),
+    **kw: object,
+) -> Card:
+    options = [
+        CardOption(id=chr(65 + i), label=label, basis="your_words")
+        for i, label in enumerate(labels if labels is not None else OWN)
+    ]
+    start = len(options)
+    options += [
+        CardOption(id=chr(65 + start + i), label=label, basis="suggestion")
+        for i, label in enumerate(suggested)
+    ]
+    fields: dict[str, object] = {
+        "type": "priority",
+        "question": "For the first version of your tiffin service, which matters most?",
+        "options": options,
+        "needs": list(CLOSING_NEEDS),
+        "intent": "learn what matters most in the first version",
+        "origin": "closing",
+    }
+    fields.update(kw)
+    return card("Q-020", **fields)  # type: ignore[arg-type]
+
+
+def closing_ctx(**kw: object) -> ValidationContext:
+    return ctx(closing_candidates=closing_candidates(CLOSING_CTX), **kw)
+
+
+def test_a_good_closing_question_has_no_issues() -> None:
+    assert validate_question(closing_card(), closing_ctx()) == []
+    assert not is_universal(closing_card(), REAL)  # the project-term rule applies to it
+
+
+def test_the_closing_question_is_a_priority_card_with_its_own_needs_and_the_custom_input_on() -> (
+    None
+):
+    assert "closing_shape" in codes(
+        closing_card(type="choose_one", options=opts("a", "b", "c")), closing_ctx()
+    )
+    assert "closing_shape" in codes(closing_card(needs=["scope.features"]), closing_ctx())
+    assert (
+        codes(closing_card(needs=["goals.primary"]), closing_ctx()) == []
+    )  # either need is enough
+    off = closing_card(custom_input={"enabled": False})
+    assert "closing_shape" in codes(off, closing_ctx())
+
+
+def test_the_closing_question_needs_three_to_eight_options() -> None:
+    two = closing_card(OWN[:2], suggested=())
+    assert "options_count" in codes(two, closing_ctx())
+    nine = closing_card(
+        ["weekly meal plans", "daily menu", "pause a delivery", "morning delivery routes"],
+        suggested=("Launch quickly", "Keep it simple"),
+    )
+    assert codes(nine, closing_ctx()) == []  # six options: fine
+    many = [f"daily menu {i}" for i in range(9)]
+    assert "options_count" in codes(closing_card(many, suggested=()), closing_ctx())
+    assert "options_count" not in codes(closing_card(OWN[:3], suggested=()), closing_ctx())
+
+
+def test_a_closing_option_is_the_projects_own_candidate_or_a_labelled_suggestion() -> None:
+    invented = closing_card([*OWN[:3], "Live video classes"], suggested=())
+    assert "closing_option_source" in codes(invented, closing_ctx())
+    labelled = closing_card(OWN[:3], suggested=("Live video classes",))
+    assert codes(labelled, closing_ctx()) == []
+
+
+def test_a_closing_question_has_at_most_two_suggestions() -> None:
+    three = closing_card(OWN[:3], suggested=("Launch quickly", "Keep it simple", "Test early"))
+    assert "closing_suggestions" in codes(three, closing_ctx())
+    two = closing_card(OWN[:3], suggested=("Launch quickly", "Keep it simple"))
+    assert codes(two, closing_ctx()) == []
+
+
+def test_without_a_closing_context_the_candidates_are_not_checked_but_the_shape_still_is() -> None:
+    free = closing_card(["Live video", "Chat rooms", "Gift cards"], suggested=())
+    assert codes(free, ctx()) == []
+    assert "options_count" in codes(closing_card(["Live video"], suggested=()), ctx())
+
+
+def test_a_closing_question_must_name_the_project() -> None:
+    generic = closing_card(question="Which of these matters most for the first version?")
+    assert "no_project_term" in codes(generic, closing_ctx())
+
+
+def test_an_interview_has_one_closing_question() -> None:
+    first, second = (
+        closing_card(),
+        closing_card(question="Which one matters most for the tiffin plan?").model_copy(
+            update={"id": "Q-021", "intent": "learn what else matters most"}
+        ),
+    )
+    result = validate_batch([first, second], closing_ctx(batch_limit=5))
+    assert [c.id for c in result.accepted] == ["Q-020"]
+    assert any("closing_shape" in reason for r in result.rejected for reason in r.reasons)
+
+
+def test_closing_rules_leave_every_other_card_alone() -> None:
+    plain = card(
+        type="priority",
+        options=opts("a one", "a two", "a three"),
+        question="Which tiffin plan first?",
+    )
+    assert codes(plain, closing_ctx()) == []
+
+
+def test_the_context_builds_the_candidate_list() -> None:
+    assert closing_candidates(None) == ()
+    flat = closing_candidates(CLOSING_CTX)
+    assert flat[0] == "weekly meal plans" and "payments are collected outside the app" in flat
+    built = ValidationContext.build(CAT, TERMS, closing=CLOSING_CTX)
+    assert built.closing_candidates == flat
+    assert ValidationContext.build(CAT, TERMS).closing_candidates == ()
+    assert closing_candidates(ClosingContext(features=[" a ", "a", ""])) == ("a",)
+
+
+@pytest.mark.parametrize(
+    ("label", "expected"),
+    [
+        ("Weekly meal plans", True),
+        ("weekly plans", True),  # a short form
+        ("Pausing a delivery", True),  # another ending
+        ("Working well on low-cost phones", True),
+        ("Reaching your first 100 subscribers", True),
+        ("Daily menu and ordering", True),  # longer than the candidate, which it contains
+        ("Live video classes", False),
+        ("Low cost marketing", False),
+        ("", False),
+        ("payments", True),  # one of the assumptions mentions it
+        ("Gift cards", False),
+    ],
+)
+def test_candidate_match(label: str, expected: bool) -> None:
+    assert candidate_match(label, closing_candidates(CLOSING_CTX)) is expected
+
+
+def test_candidate_match_works_for_hindi() -> None:
+    assert candidate_match("साप्ताहिक टिफिन प्लान", ["साप्ताहिक टिफिन प्लान चुनना"])
+    assert not candidate_match("वीडियो क्लास", ["साप्ताहिक टिफिन प्लान चुनना"])

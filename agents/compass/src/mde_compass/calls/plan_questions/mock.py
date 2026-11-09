@@ -95,7 +95,59 @@ def _question(
     )
 
 
+MOCK_CLOSING_MAX_OWN = 5
+MOCK_CLOSING_MAX_SUGGESTED = 2
+
+
+def _closing(inp: PlanInput) -> PlanOutput:
+    """The reserved last question from the closing context: the person's own candidates first (features, then goals,
+    then constraints), up to two labelled suggestions when there are too few. Deterministic and tagged ``[mock]``."""
+    term = (list(inp.project_terms) or ["your app"])[0]
+    c = inp.closing
+    own = list(dict.fromkeys([*c.features, *c.goals, *c.constraints]))
+    labels = [" ".join(label.split()[:8]) for label in own[:MOCK_CLOSING_MAX_OWN]]
+    options = [
+        OptionWire(label=f"{TAG} {label}", description="", basis="your_words", reason="")
+        for label in labels
+    ]
+    suggestions = (
+        f"{TAG} A suggested first-version priority for {term}",
+        f"{TAG} Another suggested priority for {term}",
+    )
+    for label in suggestions[: max(0, min(MOCK_CLOSING_MAX_SUGGESTED, 3 - len(options)))]:
+        options.append(OptionWire(label=label, description="", basis="suggestion", reason=""))
+    question = QuestionWire(
+        id=f"Q-{inp.next_card_n:03d}",
+        group_id="G1",
+        group_title=f"{TAG} The first version",
+        intent=f"learn what matters most in the first version of {term}",
+        serves=["scope.priority", "goals.primary"],
+        unlocks=[f"{TAG} Brief: first-version priorities"],
+        answer_spec=f"{TAG} the few things that must work in the first version of {term}",
+        depends_on=[],
+        priority=1,
+        type="priority",
+        text=f"{TAG} What matters most for the first version of your {term} project?",
+        why_we_ask=f"{TAG} It decides what to build first.",
+        options=options,
+        recommended=options[0].label if labels else "",
+        skip_assumes="",
+        followup_hint="",
+        examples=[f"{TAG} anything else, or what success would look like"],
+    )
+    return PlanOutput(
+        domain_hypothesis=empty_hypothesis(),
+        questions=[question],
+        covered_needs=["scope.priority", "goals.primary"],
+        assumed_instead=[],
+        expert_gaps=[],
+        backlog=[],
+    )
+
+
 def handle(inp: PlanInput) -> PlanOutput:
+    if inp.mode == "closing":
+        return _closing(inp)
     terms = list(inp.project_terms) or ["your app"]
     needs = _ordered(inp)
     if inp.mode in ("followup", "simplify"):

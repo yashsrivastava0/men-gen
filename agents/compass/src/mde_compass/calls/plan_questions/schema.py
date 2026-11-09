@@ -10,9 +10,9 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
-Mode = Literal["initial", "followup", "replan", "deepen", "simplify"]
+Mode = Literal["initial", "followup", "replan", "deepen", "simplify", "closing"]
 QuestionType = Literal[
     "choose_one", "pick_many", "priority", "confirm", "text", "quick_form", "upload_or_link"
 ]
@@ -38,6 +38,17 @@ class NeedWire(Wire):
     card_type: str  # the kind of card its last-resort fallback uses (a hint for the question type)
     option_labels: list[str]  # that fallback card's option labels (grounding for choice questions)
     assumed_value: str  # text of the current assumption, or ""
+
+
+class ClosingWire(Wire):
+    """Mode ``closing`` only (ADR 0016): short statements from the slots and the ledger, so the last question can
+    offer this project's own candidates. Features come first as the person stated them, suggested ones after."""
+
+    features: list[str] = Field(default_factory=list)
+    roles: list[str] = Field(default_factory=list)
+    goals: list[str] = Field(default_factory=list)
+    constraints: list[str] = Field(default_factory=list)
+    assumptions: list[str] = Field(default_factory=list)
 
 
 class PlanInput(Wire):
@@ -66,6 +77,9 @@ class PlanInput(Wire):
     pivot_from: str  # replan after a pivot: the old category ("" otherwise)
     style_notes: list[str]  # frame style guides and example phrasings for the needs involved
     next_card_n: int  # number the questions Q-<n>, Q-<n+1>, ... from here
+    closing: ClosingWire = Field(
+        default_factory=ClosingWire
+    )  # mode "closing" only; empty otherwise
 
 
 # ----------------------------------------------------------------------------------------------- output
