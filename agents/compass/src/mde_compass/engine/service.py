@@ -281,6 +281,7 @@ class _Turn:
         False  # a typed message (not an answer) arrived: the open question comes back
     )
     situation: Any = None  # the idea turn reads the situation in parallel with the understanding (ADR 0016: speed)
+    followup_candidates: list[str] = field(default_factory=list)
 
     @property
     def turn_id(self) -> str:

@@ -155,11 +155,10 @@ async def test_the_follow_ups_of_one_submit_arrive_as_one_form() -> None:
     svc, conv = await started()
     batch_id, cards = form(conv)
     await submit(conv, batch_id, [item(c) for c in cards])
-    follow_id, follow_cards = form(conv)
-    assert batches(conv)[-1]["mode"] == "followup" and follow_id != batch_id
-    assert len(follow_cards) >= 2 and all(c.origin == "followup" for c in follow_cards)
+    next_id, next_cards = form(conv)
+    assert next_id != batch_id
     open_now = {k for k, v in (await qa_status(svc, conv)).items() if v == "open"}
-    assert open_now == {c.id for c in follow_cards}  # every open question is on that one form
+    assert open_now == {c.id for c in next_cards}  # every open question is on that one form
 
 
 async def test_a_submit_for_a_batch_that_was_never_planned_is_a_not_found_error() -> None:
@@ -168,3 +167,17 @@ async def test_a_submit_for_a_batch_that_was_never_planned_is_a_not_found_error(
     with pytest.raises(NotFound):  # the API answers 404 and the page offers to retry
         await submit(conv, "BAT-999", [item(cards[0])])
     assert (await qa_status(svc, conv))[cards[0].id] == "open"  # nothing was recorded
+
+
+async def test_all_questions_delivered_inside_question_batch() -> None:
+    _, conv = await started()
+    batch_id, cards = form(conv)
+    assert len(cards) >= 4
+    await submit(conv, batch_id, [item(c) for c in cards])
+    # Assert that all question batches contain all cards in their groups
+    batches_seen = [e for e in conv.events if e.type == "question_batch"]
+    assert len(batches_seen) >= 2
+    for b in batches_seen:
+        batch_cards = [c for g in b.payload["groups"] for c in g["cards"]]
+        assert len(batch_cards) == b.payload["total"]
+        assert len(batch_cards) > 0

@@ -247,6 +247,7 @@ class InterviewController:
         pivot_from: str | None = None,
         depth: int = 1,
         want: tuple[int, int] | None = None,
+        followup_candidates: list[str] | None = None,
     ) -> PlanRequest:
         room = self.room(turn)
         budget = self.budget_name(turn)
@@ -274,6 +275,10 @@ class InterviewController:
             for item in backlog if isinstance(backlog, list) else []:
                 if isinstance(item, dict) and item.get("topic"):
                     notes.append(f"Backlog topic worth asking: {item['topic']}")
+        if followup_candidates is None:
+            followup_candidates = getattr(turn, "followup_candidates", None)
+            if not followup_candidates and turn.brief.meta.interview is not None:
+                followup_candidates = getattr(turn.brief.meta.interview, "followup_candidates", [])
         return PlanRequest(
             mode=mode,
             language=turn.lang,
@@ -292,6 +297,7 @@ class InterviewController:
             followup_depth=depth,
             style_notes=notes[:8],
             next_card_n=next_card_number(turn.asked_cards(), turn.memory.qa),
+            followup_candidates=list(followup_candidates or []),
             closing=closing,
         )
 
@@ -596,7 +602,10 @@ class InterviewController:
         )
         if decision.stop:
             return await self._close_out(turn, statuses, decision)
-        result, _ = await self.plan(turn, "replan", statuses)
+        followup_cands = list(turn.followup_candidates or turn.brief.meta.interview.followup_candidates or [])
+        turn.followup_candidates = []
+        turn.brief.meta.interview = turn.brief.meta.interview.model_copy(update={"followup_candidates": []})
+        result, _ = await self.plan(turn, "replan", statuses, followup_candidates=followup_cands)
         if not result.batch.cards():
             nothing = interview_policy.StopDecision(
                 True,
@@ -669,14 +678,58 @@ class InterviewController:
     async def ask_closing(self, turn: _Turn, statuses: dict[str, NeedStatus]) -> bool:
         """Plan and show the closing question. False when the planner could not write one (the interview then
         ends with the closing decided from the ledger)."""
-        result, _ = await self.plan(
+        followup_cands = list(turn.followup_candidates or turn.brief.meta.interview.followup_candidates or [])
+        turn.followup_candidates = []
+        turn.brief.meta.interview = turn.brief.meta.interview.model_copy(update={"followup_candidates": []})
+
+        room = self.room(turn)
+        followup_room = min(len(followup_cands), room.followup_room, 2)
+        followup_batch: PlannedBatch | None = None
+        if followup_cands and followup_room > 0:
+            res, _ = await self.plan(
+                turn,
+                "followup",
+                statuses,
+                focus_needs=followup_cands[:followup_room],
+                want=(1, followup_room),
+            )
+            if res.batch.cards():
+                followup_batch = res.batch
+
+        result, closing_batch_id = await self.plan(
             turn, "closing", statuses, closing=self.closing_context(turn), want=(1, 1)
         )
         if not result.batch.cards():
+            if followup_batch is not None and followup_batch.cards():
+                self._emit_batch(turn, followup_batch)
+                self.show_next(turn)
+                self.touch(turn)
+                return True
             return False
         block = self.block(turn)
         turn.brief.meta.interview = block.model_copy(update={"closing": "asked"})
-        self._emit_batch(turn, result.batch)
+
+        if followup_batch is not None and followup_batch.cards():
+            target_batch_id = closing_batch_id or result.batch.batch_id
+            mem = turn.memory
+            merged_groups: list[BatchGroup] = []
+            for g in followup_batch.groups:
+                g_cards = []
+                for c in g.cards:
+                    updated_c = c.model_copy(update={"batch_id": target_batch_id})
+                    qa = mem.qa_for(c.id)
+                    if qa is not None:
+                        mem.put_qa(qa.model_copy(update={"batch_id": target_batch_id, "card": updated_c}))
+                    g_cards.append(updated_c)
+                merged_groups.append(BatchGroup(id=g.id, title=g.title, cards=g_cards))
+            merged_groups.extend(result.batch.groups)
+            merged_batch = result.batch.model_copy(
+                update={"groups": merged_groups, "batch_id": target_batch_id}
+            )
+            self._emit_batch(turn, merged_batch)
+        else:
+            self._emit_batch(turn, result.batch)
+
         self.show_next(turn)
         self.touch(turn)
         return True
@@ -1030,9 +1083,50 @@ class InterviewController:
             )
         statuses = self.statuses(turn)
         if not self.pending(turn):
-            # follow-ups are decided when the batch is complete: a form submits it whole; a client that answers a
-            # form's cards one by one gets them with the last answer
-            await self._follow_ups(turn, items, statuses, flags)
+            if self.ui_mode(turn) == "one_at_a_time":
+                await self._follow_ups(turn, items, statuses, flags)
+            else:
+                # ADR 0016 / Option E: follow-ups are folded into the next plan call or closing round,
+                # never emitted as a separate immediate form.
+                mem = turn.memory
+                room = self.room(turn)
+                base = room.base
+                total = room.followups
+                used = counts_by_need(mem.qa, followups_only=True)
+                asked_followup = 0
+                followup_candidates: list[str] = list(getattr(turn, "followup_candidates", []))
+                for item in items:
+                    if item.action not in ("answer", "none"):
+                        continue
+                    card = item.card
+                    for need in card.need_ids:
+                        status = statuses.get(need)
+                        if status is None or need not in self.catalog.slots:
+                            continue
+                        decision = interview_policy.followup_decision(
+                            status,
+                            flags.get(card.id, []),
+                            used.get(need, 0),
+                            total + asked_followup,
+                            base,
+                            self.policy,
+                            high_impact_at=self.svc.config.questions.high_impact_at,
+                            depth=card.depth,
+                        )
+                        if (
+                            decision.action == "follow_up"
+                            and (asked_followup + len(followup_candidates)) >= room.followup_room
+                        ):
+                            decision = interview_policy.FollowupDecision("assume", "no follow-up room left")
+                        if decision.action == "follow_up" and asked_followup < 2:
+                            if need not in followup_candidates:
+                                followup_candidates.append(need)
+                                asked_followup += 1
+                        elif decision.action == "assume":
+                            self.svc._assume_need(turn, need)
+                turn.followup_candidates = followup_candidates
+                block = self.block(turn)
+                turn.brief.meta.interview = block.model_copy(update={"followup_candidates": followup_candidates})
         self.touch(turn)
 
     def _assume_for(self, turn: _Turn, card: Card) -> None:

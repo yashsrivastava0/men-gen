@@ -4,6 +4,8 @@ on it shows the MOCK MODE banner in the UI, so it is never mistaken for the prod
 
 from __future__ import annotations
 
+import re
+
 from mde_compass.calls.plan_questions.fallback import empty_hypothesis
 from mde_compass.calls.plan_questions.schema import (
     AssumedInsteadWire,
@@ -42,15 +44,19 @@ def _ordered(inp: PlanInput) -> list[NeedWire]:
     pool = [n for n in inp.needs if n.state in OPEN and not (n.assume and inp.mode != "followup")]
     if inp.mode not in ("followup", "simplify"):
         asked = _asked_intents(inp.asked_list)
-        pool = [n for n in pool if not _asked(n, asked)]
+        pool = [n for n in pool if not _asked(n, asked) or n.need_id in inp.followup_candidates]
     pool.sort(
-        key=lambda n: (n.need_id not in inp.focus_needs, -n.impact)
+        key=lambda n: (
+            n.need_id not in inp.focus_needs,
+            n.need_id not in inp.followup_candidates,
+            -n.impact,
+        )
     )  # stable: registry order inside
     return pool
 
 
 def _question(
-    n: NeedWire, term: str, qid: str, group: int, *, followup: bool = False
+    n: NeedWire, term: str, qid: str, group: int, *, followup: bool = False, refines: str = ""
 ) -> QuestionWire:
     if followup:
         gaps = ", ".join(n.missing_aspects)
@@ -97,6 +103,7 @@ def _question(
         options=options,
         recommended=options[0].label if options and qtype == "choose_one" else "",
         examples=[] if options else [f"{TAG} e.g. a short answer about {term}"],
+        refines=refines,
     )
 
 
@@ -180,16 +187,24 @@ def handle(inp: PlanInput) -> PlanOutput:
     else:
         picked = needs[: max(inp.want_min, min(inp.want_max, len(needs)))]
     size = max(1, -(-len(picked) // max(1, min(inp.group_max, 2)))) if picked else 1
-    questions = [
-        _question(
-            n,
-            terms[i % len(terms)],
-            f"Q-{inp.next_card_n + i:03d}",
-            i // size + 1,
-            followup=inp.mode == "followup",
+    questions = []
+    for i, n in enumerate(picked):
+        is_followup = inp.mode == "followup" or n.need_id in inp.followup_candidates
+        parent_id = ""
+        if is_followup:
+            match = re.search(r"\b(Q-\d{3,})\b", inp.asked_list)
+            if match:
+                parent_id = match.group(1)
+        questions.append(
+            _question(
+                n,
+                terms[i % len(terms)],
+                f"Q-{inp.next_card_n + i:03d}",
+                i // size + 1,
+                followup=is_followup,
+                refines=parent_id,
+            )
         )
-        for i, n in enumerate(picked)
-    ]
     return PlanOutput(
         domain_hypothesis=empty_hypothesis(),
         questions=questions,
