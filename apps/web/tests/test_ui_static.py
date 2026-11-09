@@ -17,7 +17,9 @@ from mde_compass.app import STATIC_DIR, create_app
 
 APP_JS = (STATIC_DIR / "agents/compass/compass.js").read_text(encoding="utf-8")
 INDEX = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
-CSS = (STATIC_DIR / "agents/compass/compass.css").read_text(encoding="utf-8")
+CSS = (STATIC_DIR / "shared/tokens.css").read_text(encoding="utf-8") + (
+    STATIC_DIR / "agents/compass/compass.css"
+).read_text(encoding="utf-8")
 
 
 @pytest.fixture
@@ -31,7 +33,9 @@ async def test_ui_served_without_auth_with_csp(anon: httpx.AsyncClient) -> None:
     for path, ctype in (
         ("/ui/", "text/html"),
         ("/ui/index.html", "text/html"),
+        ("/ui/shared/tokens.css", "text/css"),
         ("/ui/agents/compass/compass.css", "text/css"),
+        ("/ui/shared/components.js", "javascript"),
         ("/ui/agents/compass/compass.js", "javascript"),
     ):
         r = await anon.get(path)
