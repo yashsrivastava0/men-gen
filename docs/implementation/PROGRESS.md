@@ -147,3 +147,18 @@ Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompt
 - [x] Phase 6b. Live prerequisites: persisted Compass spend from the gateway ledger (2b1d8be, D-093 ceiling USD 3.00 / target 2.00); batch runner `python -m mde_compass.live_batches --batch E|F|G [--dry-run|--mock|--replay]` with preflight, ledger-delta allowance stop, report JSON and an offline twin (75 tests); expected cost E 0.05, F 0.19, G 0.12 (ceilings 0.15 / 0.58 / 0.35); tag `compass/ai-interview-p6b`
 - [~] Phase 7. Planner is the default (D-103). Live batches E, F and G ran with the real model (D-104, spend USD 0.52): E passes 23 of 23; F and G reach Brief review with fixes applied for timeouts, strict validators, tap-to-answer prompt and document needs. NOT DONE: re-running F after the fixes, the open items listed in D-104, recording cassettes, deleting the legacy path (Phase 8)
 - [ ] Phase 8. Remove the legacy path, refresh docs, `just ci`, merge `--no-ff`, report
+
+## Compass v2: necessary questions, submit-once batches, fixed tiers, speed, detailed Brief (owner message 2026-11-09 evening; branch `feat/compass-ai-interview`; decisions D-106, D-107)
+
+Owner's list: a detailed, correct Brief; one batch at a time answered and submitted ONCE; tiers 7 (hard max 10) / 12 / 25+ chosen first; a reserved last question; multi-select plus custom input; faster generation; per-question and "decide the rest" auto-answer; enterprise documents; user changes; front end. Speed first, cost not a concern, USD 3.00 ceiling. Tags `compass/v2-p<n>`; safe point `pre/compass-v2-20261109-2226`. No push.
+
+- [x] P0. Follow-up fixes landed and merged (390c9e6): BUG-27, defaults at stop, settled-assumption notice, label codes, BUG-28, BUG-22, GAP-5, GAP-1 partial; offline 2641 passed / 11 xfailed, integration 77, security 220
+- [ ] P1. Interface freeze (Room, tiers, closing mode, wire fields, `DomainFact.kind/refs`, `plan_compute`/`plan_apply`)
+- [ ] P2. Engine: tier-first, budget charged when planned, submit-once, closing question
+- [ ] P3. Latency: parallel idea turn, planner prefetch, audit policy, slim planner, gateway limits, read-preview
+- [ ] P4. Auto-answer: you-decide order, `cmp.decide_answers`, decide the rest
+- [ ] CALLS: planner type rules and `type_fit`, necessity validator, closing mode, tap facts, `scan_ambiguity` v2
+- [ ] BRIEF: `kind`/`refs`, per-section compile, corrections as assumptions, probes after compile, documents
+- [ ] WEB: tier-first welcome, form for all batches, select-all / none / custom, decide the rest, retry
+- [ ] P6. User changes write facts; section-level recompile
+- [ ] P7. Live verification (the owner enables the second key; USD 3.00 ceiling), docs, ADR 0016
