@@ -582,12 +582,15 @@ class _Runner:
                     "the service has no typed back-edge hook (reopen_slot): not implemented"
                 )
             spec = arg if isinstance(arg, dict) else {}
-            await hook(
+            result = await hook(
                 self.conv.caller,
                 self.conv.session_id,
                 str(spec.get("slot")),
                 str(spec.get("reason", "")),
             )
+            self.conv.events.extend(
+                getattr(result, "events", [])
+            )  # the hook's events are this step's
             return "other"
         if a == "you_decide":
             card = await self._card()

@@ -1,8 +1,6 @@
 id: SB-DC-14
 title: Research surprise reopens one slot through the typed back-edge (a stub hook today)
 tags: [back-edge, research]
-known_issue: BUG-14
-known_issue_note: the typed back-edge is a stub (config.max_back_edge_loops only); the service has no reopen_slot hook yet
 steps:
   - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
   - drive: {}

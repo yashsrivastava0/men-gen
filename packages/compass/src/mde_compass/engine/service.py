@@ -83,6 +83,7 @@ from mde_compass.engine import patch as patch_mod
 from mde_compass.engine import state as state_mod
 from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
+from mde_compass.engine.flows.hooks import FlowHooks
 from mde_compass.engine.language import detect_language
 from mde_compass.engine.ports import (
     Caller,
@@ -239,7 +240,7 @@ class _Turn:
         return [q.card for q in self.questions] + [c for c, _ in self.asked]
 
 
-class Service:
+class Service(FlowHooks):
     """Implements ``mde_compass.engine.ports.CompassService``."""
 
     def __init__(
@@ -638,6 +639,8 @@ class Service:
                     GateDecision(event_id=turn.turn_id, contributor_id=getattr(ev, "contributor_id", None), decision="approve", version=turn.rec.version, brief_hash=brief_hash(brief), section_hashes=section_hashes(brief)),
                 )  # fmt: skip
                 return
+        if await self._flow_voice_remove(turn, text):
+            return
         ctx = self._ctx(turn)
         understood = await self.ports.understander.understand(ctx, text, input_mode=ev.input_mode)
         if understood.language in self.config.supported_languages and not text.isascii():
@@ -654,15 +657,16 @@ class Service:
             turn.say(self._t(turn, "fallback.unsafe_decline"))
             return
         first = not has_draft
-        applied = self._write_updates(turn, understood.slot_updates, text)
+        applied = self._write_updates(
+            turn, self._flow_filter_updates(understood.slot_updates), text
+        )
         if first and not turn.slots.filled("idea.summary") and len(text.strip()) >= 3:
             turn.slots.write(
                 "idea.summary", text.strip()[:IDEA_CHARS], state="volunteered",
                 provenance=self._prov(turn, "user_text", text), confidence=0.6, turn_id=turn.turn_id,
                 contributor_id=getattr(ev, "contributor_id", None),
             )  # fmt: skip
-        for ref in understood.references:
-            self._add_reference(turn, ref, text)
+        self._flow_references(turn, understood.references, text)
         if applied:
             turn.out.append(
                 Notice(
@@ -671,6 +675,8 @@ class Service:
                     chips=applied,
                 )
             )
+        if await self._flow_on_message(turn, ev, text, understood):
+            return
         if first:
             await self._first_understanding(turn, text)
         else:
@@ -852,7 +858,8 @@ class Service:
         for item in queue:
             if item.action == "assume":
                 self._assume_default(turn, item)
-        item = forced or next((i for i in queue if i.action in ("ask", "propose")), None)
+        natural = next((i for i in queue if i.action in ("ask", "propose")), None)
+        item = forced or self._flow_pick(turn, natural)
         if item is None:
             self._rebuild(turn)
             return False
@@ -864,6 +871,7 @@ class Service:
             n=self._question_n(turn) + 1,
             of_about=max(total, self._question_n(turn) + 1),
         )
+        card = self._flow_adjust_card(turn, card)
         self._rebuild(turn)
         turn.asked.append(
             (
@@ -900,6 +908,9 @@ class Service:
         self, turn: _Turn, item: voi_mod.QueueItem, *, n: int, of_about: int
     ) -> Card:
         assert self.ports is not None
+        special = self._flow_special_card(turn, item, n=n, of_about=of_about)
+        if special is not None:
+            return special
         hyp = turn.brief.meta.hypothesis
         frame = self.catalog.frames.get(item.frame_id)
         if (
@@ -1081,6 +1092,8 @@ class Service:
             return
         if card.frame == VARIANTS_FRAME:
             await self._on_variant_pick(turn, card, ev)
+            return
+        if await self._flow_card_answer(turn, card, ev):
             return
         writes = cards_mod.answer_to_writes(card, ev.value, ev.custom_text, self.catalog)
         if not writes and card.type == "pick_many" and not ev.custom_text:
@@ -1427,6 +1440,8 @@ class Service:
         turn.say(cs.summary)
 
     async def _on_brief_edit(self, turn: _Turn, ev: BriefEdit) -> None:
+        if self._flow_locked_edit(turn, ev):
+            return
         ops = [
             PatchOp(
                 op="set",
@@ -1549,6 +1564,8 @@ class Service:
                 turn.out.append(CardEvent(card=card))
             else:
                 turn.say(question)
+            return
+        if proposal.touches_locked and self._flow_locked_chat(turn, proposal.ops):
             return
         if proposal.touches_locked:
             turn.notice("touches_locked", ", ".join(proposal.touches_locked), warn=False)

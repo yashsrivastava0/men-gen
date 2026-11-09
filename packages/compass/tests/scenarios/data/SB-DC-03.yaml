@@ -1,8 +1,6 @@
 id: SB-DC-03
 title: Two references pull in opposite directions, both captured and the borrow question is asked
 tags: [references]
-known_issue: BUG-6
-known_issue_note: "volunteered references are stored with empty borrow and avoid lists and the apps_you_like frame is never asked, so the engine never asks what to borrow from each of two opposing references"
 steps:
   - say: "I want a food delivery app in Pune, like Swiggy but also like Notion"
     expect:
