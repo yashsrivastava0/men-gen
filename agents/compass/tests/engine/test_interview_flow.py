@@ -82,7 +82,11 @@ async def test_a_whole_session_reaches_review_with_planned_questions_and_no_fall
     assert await finish(conv, svc) == "BRIEF_REVIEW"
     cards = [c for c in cards_of(conv) if c.frame == "planned"]
     assert len(cards) >= 5
-    assert all(c.origin in ("planner", "followup") and not c.fallback for c in cards)
+    assert all(c.origin in ("planner", "followup", "closing") and not c.fallback for c in cards)
+    closing = [c for c in cards if c.origin == "closing"]
+    assert (
+        len(closing) == 1 and cards[-1].id == closing[0].id
+    )  # one closing question, and it is the last
     questions = [c.question for c in cards]
     assert len(set(questions)) == len(questions)  # nothing is asked twice
     async with svc.store.begin("t1") as uow:

@@ -212,14 +212,16 @@ class InterviewController:
             f"{idea} {turn.original_text} {said}", (), glossary, extra=entities
         )
 
-    def _context(self, turn: _Turn, statuses: dict[str, NeedStatus]) -> PlanContext:
+    def _context(
+        self, turn: _Turn, statuses: dict[str, NeedStatus], *, skip_closing: bool = False
+    ) -> PlanContext:
         mem = turn.memory
         answered = [q for q in mem.qa if q.status in ("answered", "skipped", "you_decide")]
         pack = build_context(
             project_card=project_card(turn.brief, turn.lang, turn.session.mode),
             facts=mem.active_facts(),
             needs_table=needs_mod.needs_table(statuses, self.catalog),
-            asked=mem.qa,
+            asked=[q for q in mem.qa if not (skip_closing and q.card.origin == "closing")],
             last_qa=answered[-self.svc.config.context.last_qa_count :],
             summary=mem.summary,
             budgets=self.svc.config.context,
@@ -275,7 +277,7 @@ class InterviewController:
         return PlanRequest(
             mode=mode,
             language=turn.lang,
-            context=self._context(turn, statuses),
+            context=self._context(turn, statuses, skip_closing=mode == "closing"),
             needs=briefs,
             project_terms=sorted(self._terms(turn)),
             want_min=lo,
@@ -329,7 +331,12 @@ class InterviewController:
             self.catalog,
             request.project_terms,
             language=turn.lang,
-            ledger_cards=[q.card for q in turn.memory.qa],
+            # the longer interview after "Ask me more" ends with its own closing question: an earlier one is not a repeat
+            ledger_cards=[
+                q.card
+                for q in turn.memory.qa
+                if not (request.mode == "closing" and q.card.origin == "closing")
+            ],
             config=self.svc.config,
             user_text=self.svc._corpus(turn),
             evidence=evidence,
@@ -625,6 +632,19 @@ class InterviewController:
 
         hyp = turn.brief.meta.hypothesis
         suggested = [f.name for f in hyp.likely_features if not f.custom] if hyp is not None else []
+        # typical features of the idea's family (the same grounding the validators use), so a person who named none
+        # still gets a project-specific question made of labelled suggestions
+        family_ids = list(hyp.likely_families) if hyp is not None else []
+        category = turn.slots.get("idea.category")
+        if (
+            category is not None
+            and isinstance(category.value, str)
+            and category.value in self.catalog.families
+        ):
+            family_ids.insert(0, category.value)
+        suggested += cards_mod.family_hints(
+            self.catalog, ["scope.features"], family_ids[:2], language=turn.lang
+        )
         constraints = [
             rec.value
             for slot_id, rec in slots.all().items()
