@@ -15,9 +15,9 @@ from mde_compass.api.settings import ApiSettings
 from mde_compass.api.testing import ScriptedService
 from mde_compass.app import STATIC_DIR, create_app
 
-APP_JS = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+APP_JS = (STATIC_DIR / "agents/compass/compass.js").read_text(encoding="utf-8")
 INDEX = (STATIC_DIR / "index.html").read_text(encoding="utf-8")
-CSS = (STATIC_DIR / "styles.css").read_text(encoding="utf-8")
+CSS = (STATIC_DIR / "agents/compass/compass.css").read_text(encoding="utf-8")
 
 
 @pytest.fixture
@@ -31,8 +31,8 @@ async def test_ui_served_without_auth_with_csp(anon: httpx.AsyncClient) -> None:
     for path, ctype in (
         ("/ui/", "text/html"),
         ("/ui/index.html", "text/html"),
-        ("/ui/styles.css", "text/css"),
-        ("/ui/app.js", "javascript"),
+        ("/ui/agents/compass/compass.css", "text/css"),
+        ("/ui/agents/compass/compass.js", "javascript"),
     ):
         r = await anon.get(path)
         assert r.status_code == 200, path
@@ -50,7 +50,7 @@ async def test_every_asset_referenced_by_index_exists_and_is_served(
 ) -> None:
     refs = re.findall(r"""(?:src|href)=["']([^"'#]+)["']""", INDEX)
     assets = [r for r in refs if not r.startswith(("#", "data:"))]
-    assert "app.js" in assets and "styles.css" in assets
+    assert "agents/compass/compass.js" in assets and "agents/compass/compass.css" in assets
     for ref in assets:
         assert not re.match(r"^(https?:)?//", ref), f"external asset {ref}"
         assert (STATIC_DIR / ref).is_file(), ref
@@ -108,7 +108,11 @@ def test_theme_and_responsive_rules_present() -> None:
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
 def test_app_js_parses_with_node() -> None:
     out = subprocess.run(
-        [shutil.which("node") or "node", "--check", str(Path(STATIC_DIR / "app.js"))],
+        [
+            shutil.which("node") or "node",
+            "--check",
+            str(Path(STATIC_DIR / "agents/compass/compass.js")),
+        ],
         capture_output=True,
         text=True,
         timeout=60,

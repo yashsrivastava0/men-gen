@@ -24,7 +24,7 @@ from mde_compass.domain.events import (
 )
 from mde_compass.views.models import BriefViewModel
 
-APP_JS = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+APP_JS = (STATIC_DIR / "agents/compass/compass.js").read_text(encoding="utf-8")
 
 
 def _contract() -> dict[str, Any]:
