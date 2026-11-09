@@ -85,6 +85,7 @@ from mde_compass.engine import gate as gate_mod
 from mde_compass.engine import patch as patch_mod
 from mde_compass.engine import state as state_mod
 from mde_compass.engine import voi as voi_mod
+from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
 from mde_compass.engine.language import detect_language
 from mde_compass.engine.ports import (
@@ -209,6 +210,16 @@ def _is_chat_language_switch(text: str) -> bool:
     low = text.lower()
     chat, app = _chat_language_cues()
     return any(c in low for c in chat) and not any(a in low for a in app)
+
+
+def _chat_language_target(text: str) -> str | None:
+    """The language a chat-language switch asks for, when it names one (``en`` or ``hi``)."""
+    low = text.lower()
+    if "english" in low or "अंग्रेज़ी" in low or "अंग्रेजी" in low:
+        return "en"
+    if "hindi" in low or "हिंदी" in low or "हिन्दी" in low:
+        return "hi"
+    return None
 
 
 def _idea_like(text: str) -> bool:
@@ -661,9 +672,13 @@ class Service:
         for flag in scr.flags:
             if flag == "secret":
                 turn.notice("secret_redacted", self._t(turn, "error.generic"), warn=True)
+        if _is_chat_language_switch(text):
+            target = _chat_language_target(text)
+            if target in self.config.supported_languages:
+                turn.lang = target
         if turn.state == "PAUSED":  # a message while paused is an implicit resume, never silence
             turn.state = turn.session.resume_state or "INTERVIEWING"
-            turn.notice("resumed", self._t(turn, "notice.paused_resumed"))
+            turn.say(self._t(turn, "notice.paused_resumed"))
         route = route_text(
             text, has_pending_card=turn.pending_card() is not None, language=turn.lang
         )
@@ -878,9 +893,31 @@ class Service:
         if turn.state == "BRIEF_REVIEW":
             await self._open_review(turn)
 
+    def _derive_subcategory(self, turn: _Turn) -> None:
+        """idea.subcategory is required but no card writes it: assume it from the hypothesis, else from the
+        category's label, listed in "We assumed" (never Locked)."""
+        if turn.slots.filled("idea.subcategory"):
+            return
+        hyp = turn.brief.meta.hypothesis
+        cat = turn.slots.get("idea.category")
+        value = (hyp.subcategory if hyp is not None else "") or (
+            _text(cat.value) if cat is not None and cat.value else ""
+        )
+        if value:
+            turn.slots.write(
+                "idea.subcategory",
+                value,
+                state="assumed",
+                provenance=Provenance(type="model_knowledge", ref="derived", date=self.clock.now()),
+                confidence=0.4,
+                turn_id=turn.turn_id,
+            )
+            self._rebuild(turn)
+
     async def _ask_missing_must(self, turn: _Turn) -> bool:
         """A required slot with no default that is still empty after its frame was asked (a frame batches
         several slots but one card settles one) gets ONE follow-up card; never more than twice per slot."""
+        self._derive_subcategory(turn)
         if self._question_n(turn) >= self.config.questions.hard_cap:
             return False
         counts: dict[str, int] = {}
@@ -1011,8 +1048,14 @@ class Service:
         user_text = self._corpus(turn) + " " + turn.original_text
         evidence = [line.text for line in turn.transcript if line.role == "user"][-3:]
         card_id = f"Q-{len(turn.asked_cards()) + 1:03d}"
+        selected = self._selected_labels(turn, item.slots)
         req = cards_mod.request_for(
-            item, self.catalog, ctx_language=turn.lang, hints=hints, evidence=evidence
+            item,
+            self.catalog,
+            ctx_language=turn.lang,
+            hints=hints,
+            evidence=evidence,
+            avoid_labels=selected,
         )
         ctx = self._ctx(turn)
         for _ in range(self.config.questions.card_validation_retries):
@@ -1101,10 +1144,10 @@ class Service:
                 frame = next(
                     (f for f in self.catalog.frames.values() if ask_gap.slot_id in f.slots), None
                 )
-                asked_frames = {c.frame for c in turn.asked_cards()}
+                asks = sum(1 for c in turn.asked_cards() if ask_gap.slot_id in c.slots)
                 if (
                     frame is not None
-                    and frame.id not in asked_frames
+                    and asks < 2
                     and self._question_n(turn) < self.config.questions.hard_cap
                 ):
                     item = voi_mod.QueueItem(
@@ -1211,13 +1254,18 @@ class Service:
         chips: list[str] = []
         for w in writes:
             kind = w.provenance_type if state == "confirmed" else "assumed"
+            value = (
+                expand_structure(w.value, lambda key: self._t(turn, key))
+                if w.slot_id == "apps.list"
+                else w.value
+            )
             res = turn.slots.write(
-                w.slot_id, w.value, state=state,  # type: ignore[arg-type]
+                w.slot_id, value, state=state,  # type: ignore[arg-type]
                 provenance=self._prov(turn, kind, w.custom_text or ""), confidence=0.9 if state == "confirmed" else 0.5,
                 turn_id=turn.turn_id, custom_text=w.custom_text, contributor_id=getattr(turn.event, "contributor_id", None),
             )  # fmt: skip
             if res.applied and state == "confirmed":
-                chips.append(f"{self._label(turn, w.slot_id)}: {_text(w.value)}"[:80])
+                chips.append(f"{self._label(turn, w.slot_id)}: {_text(value)}"[:80])
         return chips
 
     async def _on_card_skip(self, turn: _Turn, ev: CardSkip) -> None:
@@ -1246,6 +1294,19 @@ class Service:
         turn.notice("assumed", self._t(turn, "card.assumed_collapsed", value=picked))
         self._rebuild(turn)
         await self._advance(turn)
+
+    def _selected_labels(self, turn: _Turn, slot_ids: Sequence[str]) -> list[str]:
+        """Names already chosen for list slots, so a follow-up card offers something new."""
+        out: list[str] = []
+        for sid in slot_ids:
+            rec = turn.slots.get(sid)
+            if rec is None or not isinstance(rec.value, list):
+                continue
+            for item in rec.value:
+                name = item.get("name") if isinstance(item, dict) else item
+                if isinstance(name, str) and name.strip():
+                    out.append(name)
+        return out
 
     def _ask_idea_card(self, turn: _Turn) -> None:
         card = cards_mod.fallback_card(

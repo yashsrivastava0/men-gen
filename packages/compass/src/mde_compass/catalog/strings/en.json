@@ -137,5 +137,13 @@
   "change.target_unknown": "Which part do you mean?",
   "brief.ready": "Your Brief is ready. Look it over on the right: tap 'Looks right' if it is correct, or tell me what to change.",
   "notice.tier_b": "Heads up: {items} need extra engineering. I will plan a simulated version first and list it as a later phase.",
-  "notice.paused_resumed": "Welcome back. I picked up where we left off."
+  "notice.paused_resumed": "Welcome back. I picked up where we left off.",
+  "app.main": "The app",
+  "app.main_purpose": "The main app for your customers",
+  "app.customer": "Customer app",
+  "app.customer_purpose": "What your customers use",
+  "app.staff": "Staff app",
+  "app.staff_purpose": "What your team uses day to day",
+  "app.manager": "Manager side",
+  "app.manager_purpose": "A simple side to manage the business"
 }

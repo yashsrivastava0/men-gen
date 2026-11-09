@@ -87,7 +87,7 @@ def tier_for(status: Status, has_value: bool, provenance: list[Provenance]) -> s
     if not has_value or status == "empty":
         return "Open"
     tier = max_tier(has_value=True, provenance=provenance)
-    return "Default" if status == "assumed" and tier == "Locked" else tier
+    return "Default" if status in ("assumed", "disputed") and tier == "Locked" else tier
 
 
 class SlotStore:

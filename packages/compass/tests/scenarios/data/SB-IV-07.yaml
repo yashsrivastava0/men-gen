@@ -5,8 +5,6 @@ mode: enterprise
 contributors:
   - {id: priya, name: Priya (operations), role: requester}
   - {id: rahul, name: Rahul (sales), role: requester}
-known_issue: BUG-7
-known_issue_note: "a second contributor's different value for a slot overwrites the first instead of marking it disputed: slots_from_brief never restores SlotRecord.contributor_id, so SlotStore.write cannot see two contributors across turns"
 steps:
   - say: "We need an internal field service app for our technicians in Pune"
     as: priya

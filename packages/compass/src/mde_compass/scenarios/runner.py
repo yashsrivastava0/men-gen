@@ -12,7 +12,7 @@ import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import yaml
 
@@ -131,8 +131,11 @@ def describe_event(ev: StoredEvent) -> str:
     if ev.type == "assistant_message":
         return f"assistant_message: {str(p.get('text', ''))[:140]!r}"
     if ev.type == "card":
-        c = p.get("card", {})
-        opts = ", ".join(f"{o.get('id')}={str(o.get('label'))[:24]}" for o in c.get("options", []))
+        c: dict[str, Any] = cast(dict[str, Any], p.get("card") or {})
+        opts = ", ".join(
+            f"{o.get('id')}={str(o.get('label'))[:24]}"
+            for o in cast(list[dict[str, Any]], c.get("options", []))
+        )
         return (
             f"card {c.get('id')} frame={c.get('frame')} type={c.get('type')} "
             f"fallback={c.get('fallback')}: {str(c.get('question'))[:80]!r} [{opts}]"
@@ -790,9 +793,11 @@ async def run_scenario(
 async def _register_contributors(service: Any, conv: Conversation, scn: Scenario) -> None:
     """Add the scenario's contributors to the session (enterprise mode); the creator stays the decision-owner."""
     wanted = [
-        Contributor(id=c.id, name=c.name or c.id, role=c.role, decision_owner=c.decision_owner)
+        Contributor(
+            id=c.id, name=c.name or c.id, role=cast(Any, c.role), decision_owner=c.decision_owner
+        )
         for c in scn.contributors
-    ]  # type: ignore[arg-type]
+    ]
     async with service.store.begin(conv.caller.tenant_id) as uow:
         rec = await uow.sessions.get(conv.session_id)
         by_id = {c.id: c for c in rec.contributors}

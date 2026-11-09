@@ -1,8 +1,6 @@
 id: SB-DC-10
 title: A request beyond capability (tier B) is said right away with the alternative
 tags: [capabilities, tier-b]
-known_issue: BUG-16
-known_issue_note: "SafetyScreen detects tier-B capabilities (screened.tier_b) but the service never uses it: the answer to 'real push, fingerprint login, live GPS tracking' says nothing about extra engineering or a simulated version"
 steps:
   - say: "I want a food delivery app in Pune with real push notifications, fingerprint login and live GPS tracking of the delivery partner"
     expect:
