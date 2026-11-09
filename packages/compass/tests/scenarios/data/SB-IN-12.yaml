@@ -1,8 +1,6 @@
 id: SB-IN-12
 title: '"Exactly like [brand]": patterns borrowed, never brand assets or copy; confirm before treating as a reference'
 tags: [references, brand]
-known_issue: BUG-6
-known_issue_note: "no one warns once that only patterns (never logo, copy or screens) are borrowed from the named brand, and the apps_you_like card is never shown to confirm the reference"
 steps:
   - say: "I want a food delivery app in Pune exactly like Zomato, same logo and same screens"
     expect:

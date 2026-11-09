@@ -1,8 +1,6 @@
 id: SB-IV-06
 title: Wants everything, the interview forces a first-release priority card
 tags: [interview, scope, priority]
-known_issue: BUG-3
-known_issue_note: "the forced first-release ranking (frame priorities) is never asked, even when the user says everything is a must"
 steps:
   - say: "I want a food delivery app in Pune with everything: ordering, payments, live tracking, chat, loyalty points, reviews, offers, analytics, scheduled orders, subscriptions and gift cards. Everything is a must."
     expect:

@@ -1,8 +1,6 @@
 id: SB-DC-11
 title: Five or more apps, the main two now and the rest as later phases
 tags: [apps, scope]
-known_issue: BUG-10
-known_issue_note: "six apps are all stored; nothing proposes the main two now and the rest as later phases"
 steps:
   - say: "For food delivery in Pune I need a customer app, a driver app, a restaurant app, an admin panel, a support dashboard and a franchise portal"
     expect:

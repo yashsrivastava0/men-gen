@@ -423,3 +423,11 @@ class CompassService(Protocol):
     async def calls(
         self, caller: Caller, session_id: str, *, limit: int = 30
     ) -> list[dict[str, JsonValue]]: ...
+
+    async def reopen_slot(
+        self, caller: Caller, session_id: str, slot_id: str, reason: str
+    ) -> TurnResult:
+        """The typed back-edge (docs 11 section 4): a later stage reopens ONE slot with a single targeted
+        question, at most ``config.gate.max_back_edge_loops`` times per session, never a new interview.
+        Optional: the default says the service has no such hook (the scripted API fake keeps it)."""
+        raise NotImplementedError("this service has no back-edge hook")

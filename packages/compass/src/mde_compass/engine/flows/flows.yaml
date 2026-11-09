@@ -1,0 +1,160 @@
+# Data for the targeted interview flows (priorities, references, voice, apps, locked edits, back-edge).
+# Cue phrases are matched after normalisation (casefold, no punctuation, whole words), see data.py.
+# Numbers here are product policy, not logic: change them here, never in code.
+priorities:
+  first_release_max: 5          # "If you launched with only five features, which?"
+  min_features: 2               # fewer than this is nothing to rank
+  max_options: 14               # a ranking card never shows more than this many chips
+  number_words:                 # "{n}" in the card question: the word when we have it, else the digits
+    en: {2: two, 3: three, 4: four, 5: five, 6: six, 7: seven, 8: eight, 9: nine, 10: ten}
+    hi: {2: दो, 3: तीन, 4: चार, 5: पाँच, 6: छह, 7: सात, 8: आठ, 9: नौ, 10: दस}
+  everything_must:              # the user says every feature is essential
+    en:
+      - everything is a must
+      - everything is must
+      - everything is a must have
+      - everything is must have
+      - everything is essential
+      - everything is mandatory
+      - everything is important
+      - all of it is a must
+      - all of it is must
+      - all of them are must
+      - all are must
+      - all are a must
+      - all must have
+      - all features are important
+      - every feature is a must
+      - every feature is important
+      - nothing can wait
+      - nothing can be dropped
+      - nothing can be left out
+      - i need everything
+      - i want everything
+      - need all of it
+      - need all of them
+    hinglish:
+      - sab zaroori
+      - sab kuch zaroori
+      - sabkuch zaroori
+      - sab jaruri
+      - sab kuch jaruri
+      - sab must
+      - sab kuch must
+      - sab chahiye
+      - sab kuch chahiye
+      - sabhi zaroori
+      - sab ek saath chahiye
+    hi:
+      - सब ज़रूरी
+      - सब जरूरी
+      - सब कुछ ज़रूरी
+      - सब कुछ जरूरी
+      - सभी ज़रूरी
+      - सभी जरूरी
+      - सब चाहिए
+      - सब कुछ चाहिए
+  not_everything:               # a negation right before the cue cancels it ("not everything is a must")
+    - not everything
+    - not all of it
+    - not all are
+    - nothing is a must
+    - nothing is must
+    - sab nahi
+    - sab zaroori nahi
+    - sab kuch zaroori nahi
+    - सब नहीं
+    - सब ज़रूरी नहीं
+languages:                      # language names a dictation may list ("hindi and english"); also never brands
+  [english, angrezi, hindi, marathi, tamil, telugu, bengali, bangla, gujarati, kannada, malayalam, punjabi, urdu,
+   "अंग्रेज़ी", "अंग्रेजी", "हिंदी", "हिन्दी", "मराठी", "तमिल", "तेलुगु", "बंगाली", "गुजराती", "कन्नड़", "मलयालम", "पंजाबी"]
+references:
+  max_named: 4                  # references one card asks about
+  brand_stop:                   # capitalised words after "I own" that are not a brand
+    [india, indian, indians, america, american, europe, asia, africa, monday, tuesday, wednesday, thursday, friday,
+     saturday, sunday, january, february, march, april, june, july, august, september, october, november,
+     december, startup, company, business, team, family, group, shop, store, firm, agency, hospital, clinic]
+  own_business_cues:            # "I own Swiggy": the user names a business as their own
+    en:
+      - i own
+      - i run
+      - i founded
+      - i started
+      - i manage
+      - i work at
+      - i work for
+      - we own
+      - we run
+      - we are
+      - we founded
+      - my company is
+      - my company
+      - our company is
+      - our company
+      - my business is
+      - my brand is
+      - our brand is
+      - my startup is
+    hinglish:
+      - meri company
+      - mera business
+      - meri dukaan
+      - hamari company
+      - mai chalata hu
+      - main chalata hoon
+    hi:
+      - मेरी कंपनी
+      - मेरा बिज़नेस
+      - हमारी कंपनी
+  exact_cues:                   # "exactly like Zomato": copy the whole thing, which we never do
+    en:
+      - exactly like
+      - exactly same as
+      - exactly the same as
+      - same as
+      - clone of
+      - copy of
+      - same logo
+      - same screens
+      - identical to
+      - replica of
+    hinglish:
+      - bilkul waisa
+      - bilkul jaisa
+      - hubahu
+      - same to same
+      - copy karo
+    hi:
+      - बिल्कुल वैसा
+      - बिल्कुल जैसा
+      - हूबहू
+voice:
+  min_statements_for_readback: 3   # read back a numbered list from this many statements
+  min_words_to_split: 10           # shorter dictation is one statement
+  max_statements: 12
+  max_statement_words: 40
+  splitters:                       # words and phrases that start a new statement
+    en: [and also, also, and then, and, plus, then, as well as, along with, but]
+    hinglish: [aur, bhi, phir, saath mein, lekin]
+    hi: [और, भी, फिर, साथ में, लेकिन]
+  remove_words:                    # "remove 2", "drop number 3", "hatao 4"
+    en: [remove, drop, delete, discard, scratch, ignore, "take out", "get rid of", "not needed", "leave out"]
+    hinglish: [hatao, hata, nikalo, nikal do, "hata do", mat]
+    hi: [हटाओ, हटा, निकालो, "हटा दो"]
+  fillers:                         # dictation noise dropped from the start of a statement
+    en: [so, um, uh, you know, basically, i mean]
+    hinglish: [toh, matlab, haan, accha]
+    hi: [तो, मतलब, हाँ, अच्छा]
+apps:
+  surface_words:                # the noun after a name that makes it an app: mobile or web surface
+    mobile: [app, apps, application, "ऐप", "एप"]
+    web: [panel, dashboard, portal, website, "पैनल", "डैशबोर्ड", "पोर्टल"]
+  name_stop:                    # words before "app" / "panel" that are not part of a name
+    [a, an, the, my, our, your, this, that, these, those, one, another, mobile, web, new, same, whole, separate, own, full, simple, android, ios, native]
+  phase_at: 5                   # this many apps or more: propose the main ones now, the rest later
+  main_now: 2
+  max_listed_later: 6           # names listed in the explanation
+locked:
+  max_preview_consumers: 4
+backedge:
+  max_variants: 3

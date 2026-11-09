@@ -1,8 +1,6 @@
 id: SB-DC-08
 title: Changing a Locked answer later asks for a one-tap confirm with an impact preview
 tags: [change, locked]
-known_issue: BUG-12
-known_issue_note: "a UI edit of a Locked, tap-confirmed value is applied at once (version +1) with no confirm card and no impact preview; docs 05 IV-02 and 11 DC-08 require one"
 steps:
   - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
   - drive: {}
