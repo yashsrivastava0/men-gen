@@ -114,7 +114,7 @@ def good(**changes: object) -> CompileOutput:
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
     assert s.id == "cmp.compile_brief" and s.version == 1
-    assert s.reasoning_effort == "high" and s.max_output_tokens == 8000 and s.route == "deep"
+    assert s.reasoning_effort == "low" and s.max_output_tokens == 8000 and s.route == "deep"
     assert SPEC.lane == "writer" and SPEC.timeout_s == 150 and not s.tools and not s.cacheable
     assert set(s.untrusted_inputs) == {
         "ledger",

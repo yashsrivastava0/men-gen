@@ -7,6 +7,7 @@ from mde_compass.calls.compile_text.brief_text import slot_facts
 from mde_compass.calls.compile_text.fallback import fallback
 from mde_compass.calls.compile_text.schema import (
     MAX_ITEMS,
+    MAX_PITCH_CHARS,
     CompileTextInput,
     CompileTextOutput,
     ItemRef,
@@ -45,10 +46,18 @@ def build_input(ctx: TurnContext, brief: Brief, catalog: Catalog) -> CompileText
     )
 
 
+def _clip(text: str, limit: int) -> str:
+    """Cut at a word boundary within the limit (a slightly long pitch is trimmed, not a failure)."""
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rsplit(" ", 1)[0].rstrip(" ,;:-")
+    return cut if cut.endswith((".", "!", "?")) else cut + "."
+
+
 def to_domain(out: CompileTextOutput) -> CompiledText:
     return CompiledText(
         summary=" ".join(out.summary.split()),
-        pitch=out.pitch.strip(),
+        pitch=_clip(out.pitch.strip(), MAX_PITCH_CHARS),
         descriptions=[
             ItemDescription(item_id=d.item_id, text=d.text.strip()) for d in out.descriptions
         ],

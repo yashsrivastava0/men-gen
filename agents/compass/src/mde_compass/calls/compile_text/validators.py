@@ -11,7 +11,6 @@ import functools
 
 from mde_compass.calls.compile_text.schema import (
     MAX_DESCRIPTION_CHARS,
-    MAX_PITCH_CHARS,
     MAX_SUMMARY_CHARS,
     CompileTextInput,
     CompileTextOutput,
@@ -79,8 +78,7 @@ def structure_errors(inp: CompileTextInput, out: CompileTextOutput) -> list[str]
         errors.append(f"summary longer than {MAX_SUMMARY_CHARS} characters")
     if not out.pitch.strip():
         errors.append("pitch is empty")
-    if len(out.pitch) > MAX_PITCH_CHARS:
-        errors.append(f"pitch longer than {MAX_PITCH_CHARS} characters")
+    # a pitch over the limit is clipped by the adapter, not a failure
     known = {i.path for i in inp.items}
     seen: set[str] = set()
     for d in out.descriptions:

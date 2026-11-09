@@ -52,7 +52,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.answer", "medium", 1500, "writer", "standard", 45),
         _p("cmp.write_card", "high", 2500, "writer", "deep", 60),
         _p("cmp.scan_ambiguity", "high", 3000, "critic", "deep", 60),
-        _p("cmp.seed_research", "high", 4000, "writer", "deep", 90),
+        _p("cmp.seed_research", "medium", 4000, "writer", "deep", 90),
         _p("cmp.probe_handoff", "low", 2500, "canary", "fast", 30),
         _p("cmp.compile_text", "high", 3500, "writer", "deep", 90),
         _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
@@ -61,7 +61,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.plan_questions", "low", 5000, "writer", "standard", 90),
         _p("cmp.audit_questions", "medium", 3000, "critic", "standard", 60),
         _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
-        _p("cmp.compile_brief", "high", 8000, "writer", "deep", 150),
+        _p("cmp.compile_brief", "low", 8000, "writer", "deep", 150),
         _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
     )
 }

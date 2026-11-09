@@ -101,6 +101,9 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
     )
 
 
+_FREE_TYPES = {"text", "quick_form", "upload_or_link"}
+
+
 def _card(
     catalog: Catalog, q: QuestionWire, *, number: int, group_id: str, request: PlanRequest
 ) -> Card:
@@ -114,6 +117,7 @@ def _card(
             description=o.description,
         )
         for i, o in enumerate(q.options[:MAX_OPTIONS])
+        if q.type not in _FREE_TYPES
     ]
     recommended = next((o for o in options if o.recommended), None)
     followup = request.mode == "followup"

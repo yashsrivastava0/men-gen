@@ -16,7 +16,7 @@ _ID = re.compile(r"^Q-\d{3,}$")
 def structural(inp: PlanInput, out: PlanOutput) -> list[str]:
     errors: list[str] = []
     questions = out.questions
-    if not questions and inp.mode not in ("replan", "deepen"):
+    if not questions and inp.mode not in ("replan", "deepen", "followup"):
         errors.append("no questions in a mode that must ask something")
     if len(questions) > max(inp.want_max * 2, 6):
         errors.append(f"far too many questions ({len(questions)} for at most {inp.want_max})")
@@ -27,8 +27,7 @@ def structural(inp: PlanInput, out: PlanOutput) -> list[str]:
             continue
         if titles.setdefault(q.group_id, q.group_title) != q.group_title:
             errors.append(f"group {q.group_id!r} has two different titles")
-    if len(titles) > max(inp.group_max + 1, 4):
-        errors.append(f"too many groups ({len(titles)})")
+    # more groups than asked for is not fatal: the engine cuts the batch to size
     seen: set[str] = set()
     for q in questions:
         where = f"question {q.id!r}"
@@ -44,8 +43,7 @@ def structural(inp: PlanInput, out: PlanOutput) -> list[str]:
         # priority is only an ordering hint: an out-of-range value is clamped by the adapter, never fatal
         if q.type in _CHOICE and len(q.options) < 2:
             errors.append(f"{where}: a {q.type} question needs options")
-        if q.type in _FREE and q.options:
-            errors.append(f"{where}: a {q.type} question must not carry options")
+        # options on a free-answer question are dropped by the adapter (not fatal)
         # a `recommended` that is not one of the options is ignored by the adapter (no option is marked)
         if any(not o.label.strip() for o in q.options):
             errors.append(f"{where}: an option has no label")
