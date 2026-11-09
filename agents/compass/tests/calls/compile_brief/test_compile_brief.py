@@ -354,6 +354,24 @@ def test_short_summary_is_the_first_statement_cut_at_the_limit() -> None:
     assert short_summary(parse_ledger("FCT-001 [goal] short")) == "short"
 
 
+def test_parsing_hostile_long_lines_is_linear() -> None:
+    import time
+
+    hostile = "\n".join(
+        [
+            "FCT-001 [" + "a" * 400_000,  # never closed
+            "FCT-002 [" + "]" * 400_000,
+            "FCT-003 [rule|x] " + "(from " * 70_000 + " | " * 70_000,
+            "FCT-004 [rule|x] " + " " * 400_000 + "(from",
+        ]
+    )
+    started = time.perf_counter()
+    facts = parse_ledger(hostile)
+    chunk_text(hostile)
+    assert time.perf_counter() - started < 2.0
+    assert [f.fact_id for f in facts] == ["FCT-002", "FCT-003", "FCT-004"]
+
+
 # ------------------------------------------------------------------------------------------ chunking
 def test_chunk_text_pieces_fit_and_rejoin_exactly() -> None:
     text = "\n".join(f"line {i} " + "x" * 90 for i in range(400))
