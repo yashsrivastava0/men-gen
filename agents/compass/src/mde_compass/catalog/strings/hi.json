@@ -268,5 +268,8 @@
   "brief.v2.document.confirm.placeholder": "कुछ गलत या छूटा है? यहाँ बताइए।",
   "brief.v2.document.conflict": "आपके दस्तावेज़ में “{first}” और “{second}” दोनों लिखा है; आपके फ़ैसले तक हमने कोई नहीं लिया।",
   "brief.v2.document.conflict.reason": "आपके दस्तावेज़ के दो हिस्से आपस में मेल नहीं खाते।",
-  "brief.v2.document.conflict.what_changes": "बताइए कौन सा सही है, योजना वही इस्तेमाल करेगी।"
+  "brief.v2.document.conflict.what_changes": "बताइए कौन सा सही है, योजना वही इस्तेमाल करेगी।",
+  "brief.v2.gap.assume": "हम {what} नहीं जान सके; हमारा सुझाव है {value}।",
+  "brief.v2.gap.reason": "इसके बिना अगला चरण शुरू नहीं हो सकता था।",
+  "brief.v2.gap.what_changes": "सही बात बताइए, योजना वही इस्तेमाल करेगी।"
 }

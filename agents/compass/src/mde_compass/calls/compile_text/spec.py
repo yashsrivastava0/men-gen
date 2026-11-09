@@ -16,7 +16,7 @@ _P = CALL_PROFILES[CALL_ID]
 
 _CORE: CallSpec[CompileTextInput, CompileTextOutput] = CallSpec(
     id=CALL_ID,
-    version=1,
+    version=2,
     input_model=CompileTextInput,
     output_model=CompileTextOutput,
     system_template="system.jinja",
@@ -26,7 +26,7 @@ _CORE: CallSpec[CompileTextInput, CompileTextOutput] = CallSpec(
     reasoning_effort=_P.effort,
     max_output_tokens=_P.max_output_tokens,
     mock_handler="mde_compass.calls.compile_text.mock:handle",
-    untrusted_inputs=("slots", "items"),
+    untrusted_inputs=("slots", "items", "details"),
     cacheable=False,
     repair=True,
     fallback="compass.compile_text",

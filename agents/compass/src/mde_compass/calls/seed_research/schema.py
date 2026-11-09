@@ -4,12 +4,14 @@ from __future__ import annotations
 
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 MAX_FEATURES = 20
 MAX_REQUESTS = 12
 MIN_REQUESTS = 3
 FALLBACK_MAX_REQUESTS = 8
+MAX_DETAILS = 30
+DETAIL_CHARS = 160
 
 
 class Wire(BaseModel):
@@ -32,6 +34,13 @@ class FeatureIn(Wire):
     intent: str
 
 
+class DetailIn(Wire):
+    """A detail the person gave that research can use: a rule, a number, a compliance duty, a named system."""
+
+    kind: str
+    text: str
+
+
 class SeedResearchInput(Wire):
     language: str
     category: str
@@ -47,6 +56,9 @@ class SeedResearchInput(Wire):
     features: list[FeatureIn]  # at most MAX_FEATURES
     families: list[str]  # likely capability families
     languages: list[str]  # app locales
+    details: list[DetailIn] = Field(
+        default_factory=list
+    )  # v2: rules, numbers, compliance, integrations (<= 30)
 
 
 class WireRequest(Wire):

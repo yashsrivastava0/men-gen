@@ -9,20 +9,68 @@ from mde_compass.calls.compile_text.brief_text import slot_facts, split_list
 from mde_compass.calls.compile_text.text_utils import clip
 from mde_compass.calls.probe_handoff.rules import evaluate
 from mde_compass.calls.probe_handoff.schema import (
+    DETAIL_CHARS,
+    MAX_DETAILS,
     MAX_ITEMS,
     Digest,
     DigestApp,
+    DigestDetail,
     DigestFeature,
     DigestRole,
     ProbeHandoffInput,
     ProbeHandoffOutput,
 )
 from mde_compass.calls.probe_handoff.spec import SPEC
+from mde_compass.catalog.fact_kinds import kind_for
 from mde_compass.catalog.loader import Catalog
 from mde_compass.domain.brief import Brief
 from mde_compass.engine.ports import ProbeGap, ProbeKind, ProbeResult, TurnContext
 
 TEXT_CHARS = 300
+
+
+# the kinds a probe cares about first when there are more details than fit
+_KIND_ORDER = (
+    "screen",
+    "flow",
+    "preference",
+    "entity",
+    "rule",
+    "number",
+    "compliance",
+    "nfr",
+    "integration_detail",
+    "constraint",
+    "acceptance",
+    "example",
+    "context",
+    "other",
+)
+
+
+def digest_details(brief: Brief) -> list[DigestDetail]:
+    """The Brief's typed details (``domain_facts``, values only) and the typical details proposed for approval (not
+    rejected), ordered by kind so the most useful fit under the cap."""
+    rows = [
+        (
+            _KIND_ORDER.index(f.kind) if f.kind in _KIND_ORDER else len(_KIND_ORDER),
+            f.id,
+            f.kind or kind_for(f.type, f.topics),
+            f.statement,
+        )
+        for f in brief.domain_facts
+    ]
+    typical = [
+        (len(_KIND_ORDER) + 1, a.id, "typical", a.claim)
+        for a in brief.assumptions
+        if a.basis == "typical" and not a.slot_id and a.decision != "rejected"
+    ]
+    ordered = sorted(rows) + sorted(typical)
+    return [
+        DigestDetail(kind=kind, text=clip(" ".join(text.split()), DETAIL_CHARS))
+        for _, _, kind, text in ordered[:MAX_DETAILS]
+        if text.strip()
+    ]
 
 
 def build_digest(ctx: TurnContext, brief: Brief, catalog: Catalog) -> Digest:
@@ -58,6 +106,7 @@ def build_digest(ctx: TurnContext, brief: Brief, catalog: Catalog) -> Digest:
         brand_signals=items("brand.name", "brand.assets", "look.visual_references"),
         locales=list(brief.meta.locales) or items("locales"),
         constraints=constraints[:MAX_ITEMS],
+        details=digest_details(brief),
     )
 
 

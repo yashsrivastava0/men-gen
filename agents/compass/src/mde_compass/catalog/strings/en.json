@@ -268,5 +268,8 @@
   "brief.v2.document.confirm.placeholder": "Something wrong or missing? Tell us here.",
   "brief.v2.document.conflict": "Your document says both “{first}” and “{second}”; we used neither until you decide.",
   "brief.v2.document.conflict.reason": "Two parts of your document do not agree.",
-  "brief.v2.document.conflict.what_changes": "Tell us which one is right and the plan uses it."
+  "brief.v2.document.conflict.what_changes": "Tell us which one is right and the plan uses it.",
+  "brief.v2.gap.assume": "We could not tell {what}; we suggest {value}.",
+  "brief.v2.gap.reason": "A later step could not start without it.",
+  "brief.v2.gap.what_changes": "Tell us the right one and the plan uses it."
 }

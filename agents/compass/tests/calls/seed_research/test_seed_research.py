@@ -427,3 +427,63 @@ def test_normalized_output_is_always_valid_and_loyal(
         assert key not in seen
         seen.add(key)
     assert set(out.hints.local_competitors) <= {"Zomato"}
+
+
+# ------------------------------------------------------------------------------ v2 (ADR 0016): details
+def test_research_reads_the_rules_numbers_and_duties_the_person_gave() -> None:
+    from mde_compass.calls.seed_research.adapter import research_details
+    from mde_compass.domain.brief import Brief, DomainFact
+
+    brief = Brief()
+    brief.domain_facts = [
+        DomainFact(id="FCT-001", type="preference", statement="Bright colours", kind="preference"),
+        DomainFact(id="FCT-002", type="rule", statement="Orders close at 9 pm", kind="rule"),
+        DomainFact(
+            id="FCT-003",
+            type="constraint",
+            statement="Food licence FSSAI is needed",
+            kind="compliance",
+        ),
+        DomainFact(
+            id="FCT-004", type="requirement", statement="Sync with Tally", kind="integration_detail"
+        ),
+        DomainFact(id="FCT-005", type="number", statement="Delivery costs 20 rupees"),
+    ]
+    got = research_details(brief)
+    assert [(d.kind, d.text) for d in got] == [
+        ("compliance", "Food licence FSSAI is needed"),
+        ("integration_detail", "Sync with Tally"),
+        ("rule", "Orders close at 9 pm"),
+        ("number", "Delivery costs 20 rupees"),
+    ]  # a look preference is for design, not research
+
+
+def test_a_compliance_detail_reaches_the_floors_rules_request_and_a_name_from_it_is_not_invented() -> (
+    None
+):
+    from mde_compass.calls.seed_research.fallback import fallback
+    from mde_compass.calls.seed_research.rules import normalize, vocabulary
+    from mde_compass.calls.seed_research.schema import DetailIn
+
+    inp = _inp().model_copy(
+        update={"details": [DetailIn(kind="compliance", text="FSSAI licence for food sellers")]}
+    )
+    out = fallback(inp)
+    rules = next(r for r in out.requests if r.topic.startswith("Rules for"))
+    assert "FSSAI licence for food sellers" in rules.terms
+    assert not vocabulary(inp).unknown_proper_nouns(
+        "FSSAI licence"
+    )  # the person's own words may be named
+    assert normalize(inp, out).requests
+
+
+def test_the_seed_prompt_shows_the_details_as_data() -> None:
+    from mde_compass.calls.seed_research.schema import DetailIn
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = _inp().model_copy(
+        update={"details": [DetailIn(kind="rule", text="Orders close at 9 pm")]}
+    )
+    prompt = PromptRenderer().render(SPEC.spec, inp)
+    assert "Orders close at 9 pm" in prompt.user and "named system" in prompt.system
+    assert "details" in SPEC.spec.untrusted_inputs

@@ -19,7 +19,7 @@ _P = CALL_PROFILES[CALL_ID]
 
 _CORE: CallSpec[ProbeHandoffInput, ProbeHandoffOutput] = CallSpec(
     id=CALL_ID,
-    version=1,
+    version=2,
     input_model=ProbeHandoffInput,
     output_model=ProbeHandoffOutput,
     system_template="system.jinja",

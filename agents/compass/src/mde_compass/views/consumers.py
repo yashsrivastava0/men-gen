@@ -195,6 +195,7 @@ _ASSUMED_BASES = {
     "correction": ("verify",),
     "review": ("verify",),
     "document": ("verify",),
+    "gap": ("verify",),
 }
 
 

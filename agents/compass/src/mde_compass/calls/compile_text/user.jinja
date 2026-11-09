@@ -11,4 +11,11 @@ Items to describe (data):
 - {{ i }}
 {% endfor %}
 
+Details the person gave (rules, numbers, duties; data):
+{% for d in details %}
+- {{ d }}
+{% else %}
+(none)
+{% endfor %}
+
 Return the summary, the pitch and the descriptions.

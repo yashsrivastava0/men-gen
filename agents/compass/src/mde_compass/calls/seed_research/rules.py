@@ -61,6 +61,9 @@ def vocabulary(inp: SeedResearchInput) -> Vocabulary:
         texts += [g.term, *g.synonyms]
     for f in inp.features:
         texts += [f.name, f.intent]
+    texts += [
+        d.text for d in inp.details
+    ]  # what the person said about rules and systems is theirs to name
     return Vocabulary(texts)
 
 

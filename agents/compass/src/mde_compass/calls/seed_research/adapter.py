@@ -11,8 +11,11 @@ from mde_compass.calls.compile_text.brief_text import slot_facts, split_list, va
 from mde_compass.calls.seed_research.fallback import fallback
 from mde_compass.calls.seed_research.rules import normalize
 from mde_compass.calls.seed_research.schema import (
+    DETAIL_CHARS,
+    MAX_DETAILS,
     MAX_FEATURES,
     MIN_REQUESTS,
+    DetailIn,
     FeatureIn,
     GeoIn,
     GlossaryIn,
@@ -20,6 +23,7 @@ from mde_compass.calls.seed_research.schema import (
     SeedResearchOutput,
 )
 from mde_compass.calls.seed_research.spec import SPEC
+from mde_compass.catalog.fact_kinds import kind_for
 from mde_compass.catalog.loader import Catalog
 from mde_compass.domain.brief import Brief
 from mde_compass.domain.research import ResearchRequest, SearchHints
@@ -66,6 +70,21 @@ def _working(ctx: TurnContext, slot_id: str) -> JsonValue:
     return None
 
 
+# the detail kinds that decide what is worth looking up (rules that apply, figures, systems to connect, duties)
+RESEARCH_KINDS = ("compliance", "integration_detail", "rule", "number", "constraint", "nfr")
+
+
+def research_details(brief: Brief) -> list[DetailIn]:
+    """The Brief's details research needs, values only, compliance and integrations first, at most 30."""
+    rows: list[tuple[int, str, DetailIn]] = []
+    for f in brief.domain_facts:
+        kind = f.kind or kind_for(f.type, f.topics)
+        if kind in RESEARCH_KINDS and f.statement.strip():
+            text = " ".join(f.statement.split())[:DETAIL_CHARS]
+            rows.append((RESEARCH_KINDS.index(kind), f.id, DetailIn(kind=kind, text=text)))
+    return [d for _, _, d in sorted(rows, key=lambda r: (r[0], r[1]))[:MAX_DETAILS]]
+
+
 def build_input(ctx: TurnContext, brief: Brief, catalog: Catalog) -> SeedResearchInput:
     """The compact wire input from the Brief so far and the working slots (never the chat)."""
     facts = slot_facts(ctx, brief, catalog)
@@ -104,6 +123,7 @@ def build_input(ctx: TurnContext, brief: Brief, catalog: Catalog) -> SeedResearc
         features=[FeatureIn(name=f.name, intent=f.intent) for f in live],
         families=list(hypothesis.likely_families) if hypothesis else [],
         languages=languages,
+        details=research_details(brief),
     )
 
 

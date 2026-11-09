@@ -46,6 +46,7 @@ def ungrounded_terms(inp: CompileTextInput, out: CompileTextOutput) -> list[str]
         texts += [s.label, s.value]
     for i in inp.items:
         texts += [i.name, i.intent]
+    texts += inp.details  # what the person said about rules and figures is theirs to repeat
     vocab = Vocabulary(texts, [inp.app_count, inp.role_count, inp.feature_count])
     allowed = allowed_words("hi" if _is_hi(inp.language) else "en") | allowed_words("en")
     texts = [out.summary, out.pitch, *[d.text for d in out.descriptions]]
