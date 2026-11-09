@@ -372,6 +372,47 @@ def test_the_wait_line_follows_the_phase_of_the_request_and_is_a_polite_live_reg
     assert 'role="status"' in tag and 'aria-live="polite"' in tag
 
 
+# ---- Compass v2: documents and edges -------------------------------------------------------------------------
+
+
+def test_every_file_picker_offers_the_supported_types_and_every_upload_is_prechecked() -> None:
+    picker = function_body("fileInput")
+    assert "accept: I.UPLOAD_ACCEPT" in picker and 'input.value = ""' in picker
+    assert JS.count("fileInput(") >= 4, (
+        "the welcome button, the Sources tab, the upload card and the form share it"
+    )
+    assert 'type: "file"' not in JS.replace(
+        'type: "file", class: "sr-only", tabindex: "-1", accept', ""
+    ), "no picker is built by hand any more"
+    upload = function_body("uploadFile")
+    assert "I.checkUpload(file)" in upload and "if (!check.ok)" in upload
+    assert upload.index("I.checkUpload(file)") < upload.index("new FormData()"), (
+        "refused before anything is sent"
+    )
+    assert 'setTyping(true, "document")' in upload, "a visible Reading your document state"
+    assert "ui.v2.upload_reading" in upload and "enqueue(" in upload
+    # 413 and 415 (and anything else) leave the page working with a plain message
+    err = function_body("uploadErrorText")
+    assert "I.uploadErrorKey(err && err.status)" in err and "ui.v2.upload_failed" in err
+    assert ".catch(function (err)" in upload and 'addMsg("error", text)' in upload
+    api_body = function_body("api")
+    assert "body instanceof FormData" in api_body and "init.body = body" in api_body
+    assert 'api("POST", "/sessions/" + sid + "/uploads", fd)' in upload
+    assert "/uploads" in JS and "FormData" in JS
+
+
+def test_the_stream_reconnects_with_a_growing_wait_and_draws_each_event_once() -> None:
+    stream = function_body("startStream")
+    assert "I.reconnectDelay(attempt)" in stream and "attempt = 0;" in stream
+    assert "3000" not in stream, "no fixed three second retry"
+    assert '"Last-Event-ID"' in stream and "state.lastSeq" in stream
+    stored = function_body("onStored")
+    assert "I.registerEvent(state.seen, ev)" in stored, (
+        "one rule for the stream, the reply and the replay"
+    )
+    assert "noteRenderError(e)" in stream, "a drawing bug in a streamed event is not swallowed"
+
+
 def test_the_layout_toggle_is_gone_and_ask_more_lives_near_the_composer() -> None:
     bar = re.search(r'<div id="interview-bar".*?</div>', HTML, flags=re.S)
     assert bar, "the interview bar is in the fragment"
@@ -471,7 +512,8 @@ def test_choosing_a_tier_sends_the_budget_command_and_rolls_back_when_it_fails()
     assert '$("composer-input").focus()' in body, "the next thing to do is typing the idea"
     # commands queue behind each other, so the tier always reaches the server before the idea
     send = function_body("sendEvent")
-    assert "sendQueue" in send and "state.awaitingTier = false" in send
+    assert "enqueue(" in send and "state.awaitingTier = false" in send
+    assert "sendQueue" in function_body("enqueue")
 
 
 def test_the_server_welcome_card_is_replaced_by_the_welcome_block() -> None:

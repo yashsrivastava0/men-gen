@@ -217,6 +217,13 @@ CONTRACT*/
     "ui.v2.wait_more": "Planning more questions…",
     "ui.v2.wait_working": "Working on it…",
     "ui.v2.wait_very_long": "This is taking longer than usual. We are still working; please keep this page open.",
+    "ui.v2.upload_hint": "PDF, Word, Excel, PowerPoint, CSV, text, Markdown or email (.eml), up to 15 MB.",
+    "ui.v2.upload_too_large": "That file is larger than 15 MB. Please choose a smaller one, or paste the important parts into the chat.",
+    "ui.v2.upload_empty": "That file is empty. Please choose another one.",
+    "ui.v2.upload_unsupported": "We cannot read that kind of file. Please use PDF, Word, Excel, PowerPoint, CSV, text, Markdown or email, or describe it in your own words.",
+    "ui.v2.upload_failed": "That file could not be read. You can describe it in your own words or add a link.",
+    "ui.v2.upload_reading": "Reading your document: {name}…",
+    "ui.v2.upload_instead": "Upload a file instead",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -283,7 +290,9 @@ CONTRACT*/
   function api(method, path, body) {
     var headers = authHeaders();
     var init = { method: method, headers: headers };
-    if (body !== undefined) { headers["Content-Type"] = "application/json"; init.body = JSON.stringify(body); }
+    var isForm = typeof FormData !== "undefined" && body instanceof FormData;   // an upload: the browser sets the multipart header
+    if (isForm) { init.body = body; }
+    else if (body !== undefined) { headers["Content-Type"] = "application/json"; init.body = JSON.stringify(body); }
     var startTime = Date.now();
     return fetch(BASE + path, init).then(function (res) {
       return res.text().then(function (txt) {
@@ -296,7 +305,7 @@ CONTRACT*/
           path: path,
           status: res.status,
           latency: duration,
-          body: body,
+          body: isForm ? { file: (body.get("file") || {}).name, bytes: (body.get("file") || {}).size } : body,
           response: data || txt
         });
         if (!res.ok) {
@@ -658,13 +667,11 @@ CONTRACT*/
   }
   function cardUpload(card, body) {
     var note = h("p", { class: "hint", role: "status" });
-    var file = h("input", { type: "file", class: "sr-only", "aria-label": t("ui.upload"), tabindex: "-1" });
-    file.addEventListener("change", function () {
-      if (file.files && file.files.length) { uploadFile(file.files[0], note); }
-    });
+    var file = fileInput(function (f) { uploadFile(f, note); });
     var link = h("input", { type: "url", placeholder: t("x.link_placeholder"), "aria-label": t("x.add_link") });
     body.appendChild(h("div", { class: "row-actions" },
-      h("button", { class: "btn", type: "button", text: t("ui.upload"), on: { click: function () { file.click(); } } }), file));
+      h("button", { class: "btn", type: "button", text: t("ui.upload"), on: { click: function () { file.click(); } } }), file,
+      h("span", { class: "hint", text: t("ui.v2.upload_hint") })));
     body.appendChild(h("div", { class: "custom-row" }, link, h("button", { class: "btn", type: "button", text: t("x.add_link"), on: { click: function () {
       var u = link.value.trim();
       if (u) { addMsg("user", u); collapseActive(card.question + " — " + u); sendEvent({ type: "link_added", url: u }); }
@@ -826,6 +833,12 @@ CONTRACT*/
       link.value = entry.text || "";
       link.addEventListener("input", function () { entry.text = link.value; onChange(); });
       wrap.appendChild(link);
+      var fileNote = h("p", { class: "hint", role: "status" });
+      var picker = fileInput(function (f) { uploadFile(f, fileNote); });
+      wrap.appendChild(h("div", { class: "row-actions" },
+        h("button", { class: "btn", type: "button", text: t("ui.v2.upload_instead"), on: { click: function () { picker.click(); } } }), picker,
+        h("span", { class: "hint", text: t("ui.v2.upload_hint") })));
+      wrap.appendChild(fileNote);
     } else {
       var area = h("textarea", { rows: "3", "aria-label": card.question, placeholder: placeholder || t("ui.type_here") });
       area.value = entry.text || "";
@@ -1370,11 +1383,9 @@ CONTRACT*/
 
   function onStored(ev, replay) {
     if (!ev || typeof ev !== "object") { return; }
-    if (ev.direction === "out" && ev.seq !== null && ev.seq !== undefined) {
-      if (state.seen[ev.seq]) { return; }
-      state.seen[ev.seq] = true;
-      state.lastSeq = Math.max(state.lastSeq, ev.seq);
-    }
+    // drawn once: the stream replays events after a reconnect, and one event can arrive twice (the stream and the reply)
+    if (!I.registerEvent(state.seen, ev)) { return; }
+    if (ev.direction === "out" && ev.seq !== null && ev.seq !== undefined) { state.lastSeq = Math.max(state.lastSeq, ev.seq); }
     state.devEvents.push(ev);
     if (state.devEvents.length > 300) { state.devEvents.shift(); }
     if (ev.direction === "out") {
@@ -1405,9 +1416,13 @@ CONTRACT*/
     var ev = Object.assign({ event_id: randomId() }, body);
     if (state.contributor && !ev.contributor_id) { ev.contributor_id = state.contributor; }
     if (ev.type !== "command" && state.awaitingTier) { state.awaitingTier = false; applyComposerGate(); renderWelcome(); }
-    var job = sendQueue.then(function () { return postEvent(sid, ev, o); });
-    sendQueue = job;   // postEvent never rejects
-    return job;
+    return enqueue(function () { return postEvent(sid, ev, o); });
+  }
+  /** One request of a session at a time, in the order the person made them (the job never rejects). */
+  function enqueue(job) {
+    var p = sendQueue.then(job);
+    sendQueue = p;
+    return p;
   }
   function postEvent(sid, ev, o) {
     if (sid !== state.sessionId) { return Promise.resolve(null); }   // another project was opened while this one waited
@@ -1427,32 +1442,52 @@ CONTRACT*/
     }).then(function () { IN_FLIGHT -= 1; if (!o.quiet) { setTyping(false); } return acked; });
   }
 
-  // ---- upload: one multipart request; the reply is an EventAck, handled like any other event -------------
+  // ---- upload: one multipart request; the reply is an EventAck, handled like any other event ---------------------
+  /** The picker only offers the supported types; the 15 MB limit is checked here, before any bytes are sent. */
+  function fileInput(onFile) {
+    var input = h("input", { type: "file", class: "sr-only", tabindex: "-1", accept: I.UPLOAD_ACCEPT, "aria-label": t("ui.upload") });
+    input.addEventListener("change", function () {
+      if (input.files && input.files.length) { onFile(input.files[0]); }
+      input.value = "";   // the same file can be chosen again after a refusal
+    });
+    return input;
+  }
+  function uploadErrorText(err) {
+    var key = I.uploadErrorKey(err && err.status);
+    if (key) { return t(key); }
+    return err && err.apiMessage ? err.apiMessage : t("ui.v2.upload_failed");
+  }
   function uploadFile(file, note) {
     if (!state.sessionId || !file) { return Promise.resolve(); }
+    var check = I.checkUpload(file);
+    if (!check.ok) {   // too large or empty: said at once, nothing is sent
+      if (note) { note.textContent = t(check.key); }
+      var refused = addMsg("error", t(check.key));
+      refused.setAttribute("role", "alert");
+      return Promise.resolve();
+    }
     var fd = new FormData();
     fd.append("file", file);
-    IN_FLIGHT += 1;
-    setTyping(true);
-    if (note) { note.textContent = file.name; }
+    var sid = state.sessionId;
+    if (note) { note.textContent = t("ui.v2.upload_reading", { name: file.name }); }
     addMsg("user", file.name);
-    return fetch(BASE + "/sessions/" + state.sessionId + "/uploads", { method: "POST", headers: authHeaders(), body: fd })
-      .then(function (res) {
-        return res.json().then(function (data) {
-          if (!res.ok) { throw ApiProblem(res.status, data && data.code, data && data.message); }
-          return data;
-        });
-      })
-      .then(processAck)
-      .catch(function (err) {
-        var el = addMsg("error", err && err.apiMessage ? err.apiMessage : t("x.upload_unavailable"));
+    return enqueue(function () {
+      if (sid !== state.sessionId) { return null; }
+      IN_FLIGHT += 1;
+      setTyping(true, "document");   // "Reading your document…", visible and announced
+      return api("POST", "/sessions/" + sid + "/uploads", fd).then(function (ack) {
+        try { processAck(ack); } catch (e) { noteRenderError(e); }
+        if (note) { note.textContent = ""; }
+      }).catch(function (err) {   // 413 and 415 included: the page keeps working
+        var text = uploadErrorText(err);
+        if (note) { note.textContent = text; }
+        var el = addMsg("error", text);
         el.setAttribute("role", "alert");
-      })
-      .then(function () { IN_FLIGHT -= 1; setTyping(false); });
+      }).then(function () { IN_FLIGHT -= 1; setTyping(false); });
+    });
   }
   function pickFile() {
-    var input = h("input", { type: "file", class: "sr-only", tabindex: "-1", "aria-label": t("ui.upload") });
-    input.addEventListener("change", function () { if (input.files && input.files.length) { uploadFile(input.files[0], null); } });
+    var input = fileInput(function (file) { uploadFile(file, null); });
     document.body.appendChild(input);
     input.click();
     setTimeout(function () { if (input.parentNode) { input.parentNode.removeChild(input); } }, 60000);
@@ -1464,6 +1499,7 @@ CONTRACT*/
     var ctl = new AbortController();
     state.streamAbort = ctl;
     var sid = state.sessionId;
+    var attempt = 0;   // failed connections in a row: the wait before the next one grows (1, 2, 4, 8, 15 s)
     function connect() {
       if (state.streamAbort !== ctl) { return; }
       var headers = authHeaders();
@@ -1473,6 +1509,7 @@ CONTRACT*/
         .then(function (res) {
           if (!res.ok || !res.body) { throw new Error("stream " + res.status); }
           state.streamOk = true;
+          attempt = 0;
           renderDevHead();
           return pump(res.body.getReader());
         })
@@ -1480,7 +1517,7 @@ CONTRACT*/
         .then(function () {
           state.streamOk = false;
           renderDevHead();
-          if (state.streamAbort === ctl) { window.setTimeout(connect, 3000); }
+          if (state.streamAbort === ctl) { window.setTimeout(connect, I.reconnectDelay(attempt) * 1000); attempt += 1; }
         });
     }
     function pump(reader) {
@@ -1506,7 +1543,9 @@ CONTRACT*/
         if (line.indexOf("data:") === 0) { data.push(line.slice(5).replace(/^ /, "")); }
       });
       if (!data.length) { return; }
-      try { onStored(JSON.parse(data.join("\n")), false); } catch (e) { /* ignore a malformed frame */ }
+      var ev;
+      try { ev = JSON.parse(data.join("\n")); } catch (e) { return; }   // a malformed frame is skipped
+      try { onStored(ev, false); } catch (e) { noteRenderError(e); }     // a drawing bug is never swallowed
     }
     connect();
   }
@@ -1835,10 +1874,10 @@ CONTRACT*/
     var sec = { id: "sources", title: t("sources.title"), rows: [] };
     rows.forEach(function (r) { host.appendChild(rowEl(sec, r)); });
     var note = h("p", { class: "hint", role: "status" });
-    var file = h("input", { type: "file", class: "sr-only", tabindex: "-1", "aria-label": t("ui.upload") });
-    file.addEventListener("change", function () { if (file.files && file.files.length) { uploadFile(file.files[0], note); } });
+    var file = fileInput(function (f) { uploadFile(f, note); });
     var link = h("input", { type: "url", placeholder: t("x.link_placeholder"), "aria-label": t("x.add_link") });
-    host.appendChild(h("div", { class: "row-actions" }, h("button", { class: "btn", type: "button", text: t("ui.upload"), on: { click: function () { file.click(); } } }), file));
+    host.appendChild(h("div", { class: "row-actions" }, h("button", { class: "btn", type: "button", text: t("ui.upload"), on: { click: function () { file.click(); } } }), file,
+      h("span", { class: "hint", text: t("ui.v2.upload_hint") })));
     host.appendChild(h("div", { class: "custom-row" }, link, h("button", { class: "btn", type: "button", text: t("x.add_link"), on: { click: function () {
       var u = link.value.trim();
       if (u) { link.value = ""; sendEvent({ type: "link_added", url: u }); }

@@ -960,6 +960,53 @@ def test_a_progress_stage_can_move_the_wait_line_on() -> None:
     assert got == ["brief", "brief", "brief", "document", "document", None, None, None, None]
 
 
+# ---- Compass v2: documents --------------------------------------------------------------------------------
+
+
+def test_a_file_over_15_mb_or_an_empty_one_is_refused_before_it_is_sent() -> None:
+    got = run_js(
+        """
+        const mb = 1024 * 1024;
+        return {
+          limit: I.MAX_UPLOAD_BYTES === 15 * mb,
+          ok: I.checkUpload({ size: 3 * mb }), edge: I.checkUpload({ size: 15 * mb }), over: I.checkUpload({ size: 15 * mb + 1 }),
+          empty: I.checkUpload({ size: 0 }), none: I.checkUpload(null), custom: I.checkUpload({ size: 11 }, 10),
+          accept: I.UPLOAD_ACCEPT.split(","),
+          status: [413, 415, 500, 0, undefined].map((s) => I.uploadErrorKey(s)),
+        };
+        """
+    )
+    assert got["limit"] is True
+    assert got["ok"] == {"ok": True, "key": ""} and got["edge"]["ok"] is True
+    assert got["over"] == {"ok": False, "key": "ui.v2.upload_too_large"}
+    assert (
+        got["empty"]["key"] == "ui.v2.upload_empty" and got["none"]["key"] == "ui.v2.upload_empty"
+    )
+    assert got["custom"]["ok"] is False
+    assert got["accept"] == [".pdf", ".docx", ".xlsx", ".pptx", ".csv", ".txt", ".md", ".eml"]
+    assert got["status"] == [
+        "ui.v2.upload_too_large",
+        "ui.v2.upload_unsupported",
+        None,
+        None,
+        None,
+    ]
+    strings = load_catalog().strings["en"]
+    assert "15 MB" in strings["ui.v2.upload_too_large"] and "15 MB" in strings["ui.v2.upload_hint"]
+
+
+def test_a_replayed_event_is_recognised_by_its_sequence_number_or_its_log_index() -> None:
+    got = run_js(
+        """
+        const seen = {};
+        return [I.registerEvent(seen, { seq: 7, idx: 12, direction: "out" }), I.registerEvent(seen, { seq: 7, idx: 12, direction: "out" }),
+                I.registerEvent(seen, { seq: null, idx: 3, direction: "in" }), I.registerEvent(seen, { seq: null, idx: 3, direction: "in" }),
+                I.registerEvent(seen, { seq: null, idx: 7, direction: "in" }), I.registerEvent(seen, { type: "x" })];
+        """
+    )
+    assert got == [True, False, True, False, True, True], "idx 7 is not seq 7"
+
+
 def test_the_helper_exposes_only_what_the_screen_uses() -> None:
     names = run_js("return Object.keys(I).sort();")
     assert {

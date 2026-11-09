@@ -302,5 +302,12 @@
   "ui.v2.wait_edit": "Updating your Brief…",
   "ui.v2.wait_more": "Planning more questions…",
   "ui.v2.wait_working": "Working on it…",
-  "ui.v2.wait_very_long": "This is taking longer than usual. We are still working; please keep this page open."
+  "ui.v2.wait_very_long": "This is taking longer than usual. We are still working; please keep this page open.",
+  "ui.v2.upload_hint": "PDF, Word, Excel, PowerPoint, CSV, text, Markdown or email (.eml), up to 15 MB.",
+  "ui.v2.upload_too_large": "That file is larger than 15 MB. Please choose a smaller one, or paste the important parts into the chat.",
+  "ui.v2.upload_empty": "That file is empty. Please choose another one.",
+  "ui.v2.upload_unsupported": "We cannot read that kind of file. Please use PDF, Word, Excel, PowerPoint, CSV, text, Markdown or email, or describe it in your own words.",
+  "ui.v2.upload_failed": "That file could not be read. You can describe it in your own words or add a link.",
+  "ui.v2.upload_reading": "Reading your document: {name}…",
+  "ui.v2.upload_instead": "Upload a file instead"
 }

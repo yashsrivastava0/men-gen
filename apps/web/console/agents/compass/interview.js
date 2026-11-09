@@ -412,12 +412,31 @@
       flatCards(b.groups || []).map(function (c) { return c.id; }).join("|");
   }
 
+  // ---- documents ------------------------------------------------------------------------------------------------
+
+  var MAX_UPLOAD_BYTES = 15 * 1024 * 1024;   // the server's limit (intake.max_file_bytes); checked here first
+  var UPLOAD_ACCEPT = ".pdf,.docx,.xlsx,.pptx,.csv,.txt,.md,.eml";   // what the picker offers; the server checks the type
+  /** Is this file worth sending? A file over the limit or an empty one is refused before any bytes leave the page. */
+  function checkUpload(file, limit) {
+    if (!file || !(file.size > 0)) { return { ok: false, key: "ui.v2.upload_empty" }; }
+    if (file.size > (limit || MAX_UPLOAD_BYTES)) { return { ok: false, key: "ui.v2.upload_too_large" }; }
+    return { ok: true, key: "" };
+  }
+  /** The plain-words string for a failed upload request (null: use the server's own message, else the generic one). */
+  function uploadErrorKey(status) {
+    if (status === 413) { return "ui.v2.upload_too_large"; }
+    if (status === 415) { return "ui.v2.upload_unsupported"; }
+    return null;
+  }
+
   /** True the first time an outbound event is seen. The stream can replay events after a reconnect, and an
       event can arrive both from the stream and in the reply to the request: each is drawn once. */
   function registerEvent(seen, ev) {
-    if (!ev || ev.seq === null || ev.seq === undefined) { return true; }
-    if (seen[ev.seq]) { return false; }
-    seen[ev.seq] = true;
+    if (!ev) { return true; }
+    var key = ev.seq !== null && ev.seq !== undefined ? ev.seq : (ev.idx !== null && ev.idx !== undefined ? "i" + ev.idx : null);
+    if (key === null) { return true; }
+    if (seen[key]) { return false; }
+    seen[key] = true;
     return true;
   }
   // ---- waiting: what the page says while the server works ----------------------------------------------------
@@ -620,7 +639,8 @@
     movePick: movePick, sanitizeEntry: sanitizeEntry, carryDraft: carryDraft, upsertBatch: upsertBatch,
     sameQuestions: sameQuestions, registerEvent: registerEvent, reconnectDelay: reconnectDelay,
     WAIT: WAIT, waitSchedule: waitSchedule, waitKey: waitKey, phaseFor: phaseFor, phaseContext: phaseContext,
-    phaseForStage: phaseForStage,
+    phaseForStage: phaseForStage, MAX_UPLOAD_BYTES: MAX_UPLOAD_BYTES, UPLOAD_ACCEPT: UPLOAD_ACCEPT,
+    checkUpload: checkUpload, uploadErrorKey: uploadErrorKey,
     qaStatus: qaStatus, qaCanEdit: qaCanEdit, qaIndent: qaIndent, qaAnswerText: qaAnswerText,
     qaEditModel: qaEditModel, qaEditPayload: qaEditPayload, qaFactLine: qaFactLine,
     changedRows: changedRows, pulseKey: pulseKey, ackHasNotice: ackHasNotice
