@@ -27,7 +27,9 @@ LONG = "We deliver 200 lunch boxes a day to offices, mostly in Baner and Hinjewa
 
 
 def planner_service() -> Service:
-    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    interview = dataclasses.replace(
+        DEFAULT_CONFIG.interview, engine="planner", default_ui_mode="one_at_a_time"
+    )
     config = dataclasses.replace(DEFAULT_CONFIG, interview=interview)
     return build_service(memory=True, clock=FakeClock(), compass_config=config)
 

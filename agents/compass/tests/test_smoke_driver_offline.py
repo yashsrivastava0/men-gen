@@ -3,11 +3,11 @@
 from __future__ import annotations
 
 from mde_compass.compose import build_service
-from mde_compass.live_smoke import run_smoke
+from mde_compass.live_smoke import run_smoke, smoke_config
 
 
 async def test_smoke_driver_exercises_every_call_type_in_mock_mode() -> None:
-    report = await run_smoke(build_service(memory=True))
+    report = await run_smoke(build_service(memory=True, compass_config=smoke_config()))
     assert report.mode == "mock" and not report.errors
     assert report.spent_usd == "0.0000"
     expected = {

@@ -24,7 +24,9 @@ TIERS = {
 
 
 def planner_service() -> Service:
-    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    interview = dataclasses.replace(
+        DEFAULT_CONFIG.interview, engine="planner", default_ui_mode="one_at_a_time"
+    )
     return build_service(
         memory=True,
         clock=FakeClock(),

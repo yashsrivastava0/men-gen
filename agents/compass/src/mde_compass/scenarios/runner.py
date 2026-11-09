@@ -121,7 +121,12 @@ def engine_config(engine: Engine, policy: dict[str, Any] | None = None) -> Any:
 
     from mde_compass.config import DEFAULT_CONFIG
 
-    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine=engine, **(policy or {}))
+    # the drivers answer card by card, so scenarios run in the one-at-a-time layout unless a scenario asks for
+    # ``default_ui_mode: answer_all`` in its ``policy:`` (ADR 0016 makes the form the product default)
+    base: dict[str, Any] = {"default_ui_mode": "one_at_a_time"}
+    interview = dataclasses.replace(
+        DEFAULT_CONFIG.interview, engine=engine, **{**base, **(policy or {})}
+    )
     return dataclasses.replace(DEFAULT_CONFIG, interview=interview)
 
 

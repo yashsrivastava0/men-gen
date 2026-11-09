@@ -8,11 +8,12 @@ Vision and streaming are reported as unsupported: the gateway has no image input
 
 from __future__ import annotations
 
+import dataclasses
 from typing import Any
 
 from pydantic import BaseModel, Field
 
-from mde_compass.config import MODEL_ID
+from mde_compass.config import DEFAULT_CONFIG, MODEL_ID, CompassConfig
 from mde_compass.engine.ports import TurnContext
 from mde_compass.engine.service import Service, tenant_scope
 from mde_compass.testing import Conversation
@@ -45,6 +46,15 @@ class SmokeReport(BaseModel):
     errors: list[str] = Field(default_factory=list)
     vision: str = "unsupported by the gateway (no image input); not tested"
     streaming: str = "unsupported by the gateway; assistant_delta is never emitted"
+
+
+def smoke_config() -> CompassConfig:
+    """The smoke driver answers card by card, so it asks for the one-at-a-time layout (ADR 0016 makes the batch form
+    the product default)."""
+    return dataclasses.replace(
+        DEFAULT_CONFIG,
+        interview=dataclasses.replace(DEFAULT_CONFIG.interview, default_ui_mode="one_at_a_time"),
+    )
 
 
 async def run_smoke(service: Service) -> SmokeReport:

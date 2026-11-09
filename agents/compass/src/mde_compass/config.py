@@ -100,6 +100,9 @@ class InterviewPolicy:
 
     # ``legacy`` is the frame-driven path kept only while the planner path is built (D-090); removed in phase 8.
     engine: InterviewEngine = "planner"
+    # the layout of a planned batch: one form, submitted once (ADR 0016). Drivers that answer card by card (the
+    # scenario runner, the persona and live-batch players) ask for ``one_at_a_time`` explicitly.
+    default_ui_mode: Literal["one_at_a_time", "answer_all"] = "answer_all"
     # question budgets (follow-ups included)
     quick_max: int = 7  # the tier targets (ADR 0016); the closing question is one of them
     standard_max: int = 12

@@ -22,7 +22,9 @@ LONG = "We deliver 200 lunch boxes a day to offices, mostly in Baner and Hinjewa
 
 
 def planner_service() -> Service:
-    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    interview = dataclasses.replace(
+        DEFAULT_CONFIG.interview, engine="planner", default_ui_mode="one_at_a_time"
+    )
     config = dataclasses.replace(DEFAULT_CONFIG, interview=interview)
     return build_service(memory=True, clock=FakeClock(), compass_config=config)
 
@@ -338,7 +340,9 @@ async def test_consumer_views_carry_the_facts_and_never_the_words_of_the_chat() 
 
 def small_budget_service() -> Service:
     """Tiny context budgets, so the chunked compile and the rolling summary are exercised by a short session."""
-    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    interview = dataclasses.replace(
+        DEFAULT_CONFIG.interview, engine="planner", default_ui_mode="one_at_a_time"
+    )
     context = dataclasses.replace(
         DEFAULT_CONFIG.context, compile_ceiling=60, compile_chunk_facts=4, fact_digest=60
     )

@@ -1662,26 +1662,32 @@ class Service(FlowHooks):
             await self._advance(turn)
 
     async def _on_batch_answer(self, turn: _Turn, ev: BatchAnswer) -> None:
-        """ "Answer all at once": the answers of a whole batch form, read in one pass."""
+        """ "Answer all at once": the answers of a whole batch form, read in one pass (ADR 0016: nothing is processed
+        before this event). Every question of the submitted batch is closed by it: a question the form left out
+        counts as skipped. A question that is already answered (a repeated submit, a retry after a slow reply) is
+        ignored, so nothing is recorded twice."""
         if not self.interview.active:
             return
+        mem = turn.memory
         items: list[AnswerItem] = []
+        closed: set[str] = set()
         for a in ev.answers:
             card = self._find_question(turn, a.card_id)
             if card is None:
                 raise NotFound(f"card {a.card_id}")
+            closed.add(card.id)
+            qa = mem.qa_for(card.id)
+            if qa is not None and qa.status != "open":
+                continue
             typed = bool(a.custom_text) and a.value in (None, "", [])
             items.append(
-                AnswerItem(
-                    card,
-                    "skip"
-                    if a.action == "none"
-                    else a.action,  # "none of these" is built in the engine phase (ADR 0016)
-                    a.value,
-                    a.custom_text,
-                    "text" if typed else "tap",
-                )
+                AnswerItem(card, a.action, a.value, a.custom_text, "text" if typed else "tap")
             )
+        for qa in self.interview.pending(turn):
+            if qa.batch_id == ev.batch_id and qa.card_id not in closed:
+                items.append(AnswerItem(qa.card, "skip"))
+        if not items:
+            return  # everything in it was answered already: a no-op, never a second batch
         await self.interview.on_answers(turn, items)
         self._rebuild(turn)
         await self._advance(turn)

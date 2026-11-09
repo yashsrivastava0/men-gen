@@ -77,7 +77,7 @@ from mde_compass.engine.question_validators import ValidationContext
 if TYPE_CHECKING:  # pragma: no cover
     from mde_compass.engine.service import Service, _Turn
 
-Action = Literal["answer", "skip", "you_decide"]
+Action = Literal["answer", "skip", "you_decide", "none"]
 BudgetName = Literal["quick", "standard", "thorough"]
 PLAN_KINDS = ("initial", "followup", "replan", "deepen", "simplify")
 
@@ -152,11 +152,8 @@ class InterviewController:
     def ui_mode(self, turn: _Turn) -> Literal["one_at_a_time", "answer_all"]:
         block = turn.brief.meta.interview
         if block is not None and block.ui_mode_set:
-            return block.ui_mode
-        profile = turn.brief.meta.situation_profile
-        if profile is not None and profile.expertise in ("technical", "product"):
-            return "answer_all"
-        return "one_at_a_time"
+            return block.ui_mode  # the person switched the layout
+        return cast(Literal["one_at_a_time", "answer_all"], self.policy.default_ui_mode)
 
     def block(self, turn: _Turn) -> InterviewBlock:
         if turn.brief.meta.interview is None:
@@ -522,6 +519,14 @@ class InterviewController:
         if self.show_next(turn):
             self.touch(turn)
             return "asked"
+        if self.pending(turn):
+            # questions are still on screen (an answer-all form not yet complete, a repeated submit): nothing new is
+            # planned until each one is answered, skipped or no longer needed. A one-at-a-time client gets the
+            # latest open question back; the batch form is already on the person's screen
+            if self.ui_mode(turn) != "answer_all":
+                self.reshow_pending(turn)
+            self.touch(turn)
+            return "asked"
         if not turn.memory.batches:
             is_prepare = isinstance(turn.event, Command) and turn.event.name == "prepare_questions"
             if not is_prepare:
@@ -815,9 +820,12 @@ class InterviewController:
         for item, understood in zip(items, readings, strict=True):
             card = item.card
             qa = mem.qa_for(card.id) or QaRecord(card_id=card.id, card=card, status="open")
-            status = {"answer": "answered", "skip": "skipped", "you_decide": "you_decide"}[
-                item.action
-            ]
+            status = {
+                "answer": "answered",
+                "skip": "skipped",
+                "you_decide": "you_decide",
+                "none": "answered",  # "none of these": answered with nothing; the need stays open (a follow-up)
+            }[item.action]
             mem.put_qa(
                 qa.model_copy(
                     update={
@@ -838,6 +846,10 @@ class InterviewController:
             )  # type: ignore[arg-type]
             if item.action == "you_decide":
                 self._assume_for(turn, card)
+            if item.action == "none":
+                flags[card.id] = [
+                    "vague"
+                ]  # nothing fit: the policy decides a follow-up or a visible assumption
             if understood is None:
                 continue
             labels, text = self._labels_and_text(item)
@@ -862,7 +874,10 @@ class InterviewController:
                 )
             )
         statuses = self.statuses(turn)
-        await self._follow_ups(turn, items, statuses, flags)
+        if not self.pending(turn):
+            # follow-ups are decided when the batch is complete: a form submits it whole; a client that answers a
+            # form's cards one by one gets them with the last answer
+            await self._follow_ups(turn, items, statuses, flags)
         self.touch(turn)
 
     def _assume_for(self, turn: _Turn, card: Card) -> None:
@@ -891,8 +906,9 @@ class InterviewController:
         total = room.followups
         used = counts_by_need(mem.qa, followups_only=True)
         asked_followup = 0
+        planned: list[PlannedBatch] = []
         for item in items:
-            if item.action != "answer":
+            if item.action not in ("answer", "none"):
                 continue
             card = item.card
             for need in card.need_ids:
@@ -931,6 +947,7 @@ class InterviewController:
                         depth=card.depth + 1,
                     )
                     if result.batch.cards():
+                        planned.append(result.batch)
                         asked_followup += 1
                         used[need] = used.get(need, 0) + 1
                         for qa in [q for q in mem.open_qa() if q.card.parent_card_id == card.id]:
@@ -939,7 +956,29 @@ class InterviewController:
                     break
                 if decision.action == "assume":
                     self.svc._assume_need(turn, need)
+        if planned:
+            self._emit_followup_form(turn, planned)
         self.svc._rebuild(turn)
+
+    def _emit_followup_form(self, turn: _Turn, planned: list[PlannedBatch]) -> None:
+        """The follow-ups of one submit are ONE form (the page renders forms from ``question_batch``), however many
+        planner runs wrote them: their questions move into the first batch."""
+        first = planned[0]
+        if len(planned) > 1:
+            mem = turn.memory
+            moved: list[Card] = []
+            for batch in planned:
+                for card in batch.cards():
+                    card = card.model_copy(update={"batch_id": first.batch_id})
+                    qa = mem.qa_for(card.id)
+                    if qa is not None:
+                        mem.put_qa(qa.model_copy(update={"batch_id": first.batch_id, "card": card}))
+                    moved.append(card)
+            group = first.groups[0]
+            first = first.model_copy(
+                update={"groups": [BatchGroup(id=group.id, title=group.title, cards=moved)]}
+            )
+        self._emit_batch(turn, first)
 
     # ----------------------------------------------------------------------------- free text, modes
     async def on_text(

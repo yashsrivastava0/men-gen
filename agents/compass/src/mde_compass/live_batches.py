@@ -2095,9 +2095,13 @@ def write_report(report: Mapping[str, Any], out_dir: Path, batch_id: str, mode: 
 
 # ===================================================================================== service factory
 def planner_config(base: CompassConfig = DEFAULT_CONFIG) -> CompassConfig:
-    """The default configuration with the AI-planned interview forced on."""
+    """The default configuration with the AI-planned interview forced on. The batch players answer card by card,
+    so they ask for the one-at-a-time layout; the live check of the batch form is a P7 item (ADR 0016)."""
     return dataclasses.replace(
-        base, interview=dataclasses.replace(base.interview, engine="planner")
+        base,
+        interview=dataclasses.replace(
+            base.interview, engine="planner", default_ui_mode="one_at_a_time"
+        ),
     )
 
 

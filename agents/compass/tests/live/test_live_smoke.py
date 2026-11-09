@@ -11,7 +11,7 @@ from pathlib import Path
 import pytest
 
 from mde_compass.compose import build_service
-from mde_compass.live_smoke import run_smoke
+from mde_compass.live_smoke import run_smoke, smoke_config
 
 pytestmark = pytest.mark.live
 ALLOWANCE_USD = "0.10"
@@ -19,7 +19,7 @@ ALLOWANCE_USD = "0.10"
 
 async def test_live_smoke(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("COMPASS_LIVE_BUDGET_USD", ALLOWANCE_USD)
-    service = build_service(memory=True)
+    service = build_service(memory=True, compass_config=smoke_config())
     assert service.budget_snapshot()["mode"] == "live"
     report = await run_smoke(service)
     out = Path(__file__).parents[2] / "evals" / "reports"
