@@ -42,7 +42,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from decimal import ROUND_CEILING, Decimal, InvalidOperation
 from pathlib import Path
-from typing import Any, Literal
+from typing import Any, Literal, cast
 
 import yaml
 from pydantic import BaseModel, ConfigDict, Field, JsonValue, ValidationError, model_validator
@@ -506,6 +506,13 @@ class AnswerPolicy:
         self._cursor: Counter[str] = Counter()
         self._typed = 0
         self._pivot_sent = False
+        # Skips and "you decide" are owed from their turn on: a card that cannot take one (it must be confirmed,
+        # or the button is off) hands it to the next card, and two are never put back to back (that is fatigue).
+        self._owed: list[tuple[int, ActionKind]] = sorted(
+            [(t, "skip") for t in sdef.skip_turns]
+            + [(t, "you_decide") for t in sdef.you_decide_turns]
+        )
+        self._last_quiet = -10
 
     # ------------------------------------------------------------------------------------- planted
     def pivot_before(self, turn: int) -> str | None:
@@ -561,6 +568,18 @@ class AnswerPolicy:
             and self._need_pool(card) is not None
         )
 
+    def _quiet(self, card: Card, turn: int, *, can_skip: bool, can_decide: bool) -> Action | None:
+        if turn - self._last_quiet < 2:
+            return None
+        for i, (due, kind) in enumerate(self._owed):
+            if due > turn:
+                break
+            if (kind == "skip" and can_skip) or (kind == "you_decide" and can_decide):
+                del self._owed[i]
+                self._last_quiet = turn
+                return Action(turn, card.id, kind)
+        return None
+
     # ----------------------------------------------------------------------------------------- decide
     def decide(self, card: Card, turn: int) -> Action:
         s = self.sdef
@@ -583,10 +602,9 @@ class AnswerPolicy:
             return Action(
                 turn, card.id, "tap", value=tap_value(card), tag="tail", specificity="specific"
             )
-        if turn in s.skip_turns and can_skip:
-            return Action(turn, card.id, "skip")
-        if turn in s.you_decide_turns and can_decide:
-            return Action(turn, card.id, "you_decide")
+        quiet = self._quiet(card, turn, can_skip=can_skip, can_decide=can_decide)
+        if quiet is not None:
+            return quiet
         if self._wants_text(card, turn):
             spec = s.answer_cycle[self._typed % len(s.answer_cycle)]
             self._typed += 1
@@ -607,6 +625,9 @@ class RunContext:
     start_spent: int
     service_factory: ServiceFactory
     mode: str
+    sessions: list[SessionData] = field(
+        default_factory=list
+    )  # filled as sessions start, so a report can be partial
 
     def delta(self) -> int:
         return self.spend() - self.start_spent
@@ -847,7 +868,8 @@ async def _collect(sd: SessionData, svc: Service, conv: Conversation) -> None:
 async def play_session(ctx: RunContext, sdef: SessionDef) -> SessionData:
     """Play one scripted session against a fresh service, never losing the report to a crash."""
     svc = ctx.service_factory()
-    if svc.mode_label != ctx.mode:
+    expected = "live" if ctx.mode == "live" else "mock"  # replay runs report as "mock" (no billing)
+    if svc.mode_label != expected:
         raise RuntimeError(
             f"the service runs in {svc.mode_label} mode but this run is {ctx.mode}: refusing to go on"
         )
@@ -855,18 +877,27 @@ async def play_session(ctx: RunContext, sdef: SessionDef) -> SessionData:
         raise RuntimeError("the planner engine is not active (COMPASS_INTERVIEW_ENGINE=legacy?)")
     conv = await Conversation.start(svc, locale=sdef.start_locale)
     sd = SessionData(sdef=sdef, session_id=conv.session_id)
+    ctx.sessions.append(sd)
     sd.spend_start = ctx.delta()
     started = time.monotonic()
+    interrupted: asyncio.CancelledError | None = None
     try:
         await _drive(ctx, sd, svc, conv)
     except AllowanceReached:
         sd.stopped = "allowance"
+    except (
+        asyncio.CancelledError
+    ) as exc:  # Ctrl+C: keep what was paid for, then let the cancellation go on
+        sd.stopped = "interrupted"
+        interrupted = exc
     except Exception as exc:  # the report must survive whatever went wrong
         sd.stopped = "error"
         sd.error = f"{type(exc).__name__}: {exc}"[:300]
     sd.spend_end = ctx.delta()
     sd.wall_ms = _ms(started)
     await _collect(sd, svc, conv)
+    if interrupted is not None:
+        raise interrupted
     return sd
 
 
@@ -1267,6 +1298,10 @@ def needle_check(sd: SessionData) -> Check:
     in_brief = any(w.startswith(("domain_facts", "evidence")) for w in where)
     holders = [f for f in sd.facts if contains_all(_fact_text(f), needle.probe_terms)]
     bonus = [t for t in needle.bonus_terms if find_in_brief(sd.brief, [t])]
+    snap = sd.pivot_snapshot
+    by_pivot = [
+        f.id for f in holders if snap and f.id in snap["active"] and f.status == "superseded"
+    ]
     return Check(
         "needle_in_brief",
         f"the fact planted at turn {needle.turn} reaches the final Brief (a domain fact or an item's evidence)",
@@ -1276,6 +1311,7 @@ def needle_check(sd: SessionData) -> Check:
         note=(
             f"ledger facts holding it: {[(f.id, f.status) for f in holders]}; "
             f"bonus terms found anywhere in the Brief: {bonus}"
+            + (f"; superseded by the pivot (history kept): {by_pivot}" if by_pivot else "")
         ),
         session=sd.sdef.id,
     )
@@ -1292,13 +1328,15 @@ def contradiction_check(sd: SessionData) -> Check:
     old = [
         f
         for f in sd.facts
-        if f.qa_card_id == anchor_card
+        if anchor_card is not None
+        and f.qa_card_id == anchor_card
         and any(contains_all(_fact_text(f), [t]) for t in spec.anchor_terms)
     ]
     new = [
         f
         for f in sd.facts
-        if f.qa_card_id == correction_card
+        if correction_card is not None
+        and f.qa_card_id == correction_card
         and any(contains_all(_fact_text(f), [t]) for t in spec.correction_terms)
     ]
     old_inactive = bool(old) and all(f.status != "active" for f in old)
@@ -1982,17 +2020,21 @@ async def run_batch(
         start_spent=spend(),
     )
     ctx = RunContext(allowance_micros, spend, run.start_spent, service_factory, mode)
-    catalog: Catalog | None = None
+    interrupted: asyncio.CancelledError | None = None
     with capture_gateway_logs() as entries:
-        for sdef in data.sessions:
-            if run.stopped == "allowance":
-                run.skipped.append(sdef.id)
-                continue
-            sd = await play_session(ctx, sdef)
-            run.sessions.append(sd)
-            catalog = catalog or sd.catalog
-            if sd.stopped == "allowance":
-                run.stopped = "allowance"
+        try:
+            for sdef in data.sessions:
+                if run.stopped == "allowance":
+                    run.skipped.append(sdef.id)
+                    continue
+                sd = await play_session(ctx, sdef)
+                if sd.stopped == "allowance":
+                    run.stopped = "allowance"
+        except asyncio.CancelledError as exc:
+            run.stopped = "interrupted"
+            interrupted = exc
+    run.sessions = ctx.sessions
+    catalog = next((sd.catalog for sd in run.sessions if sd.catalog is not None), None)
     gateway = {str(e.get("request_id")): e for e in entries if e.get("event") == "llm_call"}
     for sd in run.sessions:
         sd.calls = _call_rows(sd, gateway)
@@ -2004,14 +2046,16 @@ async def run_batch(
     report = build_report(run)
     if out_dir is not None:
         report["report_path"] = str(write_report(report, out_dir, data.id, mode))
+    if interrupted is not None:
+        raise interrupted
     return report
 
 
 def write_report(report: Mapping[str, Any], out_dir: Path, batch_id: str, mode: str) -> Path:
-    """The raw report as JSON (``live-<batch>.json``; a mock run writes ``live-<batch>-mock.json`` so it can never
-    overwrite a live report). The directory is gitignored."""
+    """The raw report as JSON (``live-<batch>.json``; a mock or replay run writes ``live-<batch>-mock.json`` or ``-replay.json`` so it
+    can never overwrite a live report). The directory is gitignored."""
     out_dir.mkdir(parents=True, exist_ok=True)
-    path = out_dir / f"live-{batch_id}{'' if mode == 'live' else '-mock'}.json"
+    path = out_dir / f"live-{batch_id}{'' if mode == 'live' else f'-{mode}'}.json"
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
     return path
 
@@ -2024,12 +2068,15 @@ def planner_config(base: CompassConfig = DEFAULT_CONFIG) -> CompassConfig:
     )
 
 
-def default_service_factory(*, mock: bool, clock: Clock | None = None) -> ServiceFactory:
-    """A fresh real service per session: in-memory store, planner engine, the gateway of the process environment
-    (or, with ``mock``, mock settings whatever the environment says)."""
+def default_service_factory(
+    *, llm_mode: Literal["mock", "replay"] | None = None, clock: Clock | None = None
+) -> ServiceFactory:
+    """A fresh real service per session: in-memory store, planner engine, the gateway of the process environment.
+    With ``llm_mode`` the settings are forced to mock or replay (cassettes) whatever the environment says, so an
+    offline run can never reach a live model."""
 
     def factory() -> Service:
-        settings = load_settings(llm_mode="mock") if mock else load_settings()
+        settings = load_settings(llm_mode=llm_mode) if llm_mode else load_settings()
         return build_service(
             memory=True, settings=settings, clock=clock, compass_config=planner_config()
         )
@@ -2220,8 +2267,14 @@ def main(
     )
     parser.add_argument("--batch", required=True, type=str.upper, choices=BATCH_IDS)
     parser.add_argument("--dry-run", action="store_true", help="print the plan and exit; no calls")
-    parser.add_argument(
+    offline = parser.add_mutually_exclusive_group()
+    offline.add_argument(
         "--mock", action="store_true", help="run the same code offline in mock mode (free)"
+    )
+    offline.add_argument(
+        "--replay",
+        action="store_true",
+        help="run the same code offline against the recorded cassettes (free; never goes live)",
     )
     parser.add_argument(
         "--allowance-usd", default=None, help="stop when the ledger delta reaches this"
@@ -2238,7 +2291,8 @@ def main(
     ledger = ledger_path or Path(settings.llm_budget_ledger)
     policy = load_budget_policy(environ)
     spent = compass_spent_micros(ledger)
-    mode = "mock" if args.mock else "live"
+    mode = "mock" if args.mock else "replay" if args.replay else "live"
+    offline_run = mode != "live"
     price = Pricing.load().price_for(MODEL_ID)
     plan = build_plan(
         data,
@@ -2254,11 +2308,11 @@ def main(
         ledger,
         allowance,
         policy.cap_micros,
-        dry_run=args.dry_run or args.mock,
+        dry_run=args.dry_run or offline_run,
         reserve_micros=plan.reserve_micros,
         stop_fraction=policy.stop_fraction,
         api_key_present=None
-        if (args.dry_run or args.mock)
+        if (args.dry_run or offline_run)
         else settings.openai_api_key is not None,
     )
     if args.dry_run:
@@ -2266,7 +2320,7 @@ def main(
             say(f"  a live run would be refused: {reason}")
         say("dry run: nothing was called")
         return 0
-    if reasons and not args.mock:
+    if reasons and not offline_run:
         warn(f"REFUSED: batch {data.id} will not run.")
         for reason in reasons:
             warn(f"  - {reason}")
@@ -2275,8 +2329,10 @@ def main(
         )
         return 2
 
-    factory = service_factory or default_service_factory(mock=args.mock)
-    reader: SpendReader = (lambda: 0) if args.mock else ledger_reader(ledger)
+    factory = service_factory or default_service_factory(
+        llm_mode=cast(Literal["mock", "replay"], mode) if offline_run else None
+    )
+    reader: SpendReader = (lambda: 0) if offline_run else ledger_reader(ledger)
     try:
         report = asyncio.run(
             run_batch(
