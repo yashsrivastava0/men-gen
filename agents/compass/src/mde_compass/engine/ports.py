@@ -531,12 +531,14 @@ class RephraseRequest(Strict):
     card: Card
     mode: Literal["rephrase", "simplify"] = "rephrase"
     language: str = "en"
+    project_terms: list[str] = Field(default_factory=list)  # the project's own vocabulary
 
 
 class RephraseResult(Strict):
     question: str
     why_we_ask: str = ""
     options: list[CardOption] = Field(default_factory=list)
+    examples: list[str] = Field(default_factory=list)  # placeholder hints for a text question
     used_fallback: bool = False
 
 

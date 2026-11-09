@@ -406,3 +406,32 @@ async def test_a_structurally_bad_answer_falls_back_to_the_unchanged_card(
         SPEC, _wire("rephrase"), session_id="ses_1", tenant_id="t1"
     )
     assert run.used_fallback and expected in run.reason
+
+
+def test_project_terms_go_in_and_text_question_examples_come_back() -> None:
+    from mde_compass.calls.rephrase_question.adapter import build_input, to_result
+    from mde_compass.calls.rephrase_question.schema import RephraseOutput
+    from mde_compass.domain.cards import Card
+    from mde_compass.engine.ports import RephraseRequest, TurnContext
+
+    card = Card(
+        id="Q-010",
+        frame="planned",
+        slots=[],
+        type="open_prompt",
+        question="Where do shops keep their stock list today?",
+        origin="planner",
+    )
+    request = RephraseRequest(card=card, mode="simplify", project_terms=["pharmacy", "stock"])
+    wire = build_input(TurnContext(session_id="ses_1", tenant_id="t1"), request)
+    assert wire.project_terms == ["pharmacy", "stock"]
+    out = RephraseOutput(
+        question="Where is the stock list kept?",
+        why_we_ask="It lets us start from what you have.",
+        options=[],
+        examples=["e.g. a register", " ", "e.g. an Excel sheet"],
+    )
+    result = to_result(card, out)
+    assert (
+        result.examples == ["e.g. a register", "e.g. an Excel sheet"] and not result.used_fallback
+    )

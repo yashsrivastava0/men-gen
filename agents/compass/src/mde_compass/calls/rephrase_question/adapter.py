@@ -29,9 +29,7 @@ def recent_words(ctx: TurnContext) -> str:
 
 
 def build_input(ctx: TurnContext, request: RephraseRequest) -> RephraseInput:
-    """The wire input. Everything that carries the person's words is secret-redacted first. The engine does not
-    pass the project's vocabulary in this request yet, so ``project_terms`` is empty (the prompt then keeps the
-    original question's own words)."""
+    """The wire input. Everything that carries the person's words is secret-redacted first."""
     card = request.card
     return RephraseInput(
         language=request.language,
@@ -45,7 +43,7 @@ def build_input(ctx: TurnContext, request: RephraseRequest) -> RephraseInput:
             OptionWire(label=_clean(o.label), description=_clean(o.description))
             for o in card.options
         ],
-        project_terms=[],
+        project_terms=list(request.project_terms),
         recent_user_words=recent_words(ctx),
     )
 
@@ -56,6 +54,7 @@ def unchanged(card: Card, *, used_fallback: bool) -> RephraseResult:
         question=card.question,
         why_we_ask=card.why_we_ask,
         options=list(card.options),
+        examples=list(card.examples),
         used_fallback=used_fallback,
     )
 
@@ -76,6 +75,7 @@ def to_result(card: Card, out: RephraseOutput) -> RephraseResult:
         question=out.question.strip(),
         why_we_ask=out.why_we_ask.strip() or card.why_we_ask,
         options=options,
+        examples=[e.strip() for e in out.examples if e.strip()],
         used_fallback=False,
     )
 
