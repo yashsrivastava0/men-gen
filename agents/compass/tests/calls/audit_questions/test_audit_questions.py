@@ -130,7 +130,7 @@ def _card(
 # ----------------------------------------------------------------------------------------- spec, examples
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.audit_questions" and s.version == 1
+    assert s.id == "cmp.audit_questions" and s.version == 2
     assert s.reasoning_effort == "medium" and s.max_output_tokens == 3000 and s.route == "standard"
     assert SPEC.lane == "critic" and SPEC.timeout_s == 60 and not s.tools
     assert s.untrusted_inputs == ("asked_list",)
@@ -166,6 +166,7 @@ def test_the_prompt_carries_the_rubric_and_the_rules() -> None:
         "never a rewritten question",
         "do not rewrite questions",
         "Never approve",
+        '"priority" question',
     ):
         assert needle in system, needle
     assert (
@@ -687,3 +688,23 @@ async def test_the_mock_planner_output_is_accepted_by_the_mock_auditor() -> None
     result = await AuditAdapter(CallRunner(make_client([SPEC])), CATALOG).audit(CTX, request)
     assert len(result.verdicts) == len(cards) >= 3
     assert all(v.specific >= 3 and not v.leading and not v.jargon for v in result.verdicts)
+
+
+async def test_a_closing_priority_card_is_audited_like_any_other_and_maps_to_its_needs() -> None:
+    """The auditor always runs for the closing question (ADR 0016): a priority card serving scope.priority and
+    goals.primary is a mapped, answerable question, specific when its text names the project."""
+    closing = _card(
+        7,
+        "For the first version of your tiffin service, which of these matters most?",
+        intent="learn what matters most in the first version",
+        need_ids=["scope.priority", "goals.primary"],
+        options=["Weekly meal plans", "Daily menu and ordering", "Delivery tracking"],
+    ).model_copy(update={"type": "priority", "origin": "closing"})
+    request = AuditRequest(cards=[closing], project_terms=["tiffin", "Pune"], needs_table="")
+    wire = build_input(CATALOG, request)
+    assert wire.questions[0].type == "priority" and len(wire.questions[0].option_labels) == 3
+    assert {n.need_id for n in wire.needs} == {"scope.priority", "goals.primary"}
+    result = await AuditAdapter(CallRunner(make_client([SPEC])), CATALOG).audit(CTX, request)
+    (verdict,) = result.verdicts
+    assert verdict.maps_to_need and verdict.answerable and verdict.specific >= 3
+    assert not verdict.leading and not verdict.jargon and verdict.issues == []

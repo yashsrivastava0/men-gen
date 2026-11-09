@@ -61,7 +61,7 @@ def _request(inp: PlanInput, **changes: object) -> PlanRequest:
 
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.plan_questions" and s.version == 1
+    assert s.id == "cmp.plan_questions" and s.version == 2
     assert s.reasoning_effort == "low" and s.max_output_tokens == 5000 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
     assert "focus_answer" in s.untrusted_inputs and "fact_digest" in s.untrusted_inputs

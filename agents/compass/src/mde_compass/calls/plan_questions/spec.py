@@ -17,7 +17,7 @@ _P = CALL_PROFILES[CALL_ID]
 SPEC: CompassCallSpec[PlanInput, PlanOutput] = CompassCallSpec(
     spec=CallSpec(
         id=CALL_ID,
-        version=1,
+        version=2,
         input_model=PlanInput,
         output_model=PlanOutput,
         system_template="system.jinja",
@@ -28,7 +28,14 @@ SPEC: CompassCallSpec[PlanInput, PlanOutput] = CompassCallSpec(
         max_output_tokens=_P.max_output_tokens,
         mock_handler="mde_compass.calls.plan_questions.mock:handle",
         # everything that carries the user's or a document's words is data, never instructions
-        untrusted_inputs=("project_card", "fact_digest", "asked_list", "last_qa", "focus_answer"),
+        untrusted_inputs=(
+            "project_card",
+            "fact_digest",
+            "asked_list",
+            "last_qa",
+            "focus_answer",
+            "closing",
+        ),
         cacheable=False,
         repair=True,
         fallback="compass.plan_questions",

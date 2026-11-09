@@ -7,6 +7,7 @@ import json
 from mde_compass.calls.base import CallRunner
 from mde_compass.calls.plan_questions.fallback import fallback_batch
 from mde_compass.calls.plan_questions.schema import (
+    ClosingWire,
     NeedWire,
     PlanInput,
     PlanOutput,
@@ -24,6 +25,13 @@ from mde_compass.domain.interview import (
 )
 from mde_compass.domain.situation import DomainHypothesis, GlossaryCandidate, HypothesisFeature
 from mde_compass.engine.ports import NeedBrief, PlanRequest, PlanResult, TurnContext
+from mde_compass.engine.question_validators import (
+    CLOSING_MAX_OPTIONS,
+    CLOSING_MAX_SUGGESTIONS,
+    CLOSING_NEEDS,
+    candidate_match,
+    closing_candidates,
+)
 from mde_core.redact import redact_text
 
 PLACEHOLDER_BATCH_ID = "BAT-000"
@@ -77,8 +85,7 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
     answer = ""
     if focus is not None:
         answer = " | ".join([*focus.selected_labels, focus.answer_text]).strip(" |")
-    if request.mode == "closing":
-        raise NotImplementedError("planner mode 'closing' is built by the calls stream (ADR 0016)")
+    closing = request.closing
     return PlanInput(
         mode=request.mode,
         language=request.language,
@@ -87,7 +94,10 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
         asked_list=ctx.asked_list,
         last_qa=redact_text(ctx.last_qa)[0],
         project_terms=list(request.project_terms),
-        needs=[_need_wire(catalog, n, lang) for n in request.needs],
+        # the closing question is built from the closing context, not from the needs table
+        needs=[]
+        if request.mode == "closing"
+        else [_need_wire(catalog, n, lang) for n in request.needs],
         want_min=request.want_min,
         want_max=request.want_max,
         group_min=request.group_min,
@@ -101,7 +111,19 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
         pivot_from=request.pivot_from or "",
         style_notes=list(request.style_notes),
         next_card_n=request.next_card_n,
+        closing=ClosingWire(
+            features=_clean_list(closing.features if closing else []),
+            roles=_clean_list(closing.roles if closing else []),
+            goals=_clean_list(closing.goals if closing else []),
+            constraints=_clean_list(closing.constraints if closing else []),
+            assumptions=_clean_list(closing.assumptions if closing else []),
+        ),
     )
+
+
+def _clean_list(items: list[str]) -> list[str]:
+    """Statements the person's words went into: secret-redacted, blanks dropped."""
+    return [c for c in (redact_text(i)[0].strip() for i in items) if c]
 
 
 _FREE_TYPES = {"text", "quick_form", "upload_or_link"}
@@ -152,11 +174,81 @@ def _card(
     )
 
 
+def _closing_card(catalog: Catalog, q: QuestionWire, *, number: int, request: PlanRequest) -> Card:
+    """The reserved last question: always a priority card with its own two needs and the custom input on. Code, not
+    the model, says which options are the project's own: one that matches none of the closing candidates is a
+    suggestion whatever the model claimed, and suggestions beyond the cap are dropped (never fatal)."""
+    candidates = closing_candidates(request.closing)
+    options: list[CardOption] = []
+    suggested = 0
+    for o in q.options:
+        basis = o.basis
+        if candidates:
+            if candidate_match(o.label, candidates):
+                basis = "suggestion" if o.basis == "typical" else o.basis
+            else:
+                if suggested >= CLOSING_MAX_SUGGESTIONS:
+                    continue
+                suggested += 1
+                basis = "suggestion"
+        options.append(
+            CardOption(
+                id=chr(ord("A") + len(options)),
+                label=o.label,
+                basis=basis,
+                description=o.description,
+            )
+        )
+        if len(options) >= CLOSING_MAX_OPTIONS:
+            break
+    top = next((o for o in options if q.recommended and o.label == q.recommended), None)
+    needs = [n for n in CLOSING_NEEDS if n in catalog.slots]
+    return Card(
+        id=f"Q-{number:03d}",
+        frame="planned",
+        slots=needs,
+        type="priority",
+        question=q.text,
+        why_we_ask=q.why_we_ask,
+        options=options,
+        custom_input=CustomInput(enabled=True, placeholder=q.examples[0] if q.examples else ""),
+        you_decide=YouDecide(enabled=True, assumes=top.id if top else None),
+        progress=None,
+        language=request.language,
+        group_id="G1",
+        need_ids=list(CLOSING_NEEDS),
+        intent=q.intent,
+        unlocks=list(q.unlocks),
+        answer_spec=q.answer_spec,
+        examples=list(q.examples),
+        origin="closing",
+        priority=1,
+    )
+
+
+def _closing_batch(
+    catalog: Catalog, out: PlanOutput, request: PlanRequest, batch_id: str
+) -> PlannedBatch:
+    """Mode closing: the first priority question of the output and nothing else."""
+    q = next((q for q in out.questions if q.type == "priority"), None)
+    if q is None:
+        return PlannedBatch(batch_id=batch_id, mode=stored_mode(request.mode))
+    card = _closing_card(catalog, q, number=request.next_card_n, request=request)
+    return PlannedBatch(
+        batch_id=batch_id,
+        mode=stored_mode(request.mode),
+        groups=[BatchGroup(id="G1", title=q.group_title, cards=[card])],
+        covered_needs=list(CLOSING_NEEDS),
+    )
+
+
 def to_batch(
     catalog: Catalog, out: PlanOutput, request: PlanRequest, *, batch_id: str = PLACEHOLDER_BATCH_ID
 ) -> PlannedBatch:
     """Wire output to the domain batch: ids are assigned here in order (the model's own ids are ignored, so two
     batches can never collide), options get letters, and the question type maps to the card type."""
+    if request.mode == "closing":
+        return _closing_batch(catalog, out, request, batch_id)
     number = request.next_card_n
     order: list[str] = []
     titles: dict[str, str] = {}

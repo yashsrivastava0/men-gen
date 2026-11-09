@@ -7,15 +7,36 @@ from __future__ import annotations
 import re
 
 from mde_compass.calls.plan_questions.schema import PlanInput, PlanOutput
+from mde_compass.engine.question_validators import CLOSING_MIN_OPTIONS
 
 _CHOICE = {"choose_one", "pick_many", "priority"}
 _FREE = {"text", "quick_form", "upload_or_link"}
 _ID = re.compile(r"^Q-\d{3,}$")
 
 
+def _closing(out: PlanOutput) -> list[str]:
+    """Mode closing: the reserved last question must be there, as a priority question with enough options to
+    choose from. Everything finer (the options' source, the cap on suggestions, the needs) is code elsewhere."""
+    q = next((q for q in out.questions if q.type == "priority"), None)
+    if q is None:
+        return ["closing: no priority question (what matters most in the first version)"]
+    errors: list[str] = []
+    if not q.text.strip() or not q.intent.strip():
+        errors.append(f"question {q.id!r}: empty text or intent")
+    if len(q.options) < CLOSING_MIN_OPTIONS:
+        errors.append(
+            f"question {q.id!r}: a closing question needs at least {CLOSING_MIN_OPTIONS} options"
+        )
+    if any(not o.label.strip() for o in q.options):
+        errors.append(f"question {q.id!r}: an option has no label")
+    return errors
+
+
 def structural(inp: PlanInput, out: PlanOutput) -> list[str]:
     errors: list[str] = []
     questions = out.questions
+    if inp.mode == "closing":
+        return _closing(out)
     if not questions and inp.mode not in ("replan", "deepen", "followup"):
         errors.append("no questions in a mode that must ask something")
     if len(questions) > max(inp.want_max * 2, 6):

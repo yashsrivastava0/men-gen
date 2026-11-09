@@ -23,6 +23,10 @@ Rules (code: meaning)
   ``leading_wording``, ``invented_number``, ``brand_name``, ``multiple_questions``, ``not_a_question`` (a choice card's
   hypothesis must be phrased as a question).
 * ``too_many_recommended`` / ``recommended_not_allowed`` / ``recommended_without_reason``.
+* ``closing_shape`` / ``closing_option_source`` / ``closing_suggestions`` (ADR 0016): the reserved last question is one
+  ``priority`` card that serves ``scope.priority`` and ``goals.primary``, keeps its custom input, offers 3..8 options
+  (``options_count``), every option is a candidate from the closing context (what the person said or what was assumed)
+  or labelled ``suggestion``, and at most two are suggestions. The project-term rule applies as everywhere.
 * Batch only: ``over_batch_size``, ``over_group_size``.
 
 Batch level: ``validate_batch`` also reports; ``project_term_share``, ``cross_idea_overlap`` measure specificity and
@@ -45,8 +49,8 @@ from mde_compass.domain.interview import AssumedInstead, NeedStatus, RejectedQue
 from mde_compass.engine import cards as card_rules
 from mde_compass.engine.language import normalize
 from mde_compass.engine.needs import expert_gap_obligations
-from mde_compass.engine.ports import CardDraft, CardRequest
-from mde_compass.engine.terms import contains_project_term, extract_terms, jaccard, tokenize
+from mde_compass.engine.ports import CardDraft, CardRequest, ClosingContext
+from mde_compass.engine.terms import contains_project_term, extract_terms, jaccard, stem, tokenize
 from mde_compass.safety.screen import declined_category, phrase_hits
 
 IssueCode = Literal[
@@ -78,6 +82,9 @@ IssueCode = Literal[
     "recommended_without_reason",
     "over_batch_size",
     "over_group_size",
+    "closing_shape",
+    "closing_option_source",
+    "closing_suggestions",
 ]
 
 CHOICE_TYPES: frozenset[str] = frozenset({"choose_one", "look_signals", "confirm"})
@@ -88,6 +95,13 @@ QUESTION_MARK_TYPES: frozenset[str] = frozenset(
 EXAMPLE_TYPES: frozenset[str] = frozenset({"open_prompt", "quick_form"})
 DOMAIN_PREFIX = "domain:"
 TEXT_COMPARE_CHARS = 300
+
+# The reserved last question (ADR 0016): what it serves and how it is shaped.
+CLOSING_NEEDS: tuple[str, ...] = ("scope.priority", "goals.primary")
+CLOSING_MIN_OPTIONS = 3
+CLOSING_MAX_OPTIONS = 8
+CLOSING_MAX_SUGGESTIONS = 2
+"""Options a closing question may add that are not among the project's own candidates (labelled ``suggestion``)."""
 _QUESTION_MARKS = ("?", "？", "؟")
 
 # Leading wording beyond card_rules.yaml: the question pushes the user toward an answer.
@@ -226,6 +240,9 @@ class ValidationContext:
         None  # most questions this batch may hold (None: the largest policy batch)
     )
     max_per_group: int | None = None  # None: the policy's group size
+    closing_candidates: tuple[
+        str, ...
+    ] = ()  # closing question: the project's own candidates (empty: unchecked)
 
     @classmethod
     def build(
@@ -240,6 +257,7 @@ class ValidationContext:
         evidence: Iterable[str] = (),
         hints: Iterable[str] = (),
         batch_limit: int | None = None,
+        closing: ClosingContext | None = None,
     ) -> ValidationContext:
         cfg = config or CompassConfig()
         return cls(
@@ -253,6 +271,7 @@ class ValidationContext:
             evidence=tuple(evidence),
             hints=tuple(hints),
             batch_limit=batch_limit,
+            closing_candidates=closing_candidates(closing),
         )
 
     def effective_batch_limit(self) -> int:
@@ -339,6 +358,66 @@ def _similar(a: str, b: str, threshold: float) -> bool:
     if matcher.real_quick_ratio() < threshold or matcher.quick_ratio() < threshold:
         return False
     return matcher.ratio() >= threshold
+
+
+def closing_candidates(closing: ClosingContext | None) -> tuple[str, ...]:
+    """Every statement of the closing context as one list (what an option of the closing question may rest on)."""
+    if closing is None:
+        return ()
+    flat = (*closing.features, *closing.roles, *closing.goals, *closing.constraints)
+    return tuple(dict.fromkeys(c.strip() for c in (*flat, *closing.assumptions) if c.strip()))
+
+
+def _content(text: str) -> frozenset[str]:
+    return frozenset(stem(t) for t in extract_terms(text))
+
+
+MATCH_MIN_PREFIX = 4
+MATCH_DICE = 0.7
+
+
+def _same_word(a: str, b: str) -> bool:
+    """The same word allowing an ending (``pause`` / ``pausing``, ``work`` / ``works``, a Hindi inflection): one
+    shared prefix of at least four letters that covers all but two letters of the shorter word."""
+    if a == b:
+        return True
+    shared = 0
+    for x, y in zip(a, b, strict=False):
+        if x != y:
+            break
+        shared += 1
+    return shared >= max(MATCH_MIN_PREFIX, min(len(a), len(b)) - 2)
+
+
+def _covered(words: frozenset[str], other: frozenset[str]) -> int:
+    return sum(1 for w in words if any(_same_word(w, o) for o in other))
+
+
+def candidate_match(label: str, candidates: Iterable[str]) -> bool:
+    """Is this option label one of the candidates (or a short form or a re-wording of one)? Equal text, one
+    contained in the other (four letters or more), every content word of one found in the other (endings aside), or
+    seven tenths of the words shared. Deliberately forgiving: it only decides what counts as a suggestion."""
+    norm = normalize(label)
+    if not norm:
+        return False
+    mine = _content(label)
+    for candidate in candidates:
+        other = normalize(candidate)
+        if not other:
+            continue
+        if norm == other or (min(len(norm), len(other)) >= 4 and (norm in other or other in norm)):
+            return True
+        theirs = _content(candidate)
+        if not mine or not theirs:
+            continue
+        a, b = _covered(mine, theirs), _covered(theirs, mine)
+        if (
+            a == len(mine)
+            or b == len(theirs)
+            or 2 * min(a, b) / (len(mine) + len(theirs)) >= MATCH_DICE
+        ):
+            return True
+    return False
 
 
 # ------------------------------------------------------------------------------------------ the rules
@@ -468,6 +547,58 @@ def _check_options(card: Card, ctx: ValidationContext) -> list[Issue]:
         issues.append(Issue("options_count", "a confirmation needs at least one option"))
     if card.type in EXAMPLE_TYPES and not any(e.strip() for e in card.examples):
         issues.append(Issue("missing_examples", f"a {card.type} question needs example hints"))
+    return issues
+
+
+def _check_closing(card: Card, ctx: ValidationContext) -> list[Issue]:
+    """The reserved last question (``origin == "closing"``): a priority card with its own needs, 3..8 options taken
+    from the project's own candidates (at most two suggested ones) and the custom input kept on."""
+    if card.origin != "closing":
+        return []
+    issues: list[Issue] = []
+    if card.type != "priority":
+        issues.append(
+            Issue(
+                "closing_shape",
+                "the closing question must be a priority question (what matters most)",
+            )
+        )
+    if not set(CLOSING_NEEDS) & set(card.need_ids):
+        issues.append(Issue("closing_shape", f"it must serve {' and '.join(CLOSING_NEEDS)}"))
+    if not card.custom_input.enabled:
+        issues.append(
+            Issue(
+                "closing_shape",
+                "the custom input (anything else, what success looks like) stays on",
+            )
+        )
+    count = len(card.options)
+    if not CLOSING_MIN_OPTIONS <= count <= CLOSING_MAX_OPTIONS:
+        issues.append(
+            Issue(
+                "options_count",
+                f"the closing question needs {CLOSING_MIN_OPTIONS}..{CLOSING_MAX_OPTIONS} options, got {count}",
+            )
+        )
+    if ctx.closing_candidates:
+        outside = [o for o in card.options if not candidate_match(o.label, ctx.closing_candidates)]
+        unlabelled = [o.id for o in outside if o.basis != "suggestion"]
+        if unlabelled:
+            issues.append(
+                Issue(
+                    "closing_option_source",
+                    f"option {', '.join(unlabelled)} is not one of the project's own candidates "
+                    "and is not labelled a suggestion",
+                )
+            )
+        if len(outside) > CLOSING_MAX_SUGGESTIONS:
+            issues.append(
+                Issue(
+                    "closing_suggestions",
+                    f"{len(outside)} options are outside the project's own candidates; "
+                    f"at most {CLOSING_MAX_SUGGESTIONS} suggestions are allowed",
+                )
+            )
     return issues
 
 
@@ -649,6 +780,7 @@ def validate_question(card: Card, ctx: ValidationContext) -> list[Issue]:
         *_check_duplicates(card, ctx),
         *_check_lengths(card, ctx),
         *_check_options(card, ctx),
+        *_check_closing(card, ctx),
         *_check_recommended(card),
         *_check_wording_and_basis(card, ctx),
         *_check_technology(card, ctx),
@@ -681,10 +813,13 @@ def validate_batch(cards: Sequence[Card], ctx: ValidationContext) -> BatchValida
     per_group: dict[str, int] = {}
     batch_limit = ctx.effective_batch_limit()
     group_limit = ctx.effective_group_limit()
+    closing_taken = False
     for card in cards:
         local = replace(ctx, planned=(*ctx.planned, *planned))
         issues = validate_question(card, local)
         group = card.group_id or ""
+        if card.origin == "closing" and closing_taken:
+            issues.append(Issue("closing_shape", "an interview has exactly one closing question"))
         if len(accepted) >= batch_limit:
             issues.append(
                 Issue("over_batch_size", f"the batch already holds {batch_limit} questions")
@@ -700,6 +835,7 @@ def validate_batch(cards: Sequence[Card], ctx: ValidationContext) -> BatchValida
             )
             continue
         accepted.append(card)
+        closing_taken = closing_taken or card.origin == "closing"
         planned.append(LedgerEntry.from_card(card))
         per_group[group] = per_group.get(group, 0) + 1
     return BatchValidation(accepted=accepted, rejected=rejected, issues=by_card)

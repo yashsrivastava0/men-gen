@@ -1,0 +1,21 @@
+Mode: closing
+Language: {{ language }}
+Write exactly one priority question. Number it Q-{{ '%03d' % next_card_n }}.
+
+Project card:
+{{ project_card }}
+
+Project terms: {{ project_terms | join(", ") }}
+
+Facts so far:
+{{ fact_digest or "(none yet)" }}
+
+Questions already asked:
+{{ asked_list or "(nothing asked yet)" }}
+
+Candidates for the options (features, roles, goals, constraints, assumptions; the person's own wording first):
+{{ closing }}
+{% if style_notes %}
+Problems the checks found in an earlier attempt (fix them):
+{% for s in style_notes %}- {{ s }}
+{% endfor %}{% endif %}
