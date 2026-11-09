@@ -1841,9 +1841,9 @@ class Service:
         self, caller: Caller, session_id: str, filename: str, data: bytes
     ) -> TurnResult:
         """An uploaded file is one turn: it becomes a source, its claims become cited Brief writes."""
-        import hashlib
-
-        event_id = "evt_upl_" + hashlib.sha256(filename.encode() + data).hexdigest()[:24]
+        # A fresh id per request: the same bytes twice are caught by intake's sha256 de-duplication, which
+        # tells the user, instead of by event idempotency, which would stay silent.
+        event_id = new_id("evt")
         self._pending_uploads[event_id] = (filename, data)
         try:
             return await self.handle_event(
