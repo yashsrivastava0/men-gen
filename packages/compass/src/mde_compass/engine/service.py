@@ -16,7 +16,7 @@ from __future__ import annotations
 import asyncio
 import contextvars
 from collections.abc import Callable, Sequence
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any
 
@@ -233,7 +233,7 @@ class Service:
     ) -> None:
         self.store = store
         self.catalog = catalog
-        self.budget = budget
+        self.budget_guard = budget
         self.handoff_port = handoff
         self.ports = ports
         self.clock = clock or SystemClock()
@@ -763,7 +763,7 @@ class Service:
 
     async def _advance(self, turn: _Turn) -> None:
         if turn.state in ("WELCOME", "INTAKE", "UNDERSTANDING", "PLAYBACK", "INTERVIEWING"):
-            if await self._ask_next(turn):
+            if await self._ask_next(turn) or await self._ask_missing_must(turn):
                 turn.state = "INTERVIEWING"
                 return
             self._go(turn, "queue_empty", "SEEDING")
@@ -777,6 +777,34 @@ class Service:
             self._go(turn, "probes_done", "BRIEF_REVIEW")
         if turn.state == "BRIEF_REVIEW":
             await self._open_review(turn)
+
+    async def _ask_missing_must(self, turn: _Turn) -> bool:
+        """A required slot with no default that is still empty after its frame was asked (a frame batches
+        several slots but one card settles one) gets ONE follow-up card; never more than twice per slot."""
+        if self._question_n(turn) >= self.config.questions.hard_cap:
+            return False
+        counts: dict[str, int] = {}
+        for card in turn.asked_cards():
+            for sid in card.slots:
+                counts[sid] = counts.get(sid, 0) + 1
+        for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
+            sd = self.catalog.slots[sid]
+            if sd.default is not None or counts.get(sid, 0) >= 2:
+                continue
+            frame = next((f for f in self.catalog.frames.values() if sid in f.slots), None)
+            if frame is None:
+                continue
+            item = voi_mod.QueueItem(
+                frame_id=frame.id,
+                slots=[sid],
+                action="ask",
+                score=50.0,
+                must_confirm=sd.must_confirm,
+                reason="required answer still empty",
+            )
+            await self._ask_next(turn, forced=item)
+            return True
+        return False
 
     async def _reshow_or_advance(self, turn: _Turn) -> None:
         pending = turn.pending_card()
@@ -848,6 +876,18 @@ class Service:
     ) -> Card:
         assert self.ports is not None
         hyp = turn.brief.meta.hypothesis
+        frame = self.catalog.frames.get(item.frame_id)
+        if (
+            frame is not None
+            and frame.card_type in ("choose_one", "pick_many")
+            and all(
+                self.catalog.slots[sid].value_schema.kind == "text"
+                for sid in item.slots
+                if sid in self.catalog.slots
+            )
+        ):
+            # A choice card cannot be written for text-only slots: confirm the whole frame instead.
+            item = replace(item, slots=list(frame.slots))
         hints: list[str] = []
         if hyp is not None:
             if item.frame_id == "features":
@@ -856,6 +896,18 @@ class Service:
                 hints = list(hyp.likely_roles)
             elif item.frame_id == "business_model":
                 hints = list(hyp.business_model_candidates)
+        if not hints:
+            family_ids = list(hyp.likely_families) if hyp is not None else []
+            cat = turn.slots.get("idea.category")
+            if (
+                cat is not None
+                and isinstance(cat.value, str)
+                and cat.value in self.catalog.families
+            ):
+                family_ids.insert(0, cat.value)
+            hints = cards_mod.family_hints(
+                self.catalog, item.slots, family_ids[:2], language=turn.lang
+            )
         user_text = self._corpus(turn) + " " + turn.original_text
         evidence = [line.text for line in turn.transcript if line.role == "user"][-3:]
         card_id = f"Q-{len(turn.asked_cards()) + 1:03d}"
@@ -949,7 +1001,12 @@ class Service:
                 frame = next(
                     (f for f in self.catalog.frames.values() if ask_gap.slot_id in f.slots), None
                 )
-                if frame is not None and self._question_n(turn) < self.config.questions.hard_cap:
+                asked_frames = {c.frame for c in turn.asked_cards()}
+                if (
+                    frame is not None
+                    and frame.id not in asked_frames
+                    and self._question_n(turn) < self.config.questions.hard_cap
+                ):
                     item = voi_mod.QueueItem(
                         frame_id=frame.id,
                         slots=[ask_gap.slot_id],
@@ -1001,6 +1058,12 @@ class Service:
             await self._on_variant_pick(turn, card, ev)
             return
         writes = cards_mod.answer_to_writes(card, ev.value, ev.custom_text, self.catalog)
+        if not writes and card.type == "pick_many" and not ev.custom_text:
+            await self._assume_checklist(turn, card)
+            turn.answered.append((card.id, "answered", {"value": ev.value, "slots": []}))  # type: ignore[arg-type]
+            self._rebuild(turn)
+            await self._advance(turn)
+            return
         applied = self._apply_card_writes(turn, writes, state="confirmed", from_tap=True)
         turn.answered.append(
             (
@@ -1019,6 +1082,28 @@ class Service:
             )
         self._rebuild(turn)
         await self._advance(turn)
+
+    async def _assume_checklist(self, turn: _Turn, card: Card) -> None:
+        """An empty checklist on a required slot is not a decision: assume the typical items (listed in
+        "We assumed" for approval) instead of asking the same card again."""
+        required = {
+            sid
+            for sid in card.slots
+            if sid in self.catalog.slots and self.catalog.slots[sid].level == "must"
+        }
+        if not required or any(turn.slots.filled(sid) for sid in required):
+            return
+        typical = [o for o in card.options if o.basis == "typical"] or list(card.options)
+        picked = [o.id for o in typical[:3]]
+        writes = cards_mod.answer_to_writes(card, picked, None, self.catalog)
+        if writes:
+            self._apply_card_writes(turn, writes, state="assumed", from_tap=True)
+            turn.notice(
+                "assumed",
+                self._t(
+                    turn, "card.assumed_collapsed", value=", ".join(_text(w.value) for w in writes)
+                ),
+            )
 
     def _apply_card_writes(
         self, turn: _Turn, writes: Sequence[Any], *, state: str, from_tap: bool
@@ -1709,7 +1794,7 @@ class Service:
         return dict(self.budget_snapshot())
 
     def budget_snapshot(self) -> dict[str, Any]:
-        snap = dict(self.budget.snapshot())
+        snap = dict(self.budget_guard.snapshot())
         snap["mode"] = self.mode_label
         return snap
 
