@@ -21,7 +21,12 @@ from mde_compass.engine.needs import (
 from mde_compass.engine.slots import SlotStore
 from mde_core.clock import FakeClock
 
-BASE = load_catalog()
+REAL = load_catalog()  # the real Needs Registry: every need has an answer_spec
+# Same catalog with every answer_spec removed: the base for the synthetic specs below, so the semantics tests
+# do not depend on the registry's data.
+BASE = REAL.model_copy(
+    update={"slots": {k: v.model_copy(update={"answer_spec": None}) for k, v in REAL.slots.items()}}
+)
 SEGMENTS = AnswerSpec(
     sufficient="At least one named segment: who they are, their goal, where they use the app.",
     aspects=["who", "goal", "where"],
@@ -94,17 +99,40 @@ def test_org_needs_only_in_enterprise() -> None:
     assert list(guided) == [s for s in CAT.slot_ids_by_order() if s in guided]  # dependency order
 
 
-def test_works_on_the_real_catalog_without_answer_specs() -> None:
-    store = SlotStore(BASE, clock=FakeClock())
+def test_every_real_need_has_an_answer_spec() -> None:
+    assert all(slot.answer_spec is not None for slot in REAL.slots.values())
+
+
+def test_real_registry_confirmed_slot_without_covered_aspects_is_partial() -> None:
+    store = SlotStore(REAL, clock=FakeClock())
     store.write(
         "idea.summary",
         "tiffin",
         state="volunteered",
         provenance=Provenance(type="user_text", ref="e"),
     )
-    statuses = compute(BASE, [], store)
-    assert statuses["idea.summary"].state == "satisfied"
+    statuses = compute(REAL, [], store)
+    summary = statuses["idea.summary"]
+    spec = REAL.slots["idea.summary"].answer_spec
+    assert spec is not None
+    assert summary.state == "partial" and summary.missing_aspects == spec.aspects
     assert statuses["idea.category"].state == "missing"
+
+
+def test_real_registry_is_satisfied_by_a_complete_fact_or_every_aspect() -> None:
+    store = SlotStore(REAL, clock=FakeClock())
+    for sid in ("idea.summary", "idea.category"):
+        store.write(sid, "x", state="confirmed", provenance=Provenance(type="user_tap", ref="e"))
+    spec = REAL.slots["idea.summary"].answer_spec
+    assert spec is not None
+    star = fact(1, "idea.summary:*")
+    category_spec = REAL.slots["idea.category"].answer_spec
+    assert category_spec is not None
+    each = fact(2, *(f"idea.category:{a}" for a in category_spec.aspects))
+    statuses = compute(REAL, [star, each], store)
+    assert statuses["idea.summary"].state == "satisfied"
+    assert statuses["idea.category"].state == "satisfied"
+    assert statuses["idea.summary"].covered_aspects == spec.aspects
 
 
 # --------------------------------------------------------------------------------- no aspects
