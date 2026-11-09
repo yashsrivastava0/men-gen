@@ -259,7 +259,38 @@ class InterviewController:
             next_card_n=next_card_number(turn.asked_cards(), turn.memory.qa),
         )
 
+    def _grounding(self, turn: _Turn) -> tuple[list[str], list[str]]:
+        """What an option may rest on: ``evidence`` (the person's recent words and document quotes, for
+        ``your_document`` and ``your_words``) and ``hints`` (typical labels from the hypothesis and the families,
+        for ``typical``)."""
+        evidence = [line.text for line in turn.transcript if line.role == "user"][-3:]
+        evidence += [
+            f.quote for f in turn.memory.active_facts() if f.origin == "document" and f.quote
+        ]
+        hyp = turn.brief.meta.hypothesis
+        hints: list[str] = []
+        family_ids: list[str] = []
+        if hyp is not None:
+            hints += [f.name for f in hyp.likely_features if not f.custom]
+            hints += list(hyp.likely_roles) + list(hyp.business_model_candidates)
+            family_ids = list(hyp.likely_families)
+        category = turn.slots.get("idea.category")
+        if (
+            category is not None
+            and isinstance(category.value, str)
+            and category.value in self.catalog.families
+        ):
+            family_ids.insert(0, category.value)
+        hints += cards_mod.family_hints(
+            self.catalog,
+            ["scope.features", "roles.list", "integrations.wanted", "idea.business_model"],
+            family_ids[:2],
+            language=turn.lang,
+        )
+        return evidence, list(dict.fromkeys(hints))
+
     def _vctx(self, turn: _Turn, request: PlanRequest) -> ValidationContext:
+        evidence, hints = self._grounding(turn)
         return ValidationContext.build(
             self.catalog,
             request.project_terms,
@@ -267,6 +298,8 @@ class InterviewController:
             ledger_cards=[q.card for q in turn.memory.qa],
             config=self.svc.config,
             user_text=self.svc._corpus(turn),
+            evidence=evidence,
+            hints=hints,
             batch_limit=max(request.want_max, 1),
         )
 
@@ -577,15 +610,14 @@ class InterviewController:
             answer_text=item.custom_text or (text if not labels else ""),
             input_mode=item.input_mode,
         )
-        briefs = [
-            b for b in need_briefs(statuses, self.catalog, turn.lang) if b.need_id in card.need_ids
+        every = need_briefs(statuses, self.catalog, turn.lang)
+        briefs = [b for b in every if b.need_id in card.need_ids]
+        # the card's own needs first, then a few other open ones, so what the person also said is credited
+        # (a detailed answer often covers more than the one need that was asked)
+        others = [
+            b for b in every if b.state in ("missing", "partial") and b.need_id not in card.need_ids
         ]
-        if not briefs:  # a domain question: show the open needs so side facts can still land
-            briefs = [
-                b
-                for b in need_briefs(statuses, self.catalog, turn.lang)
-                if b.state in ("missing", "partial")
-            ][:6]
+        briefs += others[:16]
         digest = facts_mod.digest(
             turn.memory.active_facts(), budget_tokens=self.svc.config.context.fact_digest // 3
         )
@@ -633,7 +665,13 @@ class InterviewController:
         now = self._now()
         extracted: list[ExtractedFact] = list(understood.facts)
         extracted += derived_facts(
-            understood, slots_of(extracted), self.catalog, turn.lang, complete=tap
+            understood,
+            slots_of(extracted),
+            self.catalog,
+            turn.lang,
+            complete=tap,
+            close_others_at=self.policy.high_confidence_closes_need,
+            own_needs=frozenset(card.need_ids) if card is not None else frozenset(),
         )
         origin = "tap" if tap else "stated"
         new_ids: list[str] = []

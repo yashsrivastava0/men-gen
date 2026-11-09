@@ -1,7 +1,5 @@
 id: SB-QP-04-b
 title: The same long text typed as the answer to a card also closes the other needs it answers
-known_issue: BUG-26
-known_issue_note: "a typed card answer is read with only that card's own needs, so aspects claimed for other needs are dropped: the slots are filled (Locked, FCT-002) but the needs stay partial and the questions about them are still asked"
 tags: [planner, facts, monologue]
 engines: [planner]
 steps:

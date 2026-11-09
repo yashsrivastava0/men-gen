@@ -227,9 +227,12 @@ def derived_facts(
     language: str,
     *,
     complete: bool,
+    close_others_at: float | None = None,
+    own_needs: frozenset[str] = frozenset(),
 ) -> list[ExtractedFact]:
     """Slot updates no extracted fact accounts for become facts too, so the ledger is complete whatever the
-    interpreter returned. A tap (``complete``) answers its need fully."""
+    interpreter returned. A tap (``complete``) answers its need fully; a confident, quoted update for a need the
+    question did not ask about (``close_others_at``, ``own_needs``) closes that need too: the person said it."""
     out: list[ExtractedFact] = []
     for upd in understood.slot_updates:
         slot = catalog.slots.get(upd.slot_id)
@@ -246,7 +249,16 @@ def derived_facts(
                 topics=[slot.group],
                 consumers=[c for c in slot.consumers if c != "all"] or ["all"],
                 confidence=upd.confidence,
-                aspects=[f"{upd.slot_id}:*"] if complete else [],
+                aspects=[f"{upd.slot_id}:*"]
+                if complete
+                or (
+                    close_others_at is not None
+                    and upd.slot_id not in own_needs
+                    and bool(upd.quote.strip())
+                    and upd.confidence >= close_others_at
+                    and not upd.remove
+                )
+                else [],
                 effects=[
                     FactEffect(
                         slot_id=upd.slot_id,

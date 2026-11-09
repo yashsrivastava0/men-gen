@@ -1,7 +1,5 @@
 id: SB-QP-02-b
 title: An option that rests on the document (basis your_document) is accepted, not rejected for lack of evidence
-known_issue: BUG-25
-known_issue_note: "InterviewController._vctx builds the ValidationContext without the document quotes (evidence=) or the typical labels (hints=), so every your_document or typical option is rejected: 'claims a document but there is no evidence'"
 tags: [planner, initial, documents]
 engines: [planner]
 steps:
