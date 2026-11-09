@@ -357,3 +357,210 @@ def test_the_rendered_closing_prompt_is_short_and_carries_the_candidates_and_rep
     assert "Q-012" in rendered.user and "Repair: Q-012 was rejected" in rendered.user
     batch = PromptRenderer().render(SPEC.spec, inp.model_copy(update={"mode": "initial"}))
     assert "Modes" in batch.system and "LAST question" not in batch.system
+
+
+# ---------------------------------------------------------------- suggested features (the person named few)
+SUGGESTED = ["weekly meal plans", "daily menu", "pause a delivery", "delivery tracking"]
+
+
+def _suggested_request(**closing: object) -> PlanRequest:
+    return _request(closing=ClosingContext(**closing))  # type: ignore[arg-type]
+
+
+def test_the_input_prints_the_suggested_features_as_a_separate_list() -> None:
+    request = _suggested_request(features=["daily menu"], suggested_features=SUGGESTED)
+    wire = build_input(CATALOG, request)
+    assert wire.closing.features == ["daily menu"] and wire.closing.suggested_features == SUGGESTED
+    from mde_llm_gateway.render import PromptRenderer
+
+    rendered = PromptRenderer().render(SPEC.spec, wire)
+    assert "suggested_features" in rendered.user and "pause a delivery" in rendered.user
+    assert "suggested_features" in rendered.system and "NOT named by the person" in rendered.system
+
+
+def test_the_suggestion_cap_depends_on_how_many_features_the_person_named() -> None:
+    from mde_compass.engine.question_validators import closing_suggestion_cap
+
+    assert closing_suggestion_cap(None) == 2
+    three = ClosingContext(features=["a one", "a two", "a three"], goals=["g"])
+    assert closing_suggestion_cap(three) == 2  # enough of their own: the old cap
+    none = ClosingContext()
+    assert closing_suggestion_cap(none) == 8  # nothing stated: up to eight suggestions
+    two = ClosingContext(features=["a one", "a two"], goals=["g"], constraints=["c"])
+    assert closing_suggestion_cap(two) == 4  # 8 - 4 stated candidates
+    crowded = ClosingContext(features=["a one", "a two"], goals=["g"] * 3, constraints=["c"] * 3)
+    assert closing_suggestion_cap(crowded) == 2  # never below two
+
+
+def test_no_stated_features_but_suggestions_give_a_valid_card_without_the_fallback() -> None:
+    request = _suggested_request(suggested_features=SUGGESTED)
+    inp = build_input(CATALOG, request)
+    out = handle(inp)
+    assert structural(inp, out) == []
+    (q,) = out.questions
+    assert len(q.options) == 4 and {o.basis for o in q.options} == {"suggestion"}
+    batch = to_batch(CATALOG, out, request)
+    (card,) = batch.cards()
+    assert card.origin == "closing" and card.type == "priority" and not card.fallback
+    assert validate_batch([card], _vctx(request)).rejected == []
+
+
+async def test_no_stated_features_survives_the_pipeline_with_no_fallback() -> None:
+    runner = CallRunner(make_client([SPEC, AUDIT_SPEC]))
+    request = _suggested_request(suggested_features=SUGGESTED)
+    result = await plan_validated(
+        planner=PlanAdapter(runner, CATALOG),
+        auditor=AuditAdapter(runner, CATALOG),
+        ctx=CTX,
+        request=request,
+        vctx=_vctx(request),
+        policy=InterviewPolicy(),
+        catalog=CATALOG,
+        statuses={},
+        obligations=[],
+        needs_table="",
+        asked_list="",
+    )
+    assert result.rejected == [] and not result.used_fallback and result.fallbacks == 0
+    (card,) = result.batch.cards()
+    assert len(card.options) >= 3 and not card.fallback and card.origin == "closing"
+
+
+def test_only_stated_features_the_mock_never_reaches_for_the_suggested_ones() -> None:
+    stated = ["weekly meal plans", "daily menu", "morning delivery routes"]
+    request = _suggested_request(features=stated, suggested_features=["live chat"])
+    out = handle(build_input(CATALOG, request))
+    labels = [o.label.removeprefix("[mock] ") for o in out.questions[0].options]
+    assert labels == stated and {o.basis for o in out.questions[0].options} == {"your_words"}
+
+
+def test_both_stated_and_suggested_own_first_then_suggestions_labelled() -> None:
+    request = _suggested_request(
+        features=["weekly meal plans", "daily menu"],
+        suggested_features=["daily menu", "delivery tracking", "pause a delivery"],
+    )
+    inp = build_input(CATALOG, request)
+    (q,) = handle(inp).questions
+    labels = [o.label.removeprefix("[mock] ") for o in q.options]
+    assert labels == ["weekly meal plans", "daily menu", "delivery tracking", "pause a delivery"]
+    assert [o.basis for o in q.options] == ["your_words", "your_words", "suggestion", "suggestion"]
+    (card,) = to_batch(CATALOG, handle(inp), request).cards()
+    assert validate_batch([card], _vctx(request)).rejected == []
+
+
+def _closing_card_with(options: list[tuple[str, str]], request: PlanRequest):  # type: ignore[no-untyped-def]
+    q = _example_output().questions[0]
+    from mde_compass.calls.plan_questions.schema import OptionWire
+
+    wire = [
+        OptionWire(label=label, description="", basis=basis, reason="") for label, basis in options
+    ]  # type: ignore[arg-type]
+    out = _example_output().model_copy(
+        update={"questions": [q.model_copy(update={"options": wire})]}
+    )
+    return to_batch(CATALOG, out, request).cards()[0]
+
+
+def test_an_option_built_from_a_suggested_feature_is_always_a_suggestion() -> None:
+    request = _suggested_request(features=["daily menu"], suggested_features=SUGGESTED)
+    card = _closing_card_with(
+        [
+            ("Daily menu", "your_words"),
+            ("Pausing a delivery", "your_words"),
+            ("Delivery tracking", "your_words"),
+        ],
+        request,
+    )
+    assert [o.basis for o in card.options] == ["your_words", "suggestion", "suggestion"]
+
+
+def test_suggested_features_fill_the_card_up_to_the_cap_but_invented_ones_stay_at_two() -> None:
+    request = _suggested_request(features=["daily menu"], suggested_features=SUGGESTED)
+    options = [
+        ("Daily menu", "your_words"),
+        ("Weekly meal plans", "suggestion"),
+        ("Pausing a delivery", "suggestion"),
+        ("Delivery tracking", "suggestion"),
+        ("Invented one", "suggestion"),
+        ("Invented two", "suggestion"),
+        ("Invented three", "suggestion"),
+    ]
+    card = _closing_card_with(options, request)
+    assert [o.label for o in card.options] == [
+        label for label, _ in options[:6]
+    ]  # third invented one dropped
+    assert validate_batch([card], _vctx(request)).rejected == []
+
+
+def _hand_built(request: PlanRequest, labels: list[tuple[str, str]]):  # type: ignore[no-untyped-def]
+    """A closing card with exactly these options, bypassing the adapter's own trimming."""
+    from mde_compass.domain.cards import CardOption
+
+    base = _closing_card_with([("Daily menu", "your_words")], request)
+    options = [
+        CardOption(id=chr(65 + i), label=label, basis=basis)  # type: ignore[arg-type]
+        for i, (label, basis) in enumerate(labels)
+    ]
+    return base.model_copy(update={"options": options})
+
+
+def _codes(card, request: PlanRequest) -> list[str]:  # type: ignore[no-untyped-def]
+    return [i.code for i in validate_batch([card], _vctx(request)).issues.get(card.id, [])]
+
+
+def test_with_nothing_stated_the_validator_allows_up_to_eight_suggestions() -> None:
+    request = _suggested_request(suggested_features=[*SUGGESTED, "live chat", "gift cards"])
+    five = [(label, "suggestion") for label in [*SUGGESTED, "live chat"]]
+    assert _codes(_hand_built(request, five), request) == []
+
+
+def test_but_invented_options_are_still_capped_at_two() -> None:
+    request = _suggested_request(suggested_features=SUGGESTED)
+    invented = [(f"Invented thing {n}", "suggestion") for n in ("one", "two", "three")]
+    assert "closing_suggestions" in _codes(_hand_built(request, invented), request)
+    two = [*invented[:2], (SUGGESTED[0], "suggestion")]
+    assert _codes(_hand_built(request, two), request) == []
+
+
+def test_with_three_features_stated_suggested_features_are_capped_at_two_too() -> None:
+    request = _suggested_request(
+        features=["kitchen schedule", "rider routes", "customer wallet"],
+        suggested_features=SUGGESTED,
+    )
+    own = [("Kitchen schedule", "your_words"), ("Rider routes", "your_words")]
+    two = [*own, (SUGGESTED[1], "suggestion"), (SUGGESTED[3], "suggestion")]
+    assert _codes(_hand_built(request, two), request) == []
+    three = [*two, (SUGGESTED[2], "suggestion")]
+    assert "closing_suggestions" in _codes(_hand_built(request, three), request)
+
+
+def test_a_suggestion_claiming_the_persons_words_is_refused_by_the_validator() -> None:
+    request = _suggested_request(features=["daily menu"], suggested_features=SUGGESTED)
+    lying = [
+        ("Daily menu", "your_words"),
+        (SUGGESTED[3], "your_words"),
+        (SUGGESTED[2], "suggestion"),
+    ]
+    assert "closing_option_source" in _codes(_hand_built(request, lying), request)
+
+
+async def test_the_fallback_uses_stated_then_suggested_features_and_only_then_the_registry_card() -> (
+    None
+):
+    gateway = ScriptedGateway(ProviderError("boom"))
+    adapter = PlanAdapter(CallRunner(gateway), CATALOG)
+    only_suggested = _suggested_request(suggested_features=SUGGESTED)
+    result = await adapter.plan(CTX, only_suggested)
+    (card,) = result.batch.cards()
+    assert result.used_fallback and card.fallback and card.origin == "closing"
+    assert card.type == "priority" and [o.label for o in card.options] == SUGGESTED
+    assert {o.basis for o in card.options} == {"suggestion"}
+    both = _suggested_request(
+        features=["my own menu"], suggested_features=["my own menu", *SUGGESTED]
+    )
+    (mixed,) = closing_fallback(CATALOG, both, batch_id="B", group_title="t").cards()
+    assert [o.label for o in mixed.options] == ["my own menu", *SUGGESTED]
+    assert [o.basis for o in mixed.options] == ["your_words", *["suggestion"] * 4]
+    too_few = _suggested_request(suggested_features=["only one", "only two"])
+    (registry,) = closing_fallback(CATALOG, too_few, batch_id="B", group_title="t").cards()
+    assert registry.type == CATALOG.slots["goals.primary"].fallback_card.type and registry.fallback

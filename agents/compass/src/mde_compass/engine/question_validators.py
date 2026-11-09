@@ -26,7 +26,9 @@ Rules (code: meaning)
 * ``closing_shape`` / ``closing_option_source`` / ``closing_suggestions`` (ADR 0016): the reserved last question is one
   ``priority`` card that serves ``scope.priority`` and ``goals.primary``, keeps its custom input, offers 3..8 options
   (``options_count``), every option is a candidate from the closing context (what the person said or what was assumed)
-  or labelled ``suggestion``, and at most two are suggestions. The project-term rule applies as everywhere.
+  or labelled ``suggestion``, at most two options are invented (outside every list), and at most
+  ``closing_suggestion_cap`` options are suggestions (two, or ``max(2, 8 - stated)`` when the person named fewer than
+  three features: the question is then completed from the suggested features). The project-term rule applies as everywhere.
 * Batch only: ``over_batch_size``, ``over_group_size``.
 
 Batch level: ``validate_batch`` also reports; ``project_term_share``, ``cross_idea_overlap`` measure specificity and
@@ -101,7 +103,9 @@ CLOSING_NEEDS: tuple[str, ...] = ("scope.priority", "goals.primary")
 CLOSING_MIN_OPTIONS = 3
 CLOSING_MAX_OPTIONS = 8
 CLOSING_MAX_SUGGESTIONS = 2
-"""Options a closing question may add that are not among the project's own candidates (labelled ``suggestion``)."""
+"""Options a closing question may INVENT (outside every list of the closing context), labelled ``suggestion``."""
+CLOSING_MIN_OWN_FEATURES = 3
+"""With fewer own features than this the question may be completed from the suggested features."""
 _QUESTION_MARKS = ("?", "？", "؟")
 
 # Leading wording beyond card_rules.yaml: the question pushes the user toward an answer.
@@ -240,9 +244,10 @@ class ValidationContext:
         None  # most questions this batch may hold (None: the largest policy batch)
     )
     max_per_group: int | None = None  # None: the policy's group size
-    closing_candidates: tuple[
-        str, ...
-    ] = ()  # closing question: the project's own candidates (empty: unchecked)
+    # closing question: the person's own candidates and the suggested features (both empty: unchecked)
+    closing_candidates: tuple[str, ...] = ()
+    closing_suggested: tuple[str, ...] = ()
+    closing_max_suggestions: int = CLOSING_MAX_SUGGESTIONS  # options that are not the person's own
 
     @classmethod
     def build(
@@ -272,6 +277,8 @@ class ValidationContext:
             hints=tuple(hints),
             batch_limit=batch_limit,
             closing_candidates=closing_candidates(closing),
+            closing_suggested=closing_suggested(closing),
+            closing_max_suggestions=closing_suggestion_cap(closing),
         )
 
     def effective_batch_limit(self) -> int:
@@ -366,6 +373,24 @@ def closing_candidates(closing: ClosingContext | None) -> tuple[str, ...]:
         return ()
     flat = (*closing.features, *closing.roles, *closing.goals, *closing.constraints)
     return tuple(dict.fromkeys(c.strip() for c in (*flat, *closing.assumptions) if c.strip()))
+
+
+def closing_suggested(closing: ClosingContext | None) -> tuple[str, ...]:
+    """The suggested features (typical for the kind of project, NOT stated by the person): options built from them
+    are labelled ``suggestion``."""
+    if closing is None:
+        return ()
+    return tuple(dict.fromkeys(c.strip() for c in closing.suggested_features if c.strip()))
+
+
+def closing_suggestion_cap(closing: ClosingContext | None) -> int:
+    """How many options of the closing question may be suggestions (not the person's own candidates): two, unless
+    the person named fewer than three features, when the question may be completed from the suggested features up
+    to eight options in all: ``max(2, 8 - stated candidates)``."""
+    if closing is None or len(closing.features) >= CLOSING_MIN_OWN_FEATURES:
+        return CLOSING_MAX_SUGGESTIONS
+    stated = len(closing.features) + len(closing.goals) + len(closing.constraints)
+    return max(CLOSING_MAX_SUGGESTIONS, CLOSING_MAX_OPTIONS - stated)
 
 
 def _content(text: str) -> frozenset[str]:
@@ -580,23 +605,32 @@ def _check_closing(card: Card, ctx: ValidationContext) -> list[Issue]:
                 f"the closing question needs {CLOSING_MIN_OPTIONS}..{CLOSING_MAX_OPTIONS} options, got {count}",
             )
         )
-    if ctx.closing_candidates:
-        outside = [o for o in card.options if not candidate_match(o.label, ctx.closing_candidates)]
-        unlabelled = [o.id for o in outside if o.basis != "suggestion"]
+    if ctx.closing_candidates or ctx.closing_suggested:
+        not_own = [o for o in card.options if not candidate_match(o.label, ctx.closing_candidates)]
+        unlabelled = [o.id for o in not_own if o.basis != "suggestion"]
         if unlabelled:
             issues.append(
                 Issue(
                     "closing_option_source",
-                    f"option {', '.join(unlabelled)} is not one of the project's own candidates "
+                    f"option {', '.join(unlabelled)} is not one of the person's own candidates "
                     "and is not labelled a suggestion",
                 )
             )
-        if len(outside) > CLOSING_MAX_SUGGESTIONS:
+        invented = [o for o in not_own if not candidate_match(o.label, ctx.closing_suggested)]
+        if len(invented) > CLOSING_MAX_SUGGESTIONS:
             issues.append(
                 Issue(
                     "closing_suggestions",
-                    f"{len(outside)} options are outside the project's own candidates; "
-                    f"at most {CLOSING_MAX_SUGGESTIONS} suggestions are allowed",
+                    f"{len(invented)} options are outside every candidate list; "
+                    f"at most {CLOSING_MAX_SUGGESTIONS} may be added",
+                )
+            )
+        if len(not_own) > ctx.closing_max_suggestions:
+            issues.append(
+                Issue(
+                    "closing_suggestions",
+                    f"{len(not_own)} options are suggestions; at most {ctx.closing_max_suggestions} "
+                    "are allowed here",
                 )
             )
     return issues

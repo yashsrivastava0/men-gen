@@ -5,8 +5,8 @@
   few most important open needs, every card flagged ``fallback=True`` / ``origin="fallback"``. Follow-up and
   simplify modes return nothing: the engine then assumes visibly and says so, instead of nagging.
 * ``closing_fallback`` is the same for the reserved last question (mode ``closing``): one priority card built from
-  the closing context's own features (and goals), or the registry card of ``goals.primary`` when the context has
-  too little. Flagged ``fallback=True`` and, unlike the cards above, ``origin="closing"``: it is still the closing
+  the closing context's own features (and goals), then its suggested features (labelled ``suggestion``), or the
+  registry card of ``goals.primary`` when the context has too little. Flagged ``fallback=True`` and, unlike the cards above, ``origin="closing"``: it is still the closing
   question.
 """
 
@@ -90,14 +90,20 @@ def _distinct(items: list[str]) -> list[str]:
 def closing_fallback(
     catalog: Catalog, request: PlanRequest, *, batch_id: str, group_title: str
 ) -> PlannedBatch:
-    """The last question without the model: a priority card from the closing context's own features (and goals,
-    when features alone are too few), or the registry card for ``goals.primary``. Flagged, ``origin="closing"``."""
+    """The last question without the model: a priority card from the closing context's own features and goals, then
+    its suggested features (labelled ``suggestion``), or the registry card for ``goals.primary`` when that gives
+    fewer than three options. Flagged, ``origin="closing"``."""
     language = request.language if request.language in ("en", "hi") else "en"
     needs = [n for n in CLOSING_NEEDS if n in catalog.slots]
     closing = request.closing
-    labels = _distinct(
-        [*(closing.features if closing else []), *(closing.goals if closing else [])]
-    )
+    own = _distinct([*(closing.features if closing else []), *(closing.goals if closing else [])])
+    stated = {tuple(tokenize(label)) for label in own}
+    suggested = [
+        label
+        for label in _distinct(closing.suggested_features if closing else [])
+        if tuple(tokenize(label)) not in stated
+    ]
+    labels = [*own, *suggested]
     number = request.next_card_n
     card_id = f"Q-{number:03d}"
     if len(labels) >= CLOSING_MIN_OPTIONS:
@@ -110,7 +116,11 @@ def closing_fallback(
                 "type": "priority",
                 "slots": needs,
                 "options": [
-                    CardOption(id=chr(ord("A") + i), label=label, basis="suggestion")
+                    CardOption(
+                        id=chr(ord("A") + i),
+                        label=label,
+                        basis="your_words" if i < len(own) else "suggestion",
+                    )
                     for i, label in enumerate(labels[:CLOSING_MAX_OPTIONS])
                 ],
                 "custom_input": CustomInput(

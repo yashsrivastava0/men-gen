@@ -31,6 +31,8 @@ from mde_compass.engine.question_validators import (
     CLOSING_NEEDS,
     candidate_match,
     closing_candidates,
+    closing_suggested,
+    closing_suggestion_cap,
 )
 from mde_core.redact import redact_text
 
@@ -113,6 +115,7 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
         next_card_n=request.next_card_n,
         closing=ClosingWire(
             features=_clean_list(closing.features if closing else []),
+            suggested_features=_clean_list(closing.suggested_features if closing else []),
             roles=_clean_list(closing.roles if closing else []),
             goals=_clean_list(closing.goals if closing else []),
             constraints=_clean_list(closing.constraints if closing else []),
@@ -176,20 +179,25 @@ def _card(
 
 def _closing_card(catalog: Catalog, q: QuestionWire, *, number: int, request: PlanRequest) -> Card:
     """The reserved last question: always a priority card with its own two needs and the custom input on. Code, not
-    the model, says which options are the project's own: one that matches none of the closing candidates is a
-    suggestion whatever the model claimed, and suggestions beyond the cap are dropped (never fatal)."""
+    the model, says which options are the person's own: one that matches no own candidate is a suggestion whatever
+    the model claimed (one built from the suggested features, or an invented one); invented ones beyond two and
+    suggestions beyond the cap are dropped (never fatal)."""
     candidates = closing_candidates(request.closing)
+    suggested = closing_suggested(request.closing)
+    cap = closing_suggestion_cap(request.closing)
     options: list[CardOption] = []
-    suggested = 0
+    not_own = invented = 0
     for o in q.options:
         basis = o.basis
-        if candidates:
+        if candidates or suggested:
             if candidate_match(o.label, candidates):
                 basis = "suggestion" if o.basis == "typical" else o.basis
             else:
-                if suggested >= CLOSING_MAX_SUGGESTIONS:
+                from_list = candidate_match(o.label, suggested)
+                if not_own >= cap or (not from_list and invented >= CLOSING_MAX_SUGGESTIONS):
                     continue
-                suggested += 1
+                not_own += 1
+                invented += 0 if from_list else 1
                 basis = "suggestion"
         options.append(
             CardOption(

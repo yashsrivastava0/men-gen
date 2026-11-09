@@ -407,7 +407,10 @@ class ClosingContext(Strict):
     """What the closing planner mode is built from (ADR 0016): short statements taken from the slots and the
     ledger, so the last question can offer this project's own candidates, not a generic list."""
 
-    features: list[str] = Field(default_factory=list)  # names, stated first and suggested after
+    features: list[str] = Field(default_factory=list)  # the person's own features, by name
+    suggested_features: list[str] = Field(
+        default_factory=list
+    )  # from the domain hypothesis: label as suggestions
     roles: list[str] = Field(default_factory=list)
     goals: list[str] = Field(default_factory=list)
     constraints: list[str] = Field(default_factory=list)
