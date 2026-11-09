@@ -601,11 +601,16 @@ class InterviewController:
             return None
         labels, _ = self._labels_and_text(item)
         quote = " / ".join(labels)
+        lang = card.language if card.language in ("en", "hi") else "en"
         return TurnUnderstanding(
             intent="answer",
             slot_updates=[
                 SlotUpdate(
-                    slot_id=w.slot_id, value=w.value, quote=quote, confidence=0.9, basis="user_text"
+                    slot_id=w.slot_id,
+                    value=self.svc._label_codes(w.slot_id, w.value, lang),
+                    quote=quote,
+                    confidence=0.9,
+                    basis="user_text",
                 )
                 for w in writes
             ],
