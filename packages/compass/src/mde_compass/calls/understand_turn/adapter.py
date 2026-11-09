@@ -119,7 +119,8 @@ def to_domain(
                 remove=u.remove,
             )
         )
-    flags = list(dict.fromkeys([*out.safety_flags, *(["secret"] if secret else [])]))
+    flag_list: list[str] = [*out.safety_flags, *(["secret"] if secret else [])]
+    flags = list(dict.fromkeys(flag_list))
     return TurnUnderstanding(
         intent=out.intent,
         slot_updates=updates,

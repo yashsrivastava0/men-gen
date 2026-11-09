@@ -40,6 +40,9 @@ _JAISA = re.compile(
 _JAISA_DEVA = re.compile(
     r"(?<![ऀ-ॿ])([ऀ-ॿ]{2,30}(?: [ऀ-ॿ]{2,30})?)\s{1,3}(?:जैसा|जैसे|जैसी|की तरह)(?![ऀ-ॿ])"
 )
+_BRAND = re.compile(
+    rf"(?<!\w)(?i:called|named|name is|name it|call it|naam)\s{{1,4}}[\"“']?({_WORD}(?:\s{{1,3}}{_WORD}){{0,2}})"
+)
 _MAX_QUOTE = 200
 
 
@@ -208,6 +211,14 @@ def _references(text: str) -> tuple[list[str], list[_Upd]]:
     return names, [_Upd("scope.references", value, quotes[0], 0.7)]
 
 
+def _brand(text: str) -> list[_Upd]:
+    """ "called Fresh Bake": the user's own name for the app (capitalised words only)."""
+    m = _BRAND.search(text)
+    if m is None:
+        return []
+    return [_Upd("brand.name", m.group(1).strip(), m.group(0).strip(), 0.7)]
+
+
 def _enum_phrases(text: str, catalog: Catalog) -> list[_Upd]:
     lex = lx.load_lexicon()
     out: list[_Upd] = []
@@ -317,6 +328,7 @@ def extract_updates(
     refs, ref_updates = _references(text)
     updates += ref_updates
     updates += _enum_phrases(text, catalog)
+    updates += _brand(text)
     updates += _summary(text, inp, is_question)
     seen: set[tuple[str, bool]] = set()
     unique: list[_Upd] = []
@@ -370,6 +382,14 @@ def _intent(
         return "price_or_time", 0.8
     if lx.has_phrase(text, intents["tech_choice"]) and not updates:
         return "tech_choice", 0.75
+    toks = norm.split()
+    contrast = {"but", "lekin", "magar", "par", "लेकिन", "मगर", "पर"}
+    if (
+        toks
+        and (lx.is_exact(toks[0], "confirm") or toks[0] in {"ok", "okay"})
+        and contrast & set(toks[1:])
+    ):
+        return "change_request", 0.6  # "ok but change the colour" is not a plain yes
     has_state = any(s.value_json not in ("null", "", "[]") for s in inp.current_slots)
     if lx.has_phrase(text, intents["change_request"]) and (has_state or updates):
         return "change_request", 0.7
