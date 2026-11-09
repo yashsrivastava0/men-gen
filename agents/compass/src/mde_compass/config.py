@@ -101,7 +101,7 @@ class InterviewPolicy:
     # ``legacy`` is the frame-driven path kept only while the planner path is built (D-090); removed in phase 8.
     engine: InterviewEngine = "planner"
     # question budgets (follow-ups included)
-    quick_max: int = 5
+    quick_max: int = 7  # the tier targets (ADR 0016); the closing question is one of them
     standard_max: int = 12
     thorough_max: int = 25
     # hard caps (ADR 0016): never exceeded, counting follow-ups, the gap question and the closing question. The
@@ -111,13 +111,15 @@ class InterviewPolicy:
     standard_hard: int = 15
     thorough_hard: int = 30
     # first batch sizes (min, max) by budget; later batches of the thorough budget are 6 to 8
-    quick_first_batch: tuple[int, int] = (4, 5)
-    standard_first_batch: tuple[int, int] = (5, 7)
-    thorough_batch: tuple[int, int] = (6, 8)
-    groups_per_batch: tuple[int, int] = (2, 3)
+    quick_first_batch: tuple[int, int] = (3, 3)  # every batch of the tier, not only the first
+    standard_first_batch: tuple[int, int] = (4, 4)
+    thorough_batch: tuple[int, int] = (5, 5)
+    groups_per_batch: tuple[int, int] = (1, 2)
     questions_per_group: tuple[int, int] = (3, 4)
     # follow-ups
-    followup_max_depth: int = 2  # per need
+    followup_max_depth: int = (
+        1  # per need: a follow-up is never followed up (a second thin answer is assumed)
+    )
     followup_max_fraction: float = 0.4  # follow-ups at most this share of the base questions
     # stopping
     fatigue_streak: int = 2  # consecutive skips / "you decide" / very short answers

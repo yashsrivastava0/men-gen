@@ -360,7 +360,7 @@ def check_slot(
 
 
 async def session_budget(conv: Conversation) -> tuple[str, int]:
-    """The interview budget of a planner session (name and most questions, follow-ups included)."""
+    """The interview tier of a planner session (name and its HARD cap: the most questions it may ever ask)."""
     raw = await conv.brief()
     meta = cast(dict[str, Any], raw.get("meta") or {})
     block = cast(dict[str, Any], meta.get("interview") or {})
@@ -369,7 +369,7 @@ async def session_budget(conv: Conversation) -> tuple[str, int]:
     if name not in ("quick", "standard", "thorough"):
         name = "standard"
     policy = conv.service.config.interview
-    return name, int(policy.budget_max(cast(Any, name)))
+    return name, int(policy.hard_cap(cast(Any, name)))
 
 
 # ----------------------------------------------------------------------------------------- expectations
@@ -478,7 +478,7 @@ async def check_expect(
             engine == "planner"
         ):  # the planner path is governed by the interview budget, not a frame count
             name, limit = await session_budget(conv)
-            why = f" (the {name} budget)"
+            why = f" (the {name} hard cap)"
         if total > limit:
             errs.append(f"at most {limit} questions in the whole session{why}; got {total}")
     if exp.approvable is not None:

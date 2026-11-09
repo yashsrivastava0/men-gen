@@ -2,7 +2,7 @@
 targets they measure.
 
 Legacy: the hard targets must hold today; goal targets the product does not meet yet are strict xfails that name
-the bug. Planner: the question targets are the interview budgets (Quick 5, Standard 12, Thorough 25) and the
+the bug. Planner: the question targets are the tier hard caps (Quick 10, Standard 15, Thorough 30) and the
 section-6 measures of build prompt 02; a target the planner path misses today is a strict xfail with its BUG or
 GAP number, so it turns red (and must be un-marked) the day it is met.
 """
@@ -123,6 +123,8 @@ def test_planner_personas_all_run_to_the_end(planner_report: dict[str, Any]) -> 
         "quote_verification_100",
         "followup_vague_ge_90",
         "followup_specific_zero",
+        "questions_within_budget",  # the hard cap of the tier (ADR 0016); BUG-19 is fixed by Room
+        "zero_repeated_questions",  # BUG-24: no repeats with the v2 batch sizes
     ],
 )
 def test_planner_hard_targets_hold(planner_report: dict[str, Any], target: str) -> None:
@@ -130,20 +132,11 @@ def test_planner_hard_targets_hold(planner_report: dict[str, Any], target: str) 
 
 
 PLANNER_GOALS = {
-    "questions_within_budget": (
-        "BUG-19",
-        "follow-ups planned while batch questions wait, and handoff-gap questions, are not charged to "
-        "the budget (Quick 6 of 5, Standard 13 to 16 of 12 and 28 for the answer-all expert, Thorough 27 of 25)",
-    ),
-    "zero_repeated_questions": (
-        "BUG-24",
-        "a flagged fallback batch repeats the registry cards of an earlier fallback verbatim",
-    ),
     "fallback_count_zero": (
         "GAP-1",
         "the mock planner no longer re-proposes a need an earlier batch asked (18 fallbacks across the ten mock "
-        "personas before, 13 now) but still ends in the flagged fallback when its fixed wording meets the "
-        "validators; the zero-fallback target is for scripted and live planners",
+        "personas before, 5 with the v2 tier sizes) but still ends in the flagged fallback when its fixed wording "
+        "meets the validators; the zero-fallback target is for scripted and live planners",
     ),
 }
 

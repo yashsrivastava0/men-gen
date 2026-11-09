@@ -5,7 +5,7 @@ engines: [planner]
 steps:
   - say: "I run a tiffin service and want an app for it"
     expect:
-      batch: {mode: initial, total_min: 5, total_max: 5}
+      batch: {mode: initial, total_min: 4, total_max: 4}
   - drive: {mode: skip, max: 12}
     expect:
       state: BRIEF_REVIEW

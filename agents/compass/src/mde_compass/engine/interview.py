@@ -22,7 +22,14 @@ from typing import TYPE_CHECKING, Any, Literal, cast
 from pydantic import JsonValue
 
 from mde_compass.domain.cards import Card, CardProgress
-from mde_compass.domain.events import CardEvent, Command, Notice, Progress, QuestionBatch
+from mde_compass.domain.events import (
+    BatchProgress,
+    CardEvent,
+    Command,
+    Notice,
+    Progress,
+    QuestionBatch,
+)
 from mde_compass.domain.interview import (
     BatchGroup,
     BatchRecord,
@@ -129,7 +136,18 @@ class InterviewController:
         return "standard"
 
     def budget_max(self, turn: _Turn) -> int:
+        """The tier's target (7 / 12 / 25): it counts the closing question."""
         return int(self.policy.budget_max(self.budget_name(turn)))
+
+    def hard_cap(self, turn: _Turn) -> int:
+        """The most questions this interview may ever put to the person (10 / 15 / 30; ADR 0016)."""
+        return int(self.policy.hard_cap(self.budget_name(turn)))
+
+    def room(self, turn: _Turn) -> interview_policy.Room:
+        """What is left of the tier's budget. Questions are charged when PLANNED (asked plus waiting)."""
+        return interview_policy.Room.of(
+            turn.memory.qa, target=self.budget_max(turn), hard_cap=self.hard_cap(turn)
+        )
 
     def ui_mode(self, turn: _Turn) -> Literal["one_at_a_time", "answer_all"]:
         block = turn.brief.meta.interview
@@ -152,7 +170,13 @@ class InterviewController:
         block = self.block(turn)
         mem = turn.memory
         turn.brief.meta.interview = refresh_block(
-            block.model_copy(update={"budget": self.budget_name(turn)}),
+            block.model_copy(
+                update={
+                    "budget": self.budget_name(turn),
+                    "target": self.budget_max(turn),
+                    "hard_cap": self.hard_cap(turn),
+                }
+            ),
             mem.qa,
             mem.facts,
             len(mem.batches),
@@ -216,19 +240,22 @@ class InterviewController:
         depth: int = 1,
         want: tuple[int, int] | None = None,
     ) -> PlanRequest:
-        asked = turn.memory.asked_count()
+        room = self.room(turn)
         budget = self.budget_name(turn)
-        remaining = max(0, self.budget_max(turn) - asked)
-        if want is not None:  # an explicit size (a handoff gap) may go one question past the budget
+        remaining = room.base_room + room.followup_room
+        if want is not None:  # an explicit size (a handoff gap): the caller checked the room
             lo, hi = want
         else:
-            lo, hi = interview_policy.batch_size_range(budget, asked, self.policy)
-            if mode in ("followup", "simplify"):
-                lo = hi = 1
-            hi = (
-                max(0, min(hi, remaining)) if mode != "deepen" else max(1, min(hi, remaining or hi))
-            )
+            lo, hi = interview_policy.batch_range(budget, self.policy)
+            if mode == "followup":
+                hi = min(1, room.followup_room)  # follow-ups use only the slack above the target
+            elif mode == "simplify":
+                hi = 1
+            else:
+                hi = room.batch_size(hi)
             lo = min(lo, hi)
+            if mode in ("followup", "simplify"):
+                lo = hi
         briefs = need_briefs(statuses, self.catalog, turn.lang)
         involved = [*(focus_needs or []), *(focus.need_ids if focus else [])] or [
             b.need_id for b in briefs if b.state in ("missing", "partial")
@@ -375,10 +402,8 @@ class InterviewController:
 
     # ----------------------------------------------------------------------------------- showing it
     def _progress(self, turn: _Turn) -> CardProgress:
-        asked = turn.memory.asked_count()
-        open_n = len(turn.memory.open_qa())
-        total = min(self.budget_max(turn), asked + max(open_n, 1))
-        return CardProgress(n=asked + 1, of_about=max(total, asked + 1))
+        n = turn.memory.asked_count() + 1
+        return CardProgress(n=n, of_about=max(self.budget_max(turn), n))
 
     def _emit_batch(self, turn: _Turn, batch: PlannedBatch) -> None:
         cards = batch.cards()
@@ -392,7 +417,20 @@ class InterviewController:
                 groups=batch.groups,
                 total=len(cards),
                 answered=0,
+                progress=self._batch_progress(
+                    turn, closing=any(c.origin == "closing" for c in cards)
+                ),
             )
+        )
+
+    def _batch_progress(self, turn: _Turn, *, closing: bool = False) -> BatchProgress:
+        room = self.room(turn)
+        return BatchProgress(
+            tier=self.budget_name(turn),
+            target=room.target,
+            hard_cap=room.hard_cap,
+            committed=room.committed,
+            closing=closing,
         )
 
     def _show(self, turn: _Turn, qa: QaRecord, *, emit_card: bool = True) -> Card:
@@ -514,6 +552,7 @@ class InterviewController:
             user_said_enough=said_enough,
             fatigue_flag=interview_policy.fatigue(self._history(turn), self.policy),
             policy=self.policy,
+            room=self.room(turn),
         )
         if decision.stop:
             self.finish(turn, decision.reason, decision.remaining_needs_to_assume)
@@ -847,8 +886,9 @@ class InterviewController:
         """One targeted follow-up where a high-impact need is still partial or the answer was vague (the policy
         decides; a second vague answer is assumed visibly instead of nagging)."""
         mem = turn.memory
-        base = mem.asked_count(origins=("planner", "fallback"))
-        total = mem.asked_count(origins=("followup",))
+        room = self.room(turn)
+        base = room.base
+        total = room.followups
         used = counts_by_need(mem.qa, followups_only=True)
         asked_followup = 0
         for item in items:
@@ -869,6 +909,8 @@ class InterviewController:
                     high_impact_at=self.svc.config.questions.high_impact_at,
                     depth=card.depth,
                 )
+                if decision.action == "follow_up" and asked_followup >= room.followup_room:
+                    decision = interview_policy.FollowupDecision("assume", "no follow-up room left")
                 if decision.action == "follow_up" and asked_followup < 2:
                     labels, text = self._labels_and_text(item)
                     focus = AnswerFocus(
@@ -1235,6 +1277,8 @@ class InterviewController:
 
     def set_budget(self, turn: _Turn, name: BudgetName) -> None:
         turn.brief.meta.plan = self.svc._plan(turn).model_copy(update={"interview_budget": name})
+        block = self.block(turn)
+        turn.brief.meta.interview = block.model_copy(update={"tier_set": True})
         self.touch(turn)
 
 

@@ -964,8 +964,8 @@ def test_batch_f_plays_both_interviews_with_the_planted_turns(f_report: dict[str
         assert {a["kind"] for a in s["answers"]} >= {"tap", "text", "skip", "you_decide"}
         assert [m["tag"] for m in s["messages"]] == ["pivot"]
         assert (
-            15 <= len(s["answers"]) <= 25
-        )  # the thorough budget in mock mode ends at its 25 questions
+            15 <= len(s["answers"]) <= 30
+        )  # the Thorough tier: 25 planned, follow-ups may use the slack up to the hard cap of 30
         assert s["brief"]["domain_facts"] and s["facts"]
 
 
@@ -1301,10 +1301,10 @@ def test_the_user_presses_ask_me_more_when_the_engine_ends_before_the_planted_tu
     sdef = lb.load_batch("F").sessions[0].model_copy(update={"budget": "quick", "ask_more_max": 2})
     report = run(lb.load_batch("F").model_copy(update={"sessions": (sdef,)}))
     session = report["sessions"][0]
-    assert [m["tag"] for m in session["messages"]] == [
-        "ask_more",
-        "pivot",
-    ]  # the pivot turn was reached
+    tags = [m["tag"] for m in session["messages"]]
+    # "Ask me more" was pressed (Quick ends after 7 questions; with 3-question batches it may take a second press)
+    # and the pivot turn was reached
+    assert tags[0] == "ask_more" and tags[-1] == "pivot" and tags.count("ask_more") <= 2
     quiet = sdef.model_copy(update={"ask_more_max": 0})
     plain = run(lb.load_batch("F").model_copy(update={"sessions": (quiet,)}))
     assert len(session["answers"]) >= len(plain["sessions"][0]["answers"])

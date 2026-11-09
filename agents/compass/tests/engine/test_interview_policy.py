@@ -11,7 +11,9 @@ from mde_compass.domain.cards import Card
 from mde_compass.domain.interview import NeedState, NeedStatus, QaRecord
 from mde_compass.engine.interview_policy import (
     AnswerSignal,
+    Room,
     StopDecision,
+    batch_range,
     batch_size_range,
     fatigue,
     followup_cap,
@@ -110,10 +112,12 @@ def test_second_thin_answer_is_assumed_not_chased() -> None:
 
 
 def test_depth_cap() -> None:
-    assert followup_decision(need(), ["vague"], 0, 0, 5, POLICY, depth=1).action == "follow_up"
-    assert followup_decision(need(), ["vague"], 0, 0, 5, POLICY, depth=2).action == "assume"
-    tight = InterviewPolicy(followup_max_depth=1)
-    assert followup_decision(need(), ["vague"], 0, 0, 5, tight, depth=1).action == "assume"
+    # ADR 0016: a follow-up is never followed up (depth 1); a second thin answer is assumed visibly
+    assert followup_decision(need(), ["vague"], 0, 0, 5, POLICY, depth=0).action == "follow_up"
+    assert followup_decision(need(), ["vague"], 0, 0, 5, POLICY, depth=1).action == "assume"
+    deeper = InterviewPolicy(followup_max_depth=2)
+    assert followup_decision(need(), ["vague"], 0, 0, 5, deeper, depth=1).action == "follow_up"
+    assert followup_decision(need(), ["vague"], 0, 0, 5, deeper, depth=2).action == "assume"
 
 
 def test_total_followup_cap_is_ceil_of_the_fraction_of_base_questions() -> None:
@@ -256,7 +260,7 @@ def test_user_enough_and_fatigue_stop_and_list_what_to_assume() -> None:
 
 
 def test_budget_reached_per_budget() -> None:
-    for name, limit in (("quick", 5), ("standard", 12), ("thorough", 25)):
+    for name, limit in (("quick", 7), ("standard", 12), ("thorough", 25)):
         assert not stop(budget_name=name, asked_total=limit - 1).stop
         d = stop(budget_name=name, asked_total=limit)
         assert d.stop and d.reason == "budget_reached"
@@ -286,31 +290,44 @@ def test_no_musts_means_coverage_is_trivially_reached() -> None:
 
 # ------------------------------------------------------------------------------------------ batch size
 def test_first_batch_sizes() -> None:
-    assert batch_size_range("quick", 0, POLICY) == (4, 5)
-    assert batch_size_range("standard", 0, POLICY) == (5, 7)
-    assert batch_size_range("thorough", 0, POLICY) == (6, 8)
-    assert [next_batch_size(b, 0, POLICY) for b in ("quick", "standard", "thorough")] == [5, 7, 8]
+    assert batch_size_range("quick", 0, POLICY) == (3, 3)
+    assert batch_size_range("standard", 0, POLICY) == (4, 4)
+    assert batch_size_range("thorough", 0, POLICY) == (5, 5)
+    assert [next_batch_size(b, 0, POLICY) for b in ("quick", "standard", "thorough")] == [3, 4, 5]
+    assert [batch_range(b, POLICY) for b in ("quick", "standard", "thorough")] == [
+        (3, 3),
+        (4, 4),
+        (5, 5),
+    ]
 
 
 def test_later_batches_are_clipped_to_the_budget() -> None:
-    assert next_batch_size("standard", 7, POLICY) == 5  # 12 - 7
-    assert batch_size_range("standard", 7, POLICY) == (5, 5)
+    assert next_batch_size("standard", 9, POLICY) == 3  # 12 - 9
+    assert batch_size_range("standard", 9, POLICY) == (3, 3)
     assert (
-        next_batch_size("thorough", 16, POLICY) == 8
+        next_batch_size("thorough", 16, POLICY) == 5
         and next_batch_size("thorough", 24, POLICY) == 1
     )
-    assert batch_size_range("thorough", 20, POLICY) == (5, 5)
-    assert next_batch_size("quick", 5, POLICY) == 0 and next_batch_size("standard", 40, POLICY) == 0
-    assert batch_size_range("quick", 5, POLICY) == (0, 0)
-    assert next_batch_size("quick", 3, POLICY) == 2
+    assert batch_size_range("thorough", 22, POLICY) == (3, 3)
+    assert next_batch_size("quick", 7, POLICY) == 0 and next_batch_size("standard", 40, POLICY) == 0
+    assert batch_size_range("quick", 7, POLICY) == (0, 0)
+    assert next_batch_size("quick", 5, POLICY) == 2
 
 
-def test_thorough_runs_in_batches_of_six_to_eight() -> None:
+def test_thorough_runs_in_batches_of_five() -> None:
     asked, sizes = 0, []
     while (n := next_batch_size("thorough", asked, POLICY)) > 0:
         sizes.append(n)
         asked += n
-    assert asked == 25 and sizes == [8, 8, 8, 1]
+    assert asked == 25 and sizes == [5, 5, 5, 5, 5]
+
+
+def test_with_a_room_the_budget_is_reached_when_only_the_closing_place_is_left() -> None:
+    quick = Room(target=7, hard_cap=10)
+    assert not stop(budget_name="quick", asked_total=6, room=quick.add(base=5)).stop
+    d = stop(budget_name="quick", asked_total=3, room=quick.add(base=6))  # waiting questions count
+    assert d.stop and d.reason == "budget_reached"
+    # once the closing question is committed the engine finishes by itself; stop_decision is not asked
 
 
 @settings(max_examples=100)

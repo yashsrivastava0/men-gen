@@ -1,6 +1,8 @@
 id: SB-QP-04-b
 title: The same long text typed as the answer to a card also closes the other needs it answers
 tags: [planner, facts, monologue]
+# this scenario is about dropping waiting questions: it keeps a 5 question batch (the tier sizes are pinned by SB-QP-03)
+policy: {standard_first_batch: [5, 5]}
 engines: [planner]
 steps:
   - say: "I run a tiffin service and want an app for it"

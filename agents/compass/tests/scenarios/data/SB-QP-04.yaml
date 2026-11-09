@@ -1,6 +1,8 @@
 id: SB-QP-04
 title: A long message that closes several needs makes the questions still waiting for them disappear
 tags: [planner, facts, monologue]
+# this scenario is about dropping waiting questions: it keeps a 5 question batch (the tier sizes are pinned by SB-QP-03)
+policy: {standard_first_batch: [5, 5]}
 engines: [planner]
 steps:
   - say: "I run a tiffin service and want an app for it"

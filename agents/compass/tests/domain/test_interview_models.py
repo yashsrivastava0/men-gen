@@ -198,9 +198,10 @@ def test_interview_policy_budgets_and_defaults() -> None:
     assert (
         policy.engine == "planner"
     )  # switched on in phase 7; "legacy" stays as a rollback until phase 8
-    assert [policy.budget_max(b) for b in ("quick", "standard", "thorough")] == [5, 12, 25]
+    assert [policy.budget_max(b) for b in ("quick", "standard", "thorough")] == [7, 12, 25]
+    assert [policy.hard_cap(b) for b in ("quick", "standard", "thorough")] == [10, 15, 30]
     assert InterviewPolicy(engine="legacy").engine == "legacy"
-    assert 0 < policy.followup_max_fraction < 1 and policy.followup_max_depth == 2
+    assert 0 < policy.followup_max_fraction < 1 and policy.followup_max_depth == 1
     assert (
         CompassConfig().context.fact_digest * 4 < 20_000
     )  # under the gateway's untrusted-input cap

@@ -30,8 +30,9 @@ from mde_compass.scenarios.runner import (
     question_cards,
 )
 
-BUDGET_QUESTIONS_MAX: dict[str, int] = {"quick": 5, "standard": 12, "thorough": 25}
-"""The planner engine's question budgets (follow-ups included); the same numbers as ``InterviewPolicy``."""
+BUDGET_QUESTIONS_MAX: dict[str, int] = {"quick": 10, "standard": 15, "thorough": 30}
+"""The planner engine's HARD caps (follow-ups, gap and closing question included; ADR 0016): the same numbers as
+``InterviewPolicy.hard_cap``. The tier targets (7 / 12 / 25) are what the interview plans for; follow-ups use the slack."""
 PROJECT_TERM_SHARE_MIN = 0.90
 FOLLOWUP_VAGUE_MIN = 0.90
 QUESTIONS_MEDIAN_MAX = 7

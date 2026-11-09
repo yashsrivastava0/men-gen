@@ -6,7 +6,7 @@ steps:
   - command: budget_quick
   - say: "I run a tiffin service and want an app for it"
     expect:
-      batch: {mode: initial, total_min: 5, total_max: 5}
+      batch: {mode: initial, total_min: 3, total_max: 3}
       interview: {budget: quick}
   - drive: {mode: tap_recommended, max: 14}
     expect:

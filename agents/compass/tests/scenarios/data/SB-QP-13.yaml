@@ -1,7 +1,9 @@
 id: SB-QP-13
 title: Duplicates, generic, technology and over-long batches are cut by code and auditor, repaired once, truncated, extras kept
 tags: [planner, validators, auditor, repair, backlog]
-policy: {repair_only_when_short: false}  # this scenario is about the repair round
+# this scenario is about the pipeline (cuts, repair round, truncation) at a 5 to 7 question batch in 2 to 3 groups,
+# so it keeps the old Standard batch shape; the tier sizes are pinned by SB-QP-03 and the room tests
+policy: {repair_only_when_short: false, standard_first_batch: [5, 7], groups_per_batch: [2, 3]}
 engines: [planner]
 steps:
   - say: "I want an app for my tiffin delivery service in Pune"

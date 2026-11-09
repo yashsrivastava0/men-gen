@@ -578,7 +578,7 @@ def test_group_and_batch_size_limits() -> None:
     two_groups = _distinct(8)
     for i, c in enumerate(two_groups):
         two_groups[i] = c.model_copy(update={"group_id": f"G-{i // 4}"})
-    assert len(validate_batch(two_groups, ctx()).accepted) == 8
+    assert len(validate_batch(two_groups, ctx(batch_limit=8)).accepted) == 8
     capped = validate_batch(two_groups, ctx(batch_limit=5))
     assert len(capped.accepted) == 5
     assert {i.code for i in capped.issues["Q-006"]} == {"over_batch_size"}
@@ -596,7 +596,7 @@ def test_default_batch_limit_is_the_largest_policy_batch() -> None:
     nine = [*_distinct(8), extra]
     for i, c in enumerate(nine):
         nine[i] = c.model_copy(update={"group_id": f"G-{i // 3}"})
-    assert len(validate_batch(nine, ctx()).accepted) == 8
+    assert len(validate_batch(nine, ctx()).accepted) == 5  # the largest tier batch (Thorough: 5)
 
 
 def test_context_build_helper() -> None:

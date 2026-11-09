@@ -157,6 +157,7 @@ def stop_decision(
     user_said_enough: bool,
     fatigue_flag: bool,
     policy: InterviewPolicy,
+    room: Room | None = None,
 ) -> StopDecision:
     """Whether to stop asking. Order: the user said enough, fatigue, budget reached, coverage reached.
 
@@ -170,8 +171,12 @@ def stop_decision(
         reason = "user_enough"
     elif fatigue_flag:
         reason = "fatigue"
-    elif asked_total >= policy.budget_max(_budget(budget_name)):
-        reason = "budget_reached"
+    elif (
+        room.closing_due
+        if room is not None
+        else asked_total >= policy.budget_max(_budget(budget_name))
+    ):
+        reason = "budget_reached"  # with a Room: every base place is committed, only the closing question is left
     else:
         musts = [s for s in statuses.values() if s.level == "must"]
         done = all(s.state in ("satisfied", "assumed") for s in musts)
@@ -272,6 +277,15 @@ def batch_size_range(
         return (0, 0)
     high = min(high, left)
     return (min(low, high), high)
+
+
+def batch_range(budget_name: str, policy: InterviewPolicy) -> tuple[int, int]:
+    """(min, max) questions of one batch of this tier (3 / 4 / 5), before the room clips it (ADR 0016)."""
+    return {
+        "quick": policy.quick_first_batch,
+        "standard": policy.standard_first_batch,
+        "thorough": policy.thorough_batch,
+    }[_budget(budget_name)]
 
 
 def next_batch_size(budget_name: str, asked_total: int, policy: InterviewPolicy) -> int:
