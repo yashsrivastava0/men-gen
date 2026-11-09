@@ -14,8 +14,9 @@ committed content change is a new version.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import contextvars
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
 from typing import Any, cast
@@ -120,6 +121,17 @@ from mde_core.logging import get_logger
 log = get_logger(__name__)
 
 _TENANT: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_tenant", default=None)
+
+
+@contextlib.contextmanager
+def tenant_scope(tenant: str) -> Iterator[None]:
+    """Bind the tenant for call-log writes made outside ``handle_event`` (smoke and eval drivers)."""
+    token = _TENANT.set(tenant)
+    try:
+        yield
+    finally:
+        _TENANT.reset(token)
+
 
 WELCOME_FRAME = "welcome"
 VARIANTS_FRAME = "change_variants"
