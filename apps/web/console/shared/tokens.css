@@ -1,66 +1,66 @@
 /* Mobigen console design tokens. Calm neutral palette, one accent, 8px grid. Light by default; dark via
    prefers-color-scheme or the data-theme attribute on <html>. Shared by every agent screen. */
 :root {
-  --bg: #f6f7f9;
+  --bg: #f8fafc;
   --surface: #ffffff;
-  --surface-2: #f0f2f5;
-  --border: #d9dde3;
-  --text: #1c2430;
-  --muted: #5b6676;
-  --accent: #2457d6;
+  --surface-2: #f1f5f9;
+  --border: #dbe2ea;
+  --text: #0f172a;
+  --muted: #64748b;
+  --accent: #2563eb;
   --accent-text: #ffffff;
-  --accent-soft: #e6edff;
-  --ok: #1d7a46;
-  --ok-soft: #e2f4ea;
-  --warn: #8a5a00;
-  --warn-soft: #fdf0d5;
-  --danger: #b3261e;
-  --danger-soft: #fbe6e4;
-  --shadow: 0 1px 2px rgba(20, 30, 50, 0.08), 0 4px 16px rgba(20, 30, 50, 0.06);
+  --accent-soft: #eff6ff;
+  --ok: #15803d;
+  --ok-soft: #ecfdf5;
+  --warn: #b45309;
+  --warn-soft: #fffbeb;
+  --danger: #dc2626;
+  --danger-soft: #fef2f2;
+  --shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 14px rgba(15, 23, 42, 0.05);
   --radius: 12px;
   --radius-sm: 8px;
   --s1: 8px;
   --s2: 16px;
   --s3: 24px;
   --s4: 32px;
-  --font: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", Arial, sans-serif;
-  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg: #12161c;
-    --surface: #1a2028;
-    --surface-2: #222a35;
-    --border: #323c4a;
-    --text: #e8ecf2;
-    --muted: #a0abbb;
-    --accent: #7ea2ff;
-    --accent-text: #0d1526;
-    --accent-soft: #1f2c4a;
-    --ok: #6fd39a;
-    --ok-soft: #173325;
-    --warn: #f0c066;
-    --warn-soft: #3a2d12;
-    --danger: #ff9a92;
-    --danger-soft: #3d1f1d;
-    --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+    --bg: #0b0f19;
+    --surface: #141a29;
+    --surface-2: #1d2438;
+    --border: #2b354d;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+    --accent: #3b82f6;
+    --accent-text: #ffffff;
+    --accent-soft: #1e293b;
+    --ok: #22c55e;
+    --ok-soft: #052e16;
+    --warn: #f59e0b;
+    --warn-soft: #451a03;
+    --danger: #ef4444;
+    --danger-soft: #450a0a;
+    --shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.5);
   }
 }
 :root[data-theme="dark"] {
-  --bg: #12161c;
-  --surface: #1a2028;
-  --surface-2: #222a35;
-  --border: #323c4a;
-  --text: #e8ecf2;
-  --muted: #a0abbb;
-  --accent: #7ea2ff;
-  --accent-text: #0d1526;
-  --accent-soft: #1f2c4a;
-  --ok: #6fd39a;
-  --ok-soft: #173325;
-  --warn: #f0c066;
-  --warn-soft: #3a2d12;
-  --danger: #ff9a92;
-  --danger-soft: #3d1f1d;
-  --shadow: 0 1px 2px rgba(0, 0, 0, 0.4), 0 4px 16px rgba(0, 0, 0, 0.3);
+  --bg: #0b0f19;
+  --surface: #141a29;
+  --surface-2: #1d2438;
+  --border: #2b354d;
+  --text: #f1f5f9;
+  --muted: #94a3b8;
+  --accent: #3b82f6;
+  --accent-text: #ffffff;
+  --accent-soft: #1e293b;
+  --ok: #22c55e;
+  --ok-soft: #052e16;
+  --warn: #f59e0b;
+  --warn-soft: #451a03;
+  --danger: #ef4444;
+  --danger-soft: #450a0a;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.6), 0 4px 16px rgba(0, 0, 0, 0.5);
 }

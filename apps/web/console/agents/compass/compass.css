@@ -327,3 +327,13 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
   .progress-line { margin-left: 0; flex-basis: 100%; }
   .qa-depth-2, .qa-depth-3 { margin-left: var(--s2); }
 }
+
+/* Telemetry, diagnostics & flight recorder */
+.diag-actions { display: flex; gap: var(--s1); margin-bottom: var(--s2); }
+.diag-table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 12px; margin-top: var(--s1); }
+.diag-table th, .diag-table td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); }
+.status-pill { display: inline-block; padding: 2px 6px; border-radius: var(--radius-sm); font-size: 11px; font-weight: 700; }
+.status-ok { background: var(--ok-soft); color: var(--ok); }
+.status-err { background: var(--danger-soft); color: var(--danger); }
+.status-warn { background: var(--warn-soft); color: var(--warn); }
+

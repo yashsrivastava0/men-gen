@@ -55,6 +55,17 @@ The AI-planned interview (build prompt 02, section 2.7) is all front end: the ag
 | Brief row highlight | `.brow.pulse`, `@keyframes row-pulse`, `highlightChanged()` | after each turn the view is refreshed; rows with `changed` pulse once per Brief hash (off under `prefers-reduced-motion`) and the first one is scrolled into view on a wide screen |
 | Questions and answers | `#qa-section`, `#qa-list`, `.qa-item`, `.qa-status`, `.qa-editor`; chat history in `#history-chat` (History tab) | `GET /qa` on tab open and after each turn: question, answer in plain words, status chip, follow-up indent, fallback badge, the facts it produced; "Edit" opens an inline editor by question kind and "Save" calls `window.compassSend.answerEdit(cardId, value, custom)`, then the toast "Updated: your Brief and the next questions will follow" |
 | Details we captured | the `details` section of the view model | rendered by the generic section renderer: server order and title, rows grouped under their `group` heading, no Edit button because `editable` is false |
+| Developer & Diagnostics Drawer | `#dev-drawer`, `#btn-dev`, `#btn-copy-claude` | Developer tools with real-time HTTP network flight recorder (`state.networkTrace`), SSE event timeline (`state.devEvents`), raw state inspector, and LLM calls log. Includes a 1-click "Copy for Claude Code" action that exports a prompt-ready markdown report with environment state, last error details, recent API calls, and recent SSE events for instant debugging by Claude Code or Codex. |
+
+## Guide for Adding Future Agent Static Frontends
+
+When engineering new agents (e.g. Research, Spec Builder, Flow):
+1. **Directory**: Create `apps/web/console/agents/<name>/` containing `<name>.html` (fragment with `data-slot="topbar"` elements), `<name>.js` (screen logic), `<name>.css` (styles using tokens), and optional `<name>_helpers.js`.
+2. **Registry**: Register the agent in `apps/web/console/shared/registry.js` with `id`, `title`, `base`, `markup`, `script`, `style`, and optional `helper`.
+3. **Design Tokens**: Strictly use `shared/tokens.css` variables (`--bg`, `--surface`, `--surface-2`, `--border`, `--text`, `--muted`, `--accent`, `--ok`, `--warn`, `--danger`, `--shadow`, `--font`, `--mono`). No custom color declarations or external web fonts.
+4. **Layout Pattern**: Adopt the dual-canvas workspace (interaction stream on the left, live synchronized artifact on the right) and the persistent breakout composer pattern (*"Tell <agent> what to do instead..."*).
+5. **Traceability & Diagnostics**: Integrate the network flight recorder and Claude Code diagnostic context generator (`generateClaudeReport()`) so that coding AIs can seamlessly inspect, reproduce, and fix backend/frontend issues.
+
 
 ## Rules for every file under `console/`
 

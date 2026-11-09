@@ -170,18 +170,20 @@ CONTRACT*/
     "x.speaking_as": "Speaking as (contributor id)", "x.stream_on": "Stream connected",
     "x.stream_off": "Stream reconnecting", "x.provenance_none": "No details recorded for this item.",
     "x.value_history": "Earlier values", "x.dev_none": "Nothing yet.", "x.brief_empty": "Your Brief will appear here as we talk.",
-    "x.step_check": "Check", "x.back_to_chat": "Back to chat", "x.tier": "Tier"
+    "x.step_check": "Check", "x.back_to_chat": "Back to chat", "x.tier": "Tier",
+    "x.diagnostics": "Diagnostics", "x.copy_claude": "Copy for Claude"
   };
 
   var state = {
     cfg: { token: "dev-token", tenant: "demo", user: "demo-user", roles: "" },
     lang: "en", mode: "guided", strings: {}, theme: null,
-    sessionId: null, session: null, lastSeq: 0, seen: {}, devEvents: [], devTab: "events", devOpen: false,
+    sessionId: null, session: null, lastSeq: 0, seen: {}, devEvents: [], devTab: "diagnostics", devOpen: false,
     view: null, viewJson: "", lookups: [], progress: null, tab: "brief", streamAbort: null, streamOk: false,
     activeCard: null, typingCount: 0, loadingView: false, viewTimer: null, budget: null, calls: [],
     ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null,
     batches: [], answered: {}, uiMode: "one_at_a_time", modePending: false, depth: null,
-    qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {}
+    qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {},
+    networkTrace: [], lastError: null
   };
 
   function t(key, vars) {
@@ -205,20 +207,56 @@ CONTRACT*/
     e.status = status; e.code = code; e.apiMessage = message;
     return e;
   }
+  function recordNetwork(entry) {
+    state.networkTrace.push(entry);
+    if (state.networkTrace.length > 30) { state.networkTrace.shift(); }
+  }
   function api(method, path, body) {
     var headers = authHeaders();
     var init = { method: method, headers: headers };
     if (body !== undefined) { headers["Content-Type"] = "application/json"; init.body = JSON.stringify(body); }
+    var startTime = Date.now();
     return fetch(BASE + path, init).then(function (res) {
       return res.text().then(function (txt) {
+        var duration = Date.now() - startTime;
         var data = null;
         try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = null; }
+        recordNetwork({
+          time: new Date().toISOString(),
+          method: method,
+          path: path,
+          status: res.status,
+          latency: duration,
+          body: body,
+          response: data || txt
+        });
         if (!res.ok) {
-          throw ApiProblem(res.status, data && data.code ? data.code : "http_" + res.status,
+          var err = ApiProblem(res.status, data && data.code ? data.code : "http_" + res.status,
             data && data.message ? data.message : "");
+          state.lastError = {
+            time: new Date().toISOString(),
+            method: method,
+            path: path,
+            status: res.status,
+            code: err.code,
+            message: err.apiMessage || String(err.message)
+          };
+          throw err;
         }
         return data;
       });
+    }).catch(function (err) {
+      if (!state.lastError || state.lastError.path !== path) {
+        state.lastError = {
+          time: new Date().toISOString(),
+          method: method,
+          path: path,
+          status: err.status || 0,
+          code: err.code || "network_error",
+          message: err.apiMessage || err.message || "Failed to fetch"
+        };
+      }
+      throw err;
     });
   }
   function friendly(err) {
@@ -1644,7 +1682,72 @@ CONTRACT*/
     mode.className = "pill" + (live ? " live" : "");
     $("dev-title").textContent = t("dev.title");
   }
-  var DEV_TABS = [["events", "x.events"], ["state", "x.state"], ["slots", "x.slots"], ["calls", "x.calls"]];
+  function generateClaudeReport() {
+    var lines = [];
+    lines.push("I encountered an issue while testing agent `" + (AGENT.id || "compass") + "` in the Mobigen static test UI.");
+    lines.push("Please analyze this diagnostic trace and suggest or apply the fix in the codebase:\n");
+    lines.push("### 📍 Environment & Session");
+    lines.push("- **Agent**: `" + (AGENT.id || "compass") + "` | **API Base**: `" + BASE + "`");
+    lines.push("- **Session ID**: `" + (state.sessionId || "none") + "`");
+    lines.push("- **State Machine**: `" + (state.session ? state.session.state : "NONE") + "` | **Mode**: `" + state.mode + "` | **Locale**: `" + state.lang + "`");
+    lines.push("- **Brief Version**: `" + (state.session ? state.session.brief_version : 0) + "` | **Brief Hash**: `" + (state.view ? state.view.brief_hash : "none") + "`");
+    lines.push("- **Budget Mode**: `" + (state.budget ? state.budget.mode : "unknown") + "` | **Spent / Cap**: `$" + (state.budget ? state.budget.spent_usd : "0.00") + " / $" + (state.budget ? state.budget.cap_usd : "0.00") + "`");
+    lines.push("- **Timestamp**: `" + new Date().toISOString() + "`\n");
+
+    if (state.lastError) {
+      lines.push("### ❌ Last Error");
+      lines.push("- **Status**: `" + state.lastError.status + "`");
+      lines.push("- **Request**: `" + state.lastError.method + " " + state.lastError.path + "`");
+      lines.push("- **Code**: `" + state.lastError.code + "`");
+      lines.push("- **Message**: " + state.lastError.message + "\n");
+    }
+
+    lines.push("### 🌐 Recent Network Transactions (Last 5)");
+    if (!state.networkTrace.length) {
+      lines.push("*(No network calls recorded)*\n");
+    } else {
+      lines.push("| # | Method | Path | Status | Latency |");
+      lines.push("|---|---|---|---|---|");
+      var recents = state.networkTrace.slice(-5).reverse();
+      recents.forEach(function (tr, i) {
+        lines.push("| " + (i + 1) + " | `" + tr.method + "` | `" + tr.path + "` | `" + tr.status + "` | " + tr.latency + "ms |");
+      });
+      lines.push("");
+    }
+
+    lines.push("### ⚡ Recent SSE Stream Events (Last 5)");
+    if (!state.devEvents.length) {
+      lines.push("*(No SSE events recorded)*\n");
+    } else {
+      var evs = state.devEvents.slice(-5);
+      evs.forEach(function (ev) {
+        lines.push("- `[#" + (ev.seq !== null && ev.seq !== undefined ? ev.seq : "-") + " " + ev.direction + "] " + ev.type + "`: `" + JSON.stringify(ev.payload) + "`");
+      });
+      lines.push("");
+    }
+
+    lines.push("### 🖥️ Active View & State");
+    lines.push("- **Active Tab**: `" + state.tab + "`");
+    lines.push("- **UI Mode**: `" + state.uiMode + "`");
+    lines.push("- **Active Card ID**: `" + (state.activeCard ? state.activeCard.id : "none") + "`");
+
+    return lines.join("\n");
+  }
+
+  function copyClaudeReport() {
+    var report = generateClaudeReport();
+    if (window.navigator && window.navigator.clipboard && window.navigator.clipboard.writeText) {
+      window.navigator.clipboard.writeText(report).then(function () {
+        toast("Diagnostic context copied for Claude Code!");
+      }).catch(function () {
+        toast("Could not access clipboard.");
+      });
+    } else {
+      toast("Clipboard not available in this environment.");
+    }
+  }
+
+  var DEV_TABS = [["diagnostics", "x.diagnostics"], ["events", "x.events"], ["state", "x.state"], ["slots", "x.slots"], ["calls", "x.calls"]];
   function renderDev() {
     if (!state.devOpen) { return; }
     renderDevHead();
@@ -1664,7 +1767,39 @@ CONTRACT*/
       big.appendChild(h("div", { class: "meter-bar" }, h("div", { class: "meter-fill" + (pct >= 95 ? " full" : pct >= 75 ? " hot" : ""), css: { width: pct + "%" } })));
       body.appendChild(big);
     }
-    if (state.devTab === "events") {
+    if (state.devTab === "diagnostics") {
+      var actRow = h("div", { class: "diag-actions" },
+        h("button", { class: "btn btn-primary", type: "button", text: "Copy Context for Claude Code", on: { click: copyClaudeReport } })
+      );
+      body.appendChild(actRow);
+      if (state.lastError) {
+        var errBox = h("div", { class: "shell-error" },
+          h("div", { class: "evhead", text: "Last Error: [" + state.lastError.status + "] " + state.lastError.method + " " + state.lastError.path }),
+          h("div", { class: "mono", text: state.lastError.code + ": " + state.lastError.message })
+        );
+        body.appendChild(errBox);
+      }
+      if (!state.networkTrace.length) {
+        body.appendChild(h("div", { class: "empty", text: "No network requests recorded yet." }));
+      } else {
+        var nt = h("table", { class: "diag-table" },
+          h("thead", null, h("tr", null,
+            ["Method", "Path", "Status", "Latency", "Time"].map(function (x) { return h("th", { text: x }); }))));
+        var nb = h("tbody");
+        state.networkTrace.slice().reverse().forEach(function (tr) {
+          var pillClass = tr.status >= 200 && tr.status < 300 ? "status-pill status-ok" : tr.status >= 400 ? "status-pill status-err" : "status-pill status-warn";
+          nb.appendChild(h("tr", null,
+            h("td", null, h("strong", { text: tr.method })),
+            h("td", { text: tr.path }),
+            h("td", null, h("span", { class: pillClass, text: String(tr.status) })),
+            h("td", { text: tr.latency + "ms" }),
+            h("td", { class: "muted", text: (tr.time || "").split("T")[1] ? (tr.time || "").split("T")[1].slice(0, 8) : "" })
+          ));
+        });
+        nt.appendChild(nb);
+        body.appendChild(nt);
+      }
+    } else if (state.devTab === "events") {
       var evs = state.devEvents.slice().reverse();
       if (!evs.length) { body.appendChild(h("div", { class: "empty", text: t("x.dev_none") })); }
       evs.forEach(function (ev) {
@@ -1868,6 +2003,7 @@ CONTRACT*/
     $("btn-settings").textContent = t("x.settings");
     $("btn-theme").textContent = t("x.theme");
     $("btn-dev").textContent = t("x.developer");
+    $("btn-copy-claude").textContent = t("x.copy_claude");
     $("lang-label").textContent = t("ui.language");
     $("pane-chat").textContent = t("x.chat");
     $("pane-brief").textContent = t("x.brief");
@@ -1927,6 +2063,7 @@ CONTRACT*/
     $("lang-select").value = state.lang;
     $("lang-select").addEventListener("change", function () { setLang($("lang-select").value); });
     $("brand").addEventListener("click", showHome);
+    $("btn-copy-claude").addEventListener("click", copyClaudeReport);
     $("btn-settings").addEventListener("click", openSettings);
     $("settings-form").addEventListener("submit", saveSettings);
     $("settings-cancel").addEventListener("click", function () { $("settings-dialog").hidden = true; });
