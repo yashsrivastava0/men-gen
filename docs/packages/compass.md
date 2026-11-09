@@ -144,6 +144,7 @@ If the planner fails validation after the gateway's one repair, or the call fail
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `engine` | `planner` | `legacy` (a rollback) or `planner` (`COMPASS_INTERVIEW_ENGINE` overrides) |
+| `open_prompt_share`, `necessity_check` | 1/3, on | question quality rules: at most this share of a batch may be open prompts; a question must serve an open, ask-eligible need above an impact floor (the scripted scenario fixtures switch both off) |
 | `default_ui_mode` | `answer_all` | the layout of a planned batch: one form submitted once; `one_at_a_time` for clients that answer card by card (ADR 0016) |
 | `quick_max`, `standard_max`, `thorough_max` | 7, 12, 25 | the tier targets (they count the closing question) |
 | `quick_hard`, `standard_hard`, `thorough_hard` | 10, 15, 30 | the hard caps: the most questions an interview ever asks, follow-ups, gap and closing question included |

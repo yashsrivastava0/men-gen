@@ -157,8 +157,9 @@ Owner's list: a detailed, correct Brief; one batch at a time answered and submit
 - [x] P2. Engine (tag `compass/v2-p2`): tiers and `Room` accounting, BUG-19 fixed (4311f6a); the batch form as default, submit once (ecd30f1); the closing question, always last, decided when nobody answers, reopened by Ask me more (12c4911, 47c0b9a); D-108
 - [~] P3. Latency: the idea turn runs understand and situate together (e4fe865). Left: planner prefetch, audit policy, slim planner, gateway limits, read-preview
 - [~] P4. Auto-answer: "You decide" takes the recommended option (slot assumed when the label is the catalog's, assumption fact in the ledger, "We assumed" row; must-confirm cards as high-impact), "Decide the rest" (`decide_rest`) decides the blank questions and ends the interview. Left: `cmp.decide_answers` (CALLS) for open questions, typed "you decide" for a whole form
-- [~] CALLS (branch `feat/compass-v2-calls`, still running): closing mode and `suggested_features` merged (8d2b25f, 9753fb8); in progress: planner type rules, `type_fit`, necessity validator, follow-up folding, `decide_answers`
-- [ ] BRIEF: `kind`/`refs`, per-section compile, corrections as assumptions, probes after compile, documents
+- [x] CALLS (merged 38c2b53, D-110): closing mode, planner type rules, `type_fit` / `too_many_open` / `necessity` validators, `refines`, slim planner, `cmp.decide_answers`; the engine does not call `decide_answers` yet
+- [x] BRIEF (merged 439b707, wired 10faf8f and 21c6b7b, D-110): fact kinds, consumer views, parallel compile v2 with digests, corrections and review assumptions, probes after compile, documents, lock guard; the document confirm card is built but not shown
 - [x] WEB (merged c79cb76, D-109): tier-first welcome, form for every batch, select-all / none of these / picks plus custom, You decide and Decide the rest, retry, phase-aware waiting, upload checks; 2789 offline tests green
-- [ ] P6. User changes write facts; section-level recompile
-- [ ] P7. Live verification (the owner enables the second key; USD 3.00 ceiling), docs, ADR 0016
+- [~] P6. Changing a slot-less assumption keeps the words (ledger + recompile). Left: panel edits writing facts, recompile of only the affected sections for Q&A edits
+- [ ] P7. Live verification: NOT RUN (needs the owner's second key; USD 3.00 ceiling, about 2.4 left). Run `python -m mde_compass.live_batches --batch E|F|G` (the players answer card by card with `default_ui_mode: one_at_a_time`; a batch-form player is the first thing to add) and measure first-batch and later-turn latency, fallbacks, closing last, cap
+- Offline state at tag `compass/v2-p3`: 3021 passed, 3 skipped, 8 xfailed; integration 77; security 220; ruff, pyright, import-linter, docs-check clean
