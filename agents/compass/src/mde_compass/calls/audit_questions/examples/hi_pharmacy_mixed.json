@@ -1,0 +1,118 @@
+{
+  "name": "hi_pharmacy_mixed",
+  "input": {
+    "language": "hi",
+    "project_terms": ["फार्मेसी", "स्टॉक", "होलसेलर", "दवा", "एक्सपायरी", "दुकान"],
+    "needs": [
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release."
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several."
+      }
+    ],
+    "asked_list": "Q-001 how shops pay (answered)\nQ-002 who uses it in a shop (answered)\nQ-003 how many shops at launch (answered)",
+    "questions": [
+      {
+        "card_id": "Q-004",
+        "text": "जब किसी दवा की एक्सपायरी पास आए, तो ऐप सिर्फ़ दुकान को बताए, या होलसेलर को वापसी का सामान भी तैयार करे?",
+        "intent": "learn what happens when stock is close to expiry",
+        "serves": ["scope.features", "domain:expiry_handling"],
+        "type": "choose_one",
+        "option_labels": ["सिर्फ़ दुकान को बताए", "बताए और वापसी तैयार करे", "बताए और काउंटर पर बिकना रोके"],
+        "recommended": "बताए और वापसी तैयार करे",
+        "why_we_ask": "इससे तय होता है कि पहले संस्करण में वापसी का हिस्सा चाहिए या नहीं।"
+      },
+      {
+        "card_id": "Q-005",
+        "text": "स्टॉक कम होने पर ऑर्डर कौन भेजेगा: दुकान का मालिक या उसका सहायक?",
+        "intent": "learn who places the reorder",
+        "serves": ["roles.list", "domain:reordering"],
+        "type": "choose_one",
+        "option_labels": ["दुकान का मालिक", "सहायक", "दोनों"],
+        "recommended": "",
+        "why_we_ask": "इससे तय होता है कि ऑर्डर की मंज़ूरी किसके पास रहेगी।"
+      },
+      {
+        "card_id": "Q-006",
+        "text": "यह ऐप किस शहर की फार्मेसी के लिए शुरू होगा?",
+        "intent": "learn where it launches",
+        "serves": ["context.geo"],
+        "type": "open_prompt",
+        "option_labels": [],
+        "recommended": "",
+        "why_we_ask": "इससे भाषा और नियम तय होते हैं।"
+      },
+      {
+        "card_id": "Q-007",
+        "text": "सबसे अच्छा तरीका यही है कि सारा स्टॉक रोज़ गिना जाए, है ना?",
+        "intent": "learn how often stock is counted",
+        "serves": ["scope.features"],
+        "type": "confirm",
+        "option_labels": ["हाँ", "नहीं"],
+        "recommended": "हाँ",
+        "why_we_ask": "इससे स्टॉक की गिनती का तरीका तय होता है।"
+      }
+    ]
+  },
+  "output": {
+    "verdicts": [
+      {
+        "card_id": "Q-004",
+        "specific": 5,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [],
+        "fix": ""
+      },
+      {
+        "card_id": "Q-005",
+        "specific": 4,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [],
+        "fix": ""
+      },
+      {
+        "card_id": "Q-006",
+        "specific": 3,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [],
+        "fix": ""
+      },
+      {
+        "card_id": "Q-007",
+        "specific": 2,
+        "leading": true,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [
+          "Leading: 'सबसे अच्छा' and the closing 'है ना' push towards yes.",
+          "Asks for a yes to a method instead of how counting works today."
+        ],
+        "fix": "Remove the leading phrase and ask how stock is counted now."
+      }
+    ]
+  }
+}
