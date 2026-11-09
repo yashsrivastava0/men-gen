@@ -1,5 +1,7 @@
 id: SB-IV-07
 title: Enterprise stakeholders disagree, the slot is disputed and never auto-merged
+planner_known_issue: BUG-22
+planner_known_issue_note: "fact projection passes no contributor to the slot store, so a conflicting statement by a second contributor replaces the value instead of marking it disputed"
 tags: [enterprise, conflict]
 mode: enterprise
 contributors:

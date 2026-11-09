@@ -1,0 +1,30 @@
+id: SB-QP-08
+title: A pivot mid-interview supersedes the old direction, keeps its history and plans for the new one
+tags: [planner, pivot]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      facts: {active_contains: ["tiffin"]}
+      batch: {mode: initial, total_min: 3, total_max: 3}
+  - answer_texts: ["Office workers who want lunch on time"]
+  - say: "Actually, forget the tiffin service, it is for a clinic that wants appointment booking"
+    expect:
+      notice_code: [pivot, picked_up]
+      batch:
+        mode: replan
+        first_contains: [clinic, patients, appointment]
+      facts:
+        superseded_contains: ["tiffin"]
+        active_contains: ["clinic"]
+        active_not_contains: ["tiffin"]
+        count_min: 3
+      calls:
+        modes: {cmp.plan_questions: [initial, replan]}
+        input_contains:
+          cmp.plan_questions: [clinic, pivot_from]
+      qa:
+        dropped_min: 1
+final:
+  facts: {ids_gapless: true}
+  qa: {no_repeats: true}

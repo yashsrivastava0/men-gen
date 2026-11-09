@@ -12,12 +12,13 @@ import re
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
-from typing import Any, cast
+from typing import Any, Literal, cast
 
 import yaml
 
 from mde_compass.domain import Card, StoredEvent
 from mde_compass.domain.events import (
+    AnswerEdit,
     AssumptionDecision,
     BriefEdit,
     BriefFeedback,
@@ -36,7 +37,41 @@ from mde_compass.scenarios.models import Expect, Scenario, SlotExpect, Step
 from mde_compass.testing import Conversation
 
 NON_QUESTION_FRAMES: frozenset[str] = frozenset({"welcome", "change_variants"})
+TYPED_ANSWER = (
+    "We handle about 200 orders a day for regular customers and our own staff take care of them"
+)
+TYPED_BY_NEED: dict[str, str] = {
+    "context.geo": "In Pune, India",
+    "audience.segments": "Regular customers who order from their phone every day",
+    "locales": "English and Hindi",
+    "look.tone_words": "Friendly, simple and warm",
+    "scope.features": "Ordering, online payments and order tracking",
+    "scope.priority": "Ordering and payments first, the rest can wait",
+    "roles.list": "Customers, shop staff who prepare orders, and an admin",
+    "apps.list": "One app for customers and a small admin panel",
+    "idea.business_model": "We charge a small fee on every order",
+}
+"""What a person types when a planned question has no options and the script just says "accept what is offered"
+(``tap_recommended``, ``drive``). A planner question is often free text; tapping "ok" on it would teach nothing.
+The text is about the question's own need (never another need's words), so it cannot overwrite what the person
+said elsewhere."""
 TERMINAL_STATES: frozenset[str] = frozenset({"BRIEF_REVIEW", "APPROVED", "ARCHIVED"})
+
+
+def frame_slots(frames: Sequence[str]) -> frozenset[str]:
+    """The needs (slot ids) that the legacy frames ask about; a planned question has no frame, only needs."""
+    from mde_compass.catalog import load_catalog
+
+    catalog = load_catalog()
+    return frozenset(s for f in frames if f in catalog.frames for s in catalog.frames[f].slots)
+
+
+def in_frame(card: Card, frames: Sequence[str], engine: str) -> bool:
+    """Whether a card belongs to one of the legacy frames. On the planner path a card has the frame ``planned``,
+    so the frame expectation is translated: the card's needs include a slot of that frame (D-planner-frames)."""
+    if card.frame in frames:
+        return True
+    return engine == "planner" and bool(set(card.need_ids) & frame_slots(frames))
 
 
 class ScenarioFailure(AssertionError):
@@ -75,18 +110,53 @@ class RunResult:
             raise ScenarioFailure(self.failure)
 
 
-def new_service() -> Any:
-    """A fresh real Service: mock mode, in-memory store, a fake clock (the gateway rate limiter then never waits)."""
+Engine = Literal["legacy", "planner"]
+ENGINES: tuple[Engine, ...] = ("legacy", "planner")
+
+
+def engine_config(engine: Engine) -> Any:
+    """The default configuration with the question engine set (the planner path is selected by this one field)."""
+    import dataclasses
+
+    from mde_compass.config import DEFAULT_CONFIG
+
+    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine=engine)
+    return dataclasses.replace(DEFAULT_CONFIG, interview=interview)
+
+
+def new_scripted_service(engine: Engine, script: Any) -> tuple[Any, Any]:
+    """A planner service whose model calls come from a provider fixture; returns the service and the gateway
+    (``HybridGateway``: its ``trace`` lists the calls, ``assert_consumed`` checks the script was used up)."""
+    from mde_compass.compose import build_service
+    from mde_compass.scenarios.providers import hybrid_for
+    from mde_core.clock import FakeClock
+
+    clock = FakeClock()
+    gateway = hybrid_for(script, clock)
+    service = build_service(
+        memory=True, clock=clock, compass_config=engine_config(engine), gateway=cast(Any, gateway)
+    )
+    return service, gateway
+
+
+def new_service(engine: Engine = "legacy", *, gateway: Any | None = None) -> Any:
+    """A fresh real Service: mock mode, in-memory store, a fake clock (the gateway rate limiter then never waits).
+
+    ``engine`` picks the question engine (``legacy`` frame queue or the AI ``planner``); ``gateway`` replaces the
+    mock gateway (a ``ScriptedGateway`` with hand-written model outputs)."""
     from mde_compass.compose import build_service
     from mde_core.clock import FakeClock
 
-    return build_service(memory=True, clock=FakeClock())
+    return build_service(
+        memory=True, clock=FakeClock(), compass_config=engine_config(engine), gateway=gateway
+    )
 
 
 # ---------------------------------------------------------------------------------------- loading
 def load_scenario(path: Path | str) -> Scenario:
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    return Scenario.model_validate(raw)
+    scn = Scenario.model_validate(raw)
+    return scn.model_copy(update={"source_dir": str(Path(path).resolve().parent)})
 
 
 def load_dir(directory: Path | str, pattern: str = "*.yaml") -> list[tuple[Path, Scenario]]:
@@ -217,7 +287,9 @@ def _as_list(v: Any) -> list[Any]:
     return [] if v is None else (v if isinstance(v, list) else [v])
 
 
-def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
+def check_slot(
+    brief: dict[str, Any], path: str, exp: SlotExpect, engine: str = "legacy"
+) -> list[str]:
     nodes = _resolve(brief, path.split("."))
     errs: list[str] = []
     if not nodes:
@@ -233,10 +305,11 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     for needle in _as_list(exp.contains):
         if not any(str(needle).lower() in t for t in texts):
             errs.append(f"slot {path}: value should contain {needle!r}; got {texts[0][:200]}")
-    if exp.contains_any and not any(str(n).lower() in t for n in exp.contains_any for t in texts):
-        errs.append(
-            f"slot {path}: value should contain any of {exp.contains_any}; got {texts[0][:200]}"
-        )
+    accepted = list(exp.contains_any or [])
+    if engine == "planner":  # the planner path normalizes the user's words to the registry's value
+        accepted += list(exp.planner_contains_any or [])
+    if accepted and not any(str(n).lower() in t for n in accepted for t in texts):
+        errs.append(f"slot {path}: value should contain any of {accepted}; got {texts[0][:200]}")
     for needle in _as_list(exp.not_contains):
         if any(str(needle).lower() in t for t in texts):
             errs.append(f"slot {path}: value should NOT contain {needle!r}; got {texts[0][:200]}")
@@ -280,6 +353,19 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     return errs
 
 
+async def session_budget(conv: Conversation) -> tuple[str, int]:
+    """The interview budget of a planner session (name and most questions, follow-ups included)."""
+    raw = await conv.brief()
+    meta = cast(dict[str, Any], raw.get("meta") or {})
+    block = cast(dict[str, Any], meta.get("interview") or {})
+    plan = cast(dict[str, Any], meta.get("plan") or {})
+    name = str(plan.get("interview_budget") or block.get("budget") or "standard")
+    if name not in ("quick", "standard", "thorough"):
+        name = "standard"
+    policy = conv.service.config.interview
+    return name, int(policy.budget_max(cast(Any, name)))
+
+
 # ----------------------------------------------------------------------------------------- expectations
 async def check_expect(
     exp: Expect | None,
@@ -290,6 +376,8 @@ async def check_expect(
     version_before: int,
     version_after: int,
     card_on_screen: Card | None = None,
+    engine: str = "legacy",
+    gateway: Any | None = None,
 ) -> list[str]:
     exp = exp or Expect()
     errs: list[str] = []
@@ -329,11 +417,20 @@ async def check_expect(
     last = _last_card_in(events) or card_on_screen
     if exp.no_card and last is not None:
         errs.append(f"no card expected, but card {last.id} ({last.frame}) was shown")
-    if exp.card_frame and (last is None or last.frame not in _as_list(exp.card_frame)):
+    if exp.card_frame and (last is None or not in_frame(last, _as_list(exp.card_frame), engine)):
         errs.append(
             f"last card frame should be one of {exp.card_frame}; got {last.frame if last else None}"
         )
-    if exp.card_type and (last is None or last.type not in _as_list(exp.card_type)):
+    # the planner chooses the card type per question (choose_one only for three real alternatives), so a type named
+    # next to a legacy frame describes that frame's template and is not checked on the planner path
+    type_applies = not (
+        engine == "planner" and exp.card_frame and last is not None and last.frame == "planned"
+    )
+    if (
+        exp.card_type
+        and type_applies
+        and (last is None or last.type not in _as_list(exp.card_type))
+    ):
         errs.append(
             f"last card type should be one of {exp.card_type}; got {last.type if last else None}"
         )
@@ -370,8 +467,14 @@ async def check_expect(
         )
     if exp.questions_max is not None:
         total = len(question_cards(conv.events))
-        if total > exp.questions_max:
-            errs.append(f"at most {exp.questions_max} questions in the whole session; got {total}")
+        limit, why = exp.questions_max, ""
+        if (
+            engine == "planner"
+        ):  # the planner path is governed by the interview budget, not a frame count
+            name, limit = await session_budget(conv)
+            why = f" (the {name} budget)"
+        if total > limit:
+            errs.append(f"at most {limit} questions in the whole session{why}; got {total}")
     if exp.approvable is not None:
         readies = [e for e in events if e.type == "brief_ready"]
         if not readies or bool(readies[-1].payload.get("approvable")) != exp.approvable:
@@ -400,15 +503,376 @@ async def check_expect(
     if exp.slots:
         brief = await conv.brief()
         for path, sx in exp.slots.items():
-            errs.extend(check_slot(brief, path, sx))
+            errs.extend(check_slot(brief, path, sx, engine))
+    errs.extend(await check_memory(exp, conv=conv, events=events, gateway=gateway))
+    return errs
+
+
+# ---------------------------------------------------------------------------- the interview memory
+def _has(texts: Sequence[str], needle: str) -> bool:
+    return any(needle.lower() in t.lower() for t in texts)
+
+
+def _fact_texts(facts: Sequence[Any]) -> list[str]:
+    return [f"{f.statement} | {f.quote}" for f in facts]
+
+
+def check_facts(exp: Any, data: Any) -> list[str]:
+    from mde_compass.scenarios import ledger
+
+    errs: list[str] = []
+    facts = data.facts
+    active = [f for f in facts if f.status == "active"]
+    if exp.count_min is not None and len(facts) < exp.count_min:
+        errs.append(f"facts: at least {exp.count_min} expected, got {len(facts)}")
+    if exp.count_max is not None and len(facts) > exp.count_max:
+        errs.append(f"facts: at most {exp.count_max} expected, got {len(facts)}")
+    if exp.active_min is not None and len(active) < exp.active_min:
+        errs.append(f"facts: at least {exp.active_min} active expected, got {len(active)}")
+    for needle in exp.active_contains:
+        if not _has(_fact_texts(active), needle):
+            errs.append(f"facts: no ACTIVE fact contains {needle!r}: {_fact_texts(active)[:6]}")
+    for needle in exp.active_not_contains:
+        if _has(_fact_texts(active), needle):
+            errs.append(f"facts: an active fact still contains {needle!r}")
+    superseded = [f for f in facts if f.status == "superseded"]
+    for needle in exp.superseded_contains:
+        if not _has(_fact_texts(superseded), needle):
+            errs.append(
+                f"facts: no SUPERSEDED fact contains {needle!r}: {_fact_texts(superseded)[:6]}"
+            )
+    if exp.superseded_min is not None and len(superseded) < exp.superseded_min:
+        errs.append(
+            f"facts: at least {exp.superseded_min} superseded expected, got {len(superseded)}"
+        )
+    disputed = [f for f in facts if f.status == "disputed"]
+    if exp.disputed_min is not None and len(disputed) < exp.disputed_min:
+        errs.append(f"facts: at least {exp.disputed_min} disputed expected, got {len(disputed)}")
+    if exp.ids_gapless:
+        want = [f"FCT-{i:03d}" for i in range(1, len(facts) + 1)]
+        got = [f.id for f in facts]
+        if got != want:
+            errs.append(
+                f"facts: ids should run FCT-001..{len(facts):03d} without gaps or reuse; got {got}"
+            )
+    bad = [f.id for f in facts if f.unverified_quote]
+    if exp.unverified_max is not None and len(bad) > exp.unverified_max:
+        errs.append(f"facts: at most {exp.unverified_max} unverified quotes expected, got {bad}")
+    if exp.unverified_min is not None and len(bad) < exp.unverified_min:
+        errs.append(f"facts: at least {exp.unverified_min} unverified quotes expected, got {bad}")
+    if exp.coverage is not None:
+        cov = ledger.coverage(data)
+        if cov.ratio < exp.coverage:
+            errs.append(
+                f"facts: coverage {cov.ratio:.2f} < {exp.coverage}; unreferenced {cov.unreferenced}"
+            )
+    return errs
+
+
+def check_qa(exp: Any, data: Any, catalog: Any) -> list[str]:
+    from mde_compass.scenarios import ledger
+
+    errs: list[str] = []
+    shown = data.shown_cards()
+    n = len(shown)
+    if exp.shown_min is not None and n < exp.shown_min:
+        errs.append(f"qa: at least {exp.shown_min} questions shown expected, got {n}")
+    if exp.shown_max is not None and n > exp.shown_max:
+        errs.append(
+            f"qa: at most {exp.shown_max} questions shown expected, got {n}: {[c.id for c in shown]}"
+        )
+    follow = sum(1 for c in shown if c.origin == "followup")
+    if exp.followups is not None and follow != exp.followups:
+        errs.append(f"qa: exactly {exp.followups} follow-ups expected, got {follow}")
+    if exp.followups_max is not None and follow > exp.followups_max:
+        errs.append(f"qa: at most {exp.followups_max} follow-ups expected, got {follow}")
+    if exp.no_repeats:
+        repeats = ledger.repeated_questions(shown)
+        if repeats:
+            errs.append(f"qa: repeated questions {repeats}")
+    by_id = {q.card_id: q for q in data.qa}
+    for cid, status in exp.statuses.items():
+        got = by_id[cid].status if cid in by_id else "(no such question)"
+        if got != status:
+            errs.append(f"qa: {cid} should be {status}; got {got}")
+    for cid, count in exp.versions.items():
+        got_n = sum(1 for q in data.qa_versions if q.card_id == cid)
+        if got_n != count:
+            errs.append(f"qa: {cid} should keep {count} versions; got {got_n}")
+    dropped = sum(1 for q in data.qa if q.status == "dropped")
+    if exp.dropped_min is not None and dropped < exp.dropped_min:
+        errs.append(f"qa: at least {exp.dropped_min} questions dropped expected, got {dropped}")
+    texts = [f"{c.question} | {' | '.join(o.label for o in c.options)}" for c in shown]
+    for needle in exp.shown_contains:
+        if not _has(texts, needle):
+            errs.append(f"qa: no shown question contains {needle!r}")
+    for needle in exp.shown_not_contains:
+        if _has(texts, needle):
+            errs.append(f"qa: a shown question contains {needle!r}")
+    first = shown[0] if shown else None
+    for needle in exp.first_contains:
+        if first is None or needle.lower() not in first.question.lower():
+            errs.append(
+                f"qa: the first question should contain {needle!r}; got {first.question if first else None!r}"
+            )
+    if exp.first_serves and (first is None or not set(first.need_ids) & set(exp.first_serves)):
+        errs.append(
+            f"qa: the first question should serve one of {exp.first_serves}; got {first.need_ids if first else None}"
+        )
+    served = {need for c in shown for need in c.need_ids}
+    for need in exp.asked_needs:
+        if need not in served:
+            errs.append(f"qa: no shown question serves {need}; they serve {sorted(served)}")
+    for need in exp.not_asked_needs:
+        if need in served:
+            errs.append(f"qa: a question serving {need} was shown, but the facts already answer it")
+    origins = {c.origin for c in shown}
+    for origin in exp.origins_include:
+        if origin not in origins:
+            errs.append(f"qa: no {origin} question was shown; origins: {sorted(origins)}")
+    if exp.project_term_share_min is not None:
+        with_term, scored, missing = ledger.project_term_report(
+            data.planned_cards(), ledger.terms_of(data), catalog
+        )
+        share = with_term / scored if scored else 1.0
+        if share < exp.project_term_share_min:
+            errs.append(
+                f"qa: project-term share {share:.2f} < {exp.project_term_share_min}; without a term: {missing}"
+            )
+    return errs
+
+
+def check_interview(exp: Any, data: Any) -> list[str]:
+    from mde_compass.scenarios import ledger
+
+    errs: list[str] = []
+    block = data.brief.meta.interview
+    if exp.fallback_count is not None:
+        got = block.fallback_count if block is not None else 0
+        if got != exp.fallback_count:
+            errs.append(f"interview: fallback_count should be {exp.fallback_count}; got {got}")
+    if exp.stop_reason and (
+        block is None or not any(r in block.stop_reason for r in exp.stop_reason)
+    ):
+        errs.append(
+            f"interview: stop_reason should contain one of {exp.stop_reason}; got {block.stop_reason if block else None!r}"
+        )
+    if exp.budget and (block is None or block.budget != exp.budget):
+        errs.append(
+            f"interview: budget should be {exp.budget}; got {block.budget if block else None}"
+        )
+    nb = len(data.batches)
+    if exp.batches_min is not None and nb < exp.batches_min:
+        errs.append(f"interview: at least {exp.batches_min} planner batches expected, got {nb}")
+    if exp.batches_max is not None and nb > exp.batches_max:
+        errs.append(f"interview: at most {exp.batches_max} planner batches expected, got {nb}")
+    rejected = [r for b in data.batches for r in b.rejected]
+    if exp.rejected_min is not None and len(rejected) < exp.rejected_min:
+        errs.append(
+            f"interview: at least {exp.rejected_min} rejected questions expected, got {len(rejected)}"
+        )
+    reasons = [x for r in rejected for x in r.reasons]
+    for code in exp.rejected_codes:
+        if not _has(reasons, code):
+            errs.append(f"interview: no rejection mentions {code!r}; reasons: {reasons[:8]}")
+    audited = [r for r in rejected if r.source == "auditor"]
+    if exp.auditor_rejected_min is not None and len(audited) < exp.auditor_rejected_min:
+        errs.append(
+            f"interview: at least {exp.auditor_rejected_min} auditor rejections expected, got {len(audited)}"
+        )
+    if exp.repaired is not None and any(b.repaired for b in data.batches) != exp.repaired:
+        errs.append(f"interview: repaired should be {exp.repaired}")
+    fb = sum(1 for b in data.batches if b.used_fallback)
+    if exp.fallback_batches is not None and fb != exp.fallback_batches:
+        errs.append(f"interview: {exp.fallback_batches} fallback batches expected, got {fb}")
+    if exp.backlog_min is not None:
+        backlog = sum(len(b.output.get("backlog") or []) for b in data.batches)  # type: ignore[arg-type]
+        if backlog < exp.backlog_min:
+            errs.append(
+                f"interview: at least {exp.backlog_min} backlog items expected, got {backlog}"
+            )
+    if exp.batch_sizes_max is not None:
+        for b in data.batches:
+            if len(b.accepted) > exp.batch_sizes_max:
+                errs.append(
+                    f"interview: batch {b.id} holds {len(b.accepted)} questions, more than {exp.batch_sizes_max}"
+                )
+    _ = ledger
+    return errs
+
+
+def check_batch(exp: Any, events: Sequence[StoredEvent]) -> list[str]:
+    batches = [e for e in events if e.type == "question_batch"]
+    if not batches:
+        return ["batch: no question_batch event in this step"]
+    payload = batches[-1].payload
+    groups = cast(list[dict[str, Any]], payload.get("groups") or [])
+    cards = [c for g in groups for c in cast(list[dict[str, Any]], g.get("cards") or [])]
+    errs: list[str] = []
+    if exp.mode and payload.get("mode") != exp.mode:
+        errs.append(f"batch: mode should be {exp.mode}; got {payload.get('mode')}")
+    if exp.ui_mode and payload.get("ui_mode") != exp.ui_mode:
+        errs.append(f"batch: ui_mode should be {exp.ui_mode}; got {payload.get('ui_mode')}")
+    if exp.total_min is not None and len(cards) < exp.total_min:
+        errs.append(f"batch: at least {exp.total_min} questions expected, got {len(cards)}")
+    if exp.total_max is not None and len(cards) > exp.total_max:
+        errs.append(f"batch: at most {exp.total_max} questions expected, got {len(cards)}")
+    if exp.groups_min is not None and len(groups) < exp.groups_min:
+        errs.append(f"batch: at least {exp.groups_min} groups expected, got {len(groups)}")
+    if exp.groups_max is not None and len(groups) > exp.groups_max:
+        errs.append(f"batch: at most {exp.groups_max} groups expected, got {len(groups)}")
+    if exp.group_size_max is not None:
+        for g in groups:
+            if len(g.get("cards") or []) > exp.group_size_max:
+                errs.append(
+                    f"batch: group {g.get('id')} holds more than {exp.group_size_max} questions"
+                )
+    if exp.titles_filled and any(not str(g.get("title", "")).strip() for g in groups):
+        errs.append("batch: every group needs a title")
+    first = cards[0] if cards else None
+    if exp.first_serves and (
+        first is None or not set(first.get("need_ids", [])) & set(exp.first_serves)
+    ):
+        errs.append(
+            f"batch: the first question should serve one of {exp.first_serves}; got {first.get('need_ids') if first else None}"
+        )
+    if exp.first_contains and (
+        first is None
+        or not any(w.lower() in str(first.get("question", "")).lower() for w in exp.first_contains)
+    ):
+        errs.append(
+            f"batch: the first question should contain one of {exp.first_contains}; got {first.get('question') if first else None!r}"
+        )
+    lead = cards[: exp.lead]
+    for c in lead:
+        if c.get("type") in exp.lead_types_not:
+            errs.append(
+                f"batch: a lead question has type {c.get('type')}, which is too detailed to open with"
+            )
+        if exp.lead_serves_only and not set(c.get("need_ids", [])) <= set(exp.lead_serves_only):
+            errs.append(
+                f"batch: lead question {c.get('id')} serves {c.get('need_ids')}, not only {exp.lead_serves_only}"
+            )
+    texts = [str(c.get("question", "")) for c in cards]
+    for needle in exp.texts_contain:
+        if not _has(texts, needle):
+            errs.append(f"batch: no question contains {needle!r}")
+    for needle in exp.texts_not_contain:
+        if _has(texts, needle):
+            errs.append(f"batch: a question contains {needle!r}, which should have been rejected")
+    origins = {str(c.get("origin")) for c in cards}
+    for origin in exp.origins:
+        if origin not in origins:
+            errs.append(f"batch: no {origin} question; origins {sorted(origins)}")
+    types = {c.get("type") for c in cards}
+    for t in exp.types_include:
+        if t not in types:
+            errs.append(
+                f"batch: no {t} question in the batch; types {sorted(str(x) for x in types)}"
+            )
+    return errs
+
+
+def check_calls(exp: Any, gateway: Any) -> list[str]:
+    errs: list[str] = []
+    if gateway is None:
+        return ["calls: this scenario has no traced gateway (give it a provider fixture)"]
+    for spec_id, n in exp.counts.items():
+        if gateway.called(spec_id) != n:
+            errs.append(
+                f"calls: {spec_id} should be called {n} times; got {gateway.called(spec_id)}"
+            )
+    for spec_id, n in exp.at_least.items():
+        if gateway.called(spec_id) < n:
+            errs.append(
+                f"calls: {spec_id} should be called at least {n} times; got {gateway.called(spec_id)}"
+            )
+    for spec_id, n in exp.at_most.items():
+        if gateway.called(spec_id) > n:
+            errs.append(
+                f"calls: {spec_id} should be called at most {n} times; got {gateway.called(spec_id)}"
+            )
+    for spec_id, modes in exp.modes.items():
+        seen = [getattr(i, "mode", None) for s, i in gateway.inputs if s == spec_id]
+        if seen != modes:
+            errs.append(f"calls: {spec_id} modes should be {modes}; got {seen}")
+    for spec_id, needles in exp.input_contains.items():
+        last = gateway.last_input(spec_id)
+        text = last.model_dump_json() if last is not None else ""
+        for needle in needles:
+            if needle.lower() not in text.lower():
+                errs.append(f"calls: the last {spec_id} input should contain {needle!r}")
+    return errs
+
+
+async def check_memory(
+    exp: Expect, *, conv: Conversation, events: Sequence[StoredEvent], gateway: Any | None
+) -> list[str]:
+    """The checks that read the interview memory (facts, Q&A, planner runs, Brief text) and the model calls."""
+    errs: list[str] = []
+    if exp.event_order:
+        types = [e.type for e in events]
+        pos = -1
+        for t in exp.event_order:
+            nxt = next((i for i in range(pos + 1, len(types)) if types[i] == t), None)
+            if nxt is None:
+                errs.append(f"event order {exp.event_order} not found in {types}")
+                break
+            pos = nxt
+    if exp.blockers_contain:
+        readies = [e for e in events if e.type == "brief_ready"]
+        raw_blockers = cast(list[Any], readies[-1].payload.get("blockers", []) if readies else [])
+        blockers = " ".join(str(b) for b in raw_blockers)
+        for needle in exp.blockers_contain:
+            if needle.lower() not in blockers.lower():
+                errs.append(f"the Gate 1 blockers should mention {needle!r}; got {blockers!r}")
+    if exp.calls is not None:
+        errs.extend(check_calls(exp.calls, gateway))
+    if exp.batch is not None:
+        errs.extend(check_batch(exp.batch, events))
+    wants_data = bool(
+        exp.facts or exp.qa or exp.interview or exp.brief_contains or exp.brief_not_contains
+        or exp.domain_facts_contains or exp.assumptions_min is not None
+    )  # fmt: skip
+    if not wants_data:
+        return errs
+    from mde_compass.catalog import load_catalog
+    from mde_compass.scenarios import ledger
+
+    data = await ledger.load_session(conv)
+    if exp.facts:
+        errs.extend(check_facts(exp.facts, data))
+    if exp.qa:
+        errs.extend(check_qa(exp.qa, data, load_catalog()))
+    if exp.interview:
+        errs.extend(check_interview(exp.interview, data))
+    for needle in exp.brief_contains:
+        if not ledger.needle_in_brief(data.brief, needle):
+            errs.append(f"the Brief should contain {needle!r} somewhere")
+    for needle in exp.brief_not_contains:
+        if ledger.needle_in_brief(data.brief, needle):
+            errs.append(f"the Brief should NOT contain {needle!r}")
+    if exp.domain_facts_contains:
+        rows = [f"{d.statement} | {d.quote}" for d in data.brief.domain_facts]
+        for needle in exp.domain_facts_contains:
+            if not _has(rows, needle):
+                errs.append(f"domain_facts should contain {needle!r}; rows: {rows[:6]}")
+    if exp.assumptions_min is not None and len(data.brief.assumptions) < exp.assumptions_min:
+        errs.append(
+            f"the Brief should hold at least {exp.assumptions_min} assumptions; has {len(data.brief.assumptions)}"
+        )
     return errs
 
 
 # --------------------------------------------------------------------------------------------- execution
 class _Runner:
-    def __init__(self, conv: Conversation, scenario: Scenario) -> None:
+    def __init__(
+        self, conv: Conversation, scenario: Scenario, engine: str = "legacy", gateway: Any = None
+    ) -> None:
         self.conv = conv
         self.scn = scenario
+        self.engine = engine
+        self.gateway = gateway
         self._n = 0
         self.answers: list[
             tuple[str, Card]
@@ -508,6 +972,32 @@ class _Runner:
                 )
                 await self.conv.send(BriefEdit(event_id=self.eid(), item_id=slot.brief_path, value=value, contributor_id=who))  # fmt: skip
 
+    def _card_ref(self, ref: Any) -> str:
+        """``first`` / ``last`` question shown, or a card id (``Q-003``)."""
+        planned = [
+            Card.model_validate(e.payload["card"]) for e in self.conv.events if e.type == "card"
+        ]
+        planned = [c for c in planned if c.frame not in NON_QUESTION_FRAMES]
+        if ref == "first" and planned:
+            return planned[0].id
+        if ref == "last" and planned:
+            return planned[-1].id
+        return str(ref)
+
+    async def _feedback_target(self, arg: Any) -> str:
+        """``target`` as written; on the planner path ``planner_target: slot:<slot id>`` names the assumption by its
+        slot (assumption numbers depend on which questions the engine asked)."""
+        target = str(arg["target"])
+        alias = arg.get("planner_target") if self.engine == "planner" else None
+        if not alias:
+            return target
+        slot_id = str(alias).removeprefix("slot:")
+        brief = await self.conv.brief()
+        for asm in brief.get("assumptions", []):
+            if asm.get("slot_id") == slot_id:
+                return str(asm["id"])
+        raise ScenarioFailure(f"no assumption for slot {slot_id!r} to give feedback on")
+
     async def execute(self, step: Step) -> str:
         """Run one step; returns how a card was answered (tap | custom | you_decide | skip | text | other)."""
         conv, who, arg = self.conv, step.contributor, step.arg
@@ -539,6 +1029,13 @@ class _Runner:
         if a == "tap_recommended":
             card = await self._card()
             opt = card.recommended_option() or (card.options[0] if card.options else None)
+            if self.engine == "planner" and not card.options and card.type != "quick_form":
+                typed = str(self.scn.persona.get("typed", ""))
+                typed = typed or next(
+                    (TYPED_BY_NEED[n] for n in card.need_ids if n in TYPED_BY_NEED), TYPED_ANSWER
+                )
+                await self._answer(None, custom=typed, who=who)
+                return "custom"
             if card.type == "quick_form":
                 value: Any = await self._form_value(card)
             elif card.type == "priority":
@@ -622,8 +1119,9 @@ class _Runner:
             await conv.send(BriefEdit(event_id=self.eid(), item_id=str(arg["path"]), value=arg.get("value"), contributor_id=who))  # fmt: skip
             return "other"
         if a == "feedback":
+            target = await self._feedback_target(arg)
             await conv.send(
-                BriefFeedback(event_id=self.eid(), target=str(arg["target"]), reason=arg.get("reason", "other"), text=str(arg.get("text", "")), contributor_id=who)  # type: ignore[arg-type]
+                BriefFeedback(event_id=self.eid(), target=target, reason=arg.get("reason", "other"), text=str(arg.get("text", "")), contributor_id=who)  # type: ignore[arg-type]
             )  # fmt: skip
             return "other"
         if a == "decide":
@@ -689,6 +1187,36 @@ class _Runner:
         if a == "switch":
             await conv.send(ContributorSwitch(event_id=self.eid(), contributor_id=str(arg)))
             return "other"
+        if a == "upload":
+            spec = arg if isinstance(arg, dict) else {}
+            res = await conv.service.ingest_upload(
+                conv.caller,
+                conv.session_id,
+                str(spec.get("name", "notes.txt")),
+                str(spec["text"]).encode(),
+            )
+            conv.events.extend(res.events)
+            return "other"
+        if a == "edit_answer":
+            spec = arg if isinstance(arg, dict) else {}
+            await conv.send(
+                AnswerEdit(
+                    event_id=self.eid(),
+                    card_id=self._card_ref(spec.get("card", "first")),
+                    value=spec.get("value"),
+                    custom_text=spec.get("custom"),
+                    contributor_id=who,
+                )
+            )
+            return "other"
+        if a == "say_many":
+            for text in cast(list[Any], arg):
+                await self.execute(Step(action="say", arg=text, contributor=who))
+            return "text"
+        if a == "answer_texts":
+            for text in cast(list[Any], arg):
+                await self._answer(None, custom=str(text), who=who)
+            return "custom"
         if a == "drive":
             spec = arg if isinstance(arg, dict) else {}
             mode = spec.get("mode", "tap_recommended")
@@ -698,7 +1226,7 @@ class _Runner:
             for _ in range(limit):
                 if await conv.state() == until or conv.last_card() is None:
                     break
-                if until_frame and conv.last_card().frame == until_frame:  # type: ignore[union-attr]
+                if until_frame and in_frame(conv.last_card(), [until_frame], self.engine):  # type: ignore[arg-type]
                     break
                 card = conv.last_card()
                 if card is not None and card.must_confirm and mode in ("you_decide", "skip"):
@@ -731,20 +1259,32 @@ def _format_failure(
 async def run_scenario(
     scn: Scenario,
     *,
+    engine: Engine | None = None,
     service: Any | None = None,
     service_factory: Callable[[], Any] | None = None,
 ) -> RunResult:
-    """Run every step in order against a fresh service; stops at the first failed expectation."""
-    if service is None:
+    """Run every step in order against a fresh service; stops at the first failed expectation.
+
+    ``engine`` picks the question engine of a service built here; for a service passed in (or made by
+    ``service_factory``) the engine is read from its configuration, so the frame translation always matches."""
+    svc: Any = service
+    gateway: Any = None
+    if svc is None:
         if service_factory is not None:
-            service = service_factory()
+            svc = service_factory()
+        elif (engine or "legacy") == "planner" and (script := _provider_for(scn)) is not None:
+            svc, gateway = new_scripted_service("planner", script)
+            svc.scripted_gateway = gateway
         else:
-            service = new_service()
-    conv = await Conversation.start(service, mode=scn.mode, locale=scn.locale)
+            svc = new_service(engine or "legacy")
+    service = svc
+    engine = cast(Engine, svc.config.interview.engine)
+    gateway = gateway or getattr(svc, "scripted_gateway", None)
+    conv = await Conversation.start(svc, mode=scn.mode, locale=scn.locale)
     result = RunResult(scenario=scn, conv=conv)
     if scn.contributors:
         await _register_contributors(service, conv, scn)
-    runner = _Runner(conv, scn)
+    runner = _Runner(conv, scn, engine, gateway)
     for i, step in enumerate(scn.steps):
         before_n = len(conv.events)
         state_before = await conv.state()
@@ -770,7 +1310,8 @@ async def run_scenario(
             errors = await check_expect(
                 step.expect, conv=conv, events=events, state_after=state_after,
                 version_before=version_before, version_after=version_after,
-                card_on_screen=conv.last_card() if step.action == "drive" else None,
+                card_on_screen=conv.last_card() if step.action == "drive" else None, engine=engine,
+                gateway=gateway,
             )  # fmt: skip
         if errors:
             result.failure = _format_failure(scn, i, step, errors, events, conv.events)
@@ -784,13 +1325,29 @@ async def run_scenario(
     if scn.final is not None:
         errors = await check_expect(
             scn.final, conv=conv, events=[], state_after=await conv.state(),
-            version_before=0, version_after=int((await conv.brief())["version"]),
+            version_before=0, version_after=int((await conv.brief())["version"]), engine=engine,
+            gateway=gateway,
         )  # fmt: skip
         if errors:
             last = Step(action="final", arg=None, expect=scn.final)
             result.failure = _format_failure(scn, len(scn.steps), last, errors, [], conv.events)
             result.failed_step = len(scn.steps)
+    if result.failure is None and gateway is not None and hasattr(gateway, "unconsumed"):
+        left = gateway.unconsumed()
+        if left:  # strict: an answer nobody asked for means the script and the engine disagree
+            result.failure = f"{scn.id}: scripted model answers never used: {left}"
+            result.failed_step = len(scn.steps)
     return result
+
+
+def _provider_for(scn: Scenario) -> Any | None:
+    """The scenario's provider fixture (``providers/<id>.yaml`` or the file named by ``provider:``), if any."""
+    from mde_compass.scenarios.providers import find_provider, load_provider
+
+    if not scn.source_dir:
+        return None
+    found = find_provider(scn.source_dir, scn.id, scn.provider)
+    return load_provider(found) if found is not None else None
 
 
 async def _register_contributors(service: Any, conv: Conversation, scn: Scenario) -> None:

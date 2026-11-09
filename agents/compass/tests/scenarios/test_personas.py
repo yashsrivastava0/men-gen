@@ -1,7 +1,10 @@
-"""The ten persona scripts (agents/compass/evals/personas) run offline, and the metric targets they measure.
+"""The ten persona scripts (agents/compass/evals/personas) run offline on both question engines, and the metric
+targets they measure.
 
-The hard targets must hold today. The goal targets that the product does not meet yet are strict xfails that
-name the bug, so they turn red (and must be un-marked) the day the product meets them.
+Legacy: the hard targets must hold today; goal targets the product does not meet yet are strict xfails that name
+the bug. Planner: the question targets are the interview budgets (Quick 5, Standard 12, Thorough 25) and the
+section-6 measures of build prompt 02; a target the planner path misses today is a strict xfail with its BUG or
+GAP number, so it turns red (and must be un-marked) the day it is met.
 """
 
 from __future__ import annotations
@@ -14,6 +17,18 @@ from typing import Any
 import pytest
 
 EVALS = Path(__file__).resolve().parents[2] / "evals"
+KINDS = {
+    "silent",
+    "chatty",
+    "confused",
+    "expert",
+    "hinglish",
+    "enterprise",
+    "voice",
+    "adversarial",
+    "returns",
+    "change_heavy",
+}
 
 
 def _load_runner() -> Any:
@@ -29,20 +44,14 @@ def report() -> dict[str, Any]:
     return asyncio.run(_load_runner().run())
 
 
+@pytest.fixture(scope="module")
+def planner_report() -> dict[str, Any]:
+    return asyncio.run(_load_runner().run(engine="planner"))
+
+
+# ------------------------------------------------------------------------------------------ legacy engine
 def test_ten_personas_all_run_to_the_end(report: dict[str, Any]) -> None:
-    kinds = {r["kind"] for r in report["rows"]}
-    assert kinds == {
-        "silent",
-        "chatty",
-        "confused",
-        "expert",
-        "hinglish",
-        "enterprise",
-        "voice",
-        "adversarial",
-        "returns",
-        "change_heavy",
-    }
+    assert {r["kind"] for r in report["rows"]} == KINDS
     assert report["metrics"]["scripts_failed"] == []
     assert report["metrics"]["reached_review_pct"] == 100.0
 
@@ -90,3 +99,78 @@ GOALS = {
 )
 def test_goal_targets_not_met_yet(report: dict[str, Any], target: str) -> None:
     assert report["targets"][target], report["metrics"]
+
+
+# ----------------------------------------------------------------------------------------- planner engine
+def test_planner_personas_all_run_to_the_end(planner_report: dict[str, Any]) -> None:
+    assert planner_report["engine"] == "planner"
+    assert {r["kind"] for r in planner_report["rows"]} == KINDS
+    assert planner_report["metrics"]["scripts_failed"] == []
+    assert planner_report["metrics"]["reached_review_pct"] == 100.0
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        "locked_without_evidence_zero",
+        "all_three_probes_pass_before_gate1",
+        "hidden_instructions_100_ignored",
+        "turns_with_errors_zero",
+        "cards_valid_or_fallback_100",
+        "assumptions_unchanged_ge_80",
+        "project_term_share_ge_90",
+        "fact_coverage_100",
+        "quote_verification_100",
+        "followup_vague_ge_90",
+        "followup_specific_zero",
+    ],
+)
+def test_planner_hard_targets_hold(planner_report: dict[str, Any], target: str) -> None:
+    assert planner_report["targets"][target], planner_report["section6"]
+
+
+PLANNER_GOALS = {
+    "questions_within_budget": (
+        "BUG-19",
+        "follow-ups planned while batch questions wait, and handoff-gap questions, are not charged to "
+        "the budget (Quick 6 of 5, Standard 13 to 16 of 12 and 28 for the answer-all expert, Thorough 27 of 25)",
+    ),
+    "zero_repeated_questions": (
+        "BUG-24",
+        "a flagged fallback batch repeats the registry cards of an earlier fallback verbatim",
+    ),
+    "fallback_count_zero": (
+        "GAP-1",
+        "the mock planner re-proposes needs it already asked, every question is rejected as a duplicate and "
+        "the flagged fallback runs; the zero-fallback target is for scripted and live planners",
+    ),
+}
+
+
+@pytest.mark.parametrize(
+    "target",
+    [
+        pytest.param(t, marks=pytest.mark.xfail(strict=True, reason=f"{bug}: {why}"))
+        for t, (bug, why) in PLANNER_GOALS.items()
+    ],
+)
+def test_planner_goal_targets_not_met_yet(planner_report: dict[str, Any], target: str) -> None:
+    assert planner_report["targets"][target], planner_report["section6"]
+
+
+def test_planner_report_has_the_section_six_measures(planner_report: dict[str, Any]) -> None:
+    s6 = planner_report["section6"]
+    assert {
+        "questions_by_budget",
+        "project_term_share",
+        "repeated_questions",
+        "fact_coverage",
+        "quote_violations",
+        "fallback_count",
+        "followup_rate_vague",
+        "followup_rate_specific",
+        "needle_present",
+    } <= set(s6)
+    assert set(s6["questions_by_budget"]) == {"quick", "standard", "thorough"}
+    assert s6["followup_rate_vague"] == 1.0 and s6["followup_rate_specific"] == 0.0
+    assert "questions_median_le_7" not in planner_report["targets"]

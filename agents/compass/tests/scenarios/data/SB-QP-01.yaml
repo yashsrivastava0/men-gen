@@ -1,0 +1,28 @@
+id: SB-QP-01
+title: A one-line idea ("an app") gets broad grounding questions first, never detailed ones
+tags: [planner, initial, grounding]
+engines: [planner]
+steps:
+  - say: "I want to build an app for my business"
+    expect:
+      event_order: [playback, question_batch, card]
+      batch:
+        mode: initial
+        total_min: 4
+        total_max: 5
+        groups_min: 2
+        groups_max: 3
+        titles_filled: true
+        first_serves: [idea.summary]
+        lead: 2
+        lead_types_not: [choose_one, pick_many, priority]
+        lead_serves_only: [idea.summary, context.geo, locales]
+      calls:
+        counts: {cmp.plan_questions: 1, cmp.audit_questions: 1}
+      qa:
+        shown_max: 1
+        first_serves: [idea.summary]
+        first_contains: [typical day]
+      interview: {fallback_count: 0, repaired: false}
+final:
+  interview: {fallback_count: 0}

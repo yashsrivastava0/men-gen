@@ -12,29 +12,57 @@ import pytest
 import yaml
 
 from mde_compass.scenarios import Scenario, load_scenario, run_scenario
+from mde_compass.scenarios.runner import ENGINES, Engine
 
 DATA = Path(__file__).parent / "data"
 
+# Scripts that assert the legacy frame queue's own behaviour. Every one carries `engines_reason` in its YAML; the
+# lead ports or deletes them when the legacy path is removed (ADR 0015 point 7).
+LEGACY_ONLY = {"SB-DC-03", "SB-DC-05", "SB-DC-12", "SB-IV-06"}
 
-def _params() -> list[object]:
+
+def _marks(scn: Scenario, engine: Engine) -> list[pytest.MarkDecorator]:
+    reasons = []
+    if scn.known_issue:
+        reasons.append(f"{scn.known_issue}: {scn.known_issue_note}")
+    if engine == "planner" and scn.planner_known_issue:
+        reasons.append(f"{scn.planner_known_issue}: {scn.planner_known_issue_note}")
+    return [pytest.mark.xfail(strict=True, reason=" / ".join(reasons).strip())] if reasons else []
+
+
+def _params(prefix: str = "SB-") -> list[object]:
     out: list[object] = []
-    for path in sorted(DATA.glob("SB-*.yaml")):
+    for path in sorted(DATA.glob(f"{prefix}*.yaml")):
         scn = load_scenario(path)
-        marks = []
-        if scn.known_issue:
-            marks.append(
-                pytest.mark.xfail(
-                    strict=True, reason=f"{scn.known_issue}: {scn.known_issue_note}".strip()
+        for engine in ENGINES:
+            if engine in scn.engines:
+                out.append(
+                    pytest.param(scn, engine, id=f"{scn.id}-{engine}", marks=_marks(scn, engine))
                 )
-            )
-        out.append(pytest.param(scn, id=scn.id, marks=marks))
     return out
 
 
-@pytest.mark.parametrize("scn", _params())
-async def test_scenario(scn: Scenario, service) -> None:
-    result = await run_scenario(scn, service=service)
+@pytest.mark.parametrize(("scn", "engine"), _params())
+async def test_scenario(scn: Scenario, engine: Engine) -> None:
+    result = await run_scenario(
+        scn, engine=engine
+    )  # a provider fixture, if there is one, is loaded here
     result.raise_if_failed()
+
+
+def test_engine_limits_are_few_and_always_explained() -> None:
+    limited = {}
+    for path in sorted(DATA.glob("SB-*.yaml")):
+        scn = load_scenario(path)
+        if scn.engines != ["legacy", "planner"] and not scn.id.startswith("SB-QP-"):
+            limited[scn.id] = scn
+    assert set(limited) == LEGACY_ONLY
+    for scn in limited.values():
+        assert scn.engines == ["legacy"] and len(scn.engines_reason) > 40, scn.id
+    for path in sorted(DATA.glob("SB-*.yaml")):
+        scn = load_scenario(path)
+        if scn.planner_known_issue:
+            assert scn.planner_known_issue.startswith("BUG-") and scn.planner_known_issue_note
 
 
 def test_every_named_scenario_is_implemented_or_deferred() -> None:

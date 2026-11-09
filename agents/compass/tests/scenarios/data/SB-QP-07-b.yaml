@@ -1,0 +1,27 @@
+id: SB-QP-07-b
+title: A contradiction also earns a small either/or card to settle which statement is right
+tags: [planner, facts, contradiction]
+engines: [planner]
+known_issue: GAP-3
+known_issue_note: "a contradiction only supersedes the older fact (newest wins); no either/or clarification card is shown"
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      facts: {active_contains: ["delivers in Pune"], active_min: 1}
+      batch: {mode: initial, total_min: 3, total_max: 3}
+  - answer_texts:
+      - "Office workers who want lunch on time"
+      - "They pay at the start of every month"
+      - "Pune and the areas around it, for now"
+    expect:
+      batch: {mode: replan}
+      calls:
+        modes: {cmp.plan_questions: [initial, replan]}
+  - say: "Sorry, a correction: we only deliver in Mumbai, not Pune"
+    expect:
+      notice_code: picked_up
+      card_text_contains: [Pune, Mumbai]
+      card_type: [choose_one, confirm]
+final:
+  facts: {ids_gapless: true, superseded_min: 1}
+  qa: {no_repeats: true}

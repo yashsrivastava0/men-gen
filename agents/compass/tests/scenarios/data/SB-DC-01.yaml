@@ -9,7 +9,7 @@ steps:
   - tap_and_custom: {recommended: true, custom: "actually no commission at all, it is free for everyone and we earn from ads"}
     expect:
       slots:
-        idea.business_model: {contains_any: [ads, free, no commission], history_min: 0}
+        idea.business_model: {contains_any: [ads, free, no commission], planner_contains_any: [advertising], history_min: 0}
 final:
   slots:
-    idea.business_model: {contains_any: [ads, free, no commission]}
+    idea.business_model: {contains_any: [ads, free, no commission], planner_contains_any: [advertising]}

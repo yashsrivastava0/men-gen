@@ -1,0 +1,76 @@
+# Both the draft and its repair are generic. Nothing is shown from them; the engine asks the planner port for
+# its flagged fallback (cards from the Needs Registry) and counts it.
+calls:
+  cmp.understand_turn:
+    - mock: true
+  cmp.plan_questions:
+    - covered_needs: [scope.features]
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your app
+          intent: learn which features are wanted
+          serves: [scope.features]
+          answer_spec: The features.
+          type: text
+          text: "What features do you want?"
+          why_we_ask: Features decide the plan.
+          unlocks: ["Blueprint: features"]
+          examples: ["Ordering"]
+        - group_id: G1
+          group_title: Your app
+          intent: learn who the users are
+          serves: [roles.list]
+          answer_spec: The users.
+          type: text
+          text: "Who are your users?"
+          why_we_ask: Users decide the roles.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Customers"]
+        - group_id: G2
+          group_title: Your app
+          intent: learn the colours wanted
+          serves: [look.tone_words]
+          answer_spec: Colours.
+          type: text
+          text: "What colours do you like?"
+          why_we_ask: Colours are part of the design.
+          unlocks: ["Design: tone"]
+          examples: ["Green"]
+    - covered_needs: [scope.features]
+      questions:
+        - group_id: G1
+          group_title: Your app
+          intent: learn the features wanted
+          serves: [scope.features]
+          answer_spec: The features.
+          type: text
+          text: "Which features would you like?"
+          why_we_ask: Features decide the plan.
+          unlocks: ["Blueprint: features"]
+          examples: ["Ordering"]
+        - group_id: G1
+          group_title: Your app
+          intent: learn who will use it
+          serves: [roles.list]
+          answer_spec: The users.
+          type: text
+          text: "Who will use this?"
+          why_we_ask: Users decide the roles.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Customers"]
+        - group_id: G2
+          group_title: Your app
+          intent: learn the preferred colours
+          serves: [look.tone_words]
+          answer_spec: Colours.
+          type: text
+          text: "Which colours do you prefer?"
+          why_we_ask: Colours are part of the design.
+          unlocks: ["Design: tone"]
+          examples: ["Green"]
+  cmp.audit_questions: []

@@ -1,0 +1,94 @@
+# A beekeeping cooperative is a domain the model knows little about: it says so (confidence 0.2), opens with a
+# typical day and the apps the members already use, and keeps the mechanics for the next groups.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - facts:
+        - type: context
+          statement: "Members bring honey in drums to the collection centre in Kalpetta each morning"
+          quote: "members bring honey in drums to our collection centre in Kalpetta"
+          topics: [process]
+          entities: [honey, collection centre, Kalpetta]
+          aspects: ["idea.summary:*"]
+        - type: rule
+          statement: "Honey is weighed and tested for purity at the collection centre before it is packed"
+          quote: "weighed and tested for purity"
+          topics: [process]
+          entities: [honey]
+        - type: context
+          statement: "The cooperative sells jars of honey to shops and tourists"
+          quote: "sell to shops and tourists"
+          topics: [sales]
+          entities: [honey]
+  cmp.plan_questions:
+    - defer_rest: "the model does not know this trade well enough to ask about the rest yet"
+      domain_hypothesis:
+        category: agriculture marketplace
+        subcategory: honey cooperative
+        business_model_candidates: [sells honey for members]
+        likely_roles: [member, collection centre staff]
+        hard_parts: []
+        confidence: 0.2
+      questions:
+        - group_id: G1
+          group_title: How the cooperative works day to day
+          intent: understand a typical day of the beekeeping cooperative from hive to sale
+          serves: [idea.summary, "domain:typical_day"]
+          answer_spec: One ordinary day, who does what and where the honey goes.
+          type: text
+          text: "Walk me through a typical day in your beekeeping cooperative, from the hive to a sale."
+          why_we_ask: This is a trade we know little about, so a real day teaches us the most.
+          unlocks: ["Research: which similar cooperatives to study"]
+          examples: ["Members bring honey in drums in the morning and..."]
+        - group_id: G1
+          group_title: How the cooperative works day to day
+          intent: learn which apps the cooperative members already use to sell honey
+          serves: ["domain:reference_apps"]
+          answer_spec: App names and what the members like or dislike about them.
+          type: text
+          text: "Which apps do your cooperative members already use for selling honey, if any?"
+          why_we_ask: Apps they already know show what feels natural to them.
+          unlocks: ["Design: patterns worth borrowing"]
+          examples: ["WhatsApp groups and a Google form"]
+        - group_id: G2
+          group_title: Selling the honey
+          intent: learn who buys the honey today
+          serves: [audience.segments]
+          answer_spec: The kinds of buyers and what each wants.
+          type: text
+          text: "Who buys your cooperative's honey today, and how do they order?"
+          why_we_ask: Buyers decide what the app has to show and take payment for.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Local shops phone us, tourists buy at the centre"]
+        - group_id: G2
+          group_title: Selling the honey
+          intent: learn how a member's honey is paid for
+          serves: ["domain:member_payment"]
+          answer_spec: How and when members are paid for their honey.
+          type: text
+          text: "How is a beekeeping member paid for the honey they bring in?"
+          why_we_ask: Payment rules are the heart of a cooperative.
+          unlocks: ["Blueprint: payment rules"]
+          examples: ["By weight after testing, once a month"]
+        - group_id: G3
+          group_title: Running it
+          intent: learn who approves members and honey batches
+          serves: [roles.list]
+          answer_spec: Who approves what in the cooperative.
+          type: text
+          text: "Who in the cooperative approves a new beekeeping member or a batch of honey?"
+          why_we_ask: Approvals tell us which roles the app needs.
+          unlocks: ["Blueprint: roles and permissions"]
+          examples: ["The secretary approves members, the lab approves batches"]
+        - group_id: G3
+          group_title: Running it
+          intent: learn how good the phone network is where the members work
+          serves: [constraints.offline]
+          answer_spec: Where the network is poor and whether the app must work offline.
+          type: text
+          text: "How is the phone network at your Wayanad apiaries, and must the app work without it?"
+          why_we_ask: Hills often lose the signal, which changes how the app must be built.
+          unlocks: ["Blueprint: offline needs"]
+          examples: ["No signal at most apiaries"]
+  cmp.audit_questions:
+    - pass_all: true

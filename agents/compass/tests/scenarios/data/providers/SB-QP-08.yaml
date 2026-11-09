@@ -1,0 +1,94 @@
+# The person pivots from tiffins to a clinic. The model flags the pivot; the engine supersedes the old idea
+# facts (kept in the ledger), asks the situator again and plans the next batch for the clinic.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - {}
+    - flags: [pivot]
+      facts:
+        - type: context
+          statement: "The app is an appointment booking app for a clinic"
+          quote: "it is for a clinic that wants appointment booking"
+          topics: [idea]
+          entities: [clinic]
+          aspects: ["idea.summary:*"]
+          effects:
+            - {slot_id: idea.summary, value_json: '"An appointment booking app for a clinic"'}
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: The kinds of customers, what each wants, where and how they use the app.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, and how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge and remind.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G2
+          group_title: Where you work
+          intent: learn which areas the tiffin service delivers to
+          serves: [context.geo]
+          answer_spec: The city and the areas covered.
+          type: text
+          text: "Which city and areas do your tiffins reach?"
+          why_we_ask: Place decides maps, rules and competitors to study.
+          unlocks: ["Research: local competitors"]
+          examples: ["Pune, Baner and Aundh"]
+    - defer_rest: the pivot changed the project, the rest comes later
+      domain_hypothesis:
+        category: healthcare
+        subcategory: clinic appointments
+        likely_roles: [patient, doctor, receptionist]
+        confidence: 0.7
+      questions:
+        - group_id: G1
+          group_title: How the clinic books visits
+          intent: learn how patients book a visit with the clinic today
+          serves: [domain:booking_today]
+          answer_spec: How booking happens now.
+          type: text
+          text: "How do patients book a visit with your clinic today, by phone, walk-in or by message?"
+          why_we_ask: The current way of booking shows what the app must replace.
+          unlocks: ["Blueprint: booking flow"]
+          examples: ["By phone through the receptionist"]
+        - group_id: G1
+          group_title: How the clinic books visits
+          intent: learn who the appointment app is for
+          serves: [audience.segments]
+          answer_spec: The kinds of users and what each wants.
+          type: text
+          text: "Who will use the clinic appointment app, patients, receptionists, doctors?"
+          why_we_ask: Each kind of user needs its own screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Patients book, the receptionist manages"]
+        - group_id: G2
+          group_title: Doctors and slots
+          intent: learn how doctors' time slots are set
+          serves: [domain:doctor_slots]
+          answer_spec: Who sets slots and how they change.
+          type: text
+          text: "How are the time slots of each doctor in your clinic decided and changed?"
+          why_we_ask: Slots are the core of appointment booking.
+          unlocks: ["Blueprint: slot rules"]
+          examples: ["Each doctor sends me a weekly list"]
+  cmp.audit_questions:
+    - pass_all: true
+    - pass_all: true

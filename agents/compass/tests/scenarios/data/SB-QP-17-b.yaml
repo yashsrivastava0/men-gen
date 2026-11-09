@@ -1,0 +1,26 @@
+id: SB-QP-17-b
+title: A document uploaded mid-way closes the needs it answers, drops those questions and shows an updated playback
+tags: [planner, documents]
+engines: [planner]
+known_issue: GAP-7
+known_issue_note: "after a mid-interview upload the document's facts carry no aspects, so the needs it answers stay partial, the waiting question about them is still asked, and no new playback is shown"
+steps:
+  - say: "I run a tiffin service and want an app for it"
+    expect:
+      batch: {mode: initial, total_min: 4, total_max: 4}
+  - answer_texts: ["Office workers who want lunch on time, ordering the evening before"]
+  - upload:
+      name: prd.txt
+      text: |
+        Product requirements: Dabbawala Connect
+        We run a tiffin delivery service in Pune with 40 riders. Office workers in Baner and Hinjewadi order a monthly meal plan.
+        Roles: customer, rider, kitchen manager and admin.
+        Features: choose a weekly menu, pay by UPI, track the rider live, pause the plan during holidays.
+    expect:
+      event_types: [playback]
+      qa:
+        dropped_min: 1
+        not_asked_needs: [roles.list]
+final:
+  facts: {ids_gapless: true}
+  qa: {no_repeats: true}

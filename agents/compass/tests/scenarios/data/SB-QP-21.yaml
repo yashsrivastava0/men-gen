@@ -1,0 +1,12 @@
+id: SB-QP-21
+title: The owner's own example idea, a children's language-learning app with short games, is not refused as a game
+tags: [planner, declined, safety, false-positive]
+engines: [planner]
+known_issue: BUG-28
+known_issue_note: "the safety screen's 'game' keyword declines the whole first message ('Games of any kind is not something we can build here') because the idea says 'short games and stories'; a learning app that merely contains games is not a game app. The corpus option 'short games' is likewise rejected by the declined_option validator"
+steps:
+  - say: "A language-learning app for children aged 5 to 10 with short games and stories; parents see their child's progress."
+    expect:
+      no_notice_code: declined_category
+      batch: {mode: initial, total_min: 3}
+      qa: {shown_max: 1}

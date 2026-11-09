@@ -1,0 +1,37 @@
+id: SB-QP-02-b
+title: An option that rests on the document (basis your_document) is accepted, not rejected for lack of evidence
+known_issue: BUG-25
+known_issue_note: "InterviewController._vctx builds the ValidationContext without the document quotes (evidence=) or the typical labels (hints=), so every your_document or typical option is rejected: 'claims a document but there is no evidence'"
+tags: [planner, initial, documents]
+engines: [planner]
+steps:
+  - upload:
+      name: prd.txt
+      text: |
+        Product requirements: Dabbawala Connect
+        We run a tiffin delivery service in Pune with 40 riders. Office workers in Baner and Hinjewadi order a monthly meal plan.
+        Roles: customer, rider, kitchen manager and admin.
+        Features: choose a weekly menu, pay by UPI, track the rider live, pause the plan during holidays.
+        Delivery must reach the office before 12:30. The app must work in English and Marathi.
+        Payments go through Razorpay. Riders are independent contractors and are paid per delivery.
+    expect:
+      event_order: [playback, question_batch, card]
+      batch:
+        mode: initial
+        total_min: 3
+        total_max: 3
+        types_include: [confirm]
+      calls:
+        counts: {cmp.plan_questions: 1, cmp.audit_questions: 1}
+        input_contains:
+          cmp.plan_questions: [FCT-003, "Roles: customer, rider, kitchen manager", tiffin, baner]
+      facts:
+        active_min: 7
+      qa:
+        shown_max: 1
+        shown_not_contains: ["which roles", "what kind of app", "how many riders"]
+        project_term_share_min: 1.0
+      interview: {fallback_count: 0, repaired: false, rejected_min: 0}
+final:
+  facts:
+    ids_gapless: true
