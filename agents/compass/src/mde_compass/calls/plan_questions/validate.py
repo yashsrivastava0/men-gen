@@ -41,14 +41,12 @@ def structural(inp: PlanInput, out: PlanOutput) -> list[str]:
             errors.append(f"{where}: empty intent")
         if not q.serves:
             errors.append(f"{where}: serves no need")
-        if not 1 <= q.priority <= 5:
-            errors.append(f"{where}: priority must be 1 to 5")
+        # priority is only an ordering hint: an out-of-range value is clamped by the adapter, never fatal
         if q.type in _CHOICE and len(q.options) < 2:
             errors.append(f"{where}: a {q.type} question needs options")
         if q.type in _FREE and q.options:
             errors.append(f"{where}: a {q.type} question must not carry options")
-        if q.recommended and q.recommended not in {o.label for o in q.options}:
-            errors.append(f"{where}: recommended is not one of the options")
+        # a `recommended` that is not one of the options is ignored by the adapter (no option is marked)
         if any(not o.label.strip() for o in q.options):
             errors.append(f"{where}: an option has no label")
     return errors

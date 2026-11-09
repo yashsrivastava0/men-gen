@@ -62,7 +62,7 @@ def _request(inp: PlanInput, **changes: object) -> PlanRequest:
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
     assert s.id == "cmp.plan_questions" and s.version == 1
-    assert s.reasoning_effort == "high" and s.max_output_tokens == 7000 and s.route == "deep"
+    assert s.reasoning_effort == "low" and s.max_output_tokens == 5000 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
     assert "focus_answer" in s.untrusted_inputs and "fact_digest" in s.untrusted_inputs
 
@@ -135,8 +135,11 @@ def test_structural_validator_rejects_what_is_not_a_batch() -> None:
     assert any("unique" in e for e in structural(inp, dup))
     bad = good.model_copy(update={"questions": [q0.model_copy(update={"options": []})]})
     assert any("needs options" in e for e in structural(inp, bad))
+    # harmless slips are not fatal (a live model once failed a whole batch on `priority: 6`)
     wrong = good.model_copy(update={"questions": [q0.model_copy(update={"recommended": "nope"})]})
-    assert any("recommended" in e for e in structural(inp, wrong))
+    assert structural(inp, wrong) == []
+    odd = good.model_copy(update={"questions": [q0.model_copy(update={"priority": 9})]})
+    assert structural(inp, odd) == []
     two_titles = q1.model_copy(update={"group_id": q0.group_id, "group_title": "Another title"})
     assert any(
         "two different titles" in e

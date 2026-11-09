@@ -2312,9 +2312,21 @@ def main(
     parser.add_argument(
         "--allowance-usd", default=None, help="stop when the ledger delta reaches this"
     )
+    parser.add_argument(
+        "--only",
+        default="",
+        help="comma separated session ids of the batch to run (default: all)",
+    )
     args = parser.parse_args(list(argv) if argv is not None else None)
 
     data = load_batch(args.batch)
+    only = {x.strip() for x in args.only.split(",") if x.strip()}
+    if only:
+        chosen = tuple(s for s in data.sessions if s.id in only)
+        if not chosen:
+            warn(f"no session of batch {args.batch} matches --only {args.only}")
+            return 2
+        data = data.model_copy(update={"sessions": chosen})
     try:
         allowance = _parse_allowance(args.allowance_usd, data.allowance_usd)
     except ValueError as exc:

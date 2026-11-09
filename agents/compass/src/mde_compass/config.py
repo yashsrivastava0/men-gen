@@ -48,7 +48,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.read_chunk", "high", 4000, "writer", "deep", 90),
         _p("cmp.merge_claims", "high", 6000, "writer", "deep", 120),
         _p("cmp.situate", "high", 6000, "writer", "deep", 90),
-        _p("cmp.understand_turn", "medium", 3500, "writer", "standard", 45),
+        _p("cmp.understand_turn", "low", 3500, "writer", "standard", 60),
         _p("cmp.answer", "medium", 1500, "writer", "standard", 45),
         _p("cmp.write_card", "high", 2500, "writer", "deep", 60),
         _p("cmp.scan_ambiguity", "high", 3000, "critic", "deep", 60),
@@ -58,7 +58,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
         _p("cmp.make_variants", "high", 2500, "writer", "deep", 60),
         # the AI-planned interview (build prompt 02): starting caps, measured in the live batches
-        _p("cmp.plan_questions", "high", 7000, "writer", "deep", 120),
+        _p("cmp.plan_questions", "low", 5000, "writer", "standard", 90),
         _p("cmp.audit_questions", "medium", 3000, "critic", "standard", 60),
         _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
         _p("cmp.compile_brief", "high", 8000, "writer", "deep", 150),
@@ -134,6 +134,7 @@ class InterviewPolicy:
     duplicate_similarity_min: float = (
         0.8  # calibrate: normalized-text similarity that counts as a repeat
     )
+    same_need_similarity_min: float = 0.6  # two questions for exactly the same needs count as a repeat from this similarity (live batch E: 0.70)
     # facts and quotes
     min_quote_chars: int = 3
     high_confidence_closes_need: float = (

@@ -383,7 +383,16 @@ def _check_duplicates(card: Card, ctx: ValidationContext) -> list[Issue]:
         entry_text = normalize(entry.text)
         if norm_text and norm_text == entry_text:
             return [Issue("duplicate_text", f"same wording as {entry.card_id}", entry.card_id)]
-        if needs & set(entry.need_ids) and _similar(norm_text, entry_text, threshold):
+        # inside one batch, two questions for exactly the same needs are a repeat from a lower similarity
+        # (the live planner paraphrased a payment question: 0.70), against the ledger from the usual one
+        in_batch = entry in ctx.planned
+        same_needs = bool(needs) and needs == set(entry.need_ids)
+        limit = (
+            min(threshold, ctx.policy.same_need_similarity_min)
+            if in_batch and same_needs
+            else threshold
+        )
+        if (needs & set(entry.need_ids)) and _similar(norm_text, entry_text, limit):
             return [
                 Issue(
                     "duplicate_text",

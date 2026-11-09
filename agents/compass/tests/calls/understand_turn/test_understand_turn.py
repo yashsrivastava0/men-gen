@@ -77,7 +77,7 @@ def test_spec_matches_profile() -> None:
     assert (
         s.id == "cmp.understand_turn" and s.version == 2 and s.fallback == "compass.understand_turn"
     )
-    assert s.reasoning_effort == "medium" and s.max_output_tokens == 3500 and s.route == "standard"
+    assert s.reasoning_effort == "low" and s.max_output_tokens == 3500 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
 
 
