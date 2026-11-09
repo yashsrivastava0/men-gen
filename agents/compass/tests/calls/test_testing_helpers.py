@@ -77,3 +77,27 @@ async def test_scripted_gateway_drives_fallbacks(spec) -> None:
     second = await runner.run(cs, In(text="b"), session_id="ses_1", tenant_id="t")
     assert first.used_fallback and first.output.answer == "fb:a"
     assert not second.used_fallback and second.output.answer == "second"
+
+
+async def test_scripted_gateway_serves_a_queue_per_spec_and_checks_it_was_used() -> None:
+    from types import SimpleNamespace
+
+    from pydantic import BaseModel
+
+    from mde_compass.calls.testing import ScriptedGateway, ScriptExhausted
+    from mde_contracts.gateway import CallContext
+
+    class Out(BaseModel):
+        n: int
+
+    ctx = CallContext(request_id="call_1", budget_scope="session:ses_1", purpose="test")
+    gw = ScriptedGateway(by_spec={"cmp.a": [Out(n=1), Out(n=2)], "cmp.b": [Out(n=9)]})
+    a, b = SimpleNamespace(id="cmp.a", version=1), SimpleNamespace(id="cmp.b", version=1)
+    assert (await gw.run(a, Out(n=0), ctx)).output.n == 1  # type: ignore[union-attr]
+    assert (await gw.run(b, Out(n=0), ctx)).output.n == 9  # type: ignore[union-attr]
+    with pytest.raises(ScriptExhausted, match=r"never used"):
+        gw.assert_consumed()  # one cmp.a answer is left
+    assert (await gw.run(a, Out(n=0), ctx)).output.n == 2  # type: ignore[union-attr]
+    gw.assert_consumed()
+    with pytest.raises(ScriptExhausted):
+        await gw.run(a, Out(n=0), ctx)

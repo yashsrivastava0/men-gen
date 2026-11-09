@@ -36,17 +36,45 @@ def make_client(
     return InProcessGatewayClient(create_gateway(settings, registry, clock=clock, config=config))
 
 
-class ScriptedGateway:
-    """Duck-typed ``GatewayClient``: each ``run`` pops the next queued item (a model or an exception)."""
+class ScriptExhausted(AssertionError):
+    """A call asked for a scripted answer but none was queued: the test's script is wrong, not the code."""
 
-    def __init__(self, *script: BaseModel | Exception, cost_micros: int = 0) -> None:
+
+class ScriptedGateway:
+    """Duck-typed ``GatewayClient``: each ``run`` pops the next queued item (a model or an exception).
+
+    ``ScriptedGateway(a, b)`` serves one queue in call order. ``ScriptedGateway(by_spec={"cmp.plan_questions":
+    [a], "cmp.audit_questions": [b, c]})`` serves a queue per call id, so a scenario's hand-written outputs
+    do not depend on the order in which different calls happen. A call with no queued answer raises
+    :class:`ScriptExhausted`, and :meth:`assert_consumed` fails when an answer was never used.
+    """
+
+    def __init__(
+        self,
+        *script: BaseModel | Exception,
+        by_spec: dict[str, list[BaseModel | Exception]] | None = None,
+        cost_micros: int = 0,
+    ) -> None:
         self.script: list[BaseModel | Exception] = list(script)
+        self.by_spec: dict[str, list[BaseModel | Exception]] = {
+            k: list(v) for k, v in (by_spec or {}).items()
+        }
         self.cost_micros = cost_micros
         self.calls: list[tuple[str, BaseModel]] = []
 
+    def assert_consumed(self) -> None:
+        left = {k: len(v) for k, v in self.by_spec.items() if v}
+        if self.script:
+            left["(ordered script)"] = len(self.script)
+        if left:
+            raise ScriptExhausted(f"scripted answers never used: {left}")
+
     async def run(self, spec: Any, inp: BaseModel, ctx: CallContext) -> CallResult[Any]:
         self.calls.append((spec.id, inp))
-        item = self.script.pop(0)
+        queue = self.by_spec.get(spec.id) if spec.id in self.by_spec else self.script
+        if not queue:
+            raise ScriptExhausted(f"no scripted answer left for {spec.id}")
+        item = queue.pop(0)
         if isinstance(item, Exception):
             raise item
         return CallResult(
