@@ -1,0 +1,12 @@
+Language: {{ language }}
+Refresh the summary so that it covers every fact up to {{ through_fact_id or "the newest one" }}.
+
+Summary so far, one block per topic:
+{% for topic in previous_topics %}
+{{ topic }}
+{% else %}
+(nothing yet: this is the first summary)
+{% endfor %}
+
+New facts to add, one per line (every id here must appear in a topic's fact_ids):
+{{ new_facts_digest }}
