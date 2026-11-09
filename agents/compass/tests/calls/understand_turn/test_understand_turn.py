@@ -50,6 +50,13 @@ def mk(
         current_slots=slots or [],
         slot_hints=[],
         recent_turns=[],
+        focus_card_id="",
+        focus_question="",
+        focus_intent="",
+        focus_need_ids=[],
+        focus_selected_labels=[],
+        needs=[],
+        fact_digest="",
     )  # type: ignore[arg-type]
 
 
@@ -68,7 +75,7 @@ def test_strict_schemas() -> None:
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
     assert (
-        s.id == "cmp.understand_turn" and s.version == 1 and s.fallback == "compass.understand_turn"
+        s.id == "cmp.understand_turn" and s.version == 2 and s.fallback == "compass.understand_turn"
     )
     assert s.reasoning_effort == "medium" and s.max_output_tokens == 3500 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
@@ -265,6 +272,10 @@ def _out(*updates: SlotUpdateWire, intent: str = "answer") -> UnderstandOutput:
         safety_flags=[],
         ambiguous=[],
         confidence=0.8,
+        facts=[],
+        flags=[],
+        glossary_terms=[],
+        contradicts=[],
     )  # type: ignore[arg-type]
 
 

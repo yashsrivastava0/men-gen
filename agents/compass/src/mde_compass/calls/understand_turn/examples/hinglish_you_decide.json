@@ -125,7 +125,14 @@
         "fields": []
       }
     ],
-    "recent_turns": []
+    "recent_turns": [],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_intent": "",
+    "focus_need_ids": [],
+    "focus_selected_labels": [],
+    "needs": [],
+    "fact_digest": ""
   },
   "output": {
     "intent": "you_decide",
@@ -134,6 +141,10 @@
     "language": "hi-Latn",
     "safety_flags": [],
     "ambiguous": [],
-    "confidence": 0.85
+    "confidence": 0.85,
+    "facts": [],
+    "flags": [],
+    "glossary_terms": [],
+    "contradicts": []
   }
 }
