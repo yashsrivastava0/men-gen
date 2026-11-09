@@ -121,6 +121,30 @@ def test_mock_follows_up_with_exactly_one_question_on_the_focus_need() -> None:
     assert questions[0].id == "Q-009" and questions[0].type == "text" and not questions[0].options
 
 
+def test_mock_does_not_re_propose_a_need_an_earlier_batch_already_asked() -> None:
+    """GAP-1: a real planner reads the asked list and never repeats a need; the mock now behaves the same, so a
+    replan does not hand the validators a batch of repeats (which ends in the flagged fallback)."""
+    inp = _input(EXAMPLES[0])
+    first = handle(inp).questions
+    assert first
+    asked = "\n".join(f"{q.id} | open | {q.intent}" for q in first)
+    second = handle(inp.model_copy(update={"asked_list": asked})).questions
+    assert {n for q in first for n in q.serves}.isdisjoint({n for q in second for n in q.serves})
+
+
+def test_mock_follow_up_may_still_target_a_need_that_was_asked() -> None:
+    inp = _input(EXAMPLES[0])
+    first = handle(inp).questions
+    need = first[0].serves[0]
+    asked = "\n".join(f"{q.id} | open | {q.intent}" for q in first)
+    follow = inp.model_copy(
+        update={"mode": "followup", "focus_needs": [need], "asked_list": asked, "next_card_n": 20}
+    )
+    questions = handle(follow).questions
+    assert len(questions) == 1 and questions[0].serves == [need]
+    assert "learn more about" in questions[0].intent
+
+
 def test_structural_validator_rejects_what_is_not_a_batch() -> None:
     inp = _input(EXAMPLES[0])
     good = _output(EXAMPLES[0])
