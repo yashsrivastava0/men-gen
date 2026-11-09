@@ -51,6 +51,8 @@ def test_ten_personas_all_run_to_the_end(report: dict[str, Any]) -> None:
     "target",
     [
         "locked_without_evidence_zero",
+        "express_le_5",
+        "all_three_probes_pass_before_gate1",
         "hidden_instructions_100_ignored",
         "turns_with_errors_zero",
         "cards_valid_or_fallback_100",
@@ -73,8 +75,6 @@ def test_report_has_the_documented_metrics(report: dict[str, Any]) -> None:
 GOALS = {
     "questions_median_le_7": "BUG-18",
     "questions_max_le_10": "BUG-18",
-    "express_le_5": "BUG-18",
-    "all_three_probes_pass_before_gate1": "BUG-4",
 }
 
 

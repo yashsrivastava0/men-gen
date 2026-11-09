@@ -16,6 +16,7 @@ en:
   journey: "{role}"
   journey_goal: "{role}: {goal}"
   home_screen: "Home: {app}"
+  role_screen: "Home for {role}"
   direction: "A {tone} look for {audience}, in {locales}."
   direction_no_audience: "A {tone} look, in {locales}."
   questions:
@@ -58,6 +59,7 @@ hi:
   journey: "{role}"
   journey_goal: "{role}: {goal}"
   home_screen: "होम: {app}"
+  role_screen: "{role} के लिए होम"
   direction: "{audience} के लिए {tone} रूप-रंग, {locales} में।"
   direction_no_audience: "{tone} रूप-रंग, {locales} में।"
   questions:

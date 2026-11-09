@@ -923,6 +923,10 @@ class Service:
         if turn.state == "BRIEF_REVIEW":
             await self._open_review(turn)
 
+    def _ask_cap(self, turn: _Turn) -> int:
+        plan = self._plan(turn)
+        return plan.question_budget if plan.depth == "express" else self.config.questions.hard_cap
+
     def _derive_subcategory(self, turn: _Turn) -> None:
         """idea.subcategory is required but no card writes it: assume it from the hypothesis, else from the
         category's label, listed in "We assumed" (never Locked)."""
@@ -944,11 +948,53 @@ class Service:
             )
             self._rebuild(turn)
 
+    def _assume_required(self, turn: _Turn) -> None:
+        """Express: every required slot still empty is assumed (catalog default, else the hypothesis, else the
+        first, suggested option) and listed in "We assumed" for approval; never Locked."""
+        hyp = turn.brief.meta.hypothesis
+        for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
+            sd = self.catalog.slots[sid]
+            value: JsonValue = cast(JsonValue, sd.default)
+            if value is None and hyp is not None:
+                if sid == "idea.business_model" and hyp.business_model_candidates:
+                    value = hyp.business_model_candidates[0]
+                elif sid == "scope.features":
+                    feats = [f for f in hyp.likely_features if not f.custom][:3]
+                    value = (
+                        cast(JsonValue, [{"name": f.name, "intent": f.intent} for f in feats])
+                        or None
+                    )
+            if value is None and sd.fallback_card.options:
+                first = sd.fallback_card.options[0]
+                if first.value is not None:
+                    value = (
+                        [first.value]
+                        if sd.value_schema.kind in ("enum_list", "text_list")
+                        else first.value
+                    )
+                    value = self._label_codes(sid, value, turn.lang)
+            if value is None or value == []:
+                continue
+            turn.slots.write(
+                sid,
+                value,
+                state="assumed",
+                provenance=Provenance(type="pattern", ref=f"express:{sid}", date=self.clock.now()),
+                confidence=0.4,
+                turn_id=turn.turn_id,
+            )
+        self._rebuild(turn)
+
     async def _ask_missing_must(self, turn: _Turn) -> bool:
         """A required slot with no default that is still empty after its frame was asked (a frame batches
         several slots but one card settles one) gets ONE follow-up card; never more than twice per slot."""
         self._derive_subcategory(turn)
         plan = self._plan(turn)
+        if (
+            plan.depth == "express"
+        ):  # "just build it": assume and list everything still required, ask nothing more
+            self._assume_required(turn)
+            return False
         cap = plan.question_budget if plan.depth == "express" else self.config.questions.hard_cap
         over_cap = self._question_n(turn) >= cap
         counts: dict[str, int] = {}
@@ -1211,11 +1257,7 @@ class Service:
                     (f for f in self.catalog.frames.values() if ask_gap.slot_id in f.slots), None
                 )
                 asks = sum(1 for c in turn.asked_cards() if ask_gap.slot_id in c.slots)
-                if (
-                    frame is not None
-                    and asks < 2
-                    and self._question_n(turn) < self.config.questions.hard_cap
-                ):
+                if frame is not None and asks < 2 and self._question_n(turn) < self._ask_cap(turn):
                     item = voi_mod.QueueItem(
                         frame_id=frame.id,
                         slots=[ask_gap.slot_id],

@@ -1,8 +1,6 @@
 id: SB-EXPRESS-01
 title: A "just build it" user (express profile) is asked at most five questions
 tags: [interview, express, budget]
-known_issue: BUG-18
-known_issue_note: "the express plan sets question_budget 5 (progress says 'of about 4') but the interview asks 10 questions: required slots left empty by a card get one follow-up card each (confirm_kind_of_app, who_and_where and login_and_accounts are all asked twice)"
 steps:
   - say: "Quickly, an app for my salon in Pune, asap"
     expect:

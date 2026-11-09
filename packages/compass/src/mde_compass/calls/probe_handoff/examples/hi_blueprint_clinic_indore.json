@@ -79,6 +79,16 @@
         "first_release": true
       },
       {
+        "name": "मरीज़ के लिए होम",
+        "journey": "मरीज़: डॉक्टर से मिलने का समय लेना",
+        "first_release": true
+      },
+      {
+        "name": "रिसेप्शनिस्ट के लिए होम",
+        "journey": "मरीज़: डॉक्टर से मिलने का समय लेना",
+        "first_release": true
+      },
+      {
         "name": "बुकिंग",
         "journey": "मरीज़: डॉक्टर से मिलने का समय लेना",
         "first_release": true

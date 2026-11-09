@@ -108,6 +108,16 @@ def blueprint_plan(inp: ProbeHandoffInput) -> tuple[list[Journey], list[Screen]]
         for a in d.apps
         if a.name.strip()
     ]
+    # each role the user confirmed gets its own first screen (a data-derived screen, not a guess)
+    screens += [
+        Screen(
+            name=_fill(table["role_screen"], {"role": clip(r.name.strip(), PART_CHARS)}),
+            journey=first,
+            first_release=True,
+        )
+        for r in d.roles
+        if r.name.strip()
+    ]
     screens += [
         Screen(name=clip(f.name, PART_CHARS), journey=first, first_release=True)
         for f in live_features(d)
