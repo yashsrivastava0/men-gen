@@ -390,7 +390,8 @@ async def test_ingest_url_end_to_end_with_injected_network(ctx) -> None:
         "1234-" * 10_000,
         "password=" * 5_000,
         "Bearer " * 7_000,
-        "-----BEGIN PRIVATE KEY-----" * 2_000,
+        "-----BEGIN PRIVATE KEY-----"
+        * 2_000,  # secret-scan: allow (a hostile-input fixture, not a key)
         "<system>" * 6_000,
         "eyJ" + "a." * 25_000,
         "https://" + "a:" * 20_000 + "@",
