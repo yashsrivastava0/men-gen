@@ -273,6 +273,9 @@ class _Turn:
     internal: Any = (
         None  # an internal event to run right after this turn commits (round 0 planning)
     )
+    reshow_pending: bool = (
+        False  # a typed message (not an answer) arrived: the open question comes back
+    )
 
     @property
     def turn_id(self) -> str:
@@ -881,6 +884,7 @@ class Service(FlowHooks):
             await self._first_understanding(turn, text)
         else:
             self._rebuild(turn)
+        turn.reshow_pending = True  # BUG-27: a question still on screen is shown again, not skipped
         await self._advance(turn)
 
     def _write_updates(self, turn: _Turn, updates: Sequence[Any], text: str) -> list[str]:

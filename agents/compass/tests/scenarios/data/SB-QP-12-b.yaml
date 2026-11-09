@@ -1,7 +1,5 @@
 id: SB-QP-12-b
 title: After a side message that changes a fact, the question that was on screen comes back
-known_issue: BUG-27
-known_issue_note: "a message sent while a planned question is on screen makes the engine show the NEXT question: show_next only takes questions never shown, so the pending one stays 'open' and is never shown again (it is neither answered, dropped nor assumed)"
 tags: [planner, voice]
 engines: [planner]
 steps:

@@ -424,6 +424,22 @@ class InterviewController:
         self._show(turn, waiting[0])
         return True
 
+    def pending(self, turn: _Turn) -> list[QaRecord]:
+        """Questions on screen that nobody has answered yet (shown, still open), oldest first."""
+        return [q for q in turn.memory.open_qa() if q.asked_at is not None]
+
+    def reshow_pending(self, turn: _Turn) -> bool:
+        """After a typed message that did not answer them, the questions still on screen come back (never
+        skipped, never counted as asked again). One at a time: the latest one; answer-all: the whole form."""
+        waiting = self.pending(turn)
+        if not waiting:
+            return False
+        if self.ui_mode(turn) == "answer_all":
+            self._relayout(turn, "answer_all")
+        else:
+            turn.out.append(CardEvent(card=waiting[-1].card))
+        return True
+
     # ------------------------------------------------------------------------------------ round 0
     async def prepare(self, turn: _Turn) -> None:
         """Plan and show the first batch (the internal ``prepare_questions`` turn after the playback card)."""
@@ -462,6 +478,9 @@ class InterviewController:
         an internal turn; ``done``: nothing more to ask, the pipeline moves on to seeding."""
         statuses = self.statuses(turn)
         self._drop_answered(turn, statuses)
+        if turn.reshow_pending and self.reshow_pending(turn):
+            self.touch(turn)
+            return "asked"
         if self.show_next(turn):
             self.touch(turn)
             return "asked"
