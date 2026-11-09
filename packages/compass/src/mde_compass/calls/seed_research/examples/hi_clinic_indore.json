@@ -1,0 +1,195 @@
+{
+  "name": "hi_clinic_indore",
+  "input": {
+    "language": "hi",
+    "category": "क्लिनिक बुकिंग",
+    "subcategory": "",
+    "geography": {
+      "country": "India",
+      "city": "इंदौर",
+      "region": ""
+    },
+    "locale_country": "IN",
+    "audience": [
+      "मरीज़"
+    ],
+    "business_model": "मरीज़ हर अपॉइंटमेंट का भुगतान करते हैं",
+    "references": [],
+    "glossary": [
+      {
+        "term": "अपॉइंटमेंट",
+        "synonyms": [
+          "डॉक्टर से मिलने का समय"
+        ]
+      }
+    ],
+    "exclusions": [],
+    "unknowns": [],
+    "features": [
+      {
+        "name": "बुकिंग",
+        "intent": "मरीज़ अपना समय चुनते हैं"
+      }
+    ],
+    "families": [
+      "booking_scheduling"
+    ],
+    "languages": [
+      "hi",
+      "en"
+    ]
+  },
+  "output": {
+    "requests": [
+      {
+        "topic": "मिलते-जुलते क्लिनिक बुकिंग ऐप की सुविधाएँ",
+        "question": "इंदौर, India में मरीज़ के लिए क्लिनिक बुकिंग ऐप आम तौर पर कौन सी सुविधाएँ देते हैं?",
+        "decision_unlocked": "पहले वर्शन में कौन सी सुविधाएँ हों",
+        "entity": "क्लिनिक बुकिंग ऐप",
+        "geography": "इंदौर, India",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "क्लिनिक बुकिंग",
+          "मरीज़",
+          "सुविधाएँ",
+          "अपॉइंटमेंट",
+          "डॉक्टर से मिलने का समय"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "ऐप स्टोर",
+          "आधिकारिक वेबसाइट"
+        ],
+        "avoid": [],
+        "depth": "standard",
+        "priority": "high",
+        "shown_to_user_as": "इंदौर, India में मिलते-जुलते क्लिनिक बुकिंग ऐप क्या देते हैं"
+      },
+      {
+        "topic": "इंदौर, India में स्थानीय क्लिनिक बुकिंग ऐप और सेवाएँ",
+        "question": "इंदौर, India में मरीज़ कौन से क्लिनिक बुकिंग ऐप और सेवाएँ इस्तेमाल करते हैं?",
+        "decision_unlocked": "ऐप को किन स्थानीय आदतों और विकल्पों के साथ चलना होगा",
+        "entity": "स्थानीय क्लिनिक बुकिंग ऐप",
+        "geography": "इंदौर, India",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "क्लिनिक बुकिंग",
+          "स्थानीय ऐप",
+          "इंदौर, India",
+          "अपॉइंटमेंट",
+          "डॉक्टर से मिलने का समय"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "ऐप स्टोर",
+          "स्थानीय समाचार",
+          "आधिकारिक वेबसाइट"
+        ],
+        "avoid": [],
+        "depth": "standard",
+        "priority": "high",
+        "shown_to_user_as": "इंदौर, India में मरीज़ को और कौन सेवा देता है"
+      },
+      {
+        "topic": "इंदौर, India में क्लिनिक बुकिंग ऐप के लिए भुगतान के तरीके",
+        "question": "इंदौर, India में क्लिनिक बुकिंग ऐप मरीज़ हर अपॉइंटमेंट का भुगतान करते हैं के लिए कौन से भुगतान तरीके इस्तेमाल करते हैं?",
+        "decision_unlocked": "किन भुगतान तरीकों की योजना बनानी है",
+        "entity": "भुगतान के तरीके",
+        "geography": "इंदौर, India",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "भुगतान",
+          "मरीज़ हर अपॉइंटमेंट का भुगतान करते हैं",
+          "क्लिनिक बुकिंग",
+          "अपॉइंटमेंट",
+          "डॉक्टर से मिलने का समय"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "आधिकारिक वेबसाइट",
+          "प्रदाता के दस्तावेज़"
+        ],
+        "avoid": [],
+        "depth": "standard",
+        "priority": "medium",
+        "shown_to_user_as": "इंदौर, India में लोग भुगतान कैसे करते हैं"
+      },
+      {
+        "topic": "इंदौर, India में साइन इन और संदेशों की आदतें",
+        "question": "इंदौर, India में मरीज़ आम तौर पर क्लिनिक बुकिंग ऐप में साइन इन कैसे करते हैं और संदेश कैसे पाते हैं?",
+        "decision_unlocked": "साइन इन और सूचना के कौन से तरीके देने हैं",
+        "entity": "साइन इन और संदेश",
+        "geography": "इंदौर, India",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "साइन इन",
+          "SMS",
+          "सूचनाएँ",
+          "क्लिनिक बुकिंग",
+          "अपॉइंटमेंट",
+          "डॉक्टर से मिलने का समय"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "आधिकारिक वेबसाइट",
+          "प्रदाता के दस्तावेज़"
+        ],
+        "avoid": [],
+        "depth": "quick",
+        "priority": "medium",
+        "shown_to_user_as": "इंदौर, India में लोग साइन इन और संदेश कैसे लेते हैं"
+      },
+      {
+        "topic": "इंदौर, India में क्लिनिक बुकिंग ऐप के नियम",
+        "question": "इंदौर, India में क्लिनिक बुकिंग ऐप पर कौन से नियम, लाइसेंस या गोपनीयता की ज़रूरतें लागू होती हैं?",
+        "decision_unlocked": "किन नियमों की योजना बनानी है",
+        "entity": "नियम",
+        "geography": "इंदौर, India",
+        "source_languages": [
+          "hi",
+          "en"
+        ],
+        "terms": [
+          "नियम",
+          "गोपनीयता",
+          "क्लिनिक बुकिंग",
+          "इंदौर, India",
+          "अपॉइंटमेंट",
+          "डॉक्टर से मिलने का समय"
+        ],
+        "references": [],
+        "prefer_sources": [
+          "सरकारी वेबसाइट",
+          "आधिकारिक वेबसाइट"
+        ],
+        "avoid": [],
+        "depth": "standard",
+        "priority": "medium",
+        "shown_to_user_as": "इंदौर, India के जानने लायक नियम"
+      }
+    ],
+    "hints": {
+      "disambiguated_names": [],
+      "synonyms": [
+        "डॉक्टर से मिलने का समय"
+      ],
+      "local_competitors": [],
+      "languages": [
+        "hi",
+        "en"
+      ]
+    }
+  }
+}

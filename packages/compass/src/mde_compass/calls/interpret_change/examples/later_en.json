@@ -1,0 +1,20 @@
+{
+  "name": "move a feature to later (English)",
+  "input": {
+    "text": "move group ordering to later",
+    "language": "en",
+    "target_kind": "feature",
+    "target_id": "FTR-004",
+    "reason": "",
+    "history": [],
+    "items": [
+      {"path": "scope.FTR-004", "label": "Group ordering", "value_json": "{\"apps\": [], \"intent\": \"Let a group place one shared order.\", \"name\": \"Group ordering\", \"priority\": \"must\", \"scope_status\": \"in\"}", "tier": "Default", "status": "assumed", "value_kind": "record", "options": []}
+    ],
+    "add_sections": ["scope"]
+  },
+  "expect": {
+    "understood": true,
+    "ops": [["set", "scope.FTR-004.priority", "later"], ["set", "scope.FTR-004.scope_status", "later"]],
+    "touches_locked": []
+  }
+}

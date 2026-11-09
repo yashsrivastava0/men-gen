@@ -1,0 +1,24 @@
+{
+  "name": "hi_clinic",
+  "input": {
+    "language": "hi",
+    "slots": [
+      {"slot_id": "idea.summary", "label": "आपका आइडिया एक पंक्ति में", "value": "क्लिनिक के लिए अपॉइंटमेंट बुकिंग", "state": "confirmed"},
+      {"slot_id": "audience.segments", "label": "यह किसके लिए है", "value": "मरीज़", "state": "confirmed"},
+      {"slot_id": "context.geo", "label": "कहाँ इस्तेमाल होगा", "value": "इंदौर", "state": "confirmed"}
+    ],
+    "app_count": 1,
+    "role_count": 2,
+    "feature_count": 1,
+    "items": [
+      {"path": "scope.FTR-001", "name": "बुकिंग", "intent": "मरीज़ अपना समय चुनते हैं"}
+    ]
+  },
+  "output": {
+    "summary": "क्लिनिक के लिए अपॉइंटमेंट बुकिंग ऐप, मरीज़ों के लिए।",
+    "pitch": "यह ऐप इंदौर में मरीज़ों को क्लिनिक में अपॉइंटमेंट बुक करने देता है।",
+    "descriptions": [
+      {"item_id": "scope.FTR-001", "text": "बुकिंग: मरीज़ अपना समय चुनते हैं।"}
+    ]
+  }
+}

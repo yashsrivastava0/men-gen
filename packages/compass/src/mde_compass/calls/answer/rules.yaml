@@ -1,0 +1,63 @@
+# Phrase tables of the rule-based answerer (fallback and mock). English, Hindi (Devanagari) and
+# Hinglish (Hindi in Latin letters). Normalised on load (casefold, punctuation and apostrophes dropped).
+# Data, not logic: nothing here is specific to one company, place or app type.
+
+price_time:
+  [price, pricing, prices, cost, costs, "how much", quote, quotation, estimate, budget, "how long",
+   "how many days", "how many weeks", "how many months", timeline, deadline, turnaround, "how soon",
+   "when will it be ready", "when will it be done", "how fast", "kitna kharcha", "kitna kharch",
+   "kitne paise", "kitna paisa", "kitna lagega", "kitne ka", "kitne din", "kitna time", "kitna samay",
+   "kab tak", "kab milega", "kab tak milega", "कीमत", "क़ीमत", "लागत", "कितना खर्च", "कितने पैसे",
+   "कितने दिन", "कब तक", "कितना समय", "कितना वक़्त", "कितना वक्त", "समय सीमा", "बजट"]
+
+tech_choice:
+  ["tech stack", "technology stack", "which technology", "what technology", "which technologies",
+   "which framework", "what framework", "any framework", "programming language", "which language",
+   "which database", "native or hybrid", "native or cross platform", "react native", flutter,
+   "kaunsi technology", "kaun si technology", "kaunsa framework", "kaun sa framework", "kaunsi language",
+   "कौन सी तकनीक", "कौन सा फ्रेमवर्क", "कौन सी भाषा में बनेगा"]
+
+unsafe:
+  ["sell drugs", "buy drugs", cocaine, heroin, "money laundering", "launder money", phishing,
+   "fake id", "fake ids", "fake passport", "fake documents", counterfeit, "credit card fraud",
+   "steal credit cards", "steal passwords", "steal data", "hack into", hacking, "make a weapon",
+   "sell weapons", "buy guns", bomb, explosive, stalk, stalking, "track my ex", "spy on my wife",
+   "spy on my husband", spyware, keylogger, malware, ransomware, ddos, "fake reviews",
+   "bypass kyc", "avoid tax", "tax evasion", "hack karna", "chori karna", "नकली पासपोर्ट", "हैक"]
+
+why:
+  ["why do you ask", "why are you asking", "why this question", "why ask", "why is this needed",
+   "why do you need", "what is this for", "what does this mean", "what do you mean", "i dont understand",
+   "explain", "kyon puch", "kyun puch", "kyu puch", "yeh kyon", "ye kyu", "iska matlab", "matlab kya",
+   "samajh nahi aaya", "क्यों पूछ", "यह क्यों", "इसका मतलब", "मतलब क्या", "समझ नहीं आया"]
+
+recap:
+  ["what do you know", "what do you have so far", "what have you got", "so far", "show what you know",
+   "what did i say", "what did i tell you", "my answers", "summary so far", "recap", "abhi tak kya",
+   "ab tak kya", "kya samjha", "meri baat", "अब तक क्या", "अभी तक क्या", "क्या समझा", "मैंने क्या बताया"]
+
+promise:
+  ["we guarantee", "i guarantee", guaranteed, guarantee, "we promise", "i promise", "100 percent",
+   "definitely will", "for sure", "we will build", "we can build", "we will add", "we can add",
+   "we will support", "we can support", "we will integrate", "we can integrate", "pakka milega",
+   "pakka banega", "pakka promise", "गारंटी", "वादा", "पक्का मिलेगा", "पक्का बनेगा"]
+
+pointer_prefix:
+  en: "Back to our question:"
+  hi: "अब हमारे सवाल पर वापस:"
+  hi-Latn: "Ab hamare sawaal par wapas:"
+
+pointer_generic:
+  en: "Shall we continue?"
+  hi: "क्या हम आगे बढ़ें?"
+  hi-Latn: "Kya hum aage badhein?"
+
+recap_intro:
+  en: "So far I have"
+  hi: "अब तक मेरे पास यह है"
+  hi-Latn: "Ab tak mere paas yeh hai"
+
+recap_empty:
+  en: "We have not filled anything in yet."
+  hi: "अभी हमने कुछ भी नहीं भरा है।"
+  hi-Latn: "Abhi humne kuch nahi bhara hai."

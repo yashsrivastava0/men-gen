@@ -1,0 +1,24 @@
+{
+  "name": "hinglish_kirana",
+  "input": {
+    "language": "hi-Latn",
+    "slots": [
+      {"slot_id": "idea.summary", "label": "Aapka idea ek line mein", "value": "mere kirana store ke liye ek app jisse log ghar baithe saman mangwa sakein", "state": "confirmed"},
+      {"slot_id": "context.geo", "label": "Kahan chalega", "value": "Jaipur, Rajasthan", "state": "confirmed"},
+      {"slot_id": "audience.segments", "label": "Kiske liye", "value": "aas-paas ke parivar", "state": "volunteered"}
+    ],
+    "app_count": 1,
+    "role_count": 2,
+    "feature_count": 1,
+    "items": [
+      {"path": "scope.FTR-001", "name": "Saman ki list", "intent": "ghar ka saman list mein chunna"}
+    ]
+  },
+  "output": {
+    "summary": "Mere kirana store ke liye ek app, Jaipur ke aas-paas ke parivar ke liye.",
+    "pitch": "Yeh app Jaipur, Rajasthan mein aas-paas ke parivar ko ghar baithe saman mangwane deta hai.",
+    "descriptions": [
+      {"item_id": "scope.FTR-001", "text": "Saman ki list: ghar ka saman list mein chunna."}
+    ]
+  }
+}

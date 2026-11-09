@@ -1,0 +1,10 @@
+# Cue tables for the deterministic situate fallback (English, Hindi, Hinglish). DATA, not logic.
+technical: [api, apis, backend, "back end", database, schema, endpoint, endpoints, sdk, oauth, sso, webhook, "react native", flutter, kotlin, swift, firebase, postgres, "rest api", graphql, docker, kubernetes, microservice, microservices, "डेटाबेस", "बैकएंड"]
+product: [mvp, roadmap, "user story", "user stories", kpi, kpis, persona, personas, "user flow", "user flows", wireframe, wireframes, "go to market", gtm, backlog, "product requirements", prd, "acceptance criteria", onboarding, retention, "conversion rate"]
+enterprise: [enterprise, "our company", "our organisation", "our organization", "our employees", employees, department, departments, compliance, "audit trail", "head office", branches, "multiple branches", subsidiaries, "कंपनी के कर्मचारी", "हमारी कंपनी", "विभाग"]
+tiny: ["my shop", "my small", "my bakery", "my store", "my salon", "my tuition", "just me", "only me", solo, freelancer, "mera chhota", "meri dukaan", "meri dukan", "मेरी दुकान", "मेरा छोटा", "छोटी दुकान"]
+several: ["our team", "we are", "we have", "my team", "my partner", "my partners", "co-founder", cofounder, "co founder", stakeholders, "my colleagues", "hum log", "humari team", "hamari team", "हमारी टीम", "हम लोग"]
+professional: [regards, "dear sir", "dear team", "please find", "kindly", "requirement", "requirements", "stakeholder", "deliverable", "deliverables", "scope of work", "respected"]
+casual: [yaar, bro, hey, lol, haha, bhai, "hi there", "pls", "plz", "gonna", "wanna"]
+urgency: [asap, urgent, urgently, quickly, "right away", "as soon as possible", jaldi, "jaldi se", "turant", "जल्दी", "तुरंत"]
+documents: ["attached", "see attached", "uploaded", "the document", "this document", "prd", "brief attached"]

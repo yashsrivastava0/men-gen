@@ -1,0 +1,86 @@
+# Wording and keyword data of the deterministic fallback planners of cmp.probe_handoff (data, not logic).
+# Placeholders: {category} {geo} {audience} {business_model} {reference} {role} {goal} {app} {tone} {locales}.
+en:
+  research_queries:
+    - {query: "{category} apps in {geo}", entity: "{category} apps", terms: ["{category}", "apps", "{geo}"]}
+    - {query: "popular {category} apps {geo} reviews", entity: "{category} apps", terms: ["{category}", "reviews", "{geo}"]}
+    - {query: "{category} local competitors {geo}", entity: "local {category} apps", terms: ["{category}", "competitors", "{geo}"]}
+    - {query: "payment methods for {category} in {geo}", entity: "payment methods", terms: ["payment", "{category}", "{geo}"]}
+    - {query: "SMS and sign in providers {geo}", entity: "sign-in and messaging", terms: ["SMS", "sign in", "{geo}"]}
+    - {query: "rules and licences for {category} in {geo}", entity: "regulation", terms: ["rules", "licence", "{category}", "{geo}"]}
+    - {query: "{category} pricing models {geo}", entity: "pricing", terms: ["pricing", "{category}", "{geo}"]}
+    - {query: "{category} app user complaints {geo}", entity: "{category} apps", terms: ["complaints", "{category}", "{geo}"]}
+    - {query: "what {audience} expect from {category} apps in {geo}", entity: "{category} apps", terms: ["{audience}", "{category}", "{geo}"], requires: [audience]}
+    - {query: "{business_model} for {category} in {geo}", entity: "{category} business model", terms: ["{business_model}", "{category}", "{geo}"], requires: [business_model]}
+  reference_query: {query: "{reference} features and flows in {geo}", entity: "{reference}", terms: ["{reference}", "{category}", "{geo}"]}
+  journey: "{role}"
+  journey_goal: "{role}: {goal}"
+  home_screen: "Home: {app}"
+  direction: "A {tone} look for {audience}, in {locales}."
+  direction_no_audience: "A {tone} look, in {locales}."
+  questions:
+    geography: "Which country, city or region will the app be used in?"
+    category: "What kind of app is this?"
+    audience: "Who is the app for?"
+    roles: "Who are the people who will use the app, in your words?"
+    apps: "Which apps does this include, for example one for customers and one for staff?"
+    features: "Which features should the first release include?"
+    intents: "What should each of these features let people do: {names}?"
+    tone: "Which words describe the look and feel you want?"
+    locales: "Which languages should the app speak?"
+    brand: "Do you have a brand name, logo or colours to follow?"
+    queries: "Only {n} of the planned searches are concrete enough to start; what else should we look up?"
+    journeys: "Which main journeys should the first release support?"
+    screens: "Which screens must the first release have?"
+  slot_keywords:
+    context.geo: [country, city, region, geography, where, location, place]
+    idea.category: [kind of app, category, what kind]
+    audience.segments: [audience, who is the app for, customers]
+    roles.list: [role, who will use, people who]
+    apps.list: [which apps, apps does]
+    scope.features: [feature, intent, first release, journey, screen]
+    look.tone_words: [tone, look and feel, mood, style]
+    locales: [language, locale]
+    brand.name: [brand, logo, colour, color, palette]
+hi:
+  research_queries:
+    - {query: "{geo} में {category} ऐप", entity: "{category} ऐप", terms: ["{category}", "ऐप", "{geo}"]}
+    - {query: "{geo} में लोकप्रिय {category} ऐप की समीक्षाएँ", entity: "{category} ऐप", terms: ["{category}", "समीक्षा", "{geo}"]}
+    - {query: "{geo} में स्थानीय {category} प्रतिस्पर्धी", entity: "स्थानीय {category} ऐप", terms: ["{category}", "प्रतिस्पर्धी", "{geo}"]}
+    - {query: "{geo} में {category} के लिए भुगतान के तरीके", entity: "भुगतान के तरीके", terms: ["भुगतान", "{category}", "{geo}"]}
+    - {query: "{geo} में SMS और साइन इन सेवाएँ", entity: "साइन इन और संदेश", terms: ["SMS", "साइन इन", "{geo}"]}
+    - {query: "{geo} में {category} के नियम और लाइसेंस", entity: "नियम", terms: ["नियम", "लाइसेंस", "{category}", "{geo}"]}
+    - {query: "{geo} में {category} की कीमत के तरीके", entity: "कीमत", terms: ["कीमत", "{category}", "{geo}"]}
+    - {query: "{geo} में {category} ऐप की शिकायतें", entity: "{category} ऐप", terms: ["शिकायतें", "{category}", "{geo}"]}
+    - {query: "{geo} में {audience} को {category} ऐप से क्या चाहिए", entity: "{category} ऐप", terms: ["{audience}", "{category}", "{geo}"], requires: [audience]}
+    - {query: "{geo} में {category} के लिए {business_model}", entity: "{category} कमाई का तरीका", terms: ["{business_model}", "{category}", "{geo}"], requires: [business_model]}
+  reference_query: {query: "{geo} में {reference} की सुविधाएँ और प्रक्रिया", entity: "{reference}", terms: ["{reference}", "{category}", "{geo}"]}
+  journey: "{role}"
+  journey_goal: "{role}: {goal}"
+  home_screen: "होम: {app}"
+  direction: "{audience} के लिए {tone} रूप-रंग, {locales} में।"
+  direction_no_audience: "{tone} रूप-रंग, {locales} में।"
+  questions:
+    geography: "ऐप किस देश, शहर या इलाके में इस्तेमाल होगा?"
+    category: "यह किस तरह का ऐप है?"
+    audience: "यह ऐप किनके लिए है?"
+    roles: "ऐप इस्तेमाल करने वाले लोग कौन हैं, आपके शब्दों में?"
+    apps: "इसमें कौन से ऐप शामिल हैं, जैसे ग्राहकों के लिए एक और स्टाफ के लिए एक?"
+    features: "पहले वर्शन में कौन सी सुविधाएँ हों?"
+    intents: "इन सुविधाओं से लोग क्या कर सकेंगे: {names}?"
+    tone: "आप कैसा रूप-रंग चाहते हैं, कुछ शब्दों में बताइए?"
+    locales: "ऐप किन भाषाओं में चलेगा?"
+    brand: "क्या आपके पास ब्रांड नाम, लोगो या रंग हैं?"
+    queries: "तय की गई खोजों में से सिर्फ {n} इतनी साफ़ हैं कि शुरू किया जा सके; और क्या खोजें?"
+    journeys: "पहले वर्शन में कौन सी मुख्य यात्राएँ हों?"
+    screens: "पहले वर्शन में कौन सी स्क्रीन ज़रूरी हैं?"
+  slot_keywords:
+    context.geo: [देश, शहर, इलाके, कहाँ, जगह]
+    idea.category: [किस तरह का ऐप, प्रकार]
+    audience.segments: [किनके लिए, ग्राहक]
+    roles.list: [भूमिका, कौन इस्तेमाल]
+    apps.list: [कौन से ऐप]
+    scope.features: [सुविधा, पहले वर्शन, स्क्रीन]
+    look.tone_words: [रूप-रंग, शैली, मूड]
+    locales: [भाषा]
+    brand.name: [ब्रांड, लोगो, रंग]

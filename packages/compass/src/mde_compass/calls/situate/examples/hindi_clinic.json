@@ -1,0 +1,523 @@
+{
+  "name": "hindi_clinic",
+  "input": {
+    "user_text": "मुझे अपने क्लिनिक के लिए ऐप चाहिए, मरीज़ अपॉइंटमेंट बुक कर सकें",
+    "statements": [],
+    "language": "hi",
+    "mode": "guided",
+    "input_mode": "text",
+    "families": [
+      {
+        "id": "identity_access",
+        "label": "पहचान और पहुँच",
+        "keywords": [
+          "sign in",
+          "login",
+          "account",
+          "profile",
+          "one-time code",
+          "password",
+          "साइन इन",
+          "लॉगिन",
+          "खाता",
+          "प्रोफ़ाइल",
+          "पासवर्ड",
+          "login karna"
+        ],
+        "typical_features": [
+          "साइन-अप और साइन-इन",
+          "फ़ोन पर एक बार वाला कोड",
+          "प्रोफ़ाइल पेज",
+          "भूला हुआ पासवर्ड बदलना",
+          "भूमिकाएँ और अनुमतियाँ",
+          "लोगों को आमंत्रित करना"
+        ]
+      },
+      {
+        "id": "catalog_commerce",
+        "label": "कैटलॉग और खरीदारी",
+        "keywords": [
+          "shop",
+          "store",
+          "catalog",
+          "cart",
+          "products",
+          "order online",
+          "दुकान",
+          "खरीदारी",
+          "ऑर्डर",
+          "सामान",
+          "कैटलॉग",
+          "dukaan"
+        ],
+        "typical_features": [
+          "कैटलॉग देखना",
+          "खोजना और छाँटना",
+          "सामान की जानकारी",
+          "कार्ट",
+          "चेकआउट",
+          "पुराने ऑर्डर"
+        ]
+      },
+      {
+        "id": "booking_scheduling",
+        "label": "बुकिंग और समय तय करना",
+        "keywords": [
+          "book",
+          "appointment",
+          "slot",
+          "schedule",
+          "reservation",
+          "reminder",
+          "बुकिंग",
+          "अपॉइंटमेंट",
+          "समय तय करना",
+          "आरक्षण",
+          "स्लॉट",
+          "booking karna"
+        ],
+        "typical_features": [
+          "सेवा देने वाले या जगहें देखना",
+          "उपलब्ध समय",
+          "समय बुक करना",
+          "समय बदलना या रद्द करना",
+          "याद दिलाना",
+          "कैलेंडर दृश्य"
+        ]
+      },
+      {
+        "id": "delivery_logistics",
+        "label": "डिलीवरी और लॉजिस्टिक्स",
+        "keywords": [
+          "delivery",
+          "courier",
+          "rider",
+          "tracking",
+          "dispatch",
+          "parcel",
+          "डिलीवरी",
+          "कूरियर",
+          "ट्रैकिंग",
+          "पार्सल",
+          "सवारी",
+          "delivery wala"
+        ],
+        "typical_features": [
+          "डिलीवरी का अनुरोध",
+          "राइडर तय करना",
+          "नक्शे पर ट्रैक करना",
+          "डिलीवरी की स्थिति",
+          "डिलीवरी का प्रमाण",
+          "आज की रूट सूची"
+        ]
+      },
+      {
+        "id": "payments_wallet",
+        "label": "भुगतान और वॉलेट",
+        "keywords": [
+          "payment",
+          "wallet",
+          "upi",
+          "refund",
+          "receipt",
+          "pay",
+          "भुगतान",
+          "वॉलेट",
+          "रिफ़ंड",
+          "रसीद",
+          "पैसे",
+          "paise bhejna"
+        ],
+        "typical_features": [
+          "ऑनलाइन भुगतान",
+          "वॉलेट बैलेंस",
+          "पैसे जोड़ना",
+          "लेन-देन का इतिहास",
+          "रिफ़ंड",
+          "भुगतान की रसीदें"
+        ]
+      },
+      {
+        "id": "communication",
+        "label": "संवाद",
+        "keywords": [
+          "chat",
+          "message",
+          "notification",
+          "inbox",
+          "announcement",
+          "call",
+          "चैट",
+          "संदेश",
+          "सूचना",
+          "इनबॉक्स",
+          "घोषणा",
+          "message bhejna"
+        ],
+        "typical_features": [
+          "आमने-सामने चैट",
+          "ग्रुप चैट",
+          "सूचनाएँ",
+          "इनबॉक्स",
+          "फ़ोटो और फ़ाइल भेजना",
+          "घोषणाएँ"
+        ]
+      },
+      {
+        "id": "content_community",
+        "label": "सामग्री और समुदाय",
+        "keywords": [
+          "feed",
+          "post",
+          "community",
+          "forum",
+          "blog",
+          "news",
+          "फ़ीड",
+          "पोस्ट",
+          "समुदाय",
+          "फ़ोरम",
+          "समाचार",
+          "post karna"
+        ],
+        "typical_features": [
+          "फ़ीड",
+          "पोस्ट बनाना",
+          "टिप्पणियाँ",
+          "पसंद और प्रतिक्रियाएँ",
+          "लोगों को फ़ॉलो करना",
+          "पोस्ट की शिकायत"
+        ]
+      },
+      {
+        "id": "workflows",
+        "label": "काम का प्रवाह: फ़ॉर्म, मंज़ूरी, कार्य",
+        "keywords": [
+          "form",
+          "approval",
+          "task",
+          "request",
+          "checklist",
+          "workflow",
+          "फ़ॉर्म",
+          "मंज़ूरी",
+          "कार्य",
+          "अनुरोध",
+          "चेकलिस्ट",
+          "form bharna"
+        ],
+        "typical_features": [
+          "अनुरोध जमा करना",
+          "मंज़ूरी के चरण",
+          "कार्य सूची",
+          "कार्य सौंपना",
+          "स्थिति देखना",
+          "समय-सीमा की याद"
+        ]
+      },
+      {
+        "id": "dashboards_admin",
+        "label": "डैशबोर्ड और एडमिन",
+        "keywords": [
+          "dashboard",
+          "admin",
+          "report",
+          "analytics",
+          "manage",
+          "settings",
+          "डैशबोर्ड",
+          "एडमिन",
+          "रिपोर्ट",
+          "विश्लेषण",
+          "प्रबंधन",
+          "dashboard dekhna"
+        ],
+        "typical_features": [
+          "सारांश डैशबोर्ड",
+          "फ़िल्टर वाली रिपोर्ट",
+          "उपयोगकर्ता प्रबंधन",
+          "सामग्री प्रबंधन",
+          "गतिविधि का रिकॉर्ड",
+          "डेटा निकालना"
+        ]
+      },
+      {
+        "id": "finance",
+        "label": "वित्त",
+        "keywords": [
+          "loan",
+          "savings",
+          "expenses",
+          "budget",
+          "invoice",
+          "bank",
+          "लोन",
+          "बचत",
+          "खर्च",
+          "बजट",
+          "बैंक",
+          "hisab kitab"
+        ],
+        "typical_features": [
+          "खाते का सार",
+          "खर्च का हिसाब",
+          "बजट",
+          "इनवॉइस",
+          "बिल की याद",
+          "विवरण"
+        ]
+      },
+      {
+        "id": "health_wellness",
+        "label": "स्वास्थ्य और सेहत",
+        "keywords": [
+          "clinic",
+          "doctor",
+          "patient",
+          "health",
+          "fitness",
+          "wellness",
+          "क्लिनिक",
+          "डॉक्टर",
+          "मरीज़",
+          "स्वास्थ्य",
+          "सेहत",
+          "doctor se milna"
+        ],
+        "typical_features": [
+          "डॉक्टर या ट्रेनर खोजना",
+          "मुलाक़ात बुक करना",
+          "निजी रिकॉर्ड",
+          "दवा की याद",
+          "गतिविधि दर्ज करना",
+          "लक्ष्य और योजनाएँ"
+        ]
+      },
+      {
+        "id": "learning",
+        "label": "शिक्षा",
+        "keywords": [
+          "course",
+          "class",
+          "lesson",
+          "quiz",
+          "student",
+          "teacher",
+          "कोर्स",
+          "कक्षा",
+          "पाठ",
+          "क्विज़",
+          "छात्र",
+          "padhai ka app"
+        ],
+        "typical_features": [
+          "कोर्स की सूची",
+          "पाठ",
+          "क्विज़",
+          "प्रगति देखना",
+          "गृहकार्य",
+          "प्रमाणपत्र"
+        ]
+      },
+      {
+        "id": "travel_hospitality",
+        "label": "यात्रा और आतिथ्य",
+        "keywords": [
+          "hotel",
+          "trip",
+          "travel",
+          "stay",
+          "tour",
+          "restaurant",
+          "होटल",
+          "यात्रा",
+          "ठहरना",
+          "पर्यटन",
+          "रेस्तरां",
+          "trip plan"
+        ],
+        "typical_features": [
+          "ठहरने की जगह या यात्राएँ खोजना",
+          "यात्रा की योजना",
+          "बुकिंग की पुष्टि",
+          "मेहमान के अनुरोध",
+          "स्थानीय जानकारी",
+          "समीक्षाएँ"
+        ]
+      },
+      {
+        "id": "marketplaces",
+        "label": "मार्केटप्लेस",
+        "keywords": [
+          "marketplace",
+          "buyers and sellers",
+          "vendor",
+          "listing",
+          "seller",
+          "classifieds",
+          "मार्केटप्लेस",
+          "खरीदार और विक्रेता",
+          "विक्रेता",
+          "लिस्टिंग",
+          "बाज़ार",
+          "buyer seller app"
+        ],
+        "typical_features": [
+          "विक्रेता का पंजीकरण",
+          "लिस्टिंग बनाना",
+          "खोजना और छाँटना",
+          "खरीदार-विक्रेता चैट",
+          "ऑर्डर प्रबंधन",
+          "विक्रेता को भुगतान"
+        ]
+      },
+      {
+        "id": "civic_utilities",
+        "label": "नागरिक सेवाएँ और उपयोगिताएँ",
+        "keywords": [
+          "complaint",
+          "municipal",
+          "utility",
+          "bill",
+          "citizen",
+          "service request",
+          "शिकायत",
+          "नगर निगम",
+          "बिजली",
+          "पानी",
+          "नागरिक",
+          "shikayat darj"
+        ],
+        "typical_features": [
+          "शिकायत दर्ज करना",
+          "शिकायत की स्थिति",
+          "बिल भरना",
+          "सेवा सूची",
+          "सूचनाएँ और चेतावनियाँ",
+          "पास के कार्यालय"
+        ]
+      },
+      {
+        "id": "enterprise_workforce",
+        "label": "कंपनी का कार्यबल",
+        "keywords": [
+          "employee",
+          "staff",
+          "hr",
+          "attendance",
+          "shift",
+          "leave",
+          "कर्मचारी",
+          "हाज़िरी",
+          "छुट्टी",
+          "शिफ़्ट",
+          "स्टाफ़",
+          "staff attendance"
+        ],
+        "typical_features": [
+          "हाज़िरी लगाना",
+          "छुट्टी का आवेदन",
+          "शिफ़्ट का कार्यक्रम",
+          "कर्मचारी सूची",
+          "वेतन पर्ची",
+          "कंपनी की घोषणाएँ"
+        ]
+      }
+    ]
+  },
+  "output": {
+    "profile": {
+      "input_richness": "one_sentence",
+      "clarity": "vague",
+      "expertise": "non_technical",
+      "size_stakes": "startup",
+      "reference_driven": false,
+      "collaboration": "one",
+      "language": "hi",
+      "input_mode": "text",
+      "urgency": "thorough",
+      "formality": "casual"
+    },
+    "hypothesis": {
+      "label": "hypothesis",
+      "category": "health_wellness",
+      "subcategory": "क्लिनिक",
+      "business_model_candidates": [
+        "fee per appointment",
+        "monthly listing fee for clinics",
+        "free for patients"
+      ],
+      "likely_families": [
+        "health_wellness",
+        "booking_scheduling"
+      ],
+      "likely_roles": [
+        "patient",
+        "practitioner",
+        "front desk",
+        "admin",
+        "customer",
+        "provider"
+      ],
+      "likely_features": [
+        {
+          "family": "health_wellness",
+          "name": "Find a doctor or trainer",
+          "intent": "Help a person find someone who suits their need.",
+          "custom": false
+        },
+        {
+          "family": "health_wellness",
+          "name": "Book a visit",
+          "intent": "Let a person reserve a time with a practitioner.",
+          "custom": false
+        },
+        {
+          "family": "health_wellness",
+          "name": "Personal records",
+          "intent": "Keep a person's own reports and notes in one place.",
+          "custom": false
+        },
+        {
+          "family": "booking_scheduling",
+          "name": "Browse providers or places",
+          "intent": "Let people see who or what they can book.",
+          "custom": false
+        },
+        {
+          "family": "booking_scheduling",
+          "name": "Available times",
+          "intent": "Show which times are free so a person can pick one.",
+          "custom": false
+        },
+        {
+          "family": "booking_scheduling",
+          "name": "Book a time",
+          "intent": "Let a person reserve a time with one clear confirmation.",
+          "custom": false
+        }
+      ],
+      "hard_parts": [],
+      "glossary_candidates": [
+        {
+          "term": "क्लिनिक",
+          "synonyms": [
+            "clinic",
+            "doctor",
+            "patient"
+          ]
+        },
+        {
+          "term": "अपॉइंटमेंट",
+          "synonyms": [
+            "book",
+            "appointment",
+            "slot"
+          ]
+        }
+      ],
+      "confidence": 0.5
+    },
+    "one_line_idea": "मुझे अपने क्लिनिक के लिए ऐप चाहिए, मरीज़ अपॉइंटमेंट बुक कर सकें"
+  }
+}

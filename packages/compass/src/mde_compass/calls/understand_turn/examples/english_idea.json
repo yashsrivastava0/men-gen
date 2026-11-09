@@ -1,0 +1,166 @@
+{
+  "name": "english_idea",
+  "input": {
+    "text": "I want an app for my bakery in Pune where people order cakes. Like Swiggy but only cakes.",
+    "input_mode": "text",
+    "language": "en",
+    "pending_card": null,
+    "current_slots": [],
+    "slot_hints": [
+      {
+        "slot_id": "idea.summary",
+        "label": "Your idea in one line",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "idea.category",
+        "label": "Kind of app",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "idea.subcategory",
+        "label": "Kind of app, in detail",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "idea.business_model",
+        "label": "How it earns money",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "context.geo",
+        "label": "Country and city",
+        "value_kind": "geo",
+        "options": [],
+        "fields": [
+          "country",
+          "city",
+          "region"
+        ]
+      },
+      {
+        "slot_id": "audience.segments",
+        "label": "Who it is for",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "locales",
+        "label": "Languages",
+        "value_kind": "locales",
+        "options": [
+          "en",
+          "hi"
+        ],
+        "fields": [
+          "chat",
+          "app",
+          "right_to_left"
+        ]
+      },
+      {
+        "slot_id": "apps.list",
+        "label": "Apps needed",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "purpose",
+          "surface"
+        ]
+      },
+      {
+        "slot_id": "roles.list",
+        "label": "Roles",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "goal",
+          "permissions"
+        ]
+      },
+      {
+        "slot_id": "scope.features",
+        "label": "Features",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "intent",
+          "status",
+          "priority",
+          "tier"
+        ]
+      },
+      {
+        "slot_id": "auth.methods",
+        "label": "How people sign in",
+        "value_kind": "enum_list",
+        "options": [
+          "phone_otp",
+          "email_password",
+          "no_sign_in"
+        ],
+        "fields": []
+      },
+      {
+        "slot_id": "auth.account_model",
+        "label": "Account model",
+        "value_kind": "enum",
+        "options": [
+          "individual",
+          "team",
+          "admin_created"
+        ],
+        "fields": []
+      }
+    ],
+    "recent_turns": []
+  },
+  "output": {
+    "intent": "answer",
+    "slot_updates": [
+      {
+        "slot_id": "context.geo",
+        "value_json": "{\"city\": \"Pune\"}",
+        "quote": "in Pune",
+        "confidence": 0.6,
+        "basis": "user_text",
+        "remove": false
+      },
+      {
+        "slot_id": "scope.references",
+        "value_json": "[{\"label\": \"Swiggy\"}]",
+        "quote": "Like Swiggy",
+        "confidence": 0.7,
+        "basis": "user_text",
+        "remove": false
+      },
+      {
+        "slot_id": "idea.summary",
+        "value_json": "\"I want an app for my bakery in Pune where people order cakes. Like Swiggy but only cakes.\"",
+        "quote": "I want an app for my bakery in Pune where people order cakes. Like Swiggy but only cakes.",
+        "confidence": 0.7,
+        "basis": "user_text",
+        "remove": false
+      }
+    ],
+    "references": [
+      "Swiggy"
+    ],
+    "language": "en",
+    "safety_flags": [],
+    "ambiguous": [],
+    "confidence": 0.75
+  }
+}

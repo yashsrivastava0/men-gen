@@ -1,0 +1,90 @@
+# Phrase tables of the rule-based change interpreter (fallback and mock). English, Hindi (Devanagari) and
+# Hinglish (Hindi in Latin letters). Phrase lists are normalised on load (casefold, punctuation and
+# apostrophes dropped). Data, not logic: nothing here is specific to one company, place or app type.
+
+remove:
+  [remove, delete, drop, exclude, "get rid of", "take out", "take away", "i dont want", "dont want",
+   "do not want", "no need for", "dont need", "do not need", "hata", hatao, "hata do", "hatado",
+   "dont add", "do not add", "no need to add", "dont include", "do not include", "nikal do", "nikalo", "nahi chahiye", "nahin chahiye", "mat rakho", "हटाओ", "हटा दो", "हटा दीजिए",
+   "निकाल दो", "नहीं चाहिए", "मत रखो"]
+
+add:
+  [add, include, "also add", "can you add", "please add", "jod", jodo, "jod do", "add karo", "aur chahiye",
+   "bhi chahiye", "जोड़ो", "जोड़ दो", "जोड़िए", "भी चाहिए", "और चाहिए"]
+
+move:
+  [move, mark, make, set, change, put, shift, push, "turn into", "kar do", karo, rakho, "कर दो", करो, रखो]
+
+level_later:
+  ["to later", "as later", "for later", "move to later", "later", "next release", "next version",
+   "phase 2", "baad mein", "baad me", "बाद में", "अगले वर्ज़न में"]
+
+level_must:
+  ["must have", "a must", "as must", "to must", must, mandatory, essential, required, zaruri,
+   "ज़रूरी", "जरूरी", "अनिवार्य"]
+
+level_nice:
+  ["nice to have", "as nice", "to nice", nice, optional, "good to have", "ho to achha", "ho to accha",
+   "वैकल्पिक", "हो तो अच्छा"]
+
+assumption:
+  [assumption, assumptions, assumed, "we assumed", "you assumed", "this assumption", "that assumption",
+   "ye assumption", "yeh assumption", "ye maan liya", "yeh maan liya", "धारणा", "मान लिया"]
+
+too_much:
+  ["too much", "too many", "too long", "too big", "bahut zyada", "bahut jyada", "zyada hai",
+   "बहुत ज़्यादा", "बहुत ज्यादा", "ज़्यादा है", "ज्यादा है"]
+
+first:
+  [first, primary, "main language", "default language", "pehle", "pehli", "sabse pehle", "पहले", "सबसे पहले", "मुख्य"]
+
+# language names the user may say, mapped to the locale code used in the Brief (data; add freely)
+locale_names:
+  english: en
+  "अंग्रेज़ी": en
+  "अंग्रेजी": en
+  angrezi: en
+  hindi: hi
+  "हिंदी": hi
+  "हिन्दी": hi
+  marathi: mr
+  "मराठी": mr
+  bengali: bn
+  bangla: bn
+  "बंगाली": bn
+  tamil: ta
+  "तमिल": ta
+  telugu: te
+  "तेलुगु": te
+  gujarati: gu
+  "गुजराती": gu
+  kannada: kn
+  "कन्नड़": kn
+  malayalam: ml
+  punjabi: pa
+  "पंजाबी": pa
+  urdu: ur
+  "उर्दू": ur
+
+name_stop: [a, an, the, one, new, please, pls, too, also, feature, features, option, "ek", "एक", "नया", "नई"]
+
+name_end:
+  [to, in, on, for, please, pls, too, also, as, and, but, because, so, screen, page, tab, bhi, mein, me, ko, "में", "को", "भी", "और", "जोड़ो", "जोड़", "दो", "करो", "कर", "chahiye", "चाहिए", "पर"]
+
+strings:
+  use_variants_note:
+    en: "I will suggest a few alternatives you can pick from."
+    hi: "मैं कुछ विकल्प सुझाता हूँ, आप चुन सकते हैं।"
+    hi-Latn: "Main kuch vikalp sujhata hoon, aap chun sakte hain."
+  which_to_remove:
+    en: "Which of these would you like to remove?"
+    hi: "इनमें से आप किसे हटाना चाहेंगे?"
+    hi-Latn: "Inmein se aap kise hatana chahenge?"
+  which_one:
+    en: "Which one do you mean?"
+    hi: "आपका मतलब कौन सा है?"
+    hi-Latn: "Aapka matlab kaun sa hai?"
+  either_or:
+    en: "Do you mean \"{a}\" or \"{b}\"?"
+    hi: "क्या आपका मतलब \"{a}\" है या \"{b}\"?"
+    hi-Latn: "Kya aapka matlab \"{a}\" hai ya \"{b}\"?"

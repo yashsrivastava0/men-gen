@@ -1,0 +1,20 @@
+{
+  "name": "why do you ask (help mode)",
+  "input": {
+    "question": "why do you ask this?",
+    "language": "en",
+    "topic": "help",
+    "slots": [],
+    "expertise": "non_technical",
+    "formality": "casual",
+    "pending_question": "Which of these is closest to your app?",
+    "pending_why": "It tells us which similar apps to study.",
+    "pending_options": ["People buy or order things", "People book a time or a place", "A tool for my team to manage work"],
+    "facts": []
+  },
+  "expect": {
+    "declined": false,
+    "grounded_in": ["pending_card"],
+    "text_contains": ["It tells us which similar apps to study."]
+  }
+}
