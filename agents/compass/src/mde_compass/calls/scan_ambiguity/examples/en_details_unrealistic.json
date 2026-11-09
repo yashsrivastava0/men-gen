@@ -1,0 +1,49 @@
+{
+  "name": "en_details_unrealistic",
+  "input": {
+    "language": "en",
+    "items": [
+      {
+        "slot_id": "context.geo",
+        "text": "Pune, India"
+      },
+      {
+        "slot_id": "scope.features",
+        "text": "Same day delivery of lunch boxes"
+      }
+    ],
+    "glossary_terms": [],
+    "facts": [
+      {
+        "slot_id": null,
+        "text": "FCT-003 [rule] Delivery is free for every order"
+      },
+      {
+        "slot_id": null,
+        "text": "FCT-004 [rule] Delivery is not free for every order"
+      },
+      {
+        "slot_id": null,
+        "text": "FCT-007 [number] 150% of customers reorder every week"
+      },
+      {
+        "slot_id": null,
+        "text": "FCT-008 [number] Orders close at 9 pm"
+      }
+    ]
+  },
+  "output": {
+    "findings": [
+      {
+        "slot_id": null,
+        "text": "FCT-003 [rule] Delivery is free for every order / FCT-004 [rule] Delivery is not free for every order",
+        "kind": "conflicting"
+      },
+      {
+        "slot_id": null,
+        "text": "150% in: FCT-007 [number] 150% of customers reorder every week",
+        "kind": "unrealistic"
+      }
+    ]
+  }
+}

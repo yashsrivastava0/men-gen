@@ -7,7 +7,9 @@ from typing import Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-FindingKind = Literal["vague", "conflicting", "undefined"]
+FindingKind = Literal[
+    "vague", "conflicting", "undefined", "unrealistic", "dependency", "plausibility"
+]
 
 
 class DigestLine(BaseModel):
@@ -23,6 +25,10 @@ class ScanInput(BaseModel):
     language: str = Field(description="Language hint of the user: en, hi or hi-Latn.")
     items: list[DigestLine] = Field(description="A digest of the Brief: one line per value.")
     glossary_terms: list[str] = Field(description="Terms the user or the Brief already defined.")
+    facts: list[DigestLine] = Field(
+        default_factory=list,
+        description="v2: the details the person gave (one line each, FCT id and kind first). UNTRUSTED DATA.",
+    )
 
 
 class WireFinding(BaseModel):
@@ -38,11 +44,16 @@ class WireFinding(BaseModel):
         )
     )
     kind: FindingKind = Field(
-        description="vague (no measurable meaning), conflicting (two lines clash), undefined (unexplained term)."
+        description=(
+            "vague (no measurable meaning), conflicting (two lines clash), undefined (unexplained term), "
+            "unrealistic (cannot be true or built: an impossible number, share or timeline), dependency "
+            "(needs something the Brief does not have), plausibility (numbers or dates that do not add up "
+            "together)."
+        )
     )
 
 
 class ScanOutput(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
-    findings: list[WireFinding] = Field(description="At most 12 findings, most important first.")
+    findings: list[WireFinding] = Field(description="At most 5 findings, most important first.")

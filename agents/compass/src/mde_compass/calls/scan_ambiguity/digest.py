@@ -32,6 +32,19 @@ def _join(*parts: str) -> str:
     return ": ".join(p.strip() for p in parts if p and p.strip())
 
 
+def fact_lines(brief: Brief, rules: ScanRules | None = None) -> list[DigestLine]:
+    """The details the Brief carries (``domain_facts``), one line each: ``FCT-004 [rule] statement``. Values only:
+    never the quote. Capped, newest first when it is long (the newest statement of the person wins a conflict)."""
+    r = rules or load_rules()
+    rows = sorted(brief.domain_facts, key=lambda f: f.id, reverse=True)[: r.max_fact_lines]
+    lines: list[DigestLine] = []
+    for fact in sorted(rows, key=lambda f: f.id):
+        tag = fact.kind or fact.type
+        text = " ".join(f"{fact.id} [{tag}] {fact.statement}".split())[: r.max_item_chars]
+        lines.append(DigestLine(slot_id=None, text=text))
+    return lines
+
+
 def build_digest(
     ctx: TurnContext, brief: Brief, catalog: Catalog, rules: ScanRules | None = None
 ) -> tuple[list[DigestLine], list[str]]:
@@ -69,6 +82,8 @@ def build_digest(
     for ref in brief.references:
         add(by_path.get("references"), ref.label)
     for assumption in brief.assumptions:
+        if assumption.basis in ("correction", "review"):
+            continue  # our own findings from an earlier scan: never fed back to the scanner
         add(assumption.slot_id, assumption.claim)
     for slot in ctx.slots:  # working slots not yet in the Brief
         if (

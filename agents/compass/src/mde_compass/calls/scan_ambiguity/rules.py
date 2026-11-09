@@ -19,6 +19,8 @@ class ScanRules:
     max_findings: int
     max_items: int
     max_item_chars: int
+    max_fact_lines: int
+    max_percent: int
     max_finding_chars: int
     min_acronym_len: int
     max_acronym_len: int
@@ -37,6 +39,8 @@ def load_rules() -> ScanRules:
         max_findings=int(lim["max_findings"]),
         max_items=int(lim["max_items"]),
         max_item_chars=int(lim["max_item_chars"]),
+        max_fact_lines=int(lim["max_fact_lines"]),
+        max_percent=int(raw["implausible"]["max_percent"]),
         max_finding_chars=int(lim["max_finding_chars"]),
         min_acronym_len=int(lim["min_acronym_len"]),
         max_acronym_len=int(lim["max_acronym_len"]),

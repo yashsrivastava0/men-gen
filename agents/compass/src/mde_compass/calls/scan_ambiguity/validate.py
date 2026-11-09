@@ -7,6 +7,9 @@ from mde_compass.calls.read_chunk.textutil import has_phrase, normalize, tokens
 from mde_compass.calls.scan_ambiguity.rules import load_rules
 from mde_compass.calls.scan_ambiguity.schema import ScanInput, ScanOutput, WireFinding
 
+# findings that describe a problem in a few words (they need not be a verbatim phrase of the digest, only grounded in it)
+FREE_TEXT_KINDS = frozenset({"conflicting", "unrealistic", "dependency", "plausibility"})
+
 
 def _problem(
     inp: ScanInput, f: WireFinding, slot_ids: set[str], digest_tokens: set[str]
@@ -17,12 +20,21 @@ def _problem(
         return "empty or too long"
     if f.slot_id is not None and f.slot_id not in slot_ids:
         return "unknown slot"
-    if f.kind == "conflicting":
-        return None if set(tokens(text)) & digest_tokens else "not grounded in the digest"
+    if f.kind in FREE_TEXT_KINDS:
+        needed = (
+            1 if f.kind == "conflicting" else 2
+        )  # a new kind must share two real tokens with the digest
+        return (
+            None
+            if len(set(tokens(text)) & digest_tokens) >= needed
+            else "not grounded in the digest"
+        )
     norm = normalize(text)
     if not norm:
         return "empty"
     candidates = [it.text for it in inp.items if f.slot_id is None or it.slot_id == f.slot_id]
+    if f.slot_id is None:
+        candidates += [it.text for it in inp.facts]
     if not any(has_phrase(normalize(c), norm) for c in candidates):
         return "text is not in the digest"
     return None
@@ -32,7 +44,7 @@ def keep_valid(inp: ScanInput, findings: list[WireFinding]) -> list[WireFinding]
     """Findings that point at something real, de-duplicated and capped."""
     rules = load_rules()
     slot_ids = {it.slot_id for it in inp.items if it.slot_id is not None}
-    digest_tokens = {t for it in inp.items for t in tokens(it.text)}
+    digest_tokens = {t for it in (*inp.items, *inp.facts) for t in tokens(it.text)}
     out: list[WireFinding] = []
     seen: set[tuple[str | None, str, str]] = set()
     for f in findings:
