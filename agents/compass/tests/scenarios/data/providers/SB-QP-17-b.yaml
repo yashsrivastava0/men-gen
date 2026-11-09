@@ -1,0 +1,63 @@
+# The first batch is planned from one line. After the first answer a product document arrives: the model reads
+# its chunk (three statements), the engine stores them as facts of the ledger with the document as source.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - {}
+  cmp.read_chunk:
+    - statements:
+        - {type: user_or_role, text: "Customers, riders, kitchen managers and admins", quote: "Roles: customer, rider, kitchen manager and admin", confidence: high}
+        - {type: requirement, text: "Pause the plan during holidays", quote: "pause the plan during holidays", confidence: high}
+        - {type: business_context, text: "Office workers in Baner and Hinjewadi order a monthly meal plan", quote: "Office workers in Baner and Hinjewadi order a monthly meal plan", confidence: high}
+  cmp.merge_claims:
+    - mock: true
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: Kinds of customers and what each wants.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G2
+          group_title: Running the kitchen
+          intent: learn who prepares and packs the tiffins
+          serves: [roles.list]
+          answer_spec: Who does what.
+          type: text
+          text: "Who in your kitchen prepares and packs the tiffins each morning?"
+          why_we_ask: Kitchen roles decide the screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Two cooks and a packer"]
+        - group_id: G2
+          group_title: Running the kitchen
+          intent: learn how the riders get their routes
+          serves: [domain:rider_routes]
+          answer_spec: How routes are given out.
+          type: text
+          text: "How do your tiffin riders get their routes each day?"
+          why_we_ask: Routes are the hard part of a tiffin service.
+          unlocks: ["Blueprint: rider screens"]
+          examples: ["The manager hands out a list at 10"]
+  cmp.audit_questions:
+    - pass_all: true

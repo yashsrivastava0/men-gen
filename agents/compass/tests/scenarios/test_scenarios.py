@@ -44,7 +44,9 @@ def _params(prefix: str = "SB-") -> list[object]:
 
 @pytest.mark.parametrize(("scn", "engine"), _params())
 async def test_scenario(scn: Scenario, engine: Engine) -> None:
-    result = await run_scenario(scn, engine=engine)  # a provider fixture, if there is one, is loaded here
+    result = await run_scenario(
+        scn, engine=engine
+    )  # a provider fixture, if there is one, is loaded here
     result.raise_if_failed()
 
 

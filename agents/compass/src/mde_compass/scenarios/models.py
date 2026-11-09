@@ -192,6 +192,15 @@ class BatchExpect(BaseModel):
     types_include: list[str] = Field(
         default_factory=list
     )  # some question of the batch has each type
+    texts_contain: list[str] = Field(
+        default_factory=list
+    )  # some question of the batch contains each text
+    texts_not_contain: list[str] = Field(
+        default_factory=list
+    )  # no question of the batch contains the text
+    origins: list[str] = Field(
+        default_factory=list
+    )  # origins present: planner | followup | fallback
     ui_mode: str | None = None  # one_at_a_time | answer_all
 
 

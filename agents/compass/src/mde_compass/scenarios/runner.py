@@ -753,6 +753,17 @@ def check_batch(exp: Any, events: Sequence[StoredEvent]) -> list[str]:
             errs.append(
                 f"batch: lead question {c.get('id')} serves {c.get('need_ids')}, not only {exp.lead_serves_only}"
             )
+    texts = [str(c.get("question", "")) for c in cards]
+    for needle in exp.texts_contain:
+        if not _has(texts, needle):
+            errs.append(f"batch: no question contains {needle!r}")
+    for needle in exp.texts_not_contain:
+        if _has(texts, needle):
+            errs.append(f"batch: a question contains {needle!r}, which should have been rejected")
+    origins = {str(c.get("origin")) for c in cards}
+    for origin in exp.origins:
+        if origin not in origins:
+            errs.append(f"batch: no {origin} question; origins {sorted(origins)}")
     types = {c.get("type") for c in cards}
     for t in exp.types_include:
         if t not in types:

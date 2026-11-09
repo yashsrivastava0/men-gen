@@ -1,0 +1,20 @@
+id: SB-QP-15
+title: A person who skips every question ends the interview early, with visible assumptions for everything unasked
+tags: [planner, skip, fatigue, assumptions]
+engines: [planner]
+steps:
+  - say: "I run a tiffin service and want an app for it"
+    expect:
+      batch: {mode: initial, total_min: 5, total_max: 5}
+  - drive: {mode: skip, max: 12}
+    expect:
+      state: BRIEF_REVIEW
+      qa:
+        shown_min: 5
+        statuses: {Q-002: skipped, Q-003: skipped, Q-004: skipped, Q-005: skipped, Q-006: skipped}
+      interview: {stop_reason: fatigue, fallback_count: 0}
+      assumptions_min: 5
+      blockers_contain: [assumptions]
+final:
+  interview: {stop_reason: fatigue}
+  qa: {no_repeats: true}

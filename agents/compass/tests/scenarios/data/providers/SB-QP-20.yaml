@@ -1,0 +1,22 @@
+# Turn 2 holds a detail no catalog field has: the riders' green vest and red-tagged dabba. The model reports it
+# as a fact; the rest of the interview (planning, auditing, reading answers, compiling) runs its mock handlers.
+# After more than twenty questions the detail must still be in the Brief, in domain_facts, with its quote.
+then_mock: [cmp.understand_turn]
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - facts:
+        - type: rule
+          statement: "Riders must wear a green vest and carry a steel dabba with a red tag so offices can tell the deliveries apart"
+          quote: "riders must wear a green vest and carry a steel dabba with a red tag"
+          topics: [riders]
+          entities: [green vest, dabba, red tag]
+          consumers: [blueprint, design]
+          confidence: 0.9
+        - type: context
+          statement: "Customers order for the whole month"
+          quote: "Customers order for the whole month"
+          topics: [pricing]
+          aspects: ["idea.business_model:*"]
+          effects:
+            - {slot_id: idea.business_model, value_json: '"A monthly order for the whole month"'}

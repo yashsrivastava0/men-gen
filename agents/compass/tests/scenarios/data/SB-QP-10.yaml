@@ -1,0 +1,26 @@
+id: SB-QP-10
+title: A declined category is refused at once with an alternative, and never offered as an option
+tags: [planner, declined, safety]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      interview:
+        rejected_min: 1
+        rejected_codes: [declined_option]
+        repaired: true
+        fallback_count: 0
+      calls:
+        counts: {cmp.plan_questions: 2}
+      qa:
+        shown_not_contains: ["virtual reality", "3d"]
+  - say: "Can we add a virtual reality tour of our kitchen?"
+    expect:
+      notice_code: declined_category
+      text_contains: ["AR, VR and 3D"]
+      no_card: true
+      calls:
+        counts: {cmp.understand_turn: 1, cmp.plan_questions: 2}
+      qa: {shown_max: 1}
+final:
+  qa: {shown_not_contains: ["virtual reality"]}

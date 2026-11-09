@@ -1,0 +1,20 @@
+id: SB-QP-14
+title: When every planned question is rejected twice the flagged fallback is used, counted and never silent
+tags: [planner, fallback]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      interview:
+        fallback_count: 1
+        fallback_batches: 1
+        rejected_min: 6
+        rejected_codes: [no_project_term]
+        repaired: true
+      calls:
+        counts: {cmp.plan_questions: 2, cmp.audit_questions: 0}
+      batch: {mode: initial, origins: [fallback], total_min: 1}
+      qa: {origins_include: [fallback], shown_max: 1}
+      card_text_contains: ["Who will use the app"]
+final:
+  interview: {fallback_count: 1}

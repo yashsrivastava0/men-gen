@@ -1,0 +1,152 @@
+# The first draft is messy on purpose: a duplicate (same intent as the first question), a generic question, a
+# technology question, a vague one the auditor will fail, and eleven questions where seven fit. Code cuts what
+# it can judge, the auditor cuts the rest, one repair adds two, the batch is cut to seven and the extra goes to
+# the backlog. Nothing rejected is ever shown.
+calls:
+  cmp.understand_turn:
+    - mock: true
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: Kinds of customers and what each wants.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: Kinds of customers.
+          type: text
+          text: "Tell me about the people who buy your tiffins and what they hope the app will do."
+          why_we_ask: Customers decide the screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn which features are wanted
+          serves: [scope.features]
+          answer_spec: The features.
+          type: text
+          text: "What features do you want?"
+          why_we_ask: Features decide the plan.
+          unlocks: ["Blueprint: features"]
+          examples: ["Ordering and payments"]
+        - group_id: G2
+          group_title: How it should work
+          intent: learn which database to use for the tiffin orders
+          serves: [scope.features]
+          answer_spec: A database name.
+          type: text
+          text: "Which database should we use for your tiffin orders?"
+          why_we_ask: The database decides how orders are kept.
+          unlocks: ["Blueprint: data"]
+          examples: ["PostgreSQL"]
+        - group_id: G2
+          group_title: How it should work
+          intent: learn how the tiffin app should feel
+          serves: [look.tone_words]
+          answer_spec: Words for the feel.
+          type: text
+          text: "How should the tiffin app feel when customers open it?"
+          why_we_ask: The feel is part of the design.
+          unlocks: ["Design: tone"]
+          examples: ["Warm and simple"]
+        - group_id: G2
+          group_title: How it should work
+          intent: learn which areas of the city the tiffins reach
+          serves: [context.geo]
+          answer_spec: City and areas.
+          type: text
+          text: "Which areas of your city do your tiffins reach?"
+          why_we_ask: Place decides maps and rivals.
+          unlocks: ["Research: local competitors"]
+          examples: ["Baner and Aundh"]
+        - group_id: G2
+          group_title: How it should work
+          intent: learn the day-one features of the tiffin app
+          serves: [scope.features]
+          answer_spec: The must-have features.
+          type: text
+          text: "Which features must your tiffin app have on day one, such as ordering and payment?"
+          why_we_ask: The first release decides the plan.
+          unlocks: ["Blueprint: features"]
+          examples: ["Ordering, payment, tracking"]
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn who prepares and packs the tiffins
+          serves: [roles.list]
+          answer_spec: Who does what.
+          type: text
+          text: "Who in your kitchen prepares and packs the tiffins each morning?"
+          why_we_ask: Kitchen roles decide the screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Two cooks and a packer"]
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn how the riders get their routes
+          serves: [domain:rider_routes]
+          answer_spec: How routes are given out.
+          type: text
+          text: "How do your tiffin riders get their routes each day?"
+          why_we_ask: Routes are the hard part of a tiffin service.
+          unlocks: ["Blueprint: rider screens"]
+          examples: ["The manager hands out a list at 10"]
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn what happens when a tiffin is late
+          serves: [domain:late_tiffin]
+          answer_spec: The rule for a late tiffin.
+          type: text
+          text: "What should happen when a tiffin arrives late, does the customer get a refund?"
+          why_we_ask: Late tiffins decide support screens.
+          unlocks: ["Blueprint: support rules"]
+          examples: ["A free meal next day"]
+    - covered_needs: [domain:rider_pay]
+      questions:
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn how the tiffin riders are paid
+          serves: [domain:rider_pay]
+          answer_spec: How and when riders are paid.
+          type: text
+          text: "How are your tiffin riders paid, for each delivery or by the month?"
+          why_we_ask: Rider pay decides the payout screens.
+          unlocks: ["Blueprint: payout screens"]
+          examples: ["Per delivery, weekly"]
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn what happens when a customer pauses the tiffin plan
+          serves: [domain:plan_pause]
+          answer_spec: The rule for a paused plan.
+          type: text
+          text: "What happens when a customer pauses the tiffin plan for a week?"
+          why_we_ask: Pausing decides the plan rules.
+          unlocks: ["Blueprint: plan rules"]
+          examples: ["Days are added at the end"]
+  cmp.audit_questions:
+    - pass_all: true
+      except:
+        Q-007: {specific: 2, issues: ["a generic tone question that fits any app"], fix: "ask about the tiffin menu or the delivery moment"}
+    - pass_all: true

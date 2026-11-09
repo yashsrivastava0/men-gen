@@ -1,0 +1,8 @@
+# The gateway gave up on the planner (its retries and its one repair spent): the call runner falls back, the
+# engine builds the registry cards, flags them and counts the fallback.
+calls:
+  cmp.understand_turn:
+    - mock: true
+  cmp.plan_questions:
+    - error: gateway
+  cmp.audit_questions: []

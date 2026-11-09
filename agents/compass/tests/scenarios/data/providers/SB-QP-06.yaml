@@ -1,0 +1,62 @@
+# The person does not know how the business earns. The model is asked (mode simplify) for the same question in
+# simpler words, once; a second non-answer is assumed visibly and not pressed.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - intent: answer
+      flags: [vague]
+    - intent: answer
+      flags: [vague]
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: How you earn
+          intent: learn how the tiffin service earns money
+          serves: [idea.business_model]
+          answer_spec: Who pays, for what, and how often.
+          type: text
+          text: "How does your tiffin service earn money today: who pays you, and for what?"
+          why_we_ask: Money flow decides what the app must charge.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["Customers pay me every month"]
+        - group_id: G1
+          group_title: How you earn
+          intent: learn who orders the tiffins
+          serves: [audience.segments]
+          answer_spec: The kinds of customers.
+          type: text
+          text: "Who orders your tiffins?"
+          why_we_ask: The customers decide the ordering screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers"]
+        - group_id: G2
+          group_title: Where you work
+          intent: learn the city the tiffins reach
+          serves: [context.geo]
+          answer_spec: The city.
+          type: text
+          text: "Which city do your tiffins reach?"
+          why_we_ask: Place decides rules and rivals.
+          unlocks: ["Research: local competitors"]
+          examples: ["Pune"]
+    - covered_needs: [idea.business_model]
+      questions:
+        - group_id: G1
+          group_title: How you earn
+          intent: learn in simple words whether customers pay per tiffin or per month
+          serves: [idea.business_model]
+          answer_spec: Pay per tiffin, or pay per month.
+          type: text
+          text: "Put simply: do customers pay for each tiffin, or a fixed amount for the month (for example 3000 rupees)?"
+          why_we_ask: A simple example may make this easier to answer.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["Each tiffin"]
+  cmp.audit_questions:
+    - pass_all: true
+    - pass_all: true

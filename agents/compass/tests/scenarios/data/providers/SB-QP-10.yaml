@@ -1,0 +1,66 @@
+# The first draft offers a 3D viewer of the dishes (a declined category) as an option: code rejects it, the one
+# repair replaces it. Later the person asks for a virtual reality tour: refused immediately, with the alternative.
+calls:
+  cmp.understand_turn:
+    - mock: true
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: The kinds of customers, what each wants, where and how they use the app.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, and how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge and remind.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G2
+          group_title: Look and feel
+          intent: choose how the tiffin menu should be shown
+          serves: [look.visual_references]
+          answer_spec: How the menu should look.
+          type: choose_one
+          text: "How should your tiffin menu look in the app?"
+          why_we_ask: The menu is the first thing customers see.
+          unlocks: ["Design: menu layout"]
+          options:
+            - {label: "Simple photos with prices", basis: suggestion, reason: "Photos help people pick quickly"}
+            - {label: "A 3D model viewer of each dish", basis: suggestion}
+            - {label: "Plain text list", basis: suggestion}
+          recommended: "Simple photos with prices"
+    - covered_needs: [look.visual_references]
+      questions:
+        - group_id: G2
+          group_title: Look and feel
+          intent: choose how the tiffin menu should be shown
+          serves: [look.visual_references]
+          answer_spec: How the menu should look.
+          type: choose_one
+          text: "How should your tiffin menu look in the app?"
+          why_we_ask: The menu is the first thing customers see.
+          unlocks: ["Design: menu layout"]
+          options:
+            - {label: "Simple photos with prices", basis: suggestion, reason: "Photos help people pick quickly"}
+            - {label: "A photo gallery of the week", basis: suggestion}
+            - {label: "Plain text list", basis: suggestion}
+          recommended: "Simple photos with prices"
+  cmp.audit_questions:
+    - pass_all: true
+    - pass_all: true

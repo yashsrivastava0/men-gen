@@ -1,0 +1,26 @@
+id: SB-QP-18
+title: When the first batch is not ready the playback card is already committed, and asking again plans it
+tags: [planner, latency, playback]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    note: the planner fails in the chained turn (no_error is off for this step on purpose)
+    expect:
+      no_error: false
+      event_types: [playback, error]
+      event_order: [playback, error]
+      no_event_types: [question_batch]
+      no_card: true
+      state: PLAYBACK
+  - command: prepare_questions
+    note: "what the screen does behind Preparing your questions: ask again"
+    expect:
+      event_order: [question_batch, card]
+      state: INTERVIEWING
+      batch: {mode: initial, total_min: 3, total_max: 3}
+      qa: {first_serves: [audience.segments], shown_max: 1}
+      calls:
+        counts: {cmp.plan_questions: 2, cmp.audit_questions: 1}
+final:
+  interview: {fallback_count: 0}
+  facts: {ids_gapless: true}

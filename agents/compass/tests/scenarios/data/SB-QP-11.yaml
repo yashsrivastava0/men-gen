@@ -1,0 +1,28 @@
+id: SB-QP-11
+title: A Hindi session gets Hindi questions and options, an English question is rejected, keys stay normalized
+tags: [planner, language, hindi]
+engines: [planner]
+locale: hi
+steps:
+  - say: "मुझे पुणे में अपनी टिफिन डिलीवरी सेवा के लिए ऐप चाहिए"
+    expect:
+      card_language: hi
+      interview: {rejected_min: 1, rejected_codes: [wrong_language], repaired: true, fallback_count: 0}
+      batch: {mode: initial, total_min: 3, total_max: 4, texts_not_contain: ["Which areas"]}
+      calls:
+        counts: {cmp.plan_questions: 2}
+        input_contains: {cmp.plan_questions: ['"language":"hi"', "टिफिन"]}
+  - answer_texts: ["हमारे ग्राहक दफ्तर में काम करने वाले लोग हैं जो रोज़ दोपहर का खाना मंगाते हैं"]
+    expect:
+      card_language: hi
+      qa: {options_language: hi}
+      facts: {active_contains: ["दफ्तर में काम करने वाले लोग"], unverified_max: 0}
+  - tap_label: "ओटीपी"
+    note: the option label is Hindi; the stored value is the catalog key
+    expect:
+      facts: {active_contains: ["ओटीपी"], unverified_max: 0}
+      slots:
+        access.auth_methods: {contains: phone_otp}
+final:
+  facts: {ids_gapless: true}
+  interview: {fallback_count: 0}

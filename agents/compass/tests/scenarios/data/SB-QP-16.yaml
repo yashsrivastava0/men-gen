@@ -1,0 +1,35 @@
+id: SB-QP-16
+title: Editing an earlier answer makes a new answer version, supersedes its facts, rebuilds the slot and plans again
+tags: [planner, edit, facts, versions]
+engines: [planner]
+steps:
+  - say: "I run a tiffin service and want an app for it"
+    expect:
+      batch: {mode: initial, total_min: 4, total_max: 4}
+  - answer_texts: ["Office workers in Baner who order lunch every weekday"]
+    expect:
+      facts: {active_contains: ["Office workers in Baner"]}
+      slots:
+        audience.segments: {contains: baner}
+  - edit_answer: {card: first, custom: "Students and hostel residents near the college who want cheap dinners every evening"}
+    expect:
+      qa:
+        versions: {Q-002: 2}
+        statuses: {Q-002: answered}
+        dropped_min: 2
+      facts:
+        superseded_contains: ["Office workers in Baner"]
+        active_contains: ["Students and hostel residents"]
+        active_not_contains: ["Office workers in Baner"]
+        ids_gapless: true
+        unverified_max: 0
+      slots:
+        audience.segments: {contains: students, not_contains: office, history_min: 1}
+      batch:
+        mode: replan
+        first_contains: [students, hostel]
+      calls:
+        modes: {cmp.plan_questions: [initial, replan]}
+final:
+  facts: {ids_gapless: true, superseded_min: 1}
+  qa: {no_repeats: true}

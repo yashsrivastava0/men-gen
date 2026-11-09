@@ -1,0 +1,30 @@
+id: SB-QP-07
+title: A later batch's correction beats an earlier fact, the older fact is superseded and kept
+tags: [planner, facts, contradiction]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      facts: {active_contains: ["delivers in Pune"], active_min: 1}
+      batch: {mode: initial, total_min: 3, total_max: 3}
+  - answer_texts:
+      - "Office workers who want lunch on time"
+      - "They pay at the start of every month"
+      - "Pune and the areas around it, for now"
+    expect:
+      batch: {mode: replan}
+      calls:
+        modes: {cmp.plan_questions: [initial, replan]}
+  - say: "Sorry, a correction: we only deliver in Mumbai, not Pune"
+    expect:
+      notice_code: picked_up
+      facts:
+        superseded_contains: ["delivers in Pune"]
+        active_contains: ["Mumbai"]
+        active_not_contains: ["delivers in Pune"]
+        count_min: 2
+      slots:
+        context.geo: {contains: mumbai, not_contains: pune, history_min: 1}
+final:
+  facts: {ids_gapless: true, superseded_min: 1}
+  qa: {no_repeats: true}

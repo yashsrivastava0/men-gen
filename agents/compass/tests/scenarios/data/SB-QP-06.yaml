@@ -1,0 +1,25 @@
+id: SB-QP-06
+title: '"I do not know" gets the question in simpler words once, then "you decide" with the reason shown'
+tags: [planner, simplify, assume]
+engines: [planner]
+known_issue: GAP-2
+known_issue_note: "no code path calls cmp.plan_questions in mode simplify or cmp.rephrase_question: the Service never uses the question_rephraser port, so a non-answer earns the ordinary follow-up (mode followup) instead of a simpler wording"
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      qa: {first_serves: [idea.business_model], shown_max: 1}
+  - answer_texts: ["I do not know"]
+    expect:
+      calls:
+        modes: {cmp.plan_questions: [initial, simplify]}
+      card_text_contains: ["for example"]
+      qa: {shown_contains: ["for example"], followups_max: 0}
+  - answer_texts: ["still no idea"]
+    note: a second non-answer is never pressed again
+    expect:
+      notice_code: assumed
+      text_contains: ["assume"]
+      calls:
+        modes: {cmp.plan_questions: [initial, simplify]}
+final:
+  qa: {no_repeats: true}
