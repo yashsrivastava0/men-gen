@@ -6,6 +6,7 @@ in the normal run."""
 from __future__ import annotations
 
 import logging
+from collections.abc import Iterator
 
 import pytest
 import structlog
@@ -26,10 +27,17 @@ settings.load_profile("compass")
 
 
 @pytest.fixture(autouse=True)
-def _quiet_logs() -> None:
-    """Hundreds of mock calls per example would drown the report in llm_call lines."""
+def _quiet_logs() -> Iterator[None]:
+    """Hundreds of mock calls per example would drown the report in llm_call lines. The global logging state
+    is put back afterwards (D-038): other packages' tests depend on it."""
+    previous = logging.root.manager.disable
     logging.disable(logging.CRITICAL)
     structlog.configure(wrapper_class=structlog.make_filtering_bound_logger(logging.CRITICAL))
+    try:
+        yield
+    finally:
+        logging.disable(previous)
+        structlog.reset_defaults()
 
 
 @pytest.fixture(autouse=True)
