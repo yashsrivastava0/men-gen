@@ -1,0 +1,154 @@
+# Fact kinds: what a detail IS, so the Brief can group it and route it to the agents that need it (ADR 0016; data,
+# not logic: hard rule 8, nothing here is specific to one company or app type).
+#
+# kinds:      key -> description (one line, what the kind holds), consumers (the catalog ``Consumer`` values that
+#             need it by default), theme (the Gate 1 assumption theme a drafted detail of this kind belongs to).
+# from_type:  the fact type (``FactType``) -> the kind a fact of that type has when its topics say nothing.
+# from_topics: kind -> topic words (en, hi, hinglish). A fact whose topic has one of these words (whole word, plural
+#             folded) gets that kind, whatever its type; the first kind in this list wins.
+# view_routes: a consumer tag -> the consumer VIEWS (research, blueprint, design, verify) that receive facts tagged
+#             with it. Every ``Consumer`` value is listed, so a fact tagged for any consumer reaches a view.
+# compile_groups: how ``cmp.compile_brief`` is split into parallel calls. ``sections`` are Brief sections or slot
+#             groups (the call's targets); a fact is routed to every group that lists its type, its kind or a word of
+#             its topics; a fact that matches none goes to ``general``.
+version: 1
+
+kinds:
+  rule:
+    description: A business rule, policy or functional requirement the app must follow or enforce.
+    consumers: [blueprint, backend, qa]
+    theme: Features
+  number:
+    description: A quantity, limit, price, percentage, duration or other figure the app depends on.
+    consumers: [blueprint, backend, qa]
+    theme: Business
+  acceptance:
+    description: A condition that must hold for a feature to count as done.
+    consumers: [verify, qa]
+    theme: Features
+  screen:
+    description: A screen, page or view and what it shows or lets the person do.
+    consumers: [screens, design, frontend]
+    theme: Look
+  flow:
+    description: A sequence of steps a person goes through to get something done.
+    consumers: [blueprint, screens, frontend, qa]
+    theme: Features
+  entity:
+    description: A thing the app keeps track of (a record, a document, an item) and what is known about it.
+    consumers: [blueprint, backend]
+    theme: Features
+  compliance:
+    description: A law, regulation, consent, privacy or certification requirement.
+    consumers: [research, blueprint, backend, qa, verify]
+    theme: Access
+  nfr:
+    description: A quality the app must have (speed, offline use, security, accessibility, reliability, scale).
+    consumers: [blueprint, frontend, backend, qa]
+    theme: Business
+  integration_detail:
+    description: An outside system, service or interface and how the app uses it.
+    consumers: [blueprint, backend, research]
+    theme: Integrations
+  constraint:
+    description: A limit on how the app is built or run (budget, deadline, platform, must use, must not).
+    consumers: [blueprint, research, verify, change_control]
+    theme: Business
+  example:
+    description: A sample case, number or situation that illustrates how something should work.
+    consumers: [qa, blueprint]
+    theme: Features
+  preference:
+    description: A taste, style or wish that is not a hard requirement.
+    consumers: [design, screens]
+    theme: Look
+  context:
+    description: Background about the business, the people, the place or the goal.
+    consumers: [research, blueprint, design]
+    theme: Business
+  other:
+    description: A detail that fits none of the kinds above; every agent may need it.
+    consumers: [all]
+    theme: Business
+
+from_type:
+  requirement: rule
+  rule: rule
+  constraint: constraint
+  preference: preference
+  number: number
+  example: example
+  goal: context
+  role: rule
+  exclusion: constraint
+  reference: context
+  glossary: context
+  context: context
+
+from_topics:
+  acceptance:
+    en: [acceptance, criteria, criterion, done, definition]
+    hi: [स्वीकृति]
+    hinglish: [acceptance]
+  screen:
+    en: [screen, screens, page, pages, view, views, dashboard, dashboards, layout, tab, tabs, menu, form, forms, home, homepage]
+    hi: [स्क्रीन, पेज]
+    hinglish: [screen, page]
+  flow:
+    en: [flow, flows, journey, journeys, steps, process, workflow, workflows, onboarding, checkout, booking]
+    hi: [प्रक्रिया]
+    hinglish: [process, flow]
+  entity:
+    en: [entity, entities, field, fields, record, records, table, schema, model, inventory, catalog, catalogue]
+    hi: [रिकॉर्ड]
+    hinglish: [record, stock]
+  compliance:
+    en: [compliance, legal, law, regulation, regulations, regulatory, privacy, consent, gdpr, hipaa, pci, audit, certification, gst, tax, kyc, aml, dpdp]
+    hi: [कानून, गोपनीयता]
+    hinglish: [kanoon, gopniyata]
+  nfr:
+    en: [performance, speed, latency, offline, security, accessibility, uptime, availability, reliability, scale, scalability, load, encryption, backup, battery, bandwidth]
+    hi: [सुरक्षा]
+    hinglish: [suraksha, tez]
+  integration_detail:
+    en: [integration, integrations, api, apis, payment, payments, gateway, sms, whatsapp, email, webhook, sso, erp, crm, sync, import, export]
+    hi: [भुगतान]
+    hinglish: [bhugtan, payment]
+
+view_routes:
+  research: [research]
+  blueprint: [blueprint]
+  design: [design]
+  verify: [verify]
+  screens: [design, blueprint]
+  frontend: [blueprint]
+  backend: [blueprint]
+  qa: [verify]
+  change_control: [verify]
+  all: [research, blueprint, design, verify]
+
+compile_groups:
+  idea:
+    description: Who the project is for and what it is about.
+    sections: [idea, context, audience, references, glossary, org]
+    types: [goal, context, reference, glossary, example]
+    kinds: [context]
+    topics: [idea, business, goal, goals, audience, users, customers, market, location, geography, brand, glossary, terms, competitors]
+  people_and_scope:
+    description: The apps, the roles and the features.
+    sections: [apps, roles, scope]
+    types: [requirement, role, exclusion, rule]
+    kinds: [rule, flow, screen, acceptance, entity]
+    topics: [roles, role, features, feature, scope, apps, app, permissions, admin, staff]
+  experience_and_systems:
+    description: Look and feel, access, integrations, data and limits.
+    sections: [experience, access, integrations, data, constraints]
+    types: [constraint, preference, number]
+    kinds: [nfr, integration_detail, compliance, constraint, preference, number]
+    topics: [look, design, tone, language, languages, login, signup, access, auth, data, integrations, security, privacy, offline, performance]
+  general:
+    description: "Anything the groups above did not take (placed and typed only, no Brief value is asked for)."
+    sections: ["_none"]
+    types: []
+    kinds: []
+    topics: []
