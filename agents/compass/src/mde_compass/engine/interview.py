@@ -1083,6 +1083,12 @@ class InterviewController:
                 claim_id=claim.id,
                 quote=st.quote.strip()[:500],
                 unverified_quote=False,
+                # a claim that maps to a need answers it: the interview must not ask it again (GAP-7)
+                aspects=(
+                    [f"{claim.slot_hint}:*"]
+                    if claim.slot_hint in self.catalog.slots and claim.status == "used"
+                    else []
+                ),
                 created_at=now,
                 updated_at=now,
             )

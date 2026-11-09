@@ -19,11 +19,11 @@ Two question engines exist while the work is in progress (`InterviewPolicy.engin
 
 | Id | Effort | Max out | Lane | Route | Timeout | Port (engine) | Adapter class | Engine |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| `cmp.understand_turn` | medium | 3500 | writer | standard | 45 s | `Understander` | `UnderstandAdapter` | both |
+| `cmp.understand_turn` | low | 3500 | writer | standard | 60 s | `Understander` | `UnderstandAdapter` | both |
 | `cmp.write_card` | high | 2500 | writer | deep | 60 s | `CardWriter` | `WriteCardAdapter` | legacy |
 | `cmp.situate` | high | 6000 | writer | deep | 90 s | `Situator` | `SituateAdapter` | both |
 | `cmp.compile_text` | high | 3500 | writer | deep | 90 s | `Compiler` | `CompileTextAdapter` | both |
-| `cmp.seed_research` | high | 4000 | writer | deep | 90 s | `ResearchSeeder` | `SeedResearchAdapter` | both |
+| `cmp.seed_research` | medium | 4000 | writer | deep | 90 s | `ResearchSeeder` | `SeedResearchAdapter` | both |
 | `cmp.probe_handoff` | low | 2500 | canary | fast | 30 s | `Prober` | `ProbeHandoffAdapter` | both |
 | `cmp.answer` | medium | 1500 | writer | standard | 45 s | `Answerer` | `AnswerAdapter` | both |
 | `cmp.interpret_change` | high | 3500 | writer | deep | 90 s | `ChangeInterpreter` | `InterpretChangeAdapter` | both |
@@ -31,10 +31,10 @@ Two question engines exist while the work is in progress (`InterviewPolicy.engin
 | `cmp.read_chunk` | high | 4000 | writer | deep | 90 s | `ChunkReader` | `ReadChunkAdapter` | both |
 | `cmp.merge_claims` | high | 6000 | writer | deep | 120 s | `ClaimMerger` | `MergeClaimsAdapter` | both |
 | `cmp.scan_ambiguity` | high | 3000 | critic | deep | 60 s | `AmbiguityScanner` | `ScanAmbiguityAdapter` | both |
-| `cmp.plan_questions` | high | 7000 | writer | deep | 120 s | `QuestionPlanner` | `PlanAdapter` | planner |
+| `cmp.plan_questions` | low | 5000 | writer | standard | 90 s | `QuestionPlanner` | `PlanAdapter` | planner |
 | `cmp.audit_questions` | medium | 3000 | critic | standard | 60 s | `QuestionAuditor` | `AuditAdapter` | planner |
 | `cmp.update_summary` | medium | 2500 | writer | standard | 60 s | `SummaryUpdater` | `SummaryAdapter` | planner |
-| `cmp.compile_brief` | high | 8000 | writer | deep | 150 s | `BriefCompiler` | `CompileAdapter` | planner |
+| `cmp.compile_brief` | low | 8000 | writer | deep | 150 s | `BriefCompiler` | `CompileAdapter` | planner |
 | `cmp.rephrase_question` | medium | 1500 | writer | standard | 45 s | `QuestionRephraser` | `RephraseAdapter` | planner |
 
 The ports are Protocols in `engine/ports.py`; `calls/registry.py` (`PORT_BY_CALL`) maps each folder to its `Ports` attribute. Tests named below are in `agents/compass/tests/calls/<name>/test_<name>.py` unless a file is named. Run one call with `uv run pytest agents/compass/tests/calls/<name>`.
