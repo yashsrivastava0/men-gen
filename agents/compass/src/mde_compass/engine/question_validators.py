@@ -571,7 +571,9 @@ def _check_technology(card: Card, ctx: ValidationContext) -> list[Issue]:
 def _check_declined(card: Card, ctx: ValidationContext) -> list[Issue]:
     for option in card.options:
         for text in (option.label, option.description, *_set_texts(option.sets)):
-            match = declined_category(text, ctx.catalog, language=ctx.language)
+            match = declined_category(
+                text, ctx.catalog, language=ctx.language, user_text=ctx.user_text
+            )
             if match is not None:
                 return [
                     Issue(

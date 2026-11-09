@@ -132,6 +132,73 @@ def test_declined_category_is_word_aware(text: str) -> None:
     assert declined_category(text, CATALOG) is None
 
 
+LEARNING_WITH_GAMES = (
+    "A language-learning app for children aged 5 to 10 with short games and stories; parents see their "
+    "child's progress."
+)
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        LEARNING_WITH_GAMES,
+        "a maths practice app for school students including quizzes and games",
+        "a kids reading app that has a few games for each lesson",
+        "an English course app with a game after every unit",
+        "bachon ke liye ek seekhne wala app jisme chhote games aur kahaniyan hon",
+        "बच्चों के लिए भाषा सीखने का ऐप जिसमें छोटे गेम और कहानियाँ हों",
+        "a quiz app for revision along with games",
+    ],
+)
+def test_an_app_that_merely_contains_games_is_not_a_game_app(text: str) -> None:
+    """BUG-28: 'games' as content inside a learning (or any other) app is not the declined category."""
+    assert declined_category(text, CATALOG) is None
+    assert screen(text).declined is None
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "I want to build games for kids",
+        "make a game like Candy Crush",
+        "a game app with a learning mode",  # the app itself is the game
+        "a mobile game with short stories",
+        "an app with games like Ludo and chess",
+        "a learning app with a multiplayer quiz arena",  # another declined keyword still declines
+        "a kids app with an arcade corner",
+        "racing games with leaderboards",
+        "a language app with games, and I want to build games too",  # one occurrence is not introduced
+        "mujhe ek game wala app banana hai",
+    ],
+)
+def test_an_app_that_is_a_game_is_still_declined(text: str) -> None:
+    match = declined_category(text, CATALOG)
+    assert match is not None and match.id == "games"
+
+
+def test_the_users_own_accepted_words_are_not_a_declined_option() -> None:
+    """The card option "short games" echoes the idea the user wrote (which was not declined)."""
+    assert declined_category("short games", CATALOG) is not None
+    assert declined_category("short games", CATALOG, user_text=LEARNING_WITH_GAMES) is None
+    # the user never said it: still declined; the user's own text was declined: no echo exemption
+    assert declined_category("Virtual reality tour", CATALOG, user_text=LEARNING_WITH_GAMES)
+    assert declined_category("A multiplayer arena", CATALOG, user_text=LEARNING_WITH_GAMES)
+    assert declined_category("short games", CATALOG, user_text="I want to build a 3D racing game")
+
+
+def test_content_rule_has_linear_time_on_hostile_input() -> None:
+    for text in (
+        "with game " * 20_000,
+        "with " * 40_000 + "games",
+        "game " * 40_000,
+        "app with games " * 13_000,
+    ):
+        start = time.perf_counter()
+        declined_category(text, CATALOG)
+        declined_category("short games", CATALOG, user_text=text)
+        assert time.perf_counter() - start < 1.5
+
+
 def test_declined_is_localised() -> None:
     en = declined_category("a game app", CATALOG, language="en")
     hi = declined_category("a game app", CATALOG, language="hi")

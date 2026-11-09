@@ -421,6 +421,16 @@ def test_declined_categories_are_never_offered() -> None:
     assert "declined_option" not in codes(card())
 
 
+def test_an_option_echoing_the_users_accepted_games_is_not_declined() -> None:
+    """BUG-28: the idea said 'with short games and stories' (content, accepted), so 'short games' is allowed."""
+    idea = "A language-learning app for children with short games and stories"
+    c = card(options=opts("Short games", "Long lessons", "Both ways"))
+    assert "declined_option" not in codes(c, ctx(user_text=idea))
+    assert "declined_option" in codes(c, ctx(user_text="a clinic booking app"))
+    vr = card(options=opts("Short games", "Virtual reality tour", "Both ways"))
+    assert "declined_option" in codes(vr, ctx(user_text=idea))
+
+
 def test_declined_category_in_option_sets_is_found() -> None:
     c = card(
         options=[

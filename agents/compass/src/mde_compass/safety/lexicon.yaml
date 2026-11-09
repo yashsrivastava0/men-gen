@@ -42,3 +42,58 @@ declined_companion:
   - "companion for"
   - "साथी ऐप"
   - "companion app for"
+# A declined noun can be CONTENT inside another kind of app ("a language-learning app with short games and stories"):
+# that app is not the declined thing. Per declined category id. A hit of a `weak` keyword (the bare noun, also in the
+# category's keywords) is a content mention when every occurrence is introduced by one of the `introducers` within
+# the few words before it, and no `is_the_thing` phrase appears anywhere in the message ("game app", "games like X").
+# Any other keyword of the category ("multiplayer", "arcade", "puzzle game") still declines the whole message.
+declined_content:
+  games:
+    weak: [game, "गेम", "खेल"]
+    introducers:
+      - with
+      - including
+      - includes
+      - include
+      - containing
+      - contains
+      - contain
+      - featuring
+      - features
+      - has
+      - have
+      - having
+      - plus
+      - inside
+      - alongside
+      - "along with"
+      - "as well as"
+      - "built in"
+      - "जिसमें"
+      - "जिसमे"
+      - "के साथ"
+      - "साथ में"
+      - "सहित"
+      - "शामिल"
+      - jisme
+      - jismein
+      - "ke saath"
+      - "saath mein"
+      - shamil
+      - sahit
+    is_the_thing:
+      - "game app"
+      - "games app"
+      - "gaming app"
+      - "mobile game"
+      - "video game"
+      - "game like"
+      - "games like"
+      - "game similar"
+      - "game development"
+      - "game engine"
+      - "गेम ऐप"
+      - "गेमिंग"
+      - "game wala"
+      - "game banana"
+      - "games banana"

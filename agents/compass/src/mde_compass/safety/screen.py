@@ -63,11 +63,21 @@ class Screened:
 
 
 @dataclass(frozen=True)
+class ContentRule:
+    """When a declined noun is only CONTENT of another kind of app (``declined_content`` in the lexicon)."""
+
+    weak: frozenset[str]  # bare nouns that can be content ("game")
+    introducers: tuple[str, ...]  # "with", "including"...: what introduces content
+    is_the_thing: tuple[str, ...]  # "game app", "games like": the app itself is the declined thing
+
+
+@dataclass(frozen=True)
 class Lexicon:
     unsafe: dict[str, tuple[str, ...]]
     injection: tuple[re.Pattern[str], ...]
     declined_allow: tuple[str, ...]
     declined_companion: tuple[str, ...]
+    declined_content: dict[str, ContentRule]
 
 
 @lru_cache(maxsize=1)
@@ -79,6 +89,14 @@ def load_lexicon() -> Lexicon:
         injection=tuple(re.compile(p, re.IGNORECASE) for p in raw["injection"]),
         declined_allow=tuple(normalize(str(p)) for p in raw["declined_context_allow"]),
         declined_companion=tuple(normalize(str(p)) for p in raw["declined_companion"]),
+        declined_content={
+            str(cid): ContentRule(
+                weak=frozenset(normalize(str(p)) for p in rule["weak"]),
+                introducers=tuple(normalize(str(p)) for p in rule["introducers"]),
+                is_the_thing=tuple(normalize(str(p)) for p in rule["is_the_thing"]),
+            )
+            for cid, rule in (raw.get("declined_content") or {}).items()
+        },
     )  # fmt: skip
 
 
@@ -129,13 +147,49 @@ def _kw_norm(rule: CapabilityRule) -> list[str]:
     return list(dict.fromkeys(n for k in rule.keywords if (n := normalize(k))))
 
 
-def declined_category(text: str, catalog: Catalog, *, language: str = "en") -> DeclinedMatch | None:
+_CONTENT_WINDOW = (
+    80  # characters (and at most _CONTENT_WORDS words) before a hit that may hold its introducer
+)
+_CONTENT_WORDS = 5
+_CONTENT_MAX_HITS = (
+    24  # more occurrences than this are not "a mention": the message is about the thing
+)
+
+
+def _introduced(cleaned: str, phrase: str, introducers: tuple[str, ...]) -> bool:
+    """Every whole-word occurrence of ``phrase`` in ``cleaned`` is introduced ("with short games")."""
+    seen = 0
+    for m in _phrase_re(phrase).finditer(cleaned):
+        seen += 1
+        if seen > _CONTENT_MAX_HITS:
+            return False
+        before = cleaned[max(0, m.start() - _CONTENT_WINDOW) : m.start()].split()
+        if not phrase_hits(" ".join(before[-_CONTENT_WORDS:]), introducers):
+            return False
+    return seen > 0
+
+
+def _content_only(cleaned: str, hits: list[str], rule: ContentRule) -> bool:
+    """The declined hits are only content of another app: the weak nouns, each one introduced, and nothing
+    in the message says the app itself is the declined thing."""
+    if phrase_hits(cleaned, rule.is_the_thing):
+        return False
+    return all(h in rule.weak and _introduced(cleaned, h, rule.introducers) for h in hits)
+
+
+def declined_category(
+    text: str, catalog: Catalog, *, language: str = "en", user_text: str = ""
+) -> DeclinedMatch | None:
     """The first declined category (games, AR/VR, editors, DRM, trading, OS utilities, medical,
     hardware) whose keyword occurs in ``text`` as a whole word, or ``None``.
 
     Keywords come from ``catalog.capabilities`` (kind ``declined``, en/hi/hinglish). Matching is word-aware
     ("game" does not match "game plan" or "gamification"); benign contexts listed in ``lexicon.yaml``
     ("companion app", "game plan") cancel the match, because a companion app for a game IS buildable.
+    A declined noun that is only content of another app ("a learning app with short games") does not
+    decline it (``declined_content`` in the lexicon). ``user_text`` is the user's own earlier words:
+    a declined phrase the user already used in a message that was NOT declined is echoed content, not an
+    offer of the declined thing (a card option "short games" after "a learning app with short games").
     """
     norm = normalize(text[:DEFAULT_MAX_CHARS])
     if not norm:
@@ -146,9 +200,16 @@ def declined_category(text: str, catalog: Catalog, *, language: str = "en") -> D
     cleaned = norm
     for ctx in phrase_hits(norm, lex.declined_allow):
         cleaned = cleaned.replace(ctx, " ")
+    own = normalize(user_text[:DEFAULT_MAX_CHARS]) if user_text else ""
+    own_declined = bool(own) and declined_category(own, catalog) is not None
     for rule in catalog.declined():
         hits = phrase_hits(cleaned, _kw_norm(rule))
         if hits:
+            content = lex.declined_content.get(rule.id)
+            if content is not None and _content_only(cleaned, hits, content):
+                continue
+            if own and not own_declined and all(phrase_hits(own, [h]) for h in hits):
+                continue  # the user's own, already accepted words
             lang = language if language in ("en", "hi") else "en"
             return DeclinedMatch(
                 id=rule.id,
