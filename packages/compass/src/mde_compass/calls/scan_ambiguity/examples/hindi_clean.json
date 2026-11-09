@@ -1,0 +1,20 @@
+{
+  "name": "hindi_clean",
+  "input": {
+    "language": "hi",
+    "items": [
+      {
+        "slot_id": "idea.summary",
+        "text": "दुकानदारों के लिए ऑर्डर लेने वाला ऐप"
+      },
+      {
+        "slot_id": "context.geo",
+        "text": "पुणे"
+      }
+    ],
+    "glossary_terms": []
+  },
+  "output": {
+    "findings": []
+  }
+}
