@@ -1,0 +1,15 @@
+id: SB-DC-07
+title: Voice mishears names, numbers and places, the engine echoes them back
+tags: [voice, echo]
+steps:
+  - say_voice: "I want a clinic booking app in Pune for Dr Sharma's clinic with 25 doctors"
+    expect:
+      notice_code: picked_up
+      text_contains: [pune]
+      slots:
+        context.geo: {contains: pune, provenance: voice}
+  - say_voice: "no sorry it is Pune not Poona"
+    note: a voice correction overwrites and keeps history
+    expect:
+      slots:
+        context.geo: {contains: pune}

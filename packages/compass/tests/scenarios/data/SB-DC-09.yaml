@@ -1,0 +1,17 @@
+id: SB-DC-09
+title: A technology question gets the fixed stack in a line and no choice is offered
+tags: [interview, tech-choice]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - say: "should we use React Native or Flutter? And which database do you recommend?"
+    expect:
+      text_any: [fixed, stack]
+      text_not_contains: [i recommend, flutter is]
+      card_text_not_contains: [flutter, react native, firebase, supabase]
+      slots:
+        constraints.must_use: {filled: false}
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+final:
+  slots:
+    constraints.must_use: {filled: false}

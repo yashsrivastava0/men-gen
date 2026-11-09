@@ -1,0 +1,19 @@
+id: SB-GATE-01
+title: Gate 1, approval with the matching version and hash approves and hands off
+tags: [gate]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - drive: {}
+    expect:
+      state: BRIEF_REVIEW
+      event_types: [brief_ready]
+  - fill_required: true
+    note: workaround for BUG-1 (a required must-confirm slot is never asked), so this scenario tests the gate
+  - accept_all: true
+  - approve: true
+    expect:
+      state: APPROVED
+      event_types: [brief_approved]
+      approved: true
+final:
+  state: APPROVED

@@ -1,0 +1,24 @@
+id: SB-DC-02
+title: Everything is a must, a priority card asks for the first-release five
+tags: [interview, priority]
+known_issue: BUG-3
+known_issue_note: "the forced first-release ranking (frame priorities) is never asked, even when the user ticks every feature and says everything is a must"
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - drive: {until_frame: features}
+    expect:
+      card_frame: features
+  - tap_all: true
+    note: ticks every feature
+  - say: "everything is a must have, nothing can wait"
+    expect:
+      no_event_types: [brief_approved]
+  - drive: {until_frame: priorities}
+    expect:
+      card_frame: priorities
+      card_type: priority
+  - tap_first: 5
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+final:
+  questions_max: 10

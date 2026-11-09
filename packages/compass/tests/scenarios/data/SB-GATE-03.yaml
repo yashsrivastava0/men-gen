@@ -1,0 +1,24 @@
+id: SB-GATE-03
+title: Gate 1, silence never approves
+tags: [gate, silence]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - drive: {}
+    expect:
+      state: BRIEF_REVIEW
+      no_event_types: [brief_approved]
+  - pause: true
+    note: the user walks away from the open gate
+    expect:
+      state: PAUSED
+      no_event_types: [brief_approved]
+  - resume: true
+    expect:
+      no_event_types: [brief_approved]
+      approved: false
+  - say: "hmm, let me think about it"
+    expect:
+      no_event_types: [brief_approved]
+      approved: false
+final:
+  no_event_types: [brief_approved]

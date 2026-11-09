@@ -1,0 +1,11 @@
+id: SB-IV-02-b
+title: Mind change phrased as a change request ("I meant ...") is applied, not dropped
+tags: [change, history]
+known_issue: BUG-5
+known_issue_note: "a message with a change cue (\"Sorry, I meant Mumbai\") is routed to cmp.interpret_change, whose rules cannot map a geography, so the engine answers \"I am not sure I understood that\" and drops the Mumbai that understand_turn had extracted"
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - say: "Sorry, I meant Mumbai, not Pune. It is for restaurants in Mumbai."
+    expect:
+      slots:
+        context.geo: {contains: mumbai, not_contains: pune, history_min: 1}

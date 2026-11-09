@@ -1,0 +1,20 @@
+id: SB-DC-06
+title: Chat language differs from app language, never assumed
+tags: [language, locales]
+locale: hi
+steps:
+  - say: "मुझे पुणे में रेस्टोरेंट के लिए फूड डिलीवरी ऐप चाहिए"
+    note: the user chats in Hindi but never said which languages the app is for
+    expect:
+      card_language: hi
+      slots:
+        experience.locales: {not_tier: Locked}
+  - drive: {until_frame: who_and_where}
+    expect:
+      card_frame: who_and_where
+      card_language: hi
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+final:
+  slots:
+    experience.locales: {filled: true}

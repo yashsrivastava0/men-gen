@@ -1,0 +1,13 @@
+id: SB-DC-05
+title: Hybrid category, the engine asks which is primary
+tags: [category, hybrid]
+steps:
+  - say: "I want an app for my gym where members book classes, and also buy protein supplements, and pay a monthly fee"
+    expect:
+      state: [UNDERSTANDING, PLAYBACK, INTERVIEWING]
+  - drive: {until_frame: confirm_kind_of_app}
+    expect:
+      card_frame: confirm_kind_of_app
+      card_type: choose_one
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}

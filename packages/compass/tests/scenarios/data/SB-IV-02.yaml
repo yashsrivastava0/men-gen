@@ -1,0 +1,23 @@
+id: SB-IV-02
+title: Mind change, the correction overwrites and history is kept
+tags: [change, history]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+    expect:
+      slots:
+        context.geo: {contains: pune}
+  - say: "The restaurants are in Mumbai, not Pune."
+    expect:
+      slots:
+        context.geo: {contains: mumbai, not_contains: pune, history_min: 1}
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+  - edit: {path: idea.summary, value: "A food delivery app for restaurants in Mumbai"}
+    expect:
+      version_increased: true
+      event_types: [brief_patch]
+      slots:
+        idea.summary: {contains: mumbai, history_min: 1}
+final:
+  slots:
+    context.geo: {contains: mumbai, history_min: 1}

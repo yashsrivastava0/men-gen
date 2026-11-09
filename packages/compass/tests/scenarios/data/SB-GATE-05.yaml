@@ -1,0 +1,19 @@
+id: SB-GATE-05
+title: Gate 1 in enterprise mode, a requester's approval is not enough (an approver role is required)
+tags: [gate, enterprise, approvers]
+mode: enterprise
+steps:
+  - say: "We need an internal field service app for our technicians in Pune, in English"
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+  - fill_required: true
+    note: workaround for BUG-1 (a required must-confirm slot is never asked), so this scenario tests the gate
+  - accept_all: true
+  - approve: true
+    note: the requester is not an approver
+    expect:
+      state: BRIEF_REVIEW
+      no_event_types: [brief_approved]
+      notice_code_any: [not_an_approver, gate_waiting, gate_blocked]
+final:
+  no_event_types: [brief_approved]

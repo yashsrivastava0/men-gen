@@ -1,0 +1,21 @@
+id: SB-GATE-02
+title: Gate 1, a stale hash and version are refused, the fresh one is accepted
+tags: [gate, hash]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+  - fill_required: true
+    note: workaround for BUG-1 (a required must-confirm slot is never asked), so this scenario tests the gate
+  - accept_all: true
+  - approve_stale: true
+    expect:
+      state: BRIEF_REVIEW
+      no_event_types: [brief_approved]
+      approved: false
+      notice_code_any: [gate_blocked, gate_waiting]
+      event_types: [brief_ready]
+  - approve: true
+    expect:
+      state: APPROVED
+      event_types: [brief_approved]

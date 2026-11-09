@@ -1,0 +1,22 @@
+id: SB-IV-04
+title: A very vague idea ("an app") gets help, one question at a time, and still finishes
+tags: [interview, vague, help]
+steps:
+  - say: "I want an app"
+    expect:
+      state: [UNDERSTANDING, PLAYBACK, INTERVIEWING]
+      event_types: [card]
+      max_cards: 1
+      slots:
+        idea.category: {filled: false}
+  - say: "I run a small saree shop in Surat and want my customers to order from their phone"
+    expect:
+      state: [PLAYBACK, INTERVIEWING]
+      max_cards: 1
+      slots:
+        idea.summary: {filled: true}
+  - drive: {mode: you_decide}
+    expect:
+      state: BRIEF_REVIEW
+final:
+  questions_max: 10

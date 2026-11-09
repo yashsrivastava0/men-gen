@@ -1,0 +1,21 @@
+id: SB-IV-05
+title: Asking for price or time gets no invented numbers
+tags: [interview, price, grounded-answers]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - say: "How much will this cost and how long will it take to build?"
+    expect:
+      event_types: [assistant_message]
+      text_not_matches:
+        - '\d+\s*(weeks?|days?|months?|hours?|dollars?|rupees?|usd|inr|lakhs?|k\b)'
+        - '[$₹€£]\s*\d'
+      slots:
+        idea.summary: {contains: food delivery}
+  - say: "kitne paise lagenge aur kitne din mein ban jayega?"
+    note: the same question in Hinglish
+    expect:
+      text_not_matches:
+        - '\d+\s*(weeks?|days?|months?|hours?|dollars?|rupees?|usd|inr|lakhs?|din|hafte)'
+        - '[$₹€£]\s*\d'
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
