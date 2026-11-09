@@ -16,6 +16,7 @@ apps/web/
       shell.js                  fills the switcher, mounts the chosen agent
     agents/compass/
       compass.html             the Compass screens as an HTML fragment
+      interview.js             window.compassInterview: the pure, DOM-free helpers of the interview screens
       compass.js               the Compass behaviour (starts with the /*CONTRACT {...} CONTRACT*/ block)
       compass.css              the Compass styles
   app/                          reserved for the later React app (.gitkeep)
@@ -34,8 +35,26 @@ A registry entry:
 | `title` | the label in the switcher and the page title |
 | `base` | the agent's API prefix (`/v1/compass`); the screens reach the agent only through it |
 | `markup`, `script`, `style` | the three files of the screen set, relative to `console/` |
+| `helper` | optional: a DOM-free helper script the shell loads just before `script` (Compass: `agents/compass/interview.js`) |
 
 Adding an agent is a new `agents/<id>/` folder with those three files plus one registry entry. A second agent is not built yet.
+
+## The Compass interview screens
+
+The AI-planned interview (build prompt 02, section 2.7) is all front end: the agent sends events and answers `GET /qa` and `GET /budget`; the screens below live in `compass.html`, `compass.js`, `compass.css`, and the plain-data logic lives in `interview.js` (`window.compassInterview`: locating a card in its batch, the progress line, the answer-all payload, the Q&A editor model, the Brief highlight keys). New UI strings are the `ui.interview.*` keys: embedded in the `FALLBACK` dictionary of `compass.js` and appended to the agent's `en.json` and `hi.json` (a test keeps the three equal).
+
+| What | Where (ids and classes) | Behaviour |
+| --- | --- | --- |
+| Mock banner | `#mock-banner` (first element of `<main>`, `.mock-banner`) | shown, with no close button, whenever `GET /budget` says `mode: "mock"`: "MOCK MODE: questions are canned"; sticky, wraps on a phone |
+| Themed groups and progress | `.qcard-head`, `.group-chip`, `.progress-line` | a `question_batch` event is remembered (`state.batches`); each card shows its group title and "Group 2 of 3 · question 4 of about 9" (a follow-up borrows its parent's group) |
+| "Why am I being asked this?" | `.why`, `.why-btn`, `.why-pop` (`role="note"`) | a button with `aria-expanded` and `aria-controls` toggles `why_we_ask` and "This feeds: ..." (`unlocks`); Escape closes it and returns the focus; built with `h()` and `textContent` only |
+| Fallback badge | `.fallback-badge` | a card with `fallback: true` shows "Standard question" with a tooltip and `aria-label` saying the planner did not produce it (also on the Q&A list) |
+| Answer-all form | `.batch-form`, `.qgroup`, `.qitem`, `.toggle`, `.send-all` | `ui_mode: "answer_all"` renders the whole batch as one form grouped by theme (radio, checkbox, text area with the question's `examples` as placeholder, per-question "You decide" and "Skip"); "Send all answers" calls `window.compassSend.batchAnswer(batch_id, answers)`; blanks are sent as skipped except questions that must be confirmed |
+| Layout toggle and "Ask me more" | `#interview-bar`, `#btn-mode-toggle`, `#btn-ask-more`, `#mode-note` (just above the composer) | the toggle sends `mode_answer_all` / `mode_one_at_a_time` and applies to the questions the server shows next; "Ask me more" sends `ask_more` once something is answered and the Brief is not approved |
+| Interview depth | `.depth`, `.depth-chip` (welcome block and playback card) | Quick / Standard / Thorough send `budget_quick` / `budget_standard` / `budget_thorough`; the note shows the budget known so far from the progress event |
+| Brief row highlight | `.brow.pulse`, `@keyframes row-pulse`, `highlightChanged()` | after each turn the view is refreshed; rows with `changed` pulse once per Brief hash (off under `prefers-reduced-motion`) and the first one is scrolled into view on a wide screen |
+| Questions and answers | `#qa-section`, `#qa-list`, `.qa-item`, `.qa-status`, `.qa-editor`; chat history in `#history-chat` (History tab) | `GET /qa` on tab open and after each turn: question, answer in plain words, status chip, follow-up indent, fallback badge, the facts it produced; "Edit" opens an inline editor by question kind and "Save" calls `window.compassSend.answerEdit(cardId, value, custom)`, then the toast "Updated: your Brief and the next questions will follow" |
+| Details we captured | the `details` section of the view model | rendered by the generic section renderer: server order and title, rows grouped under their `group` heading, no Edit button because `editable` is false |
 
 ## Rules for every file under `console/`
 
@@ -60,4 +79,4 @@ just compass-dev                                       # the same with the datab
 uv run pytest apps/web/tests -q
 ```
 
-Offline and fast. They fetch every console file through the real app (CSP and content types), check that the shell and registry reference only files that exist, that the switcher lists the registered agents, that the tokens define the light and dark themes, that no inline script, style or handler exists anywhere under `console/`, that every script parses (`node --check`, skipped without Node), that every id `compass.js` looks up exists in the markup, and that the keys it reads exist in the agent's view-model, card and event schemas (`test_ui_contract.py`, the one test that imports agent models). `conftest.py` imports `create_app` and `ScriptedService` to serve the console; the console itself imports nothing.
+Offline and fast. They fetch every console file through the real app (CSP and content types), check that the shell and registry reference only files that exist, that the switcher lists the registered agents, that the tokens define the light and dark themes, that no inline script, style or handler exists anywhere under `console/`, that every script parses (`node --check`, skipped without Node), that every id `compass.js` looks up exists in the markup, and that the keys it reads exist in the agent's view-model, card, batch and event schemas, that the `/qa` item keys and the commands the UI sends are the server's, and that every string the code names exists in both languages (`test_ui_contract.py`, the one test that imports agent models). `test_interview_ui.py` checks that each interview screen above is present by its ids and classes; `test_interview_helpers.py` runs the functions of `interview.js` under Node (`node -e`, skipped without Node). `conftest.py` imports `create_app` and `ScriptedService` to serve the console; the console itself imports nothing.

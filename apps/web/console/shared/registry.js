@@ -5,6 +5,7 @@
      title   the label in the switcher and the page title
      base    the agent's HTTP API prefix (the screens talk to the agent only through it)
      markup  the screen's HTML fragment (elements with data-slot="topbar" go to the shared top bar)
+     helper  optional: a DOM-free helper script loaded just before the screen's own script
      script  the screen's code (vanilla JS, no build step)
      style   the screen's styles */
 (function (root) {
@@ -15,6 +16,7 @@
       title: "Compass",
       base: "/v1/compass",
       markup: "agents/compass/compass.html",
+      helper: "agents/compass/interview.js",
       script: "agents/compass/compass.js",
       style: "agents/compass/compass.css"
     }

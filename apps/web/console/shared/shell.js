@@ -1,5 +1,6 @@
 /* Mobigen console shell. Fills the agent switcher from the registry (registry.js), then mounts the chosen
-   agent: its stylesheet and HTML fragment first, its script last (so the script finds its elements).
+   agent: its stylesheet and HTML fragment first, its optional helper script and its script last (so the
+   script finds its elements).
    Agent scripts keep global listeners and cannot be unloaded, so switching agents reloads the page with
    ?agent=<id>. The fragment is the agent's own static file from this origin (code, never user content);
    it is parsed with DOMParser into an inert document, and script/style/link/frame nodes are dropped.
@@ -83,6 +84,8 @@
     root.MobigenAgent = active;
     Promise.all([loadStyle(active.style), loadMarkup(active.markup)]).then(function (done) {
       mountMarkup(done[1]);
+      return active.helper ? loadScript(active.helper) : null;   // pure helpers first, then the screen
+    }).then(function () {
       return loadScript(active.script);
     }).catch(function (err) {
       showError("Could not load " + active.title + " (" + (err && err.message ? err.message : "error") + ").");

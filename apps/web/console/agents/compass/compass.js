@@ -18,9 +18,20 @@
   "card_keys": [
     "id", "type", "question", "why_we_ask", "options", "options[].id", "options[].label",
     "options[].basis", "options[].recommended", "options[].reason", "options[].ticked",
+    "options[].description",
     "custom_input", "custom_input.enabled", "custom_input.placeholder", "custom_input.voice",
     "you_decide", "you_decide.enabled", "skip", "skip.enabled", "progress", "progress.n",
-    "progress.of_about", "must_confirm"
+    "progress.of_about", "must_confirm", "fallback", "unlocks", "examples", "parent_card_id", "origin"
+  ],
+  "batch_keys": [
+    "batch_id", "ui_mode", "groups", "groups[].id", "groups[].title", "groups[].cards", "total"
+  ],
+  "qa_item_keys": [
+    "items", "card_id", "status", "origin", "depth", "parent_card_id", "type", "question", "options",
+    "answer", "value", "custom_text", "fallback", "facts", "facts[].statement", "facts[].status"
+  ],
+  "command_names": [
+    "ask_more", "mode_answer_all", "mode_one_at_a_time", "budget_quick", "budget_standard", "budget_thorough"
   ],
   "stored_event_keys": ["direction", "type", "event_id", "turn_id", "seq", "payload"],
   "card_types": [
@@ -57,6 +68,7 @@ CONTRACT*/
   // ---- shared helpers (shared/components.js) -------------------------------------------------------
   var UI = window.MobigenUI;
   var store = UI.store, $ = UI.$, h = UI.h, clear = UI.clear, randomId = UI.randomId, toast = UI.toast;
+  var I = window.compassInterview;  // pure interview helpers (interview.js, loaded before this file)
 
   // ---- strings (UI chrome from /strings/{lang}; embedded English fallback) -----------------------------
   var FALLBACK = {
@@ -90,6 +102,55 @@ CONTRACT*/
     "welcome.start_describe": "Describe my idea", "welcome.start_upload": "Upload my documents",
     "welcome.start_like_app": "Start from an app I like", "welcome.start_just_build": "Just build it",
     "status.draft": "Draft", "status.in_review": "In review", "status.approved": "Approved",
+    // interview screens (also in the catalog as ui.interview.*; the embedded copy keeps the page usable offline)
+    "ui.interview.why_button": "Why am I being asked this?",
+    "ui.interview.feeds": "This feeds: {items}",
+    "ui.interview.progress_line": "Group {g} of {groups} · question {n} of about {total}",
+    "ui.interview.progress_followup": "Follow-up · question {n} of about {total}",
+    "ui.interview.group_only": "Group {g} of {groups}",
+    "ui.interview.followup_tag": "Follow-up",
+    "ui.interview.fallback_badge": "Standard question",
+    "ui.interview.fallback_tip": "The AI planner did not produce this question; a standard one was used",
+    "ui.interview.example": "For example: {example}",
+    "ui.interview.mode_answer_all": "Answer all at once",
+    "ui.interview.mode_one_at_a_time": "Show one at a time",
+    "ui.interview.mode_note": "This applies to the next questions.",
+    "ui.interview.layout_label": "How questions are shown",
+    "ui.interview.ask_more": "Ask me more",
+    "ui.interview.depth_title": "How deep should I go?",
+    "ui.interview.depth_quick": "Quick",
+    "ui.interview.depth_standard": "Standard",
+    "ui.interview.depth_thorough": "Thorough",
+    "ui.interview.depth_quick_hint": "Up to about 5 questions",
+    "ui.interview.depth_standard_hint": "Up to about 12 questions",
+    "ui.interview.depth_thorough_hint": "Up to about 25 questions",
+    "ui.interview.depth_now": "Planned so far: about {total} questions.",
+    "ui.interview.form_label": "All the questions of this set",
+    "ui.interview.form_send": "Send all answers",
+    "ui.interview.form_progress": "{done} of {total} questions handled",
+    "ui.interview.form_blank_note": "{count} left blank will be skipped.",
+    "ui.interview.form_required": "Please answer this one; it needs your confirmation.",
+    "ui.interview.form_link_placeholder": "Paste a link or describe it in a few words",
+    "ui.interview.form_sent": "{count} answers sent",
+    "ui.interview.priority_hint": "Tick them in order of importance.",
+    "ui.interview.qa_title": "Questions and answers",
+    "ui.interview.qa_empty": "No questions have been asked yet.",
+    "ui.interview.qa_status_answered": "Answered",
+    "ui.interview.qa_status_skipped": "Skipped",
+    "ui.interview.qa_status_you_decide": "You asked us to decide",
+    "ui.interview.qa_status_open": "Waiting for your answer",
+    "ui.interview.qa_skipped_text": "You skipped this question.",
+    "ui.interview.qa_decide_text": "You left this one to us.",
+    "ui.interview.qa_open_text": "Not answered yet.",
+    "ui.interview.qa_facts": "What we took from it",
+    "ui.interview.qa_saved": "Updated: your Brief and the next questions will follow",
+    "ui.interview.qa_edit_empty": "Choose or type an answer first.",
+    "ui.interview.qa_saving": "Saving…",
+    "ui.interview.fact_superseded": "replaced",
+    "ui.interview.fact_disputed": "disputed",
+    "ui.interview.fact_not_used": "not used",
+    "ui.interview.mock_banner": "MOCK MODE: questions are canned",
+
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
     "x.name": "Project name (optional)", "x.no_projects": "No projects yet.", "x.settings": "Settings",
@@ -118,7 +179,9 @@ CONTRACT*/
     sessionId: null, session: null, lastSeq: 0, seen: {}, devEvents: [], devTab: "events", devOpen: false,
     view: null, viewJson: "", lookups: [], progress: null, tab: "brief", streamAbort: null, streamOk: false,
     activeCard: null, typingCount: 0, loadingView: false, viewTimer: null, budget: null, calls: [],
-    ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null
+    ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null,
+    batches: [], answered: {}, uiMode: "one_at_a_time", modePending: false, depth: null,
+    qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {}
   };
 
   function t(key, vars) {
@@ -223,8 +286,11 @@ CONTRACT*/
     return "";
   }
 
+  function markAnswered(cardId) { if (cardId) { state.answered[cardId] = true; } }
+
   function answer(card, value, custom) {
     var summary = cardSummary(card, value, custom);
+    markAnswered(card.id);
     addMsg("user", summary || t("ui.continue"));
     collapseActive(summary ? card.question + " — " + summary : card.question);
     var body = { type: "card_answer", card_id: card.id, value: value === undefined ? null : value };
@@ -233,6 +299,7 @@ CONTRACT*/
   }
   // "Answer all at once": one event with the answers of a whole batch form (phase 5 renders the form).
   function sendBatchAnswer(batchId, answers) {
+    (answers || []).forEach(function (a) { markAnswered(a.card_id); });
     return sendEvent({ type: "batch_answer", batch_id: batchId, answers: answers });
   }
   // Edit an earlier answer from the Questions-and-answers list (phase 5): a new answer version and a replan.
@@ -258,20 +325,58 @@ CONTRACT*/
     r.start();
   }
 
+  // ---- interview pieces shared by the single card and the answer-all form ---------------------------------------
+  /** A small badge for a card the planner did not produce: a failure the developer must be able to see. */
+  function fallbackBadge() {
+    var label = t("ui.interview.fallback_badge");
+    var tip = t("ui.interview.fallback_tip");
+    return h("span", { class: "fallback-badge", role: "note", tabindex: "0", title: tip, "aria-label": label + ". " + tip, text: label });
+  }
+
+  /** "Why am I being asked this?": a button that opens an inline note with why_we_ask and what the answer feeds.
+      Escape closes it and puts the focus back on the button. */
+  var whySeq = 0;
+  function whyEl(card) {
+    var unlocks = card.unlocks || [];
+    if (!card.why_we_ask && !unlocks.length) { return null; }
+    whySeq += 1;
+    var popId = "why-pop-" + whySeq;
+    var pop = h("div", { class: "why-pop", id: popId, role: "note", hidden: true });
+    if (card.why_we_ask) { pop.appendChild(h("p", { text: card.why_we_ask })); }
+    if (unlocks.length) { pop.appendChild(h("p", { class: "why-feeds", text: t("ui.interview.feeds", { items: unlocks.join(", ") }) })); }
+    var btn = h("button", { class: "why-btn", type: "button", "aria-expanded": "false", "aria-controls": popId,
+      text: t("ui.interview.why_button") });
+    function setOpen(on) { pop.hidden = !on; btn.setAttribute("aria-expanded", on ? "true" : "false"); }
+    btn.addEventListener("click", function () { setOpen(pop.hidden); });
+    var wrap = h("div", { class: "why" }, btn, pop);
+    wrap.addEventListener("keydown", function (e) {
+      if (e.key === "Escape" && !pop.hidden) { e.stopPropagation(); setOpen(false); btn.focus(); }
+    });
+    return wrap;
+  }
+
+  /** The header of a card: its group title, a follow-up marker, the fallback badge and the progress line. */
+  function cardHead(card) {
+    var loc = I.locate(state.batches, card);
+    var line = I.progressLine(loc, card.progress, t);
+    var head = h("div", { class: "qcard-head" });
+    if (loc && loc.groupTitle) { head.appendChild(h("span", { class: "group-chip", text: loc.groupTitle })); }
+    if (card.origin === "followup") { head.appendChild(h("span", { class: "followup-tag", text: "↳ " + t("ui.interview.followup_tag") })); }
+    if (card.fallback) { head.appendChild(fallbackBadge()); }
+    if (line) { head.appendChild(h("span", { class: "hint progress-line", text: line })); }
+    return head.childNodes.length ? head : null;
+  }
+
   function renderCard(card) {
     var el = h("div", { class: "qcard", role: "group", "aria-label": card.question });
     var body = h("div", { class: "options-wrap" });
     var type = card.type;
     var showCustom = !!(card.custom_input && card.custom_input.enabled) && type !== "open_prompt";
+    var head = cardHead(card);
+    if (head) { el.appendChild(head); }
     el.appendChild(h("div", { class: "q", text: card.question }));
-    if (card.progress) {
-      el.appendChild(h("div", { class: "hint",
-        text: t("progress.question_n_of_about", { n: card.progress.n, total: card.progress.of_about }) }));
-    }
-    if (card.why_we_ask) {
-      el.appendChild(h("details", null, h("summary", { text: t("card.why_we_ask", { reason: "" }).replace(/[:\s]+$/, "") }),
-        h("div", { text: card.why_we_ask })));
-    }
+    var why = whyEl(card);
+    if (why) { el.appendChild(why); }
     el.appendChild(body);
     var builders = {
       choose_one: cardChooseOne, pick_many: cardPickMany, priority: cardPriority, confirm: cardConfirm,
@@ -280,7 +385,7 @@ CONTRACT*/
     (builders[type] || cardOpen)(card, body);
     if (showCustom) {
       var input = h("input", { type: "text", "aria-label": t("ui.something_else"),
-        placeholder: (card.custom_input.placeholder || t("card.custom_placeholder")) });
+        placeholder: I.examplePlaceholder(card, t) || card.custom_input.placeholder || t("card.custom_placeholder") });
       var go = h("button", { class: "btn", type: "button", text: t("ui.send"), on: { click: function () {
         var v = input.value.trim();
         if (v) { answer(card, null, v); }
@@ -296,13 +401,16 @@ CONTRACT*/
     return el;
   }
 
+  function optionBody(o) {
+    return h("span", { class: "option-main" },
+      h("span", { class: "option-label" }, o.label, o.recommended ? h("span", { class: "rec", text: "★ Recommended" }) : null),
+      o.description ? h("span", { class: "option-desc", text: o.description }) : null,
+      basisLabel(o.basis),
+      o.reason ? h("span", { class: "option-reason", text: o.reason }) : null);
+  }
   function optionButton(card, o, role, onClick) {
-    var btn = h("button", { class: "option", type: "button", role: role, "aria-checked": role ? "false" : null, on: { click: onClick } },
-      h("span", { class: "option-main" },
-        h("span", { class: "option-label" }, o.label, o.recommended ? h("span", { class: "rec", text: "★ Recommended" }) : null),
-        basisLabel(o.basis),
-        o.reason ? h("span", { class: "option-reason", text: o.reason }) : null));
-    return btn;
+    return h("button", { class: "option", type: "button", role: role, "aria-checked": role ? "false" : null, on: { click: onClick } },
+      optionBody(o));
   }
   function cardChooseOne(card, body) {
     var list = h("div", { class: "options", role: "radiogroup", "aria-label": card.question });
@@ -407,7 +515,8 @@ CONTRACT*/
     body.appendChild(note);
   }
   function cardOpen(card, body) {
-    var ta = h("textarea", { rows: "3", "aria-label": card.question, placeholder: (card.custom_input && card.custom_input.placeholder) || t("ui.type_here") });
+    var ta = h("textarea", { rows: "3", "aria-label": card.question,
+      placeholder: I.examplePlaceholder(card, t) || (card.custom_input && card.custom_input.placeholder) || t("ui.type_here") });
     var send = h("button", { class: "btn btn-primary", type: "button", text: t("ui.send"), on: { click: function () {
       var v = ta.value.trim();
       if (v) { answer(card, v); }
@@ -420,6 +529,184 @@ CONTRACT*/
     body.appendChild(row);
   }
 
+  // ---- the answer-all form: a whole batch as one form, grouped by theme -----------------------------------------
+  var formSeq = 0;
+  function checkInput(type, name, value) { return h("input", { type: type, name: name, value: value }); }
+
+  /** The inputs of one question of the form, bound to its draft entry (what interview.js turns into an answer). */
+  function formControls(card, entry, qid, onChange) {
+    var wrap = h("div", { class: "qitem-controls" });
+    var type = card.type;
+    var opts = card.options || [];
+    var custom = card.custom_input && card.custom_input.enabled;
+    var placeholder = I.examplePlaceholder(card, t) || (card.custom_input && card.custom_input.placeholder) || "";
+
+    function otherRow(radio) {
+      var text = h("input", { type: "text", "aria-label": t("ui.something_else"), placeholder: placeholder || t("card.custom_placeholder") });
+      text.addEventListener("input", function () {
+        entry.other = text.value;
+        if (radio && text.value.trim() && entry.choice !== I.OTHER) { entry.choice = I.OTHER; radio.checked = true; }
+        onChange();
+      });
+      var label = radio ? h("label", { class: "form-other-label" }, radio, h("span", { text: t("ui.something_else") })) : null;
+      return h("div", { class: "form-option form-other" }, label, text);
+    }
+
+    if (type === "choose_one" || type === "look_signals") {
+      var group = h("div", { class: "options", role: "radiogroup", "aria-labelledby": qid });
+      opts.forEach(function (o) {
+        var input = checkInput("radio", qid, o.id);
+        input.addEventListener("change", function () { entry.choice = o.id; onChange(); });
+        group.appendChild(h("label", { class: "form-option" }, input, optionBody(o)));
+      });
+      if (custom) {
+        var radio = checkInput("radio", qid, I.OTHER);
+        radio.addEventListener("change", function () { entry.choice = I.OTHER; onChange(); });
+        group.appendChild(otherRow(radio));
+      }
+      wrap.appendChild(group);
+    } else if (type === "pick_many" || type === "priority") {
+      var boxes = [];
+      if (type === "priority") { wrap.appendChild(h("div", { class: "hint", text: t("ui.interview.priority_hint") })); }
+      var checks = h("div", { class: "options", role: "group", "aria-labelledby": qid });
+      opts.forEach(function (o) {
+        var input = checkInput("checkbox", qid, o.id);
+        boxes.push({ id: o.id, input: input });
+        input.addEventListener("change", function () {
+          if (type === "priority") {
+            entry.picks = entry.picks.filter(function (x) { return x !== o.id; });
+            if (input.checked) { entry.picks.push(o.id); }
+          } else {
+            entry.picks = boxes.filter(function (b) { return b.input.checked; }).map(function (b) { return b.id; });
+          }
+          onChange();
+        });
+        checks.appendChild(h("label", { class: "form-option" }, input, optionBody(o)));
+      });
+      if (custom) { checks.appendChild(otherRow(null)); }
+      wrap.appendChild(checks);
+    } else if (type === "confirm" || type === "quick_form") {
+      opts.forEach(function (o) {
+        var input = h("input", { type: "text", "aria-label": o.label, placeholder: type === "quick_form" ? (o.reason || "") : "" });
+        if (type === "confirm") { input.value = o.label; }
+        input.addEventListener("input", function () { entry.fields[o.id] = input.value; entry.touched = true; onChange(); });
+        wrap.appendChild(h("label", { class: "field" }, type === "confirm" ? null : h("span", { text: o.label }), input,
+          type === "confirm" ? basisLabel(o.basis) : null));
+      });
+      if (type === "confirm") {
+        var ok = checkInput("checkbox", qid, "ok");
+        ok.addEventListener("change", function () { entry.confirmed = ok.checked; onChange(); });
+        wrap.appendChild(h("label", { class: "form-option" }, ok, h("span", { class: "option-label", text: t("ui.looks_right") })));
+      }
+    } else if (type === "upload_or_link") {
+      var link = h("input", { type: "text", "aria-label": card.question, placeholder: t("ui.interview.form_link_placeholder") });
+      link.addEventListener("input", function () { entry.text = link.value; onChange(); });
+      wrap.appendChild(link);
+    } else {
+      var area = h("textarea", { rows: "3", "aria-label": card.question, placeholder: placeholder || t("ui.type_here") });
+      area.addEventListener("input", function () { entry.text = area.value; onChange(); });
+      wrap.appendChild(area);
+    }
+    return wrap;
+  }
+
+  /** One question of the form: text, why popover, inputs, and the "You decide" / "Skip" toggles. */
+  function formItem(card, entry, onChange) {
+    formSeq += 1;
+    var qid = "fq-" + formSeq;
+    var item = h("div", { class: "qitem", role: "group", "aria-labelledby": qid, data: { card: card.id } });
+    var head = h("div", { class: "qitem-head" }, h("span", { class: "q", id: qid, text: card.question }));
+    if (card.fallback) { head.appendChild(fallbackBadge()); }
+    item.appendChild(head);
+    var why = whyEl(card);
+    if (why) { item.appendChild(why); }
+    item.appendChild(formControls(card, entry, qid, onChange));
+    var err = h("div", { class: "approval-error", role: "alert" });
+    var youBtn = null, skipBtn = null;
+    function setAction(action) {
+      entry.action = action;
+      item.classList.toggle("is-off", action !== "answer");
+      Array.prototype.forEach.call(item.querySelectorAll("input, textarea"), function (c) { c.disabled = action !== "answer"; });
+      if (youBtn) { youBtn.setAttribute("aria-pressed", action === "you_decide" ? "true" : "false"); }
+      if (skipBtn) { skipBtn.setAttribute("aria-pressed", action === "skip" ? "true" : "false"); }
+      err.textContent = "";
+      onChange();
+    }
+    var toggles = h("div", { class: "qitem-toggles" });
+    if (!card.must_confirm) {
+      if (!card.you_decide || card.you_decide.enabled) {
+        youBtn = h("button", { class: "toggle", type: "button", "aria-pressed": "false", text: t("ui.you_decide"),
+          on: { click: function () { setAction(entry.action === "you_decide" ? "answer" : "you_decide"); } } });
+        toggles.appendChild(youBtn);
+      }
+      if (!card.skip || card.skip.enabled) {
+        skipBtn = h("button", { class: "toggle", type: "button", "aria-pressed": "false", text: t("ui.skip"),
+          on: { click: function () { setAction(entry.action === "skip" ? "answer" : "skip"); } } });
+        toggles.appendChild(skipBtn);
+      }
+    }
+    if (toggles.childNodes.length) { item.appendChild(toggles); }
+    item.appendChild(err);
+    return {
+      el: item,
+      showRequired: function () { err.textContent = t("ui.interview.form_required"); },
+      focus: function () { var c = item.querySelector("input, textarea"); if (c) { c.focus(); } }
+    };
+  }
+
+  /** The whole batch as one form, grouped by theme, with one "Send all answers" button. */
+  function renderBatchForm(batch, groups) {
+    var cards = I.flatCards(groups);
+    var draft = {};
+    var items = {};
+    cards.forEach(function (c) { draft[c.id] = I.emptyEntry(); });
+    var count = h("span", { class: "hint form-count", role: "status", "aria-live": "polite" });
+    var note = h("div", { class: "hint form-note" });
+    var err = h("div", { class: "approval-error", role: "alert" });
+    function refresh() {
+      count.textContent = t("ui.interview.form_progress", { done: I.handledCount(cards, draft), total: cards.length });
+      var blanks = I.blankCards(cards, draft).length;
+      note.textContent = blanks ? t("ui.interview.form_blank_note", { count: blanks }) : "";
+    }
+    var form = h("div", { class: "qcard batch-form", role: "group", "aria-label": t("ui.interview.form_label") });
+    form.appendChild(h("div", { class: "qcard-head" }, h("span", { class: "group-chip", text: t("ui.interview.mode_answer_all") }), count));
+    groups.forEach(function (g) {
+      var box = h("fieldset", { class: "qgroup" });
+      if (g.title) { box.appendChild(h("legend", { class: "qgroup-title", text: g.title })); }
+      g.cards.forEach(function (c) {
+        items[c.id] = formItem(c, draft[c.id], refresh);
+        box.appendChild(items[c.id].el);
+      });
+      form.appendChild(box);
+    });
+    function send() {
+      err.textContent = "";
+      var missing = I.missingRequired(cards, draft);
+      if (missing.length) {
+        missing.forEach(function (c) { items[c.id].showRequired(); });
+        items[missing[0].id].focus();
+        return;
+      }
+      var answers = I.buildAnswers(cards, draft);
+      var byId = {};
+      cards.forEach(function (c) { byId[c.id] = c; });
+      var lines = answers.map(function (a) {
+        var c = byId[a.card_id];
+        var said = a.action === "skip" ? t("ui.skip") : a.action === "you_decide" ? t("ui.you_decide") : cardSummary(c, a.value, a.custom_text);
+        return c.question + " — " + said;
+      });
+      addMsg("user", lines.join("\n"));
+      collapseActive(t("ui.interview.form_sent", { count: answers.length }));
+      window.compassSend.batchAnswer(batch.batch_id, answers);
+    }
+    form.appendChild(note);
+    form.appendChild(err);
+    form.appendChild(h("div", { class: "row-actions" },
+      h("button", { class: "btn btn-primary send-all", type: "button", text: t("ui.interview.form_send"), on: { click: send } })));
+    refresh();
+    return form;
+  }
+
   function renderChatActions(card) {
     var bar = $("chat-actions");
     clear(bar);
@@ -428,16 +715,112 @@ CONTRACT*/
     act(t("ui.undo"), function () { sendEvent({ type: "command", name: "undo" }); });
     if (card && !card.must_confirm) {
       if (card.skip && card.skip.enabled) {
-        act(t("ui.skip"), function () { collapseActive(card.question + " — " + t("ui.skip")); sendEvent({ type: "card_skip", card_id: card.id }); });
+        act(t("ui.skip"), function () {
+          markAnswered(card.id);
+          collapseActive(card.question + " — " + t("ui.skip"));
+          sendEvent({ type: "card_skip", card_id: card.id });
+        });
       }
       if (card.you_decide && card.you_decide.enabled) {
         act(t("ui.you_decide"), function () {
+          markAnswered(card.id);
           addMsg("system", t("ui.you_decide"));
           collapseActive(card.question + " — " + t("ui.you_decide"));
           sendEvent({ type: "card_you_decide", card_id: card.id });
         });
       }
     }
+  }
+
+  // ---- interview controls: layout toggle, "Ask me more", depth chips, mock banner ---------------------------------
+  function isApproved() {
+    var s = state.session && state.session.state;
+    var viewStatus = state.view && state.view.header ? state.view.header.status : "";
+    return s === "APPROVED" || s === "ARCHIVED" || viewStatus === "approved";
+  }
+  function answeredCount() { return Math.max(Object.keys(state.answered).length, state.qaAnswered); }
+
+  function renderInterviewBar() {
+    var bar = $("interview-bar");
+    var toggle = $("btn-mode-toggle");
+    var more = $("btn-ask-more");
+    var n = answeredCount();
+    bar.hidden = !state.sessionId || isApproved() || (!state.batch && n === 0);
+    bar.setAttribute("aria-label", t("ui.interview.layout_label"));
+    toggle.hidden = !state.batch;
+    toggle.textContent = state.uiMode === "answer_all" ? t("ui.interview.mode_one_at_a_time") : t("ui.interview.mode_answer_all");
+    toggle.disabled = state.modePending;
+    more.hidden = n === 0;
+    more.textContent = t("ui.interview.ask_more");
+    $("mode-note").textContent = t("ui.interview.mode_note");
+  }
+
+  /** Switch between one-at-a-time and the answer-all form. The server applies it to the questions it shows
+      next, so a question already on screen stays as it is (a note says so). */
+  function toggleMode() {
+    var next = I.otherMode(state.uiMode);
+    state.modePending = true;
+    renderInterviewBar();
+    sendEvent({ type: "command", name: I.modeCommand(next) }).then(function (ack) {
+      state.modePending = false;
+      if (ack) {
+        state.uiMode = next;
+        if (state.activeCard) {
+          var note = $("mode-note");
+          note.hidden = false;
+          window.setTimeout(function () { note.hidden = true; }, 8000);
+        }
+      }
+      renderInterviewBar();
+    });
+  }
+  function askMore() {
+    var btn = $("btn-ask-more");
+    btn.disabled = true;
+    addMsg("system", t("ui.interview.ask_more"));
+    sendEvent({ type: "command", name: "ask_more" }).then(function () { btn.disabled = false; });
+  }
+
+  function depthLabels(id) {
+    if (id === "quick") { return { name: t("ui.interview.depth_quick"), hint: t("ui.interview.depth_quick_hint") }; }
+    if (id === "thorough") { return { name: t("ui.interview.depth_thorough"), hint: t("ui.interview.depth_thorough_hint") }; }
+    return { name: t("ui.interview.depth_standard"), hint: t("ui.interview.depth_standard_hint") };
+  }
+  /** Quick / Standard / Thorough: how many questions the interview may ask. Sent before the first batch. */
+  function depthChips() {
+    var row = h("div", { class: "depth-chips" });
+    I.BUDGETS.forEach(function (b) {
+      var lab = depthLabels(b.id);
+      row.appendChild(h("button", { class: "depth-chip", type: "button", "aria-pressed": state.depth === b.id ? "true" : "false",
+        data: { budget: b.id }, on: { click: function () { chooseDepth(b.id); } } },
+        h("span", { class: "depth-name", text: lab.name }), h("span", { class: "hint", text: lab.hint })));
+    });
+    return h("div", { class: "depth", role: "group", "aria-label": t("ui.interview.depth_title") },
+      h("div", { class: "depth-title", text: t("ui.interview.depth_title") }), row,
+      h("div", { class: "hint depth-note", role: "status", text: depthKnown() }));
+  }
+  function depthKnown() {
+    return state.progress && state.progress.of_about ? t("ui.interview.depth_now", { total: state.progress.of_about }) : "";
+  }
+  function chooseDepth(id) {
+    state.depth = id;
+    refreshDepth();
+    sendEvent({ type: "command", name: I.budgetCommand(id) });
+  }
+  /** Pressed state of every depth chip on screen, and the budget we know about (the planner's progress). */
+  function refreshDepth() {
+    Array.prototype.forEach.call(document.querySelectorAll(".depth-chip"), function (b) {
+      b.setAttribute("aria-pressed", b.dataset.budget === state.depth ? "true" : "false");
+    });
+    var known = depthKnown();
+    Array.prototype.forEach.call(document.querySelectorAll(".depth-note"), function (n) { n.textContent = known; });
+  }
+
+  /** A mock session must never be mistaken for the product: a banner the user cannot dismiss. */
+  function renderMockBanner() {
+    var banner = $("mock-banner");
+    banner.textContent = t("ui.interview.mock_banner");
+    banner.hidden = !(state.budget && state.budget.mode === "mock");
   }
 
   // ---- outbound events ---------------------------------------------------------------------------------
@@ -453,12 +836,19 @@ CONTRACT*/
       scrollChat();
     },
     card: function (p) {
+      var card = p.card;
+      var loc = I.locate(state.batches, card);
+      var groups = loc ? I.pendingGroups(loc.batch, state.answered) : [];
+      var pending = I.flatCards(groups);
+      var inForm = I.useForm(state.uiMode, loc, pending.length) && pending.some(function (c) { return c.id === card.id; });
+      var open = state.activeCard;
+      if (inForm && open && open.batch === loc.batch) { return; }   // the form for this batch is already on screen
       collapseActive();
-      var el = renderCard(p.card);
+      var el = inForm ? renderBatchForm(loc.batch, groups) : renderCard(card);
       log().appendChild(el);
-      state.activeCard = { card: p.card, el: el };
-      renderChatActions(p.card);
-      scrollChat();
+      state.activeCard = { card: card, el: el, batch: inForm ? loc.batch : null };
+      renderChatActions(inForm ? null : card);
+      if (inForm) { el.scrollIntoView({ block: "start" }); } else { scrollChat(); }   // a form is read from its top
     },
     playback: function (p) {
       var el = h("div", { class: "qcard" }, h("div", { class: "q", text: p.title }));
@@ -471,6 +861,7 @@ CONTRACT*/
         el.appendChild(h("label", { class: "field" }, h("span", { text: it.label }), input, basisLabel(it.basis)));
       });
       if (p.unclear && p.unclear.length) { el.appendChild(h("div", { class: "hint", text: "?" }, " ", p.unclear.join(", "))); }
+      if (!state.batches.length) { el.appendChild(depthChips()); }
       el.appendChild(h("div", { class: "row-actions" }, h("button", { class: "btn btn-primary", type: "button", text: t("x.save"), on: { click: function () {
         Object.keys(inputs).forEach(function (k) {
           if (inputs[k].value !== inputs[k].dataset.original) {
@@ -482,12 +873,19 @@ CONTRACT*/
       log().appendChild(el);
       scrollChat();
     },
-    question_batch: function (p) { state.batch = p; },
+    question_batch: function (p) {
+      state.batch = p;
+      state.batches.push(p);
+      if (state.batches.length > 40) { state.batches.shift(); }
+      state.uiMode = p.ui_mode === "answer_all" ? "answer_all" : "one_at_a_time";
+      renderInterviewBar();
+    },
     notice: function (p) {
       addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
     },
     progress: function (p) {
       state.progress = p;
+      refreshDepth();
       var bar = $("progressbar");
       if (p.n && p.of_about) {
         bar.hidden = false;
@@ -537,19 +935,26 @@ CONTRACT*/
   function processAck(ack) {
     (ack.events || []).forEach(function (ev) { onStored(ev, false); });
     refreshSideData();
+    scheduleView();   // every turn can fill Brief rows: refresh them so the new ones are highlighted
+    scheduleQa();
   }
 
   var IN_FLIGHT = 0;
+  /** Post one inbound event. Resolves to the EventAck, or null when the request failed (the error is shown). */
   function sendEvent(body) {
-    if (!state.sessionId) { return Promise.resolve(); }
+    if (!state.sessionId) { return Promise.resolve(null); }
     var ev = Object.assign({ event_id: randomId() }, body);
     if (state.contributor && !ev.contributor_id) { ev.contributor_id = state.contributor; }
+    var acked = null;
     IN_FLIGHT += 1;
     setTyping(true);
-    return api("POST", "/sessions/" + state.sessionId + "/events", ev).then(processAck).catch(function (err) {
+    return api("POST", "/sessions/" + state.sessionId + "/events", ev).then(function (ack) {
+      acked = ack;
+      processAck(ack);
+    }).catch(function (err) {
       var el = addMsg("error", friendly(err));
       el.setAttribute("role", "alert");
-    }).then(function () { IN_FLIGHT -= 1; setTyping(false); });
+    }).then(function () { IN_FLIGHT -= 1; setTyping(false); return acked; });
   }
 
   // ---- upload: one multipart request; the reply is an EventAck, handled like any other event -------------
@@ -767,9 +1172,12 @@ CONTRACT*/
 
   function rowEl(section, row) {
     var isAssumption = row.id.indexOf("assumptions.") === 0;
-    var el = h("div", { class: "brow" + (row.changed ? " changed" : "") + (row.needs_review ? " review" : ""), role: "group", "aria-label": row.label });
+    var el = h("div", { class: "brow" + (row.changed ? " changed" : "") + (row.needs_review ? " review" : ""), role: "group",
+      "aria-label": row.label, data: { row: row.id } });
+    // rows of "Details we captured" sit under their topic heading (row.group), which is also their label
+    var repeats = !!row.group && row.label === row.group;
     var top = h("div", { class: "brow-top" },
-      h("span", { class: "brow-label", text: row.label }),
+      repeats ? null : h("span", { class: "brow-label", text: row.label }),
       h("span", { class: "brow-value" }, valueEl(row.value)));
     el.appendChild(top);
     var meta = h("div", { class: "brow-top" });
@@ -898,6 +1306,32 @@ CONTRACT*/
     host.appendChild(head);
     vm.sections.forEach(function (s) { host.appendChild(sectionEl(s)); });
     host.appendChild(approvalEl(vm));
+    highlightChanged(host, vm);
+  }
+
+  /** The rows the last turn filled or changed pulse once; on a wide screen the first one is scrolled into view. */
+  function highlightChanged(host, vm) {
+    if (!vm || !host.offsetParent) { return; }   // not on screen (another tab or pane): keep the pulse for later
+    var fresh = {};
+    var first = null;
+    I.changedRows(vm).forEach(function (c) {
+      var key = I.pulseKey(vm, c.row);
+      if (!state.pulsed[key]) { fresh[c.row.id] = key; }
+    });
+    if (!Object.keys(fresh).length) { return; }
+    if (Object.keys(state.pulsed).length > 500) { state.pulsed = {}; }
+    Array.prototype.forEach.call(host.querySelectorAll(".brow.changed"), function (el) {
+      var key = fresh[el.dataset.row];
+      if (!key) { return; }
+      state.pulsed[key] = true;
+      el.classList.add("pulse");
+      if (!first) { first = el; }
+    });
+    var wide = !(window.matchMedia && window.matchMedia("(max-width: 900px)").matches);
+    var still = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
+    if (first && wide && state.tab === "brief" && first.scrollIntoView) {
+      first.scrollIntoView({ block: "nearest", behavior: still ? "auto" : "smooth" });
+    }
   }
 
   // ---- lookup, sources, history tabs ---------------------------------------------------------------------
@@ -942,6 +1376,152 @@ CONTRACT*/
     host.appendChild(note);
   }
 
+  // ---- Questions and answers (History tab) --------------------------------------------------------------------
+  function scheduleQa() {
+    if (state.qaTimer) { return; }
+    state.qaTimer = window.setTimeout(function () { state.qaTimer = null; loadQa(); }, 120);
+  }
+  function loadQa() {
+    if (!state.sessionId) { return Promise.resolve(); }
+    var sid = state.sessionId;
+    return api("GET", "/sessions/" + sid + "/qa").then(function (d) {
+      if (sid !== state.sessionId) { return; }
+      state.qa = (d && d.items) || [];
+      state.qaAnswered = state.qa.filter(function (q) { return I.qaStatus(q) !== "open"; }).length;
+      renderInterviewBar();
+      if (!state.qaEdit) { renderQa(); }
+    }).catch(function () { /* the list is a convenience: the chat keeps working without it */ });
+  }
+
+  function qaStatusLabel(status) {
+    if (status === "answered") { return t("ui.interview.qa_status_answered"); }
+    if (status === "skipped") { return t("ui.interview.qa_status_skipped"); }
+    if (status === "you_decide") { return t("ui.interview.qa_status_you_decide"); }
+    return t("ui.interview.qa_status_open");
+  }
+
+  /** The inline editor of one answer: options for a choice question, fields for a form, a text area otherwise. */
+  function qaEditorEl(item, ed) {
+    var m = ed.model;
+    var box = h("div", { class: "panel qa-editor" });
+    var err = h("div", { class: "approval-error", role: "alert" });
+    var name = "qa-" + item.card_id;
+    if (m.kind === "single") {
+      var group = h("div", { class: "options", role: "radiogroup", "aria-label": item.question });
+      m.options.forEach(function (o) {
+        var input = checkInput("radio", name, o.id);
+        input.checked = m.choice === o.id;
+        input.addEventListener("change", function () { m.choice = o.id; });
+        group.appendChild(h("label", { class: "form-option" }, input, h("span", { class: "option-main" }, h("span", { class: "option-label", text: o.label }))));
+      });
+      var radio = checkInput("radio", name, I.OTHER);
+      radio.checked = m.choice === I.OTHER;
+      radio.addEventListener("change", function () { m.choice = I.OTHER; });
+      var otherText = h("input", { type: "text", "aria-label": t("ui.something_else"), placeholder: t("card.custom_placeholder") });
+      otherText.value = m.other;
+      otherText.addEventListener("input", function () {
+        m.other = otherText.value;
+        if (otherText.value.trim()) { m.choice = I.OTHER; radio.checked = true; }
+      });
+      group.appendChild(h("div", { class: "form-option form-other" },
+        h("label", { class: "form-other-label" }, radio, h("span", { text: t("ui.something_else") })), otherText));
+      box.appendChild(group);
+    } else if (m.kind === "multi") {
+      var checks = h("div", { class: "options", role: "group", "aria-label": item.question });
+      m.options.forEach(function (o) {
+        var input = checkInput("checkbox", name, o.id);
+        input.checked = m.picks.indexOf(o.id) >= 0;
+        input.addEventListener("change", function () {
+          m.picks = m.picks.filter(function (x) { return x !== o.id; });
+          if (input.checked) { m.picks.push(o.id); }
+          if (!m.ordered) { m.picks = m.options.map(function (x) { return x.id; }).filter(function (id) { return m.picks.indexOf(id) >= 0; }); }
+        });
+        checks.appendChild(h("label", { class: "form-option" }, input, h("span", { class: "option-main" }, h("span", { class: "option-label", text: o.label }))));
+      });
+      var extra = h("input", { type: "text", "aria-label": t("ui.something_else"), placeholder: t("card.custom_placeholder") });
+      extra.value = m.other;
+      extra.addEventListener("input", function () { m.other = extra.value; });
+      checks.appendChild(h("div", { class: "form-option form-other" }, extra));
+      box.appendChild(checks);
+    } else if (m.kind === "fields") {
+      m.options.forEach(function (o) {
+        var input = h("input", { type: "text", "aria-label": o.label });
+        input.value = m.fields[o.id];
+        input.addEventListener("input", function () { m.fields[o.id] = input.value; });
+        box.appendChild(h("label", { class: "field" }, h("span", { text: o.label }), input));
+      });
+    } else {
+      var area = h("textarea", { rows: "3", "aria-label": item.question });
+      area.value = m.text;
+      area.addEventListener("input", function () { m.text = area.value; });
+      box.appendChild(area);
+    }
+    var save = h("button", { class: "btn btn-primary", type: "button", text: t("x.save") });
+    save.addEventListener("click", function () {
+      var payload = I.qaEditPayload(item, m);
+      if (!payload) { err.textContent = t("ui.interview.qa_edit_empty"); return; }
+      err.textContent = "";
+      save.disabled = true;
+      save.textContent = t("ui.interview.qa_saving");
+      window.compassSend.answerEdit(item.card_id, payload.value, payload.custom).then(function (ack) {
+        if (!ack) {   // the request failed (the chat says why): keep the editor and the typed answer
+          save.disabled = false;
+          save.textContent = t("x.save");
+          return;
+        }
+        state.qaEdit = null;
+        if (!I.ackHasNotice(ack, "edit_unavailable")) { toast(t("ui.interview.qa_saved")); }
+        loadQa();
+        loadView();
+      });
+    });
+    box.appendChild(err);
+    box.appendChild(h("div", { class: "row-actions" }, save,
+      h("button", { class: "btn", type: "button", text: t("x.cancel"), on: { click: function () { state.qaEdit = null; renderQa(); } } })));
+    return box;
+  }
+
+  function qaItemEl(item) {
+    var status = I.qaStatus(item);
+    var followup = item.origin === "followup";
+    var el = h("article", { class: "qa-item qa-depth-" + I.qaIndent(item) + (followup ? " qa-followup" : ""), data: { card: item.card_id } });
+    var head = h("div", { class: "qa-head" });
+    if (followup) { head.appendChild(h("span", { class: "followup-tag", text: "↳ " + t("ui.interview.followup_tag") })); }
+    head.appendChild(h("span", { class: "qa-q", text: item.question }));
+    el.appendChild(head);
+    var meta = h("div", { class: "qa-meta" }, h("span", { class: "qa-status qa-status-" + status, text: qaStatusLabel(status) }));
+    if (item.fallback) { meta.appendChild(fallbackBadge()); }
+    el.appendChild(meta);
+    el.appendChild(h("div", { class: "qa-a", text: I.qaAnswerText(item, t) }));
+    var facts = item.facts || [];
+    if (facts.length) {
+      el.appendChild(h("div", { class: "small muted", text: t("ui.interview.qa_facts") }));
+      el.appendChild(h("ul", { class: "qa-facts" }, facts.map(function (f) {
+        var line = I.qaFactLine(f, t);
+        return h("li", { class: line.inactive ? "qa-fact-off" : "" }, line.text, line.tag ? h("span", { class: "hint", text: " (" + line.tag + ")" }) : null);
+      })));
+    }
+    var editing = state.qaEdit && state.qaEdit.cardId === item.card_id;
+    if (I.qaCanEdit(item, isApproved()) && !editing) {
+      el.appendChild(h("div", { class: "row-actions-bar" }, h("button", { class: "btn-link qa-edit", type: "button", text: t("x.edit"), on: { click: function () {
+        state.qaEdit = { cardId: item.card_id, model: I.qaEditModel(item) };
+        renderQa();
+        var first = document.querySelector(".qa-editor input, .qa-editor textarea");
+        if (first) { first.focus(); }
+      } } })));
+    }
+    if (editing) { el.appendChild(qaEditorEl(item, state.qaEdit)); }
+    return el;
+  }
+
+  function renderQa() {
+    var host = $("qa-list");
+    $("qa-title").textContent = t("ui.interview.qa_title");
+    clear(host);
+    if (!state.qa.length) { host.appendChild(h("div", { class: "empty", text: t("ui.interview.qa_empty") })); return; }
+    state.qa.forEach(function (item) { host.appendChild(qaItemEl(item)); });
+  }
+
   function turnText(ev) {
     var p = ev.payload || {};
     switch (ev.type) {
@@ -950,6 +1530,8 @@ CONTRACT*/
       case "card_skip": return { who: "user", text: t("ui.skip") };
       case "card_you_decide": return { who: "user", text: t("ui.you_decide") };
       case "card_back": return { who: "user", text: t("ui.back") };
+      case "batch_answer": return { who: "user", text: t("ui.interview.form_sent", { count: (p.answers || []).length }) };
+      case "answer_edit": return { who: "user", text: p.card_id + " → " + (p.custom_text || (typeof p.value === "string" ? p.value : JSON.stringify(p.value))) };
       case "brief_edit": return { who: "user", text: p.item_id + " → " + (typeof p.value === "string" ? p.value : JSON.stringify(p.value)) };
       case "brief_feedback": return { who: "user", text: (p.target || "") + ": " + (p.text || p.reason || "") };
       case "assistant_message": return { who: "assistant", text: p.text || "" };
@@ -986,7 +1568,7 @@ CONTRACT*/
   }
 
   function renderHistoryTab() {
-    var host = $("tab-history");
+    var host = $("history-chat");
     clear(host);
     var search = h("input", { type: "text", placeholder: t("x.search"), "aria-label": t("x.search") });
     var list = h("div", { class: "drawer-body" });
@@ -1025,7 +1607,8 @@ CONTRACT*/
   function setTab(name) {
     state.tab = name;
     renderTabs();
-    if (name === "history") { renderHistoryTab(); }
+    if (name === "history") { renderHistoryTab(); renderQa(); loadQa(); }
+    if (name === "brief" && state.view) { highlightChanged($("tab-brief"), state.view); }
     if (name === "lookup") { renderLookup(); }
     if (name === "sources") { renderSources(); }
   }
@@ -1033,6 +1616,7 @@ CONTRACT*/
     $("workspace").dataset.pane = name;
     $("pane-chat").setAttribute("aria-selected", name === "chat" ? "true" : "false");
     $("pane-brief").setAttribute("aria-selected", name === "brief" ? "true" : "false");
+    if (name === "brief" && state.view && state.tab === "brief") { highlightChanged($("tab-brief"), state.view); }
   }
 
   // ---- developer drawer ---------------------------------------------------------------------------------------
@@ -1050,7 +1634,7 @@ CONTRACT*/
     if (b) { host.title = (b.mode === "live" ? t("dev.live") : t("dev.mock")); }
   }
   function loadBudget() {
-    return api("GET", "/budget").then(function (b) { state.budget = b; renderMeter(); renderDevHead(); }).catch(function () { renderMeter(); });
+    return api("GET", "/budget").then(function (b) { state.budget = b; renderMeter(); renderDevHead(); renderMockBanner(); }).catch(function () { renderMeter(); });
   }
   function loadCalls() {
     if (!state.sessionId) { return Promise.resolve(); }
@@ -1195,19 +1779,21 @@ CONTRACT*/
     b("welcome.start_upload", function () { pickFile(); });
     b("welcome.start_like_app", function () { $("composer-input").focus(); });
     b("welcome.start_just_build", function () { postUser(t("welcome.start_just_build")); });
-    return wrap;
+    return h("div", { class: "welcome-actions" }, wrap, depthChips());
   }
 
   function openSession(id) {
     stopStream();
     state.sessionId = id; state.lastSeq = 0; state.seen = {}; state.devEvents = []; state.view = null; state.viewJson = "";
     state.lookups = []; state.activeCard = null; state.ui = { panel: null, edit: null, prov: {} }; state.calls = [];
+    state.batch = null; state.batches = []; state.answered = {}; state.uiMode = "one_at_a_time"; state.modePending = false;
+    state.depth = null; state.progress = null; state.qa = []; state.qaEdit = null; state.qaAnswered = 0; state.pulsed = {};
     $("home").hidden = true;
     $("workspace").hidden = false;
     clear(log());
     $("chat-actions").replaceChildren();
     $("progressbar").hidden = true;
-    renderTabs(); setTab("brief"); setPane("chat");
+    renderTabs(); setTab("brief"); setPane("chat"); renderQa(); renderInterviewBar();
     refreshSession().then(function () {
       if (state.session) { state.lang = state.session.locale || state.lang; $("lang-select").value = state.lang; applyChromeStrings(); }
       return loadStrings(state.lang);
@@ -1215,8 +1801,8 @@ CONTRACT*/
       return replayHistory();
     }).then(function () {
       startStream();
-      loadView(); loadBudget(); renderLookup(); renderSources();
-      if (!state.lastSeq || state.session && state.session.state === "WELCOME") { log().appendChild(startButtons()); }
+      loadView(); loadBudget(); loadQa(); renderLookup(); renderSources(); renderInterviewBar();
+      if (!state.lastSeq || state.session && state.session.state === "WELCOME") { log().appendChild(startButtons()); scrollChat(); }
     });
   }
 
@@ -1239,11 +1825,19 @@ CONTRACT*/
       var answered = {};
       items.forEach(function (ev) {
         if (ev.direction === "in" && (ev.type === "card_answer" || ev.type === "card_skip" || ev.type === "card_you_decide") && ev.payload) { answered[ev.payload.card_id] = true; }
+        if (ev.direction === "in" && ev.type === "batch_answer" && ev.payload) {
+          (ev.payload.answers || []).forEach(function (a) { answered[a.card_id] = true; });
+        }
       });
+      state.answered = answered;   // the answer-all form shows only the questions still waiting
       items.forEach(function (ev) {
         if (ev.direction === "in") {
           if (ev.type === "user_message") { addMsg("user", ev.payload.text || ""); }
-          else if (ev.type === "card_answer") { addMsg("user", turnText(ev).text); }
+          else if (ev.type === "card_answer" || ev.type === "batch_answer") { addMsg("user", turnText(ev).text); }
+          else if (ev.type === "command" && ev.payload) {   // the layout the person chose decides how later cards were shown
+            if (ev.payload.name === "mode_answer_all") { state.uiMode = "answer_all"; }
+            if (ev.payload.name === "mode_one_at_a_time") { state.uiMode = "one_at_a_time"; }
+          }
           return;
         }
         if (ev.type === "card" && ev.payload && ev.payload.card && answered[ev.payload.card.id]) {
@@ -1288,7 +1882,7 @@ CONTRACT*/
     $("composer-mic").setAttribute("aria-label", t("ui.mic"));
     $("typing-text").textContent = t("ui.typing");
     $("history-drawer-title").textContent = t("history.title");
-    renderTabs(); renderMeter(); renderDevHead();
+    renderTabs(); renderMeter(); renderDevHead(); renderMockBanner(); renderInterviewBar(); renderQa();
   }
   function setLang(lang) {
     state.lang = lang;
@@ -1345,12 +1939,15 @@ CONTRACT*/
     $("btn-dev").addEventListener("click", function () { setDev(!state.devOpen); });
     $("dev-close").addEventListener("click", function () { setDev(false); });
     $("history-close").addEventListener("click", function () { $("history-drawer").hidden = true; });
+    $("btn-mode-toggle").addEventListener("click", toggleMode);
+    $("btn-ask-more").addEventListener("click", askMore);
     $("pane-chat").addEventListener("click", function () { setPane("chat"); });
     $("pane-brief").addEventListener("click", function () { setPane("brief"); });
     document.addEventListener("keydown", function (e) {
       if (e.key === "Escape") {
         $("history-drawer").hidden = true; $("settings-dialog").hidden = true;
         if (state.ui.panel || state.ui.edit) { state.ui.panel = null; state.ui.edit = null; renderBrief(); }
+        if (state.qaEdit) { state.qaEdit = null; renderQa(); }
       }
     });
     var input = $("composer-input");
@@ -1360,7 +1957,9 @@ CONTRACT*/
       var v = input.value.trim();
       if (!v || !state.sessionId) { return; }
       input.value = "";
-      collapseActive(state.activeCard ? state.activeCard.card.question + " — " + v : "");
+      if (!state.activeCard || !state.activeCard.batch) {   // a typed line answers a single card, never a form
+        collapseActive(state.activeCard ? state.activeCard.card.question + " — " + v : "");
+      }
       postUser(v, voiceUsed ? "voice" : "text");
       voiceUsed = false;
     });

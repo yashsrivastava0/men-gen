@@ -27,7 +27,7 @@ COMPASS_JS = text("agents/compass/compass.js")
 COMPASS_HTML = text("agents/compass/compass.html")
 TOKENS = text("shared/tokens.css")
 
-ENTRY_KEYS = {"id", "title", "base", "markup", "script", "style"}
+ENTRY_KEYS = {"id", "title", "base", "markup", "helper", "script", "style"}
 
 
 def registry_entries() -> list[dict[str, str]]:
@@ -61,9 +61,10 @@ def test_the_registry_lists_compass_and_only_compass_today() -> None:
     assert entry["script"] == "agents/compass/compass.js"
     assert entry["style"] == "agents/compass/compass.css"
     assert entry["markup"] == "agents/compass/compass.html"
+    assert entry["helper"] == "agents/compass/interview.js"
     for e in entries:
         assert re.fullmatch(r"[a-z][a-z0-9_-]*", e["id"]), e["id"]
-        for key in ("markup", "script", "style"):
+        for key in ("markup", "helper", "script", "style"):
             assert (CONSOLE / e[key]).is_file(), e[key]
             assert e[key].startswith(f"agents/{e['id']}/"), "an agent's files live in its folder"
 
@@ -90,6 +91,14 @@ async def test_the_registered_api_base_is_the_one_the_agent_serves(
     for entry in registry_entries():
         r = await anon.get(f"{entry['base']}/strings/en")
         assert r.status_code == 200 and r.json()["language"] == "en", entry["id"]
+
+
+def test_the_shell_loads_the_helper_before_the_screen_script() -> None:
+    """The optional helper (pure functions the screen uses) is loaded first, then the screen's own script."""
+    helper = SHELL_JS.index("loadScript(active.helper)")
+    script = SHELL_JS.index("loadScript(active.script)")
+    assert SHELL_JS.index("mountMarkup(done[1])") < helper < script
+    assert "active.helper ?" in SHELL_JS, "an agent without a helper still loads"
 
 
 def test_the_shell_knows_no_agent_by_name() -> None:
