@@ -1,8 +1,8 @@
 # 11. Discovery agent: detailed design (v1, 2026-11-09)
 
-**Agent name: Compass** (package `mde_compass`; replaces the older "Discover"). Build prompt: [`prompts/01-compass-build-prompt.md`](../prompts/01-compass-build-prompt.md).
+**Agent name: Compass** (package `mde_compass`; replaces the older "Discover"). Build prompts: prompt 01 (the first build; its text is not preserved in this repository, its rules live in `CLAUDE.md`, `docs/packages/compass.md` and ADR 0012 to 0014) and [prompt 02, the AI-planned interview](../compass/build-prompts/02-compass-ai-interview-prompt.md).
 
-Status: design approved by the owner on 2026-11-09. It refines Stage 1 in [doc 03](03-context-engine.md) and replaces the older Discover design (final spec rev 3, section 3) wherever they differ. The built Discover code is a starting point, not a constraint: the owner allowed a complete change. Decisions: AD-27 to AD-29 in [doc 00](00-index-and-decisions.md).
+Status: design approved by the owner on 2026-11-09. It refines Stage 1 in [doc 03](03-context-engine.md) and replaces the older Discover design (final spec rev 3, section 3) wherever they differ. The built Discover code is a starting point, not a constraint: the owner allowed a complete change. Decisions: AD-27 to AD-32 in [doc 00](00-index-and-decisions.md). **Section 17 revises sections 6.1, 6.5 and 12 item 9**: the model now plans which questions to ask; code still governs flow.
 
 ## 1. The one rule that shapes everything
 **Every field in the Brief exists because a downstream agent needs it, and every downstream need has a field.** Nothing is collected "just in case", and nothing a later agent needs is left for it to guess. Discovery serves Research, Blueprint, Design, Screens, Verify, Change control and (later) the Front-end, Backend and QA engines.
@@ -90,6 +90,8 @@ Levels: **must** (cannot leave Discovery empty; may be assumed with approval), *
 
 ## 6. The question system
 ### 6.1 Fixed purpose, fixed shape, generated content
+*(Revised by section 17: the list of questions is no longer fixed. What stays fixed is the shape, the guardrails and the needs the questions must serve.)*
+
 Hard-coded questions per category bind users into our categories and ask irrelevant things; free-form AI questions invent options. The middle path:
 | Fixed (data) | Generated (per project) | Guardrails (code) |
 |---|---|---|
@@ -233,7 +235,7 @@ Every item also carries `tier` (Locked / Default / Open), `provenance`, `confide
 6. **Fail safe.** When unsure, ask or assume-and-flag; never decide silently.
 7. **Small context.** Calls receive the situation profile and the Brief so far, not the whole chat.
 8. **Structured outputs everywhere**, validated; one repair, then the deterministic fallback.
-9. **Control stays in code.** The model never chooses what to do next; it fills schemas.
+9. **Control stays in code.** The model never chooses what to do next; it fills schemas. *(Narrowed by section 17: the model also proposes which questions to ask, as a schema-validated batch; code decides whether each is allowed, when to stop, what is stored and what is shown. The model still never controls the flow.)*
 
 ## 13. Discovery-specific edge cases (to merge into the catalog)
 | ID | Case | Rule |
@@ -271,6 +273,28 @@ Every item also carries `tier` (Locked / Default / Open), `provenance`, `confide
 
 ## 16. Build order inside this agent (for the later builder prompt)
 (a) Brief schema and slot catalog as data; (b) document intake; (c) extraction and merge; (d) Situation Profile and Domain Hypothesis; (e) question engine: frames, generation, validation, value-of-information queue; (f) free text, multi-slot absorption, voice echo; (g) assumption register and review data; (h) research seeding and handoff probes; (i) Brief compile, consumer views, readiness; (j) scenario and benchmark tests for the cases in docs 05 and 11. Each sub-step has its own tests; the agent is done when section 14 passes.
+
+## 17. AI-planned interview (revision, 2026-11-09, build prompt 02)
+
+**Why.** Owner testing showed the questions were generic: a tiffin service in Pune, a clinic app and a pharmacy inventory tool received the same questions word for word (measured: 30 questions across five ideas, 9 distinct wordings, 93% shared; `docs/compass/evidence/before-first-questions.json`). Causes: the question *list* came from a fixed catalog (slots, frames, a value-of-information queue) and the model only reworded it; cards were written one at a time with no view of the interview; no follow-up existed; the Brief was built from slots only, so nothing the user said that did not fit a slot survived.
+
+**Principle.** The model decides *what to ask* (specific to this project) and *how to word it*. Code decides *whether a question is allowed* (validators), *when to stop* (coverage and budget), *what is stored* and *what is shown*. The model never controls the flow.
+
+**17.1 The catalog becomes a Needs Registry.** Section 5 stays, but it no longer lists questions. Each need keeps its consumers, level, impact and risk and gains an `answer_spec`: what a *sufficient* answer contains for those consumers (for example `audience.segments`: at least one named segment, who they are, their main goal, where and how they use the app, and the paying customer separated from the end user when they differ). Code computes a status per need each round (`satisfied`, `partial`, `missing`, `assumed`). Frames (section 6.7) become style guides and few-shot examples for the planner, and the source of a last-resort fallback card.
+
+**17.2 Interview Memory.** Every question and answer is stored (a Q&A ledger with versions), and every message, answer and document chunk yields atomic **facts** with a verbatim quote (a fact ledger). A quote is verified in code against the source text; an unverified fact can never support a Locked item. Facts are superseded or marked disputed, never deleted. A rolling summary exists for very long interviews. **Slots become a view over facts**: a slot value is written from the facts that support it and its evidence points to a fact id and, through it, to the quote.
+
+**17.3 The loop.** Round 0 (idea or documents): intake and read, facts, needs status, then one planner call returns the domain hypothesis and the first batch, while the user reads the playback card. A batch is 2 to 3 themed groups of 3 to 4 questions with model-written titles in the user's language, shown one at a time (default for non-technical users) or as one form (default for experts). After each answer the interpreter checks completeness against the `answer_spec`: a vague answer to a high-impact need earns one targeted follow-up (depth at most 2 per need, follow-ups at most 40% of base questions); a new topic goes to a backlog; a contradiction triggers a small either/or. After each batch a gap audit recomputes the needs and the planner re-plans with everything answered so far, never repeating a ledger question. Budgets are adaptive: Quick up to 5 questions, Standard up to 12 including follow-ups, Thorough up to 25 in batches of 6 to 8; "Ask me more" deepens the lowest-confidence areas; fatigue or "that's enough" stops early and turns the remaining needs into visible assumptions.
+
+**17.4 What the first batch must contain.** Low domain confidence: one or two broad grounding questions first. Then two or three domain mechanics only this idea has, the consumer-driven basics phrased in the project's own terms, and at least one expert blind-spot question. When documents are rich, ask less: confirm and fill gaps only.
+
+**17.5 Controls (code).** Every non-universal question must contain a project term, must not duplicate a ledger question (intent, serves, normalized text) and must map to a need or a `domain:<topic>`; options pass the card validation of section 6.2; `choose_one` is used only when three genuinely distinct options can be named, otherwise a text or form question with examples. A separate auditor call scores specificity, leading wording, jargon and answerability; failures get one repair, then are dropped, never replaced by a canned question. Under-asking is checked (every must or high-impact need is covered, satisfied or listed as an assumption); over-asking is prevented (a high-confidence fact closes its need and becomes a confirmation). **A fallback is a failure, not a feature**: if the planner still fails validation after one repair, a minimal deterministic card from the Needs Registry is used, flagged `fallback=true`, shown with a badge, and counted; in live batches the fallback rate must be zero. Mock mode produces clearly labelled `[mock]` questions built from the idea's terms, and the UI shows a "MOCK MODE" banner, so a mock session is never mistaken for the product.
+
+**17.6 The Brief.** `cmp.compile_brief` receives the entire active fact ledger (compiled per section only above a configured size, then one consistency pass). The Brief gains a `domain_facts` section (typed facts with provenance and `consumers[]`, so domain details that fit no field still reach Research, Blueprint and Design; consumer views include only the facts tagged for that consumer, never the transcript) and the Brief page a section "Details we captured". An internal `interview` block (counts, coverage, fallback count, question ids) is stored for audit and excluded from consumer views and from the hash. A fact coverage check (every active fact is used by a Brief item or marked `not_used` with a reason) blocks Gate 1 in tests.
+
+**17.7 What does not change.** The Situation Profile, document intake, propose-then-correct checklists, research seeding, handoff probes, the assumption review, Gate 1, the change flow with undo, evidence tiers (Locked needs verified evidence) and the rule that the stack is fixed. The model is `gpt-6-luna` only; every call goes through the gateway with a versioned spec, a mock handler and a deterministic fallback.
+
+**17.8 Acceptance additions** (initial targets, measured and reported honestly): at least 90% of non-universal questions contain project-specific terms; cross-idea overlap below a documented, calibrated threshold; zero repeated or already-answered questions; a follow-up on at least 90% of scripted vague answers and on none of the specific ones; fact coverage 100%; quote verification 100% (unverified quotes never Locked); a fact stated in turn 2 is present in the final Brief after 25 turns; live fallback rate 0; first batch ready in about 10 seconds or less after the playback card.
 
 ## Evidence used here
 ClarifyCodeBench (models under-ask; reasoning does not fix it) [V]; LLM interviewer studies show context-aware questioning comparable to human error rates, mostly with simulated stakeholders [S: LLMREI arXiv 2507.02564; iReDev arXiv 2507.13081]; closed questions plus chatbot follow-ups gave richer answers, and respondents disliked uncertainty about the number of exchanges and repetitive probes [S: Google Research]; open-ended questions are more demanding, especially on mobile [S: CHI 2025 probing-chatbot study]; competitor planning modes ask clarifying questions about audience, features, design and technical needs, then build strictly from an approved plan [S: Lovable and Replit documentation]. Full links: [doc 10](10-research-log.md).

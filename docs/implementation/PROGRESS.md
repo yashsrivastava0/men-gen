@@ -130,3 +130,20 @@ Open items and exact next steps:
 3. Intake scenarios still deferred (`tests/scenarios/data/DEFERRED.yaml`): huge document, scanned pages, contradictions across documents, mostly-vision PRD, sheets and decks. The intake tests cover duplicates, corrupt files, private links and the SSRF table.
 4. Not built: an HTTP route for `reopen_slot`, `ChainedRegistry` gateway hook, `CompassBudget.reconcile` against the ledger, per-language intake messages (English only), prefetch.
 5. Retiring `mde_discovery` is a later task (Compass does not import it; it is untouched and its suites pass).
+
+## Compass: AI-planned interview (build prompt 02; started 2026-11-09 12:30; branch `feat/compass-ai-interview`, safe-point tag `pre/compass-ai-interview-20261109-1237`)
+
+Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompts/`. No push (D-091). Each phase ends with an annotated tag `compass/ai-interview-p<n>`.
+
+- [x] Phase 0. Diagnosis and "before" evidence (c9847b6): 30 questions, 9 distinct wordings, 93% shared across five ideas
+- [x] Phase 0a. GLOBAL_RULES (74482f4); doc 11 section 17, AD-29 amended, AD-30 to AD-32, ADR 0015, D-090, D-091
+- [ ] Phase 0b. Restructure `packages/compass` -> `agents/compass` (moves only), workspace, config, security-scan globs, docs paths
+- [ ] Phase 1. Interview Memory (models, ports, fake, Postgres, migration 0002, contract suite, quote check, projector); `apps/web` port of the UI
+- [ ] Phase 2. Needs Registry (`answer_spec` for all 44 needs, frame style guides, needs status)
+- [ ] Phase 3. Calls: `plan_questions`, `audit_questions`, `understand_turn` v2, `update_summary`, `compile_brief`, `rephrase_question`
+- [ ] Phase 4. Engine: fact ingestion under the legacy flow, planner path behind a flag, follow-ups, replan, stop, budgets, edit/pivot/upload, `domain_facts`, compile from the ledger
+- [ ] Phase 5. UI in `apps/web`: groups, answer-all, why-popover, Ask me more, Q&A editor, MOCK banner, fallback badge
+- [ ] Phase 6. Offline tests: scenario and persona migration, SB-QP-01..20, property tests, needle test, metrics
+- [ ] Phase 6b. Live prerequisites: persisted Compass spend (`reconcile`), batch runner, cassette tests
+- [ ] Phase 7. Flip to the planner; live batches E, F, G (needs the owner's second key); cassettes
+- [ ] Phase 8. Remove the legacy path, refresh docs, `just ci`, merge `--no-ff`, report

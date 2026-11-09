@@ -56,6 +56,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [0012 Compass package, boundaries and layering](adr/0012-compass-package-boundaries-and-layering.md)
 - [0013 Brief schema v1, hashing and versioning](adr/0013-brief-schema-v1-hashing-and-versioning.md)
 - [0014 Call specs live in the agent package](adr/0014-call-spec-registration-from-agent-packages.md)
+- [0015 AI-planned interview, Interview Memory and the domain_facts section](adr/0015-ai-planned-interview-and-interview-memory.md)
 
 ## Evals
 
