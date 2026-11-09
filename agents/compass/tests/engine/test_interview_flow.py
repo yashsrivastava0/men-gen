@@ -613,3 +613,38 @@ async def test_help_phrases_do_nothing_new_on_the_legacy_engine() -> None:
     assert route_help("समझ नहीं आया") == "explain" and route_help("I run a clinic in Indore") is None
     # the legacy router does not know these kinds at all
     assert route("I don't understand", has_pending_card=True) is None
+
+
+async def test_option_tap_bypasses_understand_turn() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+
+    # Advance until we find a card with options
+    for _ in range(5):
+        card = conv.last_card()
+        if card is not None and card.options:
+            break
+        if card is not None:
+            await conv.answer(LONG, card=card)
+
+    card = conv.last_card()
+    assert card is not None and card.options
+
+    async with svc.store.begin(conv.caller.tenant_id) as uow:
+        calls_before = await uow.call_log.list(conv.session_id)
+    understand_before = len([c for c in calls_before if c.spec_id == "cmp.understand_turn"])
+
+    opt = card.recommended_option() or card.options[0]
+    await conv.answer(opt.id, card=card)
+
+    async with svc.store.begin(conv.caller.tenant_id) as uow:
+        calls_after = await uow.call_log.list(conv.session_id)
+        facts = await uow.facts.list(conv.session_id)
+    understand_after = len([c for c in calls_after if c.spec_id == "cmp.understand_turn"])
+
+    assert understand_after == understand_before
+    tap_facts = [f for f in facts if f.origin == "tap"]
+    assert len(tap_facts) >= 1
+    assert any(f.qa_card_id == card.id for f in tap_facts)
+

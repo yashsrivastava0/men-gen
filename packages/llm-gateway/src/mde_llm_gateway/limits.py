@@ -12,8 +12,8 @@ from contextlib import asynccontextmanager
 
 from mde_core.clock import Clock
 
-DEFAULT_CONCURRENCY: Mapping[str, int] = {"fast": 8, "standard": 4, "deep": 2}
-DEFAULT_RPM: Mapping[str, int] = {"fast": 120, "standard": 60, "deep": 30}
+DEFAULT_CONCURRENCY: Mapping[str, int] = {"fast": 8, "standard": 8, "deep": 2}
+DEFAULT_RPM: Mapping[str, int] = {"fast": 120, "standard": 120, "deep": 30}
 
 
 _EPSILON = 1e-9

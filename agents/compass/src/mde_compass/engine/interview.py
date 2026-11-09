@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import asyncio
 import hashlib
+import json
 import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
@@ -36,6 +37,7 @@ from mde_compass.domain.interview import (
     BatchGroup,
     BatchRecord,
     Fact,
+    FactEffect,
     InterviewBlock,
     InterviewSummary,
     NeedStatus,
@@ -891,11 +893,119 @@ class InterviewController:
             ],
         )
 
+    def _tap_understanding(self, item: AnswerItem) -> TurnUnderstanding | None:
+        """Deterministic option tap (ADR 0016 / Item 5): when an option is selected without
+        custom free text, bypass understand_turn completely (0 ms latency). Directly project
+        the chosen option values into facts with origin='tap' and aspects covering the card's needs."""
+        if item.action != "answer":
+            return None
+        if item.custom_text and item.custom_text.strip():
+            return None
+        labels, _ = self._labels_and_text(item)
+        if not labels:
+            return None
+
+        card = item.card
+        by_id = {o.id: o for o in card.options}
+        ids = item.value if isinstance(item.value, list) else [item.value]
+        chosen = [by_id[str(i)] for i in ids if str(i) in by_id]
+        if not chosen:
+            chosen = [o for o in card.options if o.label in labels]
+        if not chosen and not labels:
+            return None
+
+        quote = " / ".join(labels)
+        lang = card.language if card.language in ("en", "hi") else "en"
+
+        slot_updates: list[SlotUpdate] = []
+        for slot_id in card.slots:
+            slot = self.catalog.slots.get(slot_id)
+            if slot is None:
+                continue
+            kind = slot.value_schema.kind
+            val: JsonValue = None
+            if kind in ("enum", "enum_list"):
+                registry = {_untag(o.label.get(lang)).casefold(): o for o in slot.fallback_card.options}
+                matched = [registry.get(_untag(label).casefold()) for label in labels]
+                vals = [m.value for m in matched if m is not None and m.value is not None]
+                if not vals:
+                    allowed = set(slot.value_schema.options or [])
+                    vals = [c.id for c in chosen if c.id in allowed] or [
+                        _untag(c.label).casefold() for c in chosen if _untag(c.label).casefold() in allowed
+                    ]
+                if vals:
+                    val = cast(JsonValue, vals if kind == "enum_list" else vals[0])
+            elif kind == "text_list":
+                val = cast(JsonValue, [_untag(o.label) for o in chosen] if chosen else labels)
+            elif kind == "string":
+                val = quote
+            elif kind == "boolean":
+                val = any(
+                    _untag(lbl).casefold() in ("yes", "true", "enabled", "enable", "required")
+                    for lbl in labels
+                )
+            elif kind == "object_list":
+                val = cast(
+                    JsonValue,
+                    [{"name": _untag(o.label)} for o in chosen] if chosen else [{"name": lbl} for lbl in labels],
+                )
+
+            if val is not None:
+                slot_updates.append(
+                    SlotUpdate(
+                        slot_id=slot.id,
+                        value=self.svc._label_codes(slot.id, val, lang),
+                        quote=quote,
+                        confidence=0.95,
+                        basis="user_text",
+                    )
+                )
+
+        aspects: list[str] = []
+        for need in card.need_ids:
+            aspects.append(f"{need}:*")
+            aspects.append(f"need:{need}")
+        for s in card.slots:
+            if f"{s}:*" not in aspects:
+                aspects.append(f"{s}:*")
+
+        effects = [
+            FactEffect(
+                slot_id=upd.slot_id,
+                value_json=json.dumps(upd.value, ensure_ascii=False),
+                mode="set",
+            )
+            for upd in slot_updates
+        ]
+
+        topics = [self.catalog.slots[s].group for s in card.slots if s in self.catalog.slots] or ["domain"]
+        statement = f"{card.question}: {quote}" if card.question else quote
+
+        facts = [
+            ExtractedFact(
+                type="preference" if card.type in ("choose_one", "pick_many") else "rule",
+                statement=statement,
+                quote=quote,
+                topics=topics,
+                consumers=["all"],
+                confidence=0.95,
+                aspects=aspects,
+                effects=effects,
+            )
+        ]
+
+        return TurnUnderstanding(
+            intent="answer",
+            slot_updates=slot_updates,
+            facts=facts,
+            confidence=0.95,
+        )
+
     async def _interpret(
         self, turn: _Turn, item: AnswerItem, statuses: dict[str, NeedStatus]
     ) -> TurnUnderstanding:
         assert self.svc.ports is not None
-        direct = self._writes_understanding(item) or self._registry_match(item)
+        direct = self._writes_understanding(item) or self._registry_match(item) or self._tap_understanding(item)
         if direct is not None:
             return direct
         labels, text = self._labels_and_text(item)
@@ -1080,10 +1190,15 @@ class InterviewController:
                 continue
             labels, text = self._labels_and_text(item)
             tap = bool(labels) and not item.custom_text
+            sources = list(labels)
+            if len(labels) > 1:
+                sources.append(" / ".join(labels))
+            if text and text not in sources:
+                sources.append(text)
             _, got = self.ingest(
                 turn,
                 understood,
-                sources=[*labels, *([text] if text else [])],
+                sources=sources,
                 source_ref=turn.turn_id,
                 card=card,
                 tap=tap,
