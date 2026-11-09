@@ -1,0 +1,32 @@
+Mode: {{ mode }}
+Language: {{ language }}
+Questions wanted: {{ want_min }} to {{ want_max }} in {{ group_min }} to {{ group_max }} groups (never more than {{ remaining_budget }} in total). Number them from Q-{{ '%03d' % next_card_n }}.
+{% if pivot_from %}Pivot: the person changed direction away from "{{ pivot_from }}".
+{% endif %}
+Project card:
+{{ project_card }}
+
+Project terms: {{ project_terms | join(", ") }}
+
+Facts so far:
+{{ fact_digest or "(none yet)" }}
+
+Questions already asked:
+{{ asked_list or "(nothing asked yet)" }}
+
+Last answers:
+{{ last_qa or "(none)" }}
+{% if focus_card_id %}
+Focus question {{ focus_card_id }}: {{ focus_question }}
+The person's answer: {{ focus_answer }}
+{% if missing_aspects %}What is still missing: {{ missing_aspects | join(", ") }}
+{% endif %}{% endif %}
+{% if focus_needs %}Work on these needs first: {{ focus_needs | join(", ") }}
+{% endif %}
+Needs (open first), each with what a sufficient answer contains:
+{% for n in needs %}- {{ n.need_id }} [{{ n.state }}, impact {{ n.impact }}, {{ n.level }}] {{ n.label }}: {{ n.sufficient }}{% if n.missing_aspects %} Missing: {{ n.missing_aspects | join(", ") }}.{% endif %}{% if n.assumed_value %} Currently assumed: {{ n.assumed_value }}.{% endif %}{% if n.option_labels %} Typical options for a choice: {{ n.option_labels | join(" / ") }}.{% endif %}
+
+{% endfor %}
+{% if style_notes %}Style notes for these needs:
+{% for s in style_notes %}- {{ s }}
+{% endfor %}{% endif %}

@@ -398,7 +398,7 @@ class PlanContext(Strict):
 
     project_card: str = ""
     fact_digest: str = ""
-    needs_table: str = ""
+    needs_table: str = ""  # compact text of the needs, for calls that take a table (audit, compile)
     asked_list: str = ""
     last_qa: str = ""
 
@@ -407,6 +407,11 @@ class PlanRequest(Strict):
     mode: PlannerMode
     language: str = "en"
     context: PlanContext
+    needs: list[NeedBrief] = Field(
+        default_factory=list
+    )  # open needs first; the planner serves these
+    # the project's own vocabulary: words from the idea, the facts and the glossary
+    project_terms: list[str] = Field(default_factory=list)
     want_min: int = Field(
         default=3, ge=0
     )  # questions wanted in the batch (code decides the numbers)
@@ -422,6 +427,7 @@ class PlanRequest(Strict):
         default_factory=list
     )  # followup: what the answer still lacks
     pivot_from: str | None = None  # replan after a pivot: the old category
+    followup_depth: int = Field(default=1, ge=0)  # followup: the depth of the question to write
     style_notes: list[str] = Field(
         default_factory=list
     )  # frame style guides and examples for the needs

@@ -1,0 +1,479 @@
+{
+  "name": "hinglish_kids_learning_initial",
+  "input": {
+    "mode": "initial",
+    "language": "hi-Latn",
+    "project_card": "Idea (user's words): Bachchon ke liye language-learning app, 5 se 10 saal ke bachche, chhote games aur kahaniyan, aur parents bachche ki progress dekh saken.\nCategory guess: children's educational app (unsure). Geography: not stated. Language: hi-Latn. Situation: parent entrepreneur.",
+    "fact_digest": "FCT-001 [context|audience] Users are children aged 5 to 10 (from the first message)\nFCT-002 [requirement|content] Short games and stories (from the first message)\nFCT-003 [requirement|parents] Parents can see the child's progress (from the first message)",
+    "asked_list": "(nothing asked yet)",
+    "last_qa": "",
+    "project_terms": [
+      "bachche",
+      "language",
+      "games",
+      "kahaniyan",
+      "parents",
+      "progress",
+      "5 se 10 saal"
+    ],
+    "needs": [
+      {
+        "need_id": "idea.problem_value",
+        "label": "The problem it solves",
+        "impact": 3,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "The problem the app solves, for whom, and what is painful about how they cope today.",
+        "aspects": [
+          "problem",
+          "who_has_it",
+          "current_workaround"
+        ],
+        "missing_aspects": [
+          "problem",
+          "who_has_it",
+          "current_workaround"
+        ],
+        "card_type": "open_prompt",
+        "option_labels": [],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "audience.segments",
+        "label": "Who it is for",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "At least one named segment: who they are, their main goal, and where and how they use the app. Separate the paying customer from the end user when they differ.",
+        "aspects": [
+          "who",
+          "goal",
+          "where_how",
+          "payer_vs_user"
+        ],
+        "missing_aspects": [
+          "where_how",
+          "payer_vs_user"
+        ],
+        "card_type": "open_prompt",
+        "option_labels": [],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "audience.usage_context",
+        "label": "Where and how it is used",
+        "impact": 2,
+        "level": "may",
+        "state": "missing",
+        "sufficient": "Where and how the app is used: on the go, low network, a shared device, one hand.",
+        "aspects": [
+          "where",
+          "network",
+          "device_sharing"
+        ],
+        "missing_aspects": [
+          "where",
+          "network",
+          "device_sharing"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "While moving, with one hand",
+          "With a weak or slow internet",
+          "On a phone shared with others"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "impact": 5,
+        "level": "must",
+        "state": "missing",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several.",
+        "aspects": [
+          "country",
+          "city_or_region",
+          "languages",
+          "single_or_multi_city"
+        ],
+        "missing_aspects": [
+          "country",
+          "city_or_region",
+          "languages",
+          "single_or_multi_city"
+        ],
+        "card_type": "quick_form",
+        "option_labels": [],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release.",
+        "aspects": [
+          "feature",
+          "purpose",
+          "first_release"
+        ],
+        "missing_aspects": [
+          "purpose",
+          "first_release"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Sign-up and a profile page",
+          "Search and browse a list of items",
+          "Messages between people"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "scope.references",
+        "label": "Apps you like",
+        "impact": 3,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "Apps the user likes or dislikes, and what to borrow or avoid from each.",
+        "aspects": [
+          "app_name",
+          "borrow",
+          "avoid"
+        ],
+        "missing_aspects": [
+          "app_name",
+          "borrow",
+          "avoid"
+        ],
+        "card_type": "open_prompt",
+        "option_labels": [],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "data.sensitive",
+        "label": "Sensitive information",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "What sensitive information the app handles, such as health, financial, children's data or ID documents.",
+        "aspects": [
+          "data_kinds"
+        ],
+        "missing_aspects": [
+          "data_kinds"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Personal ID numbers or documents",
+          "Health records",
+          "Bank or payment details"
+        ],
+        "assumed_value": ""
+      }
+    ],
+    "want_min": 5,
+    "want_max": 6,
+    "group_min": 2,
+    "group_max": 3,
+    "remaining_budget": 12,
+    "focus_needs": [],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_answer": "",
+    "missing_aspects": [],
+    "pivot_from": "",
+    "style_notes": [],
+    "next_card_n": 1
+  },
+  "output": {
+    "domain_hypothesis": {
+      "category": "children's language learning",
+      "subcategory": "short games and stories with a parent progress view",
+      "business_model_candidates": [
+        "parents subscribe",
+        "a school or teacher provides it",
+        "free with paid content packs"
+      ],
+      "likely_roles": [
+        "Child",
+        "Parent"
+      ],
+      "likely_features": [
+        {
+          "name": "Short learning games",
+          "intent": "practice words through play",
+          "custom": false
+        },
+        {
+          "name": "Story reading",
+          "intent": "build listening and reading",
+          "custom": false
+        },
+        {
+          "name": "Parent progress view",
+          "intent": "parents follow what the child learned",
+          "custom": false
+        }
+      ],
+      "hard_parts": [
+        "Children's data and advertising rules",
+        "Keeping a child's attention"
+      ],
+      "glossary_candidates": [
+        {
+          "term": "progress",
+          "synonyms": [
+            "seekha",
+            "level"
+          ]
+        }
+      ],
+      "confidence": 0.45
+    },
+    "questions": [
+      {
+        "id": "Q-001",
+        "group_id": "G1",
+        "group_title": "Bachcha app kaise use karega",
+        "intent": "learn a typical session: when, where and with whom the child uses it",
+        "serves": [
+          "idea.problem_value",
+          "audience.usage_context"
+        ],
+        "unlocks": [
+          "Design: screen size and session length",
+          "Research: how children use such apps"
+        ],
+        "answer_spec": "A typical use: the problem, who has it, and the current workaround",
+        "depends_on": [],
+        "priority": 1,
+        "type": "text",
+        "text": "Ek normal din socho: bachcha app kab aur kahan kholta hai, aur uske saath kaun hota hai?",
+        "why_we_ask": "Isse pata chalta hai ki games kitne lambe hone chahiye aur screen kaisi.",
+        "options": [],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": [
+          "jaise: shaam ko ghar par, mummy ke phone par, 15 minute",
+          "jaise: school ke baad tablet par, akele"
+        ]
+      },
+      {
+        "id": "Q-002",
+        "group_id": "G1",
+        "group_title": "Bachcha app kaise use karega",
+        "intent": "learn which language the child speaks and which one the app teaches",
+        "serves": [
+          "domain:language_pair",
+          "locales"
+        ],
+        "unlocks": [
+          "Research: content in both languages",
+          "Screens: wording"
+        ],
+        "answer_spec": "The app languages and the language being taught",
+        "depends_on": [],
+        "priority": 1,
+        "type": "text",
+        "text": "Bachcha ghar par kaunsi bhasha bolta hai, aur app use kaunsi bhasha sikhayega?",
+        "why_we_ask": "Yeh app ki bhasha aur sikhane ki bhasha alag-alag ho sakti hain.",
+        "options": [],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": [
+          "jaise: ghar par Hindi, app English sikhayega"
+        ]
+      },
+      {
+        "id": "Q-003",
+        "group_id": "G1",
+        "group_title": "Bachcha app kaise use karega",
+        "intent": "learn which existing app or game the child already likes",
+        "serves": [
+          "scope.references"
+        ],
+        "unlocks": [
+          "Design: look and feel",
+          "Research: competitors"
+        ],
+        "answer_spec": "Apps the user likes and what to borrow or avoid",
+        "depends_on": [],
+        "priority": 3,
+        "type": "text",
+        "text": "Koi aisa app ya khel hai jo aapke bachche ko pasand hai aur aap chahenge ki yeh bhi waisa ho?",
+        "why_we_ask": "Hum wahi cheezein dekhenge jo bachchon ko pasand aati hain.",
+        "options": [],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": [
+          "jaise: ek story-wala app jo bachcha roz khud kholta hai"
+        ]
+      },
+      {
+        "id": "Q-004",
+        "group_id": "G2",
+        "group_title": "Parents aur paise",
+        "intent": "learn who pays and on whose phone it runs",
+        "serves": [
+          "audience.segments"
+        ],
+        "unlocks": [
+          "Research: pricing",
+          "Blueprint: parent and child accounts"
+        ],
+        "answer_spec": "Who the segments are, and who pays versus who uses",
+        "depends_on": [],
+        "priority": 1,
+        "type": "choose_one",
+        "text": "App ke paise kaun dega, aur yeh kiske phone par chalega?",
+        "why_we_ask": "Isse tay hota hai ki parent aur bachche ke alag account chahiye ya nahi.",
+        "options": [
+          {
+            "label": "Mata-pita denge; parents ke phone par",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "School ya teacher dilayenge",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Dono tarah se",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Mata-pita denge; parents ke phone par",
+        "skip_assumes": "Mata-pita denge; parents ke phone par",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-005",
+        "group_id": "G2",
+        "group_title": "Parents aur paise",
+        "intent": "learn what parents should see about their child's progress",
+        "serves": [
+          "scope.features",
+          "domain:parent_view"
+        ],
+        "unlocks": [
+          "Blueprint: the parent screens",
+          "Design: reports"
+        ],
+        "answer_spec": "What each feature is for and what must be in the first release",
+        "depends_on": [],
+        "priority": 2,
+        "type": "choose_one",
+        "text": "Parents ko progress mein kya dikhna chahiye?",
+        "why_we_ask": "Parents ke liye sabse upyogi cheez pehle banayenge.",
+        "options": [
+          {
+            "label": "Sirf kitna waqt khela",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Kya seekha aur kahan atka",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Dono, chhote aur saaf roop mein",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Kya seekha aur kahan atka",
+        "skip_assumes": "Kya seekha aur kahan atka",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-006",
+        "group_id": "G3",
+        "group_title": "Suraksha",
+        "intent": "learn the rules about ads and outside links for children",
+        "serves": [
+          "data.sensitive",
+          "domain:child_safety"
+        ],
+        "unlocks": [
+          "Blueprint: what the app may show or collect",
+          "Verify: safety checks"
+        ],
+        "answer_spec": "Which sensitive information is handled and what must be avoided",
+        "depends_on": [],
+        "priority": 1,
+        "type": "choose_one",
+        "text": "Bachchon ke liye app mein kya koi ad ya baahar ke links honge?",
+        "why_we_ask": "Bachchon ke app mein yeh sabse zaroori suraksha ka sawaal hai.",
+        "options": [
+          {
+            "label": "Koi ad ya link nahi",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Sirf parents ke hisse mein",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Abhi tay nahi kiya",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Koi ad ya link nahi",
+        "skip_assumes": "Koi ad ya link nahi",
+        "followup_hint": "",
+        "examples": []
+      }
+    ],
+    "covered_needs": [
+      "idea.problem_value",
+      "audience.usage_context",
+      "audience.segments",
+      "scope.features",
+      "scope.references",
+      "data.sensitive"
+    ],
+    "assumed_instead": [
+      {
+        "need_id": "context.geo",
+        "assumption": "India; Hindi and English",
+        "reason": "The message is in Hinglish; shown for approval"
+      }
+    ],
+    "expert_gaps": [
+      "How the app proves a parent is the parent",
+      "Offline use when the network is poor"
+    ],
+    "backlog": [
+      {
+        "topic": "Ages 5 to 10 need different content levels",
+        "intent": "see whether one level system fits all ages",
+        "serves": [
+          "scope.features"
+        ]
+      }
+    ]
+  }
+}

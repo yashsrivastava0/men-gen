@@ -188,5 +188,6 @@
   "intake.injection_note": "दस्तावेज़ में मेरे लिए निर्देश लिखे थे। मैंने उन्हें अनदेखा किया और केवल उसकी सामग्री रखी।",
   "intake.picked_from_doc": "आपके दस्तावेज़ से मैंने यह लिया: {items}",
   "intake.needs_confirming": "आपके दस्तावेज़ों के कुछ कथनों ({count}) की आपसे पुष्टि चाहिए।",
-  "intake.duplicate": "यह फ़ाइल मेरे पास पहले से है।"
+  "intake.duplicate": "यह फ़ाइल मेरे पास पहले से है।",
+  "interview.group_fallback": "कुछ ज़रूरी सवाल"
 }

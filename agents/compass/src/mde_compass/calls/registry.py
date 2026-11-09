@@ -19,7 +19,6 @@ from mde_compass.engine.fallback_ports import (
     NoClaimMerger,
     UnavailableBriefCompiler,
     UnavailableQuestionAuditor,
-    UnavailableQuestionPlanner,
     UnavailableQuestionRephraser,
     UnavailableSummaryUpdater,
 )
@@ -51,7 +50,6 @@ PLACEHOLDERS: dict[str, Any] = {
     "claim_merger": NoClaimMerger,
     "ambiguity_scanner": NoAmbiguityScanner,
     # remove an entry when its call folder (spec + adapter) lands
-    "question_planner": UnavailableQuestionPlanner,
     "question_auditor": UnavailableQuestionAuditor,
     "summary_updater": UnavailableSummaryUpdater,
     "brief_compiler": UnavailableBriefCompiler,

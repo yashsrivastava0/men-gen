@@ -1,0 +1,412 @@
+{
+  "name": "en_pharmacy_inventory_replan",
+  "input": {
+    "mode": "replan",
+    "language": "en",
+    "project_card": "Idea (user's words): A B2B inventory tool for pharmacies: shop owners track stock and expiry dates and reorder from their wholesalers when medicines run low.\nCategory: B2B inventory management for retail pharmacies. Geography: Pune and Nashik, India. Language: en.",
+    "fact_digest": "FCT-001 [context|customers] Customers are independent pharmacy owners (from the first message)\nFCT-002 [rule|expiry] Owners must see which medicines are close to expiry (from the first message)\nFCT-003 [rule|pricing] Shops pay a monthly subscription (from Q-001)\nFCT-004 [context|location] Launch in Pune first, Nashik later (from Q-002)\nFCT-005 [role|staff] A shop owner and one counter assistant use it (from Q-003)",
+    "asked_list": "Q-001 how shops pay (answered)\nQ-002 where it launches (answered)\nQ-003 who uses it in a shop (answered)",
+    "last_qa": "Q-001 Do shops pay a monthly fee, pay per reorder, or does the wholesaler pay? -> A monthly fee\nQ-003 Who in a shop will use it? -> The owner and one assistant at the counter",
+    "project_terms": [
+      "pharmacy",
+      "stock",
+      "expiry",
+      "wholesaler",
+      "reorder",
+      "medicines",
+      "shop owner",
+      "Pune"
+    ],
+    "needs": [
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "impact": 5,
+        "level": "must",
+        "state": "partial",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release.",
+        "aspects": [
+          "feature",
+          "purpose",
+          "first_release"
+        ],
+        "missing_aspects": [
+          "purpose",
+          "first_release"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Sign-up and a profile page",
+          "Search and browse a list of items",
+          "Messages between people"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "data.existing_systems",
+        "label": "Existing systems and data",
+        "impact": 3,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "Existing systems, databases, spreadsheets or APIs to connect to, and what each holds.",
+        "aspects": [
+          "system",
+          "data_held",
+          "access"
+        ],
+        "missing_aspects": [
+          "system",
+          "data_held",
+          "access"
+        ],
+        "card_type": "upload_or_link",
+        "option_labels": [
+          "Yes, I can share details or files",
+          "Yes, but I need help describing it",
+          "No, it starts from scratch"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "integrations.wanted",
+        "label": "Services to connect",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "Which outside services to connect (payments, maps, SMS codes, push messages, email, identity checks) and what each is for.",
+        "aspects": [
+          "service",
+          "purpose"
+        ],
+        "missing_aspects": [
+          "service",
+          "purpose"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Online payments",
+          "Maps and location",
+          "SMS or email messages"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "data.sensitive",
+        "label": "Sensitive information",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "What sensitive information the app handles, such as health, financial, children's data or ID documents.",
+        "aspects": [
+          "data_kinds"
+        ],
+        "missing_aspects": [
+          "data_kinds"
+        ],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Personal ID numbers or documents",
+          "Health records",
+          "Bank or payment details"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "scope.priority",
+        "label": "What must be in the first version",
+        "impact": 4,
+        "level": "should",
+        "state": "missing",
+        "sufficient": "Which features define the first version and which can wait, when everything cannot fit.",
+        "aspects": [
+          "must_have",
+          "can_wait"
+        ],
+        "missing_aspects": [
+          "must_have",
+          "can_wait"
+        ],
+        "card_type": "priority",
+        "option_labels": [
+          "Must have",
+          "Nice to have",
+          "Later"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "idea.business_model",
+        "label": "How it earns money",
+        "impact": 4,
+        "level": "must",
+        "state": "satisfied",
+        "sufficient": "Who pays whom for what, where the revenue comes from, and which parts are free versus paid.",
+        "aspects": [
+          "payer",
+          "payee",
+          "revenue_source",
+          "free_vs_paid"
+        ],
+        "missing_aspects": [],
+        "card_type": "choose_one",
+        "option_labels": [
+          "A small fee on each sale or booking",
+          "A monthly or yearly plan",
+          "Free to use; the business pays for it"
+        ],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "impact": 5,
+        "level": "must",
+        "state": "satisfied",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several.",
+        "aspects": [
+          "country",
+          "city_or_region",
+          "languages",
+          "single_or_multi_city"
+        ],
+        "missing_aspects": [],
+        "card_type": "quick_form",
+        "option_labels": [],
+        "assumed_value": ""
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "impact": 5,
+        "level": "must",
+        "state": "satisfied",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change.",
+        "aspects": [
+          "role_name",
+          "top_goal",
+          "permissions"
+        ],
+        "missing_aspects": [],
+        "card_type": "pick_many",
+        "option_labels": [
+          "Customer who uses the service",
+          "Staff who handle the requests",
+          "Manager who sees reports",
+          "Partner who offers a service"
+        ],
+        "assumed_value": ""
+      }
+    ],
+    "want_min": 3,
+    "want_max": 5,
+    "group_min": 2,
+    "group_max": 3,
+    "remaining_budget": 8,
+    "focus_needs": [
+      "scope.features",
+      "data.existing_systems"
+    ],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_answer": "",
+    "missing_aspects": [],
+    "pivot_from": "",
+    "style_notes": [],
+    "next_card_n": 4
+  },
+  "output": {
+    "domain_hypothesis": {
+      "category": "",
+      "subcategory": "",
+      "business_model_candidates": [],
+      "likely_roles": [],
+      "likely_features": [],
+      "hard_parts": [],
+      "glossary_candidates": [],
+      "confidence": 0.0
+    },
+    "questions": [
+      {
+        "id": "Q-004",
+        "group_id": "G1",
+        "group_title": "Expiry and batches",
+        "intent": "learn what the tool should do when stock is close to expiry",
+        "serves": [
+          "scope.features",
+          "domain:expiry_handling"
+        ],
+        "unlocks": [
+          "Blueprint: expiry alerts and returns flow"
+        ],
+        "answer_spec": "What each feature is for and what must be in the first release",
+        "depends_on": [],
+        "priority": 1,
+        "type": "choose_one",
+        "text": "When a medicine is close to expiry, should the tool only warn the shop, or also help return it to the wholesaler?",
+        "why_we_ask": "It decides whether the first version includes a returns flow.",
+        "options": [
+          {
+            "label": "Only warn the shop",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Warn and prepare a return to the wholesaler",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Warn, and stop it being sold at the counter",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Warn and prepare a return to the wholesaler",
+        "skip_assumes": "Only warn the shop",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-005",
+        "group_id": "G1",
+        "group_title": "Expiry and batches",
+        "intent": "learn whether batch numbers are tracked for every pack",
+        "serves": [
+          "domain:batch_tracking"
+        ],
+        "unlocks": [
+          "Blueprint: stock data model"
+        ],
+        "answer_spec": "Whether batch numbers are tracked, and for which medicines",
+        "depends_on": [],
+        "priority": 2,
+        "type": "choose_one",
+        "text": "Do shops need to record batch numbers for every pack, or only for certain medicines?",
+        "why_we_ask": "Batch tracking changes how stock is entered at the counter.",
+        "options": [
+          {
+            "label": "Every pack",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Only for controlled or high-risk medicines",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Not for now",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-006",
+        "group_id": "G2",
+        "group_title": "Reordering and today's setup",
+        "intent": "learn what happens when stock runs low",
+        "serves": [
+          "integrations.wanted",
+          "domain:reorder_flow"
+        ],
+        "unlocks": [
+          "Blueprint: reorder flow",
+          "Research: wholesaler ordering tools"
+        ],
+        "answer_spec": "Which outside services to connect, and what each is for",
+        "depends_on": [],
+        "priority": 2,
+        "type": "choose_one",
+        "text": "When stock runs low, should the tool send the order to the wholesaler, or only prepare a list for the owner to send?",
+        "why_we_ask": "Sending orders directly means connecting to each wholesaler.",
+        "options": [
+          {
+            "label": "Send the order to the wholesaler directly",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Prepare a list; the owner sends it",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          },
+          {
+            "label": "Owner decides for each medicine",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Prepare a list; the owner sends it",
+        "skip_assumes": "Prepare a list; the owner sends it",
+        "followup_hint": "",
+        "examples": []
+      },
+      {
+        "id": "Q-007",
+        "group_id": "G2",
+        "group_title": "Reordering and today's setup",
+        "intent": "learn how shops keep their stock records today",
+        "serves": [
+          "data.existing_systems"
+        ],
+        "unlocks": [
+          "Blueprint: import of existing stock lists"
+        ],
+        "answer_spec": "Existing systems, spreadsheets or APIs to connect to, and what each holds",
+        "depends_on": [],
+        "priority": 2,
+        "type": "text",
+        "text": "Where do shops keep their stock list today, and in what form?",
+        "why_we_ask": "If a list already exists, the tool can start from it instead of from zero.",
+        "options": [],
+        "recommended": "",
+        "skip_assumes": "",
+        "followup_hint": "",
+        "examples": [
+          "e.g. a billing software the shop already uses",
+          "e.g. an Excel sheet",
+          "e.g. a paper register"
+        ]
+      }
+    ],
+    "covered_needs": [
+      "scope.features",
+      "integrations.wanted",
+      "data.existing_systems"
+    ],
+    "assumed_instead": [
+      {
+        "need_id": "data.sensitive",
+        "assumption": "No patient or prescription data is stored; only stock and supplier data",
+        "reason": "The tool tracks medicines, not people; shown for approval"
+      }
+    ],
+    "expert_gaps": [
+      "Return and credit-note handling with wholesalers",
+      "Price changes between purchases"
+    ],
+    "backlog": [
+      {
+        "topic": "Scheduled-drug (controlled medicine) rules",
+        "intent": "check whether any compliance records are needed",
+        "serves": [
+          "data.sensitive"
+        ]
+      }
+    ]
+  }
+}
