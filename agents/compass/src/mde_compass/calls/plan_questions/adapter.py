@@ -143,6 +143,9 @@ def _card(
         parent_card_id=request.focus.card_id if followup and request.focus else None,
         depth=request.followup_depth if followup else 0,
         origin="followup" if followup else "planner",
+        priority=max(
+            1, min(5, q.priority)
+        ),  # an ordering hint: an out-of-range value is clamped, never fatal
     )
 
 

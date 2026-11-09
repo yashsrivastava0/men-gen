@@ -247,6 +247,70 @@ async def test_the_batch_limit_of_the_validators_rejects_what_does_not_fit() -> 
     assert any("over_batch_size" in r for rej in result.rejected for r in rej.reasons)
 
 
+# ------------------------------------------------------------------------------- priority (GAP-5)
+def ranked(card: Card, priority: int) -> Card:
+    return card.model_copy(update={"priority": priority})
+
+
+def test_the_planners_priority_survives_into_the_card_so_truncation_can_use_it() -> None:
+    assert "priority" in Card.model_fields
+    assert (
+        good(2).priority == 3
+    )  # a card without one is a middle one: older cards and tests keep their order
+    stored = good(2).model_dump(mode="json")
+    stored.pop("priority")  # a card stored before the field existed still validates
+    assert Card.model_validate(stored).priority == 3
+    for bad in (0, 6):
+        with pytest.raises(ValueError):
+            Card.model_validate({**stored, "priority": bad})
+
+
+async def test_a_batch_cut_to_size_keeps_the_most_important_questions_in_the_planners_reading_order() -> (
+    None
+):
+    cards = [
+        ranked(good(2, group_id="G1"), 5),
+        ranked(good(3, group_id="G1"), 4),
+        ranked(good(4, group_id="G1"), 3),
+        ranked(good(5, group_id="G2"), 1),
+        ranked(good(6, group_id="G2"), 2),
+        ranked(good(7, group_id="G2"), 5),
+    ]
+    result = await run(StubPlanner(ok(*cards)), want=(1, 3), context=vctx(batch_limit=12))
+    assert ids(result) == [
+        "Q-004",
+        "Q-005",
+        "Q-006",
+    ]  # priorities 3, 1, 2: not the first three by order
+    assert [b.serves for b in result.batch.backlog] == [
+        ["domain:" + TOPICS[n % len(TOPICS)]] for n in (2, 3, 7)
+    ]  # what was cut waits in the backlog, in the planner's order
+    assert [g.id for g in result.batch.groups] == ["G1", "G2"]  # groups keep the planner's order
+
+
+async def test_equal_priorities_keep_the_planners_order() -> None:
+    cards = [ranked(good(n, group_id=f"G{n}"), 2) for n in range(2, 8)]
+    result = await run(StubPlanner(ok(*cards)), want=(1, 4), context=vctx(batch_limit=12))
+    assert ids(result) == ["Q-002", "Q-003", "Q-004", "Q-005"]
+
+
+async def test_the_validators_batch_limit_also_drops_the_least_important_not_the_last() -> None:
+    cards = [ranked(good(n, group_id=f"G{n // 3}"), 5 if n < 5 else 1) for n in range(2, 8)]
+    result = await run(StubPlanner(ok(*cards)), want=(1, 3), context=vctx(batch_limit=3))
+    assert ids(result) == ["Q-005", "Q-006", "Q-007"]  # the three priority 1 questions
+    cut = {r.card_id for r in result.rejected}
+    assert cut == {"Q-002", "Q-003", "Q-004"}
+    assert all("over_batch_size" in reason for r in result.rejected for reason in r.reasons)
+
+
+async def test_a_less_important_repeat_loses_to_the_more_important_one() -> None:
+    first = ranked(good(2, group_id="G1"), 5)
+    twin = ranked(good(3, group_id="G1"), 1).model_copy(update={"intent": first.intent})
+    result = await run(StubPlanner(ok(first, twin)), want=(1, 3))
+    assert ids(result) == ["Q-003"]  # the important one stays, the repeat of it is rejected
+    assert [r.card_id for r in result.rejected] == ["Q-002"]
+
+
 # ----------------------------------------------------------------------------------------- the fallback
 async def test_the_flagged_fallback_is_asked_for_only_when_nothing_survives() -> None:
     fb_card = make_card(
@@ -405,12 +469,3 @@ async def test_a_question_about_a_need_the_facts_already_satisfy_is_not_shown_as
     )
     result = await run(StubPlanner(ok(ask_again), ok(good(3))), statuses=satisfied)
     assert all(c.id != "Q-002" or c.type == "confirm" for c in result.batch.cards())
-
-
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-5: the planner's priority (1 to 5) is dropped when the wire question becomes a Card, so a batch "
-    "cut to size keeps the first questions in the planner's order, not the most important ones",
-)
-def test_the_planners_priority_survives_into_the_card_so_truncation_can_use_it() -> None:
-    assert "priority" in Card.model_fields

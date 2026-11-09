@@ -172,6 +172,34 @@ def test_to_batch_assigns_ids_letters_and_card_types() -> None:
     assert batch.assumed_instead and batch.expert_gaps and batch.backlog
 
 
+def test_the_planners_priority_reaches_the_card_and_a_wild_value_is_clamped_not_fatal() -> None:
+    raw = EXAMPLES[0]
+    out = _output(raw)
+    wire = [q.priority for q in out.questions]
+    cards = to_batch(CATALOG, out, _request(_input(raw))).cards()
+    assert [c.priority for c in cards] == wire and all(1 <= p <= 5 for p in wire)
+    wild = out.model_copy(
+        update={
+            "questions": [
+                out.questions[0].model_copy(update={"priority": 9}),
+                out.questions[1].model_copy(update={"priority": -2}),
+            ]
+        }
+    )
+    clamped = to_batch(CATALOG, wild, _request(_input(raw))).cards()
+    assert [c.priority for c in clamped] == [5, 1]
+
+
+async def test_a_flagged_fallback_card_ranks_by_the_impact_of_its_need() -> None:
+    raw = EXAMPLES[0]
+    gateway = ScriptedGateway(ProviderError("boom"))
+    result = await PlanAdapter(CallRunner(gateway), CATALOG).plan(CTX, _request(_input(raw)))
+    cards = result.batch.cards()
+    assert cards and all(
+        c.priority == max(1, min(5, 6 - CATALOG.slots[c.need_ids[0]].impact)) for c in cards
+    )
+
+
 def test_hypothesis_is_only_kept_for_the_initial_mode() -> None:
     raw = EXAMPLES[0]
     replan = to_batch(CATALOG, _output(raw), _request(_input(raw), mode="replan"))

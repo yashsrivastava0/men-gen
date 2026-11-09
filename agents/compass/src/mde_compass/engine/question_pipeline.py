@@ -12,7 +12,8 @@ The model proposes; code decides. In order:
    rejected is dropped. A canned question is never substituted silently.
 5. Only when nothing at all survives in a mode that must ask does the engine ask the planner port for its flagged
    fallback batch (counted: a fallback is a failure).
-6. The batch is cut to the wanted size; extras go to the backlog.
+6. The batch is cut to the wanted size, keeping the planner's most important questions (its priority, 1 to 5,
+   ties in the planner's own order) in the planner's reading order; extras go to the backlog.
 """
 
 from __future__ import annotations
@@ -38,7 +39,13 @@ from mde_compass.engine.ports import (
     QuestionPlanner,
     TurnContext,
 )
-from mde_compass.engine.question_validators import LedgerEntry, ValidationContext, validate_batch
+from mde_compass.engine.question_validators import (
+    LedgerEntry,
+    ValidationContext,
+    in_original_order,
+    rank_by_priority,
+    validate_batch,
+)
 
 ASKING_MODES = ("initial", "replan", "deepen")
 """Modes that must put something to the person when needs are open (follow-up and simplify may ask nothing:
@@ -119,8 +126,9 @@ async def _screen(
     """Code validators, then the auditor, on one set of cards."""
     if not cards:
         return [], []
-    code = validate_batch(cards, vctx)
-    accepted = list(code.accepted)
+    # the most important questions are judged first, so a batch that is too big loses the least important ones
+    code = validate_batch(rank_by_priority(cards), vctx)
+    accepted = in_original_order(code.accepted, cards)  # the person still reads the planner's order
     rejected = list(code.rejected)
     if not accepted:
         return [], rejected
@@ -274,7 +282,9 @@ async def plan_validated(
     )
     backlog = list(first.batch.backlog)
     if len(cards) > request.want_max:
-        for extra in cards[request.want_max :]:
+        kept = in_original_order(rank_by_priority(cards)[: request.want_max], cards)
+        kept_ids = {c.id for c in kept}
+        for extra in (c for c in cards if c.id not in kept_ids):
             backlog.append(
                 BacklogItem(
                     topic=extra.intent or extra.question,
@@ -282,7 +292,7 @@ async def plan_validated(
                     serves=list(extra.need_ids),
                 )
             )
-        cards = cards[: request.want_max]
+        cards = kept
     if (
         not cards
         and request.mode in ASKING_MODES
