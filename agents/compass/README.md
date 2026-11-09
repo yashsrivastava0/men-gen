@@ -33,7 +33,7 @@ uv run python -m mde_compass --port 8110 --memory  # in-memory store: no databas
 | `LLM_MODE=replay` | answers from cassettes; a cassette per rendered request is needed (none are recorded for Compass yet) |
 | `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1` **and** `OPENAI_API_KEY` in the process environment | live calls through the gateway. `ALLOW_LIVE_LLM=1` is the user's decision, never an agent's |
 
-The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smoke.py`, USD 0.10 allowance) is the lead's or the user's to run: `ALLOW_LIVE_LLM=1 uv run pytest agents/compass/tests/live -m live -q -s` ([runbook](../../docs/runbooks/compass.md#5-live-calls-lead-or-the-user-only)); it writes `evals/reports/live-smoke.json`. Live spend has two caps. The repo-wide USD 6.00 cap and ledger stay authoritative ([runbook](../../docs/runbooks/live-llm-budget.md)). Compass adds its own: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 2.00** (unparsable, non-positive or larger values never widen it), stop at 95% of it (1.90), per session 0.25. When a check cannot prove the spend fits, the call is not made and the deterministic fallback runs instead (fails closed). Never paste, print or commit a key; `uv run mde doctor` reports presence only.
+The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smoke.py`, USD 0.10 allowance) is the lead's or the user's to run: `uv run pytest agents/compass/tests/live -m live -q -s` (with the second key in the process environment: the user's decision) ([runbook](../../docs/runbooks/compass.md#5-live-calls-lead-or-the-user-only)); it writes `evals/reports/live-smoke.json`. Live spend has two caps. The repo-wide USD 6.00 cap and ledger stay authoritative ([runbook](../../docs/runbooks/live-llm-budget.md)). Compass adds its own: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 3.00** (unparsable, non-positive or larger values never widen it), stop at 95% of it (2.85), per session 0.50, 0.30 kept in reserve; the spend counts every `cmp.*` call in the gateway ledger, across processes (D-093). When a check cannot prove the spend fits, the call is not made and the deterministic fallback runs instead (fails closed). Never paste, print or commit a key; `uv run mde doctor` reports presence only.
 
 ## Test it
 
@@ -41,7 +41,7 @@ The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smok
 just compass-test           # uv run pytest agents/compass -m "not integration and not live" -q   (offline, no database)
 just compass-test-int       # starts the private PostgreSQL on 54329, then pytest agents/compass -m integration
 uv run pytest agents/compass                                  # everything that is not marked live
-uv run pytest agents/compass/tests/calls/write_card           # one call
+uv run pytest agents/compass/tests/calls/plan_questions      # one call
 ```
 
 Integration tests (`tests/store`) create their own ephemeral database `mde_test_compass_<ulid>` inside the private cluster. The one `live` test skips itself unless `ALLOW_LIVE_LLM=1` is in the outer environment; its offline twin (`tests/test_smoke_driver_offline.py`) keeps the driver working.
