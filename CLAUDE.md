@@ -15,27 +15,16 @@ Normative docs: product spec `docs/product/context-engine-spec.md` (rev 3; wins 
 
 Plain code controls flow. LLM calls are single, structured, schema-validated. No agent loops.
 
-## Repo map
+## Layout notes
 
-```
-apps/        context-api (FastAPI+SSE) · llm-gateway-api · cli (typer, the `mde` command)
-packages/    core · contracts · llm-gateway · prompts · content · persistence
-             discovery · research · spec-builder · spec-loader · flow
-evals/       datasets, graders, runners, in-process harness (raw reports gitignored)
-tests/       cross-package: scenarios, e2e, integration, security, live, cassettes
-scripts/     dev_db, doctor, docs_check, export_schemas, gen_prompt_catalog, simulate_frontend_consumer
-docs/        index in docs/README.md (product, architecture, specs, prompts, packages, adr, evals, runbooks, api, implementation)
-.claude/     settings, rules, agents (roster), skills, hooks
-data/        runtime, gitignored, always in the MAIN checkout: projects/ (hand-off repos), .budget/ (ledger), pg/ (private Postgres)
-```
+`data/` is runtime, gitignored, and always lives in the MAIN checkout (hand-off repos, budget ledger, private Postgres).
 
-Import names: `mde_core`, `mde_contracts`, `mde_llm_gateway`, `mde_prompts`, `mde_content`, `mde_persistence`, `mde_discovery`, `mde_research`, `mde_spec_builder`, `mde_spec_loader`, `mde_flow`, `mde_context_api`, `mde_llm_gateway_api`, `mde_cli`. Layering (import-linter enforces it; `docs/architecture/repo-layout.md` says why): contracts/core → gateway, content, persistence, spec-loader → prompts → discovery, research, spec-builder → flow → context-api, llm-gateway-api → cli. Engines never import each other (the flow wires them through ports in `mde_contracts`); only `mde_llm_gateway` imports `openai`. One package page each: `docs/packages/<name>.md`.
+Engines never import each other (the flow wires them through ports in `mde_contracts`); only `mde_llm_gateway` imports `openai`. Layering is enforced by `just layers` (`docs/architecture/repo-layout.md` says why). One package page each: `docs/packages/<name>.md`.
 
 ## Commands (all via `just`; plain `uv run ...` works too)
 
 | Command | What it does |
 | --- | --- |
-| `just bootstrap` | `uv sync --all-packages` (`just hooks` installs pre-commit) |
 | `just db-up` / `db-down` / `db-reset` | start / stop / wipe the private Postgres (port 54329); `just migrate` runs Alembic to head |
 | `just dev` | context API: `uv run python -m mde_context_api --port 8100` (the job worker runs inside) |
 | `just worker` | the job worker alone: `uv run python -m mde_context_api.worker` (start the API with `WORKER_ENABLED=0`) |
@@ -45,17 +34,12 @@ Import names: `mde_core`, `mde_contracts`, `mde_llm_gateway`, `mde_prompts`, `md
 | `just budget` / `uv run mde budget` | print live spend by scope from the ledger (read-only) |
 | `uv run mde doctor` | settings present or not (never values), database, API |
 | `uv run mde spec verify\|show\|simulate-consumer <APP_SPEC.md>` | check a spec's hash, index it, walk the build sequence like the frontend engine |
-| `just lint` / `just format` | ruff check + format check / apply fixes |
-| `just typecheck` / `just layers` | pyright / import-linter contracts |
-| `just test` | unit tests, mock mode, no DB |
 | `just test-int` / `just test-e2e` | integration / end-to-end (both start the private Postgres first) |
-| `just scan-secrets` | the secret and hygiene scans (`tests/security`) |
 | `just live-smoke` / `just live-eval BATCH` | live LLM batches L0 / L1..L4: lead or the user only, and only with the second key (rule 3; `docs/runbooks/live-llm-budget.md`) |
-| `just eval-mock` | the offline eval run (mock mode, free) |
-| `just export-schemas` | JSON Schemas + `docs/api/openapi.json` |
-| `just gen-docs` / `just docs-check` | generate prompt catalog + schemas / check the docs index, links and markdown placement |
 | `just ci-fast` | lint, typecheck, layers, unit. Keep green on `main` at all times |
 | `just ci` | everything offline: ci-fast, integration, e2e, docs-check, secret scan |
+
+Other recipes (setup, lint, format, typecheck, layers, unit tests, secret scan, eval-mock, schemas, docs checks, compass-*): `just --list`.
 
 Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.toml`; markers `integration`, `e2e`, `live`, `slow`; `--import-mode=importlib`).
 
@@ -84,7 +68,7 @@ At the start of every session or after compaction: read `docs/implementation/BRI
 
 ## Contract-change rule
 
-`mde_contracts` is frozen at v1 (tag `contracts-v1`; `CONTRACTS_VERSION` is 1.0.1 after ADR 0003). Additive changes (new optional fields, new models, new protocol methods with defaults, new `Literal` members) are made **only by the lead** and logged in `docs/implementation/DECISIONS.md` without a version bump (ADR 0011). Breaking changes need an ADR (`docs/adr/`), a version bump and every consumer updated in the same change. Anyone else who needs a contract change asks the lead in their report ("Requested contract changes"); regenerate the schemas with `just export-schemas` after any change.
+`mde_contracts` is frozen at v1 (tag `contracts-v1`): only the lead changes it; anyone else asks the lead in their report ("Requested contract changes"). Full rule (additive vs breaking, ADRs, schema export): `.claude/rules/contracts.md`.
 
 ## Subagent / worktree protocol
 
@@ -101,7 +85,3 @@ At the start of every session or after compaction: read `docs/implementation/BRI
 - **Never touch Docker Desktop state** (it is paused on purpose; other projects' containers live there). Never run `wsl --shutdown`.
 - The machine has little free RAM (about 3.7 GB): no background processes, run pyright only on your own package paths, at most 4 to 5 agents at once.
 - `.env` holds `OPENAI_API_KEY` (listed twice, harmless). To see which names exist without values: `grep -oE '^[A-Za-z_][A-Za-z0-9_]*=' .env | tr -d '='`. `uv run python scripts/doctor.py` and `uv run mde doctor` report presence only.
-
-## Docs
-
-Start at `docs/README.md`. Every behavior change updates `docs/`. Architecture: `docs/architecture/` (overview, repo-layout, security, flow-and-gates, llm-gateway, data-model). Runbooks: `docs/runbooks/` (local-dev, live-llm-budget, troubleshooting). ADR template: `docs/adr/TEMPLATE.md`. Decision log: `docs/implementation/DECISIONS.md`. Progress: `docs/implementation/PROGRESS.md`.
