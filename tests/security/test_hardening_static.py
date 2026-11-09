@@ -2,7 +2,7 @@
 
 * Source never uses ``yaml.load``, ``pickle`` and friends, builtin ``compile``, a non-sandboxed
   jinja2 ``Environment``, ``shell=True``, ``os.system``/``os.popen`` or ``subprocess`` with a string
-  command (``packages/*/src``, ``apps/*/src``, ``scripts``). A justified exception carries the marker
+  command (``packages/*/src``, ``apps/*/src``, ``agents/*/src``, ``scripts``). A justified exception carries the marker
   comment ``# hardening: allow <reason>`` on a line of the call.
 * ``.claude/hooks/guard_live.py`` blocks the obvious and the obfuscated ways of turning live LLM mode
   on, for both the Bash and the PowerShell tool, and still lets the lead's live batches through.
@@ -121,7 +121,12 @@ def scan_source(source: str, rel: str = "<memory>") -> list[str]:
 
 
 def _scanned_files() -> list[Path]:
-    roots = [*ROOT.glob("packages/*/src"), *ROOT.glob("apps/*/src"), ROOT / "scripts"]
+    roots = [
+        *ROOT.glob("packages/*/src"),
+        *ROOT.glob("apps/*/src"),
+        *ROOT.glob("agents/*/src"),
+        ROOT / "scripts",
+    ]
     return sorted(p for r in roots if r.is_dir() for p in r.rglob("*.py"))
 
 

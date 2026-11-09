@@ -147,7 +147,7 @@ def test_actual_env_secrets_never_appear_in_repo_files() -> None:
 
 
 def _python_sources() -> list[Path]:
-    roots = [*ROOT.glob("packages/*/src"), *ROOT.glob("apps/*/src")]
+    roots = [*ROOT.glob("packages/*/src"), *ROOT.glob("apps/*/src"), *ROOT.glob("agents/*/src")]
     return [p for r in roots for p in r.rglob("*.py")]
 
 
@@ -201,6 +201,7 @@ def test_no_agent_framework_dependencies_declared() -> None:
         ROOT / "pyproject.toml",
         *ROOT.glob("packages/*/pyproject.toml"),
         *ROOT.glob("apps/*/pyproject.toml"),
+        *ROOT.glob("agents/*/pyproject.toml"),
     ]
     for pyproject in projects:
         data = tomllib.loads(pyproject.read_text(encoding="utf-8"))

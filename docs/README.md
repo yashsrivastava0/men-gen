@@ -37,7 +37,7 @@ Start with [../CLAUDE.md](../CLAUDE.md) (commands, hard rules) and [../README.md
 
 Libraries: [core](packages/core.md), [contracts](packages/contracts.md), [llm-gateway](packages/llm-gateway.md), [prompts](packages/prompts.md), [content](packages/content.md), [persistence](packages/persistence.md), [spec-loader](packages/spec-loader.md), [discovery](packages/discovery.md), [research](packages/research.md), [spec-builder](packages/spec-builder.md), [flow](packages/flow.md).
 
-Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gateway-api.md), [cli](packages/cli.md), [compass](packages/compass.md) (the Compass agent: Brief, calls, catalog, API, test UI; also [packages/compass/README.md](../packages/compass/README.md)).
+Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gateway-api.md), [cli](packages/cli.md), [compass](packages/compass.md) (the Compass agent: Brief, calls, catalog, API, test UI; also [packages/compass/README.md](../agents/compass/README.md)).
 
 ## ADRs
 

@@ -3,6 +3,7 @@ paths:
   - "tests/**"
   - "packages/*/tests/**"
   - "apps/*/tests/**"
+  - "agents/*/tests/**"
   - "evals/**"
 ---
 

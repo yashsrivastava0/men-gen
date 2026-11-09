@@ -647,7 +647,7 @@ requires-dist = [
 [[package]]
 name = "mde-compass"
 version = "0.1.0"
-source = { editable = "packages/compass" }
+source = { editable = "agents/compass" }
 dependencies = [
     { name = "alembic" },
     { name = "fastapi" },
@@ -1029,7 +1029,7 @@ dev = [
 [package.metadata]
 requires-dist = [
     { name = "mde-cli", editable = "apps/cli" },
-    { name = "mde-compass", editable = "packages/compass" },
+    { name = "mde-compass", editable = "agents/compass" },
     { name = "mde-content", editable = "packages/content" },
     { name = "mde-context-api", editable = "apps/context-api" },
     { name = "mde-contracts", editable = "packages/contracts" },

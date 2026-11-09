@@ -45,10 +45,10 @@ compass-migrate:
     uv run python -m mde_compass.store.migrate
 
 compass-test:
-    uv run pytest packages/compass -m "not integration and not live" -q
+    uv run pytest agents/compass -m "not integration and not live" -q
 
 compass-test-int: db-up
-    uv run pytest packages/compass -m integration -q
+    uv run pytest agents/compass -m integration -q
 
 # --- quality --------------------------------------------------------------
 lint:
