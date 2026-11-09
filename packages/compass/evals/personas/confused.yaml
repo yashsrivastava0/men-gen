@@ -1,0 +1,14 @@
+id: PERSONA-confused
+title: Does not know what they want, asks what things mean, finally describes a small idea
+persona: {kind: confused}
+steps:
+  - say: "hi"
+  - say: "I don't know what I want"
+  - say: "what do you mean by kind of app?"
+  - say: "?"
+  - say: "ok maybe a small app for my tuition classes in Jaipur, for students and parents"
+  - tap_recommended: true
+  - say: "what does that mean?"
+  - drive: {mode: you_decide}
+  - accept_all: true
+  - approve: true

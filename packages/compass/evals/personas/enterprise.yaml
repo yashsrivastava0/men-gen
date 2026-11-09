@@ -1,0 +1,18 @@
+id: PERSONA-enterprise
+title: Enterprise stakeholders disagree on a slot and the approver signs off
+persona: {kind: enterprise}
+mode: enterprise
+contributors:
+  - {id: priya, name: Priya (operations), role: requester}
+  - {id: rahul, name: Rahul (sales), role: requester}
+steps:
+  - say: "We need an internal field service app for our technicians in Pune. About 200 employees across 4 branches."
+    as: priya
+  - say: "The app should be in English"
+    as: priya
+  - say: "No, the app must be in Hindi only"
+    as: rahul
+  - drive: {}
+  - accept_all: true
+  - approve: true
+    as: approver

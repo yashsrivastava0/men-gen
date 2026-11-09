@@ -1,0 +1,13 @@
+id: SB-IV-04-b
+title: A vague start still ends in a Brief that can be approved after the assumption decisions
+tags: [interview, vague, gate]
+known_issue: BUG-19
+known_issue_note: "idea.subcategory is a required slot but no card writes it (the confirm_kind_of_app options set only idea.category) and the hypothesis has none when the first message is vague, so the review opens with 'required answers are still empty: idea.subcategory' and the follow-up re-asks the same frame to no effect"
+steps:
+  - say: "I want an app"
+  - say: "I run a small saree shop in Surat and want my customers to order from their phone"
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+  - accept_all: true
+    expect:
+      approvable: true

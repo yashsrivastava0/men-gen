@@ -1,0 +1,10 @@
+id: PERSONA-voice
+title: Dictates long run-on sentences by voice
+persona: {kind: voice}
+steps:
+  - say_voice: "so i want an app for my clinic in pune where patients can book appointments and doctors can see their schedule and also pay online and get reminders on whatsapp and hindi and english both"
+  - tap_recommended: true
+  - say_voice: "the clinic is called Sharma Care and we have 25 doctors and they work in two shifts"
+  - drive: {}
+  - accept_all: true
+  - approve: true
