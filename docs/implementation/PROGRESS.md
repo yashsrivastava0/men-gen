@@ -153,7 +153,7 @@ Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompt
 Owner's list: a detailed, correct Brief; one batch at a time answered and submitted ONCE; tiers 7 (hard max 10) / 12 / 25+ chosen first; a reserved last question; multi-select plus custom input; faster generation; per-question and "decide the rest" auto-answer; enterprise documents; user changes; front end. Speed first, cost not a concern, USD 3.00 ceiling. Tags `compass/v2-p<n>`; safe point `pre/compass-v2-20261109-2226`. No push.
 
 - [x] P0. Follow-up fixes landed and merged (390c9e6): BUG-27, defaults at stop, settled-assumption notice, label codes, BUG-28, BUG-22, GAP-5, GAP-1 partial; offline 2641 passed / 11 xfailed, integration 77, security 220
-- [ ] P1. Interface freeze (Room, tiers, closing mode, wire fields, `DomainFact.kind/refs`, `plan_compute`/`plan_apply`)
+- [x] P1. Interface freeze (eeedcde, tag `compass/v2-p1`): `Room`, hard caps, closing card origin + call mode (stored as replan), wire fields, `DomainFact.kind/refs` (hash-stable), decide port, ADR 0016; `plan_compute`/`plan_apply` moves to P3
 - [ ] P2. Engine: tier-first, budget charged when planned, submit-once, closing question
 - [ ] P3. Latency: parallel idea turn, planner prefetch, audit policy, slim planner, gateway limits, read-preview
 - [ ] P4. Auto-answer: you-decide order, `cmp.decide_answers`, decide the rest
