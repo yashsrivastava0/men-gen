@@ -1,0 +1,111 @@
+{
+  "name": "hi_pharmacy_stock",
+  "input": {
+    "language": "hi",
+    "project_card": "आइडिया (उपयोगकर्ता के शब्दों में): जयपुर में दवा की दुकानों के लिए स्टॉक का टूल, जिसमें एक्सपायरी की चेतावनी और थोक विक्रेता को ऑर्डर शामिल हो।\nश्रेणी: दवा दुकान का स्टॉक। भाषा: hi।",
+    "fact_digest": "FCT-001 [context|location] दुकानें जयपुर में हैं\nFCT-002 [requirement|expiry] टूल को एक्सपायरी की चेतावनी देनी है\nFCT-003 [role|users] मालिक और एक सहायक इसे चलाते हैं",
+    "hypothesis": "छोटी दवा दुकानें, मालिक और काउंटर स्टाफ़; थोक विक्रेता से हफ़्ते में दो बार ऑर्डर।",
+    "items": [
+      {
+        "card_id": "Q-003",
+        "question": "जब दवा की एक्सपायरी पास हो, तो टूल सिर्फ़ चेतावनी दे या थोक विक्रेता को वापसी भी तैयार करे?",
+        "card_type": "choose_one",
+        "needs": [
+          "scope.features",
+          "domain:expiry_handling"
+        ],
+        "answer_spec": "एक्सपायरी पर टूल क्या करे",
+        "options": [
+          {
+            "id": "A",
+            "label": "सिर्फ़ चेतावनी दे",
+            "basis": "suggestion"
+          },
+          {
+            "id": "B",
+            "label": "चेतावनी दे और वापसी तैयार करे",
+            "basis": "typical"
+          },
+          {
+            "id": "C",
+            "label": "चेतावनी दे और काउंटर पर बिक्री रोके",
+            "basis": "suggestion"
+          }
+        ],
+        "recommended_id": "",
+        "must_confirm": false
+      },
+      {
+        "card_id": "Q-004",
+        "question": "पहले संस्करण में सबसे ज़रूरी क्या है?",
+        "card_type": "priority",
+        "needs": [
+          "scope.priority",
+          "goals.primary"
+        ],
+        "answer_spec": "पहले संस्करण की प्राथमिकताएँ",
+        "options": [
+          {
+            "id": "A",
+            "label": "एक्सपायरी की चेतावनी",
+            "basis": "your_words"
+          },
+          {
+            "id": "B",
+            "label": "थोक विक्रेता को ऑर्डर",
+            "basis": "your_words"
+          },
+          {
+            "id": "C",
+            "label": "बैच नंबर दर्ज करना",
+            "basis": "suggestion"
+          }
+        ],
+        "recommended_id": "",
+        "must_confirm": false
+      },
+      {
+        "card_id": "Q-005",
+        "question": "दुकान का मौजूदा स्टॉक आज कहाँ दर्ज रहता है?",
+        "card_type": "open_prompt",
+        "needs": [
+          "data.existing_systems"
+        ],
+        "answer_spec": "स्टॉक की मौजूदा सूची कहाँ और किस रूप में है",
+        "options": [],
+        "recommended_id": "",
+        "must_confirm": false
+      }
+    ]
+  },
+  "output": {
+    "decisions": [
+      {
+        "card_id": "Q-003",
+        "option_ids": [
+          "B"
+        ],
+        "answer_text": "",
+        "rationale": "अक्सर दुकानें वापसी तैयार करवाना चाहती हैं; आप बदल सकते हैं",
+        "confidence": 0.6
+      },
+      {
+        "card_id": "Q-004",
+        "option_ids": [
+          "A",
+          "B"
+        ],
+        "answer_text": "",
+        "rationale": "आपने इन्हीं दोनों का ज़िक्र किया है",
+        "confidence": 0.8
+      },
+      {
+        "card_id": "Q-005",
+        "option_ids": [],
+        "answer_text": "कॉपी या रजिस्टर में हाथ से लिखा स्टॉक",
+        "rationale": "छोटी दुकानों में आम तरीका; ज़रूरत हो तो सुधार दें",
+        "confidence": 0.4
+      }
+    ]
+  }
+}

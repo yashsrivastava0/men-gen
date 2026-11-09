@@ -1,0 +1,116 @@
+{
+  "name": "hinglish_kids_learning",
+  "input": {
+    "language": "hi-Latn",
+    "project_card": "Idea (user ke shabdon mein): 5 se 10 saal ke bachchon ke liye language-learning app, jo parents ke phone par chale.\nCategory: bachchon ki shiksha. Bhasha: hi-Latn.",
+    "fact_digest": "FCT-001 [audience|children] App 5 se 10 saal ke bachchon ke liye hai\nFCT-002 [context|device] Yeh parents ke phone par chalega",
+    "hypothesis": "Chhote khel jaise lessons, parents ka progress view; ads aur chat se door.",
+    "items": [
+      {
+        "card_id": "Q-002",
+        "question": "Bachchon ke liye app mein kya koi ad ya baahar ke links honge?",
+        "card_type": "choose_one",
+        "needs": [
+          "data.sensitive",
+          "domain:child_safety"
+        ],
+        "answer_spec": "Ads aur links ki policy",
+        "options": [
+          {
+            "id": "A",
+            "label": "Koi ad ya link nahi",
+            "basis": "typical"
+          },
+          {
+            "id": "B",
+            "label": "Sirf parents ke hisse mein",
+            "basis": "suggestion"
+          },
+          {
+            "id": "C",
+            "label": "Abhi tay nahi kiya",
+            "basis": "suggestion"
+          }
+        ],
+        "recommended_id": "A",
+        "must_confirm": true
+      },
+      {
+        "card_id": "Q-003",
+        "question": "Parents ko progress mein kya dikhna chahiye?",
+        "card_type": "pick_many",
+        "needs": [
+          "scope.features",
+          "domain:parent_view"
+        ],
+        "answer_spec": "Parents ka progress view",
+        "options": [
+          {
+            "id": "A",
+            "label": "Kitna waqt khela",
+            "basis": "suggestion"
+          },
+          {
+            "id": "B",
+            "label": "Kya seekha",
+            "basis": "typical"
+          },
+          {
+            "id": "C",
+            "label": "Kahan atka",
+            "basis": "typical"
+          },
+          {
+            "id": "D",
+            "label": "Hafte ka summary",
+            "basis": "suggestion"
+          }
+        ],
+        "recommended_id": "",
+        "must_confirm": false
+      },
+      {
+        "card_id": "Q-004",
+        "question": "Ek lesson ke baad bachche ko kya milna chahiye?",
+        "card_type": "open_prompt",
+        "needs": [
+          "domain:rewards"
+        ],
+        "answer_spec": "Lesson ke baad ka inaam",
+        "options": [],
+        "recommended_id": "",
+        "must_confirm": false
+      }
+    ]
+  },
+  "output": {
+    "decisions": [
+      {
+        "card_id": "Q-002",
+        "option_ids": [
+          "A"
+        ],
+        "answer_text": "",
+        "rationale": "Bachchon ke liye sabse surakshit; kripya confirm kar lein",
+        "confidence": 0.3
+      },
+      {
+        "card_id": "Q-003",
+        "option_ids": [
+          "B",
+          "C"
+        ],
+        "answer_text": "",
+        "rationale": "Parents ko seekha hua aur atka hua hissa sabse kaam ka lagta hai",
+        "confidence": 0.6
+      },
+      {
+        "card_id": "Q-004",
+        "option_ids": [],
+        "answer_text": "Chhote sitare ya sticker",
+        "rationale": "Bachchon ke apps mein aam aur kam kharche ka tareeqa",
+        "confidence": 0.5
+      }
+    ]
+  }
+}

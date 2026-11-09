@@ -491,6 +491,7 @@ class QuestionAuditor(Protocol):
 class DecideOption(Strict):
     id: str
     label: str
+    basis: str = ""  # the option's basis (typical, your_words, ...): the deterministic choice prefers "typical"
 
 
 class DecideItem(Strict):
