@@ -8,12 +8,15 @@ environment) plus ``OPENAI_API_KEY``; the Compass cap (``COMPASS_LIVE_BUDGET_USD
 
 from __future__ import annotations
 
+import os
+from dataclasses import replace
+
 from mde_compass import AGENT_NAME
 from mde_compass.budget import CompassBudget
 from mde_compass.calls.base import CallRunner
 from mde_compass.calls.registry import all_specs, build_ports
 from mde_compass.catalog import load_catalog
-from mde_compass.config import DEFAULT_CONFIG, load_budget_policy
+from mde_compass.config import DEFAULT_CONFIG, CompassConfig, load_budget_policy
 from mde_compass.engine.handoff import LoggingHandoff
 from mde_compass.engine.service import Service
 from mde_core.clock import Clock, SystemClock
@@ -26,6 +29,16 @@ from mde_llm_gateway import (
 )
 
 
+def resolve_config(config: CompassConfig | None = None) -> CompassConfig:
+    """The given config, or the default; ``COMPASS_INTERVIEW_ENGINE`` (``legacy`` or ``planner``) overrides which
+    question engine runs, so the AI-planned interview can be tried before it becomes the default."""
+    cfg = config or DEFAULT_CONFIG
+    engine = os.environ.get("COMPASS_INTERVIEW_ENGINE", "").strip().lower()
+    if engine in ("legacy", "planner"):
+        cfg = replace(cfg, interview=replace(cfg.interview, engine=engine))  # type: ignore[arg-type]
+    return cfg
+
+
 def build_service(
     *,
     memory: bool = False,
@@ -33,6 +46,7 @@ def build_service(
     settings: Settings | None = None,
     clock: Clock | None = None,
     migrate: bool = True,
+    compass_config: CompassConfig | None = None,
 ) -> Service:
     """``memory=True`` uses the in-memory store (no database); otherwise PostgreSQL (migrated on start)."""
     the_clock = clock or SystemClock()
@@ -74,7 +88,7 @@ def build_service(
         budget=budget,
         handoff=LoggingHandoff(),
         clock=the_clock,
-        config=DEFAULT_CONFIG,
+        config=resolve_config(compass_config),
         mode_label=mode,
     )
     runner = CallRunner(gateway, clock=the_clock, guard=budget, sink=service.log_call)

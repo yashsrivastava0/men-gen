@@ -596,8 +596,42 @@ def _dedupe(issues: Iterable[Issue]) -> list[Issue]:
     return out
 
 
+MOCK_TAG = "[mock]"
+
+
+def _untag(text: str) -> str:
+    return text.replace(MOCK_TAG, "").strip()
+
+
+def untagged(card: Card) -> Card:
+    """The card without the ``[mock]`` label. Mock mode labels every question so a canned session is never taken
+    for the product; the label stays on the card the person sees, but the rules judge the real wording."""
+    if MOCK_TAG not in card.model_dump_json():
+        return card
+    return card.model_copy(
+        update={
+            "question": _untag(card.question),
+            "why_we_ask": _untag(card.why_we_ask),
+            "intent": _untag(card.intent),
+            "unlocks": [_untag(u) for u in card.unlocks],
+            "examples": [_untag(e) for e in card.examples],
+            "options": [
+                o.model_copy(
+                    update={
+                        "label": _untag(o.label),
+                        "reason": _untag(o.reason),
+                        "description": _untag(o.description),
+                    }
+                )
+                for o in card.options
+            ],
+        }
+    )
+
+
 def validate_question(card: Card, ctx: ValidationContext) -> list[Issue]:
     """Every issue found on one question (empty means it may be shown). Does not look at batch size."""
+    card = untagged(card)
     issues = [
         *_check_basics(card, ctx),
         *_check_project_term(card, ctx),

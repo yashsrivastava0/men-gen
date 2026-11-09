@@ -199,7 +199,9 @@ def test_interview_policy_budgets_and_defaults() -> None:
     assert [policy.budget_max(b) for b in ("quick", "standard", "thorough")] == [5, 12, 25]
     assert InterviewPolicy(engine="planner").engine == "planner"
     assert 0 < policy.followup_max_fraction < 1 and policy.followup_max_depth == 2
-    assert CompassConfig().context.fact_digest == 6000
+    assert (
+        CompassConfig().context.fact_digest * 4 < 20_000
+    )  # under the gateway's untrusted-input cap
 
 
 def test_fact_records_which_need_aspects_it_covers() -> None:

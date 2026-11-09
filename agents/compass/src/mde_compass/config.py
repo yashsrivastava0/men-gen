@@ -155,7 +155,9 @@ class ContextBudgets:
     Tokens are estimated as characters / ``chars_per_token`` (no tokenizer dependency); measure and adjust."""
 
     project_card: int = 1500
-    fact_digest: int = 6000
+    fact_digest: int = (
+        4500  # tokens; 4500 * 4 chars stays under the gateway's 20,000-char cap on untrusted input
+    )
     needs_table: int = 2000
     asked_list: int = 1500
     last_qa: int = 1500

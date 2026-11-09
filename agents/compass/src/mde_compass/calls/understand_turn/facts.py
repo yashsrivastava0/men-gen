@@ -234,8 +234,9 @@ def facts_for_turn(
 def _focus_fact(
     slot: SlotDef | None, label: str, said: str, quote: str, aspects: list[str]
 ) -> FactWire:
-    """A fact for the focus question when no slot update covers it: the user's words under the need's label,
-    with no effect (nothing is invented about the slot's value)."""
+    """A fact for the focus question when no slot update covers it: the user's words under the need's label.
+    For a free-text need (``text`` or ``text_list``) the words ARE the slot's value, so the fact carries that
+    effect and the need can be satisfied; for any other kind nothing is invented about the value (no effect)."""
     ftype: FactType = "requirement"
     topics = [slot.group] if slot is not None else ["domain"]
     if slot is not None:
@@ -249,6 +250,19 @@ def _focus_fact(
         consumers=[str(c) for c in slot.consumers] if slot is not None else [],
         confidence=0.6,
         aspects=aspects,
-        effects=[],
+        effects=_words_effect(slot, said) if aspects else [],
         corrects="",
     )
+
+
+def _words_effect(slot: SlotDef | None, said: str) -> list[EffectWire]:
+    """The user's own words as the value of a free-text slot (only when the answer covered the need)."""
+    if slot is None or slot.value_schema.kind not in ("text", "text_list"):
+        return []
+    words = said.strip()[:MAX_FACT_QUOTE]
+    if not words:
+        return []
+    value: Any = [words] if slot.value_schema.kind == "text_list" else words
+    return [
+        EffectWire(slot_id=slot.id, value_json=json.dumps(value, ensure_ascii=False), mode="set")
+    ]

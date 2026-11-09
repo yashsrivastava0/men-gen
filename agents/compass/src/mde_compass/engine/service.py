@@ -36,6 +36,7 @@ from mde_compass.domain import (
     ChangeSet,
     Contributor,
     DiscoveryPlan,
+    DomainHypothesis,
     OpenQuestion,
     PatchOp,
     Provenance,
@@ -54,6 +55,7 @@ from mde_compass.domain.common import ProvenanceType
 from mde_compass.domain.events import (
     AssistantMessage,
     AssumptionDecision,
+    BatchAnswer,
     BriefApproved,
     BriefEdit,
     BriefFeedback,
@@ -91,6 +93,7 @@ from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
 from mde_compass.engine.flows.hooks import FlowHooks
+from mde_compass.engine.interview import AnswerItem, InterviewController
 from mde_compass.engine.interview_state import InterviewMemory
 from mde_compass.engine.language import detect_language
 from mde_compass.engine.ports import (
@@ -324,6 +327,7 @@ class Service(FlowHooks):
         self._pending_uploads: dict[str, tuple[str, bytes]] = {}
         self.url_resolver: Any = None  # tests inject; None means the production resolver
         self.url_fetcher: Any = None
+        self.interview = InterviewController(self)
 
     def bind_ports(self, ports: Ports) -> None:
         self.ports = ports
@@ -413,28 +417,48 @@ class Service(FlowHooks):
         try:
             lock = self._locks.setdefault(session_id, asyncio.Lock())
             async with lock:
-                event = self._sanitize(event)
-                async with self.store.begin(caller.tenant_id) as uow:
-                    session = await uow.sessions.get(session_id)
-                    fresh = await uow.events.record_inbound(
-                        session_id, event.event_id, event.type, event.model_dump(mode="json")
-                    )
-                    if not fresh:
-                        return TurnResult(accepted=True, duplicate=True)
-                    if not await uow.sessions.try_begin_turn(session_id):
-                        raise Conflict("a turn is already running for this session")
-                    seq_before = session.outbound_seq
-                try:
-                    try:
-                        await self._process(caller, session_id, event)
-                    except (NotFound, Conflict, TenantViolation):
-                        raise
-                    except Exception as exc:
-                        log.exception("compass_turn_failed", session=session_id, inbound=event.type)
-                        await self._emit_error(caller.tenant_id, session_id, event.event_id, exc)
-                finally:
+                queue: list[InboundEvent] = [self._sanitize(event)]
+                seq_before = 0
+                first = True
+                # A turn can end by asking for an internal follow-up turn (round 0: the playback card is shown
+                # and committed, then the first batch is planned), so the person reads while the planner works.
+                while queue:
+                    current = queue.pop(0)
                     async with self.store.begin(caller.tenant_id) as uow:
-                        await uow.sessions.end_turn(session_id)
+                        session = await uow.sessions.get(session_id)
+                        fresh = await uow.events.record_inbound(
+                            session_id,
+                            current.event_id,
+                            current.type,
+                            current.model_dump(mode="json"),
+                        )
+                        if not fresh:
+                            if first:
+                                return TurnResult(accepted=True, duplicate=True)
+                            continue
+                        if not await uow.sessions.try_begin_turn(session_id):
+                            raise Conflict("a turn is already running for this session")
+                        if first:
+                            seq_before = session.outbound_seq
+                    follow: InboundEvent | None = None
+                    try:
+                        try:
+                            follow = await self._process(caller, session_id, current)
+                        except (NotFound, Conflict, TenantViolation):
+                            raise
+                        except Exception as exc:
+                            log.exception(
+                                "compass_turn_failed", session=session_id, inbound=current.type
+                            )
+                            await self._emit_error(
+                                caller.tenant_id, session_id, current.event_id, exc
+                            )
+                    finally:
+                        async with self.store.begin(caller.tenant_id) as uow:
+                            await uow.sessions.end_turn(session_id)
+                    if follow is not None:
+                        queue.append(follow)
+                    first = False
                 async with self.store.begin(caller.tenant_id) as uow:
                     produced = await uow.events.list_outbound(session_id, after_seq=seq_before)
                 return TurnResult(accepted=True, events=produced)
@@ -462,7 +486,9 @@ class Service(FlowHooks):
             )
 
     # ------------------------------------------------------------------ the three-phase turn
-    async def _process(self, caller: Caller, session_id: str, event: InboundEvent) -> None:
+    async def _process(
+        self, caller: Caller, session_id: str, event: InboundEvent
+    ) -> InboundEvent | None:
         turn = await self._load(caller.tenant_id, session_id, event)
         if isinstance(event, UserMessage):
             await self._on_user_message(turn, event)
@@ -492,7 +518,10 @@ class Service(FlowHooks):
             await self._on_upload_added(turn, event)
         elif isinstance(event, LinkAdded):
             await self._on_link_added(turn, event)
+        elif isinstance(event, BatchAnswer):
+            await self._on_batch_answer(turn, event)
         await self._commit(turn)
+        return cast("InboundEvent | None", turn.internal)
 
     async def _load(self, tenant: str, session_id: str, event: InboundEvent) -> _Turn:
         async with self.store.begin(tenant) as uow:
@@ -539,7 +568,11 @@ class Service(FlowHooks):
     async def _commit(self, turn: _Turn) -> None:
         sid = turn.session.id
         new_hash = brief_hash(turn.brief)
-        changed = new_hash != turn.rec.hash
+        # The interview audit block is outside the hash by design, but a change to it (the presentation mode,
+        # counts) must still be saved, so it also counts as a change here.
+        changed = (
+            new_hash != turn.rec.hash or turn.brief.meta.interview != turn.rec.brief.meta.interview
+        )
         async with self.store.begin(turn.tenant) as uow:
             version = turn.rec.version
             if changed:
@@ -778,7 +811,12 @@ class Service(FlowHooks):
         if await self._flow_voice_remove(turn, text):
             return
         ctx = self._ctx(turn)
-        understood = await self.ports.understander.understand(ctx, text, input_mode=ev.input_mode)
+        if self.interview.active:
+            understood = await self.interview.understand_text(turn, text, ev.input_mode)
+        else:
+            understood = await self.ports.understander.understand(
+                ctx, text, input_mode=ev.input_mode
+            )
         if understood.language in self.config.supported_languages and not text.isascii():
             turn.lang = understood.language
         # During the interview a change cue with an extracted value is a plain correction (the latest explicit
@@ -804,9 +842,12 @@ class Service(FlowHooks):
             turn.say(self._t(turn, "fallback.unsafe_decline"))
             return
         first = not has_draft
-        applied = self._write_updates(
-            turn, self._flow_filter_updates(understood.slot_updates), text
-        )
+        if self.interview.active:
+            applied = await self.interview.on_text(turn, understood, text, ev.input_mode)
+        else:
+            applied = self._write_updates(
+                turn, self._flow_filter_updates(understood.slot_updates), text
+            )
         if first and not turn.slots.filled("idea.summary") and len(text.strip()) >= 3:
             turn.slots.write(
                 "idea.summary", text.strip()[:IDEA_CHARS], state="volunteered",
@@ -882,8 +923,12 @@ class Service(FlowHooks):
             "standard": self.config.questions.standard_target,
             "large": self.config.questions.hard_cap,
         }[depth]
+        prior = turn.brief.meta.plan  # a depth the person chose before the idea (budget_*) is kept
         turn.brief.meta.plan = DiscoveryPlan(
-            depth=depth, question_budget=budget, minimum_viable=profile.urgency == "just_build"
+            depth=depth,
+            question_budget=budget,
+            minimum_viable=profile.urgency == "just_build",
+            interview_budget=prior.interview_budget if prior is not None else None,
         )  # type: ignore[arg-type]
         turn.brief.meta.depth_profile = depth
         turn.brief.meta.hypothesis = situation.hypothesis
@@ -930,10 +975,20 @@ class Service(FlowHooks):
 
     async def _advance(self, turn: _Turn) -> None:
         if turn.state in ("WELCOME", "INTAKE", "UNDERSTANDING", "PLAYBACK", "INTERVIEWING"):
-            if await self._ask_next(turn) or await self._ask_missing_must(turn):
+            if self.interview.active:
+                outcome = await self.interview.next_question(turn)
+                if outcome == "asked":
+                    turn.state = "INTERVIEWING"
+                    return
+                if outcome == "scheduled":  # round 0 continues in an internal turn
+                    return
+                self._assume_required(turn)  # what is still open becomes a visible assumption
+                self._go(turn, "queue_empty", "SEEDING")
+            elif await self._ask_next(turn) or await self._ask_missing_must(turn):
                 turn.state = "INTERVIEWING"
                 return
-            self._go(turn, "queue_empty", "SEEDING")
+            else:
+                self._go(turn, "queue_empty", "SEEDING")
         if turn.state == "SEEDING":
             await self._seed(turn)
             self._go(turn, "research_seeded", "PROBING")
@@ -984,41 +1039,85 @@ class Service(FlowHooks):
                 break
         self._rebuild(turn)
 
+    def _assume_slot(self, turn: _Turn, sid: str, *, ref: str = "express") -> bool:
+        """Assume a value for one slot (catalog default, else the hypothesis, else the first typical option) and
+        list it in "We assumed". Never overwrites what the person said; never Locked."""
+        sd = self.catalog.slots[sid]
+        hyp = turn.brief.meta.hypothesis
+        value: JsonValue = cast(JsonValue, sd.default)
+        if value is None and hyp is not None:
+            if sid == "idea.business_model" and hyp.business_model_candidates:
+                value = hyp.business_model_candidates[0]
+            elif sid == "scope.features":
+                feats = [f for f in hyp.likely_features if not f.custom][:3]
+                value = (
+                    cast(JsonValue, [{"name": f.name, "intent": f.intent} for f in feats]) or None
+                )
+        if value is None and sd.fallback_card.options:
+            first = sd.fallback_card.options[0]
+            if first.value is not None:
+                value = (
+                    [first.value]
+                    if sd.value_schema.kind in ("enum_list", "text_list")
+                    else first.value
+                )
+                value = self._label_codes(sid, value, turn.lang)
+        if value is None or value == []:
+            return False
+        res = turn.slots.write(
+            sid,
+            value,
+            state="assumed",
+            provenance=Provenance(type="pattern", ref=f"{ref}:{sid}", date=self.clock.now()),
+            confidence=0.4,
+            turn_id=turn.turn_id,
+        )
+        return bool(res.applied)
+
+    def _assume_need(self, turn: _Turn, need_id: str) -> None:
+        """A vague answer the person did not sharpen, or "You decide": assume visibly (a chip), do not nag."""
+        if (
+            need_id in self.catalog.slots
+            and not turn.slots.filled(need_id)
+            and self._assume_slot(turn, need_id, ref="interview")
+        ):
+            turn.notice(
+                "assumed",
+                self._t(turn, "card.assumed_collapsed", value=self._label(turn, need_id)),
+            )
+
+    def _merge_hypothesis(self, turn: _Turn, hyp: DomainHypothesis) -> None:
+        """The planner's domain hypothesis refines the one ``situate`` made: non-empty fields win, lists merge."""
+        cur = turn.brief.meta.hypothesis
+        if cur is None:
+            turn.brief.meta.hypothesis = hyp
+            return
+
+        def merge(a: list[str], b: list[str]) -> list[str]:
+            return list(dict.fromkeys([*a, *b]))
+
+        seen = {f.name.casefold() for f in cur.likely_features}
+        turn.brief.meta.hypothesis = cur.model_copy(
+            update={
+                "category": hyp.category or cur.category,
+                "subcategory": hyp.subcategory or cur.subcategory,
+                "business_model_candidates": merge(
+                    cur.business_model_candidates, hyp.business_model_candidates
+                ),
+                "likely_roles": merge(cur.likely_roles, hyp.likely_roles),
+                "likely_features": [
+                    *cur.likely_features,
+                    *(f for f in hyp.likely_features if f.name.casefold() not in seen),
+                ],
+                "hard_parts": merge(cur.hard_parts, hyp.hard_parts),
+                "confidence": max(cur.confidence, hyp.confidence),
+            }
+        )
+
     def _assume_required_once(self, turn: _Turn) -> int:
         written = 0
-        hyp = turn.brief.meta.hypothesis
         for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
-            sd = self.catalog.slots[sid]
-            value: JsonValue = cast(JsonValue, sd.default)
-            if value is None and hyp is not None:
-                if sid == "idea.business_model" and hyp.business_model_candidates:
-                    value = hyp.business_model_candidates[0]
-                elif sid == "scope.features":
-                    feats = [f for f in hyp.likely_features if not f.custom][:3]
-                    value = (
-                        cast(JsonValue, [{"name": f.name, "intent": f.intent} for f in feats])
-                        or None
-                    )
-            if value is None and sd.fallback_card.options:
-                first = sd.fallback_card.options[0]
-                if first.value is not None:
-                    value = (
-                        [first.value]
-                        if sd.value_schema.kind in ("enum_list", "text_list")
-                        else first.value
-                    )
-                    value = self._label_codes(sid, value, turn.lang)
-            if value is None or value == []:
-                continue
-            res = turn.slots.write(
-                sid,
-                value,
-                state="assumed",
-                provenance=Provenance(type="pattern", ref=f"express:{sid}", date=self.clock.now()),
-                confidence=0.4,
-                turn_id=turn.turn_id,
-            )
-            written += 1 if res.applied else 0
+            written += 1 if self._assume_slot(turn, sid) else 0
         return written
 
     async def _ask_missing_must(self, turn: _Turn) -> bool:
@@ -1298,7 +1397,10 @@ class Service(FlowHooks):
                     elif ask_gap is None and gap.slot_id:
                         ask_gap = gap
             self._rebuild(turn)
-            if ask_gap is not None:
+            if ask_gap is not None and self.interview.active:
+                if await self.interview.ask_gap(turn, ask_gap.slot_id):
+                    return False
+            elif ask_gap is not None:
                 frame = next(
                     (f for f in self.catalog.frames.values() if ask_gap.slot_id in f.slots), None
                 )
@@ -1377,6 +1479,15 @@ class Service(FlowHooks):
             return
         if card.frame == VARIANTS_FRAME:
             await self._on_variant_pick(turn, card, ev)
+            return
+        if self.interview.active and card.frame == "planned":
+            typed = bool(ev.custom_text) and ev.value in (None, "", [])
+            await self.interview.on_answers(
+                turn,
+                [AnswerItem(card, "answer", ev.value, ev.custom_text, "text" if typed else "tap")],
+            )
+            self._rebuild(turn)
+            await self._advance(turn)
             return
         if await self._flow_card_answer(turn, card, ev):
             return
@@ -1485,6 +1596,23 @@ class Service(FlowHooks):
                 chips.append(f"{self._label(turn, w.slot_id)}: {_text(value)}"[:80])
         return chips
 
+    async def _on_batch_answer(self, turn: _Turn, ev: BatchAnswer) -> None:
+        """ "Answer all at once": the answers of a whole batch form, read in one pass."""
+        if not self.interview.active:
+            return
+        items: list[AnswerItem] = []
+        for a in ev.answers:
+            card = self._find_question(turn, a.card_id)
+            if card is None:
+                raise NotFound(f"card {a.card_id}")
+            typed = bool(a.custom_text) and a.value in (None, "", [])
+            items.append(
+                AnswerItem(card, a.action, a.value, a.custom_text, "text" if typed else "tap")
+            )
+        await self.interview.on_answers(turn, items)
+        self._rebuild(turn)
+        await self._advance(turn)
+
     async def _on_card_skip(self, turn: _Turn, ev: CardSkip) -> None:
         card = self._find_question(turn, ev.card_id)
         if card is None:
@@ -1493,7 +1621,10 @@ class Service(FlowHooks):
             turn.notice("must_confirm", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
             turn.out.append(CardEvent(card=card))
             return
-        turn.answered.append((card.id, "skipped", None))
+        if self.interview.active and card.frame == "planned":
+            await self.interview.on_answers(turn, [AnswerItem(card, "skip")])
+        else:
+            turn.answered.append((card.id, "skipped", None))
         await self._advance(turn)
 
     async def _on_you_decide(self, turn: _Turn, ev: CardYouDecide) -> None:
@@ -1503,6 +1634,11 @@ class Service(FlowHooks):
         if card.must_confirm:
             turn.notice("must_confirm", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
             turn.out.append(CardEvent(card=card))
+            return
+        if self.interview.active and card.frame == "planned":
+            await self.interview.on_answers(turn, [AnswerItem(card, "you_decide")])
+            self._rebuild(turn)
+            await self._advance(turn)
             return
         writes = cards_mod.you_decide_writes(card) or self._default_writes(card)
         self._apply_card_writes(turn, writes, state="assumed", from_tap=True)
@@ -1597,6 +1733,7 @@ class Service(FlowHooks):
                 depth="express",
                 question_budget=self.config.questions.express_max,
                 minimum_viable=True,
+                interview_budget="quick",
             )
 
     async def _on_back(self, turn: _Turn) -> None:
@@ -1660,6 +1797,18 @@ class Service(FlowHooks):
             turn.state = "ARCHIVED"
         elif name == "finish_with_defaults":
             await self._finish_with_defaults(turn)
+        elif name == "prepare_questions":
+            await self.interview.prepare(turn)
+            if turn.state not in ("INTERVIEWING", "PLAYBACK"):
+                await self._advance(turn)
+        elif name == "ask_more":
+            await self.interview.ask_more(turn)
+        elif name in ("mode_answer_all", "mode_one_at_a_time"):
+            self.interview.set_ui_mode(
+                turn, "answer_all" if name == "mode_answer_all" else "one_at_a_time"
+            )
+        elif name in ("budget_quick", "budget_standard", "budget_thorough"):
+            self.interview.set_budget(turn, cast(Any, name.removeprefix("budget_")))
         elif name == "show_what_you_know":
             items = [PlaybackItem(key=sid, label=self._label(turn, sid), value=rec.value, basis="your_words" if rec.status in ("volunteered", "confirmed") else "suggestion") for sid, rec in turn.slots.all().items() if rec.value not in (None, "", [], {})]  # fmt: skip
             turn.out.append(Playback(title=self._t(turn, "playback.title"), items=items))

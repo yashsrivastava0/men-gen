@@ -258,6 +258,9 @@ class InterviewBlock(Strict):
 
     budget: Literal["quick", "standard", "thorough"] = "standard"
     ui_mode: Literal["one_at_a_time", "answer_all"] = "one_at_a_time"
+    ui_mode_set: bool = (
+        False  # the person chose the mode (otherwise it follows the situation profile)
+    )
     questions_asked: int = 0
     followups: int = 0
     answered: int = 0

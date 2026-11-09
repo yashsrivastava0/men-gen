@@ -380,7 +380,11 @@ def test_a_tap_is_one_complete_fact_per_label_with_the_label_as_quote() -> None:
     o = fallback(mk("; ".join(labels), focus=("audience.segments",), labels=labels))
     assert o.intent == "answer" and o.flags == [] and len(o.facts) == 2
     assert [f.quote for f in o.facts] == list(labels)
-    assert all(f.aspects == ["audience.segments:*"] and f.effects == [] for f in o.facts)
+    assert all(f.aspects == ["audience.segments:*"] for f in o.facts)
+    # audience.segments is a free-text list, so the chosen words ARE the slot's value (one effect per label)
+    assert [[(e.slot_id, e.value_json) for e in f.effects] for f in o.facts] == [
+        [("audience.segments", f'["{x}"]')] for x in labels
+    ]
     assert [f.statement for f in o.facts] == [f"Who it is for: {x}" for x in labels]
 
 

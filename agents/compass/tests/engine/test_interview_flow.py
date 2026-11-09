@@ -1,0 +1,235 @@
+"""The AI-planned interview through the real Service (mock providers, in-memory store).
+
+The model proposes, code governs: these tests drive whole sessions and check what the person sees and what is
+stored. ``engine == "planner"`` is set per test; the default stays ``legacy`` until the flip."""
+
+from __future__ import annotations
+
+import dataclasses
+
+import pytest
+
+from mde_compass.compose import build_service
+from mde_compass.config import DEFAULT_CONFIG
+from mde_compass.domain import Card
+from mde_compass.domain.events import Command
+from mde_compass.engine.service import Service
+from mde_compass.testing import Conversation
+from mde_core.clock import FakeClock
+
+IDEA = "I want an app for my tiffin delivery service in Pune. Office workers order a daily lunch."
+LONG = "We deliver 200 lunch boxes a day to offices, mostly in Baner and Hinjewadi, and riders are independent"
+
+
+def planner_service() -> Service:
+    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    config = dataclasses.replace(DEFAULT_CONFIG, interview=interview)
+    return build_service(memory=True, clock=FakeClock(), compass_config=config)
+
+
+def types(conv: Conversation, start: int = 0) -> list[str]:
+    return [e.type for e in conv.events[start:]]
+
+
+def cards_of(conv: Conversation) -> list[Card]:
+    seen: dict[str, Card] = {}
+    for ev in conv.events:
+        if ev.type == "card":
+            card = Card.model_validate(ev.payload["card"])
+            seen.setdefault(card.id, card)
+    return list(seen.values())
+
+
+async def finish(conv: Conversation, svc: Service, limit: int = 40) -> str:
+    """Answer every card (taps where there are options, a long typed answer otherwise) until the Brief review."""
+    for _ in range(limit):
+        state = (await svc.get_session(conv.caller, conv.session_id)).state
+        card = conv.last_card()
+        if state not in ("INTERVIEWING", "PLAYBACK", "UNDERSTANDING") or card is None:
+            return state
+        if card.options:
+            await conv.tap_recommended()
+        else:
+            await conv.answer(LONG, card=card)
+    return (await svc.get_session(conv.caller, conv.session_id)).state
+
+
+def test_the_default_engine_is_still_the_legacy_one_until_the_flip() -> None:
+    assert DEFAULT_CONFIG.interview.engine == "legacy"
+
+
+async def test_round_zero_shows_the_playback_then_plans_the_first_batch_in_one_request() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    before = len(conv.events)
+    await conv.say(IDEA)
+    kinds = types(conv, before)
+    # the playback card is committed first; an internal turn then plans the batch while the person reads it
+    assert kinds.index("playback") < kinds.index("question_batch") < kinds.index("card")
+    batch = next(e for e in conv.events if e.type == "question_batch")
+    assert batch.payload["mode"] == "initial" and batch.payload["total"] >= 3
+    first = conv.last_card()
+    assert first is not None and first.origin == "planner" and not first.fallback
+    assert first.batch_id == batch.payload["batch_id"] and first.need_ids
+
+
+async def test_a_whole_session_reaches_review_with_planned_questions_and_no_fallback() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    assert await finish(conv, svc) == "BRIEF_REVIEW"
+    cards = [c for c in cards_of(conv) if c.frame == "planned"]
+    assert len(cards) >= 5
+    assert all(c.origin in ("planner", "followup") and not c.fallback for c in cards)
+    questions = [c.question for c in cards]
+    assert len(set(questions)) == len(questions)  # nothing is asked twice
+    async with svc.store.begin("t1") as uow:
+        batches = await uow.batches.list(conv.session_id)
+        facts = await uow.facts.list(conv.session_id)
+        qa = await uow.qa.list(conv.session_id)
+        brief = (await uow.briefs.get(conv.session_id)).brief
+    assert batches and not any(b.used_fallback for b in batches)
+    assert (
+        facts
+        and all(f.source_ref for f in facts)
+        and {f.id for f in facts} == {f"FCT-{i:03d}" for i in range(1, len(facts) + 1)}
+    )
+    assert {q.card_id for q in qa} >= {c.id for c in cards if c.id in {q.card_id for q in qa}}
+    # every evidence-bearing slot cites a fact, and none is Locked on an unverified quote
+    verified = {f.id for f in facts if f.supports_locked()}
+    for section in (brief.idea, brief.context, brief.audience, brief.experience, brief.access):
+        for key, item in section.items():
+            if item.tier == "Locked":
+                refs = {p.ref for p in item.provenance if p.is_evidence()}
+                assert refs & verified or all(r.startswith("evt_") for r in refs), key
+    assert brief.meta.interview is not None and brief.meta.interview.fallback_count == 0
+    assert brief.meta.interview.questions_asked == len([q for q in qa if q.status != "dropped"])
+
+
+async def test_a_vague_answer_to_an_important_need_earns_exactly_one_followup() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None and first.need_ids == ["audience.segments"]
+    await conv.answer("office workers", card=first)  # vague: three words, no detail
+    follow = conv.last_card()
+    assert follow is not None and follow.origin == "followup"
+    assert (
+        follow.parent_card_id == first.id
+        and follow.depth == 1
+        and follow.need_ids == first.need_ids
+    )
+    await conv.answer(
+        "office workers", card=follow
+    )  # still vague: assumed visibly, never nagged again
+    nxt = conv.last_card()
+    assert (
+        nxt is not None and nxt.id != follow.id and nxt.origin != "followup"
+    ) or nxt.need_ids != first.need_ids
+    assert (
+        sum(1 for c in cards_of(conv) if c.origin == "followup" and c.need_ids == first.need_ids)
+        == 1
+    )
+    assert any(e.type == "notice" and e.payload["code"] == "assumed" for e in conv.events)
+
+
+async def test_a_specific_answer_gets_no_followup() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None
+    await conv.answer(LONG, card=first)
+    assert not any(c.origin == "followup" for c in cards_of(conv))
+
+
+async def test_skip_and_you_decide_move_on_and_are_recorded() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None
+    await conv.skip()
+    second = conv.last_card()
+    assert second is not None and second.id != first.id
+    await conv.you_decide()
+    async with svc.store.begin("t1") as uow:
+        qa = {q.card_id: q for q in await uow.qa.list(conv.session_id)}
+    assert qa[first.id].status == "skipped" and qa[second.id].status == "you_decide"
+    assert conv.last_card() is not None and conv.last_card().id not in (first.id, second.id)  # type: ignore[union-attr]
+
+
+async def test_answer_all_mode_shows_the_whole_batch_and_one_event_answers_it() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.command("mode_answer_all")
+    await conv.say(IDEA)
+    batch = next(e for e in conv.events if e.type == "question_batch")
+    assert batch.payload["ui_mode"] == "answer_all"
+    cards = [c for g in batch.payload["groups"] for c in g["cards"]]
+    assert len(cards) == batch.payload["total"] >= 3
+    from mde_compass.domain.events import BatchAnswer, BatchAnswerItem
+
+    answers = [
+        BatchAnswerItem(card_id=c["id"], value=c["options"][0]["id"] if c["options"] else LONG)
+        for c in cards
+    ]
+    before = len(conv.events)
+    await conv.send(
+        BatchAnswer(event_id="e_batch", batch_id=batch.payload["batch_id"], answers=answers)
+    )
+    async with svc.store.begin("t1") as uow:
+        qa = {q.card_id: q for q in await uow.qa.list(conv.session_id)}
+    assert all(qa[c["id"]].status == "answered" for c in cards)
+    assert types(
+        conv, before
+    )  # the turn produced events (a follow-up, the next batch or the review)
+
+
+async def test_resending_an_event_is_acknowledged_and_ignored() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    count = len(cards_of(conv))
+    from mde_compass.domain.events import UserMessage
+
+    event = UserMessage(event_id="e_dup", text=LONG)
+    first = await svc.handle_event(conv.caller, conv.session_id, event)
+    again = await svc.handle_event(conv.caller, conv.session_id, event)
+    assert first.accepted and again.duplicate and not again.events
+    assert len(cards_of(conv)) == count
+
+
+async def test_the_chained_round_zero_turn_is_idempotent_by_construction() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    async with svc.store.begin("t1") as uow:
+        events = await uow.events.list_history(conv.session_id, after_idx=0, limit=200)
+    internal = [
+        e for e in events.items if e.direction == "in" and (e.event_id or "").startswith("int_")
+    ]
+    assert len(internal) == 1 and internal[0].payload["name"] == "prepare_questions"
+    # replaying the same internal command does nothing: its id is already recorded
+    again = await svc.handle_event(
+        conv.caller,
+        conv.session_id,
+        Command(event_id=internal[0].event_id or "", name="prepare_questions"),
+    )
+    assert again.duplicate
+
+
+@pytest.mark.parametrize("name", ["budget_quick", "budget_standard", "budget_thorough"])
+async def test_the_budget_commands_set_the_interview_depth(name: str) -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.command(name)
+    await conv.say(IDEA)
+    async with svc.store.begin("t1") as uow:
+        brief = (await uow.briefs.get(conv.session_id)).brief
+    assert brief.meta.plan is not None
+    assert brief.meta.plan.interview_budget == name.removeprefix("budget_")
+    assert brief.meta.interview is not None and brief.meta.interview.budget == name.removeprefix(
+        "budget_"
+    )

@@ -29,10 +29,10 @@ def _question(
     n: NeedWire, term: str, qid: str, group: int, *, followup: bool = False
 ) -> QuestionWire:
     if followup:
-        gaps = ", ".join(n.missing_aspects) or "the details"
-        text = f"{TAG} About {term}: could you say a little more about {gaps}?"
+        gaps = ", ".join(n.missing_aspects)
+        text = f"{TAG} {n.label}: could you say more about {gaps or 'it'}, for your {term} project?"
     else:
-        text = f"{TAG} About {term}: what should we know regarding {n.label.lower()}?"
+        text = f"{TAG} {n.label}, for your {term} project?"
     options: list[OptionWire] = []
     qtype = "text"
     if not followup and n.card_type == "choose_one" and len(n.option_labels) >= 3:
@@ -52,13 +52,13 @@ def _question(
         group_title=f"{TAG} Group {group}",
         intent=f"learn {n.label.lower()} for {term}",
         serves=[n.need_id],
-        unlocks=[f"{TAG} Brief: {n.label}"],
+        unlocks=[f"{TAG} Brief: {n.label.lower()}"],
         answer_spec=n.sufficient,
         depends_on=[],
         priority=max(1, min(5, 6 - n.impact)),
         type=qtype,  # type: ignore[arg-type]
         text=text,
-        why_we_ask=f"{TAG} This fills in: {n.label}.",
+        why_we_ask=f"{TAG} This fills in: {n.label.lower()}.",
         options=options,
         recommended=options[0].label if options else "",
         skip_assumes="",
