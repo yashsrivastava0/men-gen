@@ -99,17 +99,37 @@ MOCK_CLOSING_MAX_OWN = 5
 MOCK_CLOSING_MAX_SUGGESTED = 2
 
 
+def _short(label: str) -> str:
+    return " ".join(label.split()[:8])
+
+
 def _closing(inp: PlanInput) -> PlanOutput:
     """The reserved last question from the closing context: the person's own candidates first (features, then goals,
-    then constraints), up to two labelled suggestions when there are too few. Deterministic and tagged ``[mock]``."""
+    then constraints), then, when the person named fewer than three features, the suggested features labelled as
+    suggestions (up to the cap the validators allow), then, when there are still fewer than three options, up to two
+    generic labelled suggestions. Deterministic and tagged ``[mock]``."""
     term = (list(inp.project_terms) or ["your app"])[0]
     c = inp.closing
-    own = list(dict.fromkeys([*c.features, *c.goals, *c.constraints]))
-    labels = [" ".join(label.split()[:8]) for label in own[:MOCK_CLOSING_MAX_OWN]]
+    own = list(dict.fromkeys([*c.features, *c.goals, *c.constraints]))[:MOCK_CLOSING_MAX_OWN]
     options = [
-        OptionWire(label=f"{TAG} {label}", description="", basis="your_words", reason="")
-        for label in labels
+        OptionWire(label=f"{TAG} {_short(label)}", description="", basis="your_words", reason="")
+        for label in own
     ]
+    if len(c.features) < 3:  # complete the list from the typical features of this kind of project
+        stated = len(c.features) + len(c.goals) + len(c.constraints)
+        cap = max(MOCK_CLOSING_MAX_SUGGESTED, 8 - stated)
+        known = {_short(label).casefold() for label in own}
+        typical = [
+            _short(label)
+            for label in dict.fromkeys(c.suggested_features)
+            if _short(label).casefold() not in known
+        ]
+        for label in typical[:cap]:
+            if len(options) >= MOCK_CLOSING_MAX_OWN:
+                break
+            options.append(
+                OptionWire(label=f"{TAG} {label}", description="", basis="suggestion", reason="")
+            )
     suggestions = (
         f"{TAG} A suggested first-version priority for {term}",
         f"{TAG} Another suggested priority for {term}",
@@ -130,7 +150,7 @@ def _closing(inp: PlanInput) -> PlanOutput:
         text=f"{TAG} What matters most for the first version of your {term} project?",
         why_we_ask=f"{TAG} It decides what to build first.",
         options=options,
-        recommended=options[0].label if labels else "",
+        recommended=options[0].label if own else "",
         skip_assumes="",
         followup_hint="",
         examples=[f"{TAG} anything else, or what success would look like"],

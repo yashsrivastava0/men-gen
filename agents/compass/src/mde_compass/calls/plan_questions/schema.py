@@ -42,9 +42,11 @@ class NeedWire(Wire):
 
 class ClosingWire(Wire):
     """Mode ``closing`` only (ADR 0016): short statements from the slots and the ledger, so the last question can
-    offer this project's own candidates. Features come first as the person stated them, suggested ones after."""
+    offer this project's own candidates. ``features`` are the person's own; ``suggested_features`` are typical for
+    this kind of project and were NOT stated (they are offered with basis ``suggestion``)."""
 
     features: list[str] = Field(default_factory=list)
+    suggested_features: list[str] = Field(default_factory=list)
     roles: list[str] = Field(default_factory=list)
     goals: list[str] = Field(default_factory=list)
     constraints: list[str] = Field(default_factory=list)
