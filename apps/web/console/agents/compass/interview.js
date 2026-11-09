@@ -4,7 +4,8 @@
    run under Node (apps/web/tests/test_interview_helpers.py does exactly that).
 
    Shapes it works on (all from the Compass HTTP API):
-     batch   question_batch event: {batch_id, mode, ui_mode, groups: [{id, title, cards: [card]}], total, answered}
+     batch   question_batch event: {batch_id, mode, ui_mode, groups: [{id, title, cards: [card]}], total, answered,
+             progress?: {tier, target, hard_cap, committed, closing}}   (progress is optional: absent on older servers)
      card    a Card (id, type, question, options, group_id, examples, must_confirm, ...)
      draft   {card_id: entry}; an entry is what the answer-all form has collected for one question
      qa      one item of GET /sessions/{id}/qa
@@ -30,6 +31,40 @@
     for (var i = 0; i < BUDGETS.length; i++) { if (BUDGETS[i].id === id) { return BUDGETS[i].command; } }
     return null;
   }
+  /** "budget_quick" -> "quick"; null for any other command name. */
+  function budgetOfCommand(name) {
+    for (var i = 0; i < BUDGETS.length; i++) { if (BUDGETS[i].command === name) { return BUDGETS[i].id; } }
+    return null;
+  }
+
+  // ---- the first choice: how many questions (the tier) ----------------------------------------------------
+
+  /** What the stored log says about where a session stands, read once when a project is reopened: the tier
+      the person already chose, the questions answered, the batches submitted and whether the idea was given. */
+  function replaySummary(items) {
+    var out = { tier: null, answered: {}, submitted: {}, started: false };
+    (items || []).forEach(function (ev) {
+      if (!ev || ev.direction !== "in") { return; }
+      var p = ev.payload || {};
+      if (ev.type === "command") {
+        var b = budgetOfCommand(p.name);
+        if (b) { out.tier = b; }
+        if (!b && p.name !== "mode_answer_all" && p.name !== "mode_one_at_a_time") { out.started = true; }
+        return;
+      }
+      out.started = true;
+      if (ev.type === "card_answer" || ev.type === "card_skip" || ev.type === "card_you_decide") {
+        if (p.card_id) { out.answered[p.card_id] = true; }
+      } else if (ev.type === "batch_answer") {
+        if (p.batch_id) { out.submitted[p.batch_id] = true; }
+        (p.answers || []).forEach(function (a) { out.answered[a.card_id] = true; });
+      }
+    });
+    return out;
+  }
+
+  /** The idea box and the start buttons wait for the tier while a new project has not had its first idea yet. */
+  function tierRequired(ctx) { return !!(ctx && ctx.hasSession && ctx.awaiting && !ctx.tier); }
   function modeCommand(mode) { return MODE_COMMANDS[mode] || null; }
   function otherMode(mode) { return mode === "answer_all" ? "one_at_a_time" : "answer_all"; }
 
@@ -318,7 +353,8 @@
 
   root.compassInterview = {
     OTHER: OTHER, MAX_ANSWERS: MAX_ANSWERS, BUDGETS: BUDGETS,
-    budgetCommand: budgetCommand, modeCommand: modeCommand, otherMode: otherMode,
+    budgetCommand: budgetCommand, budgetOfCommand: budgetOfCommand, replaySummary: replaySummary,
+    tierRequired: tierRequired, modeCommand: modeCommand, otherMode: otherMode,
     locate: locate, progressLine: progressLine, examplePlaceholder: examplePlaceholder, useForm: useForm,
     pendingGroups: pendingGroups, flatCards: flatCards,
     emptyEntry: emptyEntry, entryValue: entryValue, missingRequired: missingRequired, blankCards: blankCards,

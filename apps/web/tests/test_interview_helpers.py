@@ -536,6 +536,55 @@ def test_budget_and_layout_commands_are_server_commands() -> None:
     assert sent <= set(get_args(CommandName)), "the helpers only name commands the server knows"
 
 
+# ---- Compass v2: the tier first --------------------------------------------------------------------------
+
+
+def test_a_budget_command_maps_back_to_its_tier() -> None:
+    got = run_js(
+        """
+        return ["budget_quick", "budget_standard", "budget_thorough", "ask_more", undefined].map((n) => I.budgetOfCommand(n));
+        """
+    )
+    assert got == ["quick", "standard", "thorough", None, None]
+
+
+def test_the_stored_log_says_which_tier_was_chosen_and_what_was_answered() -> None:
+    got = run_js(
+        """
+        const inn = (type, payload) => ({ direction: "in", type: type, payload: payload });
+        const out = (type, payload) => ({ direction: "out", type: type, payload: payload });
+        const fresh = I.replaySummary([out("assistant_message", {}), out("card", {})]);
+        const tierOnly = I.replaySummary([inn("command", { name: "budget_thorough" })]);
+        const changed = I.replaySummary([inn("command", { name: "budget_quick" }), inn("command", { name: "budget_standard" })]);
+        const full = I.replaySummary([
+          inn("command", { name: "budget_quick" }), inn("user_message", { text: "idea" }),
+          inn("card_answer", { card_id: "Q-1" }), inn("card_skip", { card_id: "Q-2" }),
+          inn("batch_answer", { batch_id: "BAT-1", answers: [{ card_id: "Q-3" }, { card_id: "Q-4" }] }),
+        ]);
+        const layout = I.replaySummary([inn("command", { name: "mode_answer_all" })]);
+        return { fresh: fresh, tierOnly: tierOnly, changed: changed.tier, full: full, layout: layout.started, none: I.replaySummary(null) };
+        """
+    )
+    assert got["fresh"] == {"tier": None, "answered": {}, "submitted": {}, "started": False}
+    assert got["tierOnly"]["tier"] == "thorough" and got["tierOnly"]["started"] is False
+    assert got["changed"] == "standard", "the last choice wins"
+    assert got["full"]["tier"] == "quick" and got["full"]["started"] is True
+    assert got["full"]["answered"] == {"Q-1": True, "Q-2": True, "Q-3": True, "Q-4": True}
+    assert got["full"]["submitted"] == {"BAT-1": True}
+    assert got["layout"] is False, "a layout command is not the idea"
+    assert got["none"]["started"] is False
+
+
+def test_the_idea_box_waits_for_the_tier_only_in_a_new_project() -> None:
+    got = run_js(
+        """
+        const f = (hasSession, awaiting, tier) => I.tierRequired({ hasSession: hasSession, awaiting: awaiting, tier: tier });
+        return [f(true, true, null), f(true, true, "quick"), f(true, false, null), f(false, true, null), I.tierRequired(null)];
+        """
+    )
+    assert got == [True, False, False, False, False]
+
+
 def test_the_helper_exposes_only_what_the_screen_uses() -> None:
     names = run_js("return Object.keys(I).sort();")
     assert {

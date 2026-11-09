@@ -169,13 +169,13 @@ def test_event_types_cover_domain_events() -> None:
 
 def _fallback_keys() -> set[str]:
     block = APP_JS.split("var FALLBACK = {", 1)[1].split("};", 1)[0]
-    return set(re.findall(r'"([a-z_]+(?:\.[a-z_]+)+)":', block))
+    return set(re.findall(r'"([a-z_]+(?:\.[a-z0-9_]+)+)":', block))
 
 
 def test_strings_used_by_the_ui_exist() -> None:
     strings = load_catalog().strings
     known = set(strings["en"]) | _fallback_keys()
-    used = set(re.findall(r"\bt\(\s*\"([a-z_]+\.[a-z_]+(?:\.[a-z_]+)*)\"", ALL_JS))
+    used = set(re.findall(r"\bt\(\s*\"([a-z_]+\.[a-z0-9_]+(?:\.[a-z0-9_]+)*)\"", ALL_JS))
     assert len(used) > 40
     assert sorted(used - known) == []
     assert set(strings["hi"]) == set(strings["en"])
@@ -189,7 +189,7 @@ def test_strings_used_by_the_ui_exist() -> None:
 
 def _fallback_strings() -> dict[str, str]:
     block = APP_JS.split("var FALLBACK = {", 1)[1].split("};", 1)[0]
-    return dict(re.findall(r'"([a-z_]+(?:\.[a-z_]+)+)":\s*"((?:[^"\\]|\\.)*)"', block))
+    return dict(re.findall(r'"([a-z_]+(?:\.[a-z0-9_]+)+)":\s*"((?:[^"\\]|\\.)*)"', block))
 
 
 def test_every_interview_string_exists_in_both_languages_and_the_embedded_english() -> None:
@@ -212,9 +212,29 @@ def test_every_interview_string_exists_in_both_languages_and_the_embedded_englis
             assert f"ui.interview.fact_{status}" in keys
 
 
+def test_every_v2_string_exists_in_both_languages_and_the_embedded_english() -> None:
+    """Compass v2 copy (``ui.v2.*``) is new-keys-only: en, hi and the page's embedded English stay equal, and a
+    key nothing uses is dead copy."""
+    strings = load_catalog().strings
+    embedded = _fallback_strings()
+    keys = {k for k in strings["en"] if k.startswith("ui.v2.")}
+    assert len(keys) >= 10
+    assert keys == {k for k in strings["hi"] if k.startswith("ui.v2.")}
+    assert keys == {k for k in embedded if k.startswith("ui.v2.")}
+    for key in keys:
+        assert embedded[key] == strings["en"][key], f"{key}: the embedded copy drifted from en.json"
+        assert strings["hi"][key] != strings["en"][key], f"{key}: not translated"
+        assert set(re.findall(r"\{(\w+)\}", strings["hi"][key])) == set(
+            re.findall(r"\{(\w+)\}", strings["en"][key])
+        ), f"{key}: placeholders differ between en and hi"
+    named = set(re.findall(r"[\"'](ui\.v2\.[a-z0-9_]+)[\"']", ALL_JS))
+    assert sorted(named - keys) == [], "the code names a ui.v2 string that does not exist"
+    assert sorted(keys - named) == [], "a ui.v2 string nothing uses"
+
+
 def test_t_calls_fill_exactly_the_placeholders_of_their_strings() -> None:
     pool = {**_fallback_strings(), **load_catalog().strings["en"]}
-    call = re.compile(r"""\bt\(\s*"([a-z_]+(?:\.[a-z_]+)+)"\s*,\s*\{(.*?)\}\s*\)""", re.S)
+    call = re.compile(r"""\bt\(\s*"([a-z_]+(?:\.[a-z0-9_]+)+)"\s*,\s*\{(.*?)\}\s*\)""", re.S)
     seen = 0
     for key, inner in call.findall(ALL_JS):
         names = set(re.findall(r"(?:^|,)\s*(\w+)\s*:", inner))

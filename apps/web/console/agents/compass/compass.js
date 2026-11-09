@@ -121,9 +121,9 @@ CONTRACT*/
     "ui.interview.depth_quick": "Quick",
     "ui.interview.depth_standard": "Standard",
     "ui.interview.depth_thorough": "Thorough",
-    "ui.interview.depth_quick_hint": "Up to about 5 questions",
-    "ui.interview.depth_standard_hint": "Up to about 12 questions",
-    "ui.interview.depth_thorough_hint": "Up to about 25 questions",
+    "ui.interview.depth_quick_hint": "About 7 questions",
+    "ui.interview.depth_standard_hint": "About 12 questions",
+    "ui.interview.depth_thorough_hint": "25 or more questions",
     "ui.interview.depth_now": "Planned so far: about {total} questions.",
     "ui.interview.form_label": "All the questions of this set",
     "ui.interview.form_send": "Send all answers",
@@ -150,6 +150,19 @@ CONTRACT*/
     "ui.interview.fact_disputed": "disputed",
     "ui.interview.fact_not_used": "not used",
     "ui.interview.mock_banner": "MOCK MODE: questions are canned",
+    // Compass v2 (ui.v2.*): the tier first, the submit-once form, honest waiting
+    "ui.v2.tier_title": "How many questions would you like to answer?",
+    "ui.v2.tier_help": "Pick one to unlock the idea box. You can change it until the first questions arrive.",
+    "ui.v2.tier_quick_desc": "The fastest way to a first draft. We make sensible choices for the rest.",
+    "ui.v2.tier_standard_desc": "A good balance of speed and detail.",
+    "ui.v2.tier_thorough_desc": "The most detail. Best for a bigger or business app.",
+    "ui.v2.tier_chosen": "Your choice: {name} ({count})",
+    "ui.v2.tier_change": "Change",
+    "ui.v2.tier_change_label": "Change how many questions",
+    "ui.v2.tier_needed": "Choose how many questions you want above, then describe your idea here.",
+    "ui.v2.composer_locked": "Choose how many questions first",
+    "ui.v2.idea_placeholder": "Describe your app idea here",
+    "ui.v2.tier_failed": "We could not save that choice. Please try again.",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -183,8 +196,10 @@ CONTRACT*/
     ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null,
     batches: [], answered: {}, uiMode: "one_at_a_time", modePending: false, depth: null,
     qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {},
+    awaitingTier: false, tierEditing: false, welcomeEl: null,
     networkTrace: [], lastError: null
   };
+  var WELCOME_FRAME = "welcome";   // the server's canned first card: the welcome block below replaces it
 
   function t(key, vars) {
     var s = state.strings[key];
@@ -258,6 +273,13 @@ CONTRACT*/
       }
       throw err;
     });
+  }
+  /** A bug while drawing an answer: shown in the chat and kept for "Copy for Claude Code", never silent. */
+  function noteRenderError(e) {
+    state.lastError = { time: new Date().toISOString(), method: "UI", path: "render", status: 0, code: "ui_error",
+      message: String(e && e.stack ? e.stack : e).slice(0, 600) };
+    var el = addMsg("error", t("error.generic"));
+    el.setAttribute("role", "alert");
   }
   function friendly(err) {
     if (err && err.status === 429) { return t("error.rate_limited"); }
@@ -833,11 +855,16 @@ CONTRACT*/
   }
 
   function depthLabels(id) {
-    if (id === "quick") { return { name: t("ui.interview.depth_quick"), hint: t("ui.interview.depth_quick_hint") }; }
-    if (id === "thorough") { return { name: t("ui.interview.depth_thorough"), hint: t("ui.interview.depth_thorough_hint") }; }
-    return { name: t("ui.interview.depth_standard"), hint: t("ui.interview.depth_standard_hint") };
+    if (id === "quick") {
+      return { name: t("ui.interview.depth_quick"), hint: t("ui.interview.depth_quick_hint"), desc: t("ui.v2.tier_quick_desc") };
+    }
+    if (id === "thorough") {
+      return { name: t("ui.interview.depth_thorough"), hint: t("ui.interview.depth_thorough_hint"), desc: t("ui.v2.tier_thorough_desc") };
+    }
+    return { name: t("ui.interview.depth_standard"), hint: t("ui.interview.depth_standard_hint"), desc: t("ui.v2.tier_standard_desc") };
   }
-  /** Quick / Standard / Thorough: how many questions the interview may ask. Sent before the first batch. */
+  /** Compact Quick / Standard / Thorough chips. Only the playback card still offers them, and only when an idea
+      arrived without a tier (the welcome block asks for the tier first). */
   function depthChips() {
     var row = h("div", { class: "depth-chips" });
     I.BUDGETS.forEach(function (b) {
@@ -853,18 +880,108 @@ CONTRACT*/
   function depthKnown() {
     return state.progress && state.progress.of_about ? t("ui.interview.depth_now", { total: state.progress.of_about }) : "";
   }
+  /** The tier: sent as the budget_* command. The choice shows at once; if the server cannot save it the page goes
+      back to the previous state and the chat says why (sendEvent shows the error). */
   function chooseDepth(id) {
+    var prev = state.depth;
+    state.tierEditing = false;
+    if (prev === id) { renderWelcome(); return; }
     state.depth = id;
     refreshDepth();
-    sendEvent({ type: "command", name: I.budgetCommand(id) });
+    renderWelcome();
+    applyComposerGate();
+    if (state.awaitingTier) { $("composer-input").focus(); }
+    sendEvent({ type: "command", name: I.budgetCommand(id) }, { quiet: true }).then(function (ack) {
+      if (ack) { return; }
+      state.depth = prev;
+      refreshDepth();
+      renderWelcome();
+      applyComposerGate();
+    });
   }
-  /** Pressed state of every depth chip on screen, and the budget we know about (the planner's progress). */
+  /** Pressed state of every tier card and depth chip on screen, and the budget we know about (the planner's progress). */
   function refreshDepth() {
-    Array.prototype.forEach.call(document.querySelectorAll(".depth-chip"), function (b) {
+    Array.prototype.forEach.call(document.querySelectorAll(".depth-chip, .tier-card"), function (b) {
       b.setAttribute("aria-pressed", b.dataset.budget === state.depth ? "true" : "false");
     });
     var known = depthKnown();
     Array.prototype.forEach.call(document.querySelectorAll(".depth-note"), function (n) { n.textContent = known; });
+  }
+
+  // ---- the welcome block: the tier first, then the idea ---------------------------------------------------------
+  function tierLocked() {
+    return I.tierRequired({ hasSession: !!state.sessionId, awaiting: state.awaitingTier, tier: state.depth });
+  }
+  /** The idea box (and the idea buttons) wait for the tier; a visible line says why. Called whenever the tier, the
+      project or the language changes. */
+  function applyComposerGate() {
+    var locked = tierLocked();
+    var input = $("composer-input");
+    input.disabled = locked;
+    $("composer-send").disabled = locked;
+    $("composer-mic").disabled = locked;
+    var gate = $("composer-gate");
+    gate.hidden = !locked;
+    gate.textContent = locked ? t("ui.v2.tier_needed") : "";
+    input.placeholder = locked ? t("ui.v2.composer_locked") : (state.awaitingTier ? t("ui.v2.idea_placeholder") : t("ui.type_here"));
+    if (locked) { input.setAttribute("aria-describedby", "composer-gate"); } else { input.removeAttribute("aria-describedby"); }
+  }
+  /** Three large cards: what each tier means in plain words. A button each (keyboard: Tab, Enter or Space). */
+  function tierCards() {
+    var cards = h("div", { class: "tier-cards", role: "group", "aria-labelledby": "tier-title", "aria-describedby": "tier-help" });
+    I.BUDGETS.forEach(function (b) {
+      var lab = depthLabels(b.id);
+      cards.appendChild(h("button", { class: "tier-card", type: "button", "aria-pressed": state.depth === b.id ? "true" : "false",
+        data: { budget: b.id }, on: { click: function () { chooseDepth(b.id); } } },
+        h("span", { class: "tier-name", text: lab.name }), h("span", { class: "tier-count", text: lab.hint }),
+        h("span", { class: "tier-desc", text: lab.desc })));
+    });
+    return h("div", { class: "tier" }, h("div", { class: "tier-title", id: "tier-title", text: t("ui.v2.tier_title") }), cards,
+      h("div", { class: "hint", id: "tier-help", text: t("ui.v2.tier_help") }));
+  }
+  /** The four ways to start. Disabled (with the reason in the line above the idea box) until a tier is chosen. */
+  function startButtons() {
+    var locked = tierLocked();
+    var wrap = h("div", { class: "row-actions start-buttons" });
+    function b(key, fn) {
+      wrap.appendChild(h("button", { class: "btn", type: "button", text: t(key), disabled: locked, on: { click: fn } }));
+    }
+    b("welcome.start_describe", function () { $("composer-input").focus(); });
+    b("welcome.start_upload", function () { pickFile(); });
+    b("welcome.start_like_app", function () { $("composer-input").focus(); });
+    b("welcome.start_just_build", function () { postUser(t("welcome.start_just_build")); });
+    return wrap;
+  }
+  /** Rebuild the welcome block from the state: the three tier cards, or (once chosen) a chip with a "Change" link
+      that stays until the first questions arrive. */
+  function renderWelcome() {
+    var host = state.welcomeEl;
+    if (!host || !host.isConnected) { return; }
+    clear(host);
+    if (state.depth && !state.tierEditing) {
+      var lab = depthLabels(state.depth);
+      var row = h("div", { class: "tier-chosen" },
+        h("span", { class: "tier-chip", text: t("ui.v2.tier_chosen", { name: lab.name, count: lab.hint }) }));
+      if (!state.batches.length) {
+        row.appendChild(h("button", { class: "btn-link tier-change", type: "button", "aria-label": t("ui.v2.tier_change_label"),
+          text: t("ui.v2.tier_change"), on: { click: function () {
+            state.tierEditing = true;
+            renderWelcome();
+            var pressed = host.querySelector('.tier-card[aria-pressed="true"]');
+            if (pressed) { pressed.focus(); }
+          } } }));
+      }
+      host.appendChild(row);
+    } else {
+      host.appendChild(tierCards());
+    }
+    if (state.awaitingTier) { host.appendChild(startButtons()); }
+  }
+  function showWelcome() {
+    state.welcomeEl = h("div", { class: "welcome-actions" });
+    log().appendChild(state.welcomeEl);
+    renderWelcome();
+    scrollChat();
   }
 
   /** A mock session must never be mistaken for the product: a banner the user cannot dismiss. */
@@ -888,6 +1005,7 @@ CONTRACT*/
     },
     card: function (p) {
       var card = p.card;
+      if (card.frame === WELCOME_FRAME) { return; }   // the welcome block (tier first) replaces the canned first card
       var loc = I.locate(state.batches, card);
       var groups = loc ? I.pendingGroups(loc.batch, state.answered) : [];
       var pending = I.flatCards(groups);
@@ -912,7 +1030,7 @@ CONTRACT*/
         el.appendChild(h("label", { class: "field" }, h("span", { text: it.label }), input, basisLabel(it.basis)));
       });
       if (p.unclear && p.unclear.length) { el.appendChild(h("div", { class: "hint", text: "?" }, " ", p.unclear.join(", "))); }
-      if (!state.batches.length) { el.appendChild(depthChips()); }
+      if (!state.batches.length && !state.depth) { el.appendChild(depthChips()); }   // an idea that came without a tier
       el.appendChild(h("div", { class: "row-actions" }, h("button", { class: "btn btn-primary", type: "button", text: t("x.save"), on: { click: function () {
         Object.keys(inputs).forEach(function (k) {
           if (inputs[k].value !== inputs[k].dataset.original) {
@@ -930,6 +1048,7 @@ CONTRACT*/
       if (state.batches.length > 40) { state.batches.shift(); }
       state.uiMode = p.ui_mode === "answer_all" ? "answer_all" : "one_at_a_time";
       renderInterviewBar();
+      renderWelcome();   // the tier can no longer change once questions exist
     },
     notice: function (p) {
       addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
@@ -991,21 +1110,36 @@ CONTRACT*/
   }
 
   var IN_FLIGHT = 0;
-  /** Post one inbound event. Resolves to the EventAck, or null when the request failed (the error is shown). */
-  function sendEvent(body) {
+  var sendQueue = Promise.resolve();
+  /** Post one inbound event. Events of a session go out one at a time, in the order they were made (a command that
+      sets the tier must reach the server before the idea does). Resolves to the EventAck, or null when the request
+      failed. opts: quiet (no waiting indicator, for quick commands), onError (called with the error instead of the
+      chat message, so a form can keep its state and offer a retry). A body that already has an event_id keeps it:
+      the server ignores a repeated id, so a retry can never be applied twice. */
+  function sendEvent(body, opts) {
     if (!state.sessionId) { return Promise.resolve(null); }
+    var o = opts || {};
+    var sid = state.sessionId;
     var ev = Object.assign({ event_id: randomId() }, body);
     if (state.contributor && !ev.contributor_id) { ev.contributor_id = state.contributor; }
+    if (ev.type !== "command" && state.awaitingTier) { state.awaitingTier = false; applyComposerGate(); renderWelcome(); }
+    var job = sendQueue.then(function () { return postEvent(sid, ev, o); });
+    sendQueue = job;   // postEvent never rejects
+    return job;
+  }
+  function postEvent(sid, ev, o) {
+    if (sid !== state.sessionId) { return Promise.resolve(null); }   // another project was opened while this one waited
     var acked = null;
     IN_FLIGHT += 1;
-    setTyping(true);
-    return api("POST", "/sessions/" + state.sessionId + "/events", ev).then(function (ack) {
-      acked = ack;
-      processAck(ack);
+    if (!o.quiet) { setTyping(true); }
+    return api("POST", "/sessions/" + sid + "/events", ev).then(function (ack) {
+      acked = ack;   // the server has the event: a page error while showing its answer must not look like a failed send
+      try { processAck(ack); } catch (e) { noteRenderError(e); }
     }).catch(function (err) {
+      if (o.onError) { o.onError(err); return; }
       var el = addMsg("error", friendly(err));
       el.setAttribute("role", "alert");
-    }).then(function () { IN_FLIGHT -= 1; setTyping(false); return acked; });
+    }).then(function () { IN_FLIGHT -= 1; if (!o.quiet) { setTyping(false); } return acked; });
   }
 
   // ---- upload: one multipart request; the reply is an EventAck, handled like any other event -------------
@@ -1920,22 +2054,14 @@ CONTRACT*/
     }).catch(function () {});
   }
 
-  function startButtons() {
-    var wrap = h("div", { class: "row-actions" });
-    function b(key, fn) { wrap.appendChild(h("button", { class: "btn", type: "button", text: t(key), on: { click: fn } })); }
-    b("welcome.start_describe", function () { $("composer-input").focus(); });
-    b("welcome.start_upload", function () { pickFile(); });
-    b("welcome.start_like_app", function () { $("composer-input").focus(); });
-    b("welcome.start_just_build", function () { postUser(t("welcome.start_just_build")); });
-    return h("div", { class: "welcome-actions" }, wrap, depthChips());
-  }
-
   function openSession(id) {
     stopStream();
     state.sessionId = id; state.lastSeq = 0; state.seen = {}; state.devEvents = []; state.view = null; state.viewJson = "";
     state.lookups = []; state.activeCard = null; state.ui = { panel: null, edit: null, prov: {} }; state.calls = [];
     state.batch = null; state.batches = []; state.answered = {}; state.uiMode = "one_at_a_time"; state.modePending = false;
     state.depth = null; state.progress = null; state.qa = []; state.qaEdit = null; state.qaAnswered = 0; state.pulsed = {};
+    state.awaitingTier = false; state.tierEditing = false; state.welcomeEl = null;
+    applyComposerGate();
     $("home").hidden = true;
     $("workspace").hidden = false;
     clear(log());
@@ -1950,7 +2076,9 @@ CONTRACT*/
     }).then(function () {
       startStream();
       loadView(); loadBudget(); loadQa(); renderLookup(); renderSources(); renderInterviewBar();
-      if (!state.lastSeq || state.session && state.session.state === "WELCOME") { log().appendChild(startButtons()); scrollChat(); }
+      if (!state.lastSeq) { state.awaitingTier = !state.depth; }
+      applyComposerGate();
+      if (state.awaitingTier || !state.lastSeq) { showWelcome(); }
     });
   }
 
@@ -1970,14 +2098,11 @@ CONTRACT*/
   function replayHistory() {
     return loadAllHistory().then(function (items) {
       var lastCard = null;
-      var answered = {};
-      items.forEach(function (ev) {
-        if (ev.direction === "in" && (ev.type === "card_answer" || ev.type === "card_skip" || ev.type === "card_you_decide") && ev.payload) { answered[ev.payload.card_id] = true; }
-        if (ev.direction === "in" && ev.type === "batch_answer" && ev.payload) {
-          (ev.payload.answers || []).forEach(function (a) { answered[a.card_id] = true; });
-        }
-      });
+      var summary = I.replaySummary(items);
+      var answered = summary.answered;
       state.answered = answered;   // the answer-all form shows only the questions still waiting
+      state.depth = summary.tier;   // the tier chosen earlier comes back as the chip
+      state.awaitingTier = !summary.started && !!state.session && state.session.state === "WELCOME";
       items.forEach(function (ev) {
         if (ev.direction === "in") {
           if (ev.type === "user_message") { addMsg("user", ev.payload.text || ""); }
@@ -1986,6 +2111,11 @@ CONTRACT*/
             if (ev.payload.name === "mode_answer_all") { state.uiMode = "answer_all"; }
             if (ev.payload.name === "mode_one_at_a_time") { state.uiMode = "one_at_a_time"; }
           }
+          return;
+        }
+        if (ev.type === "card" && ev.payload && ev.payload.card && ev.payload.card.frame === WELCOME_FRAME) {
+          state.seen[ev.seq] = true; state.lastSeq = Math.max(state.lastSeq, ev.seq);   // nothing to draw: see showWelcome
+          state.devEvents.push(ev);
           return;
         }
         if (ev.type === "card" && ev.payload && ev.payload.card && answered[ev.payload.card.id]) {
@@ -2032,6 +2162,7 @@ CONTRACT*/
     $("typing-text").textContent = t("ui.typing");
     $("history-drawer-title").textContent = t("history.title");
     renderTabs(); renderMeter(); renderDevHead(); renderMockBanner(); renderInterviewBar(); renderQa();
+    applyComposerGate(); renderWelcome();
   }
   function setLang(lang) {
     state.lang = lang;
@@ -2105,7 +2236,7 @@ CONTRACT*/
     $("composer").addEventListener("submit", function (e) {
       e.preventDefault();
       var v = input.value.trim();
-      if (!v || !state.sessionId) { return; }
+      if (!v || !state.sessionId || tierLocked()) { return; }
       input.value = "";
       if (!state.activeCard || !state.activeCard.batch) {   // a typed line answers a single card, never a form
         collapseActive(state.activeCard ? state.activeCard.card.question + " — " + v : "");

@@ -197,14 +197,107 @@ def test_depth_chips_send_the_budget_commands_before_the_first_batch() -> None:
     chips = function_body("depthChips")
     assert "I.BUDGETS.forEach" in chips and '"depth-chip"' in chips and '"aria-pressed"' in chips
     assert "I.budgetCommand(id)" in function_body("chooseDepth")
-    assert "depthChips()" in function_body("startButtons"), "in the welcome block"
-    assert (
-        "depthChips()"
-        in JS.split("    playback: function (p) {", 1)[1].split("    question_batch:", 1)[0]
-    ), "and on the playback card"
+    assert "I.BUDGETS.forEach" in function_body("tierCards"), (
+        "the welcome block offers the same three tiers"
+    )
+    assert "tierCards()" in function_body("renderWelcome")
+    playback = JS.split("    playback: function (p) {", 1)[1].split("    question_batch:", 1)[0]
+    assert "depthChips()" in playback and "!state.depth" in playback, (
+        "the compact chips stay on the playback card only for an idea that came without a tier"
+    )
     assert "state.progress.of_about" in function_body("depthKnown"), "the budget known so far"
     for name in ("quick", "standard", "thorough"):
         assert f'"{name}"' in HELPER
+
+
+# ---- Compass v2: the tier first ----------------------------------------------------------------------------
+
+
+def test_the_welcome_block_asks_for_the_tier_before_the_idea() -> None:
+    cards = function_body("tierCards")
+    assert 'class: "tier-card"' in cards and '"aria-pressed"' in cards and 'type: "button"' in cards
+    for key in ("ui.v2.tier_title", "ui.v2.tier_help", "ui.v2.tier_quick_desc"):
+        assert key in JS, key
+    assert 'id: "tier-title"' in cards and 'id: "tier-help"' in cards
+    assert '"aria-labelledby": "tier-title"' in cards and '"aria-describedby": "tier-help"' in cards
+    labels = function_body("depthLabels")
+    assert "ui.v2.tier_standard_desc" in labels and "ui.v2.tier_thorough_desc" in labels
+    # the choice becomes a chip with a Change link, until the first batch arrives
+    welcome = function_body("renderWelcome")
+    assert 'class: "tier-chip"' in welcome and "ui.v2.tier_chosen" in welcome
+    assert "if (!state.batches.length)" in welcome and "tier-change" in welcome
+    assert "ui.v2.tier_change_label" in welcome
+    assert (
+        "renderWelcome();"
+        in JS.split("    question_batch: function (p) {", 1)[1].split("    notice:", 1)[0]
+    ), "the Change link goes away when the first batch arrives"
+    # the idea buttons wait for the tier too
+    assert "disabled: locked" in function_body("startButtons")
+    assert ".tier-card" in CSS and ".tier-chip" in CSS and "max-width: 520px" in CSS
+
+
+def test_the_idea_box_stays_disabled_until_a_tier_is_chosen_and_says_why() -> None:
+    gate = function_body("applyComposerGate")
+    for token in (
+        "composer-input",
+        "composer-send",
+        "composer-mic",
+        "composer-gate",
+        "tierLocked()",
+    ):
+        assert token in gate, token
+    assert (
+        ".disabled = locked" in gate and 'setAttribute("aria-describedby", "composer-gate")' in gate
+    )
+    assert "ui.v2.tier_needed" in gate and "ui.v2.composer_locked" in gate
+    tag = element("composer-gate")
+    assert 'role="status"' in tag and "hidden" in tag
+    assert HTML.index('id="composer-gate"') < HTML.index('id="composer"'), (
+        "the reason sits above the idea box"
+    )
+    assert "I.tierRequired(" in function_body("tierLocked")
+    submit = JS.split('$("composer").addEventListener("submit"', 1)[1].split(
+        "input.addEventListener", 1
+    )[0]
+    assert "tierLocked()" in submit, "a stray Enter cannot send an idea without a tier"
+    assert "applyComposerGate();" in function_body("applyChromeStrings"), (
+        "and the copy follows the language"
+    )
+    assert "applyComposerGate();" in function_body("chooseDepth")
+
+
+def test_choosing_a_tier_sends_the_budget_command_and_rolls_back_when_it_fails() -> None:
+    body = function_body("chooseDepth")
+    assert 'type: "command"' in body and "I.budgetCommand(id)" in body and "quiet: true" in body
+    assert "state.depth = prev" in body, "a failed save puts the page back"
+    assert '$("composer-input").focus()' in body, "the next thing to do is typing the idea"
+    # commands queue behind each other, so the tier always reaches the server before the idea
+    send = function_body("sendEvent")
+    assert "sendQueue" in send and "state.awaitingTier = false" in send
+
+
+def test_the_server_welcome_card_is_replaced_by_the_welcome_block() -> None:
+    assert 'var WELCOME_FRAME = "welcome";' in JS
+    handler = JS.split("    card: function (p) {", 1)[1].split("var loc", 1)[0]
+    assert "WELCOME_FRAME" in handler and "return;" in handler
+    replay = function_body("replayHistory")
+    assert "WELCOME_FRAME" in replay and "I.replaySummary(items)" in replay
+    assert "state.depth = summary.tier" in replay, (
+        "a reopened project shows the tier it already chose"
+    )
+    assert "showWelcome()" in function_body("openSession")
+
+
+def test_the_new_tier_numbers_are_in_both_languages() -> None:
+    en = load_catalog().strings["en"]
+    hi = load_catalog().strings["hi"]
+    assert en["ui.interview.depth_quick_hint"] == "About 7 questions"
+    assert en["ui.interview.depth_standard_hint"] == "About 12 questions"
+    assert en["ui.interview.depth_thorough_hint"] == "25 or more questions"
+    for key, number in (("quick", "7"), ("standard", "12"), ("thorough", "25")):
+        assert number in hi[f"ui.interview.depth_{key}_hint"], key
+    for stale in ("about 5", "about 25 questions"):
+        assert stale not in "\n".join(en.values()).lower()
 
 
 # ---- Brief ------------------------------------------------------------------------------------------------
