@@ -23,6 +23,8 @@ Normative sources: the [product spec](../product/context-engine-spec.md) (what) 
 
 (Steps 3 and 4 together are the PLANNING state: one run with one Stop button.) The call specs are listed in [the prompt catalog](../prompts/prompt-catalog.md). Enterprise mode runs the same engines under a different policy: several approvers per gate, audit, deeper research ([policy format](../specs/policy-format.md)).
 
+**Compass, the new first agent.** Next to Discover there is a second implementation of step 1: [Compass](../packages/compass.md) (`mde_compass`, call ids `cmp.*`, port 8110), a self-contained package with its own Brief schema (hashed, versioned, evidence-tiered), data-driven catalog, store, HTTP API and test UI, designed in [doc 11](../architecture-v3/11-discovery-agent-design.md). It imports only core, contracts, the gateway and persistence, is not wired into `mde_flow` yet, and ends at Gate 1 with a hand-off stub; `mde_discovery` stays untouched until a later task retires it. See [ADR 0012](../adr/0012-compass-package-boundaries-and-layering.md), [the API](../api/compass.md) and [the runbook](../runbooks/compass.md).
+
 ## One page, as text
 
 ```
