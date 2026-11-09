@@ -244,6 +244,64 @@ def test_an_older_server_that_still_shows_one_at_a_time_is_asked_for_the_form_on
     assert 'I.modeCommand("answer_all")' in body and "quiet: true" in body
 
 
+# ---- Compass v2: several answers can be true, and a typed answer next to them --------------------------------
+
+
+def test_a_pick_several_question_has_select_all_none_of_these_and_a_typed_answer() -> None:
+    controls = function_body("formControls")
+    assert "select-all" in controls and "select-none" in controls
+    assert "I.toggleSelectAll(card, entry)" in controls and "I.toggleNone(card, entry)" in controls
+    assert "I.canSelectAll(card)" in controls and "I.canNone(card)" in controls
+    assert "I.togglePick(card, entry, o.id, input.checked)" in controls
+    assert '"aria-pressed"' in controls, "both tools say whether they are on"
+    assert "ui.v2.select_all" in controls and "ui.v2.select_none" in controls
+    # the typed answer is on screen next to the options, not behind a click, and is sent with the ticks
+    assert "I.showsCustom(card)" in controls and "otherRow(null)" in controls
+    assert "ui.v2.custom_many" in controls
+    # buttons are disabled with the rest of the question when "You decide" is on
+    assert 'querySelectorAll("input, textarea, button")' in function_body("formItem")
+    assert ".pick-tools" in CSS and ".form-other" in CSS
+
+
+def test_a_single_choice_can_be_picked_or_typed_and_the_last_action_wins() -> None:
+    controls = function_body("formControls")
+    assert "entry.choice = I.OTHER" in controls and "radio.checked = true" in controls
+    assert "is-idle" in controls and "syncIdle" in controls, "the unused side is shown as unused"
+    assert ".form-other.is-idle" in CSS
+
+
+def test_the_priority_question_ranks_the_ticks_and_keeps_the_typed_answer() -> None:
+    controls = function_body("formControls")
+    assert (
+        'type === "priority"' in controls
+        and "rank-list" in controls
+        and "I.movePick(entry, id, -1)" in controls
+    )
+    assert (
+        "I.movePick(entry, id, 1)" in controls
+        and "ui.v2.rank_up" in controls
+        and "ui.v2.rank_remove" in controls
+    )
+    assert "ui.v2.priority_hint" in controls and "focus()" in controls, (
+        "the arrow keeps the keyboard where it was"
+    )
+    assert not re.search(r'type === "priority"[^;]*select-all', controls), (
+        "no select-all on a ranking"
+    )
+    assert 'return effectiveType(card) === "pick_many" && optionIds(card).length >= 2;' in HELPER
+    assert ".rank-row" in CSS
+
+
+def test_a_form_question_without_fields_reads_like_an_open_question_everywhere() -> None:
+    assert "var type = I.effectiveType(card);" in function_body("formControls")
+    assert 'I.effectiveType(card) === "open_prompt"' in function_body("cardForm")
+    assert 'I.effectiveType(card) === "open_prompt"' in function_body("cardConfirm")
+    assert (
+        'if ((type === "quick_form" || type === "confirm") && !((card.options || []).length))'
+        in HELPER
+    )
+
+
 def test_the_layout_toggle_is_gone_and_ask_more_lives_near_the_composer() -> None:
     bar = re.search(r'<div id="interview-bar".*?</div>', HTML, flags=re.S)
     assert bar, "the interview bar is in the fragment"

@@ -277,5 +277,13 @@
   "ui.v2.blank_list": "Left blank (question {list}): we will decide those for you.",
   "ui.v2.all_blank": "Nothing answered yet. If you send now, we will decide all of these for you.",
   "ui.v2.line_skipped": "Skipped, we decide",
-  "ui.v2.line_none": "None of these"
+  "ui.v2.line_none": "None of these",
+  "ui.v2.select_all": "Select all",
+  "ui.v2.select_none": "None of these",
+  "ui.v2.custom_many": "Anything else? Type it here",
+  "ui.v2.priority_hint": "Tick the ones that matter most for the first version. The order you tick them in is their rank; use the arrows to change it.",
+  "ui.v2.rank_title": "Your top picks, most important first",
+  "ui.v2.rank_up": "Move up: {label}",
+  "ui.v2.rank_down": "Move down: {label}",
+  "ui.v2.rank_remove": "Remove from your picks: {label}"
 }

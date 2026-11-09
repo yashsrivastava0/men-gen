@@ -187,6 +187,14 @@ CONTRACT*/
     "ui.v2.all_blank": "Nothing answered yet. If you send now, we will decide all of these for you.",
     "ui.v2.line_skipped": "Skipped, we decide",
     "ui.v2.line_none": "None of these",
+    "ui.v2.select_all": "Select all",
+    "ui.v2.select_none": "None of these",
+    "ui.v2.custom_many": "Anything else? Type it here",
+    "ui.v2.priority_hint": "Tick the ones that matter most for the first version. The order you tick them in is their rank; use the arrows to change it.",
+    "ui.v2.rank_title": "Your top picks, most important first",
+    "ui.v2.rank_up": "Move up: {label}",
+    "ui.v2.rank_down": "Move down: {label}",
+    "ui.v2.rank_remove": "Remove from your picks: {label}",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -588,6 +596,7 @@ CONTRACT*/
       } } })));
   }
   function cardConfirm(card, body) {
+    if (I.effectiveType(card) === "open_prompt") { cardOpen(card, body); return; }
     card.options.forEach(function (o) {
       var input = h("input", { type: "text", "aria-label": o.label });
       input.value = o.label;
@@ -601,7 +610,10 @@ CONTRACT*/
         answer(card, out);
       } } })));
   }
-  function cardForm(card, body) { textFields(card, body, true); }
+  function cardForm(card, body) {
+    if (I.effectiveType(card) === "open_prompt") { cardOpen(card, body); return; }   // no fields to fill: an open question
+    textFields(card, body, true);
+  }
   function cardLook(card, body) {
     var grid = h("div", { class: "look-grid", role: "group", "aria-label": card.question });
     card.options.forEach(function (o, i) {
@@ -659,7 +671,8 @@ CONTRACT*/
     /** The typed "something else": a text field that is always on screen (no extra click). For a single choice it
         has its own radio, so the last action (pick or type) is the one that counts. */
     function otherRow(radio) {
-      var text = h("input", { type: "text", "aria-label": t("ui.something_else"), placeholder: placeholder || t("card.custom_placeholder") });
+      var text = h("input", { type: "text", "aria-label": radio ? t("ui.something_else") : t("ui.v2.custom_many"),
+        placeholder: placeholder || t("card.custom_placeholder") });
       text.value = entry.other || "";
       var row = h("div", { class: "form-option form-other" });
       function sync() { row.classList.toggle("is-idle", !!radio && !!text.value.trim() && entry.choice !== I.OTHER); }
@@ -670,6 +683,7 @@ CONTRACT*/
         onChange();
       });
       if (radio) { row.appendChild(h("label", { class: "form-other-label" }, radio, h("span", { text: t("ui.something_else") }))); }
+      else { row.appendChild(h("span", { class: "form-other-label", text: t("ui.v2.custom_many") })); }
       row.appendChild(text);
       row.syncIdle = sync;
       sync();
@@ -700,17 +714,68 @@ CONTRACT*/
       wrap.appendChild(group);
     } else if (type === "pick_many" || type === "priority") {
       var boxes = [];
-      if (type === "priority") { wrap.appendChild(h("div", { class: "hint", text: t("ui.interview.priority_hint") })); }
+      var byId = {};
+      opts.forEach(function (o) { byId[o.id] = o; });
+      var allBtn = null, noneBtn = null, rankBox = null, rankList = null;
+      /** Everything that shows the picks (ticks, the two tools, the ranking) is drawn from the entry in one place. */
+      function paintPicks() {
+        boxes.forEach(function (b) { b.input.checked = entry.picks.indexOf(b.id) >= 0; });
+        if (allBtn) { allBtn.setAttribute("aria-pressed", I.allSelected(card, entry) ? "true" : "false"); }
+        if (noneBtn) { noneBtn.setAttribute("aria-pressed", entry.none ? "true" : "false"); }
+        if (rankBox) { paintRank(); }
+      }
+      function paintRank(focusId, dir) {
+        clear(rankList);
+        rankBox.hidden = !entry.picks.length;
+        entry.picks.forEach(function (id, i) {
+          var o = byId[id];
+          if (!o) { return; }
+          function btn(d, glyph, labelKey, disabled, run) {
+            return h("button", { class: "btn btn-quiet", type: "button", text: glyph, disabled: disabled, data: { id: id, dir: d },
+              "aria-label": t(labelKey, { label: o.label }), on: { click: run } });
+          }
+          rankList.appendChild(h("li", { class: "rank-row" },
+            h("span", { class: "rank-n", text: String(i + 1) }), h("span", { class: "option-label", text: o.label }),
+            btn("up", "↑", "ui.v2.rank_up", i === 0, function () { I.movePick(entry, id, -1); paintRank(id, "up"); onChange(); }),
+            btn("down", "↓", "ui.v2.rank_down", i === entry.picks.length - 1, function () { I.movePick(entry, id, 1); paintRank(id, "down"); onChange(); }),
+            btn("remove", "✕", "ui.v2.rank_remove", false, function () { I.togglePick(card, entry, id, false); paintPicks(); onChange(); })));
+        });
+        if (focusId) {   // the arrow that was pressed has been redrawn: keep the keyboard where it was
+          var again = rankList.querySelector('button[data-id="' + focusId + '"][data-dir="' + dir + '"]:not(:disabled)') ||
+            rankList.querySelector('button[data-id="' + focusId + '"]:not(:disabled)');
+          if (again) { again.focus(); }
+        }
+      }
+      if (type === "priority") { wrap.appendChild(h("div", { class: "hint", text: t("ui.v2.priority_hint") })); }
+      if (I.canSelectAll(card) || I.canNone(card)) {   // several answers can be true: all of them, or none of them
+        var tools = h("div", { class: "pick-tools", role: "group", "aria-label": card.question });
+        if (I.canSelectAll(card)) {
+          allBtn = h("button", { class: "toggle select-all", type: "button", "aria-pressed": "false", text: t("ui.v2.select_all"),
+            on: { click: function () { I.toggleSelectAll(card, entry); paintPicks(); onChange(); } } });
+          tools.appendChild(allBtn);
+        }
+        if (I.canNone(card)) {
+          noneBtn = h("button", { class: "toggle select-none", type: "button", "aria-pressed": "false", text: t("ui.v2.select_none"),
+            on: { click: function () { I.toggleNone(card, entry); paintPicks(); onChange(); } } });
+          tools.appendChild(noneBtn);
+        }
+        wrap.appendChild(tools);
+      }
       var checks = h("div", { class: "options", role: "group", "aria-labelledby": qid });
       opts.forEach(function (o) {
         var input = checkInput("checkbox", qid, o.id);
-        input.checked = entry.picks.indexOf(o.id) >= 0;
         boxes.push({ id: o.id, input: input });
-        input.addEventListener("change", function () { I.togglePick(card, entry, o.id, input.checked); onChange(); });
+        input.addEventListener("change", function () { I.togglePick(card, entry, o.id, input.checked); paintPicks(); onChange(); });
         checks.appendChild(h("label", { class: "form-option" }, input, optionBody(o)));
       });
-      if (custom) { checks.appendChild(otherRow(null)); }
+      if (custom) { checks.appendChild(otherRow(null)); }   // typed next to the ticks: both are sent
       wrap.appendChild(checks);
+      if (type === "priority") {
+        rankList = h("ol", { class: "rank-list" });
+        rankBox = h("div", { class: "rank-box" }, h("div", { class: "hint", text: t("ui.v2.rank_title") }), rankList);
+        wrap.appendChild(rankBox);
+      }
+      paintPicks();
     } else if (type === "confirm" || type === "quick_form") {
       opts.forEach(function (o) {
         var input = h("input", { type: "text", "aria-label": o.label, placeholder: type === "quick_form" ? (o.reason || "") : "" });

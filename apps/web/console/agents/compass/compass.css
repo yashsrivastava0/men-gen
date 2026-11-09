@@ -380,3 +380,10 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
 .batch-form.is-sending .send-all { cursor: progress; }
 .form-other.is-idle { opacity: 0.6; }
 .qgroup:disabled .why-btn { cursor: not-allowed; }
+
+/* Several answers can be true: select all, none of these, a typed answer next to the ticks, a ranking */
+.pick-tools { display: flex; flex-wrap: wrap; gap: var(--s1); }
+.form-other .form-other-label { font-size: 13px; color: var(--muted); }
+.rank-box { display: grid; gap: 4px; }
+.rank-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.rank-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto auto; gap: 4px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 8px; }
