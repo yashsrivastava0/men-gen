@@ -65,7 +65,7 @@ def build_ports(runner: CallRunner, catalog: Catalog) -> Ports:
     chosen: dict[str, Any] = {}
     for name, attr in PORT_BY_CALL.items():
         mod = _module(name, "adapter")
-        cls = None
+        cls: Any = None
         if mod is not None:
             for _, obj in inspect.getmembers(mod, inspect.isclass):
                 if obj.__module__ == mod.__name__ and obj.__name__.endswith("Adapter"):

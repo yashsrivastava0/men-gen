@@ -6,7 +6,7 @@ it sees. Event ids are sequential so runs are reproducible.
 
 from __future__ import annotations
 
-from typing import Any
+from typing import Any, cast
 
 from pydantic import JsonValue
 
@@ -65,8 +65,13 @@ class Conversation:
         self, text: str, *, mode: str = "text", contributor: str | None = None
     ) -> TurnResult:
         return await self.send(
-            UserMessage(event_id=self._id(), text=text, input_mode=mode, contributor_id=contributor)
-        )  # type: ignore[arg-type]
+            UserMessage(
+                event_id=self._id(),
+                text=text,
+                input_mode=cast(Any, mode),
+                contributor_id=contributor,
+            )
+        )
 
     async def answer(
         self, value: JsonValue, *, custom: str | None = None, card: Card | None = None
@@ -110,20 +115,24 @@ class Conversation:
 
     async def feedback(self, target: str, reason: str, text: str = "") -> TurnResult:
         return await self.send(
-            BriefFeedback(event_id=self._id(), target=target, reason=reason, text=text)
-        )  # type: ignore[arg-type]
+            BriefFeedback(event_id=self._id(), target=target, reason=cast(Any, reason), text=text)
+        )
 
     async def decide(self, asm_id: str, decision: str, value: JsonValue = None) -> TurnResult:
         return await self.send(
-            AssumptionDecision(event_id=self._id(), id=asm_id, decision=decision, value=value)
-        )  # type: ignore[arg-type]
+            AssumptionDecision(
+                event_id=self._id(), id=asm_id, decision=cast(Any, decision), value=value
+            )
+        )
 
     async def lookup(
         self, action: str, *, text: str = "", request_id: str | None = None
     ) -> TurnResult:
         return await self.send(
-            LookupEdit(event_id=self._id(), action=action, text=text, request_id=request_id)
-        )  # type: ignore[arg-type]
+            LookupEdit(
+                event_id=self._id(), action=cast(Any, action), text=text, request_id=request_id
+            )
+        )
 
     async def approve(self, *, contributor: str | None = None, stale: bool = False) -> TurnResult:
         brief = await self.service.get_brief(self.caller, self.session_id)
