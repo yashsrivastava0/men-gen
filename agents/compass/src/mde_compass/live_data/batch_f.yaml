@@ -9,6 +9,8 @@
 #   needle         a distinctive typed fact at turn 2; it must still be in the final Brief
 #   contradiction  an anchor statement at turn 3, a correction of it later; the newest statement must win
 #   pivot          a chat message before the listed turn: the direction changes, history is kept
+# If the engine ends an interview before those turns are reached, the user presses "Ask me more" (at most
+# ``ask_more_max`` times), so the planted facts still meet the whole Brief pipeline.
 #
 # "Specific" lines have six or more words or a number; "vague" lines are two to four words with no number,
 # comma or "and" (the offline stand-in for the model reads them the same way).
@@ -29,7 +31,8 @@ sessions:
       box and my riders deliver it.
     budget: thorough
     start_locale: en
-    max_actions: 40
+    max_actions: 45
+    ask_more_max: 2
     text_on_choice_every: 4
     answer_cycle: [specific, specific, vague, specific, vague, specific, specific, vague, specific]
     skip_turns: [9]
@@ -145,7 +148,8 @@ sessions:
       owners check stock and expiry dates, place restock orders and see what they owe us.
     budget: thorough
     start_locale: en
-    max_actions: 40
+    max_actions: 45
+    ask_more_max: 2
     text_on_choice_every: 4
     answer_cycle: [specific, vague, specific, specific, vague, specific, specific, vague, specific]
     skip_turns: [9]

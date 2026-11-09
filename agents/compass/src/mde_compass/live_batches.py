@@ -155,6 +155,8 @@ class SessionDef(_Data):
     expect_language: tuple[str, ...] = ()
     max_actions: int = Field(default=40, ge=1)
     max_answers: int | None = Field(default=None, ge=1)
+    # "Ask me more" presses when the engine ends the interview before the planted turns are reached
+    ask_more_max: int = Field(default=0, ge=0)
     tail: Literal["stop", "you_decide"] = (
         "stop"  # after max_answers: stop, or tire out (the fatigue rule)
     )
@@ -508,10 +510,9 @@ class AnswerPolicy:
         self._pivot_sent = False
         # Skips and "you decide" are owed from their turn on: a card that cannot take one (it must be confirmed,
         # or the button is off) hands it to the next card, and two are never put back to back (that is fatigue).
-        self._owed: list[tuple[int, ActionKind]] = sorted(
-            [(t, "skip") for t in sdef.skip_turns]
-            + [(t, "you_decide") for t in sdef.you_decide_turns]
-        )
+        skips: list[tuple[int, ActionKind]] = [(t, "skip") for t in sdef.skip_turns]
+        decides: list[tuple[int, ActionKind]] = [(t, "you_decide") for t in sdef.you_decide_turns]
+        self._owed: list[tuple[int, ActionKind]] = sorted(skips + decides)
         self._last_quiet = -10
 
     # ------------------------------------------------------------------------------------- planted
@@ -522,6 +523,18 @@ class AnswerPolicy:
             return None
         self._pivot_sent = True
         return pivot.text
+
+    def last_planted_turn(self) -> int:
+        """The latest turn on which something is planted (a needle, an anchor, a correction or the pivot)."""
+        s = self.sdef
+        turns = [0]
+        if s.needle:
+            turns.append(s.needle.turn)
+        if s.contradiction:
+            turns += [s.contradiction.anchor_turn, s.contradiction.correction_turn]
+        if s.pivot:
+            turns.append(s.pivot.turn)
+        return max(turns)
 
     def _planted(self, turn: int) -> tuple[str, str] | None:
         s = self.sdef
@@ -800,10 +813,20 @@ async def _drive(ctx: RunContext, sd: SessionData, svc: Service, conv: Conversat
 
     policy = AnswerPolicy(sdef)
     answered: set[str] = set()
+    asked_more = 0
     turn = 0
     for _ in range(sdef.max_actions):
         state = (await svc.get_session(conv.caller, conv.session_id)).state
         if state not in OPEN_STATES:
+            # The engine ended the interview before everything planted was said: press "Ask me more", as a person
+            # who still has something to add would (the deepen mode asks more on the thinnest areas).
+            if asked_more < sdef.ask_more_max and turn < policy.last_planted_turn():
+                asked_more += 1
+                await conv.command("ask_more")
+                sd.messages.append({"turn": turn + 1, "tag": "ask_more", "text": "", "wall_ms": 0})
+                ctx.check_allowance()
+                if (await svc.get_session(conv.caller, conv.session_id)).state in OPEN_STATES:
+                    continue
             break
         if sdef.max_answers is not None and turn >= sdef.max_answers and sdef.tail == "stop":
             sd.notes.append(f"stopped after {turn} answers (max_answers)")
@@ -1052,14 +1075,23 @@ def unmapped_questions(cards: Sequence[Card], catalog: Catalog) -> list[str]:
     return [c.id for c in cards if not c.need_ids or not all(known(n) for n in c.need_ids if n)]
 
 
-def fallback_counts(sd: SessionData) -> dict[str, int]:
+def fallback_counts(sd: SessionData) -> dict[str, Any]:
+    """Both fallback numbers. ``interview_block`` is ``meta.interview.fallback_count``, which only counts the
+    planner, auditor, rephrase, summary and compile fallbacks. ``calls`` counts EVERY call-log entry with outcome
+    ``fallback`` (understand_turn, situate, probe_handoff and the rest), and ``calls_by_spec`` splits it by spec."""
     block = sd.brief.meta.interview if sd.brief else None
+    by_spec = Counter(e.spec_id for e in sd.call_log if e.outcome == "fallback")
     return {
         "interview_block": block.fallback_count if block else 0,
-        "calls": sum(1 for c in sd.calls if c["fallback"]),
+        "calls": sum(by_spec.values()),
+        "calls_by_spec": dict(sorted(by_spec.items())),
         "cards": sum(1 for q in sd.qa if q.card.fallback or q.card.origin == "fallback"),
         "batches": sum(1 for b in sd.batches if b.used_fallback),
     }
+
+
+def _no_fallbacks(counts: Mapping[str, Any]) -> bool:
+    return all(not v for v in counts.values())
 
 
 def common_checks(sd: SessionData, cards: Sequence[Card]) -> list[Check]:
@@ -1071,10 +1103,11 @@ def common_checks(sd: SessionData, cards: Sequence[Card]) -> list[Check]:
     return [
         Check(
             "fallback_count",
-            "no fallback card, batch or call (a fallback is a failure)",
+            "no fallback anywhere: the interview block's count AND every call-log entry with outcome fallback "
+            "(a fallback is a failure)",
             dict(fb),
             0,
-            all(v == 0 for v in fb.values()),
+            _no_fallbacks(fb),
             session=sid,
         ),
         Check(

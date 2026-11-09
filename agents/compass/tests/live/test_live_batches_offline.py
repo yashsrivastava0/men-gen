@@ -23,15 +23,18 @@ import pytest
 from mde_compass import live_batches as lb
 from mde_compass.catalog import load_catalog
 from mde_compass.compose import build_service
+from mde_compass.config import MODEL_ID, BudgetPolicy
 from mde_compass.domain import Brief, Card, StoredEvent
 from mde_compass.domain.brief import DomainFact
 from mde_compass.domain.cards import CardOption, SkipSpec, YouDecide
 from mde_compass.domain.common import BriefItem, Provenance
-from mde_compass.domain.interview import Fact, QaRecord
+from mde_compass.domain.interview import Fact, FactStatus, QaRecord
 from mde_compass.engine.ports import ExtractedFact, TurnUnderstanding
 from mde_compass.engine.service import Service
 from mde_core.clock import FakeClock
+from mde_core.money import usd_to_micros
 from mde_core.settings import load_settings
+from mde_llm_gateway.pricing import Pricing
 
 LIVE_ENV = {"LLM_MODE": "live", "ALLOW_LIVE_LLM": "1"}
 CAP = 3_000_000
@@ -189,14 +192,14 @@ def test_a_script_mistake_is_refused_with_the_file_named(tmp_path: Path) -> None
 @pytest.mark.parametrize("batch", lb.BATCH_IDS)
 def test_the_plan_prices_every_planned_call_and_stays_under_the_allowance(batch: str) -> None:
     data = lb.load_batch(batch)
-    price = lb.Pricing.load().price_for(lb.MODEL_ID)
-    allowance = lb.usd_to_micros(data.allowance_usd)
+    price = Pricing.load().price_for(MODEL_ID)
+    allowance = usd_to_micros(data.allowance_usd)
     plan = lb.build_plan(
         data,
         lb.load_costs(),
         allowance_micros=allowance,
         spent_micros=0,
-        policy=lb.BudgetPolicy(),
+        policy=BudgetPolicy(),
         price=price,
     )
     assert plan.calls_total > 0 and 0 < plan.expected_micros < plan.ceiling_micros
@@ -208,7 +211,7 @@ def test_the_plan_prices_every_planned_call_and_stays_under_the_allowance(batch:
 
 def test_an_unpriced_call_in_a_script_is_refused() -> None:
     costs = lb.load_costs()
-    price = lb.Pricing.load().price_for(lb.MODEL_ID)
+    price = Pricing.load().price_for(MODEL_ID)
     with pytest.raises(ValueError, match=r"cmp\.not_a_call"):
         lb.estimate_session({"cmp.not_a_call": 1}, costs, price)
 
@@ -689,7 +692,7 @@ def test_the_contradiction_check_wants_the_old_fact_inactive_and_the_correction_
     correction = make_card("Q-012", needs=("scope.priority",))
     actions = [act(3, anchor, "text", tag="anchor"), act(12, correction, "text", tag="correction")]
 
-    def facts(old: str, new: str) -> list[Fact]:
+    def facts(old: FactStatus, new: FactStatus) -> list[Fact]:
         return [
             Fact(
                 id="FCT-007",
@@ -699,7 +702,7 @@ def test_the_contradiction_check_wants_the_old_fact_inactive_and_the_correction_
                 origin="stated",
                 qa_card_id="Q-003",
                 status=old,
-            ),  # type: ignore[arg-type]
+            ),
             Fact(
                 id="FCT-021",
                 type="rule",
@@ -708,7 +711,7 @@ def test_the_contradiction_check_wants_the_old_fact_inactive_and_the_correction_
                 origin="stated",
                 qa_card_id="Q-012",
                 status=new,
-            ),  # type: ignore[arg-type]
+            ),
         ]
 
     assert (
@@ -1248,3 +1251,57 @@ def test_replaying_the_recorded_live_batch_needs_no_cassette_that_is_missing(bat
         f"the recording?): {sorted({c['spec_id'] for c in missing})}"
     )
     assert report["stopped"] is None
+
+
+# =============================================================================== both fallback numbers
+def test_the_fallback_check_counts_every_call_log_fallback_per_spec_not_only_the_blocks_count() -> (
+    None
+):
+    from mde_compass.domain.interview import InterviewBlock
+    from mde_compass.store.ports import CallLogEntry
+
+    def entry(spec: str, outcome: str) -> CallLogEntry:
+        return CallLogEntry(call_id=f"call_{spec}_{outcome}", spec_id=spec, outcome=outcome)  # type: ignore[arg-type]
+
+    brief = Brief()
+    brief.meta.interview = InterviewBlock(fallback_count=0)  # the block sees none of these
+    sd = f_session(
+        brief=brief,
+        call_log=[
+            entry("cmp.understand_turn", "fallback"),
+            entry("cmp.understand_turn", "fallback"),
+            entry("cmp.probe_handoff", "fallback"),
+            entry("cmp.plan_questions", "ok"),
+        ],
+    )
+    counts = lb.fallback_counts(sd)
+    assert counts["interview_block"] == 0 and counts["calls"] == 3
+    assert counts["calls_by_spec"] == {"cmp.probe_handoff": 1, "cmp.understand_turn": 2}
+    check = next(c for c in lb.common_checks(sd, []) if c.id == "fallback_count")
+    assert check.passed is False and check.value["calls_by_spec"]["cmp.understand_turn"] == 2
+    clean = f_session(brief=brief, call_log=[entry("cmp.plan_questions", "ok")])
+    assert next(c for c in lb.common_checks(clean, []) if c.id == "fallback_count").passed is True
+
+
+def test_every_report_check_for_fallbacks_shows_both_numbers(e_report: dict[str, Any]) -> None:
+    for c in e_report["checks"]:
+        if c["id"] == "fallback_count":
+            assert {"interview_block", "calls", "calls_by_spec"} <= set(c["value"])
+    s = e_report["sessions"][0]
+    assert s["brief"]["meta_interview"]["fallback_count"] == 0 and all(
+        not c["fallback"] for c in s["calls"]
+    )
+
+
+# ================================================================================ "Ask me more" when ended early
+def test_the_user_presses_ask_me_more_when_the_engine_ends_before_the_planted_turns() -> None:
+    sdef = lb.load_batch("F").sessions[0].model_copy(update={"budget": "quick", "ask_more_max": 2})
+    report = run(lb.load_batch("F").model_copy(update={"sessions": (sdef,)}))
+    session = report["sessions"][0]
+    assert [m["tag"] for m in session["messages"]] == [
+        "ask_more",
+        "pivot",
+    ]  # the pivot turn was reached
+    quiet = sdef.model_copy(update={"ask_more_max": 0})
+    plain = run(lb.load_batch("F").model_copy(update={"sessions": (quiet,)}))
+    assert len(session["answers"]) >= len(plain["sessions"][0]["answers"])
