@@ -17,7 +17,7 @@ _P = CALL_PROFILES[CALL_ID]
 SPEC: CompassCallSpec[UnderstandInput, UnderstandOutput] = CompassCallSpec(
     spec=CallSpec(
         id=CALL_ID,
-        version=1,
+        version=2,
         input_model=UnderstandInput,
         output_model=UnderstandOutput,
         system_template="system.jinja",
@@ -27,7 +27,15 @@ SPEC: CompassCallSpec[UnderstandInput, UnderstandOutput] = CompassCallSpec(
         reasoning_effort=_P.effort,
         max_output_tokens=_P.max_output_tokens,
         mock_handler="mde_compass.calls.understand_turn.mock:handle",
-        untrusted_inputs=("text", "recent_turns"),
+        # everything that carries the user's words, or text derived from them, is data and never instructions
+        untrusted_inputs=(
+            "text",
+            "recent_turns",
+            "fact_digest",
+            "focus_question",
+            "focus_intent",
+            "focus_selected_labels",
+        ),
         cacheable=False,
         repair=True,
         fallback="compass.understand_turn",

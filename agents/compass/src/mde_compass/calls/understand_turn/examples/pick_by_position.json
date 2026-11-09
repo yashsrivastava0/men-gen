@@ -148,7 +148,14 @@
         "fields": []
       }
     ],
-    "recent_turns": []
+    "recent_turns": [],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_intent": "",
+    "focus_need_ids": [],
+    "focus_selected_labels": [],
+    "needs": [],
+    "fact_digest": ""
   },
   "output": {
     "intent": "answer",
@@ -166,6 +173,34 @@
     "language": "en",
     "safety_flags": [],
     "ambiguous": [],
-    "confidence": 0.75
+    "confidence": 0.75,
+    "facts": [
+      {
+        "type": "requirement",
+        "statement": "How it earns money: subscription",
+        "quote": "the second one",
+        "topics": [
+          "idea"
+        ],
+        "entities": [],
+        "consumers": [
+          "research",
+          "blueprint"
+        ],
+        "confidence": 0.85,
+        "aspects": [],
+        "effects": [
+          {
+            "slot_id": "idea.business_model",
+            "value_json": "\"subscription\"",
+            "mode": "set"
+          }
+        ],
+        "corrects": ""
+      }
+    ],
+    "flags": [],
+    "glossary_terms": [],
+    "contradicts": []
   }
 }

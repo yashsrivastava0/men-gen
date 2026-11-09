@@ -125,7 +125,14 @@
         "fields": []
       }
     ],
-    "recent_turns": []
+    "recent_turns": [],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_intent": "",
+    "focus_need_ids": [],
+    "focus_selected_labels": [],
+    "needs": [],
+    "fact_digest": ""
   },
   "output": {
     "intent": "answer",
@@ -167,6 +174,101 @@
     "language": "hi",
     "safety_flags": [],
     "ambiguous": [],
-    "confidence": 0.75
+    "confidence": 0.75,
+    "facts": [
+      {
+        "type": "requirement",
+        "statement": "Kind of app: catalog_commerce",
+        "quote": "दुकान",
+        "topics": [
+          "idea"
+        ],
+        "entities": [],
+        "consumers": [
+          "research",
+          "blueprint"
+        ],
+        "confidence": 0.55,
+        "aspects": [],
+        "effects": [
+          {
+            "slot_id": "idea.category",
+            "value_json": "\"catalog_commerce\"",
+            "mode": "set"
+          }
+        ],
+        "corrects": ""
+      },
+      {
+        "type": "context",
+        "statement": "Languages: hi; en",
+        "quote": "हिंदी और अंग्रेज़ी",
+        "topics": [
+          "experience"
+        ],
+        "entities": [],
+        "consumers": [
+          "design",
+          "screens"
+        ],
+        "confidence": 0.7,
+        "aspects": [],
+        "effects": [
+          {
+            "slot_id": "locales",
+            "value_json": "[\"hi\", \"en\"]",
+            "mode": "set"
+          }
+        ],
+        "corrects": ""
+      },
+      {
+        "type": "requirement",
+        "statement": "How people sign in: no sign in",
+        "quote": "बिना लॉगिन",
+        "topics": [
+          "auth"
+        ],
+        "entities": [],
+        "consumers": [
+          "blueprint"
+        ],
+        "confidence": 0.65,
+        "aspects": [],
+        "effects": [
+          {
+            "slot_id": "auth.methods",
+            "value_json": "[\"no_sign_in\"]",
+            "mode": "set"
+          }
+        ],
+        "corrects": ""
+      },
+      {
+        "type": "requirement",
+        "statement": "Your idea in one line: मुझे दुकान के लिए ऐप चाहिए, बिना लॉगिन के, हिंदी और अंग्रेज़ी में",
+        "quote": "मुझे दुकान के लिए ऐप चाहिए, बिना लॉगिन के, हिंदी और अंग्रेज़ी में",
+        "topics": [
+          "idea"
+        ],
+        "entities": [],
+        "consumers": [
+          "all"
+        ],
+        "confidence": 0.7,
+        "aspects": [],
+        "effects": [
+          {
+            "slot_id": "idea.summary",
+            "value_json": "\"मुझे दुकान के लिए ऐप चाहिए, बिना लॉगिन के, हिंदी और अंग्रेज़ी में\"",
+            "mode": "set"
+          }
+        ],
+        "corrects": ""
+      }
+    ],
+    "flags": [],
+    "glossary_terms": [],
+    "contradicts": []
   }
 }

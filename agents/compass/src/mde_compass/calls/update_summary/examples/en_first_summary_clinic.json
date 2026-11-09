@@ -1,0 +1,57 @@
+{
+  "name": "en_first_summary_clinic",
+  "input": {
+    "language": "en",
+    "previous_topics": [],
+    "new_facts_digest": "FCT-001 [context|clinic] A family clinic in Indore with three doctors (from the first message)\nFCT-002 [rule|booking] Patients book fixed 15-minute slots (from Q-001)\nFCT-003 [rule|booking] Walk-ins are allowed in the afternoon only (from Q-001)\nFCT-004 [preference|tone] The app should feel calm and not like a hospital (from Q-004)",
+    "through_fact_id": "FCT-004"
+  },
+  "output": {
+    "topics": [
+      {
+        "topic": "clinic",
+        "decisions": [
+          "Family clinic in Indore with three doctors"
+        ],
+        "open_issues": [],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-001"
+        ]
+      },
+      {
+        "topic": "booking",
+        "decisions": [
+          "Fixed 15-minute slots",
+          "Walk-ins in the afternoon only"
+        ],
+        "open_issues": [
+          "How a missed slot is handled is not yet known"
+        ],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-002",
+          "FCT-003"
+        ]
+      },
+      {
+        "topic": "tone",
+        "decisions": [
+          "Calm, not like a hospital"
+        ],
+        "open_issues": [],
+        "vocabulary": [],
+        "tone": [
+          "calm",
+          "not clinical"
+        ],
+        "fact_ids": [
+          "FCT-004"
+        ]
+      }
+    ],
+    "through_fact_id": "FCT-004"
+  }
+}

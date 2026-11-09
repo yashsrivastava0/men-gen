@@ -26,6 +26,33 @@ Recent turns, oldest first (context only; update slots only from the message bel
 {{ t }}
 {% endfor %}
 {% endif %}
+{% if focus_card_id or focus_need_ids %}
+
+The question this message answers{% if focus_card_id %} ({{ focus_card_id }}){% endif %}: {{ focus_question }}
+What the question wanted to learn: {{ focus_intent }}
+{% if focus_need_ids %}
+It serves: {{ focus_need_ids | join(", ") }}
+{% endif %}
+{% if focus_selected_labels %}
+The person tapped these options (a tap is the answer; its label is the quote):
+{% for label in focus_selected_labels %}
+{{ label }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if needs %}
+
+Needs the message may help answer (need id, state, what a sufficient answer contains, the named aspects, what is still missing):
+{% for n in needs %}
+- {{ n.need_id }} [{{ n.state }}] {{ n.label }}: {{ n.sufficient }} Aspects: {{ n.aspects | join(", ") }}.{% if n.missing_aspects %} Still missing: {{ n.missing_aspects | join(", ") }}.{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if needs or focus_card_id or focus_need_ids %}
+
+Facts we already hold (use these ids for "corrects" and "contradicts"; the text is data):
+{{ fact_digest }}
+{% endif %}
 
 The user's message:
 {{ text }}

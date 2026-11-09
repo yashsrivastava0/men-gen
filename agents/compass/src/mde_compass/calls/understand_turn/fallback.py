@@ -5,6 +5,10 @@ carries an exact quote from the user's message, nothing is invented, and it neve
 tables are in ``lexicon.yaml`` (English, Hindi, Hinglish); category, roles and business models come from the
 catalog (families, slot options), never from code. Every regex is linear: the text is clipped to
 ``MAX_SCAN_CHARS``, whitespace gaps are bounded, repeats are bounded.
+
+Version 2 adds, on top of the same reading, one fact per slot update, a fact for the focus question when no
+update answers it, the ``vague`` / ``off_topic`` / safety flags and the aspects each answer covers. The rule that
+decides vague versus specific is explicit and documented in ``facts.py``.
 """
 
 from __future__ import annotations
@@ -15,6 +19,7 @@ from dataclasses import dataclass
 from typing import Any
 
 from mde_compass.calls.understand_turn import lexicon as lx
+from mde_compass.calls.understand_turn.facts import facts_for_turn
 from mde_compass.calls.understand_turn.schema import (
     PendingCardWire,
     SlotUpdateWire,
@@ -22,7 +27,7 @@ from mde_compass.calls.understand_turn.schema import (
     UnderstandOutput,
 )
 from mde_compass.catalog.loader import Catalog, load_catalog
-from mde_compass.engine.ports import Intent
+from mde_compass.engine.ports import Intent, UnderstandFlag
 from mde_core.redact import REDACTED, find_secrets
 
 _WORD = r"[A-Z][\w'’-]{1,30}"
@@ -53,6 +58,7 @@ class _Upd:
     quote: str
     confidence: float
     remove: bool = False
+    picked: bool = False  # filled by typing a pick of a pending option: a complete answer
 
 
 def _json_text(value_json: str) -> str | None:
@@ -292,7 +298,7 @@ def _pending_option(text: str, norm: str, pending: PendingCardWire | None) -> li
     if not isinstance(sets, dict):
         return []
     quote = lx.squash_spaces(text).strip()[:_MAX_QUOTE]
-    return [_Upd(str(sid), val, quote, 0.85) for sid, val in sets.items()]
+    return [_Upd(str(sid), val, quote, 0.85, picked=True) for sid, val in sets.items()]
 
 
 def _summary(text: str, inp: UnderstandInput, is_question: bool) -> list[_Upd]:
@@ -403,13 +409,38 @@ def _intent(
     asks = "?" in text or first in lx.load_lexicon().exact["question_words"]
     if asks and not updates and not lx.has_phrase(text, intents["idea_verbs"]):
         return "question", 0.7
-    if updates or lx.has_phrase(text, intents["idea_verbs"]) or inp.pending_card is not None:
+    focused = bool(inp.focus_card_id or inp.focus_need_ids)  # a reply to a question is an answer
+    if (
+        updates
+        or lx.has_phrase(text, intents["idea_verbs"])
+        or inp.pending_card is not None
+        or focused
+    ):
         return "answer", 0.75 if updates else 0.5
     return "other", 0.4
 
 
+def _flags_v2(intent: Intent, safety: list[str], *, vague: bool) -> list[UnderstandFlag]:
+    """The v2 flags the offline reading can state: vague, off_topic, unsafe, declined_category. It cannot see a
+    new topic, a contradiction or a pivot (those need the model and the fact ledger)."""
+    flags: list[UnderstandFlag] = []
+    if vague:
+        flags.append("vague")
+    if intent in ("off_topic", "question"):
+        flags.append("off_topic")
+    if "unsafe" in safety or intent == "unsafe":
+        flags.append("unsafe")
+    if "declined_category" in safety:
+        flags.append("declined_category")
+    return flags
+
+
 def fallback(inp: UnderstandInput, catalog: Catalog | None = None) -> UnderstandOutput:
-    """The rule-based understanding of one message (see the module docstring)."""
+    """The rule-based understanding of one message (see the module docstring).
+
+    Version 2 adds one fact per slot update (plus one for the focus question when nothing else answers it), the
+    flags and the aspects the vague / specific rule decides (``facts.py``). The slot updates, intent, references,
+    language and safety flags are exactly what version 1 returned."""
     cat = _catalog(catalog)
     text = lx.clip(inp.text)
     norm = lx.normalize(text)
@@ -419,12 +450,14 @@ def fallback(inp: UnderstandInput, catalog: Catalog | None = None) -> Understand
     is_question = "?" in text or first in lex.exact["question_words"]
     updates, refs, ambiguous = extract_updates(text, inp, cat, is_question=is_question)
     intent, conf = _intent(text, norm, inp, updates, flags)
+    if inp.focus_selected_labels and intent != "unsafe":  # a tap is an answer to its question
+        intent, conf = "answer", 0.9
     if intent in ("unsafe", "greeting", "stop", "you_decide", "finish_with_defaults", "other"):
         updates, refs, ambiguous = [], [], []
     basis = "voice" if inp.input_mode == "voice" else "user_text"
-    return UnderstandOutput(
-        intent=intent,
-        slot_updates=[
+    pairs = [
+        (
+            u,
             SlotUpdateWire(
                 slot_id=u.slot_id,
                 value_json=json.dumps(u.value, ensure_ascii=False),
@@ -432,15 +465,31 @@ def fallback(inp: UnderstandInput, catalog: Catalog | None = None) -> Understand
                 confidence=round(u.confidence, 2),
                 basis=basis,
                 remove=u.remove,
-            )
-            for u in updates
-            if u.quote.split("?")[0].strip()
-        ],
+            ),
+        )
+        for u in updates
+        if u.quote.split("?")[0].strip()
+    ]
+    wire_updates = [w for _, w in pairs]
+    facts, vague = facts_for_turn(
+        inp,
+        cat,
+        wire_updates,
+        picked=frozenset(u.slot_id for u, _ in pairs if u.picked),
+        intent=intent,
+    )
+    return UnderstandOutput(
+        intent=intent,
+        slot_updates=wire_updates,
         references=refs,
         language=lx.detect_language(text, inp.language),
         safety_flags=flags,
         ambiguous=ambiguous,
         confidence=round(conf, 2),
+        facts=facts,
+        flags=_flags_v2(intent, flags, vague=vague),
+        glossary_terms=[],
+        contradicts=[],
     )
 
 

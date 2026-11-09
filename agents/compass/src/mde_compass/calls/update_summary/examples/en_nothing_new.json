@@ -1,0 +1,41 @@
+{
+  "name": "en_nothing_new",
+  "input": {
+    "language": "en",
+    "previous_topics": [
+      {
+        "topic": "pharmacy",
+        "decisions": [
+          "Owners track stock and expiry"
+        ],
+        "open_issues": [],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-001",
+          "FCT-002"
+        ]
+      }
+    ],
+    "new_facts_digest": "",
+    "through_fact_id": "FCT-002"
+  },
+  "output": {
+    "topics": [
+      {
+        "topic": "pharmacy",
+        "decisions": [
+          "Owners track stock and expiry"
+        ],
+        "open_issues": [],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-001",
+          "FCT-002"
+        ]
+      }
+    ],
+    "through_fact_id": "FCT-002"
+  }
+}

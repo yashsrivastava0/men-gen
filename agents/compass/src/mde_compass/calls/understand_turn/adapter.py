@@ -1,13 +1,20 @@
-"""``UnderstandAdapter``: the engine's ``Understander`` port over the ``cmp.understand_turn`` call."""
+"""``UnderstandAdapter``: the engine's ``Understander`` port over the ``cmp.understand_turn`` call.
+
+Version 2 takes the question being answered (``focus``), the needs table (``needs``) and the fact digest and
+returns facts, flags, glossary terms and contradictions next to the slot updates. Called without those three (the
+legacy path) it behaves as version 1 did: the same slot updates, intent, references, language and safety flags.
+"""
 
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from typing import Literal
 
 from mde_compass.calls.base import CallRunner
 from mde_compass.calls.understand_turn import lexicon as lx
 from mde_compass.calls.understand_turn.schema import (
+    NeedWire,
     PendingCardWire,
     PendingOptionWire,
     SlotCurrentWire,
@@ -22,10 +29,24 @@ from mde_compass.calls.understand_turn.values import ValueError_, parse_json, va
 from mde_compass.catalog.loader import Catalog
 from mde_compass.config import DEFAULT_CONFIG
 from mde_compass.domain.cards import Card
-from mde_compass.engine.ports import SlotUpdate, TurnContext, TurnUnderstanding
+from mde_compass.domain.interview import FactEffect
+from mde_compass.domain.situation import GlossaryCandidate
+from mde_compass.engine.ports import (
+    AnswerFocus,
+    ExtractedFact,
+    NeedBrief,
+    SlotUpdate,
+    TurnContext,
+    TurnUnderstanding,
+)
 from mde_core.redact import redact_text
 
 MAX_HINTS = 25
+MAX_NEEDS = 20
+"""At most this many needs go on the wire: the focus needs first, then the open ones by impact."""
+MAX_DIGEST_CHARS = 40_000
+"""Safety bound on the fact digest (the engine already fits it to its token budget)."""
+OPEN_STATES = ("missing", "partial")
 
 
 def _pending(card: Card | None) -> PendingCardWire | None:
@@ -44,10 +65,12 @@ def _pending(card: Card | None) -> PendingCardWire | None:
     )
 
 
-def select_hints(catalog: Catalog, ctx: TurnContext) -> list[SlotHintWire]:
-    """At most 25 slots a message could plausibly touch: the pending card's, those already filled (so a
-    correction can reach them), then the rest in dependency order (must slots first)."""
-    pending = list(ctx.pending_card.slots) if ctx.pending_card else []
+def select_hints(
+    catalog: Catalog, ctx: TurnContext, focus_slots: Sequence[str] = ()
+) -> list[SlotHintWire]:
+    """At most 25 slots a message could plausibly touch: the focus question's, the pending card's, those already
+    filled (so a correction can reach them), then the rest in dependency order (must slots first)."""
+    pending = [*focus_slots, *(ctx.pending_card.slots if ctx.pending_card else [])]
     filled = [s.slot_id for s in ctx.slots if s.value not in (None, "", [])]
     order = catalog.slot_ids_by_order()
     musts = [s for s in order if catalog.slots[s].level == "must"]
@@ -70,11 +93,60 @@ def select_hints(catalog: Catalog, ctx: TurnContext) -> list[SlotHintWire]:
     ]
 
 
+def _need_order(need: NeedBrief, focus_ids: Sequence[str]) -> tuple[int, int, int]:
+    """Focus needs first, then open ones (missing, partial) by impact, then the rest."""
+    return (
+        0 if need.need_id in focus_ids else 1,
+        0 if need.state in OPEN_STATES else 1,
+        -need.impact,
+    )
+
+
+def need_wires(needs: Sequence[NeedBrief], focus_ids: Sequence[str]) -> list[NeedWire]:
+    """The needs table on the wire: ordered by ``_need_order`` (stable) and capped at ``MAX_NEEDS``."""
+    ordered = sorted(needs, key=lambda n: _need_order(n, focus_ids))
+    return [
+        NeedWire(
+            need_id=n.need_id,
+            label=n.label,
+            sufficient=n.sufficient,
+            aspects=list(n.aspects),
+            state=n.state,
+            missing_aspects=list(n.missing_aspects),
+        )
+        for n in ordered[:MAX_NEEDS]
+    ]
+
+
+def _clip_lines(text: str, limit: int) -> str:
+    """At most ``limit`` characters, cut at a line end (a fact line is never split in the middle)."""
+    if len(text) <= limit:
+        return text
+    cut = text[:limit].rpartition("\n")[0]
+    return cut or text[:limit]
+
+
 def build_input(
-    catalog: Catalog, ctx: TurnContext, text: str, input_mode: Literal["text", "voice"]
+    catalog: Catalog,
+    ctx: TurnContext,
+    text: str,
+    input_mode: Literal["text", "voice"],
+    *,
+    focus: AnswerFocus | None = None,
+    needs: Sequence[NeedBrief] | None = None,
+    fact_digest: str = "",
 ) -> tuple[UnderstandInput, bool]:
-    """The wire input (secrets redacted; recent turns capped) and whether a secret was found."""
-    clean, kinds = redact_text(text)
+    """The wire input (secrets redacted; recent turns capped) and whether a secret was found.
+
+    For a tap with no typed text, the selected option labels stand in for the message (the person's words are
+    the option they chose). Without ``focus``, ``needs`` and ``fact_digest`` the v2 fields are empty."""
+    labels = [redact_text(lbl)[0] for lbl in focus.selected_labels] if focus else []
+    message = text if text.strip() or not labels else "; ".join(labels)
+    clean, kinds = redact_text(message)
+    digest = redact_text(_clip_lines(fact_digest, MAX_DIGEST_CHARS))[
+        0
+    ]  # not a "secret" flag: not this turn
+    focus_ids = list(focus.need_ids) if focus else []
     turns = ctx.recent_turns[-DEFAULT_CONFIG.gate.history_slice_turns :]
     return (
         UnderstandInput(
@@ -91,8 +163,15 @@ def build_input(
                 for s in ctx.slots
                 if s.state != "empty"
             ],
-            slot_hints=select_hints(catalog, ctx),
+            slot_hints=select_hints(catalog, ctx, focus_ids),
             recent_turns=[TurnWire(role=t.role, text=redact_text(t.text)[0]) for t in turns],
+            focus_card_id=focus.card_id if focus else "",
+            focus_question=redact_text(focus.question)[0] if focus else "",
+            focus_intent=focus.intent if focus else "",
+            focus_need_ids=focus_ids,
+            focus_selected_labels=labels,
+            needs=need_wires(needs or [], focus_ids),
+            fact_digest=digest,
         ),
         bool(kinds),
     )
@@ -121,6 +200,24 @@ def to_domain(
         )
     flag_list: list[str] = [*out.safety_flags, *(["secret"] if secret else [])]
     flags = list(dict.fromkeys(flag_list))
+    facts = [
+        ExtractedFact(
+            type=f.type,
+            statement=f.statement,
+            quote=f.quote,
+            topics=list(f.topics),
+            entities=list(f.entities),
+            consumers=list(f.consumers),
+            confidence=f.confidence,
+            aspects=list(f.aspects),
+            effects=[
+                FactEffect(slot_id=e.slot_id, value_json=e.value_json, mode=e.mode)
+                for e in f.effects
+            ],
+            corrects=f.corrects or None,
+        )
+        for f in out.facts
+    ]
     return TurnUnderstanding(
         intent=out.intent,
         slot_updates=updates,
@@ -129,6 +226,12 @@ def to_domain(
         safety_flags=flags,
         ambiguous=out.ambiguous,
         confidence=out.confidence,
+        facts=facts,
+        flags=list(out.flags),
+        glossary_terms=[
+            GlossaryCandidate(term=g.term, synonyms=list(g.synonyms)) for g in out.glossary_terms
+        ],
+        contradicts=list(out.contradicts),
     )
 
 
@@ -140,9 +243,24 @@ class UnderstandAdapter:
         self._catalog = catalog
 
     async def understand(
-        self, ctx: TurnContext, text: str, *, input_mode: Literal["text", "voice"] = "text"
+        self,
+        ctx: TurnContext,
+        text: str,
+        *,
+        input_mode: Literal["text", "voice"] = "text",
+        focus: AnswerFocus | None = None,
+        needs: list[NeedBrief] | None = None,
+        fact_digest: str = "",
     ) -> TurnUnderstanding:
-        wire, secret = build_input(self._catalog, ctx, text, input_mode)
+        wire, secret = build_input(
+            self._catalog,
+            ctx,
+            text,
+            input_mode,
+            focus=focus,
+            needs=needs,
+            fact_digest=fact_digest,
+        )
         result = await self._runner.run(
             SPEC, wire, session_id=ctx.session_id, tenant_id=ctx.tenant_id
         )
