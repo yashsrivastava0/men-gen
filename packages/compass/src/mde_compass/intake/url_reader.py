@@ -27,6 +27,7 @@ application/pdf only, scripts and hidden elements dropped from HTML. A 401/403 o
 from __future__ import annotations
 
 import asyncio
+import codecs
 import ipaddress
 import socket
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
@@ -46,6 +47,7 @@ ALLOWED_PORTS = frozenset({80, 443, 8080, 8443})
 ALLOWED_TYPES = frozenset({"text/html", "text/plain", "application/pdf"})
 MAX_ADDRESSES = 16
 MAX_CONNECT_TRIES = 3
+_BAD_CODECS = frozenset({"utf-7"})
 _REDIRECT_STATUS = frozenset({301, 302, 303, 307, 308})
 _PRIVATE_STATUS = frozenset({401, 403, 407})
 _BLOCKED_SUFFIXES = (
@@ -316,19 +318,20 @@ def validate_url(url: str) -> ValidatedUrl:
             raise refuse("address is not public")
         literal, name = str(ip6), f"[{ip6}]"
     else:
-        trimmed = host.rstrip(".")
-        ip4 = parse_loose_ipv4(trimmed)
+        try:
+            name = _normalise_name(
+                host
+            )  # IDNA: full-width dots and look-alikes become plain ASCII first
+        except ValueError as exc:
+            raise refuse("bad host name") from exc
+        ip4 = parse_loose_ipv4(name)
         if ip4 is not None:
             if ip_is_blocked(ip4):
                 raise refuse("address is not public")
             literal, name = str(ip4), str(ip4)
         else:
-            if trimmed[:1].isdigit() and all(c in _NUMBERISH for c in trimmed):
+            if name[:1].isdigit() and all(c in _NUMBERISH for c in name):
                 raise refuse("malformed address")
-            try:
-                name = _normalise_name(host)
-            except ValueError as exc:
-                raise refuse("bad host name") from exc
             if "." not in name or name == "localhost" or name.endswith(_BLOCKED_SUFFIXES):
                 raise refuse("not a public host name")
     netloc = name if port is None else f"{name}:{port}"
@@ -418,11 +421,17 @@ def _mime(headers: Mapping[str, str]) -> tuple[str, str]:
 
 
 def _decode(body: bytes, charset: str) -> str:
+    """Decode with the declared charset when it is an ordinary text codec; UTF-7 and exotic codecs are ignored."""
     if charset and charset not in ("utf-8", "utf8"):
         try:
-            return body.decode(charset, errors="replace")
+            codec = codecs.lookup(charset)
         except LookupError:
-            pass
+            return decode_text(body)
+        if codec.name not in _BAD_CODECS:
+            try:
+                return body.decode(codec.name, errors="replace")
+            except (LookupError, UnicodeError):
+                pass
     return decode_text(body)
 
 

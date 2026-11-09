@@ -296,3 +296,37 @@ def test_csv_parser_is_linear(hostile: str) -> None:
 def test_eml_parser_hostile_headers() -> None:
     hostile = ("Subject: " + "a" * 50_000 + "\n\nbody").encode()
     _fast(parse_document, "x.eml", hostile, limits=LIMITS)
+
+
+def test_xml_external_entities_are_never_resolved(tmp_path, build) -> None:
+    import io
+    import zipfile
+
+    secret = tmp_path / "secret.txt"
+    secret.write_text("TOPSECRETFILE")
+    doctype = f'<!DOCTYPE r [<!ENTITY xxe SYSTEM "file://{secret}">]>'
+
+    def tamper(data: bytes, member: str, old: str, new: str) -> bytes:
+        src = zipfile.ZipFile(io.BytesIO(data))
+        out = io.BytesIO()
+        with zipfile.ZipFile(out, "w", zipfile.ZIP_DEFLATED) as zf:
+            for info in src.infolist():
+                part = src.read(info.filename)
+                if info.filename == member:
+                    text = part.decode()
+                    head, _, rest = text.partition("?>")
+                    text = f"{head}?>{doctype}{rest}".replace(old, new)
+                    part = text.encode()
+                zf.writestr(info.filename, part)
+        return out.getvalue()
+
+    docx = tamper(build.docx(), "word/document.xml", "Users pay by UPI or card.", "&xxe;")
+    xlsx = tamper(build.xlsx(), "xl/workbook.xml", 'name="Roles"', 'name="&xxe;"')
+    for name, data in (("a.docx", docx), ("a.xlsx", xlsx)):
+        try:
+            doc = parse_document(name, data, limits=LIMITS)
+        except IntakeError:
+            continue  # refusing the file is fine
+        assert "TOPSECRETFILE" not in "\n".join(
+            s.text + s.pointer + s.heading for s in doc.sections
+        )

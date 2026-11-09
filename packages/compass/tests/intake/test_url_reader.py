@@ -125,6 +125,8 @@ async def blocked(net: Net, url: str, code: str = "blocked_url") -> IntakeError:
         "http://0x7f000001/",  # hex
         "http://0177.0.0.1/",  # octal
         "http://0x7f.1/",
+        "http://127\u30020\u30020\u30021/",  # ideographic full stops fold to dots in IDNA
+        "http://\uff11\uff12\uff17.0.0.1/",  # full-width digits
         "http://017700000001/",
         "http://100.64.0.1/",  # carrier-grade NAT
         "http://100.100.100.200/",  # a cloud metadata address inside 100.64/10
@@ -589,3 +591,28 @@ async def test_httpx_fetcher_brackets_ipv6_and_end_to_end_with_read_url() -> Non
     )
     assert doc.sections[0].text == "hello world"
     assert urls == ["https://[2606:4700:4700::1111]/p"]
+
+
+async def test_utf7_charset_is_not_honoured() -> None:
+    body = b"+ADw-p+AD4-hello+ADw-/p+AD4-"
+    net = Net(
+        pages={
+            "https://example.com/u": FetchResponse(
+                200, {"content-type": "text/plain; charset=utf-7"}, body_of(body)
+            )
+        }
+    )
+    doc = await net.read("https://example.com/u")
+    assert "<p>" not in doc.sections[0].text and "+ADw-" in doc.sections[0].text
+    latin = FetchResponse(
+        200,
+        {"content-type": "text/plain; charset=iso-8859-1"},
+        body_of("caf\u00e9".encode("latin-1")),
+    )
+    assert (
+        await Net(pages={"https://example.com/l": latin}).read("https://example.com/l")
+    ).sections[0].text == "caf\u00e9"
+    bogus = FetchResponse(200, {"content-type": "text/plain; charset=base64"}, body_of(b"abc"))
+    assert (
+        await Net(pages={"https://example.com/b": bogus}).read("https://example.com/b")
+    ).sections[0].text == "abc"
