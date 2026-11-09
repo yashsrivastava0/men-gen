@@ -39,6 +39,7 @@ from typing import Any, Literal, Union, cast, get_args, get_origin
 import yaml
 from pydantic import BaseModel
 
+from mde_compass.calls.plan_questions.schema import PlanOutput
 from mde_compass.calls.registry import all_specs
 from mde_compass.calls.testing import ScriptedGateway
 from mde_core.clock import Clock
@@ -196,6 +197,13 @@ def _error(raw: dict[str, Any]) -> Exception:
     if cls is None:
         raise ValueError(f"unknown error kind {kind!r} (use one of {sorted(ERROR_KINDS)})")
     return cls(str(raw.get("message", f"scripted {kind} failure")))
+
+
+def plan_output(raw: dict[str, Any]) -> PlanOutput:
+    """A hand-written ``cmp.plan_questions`` output (the shorthand of a fixture) as the wire model."""
+    from mde_compass.calls.plan_questions.schema import PlanOutput
+
+    return PlanOutput.model_validate(fill(PlanOutput, _shorthand("cmp.plan_questions", dict(raw))))
 
 
 def _audit_resolver(item: dict[str, Any]) -> Lazy:
