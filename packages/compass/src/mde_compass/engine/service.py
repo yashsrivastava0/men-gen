@@ -14,11 +14,12 @@ committed content change is a new version.
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import contextvars
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
-from typing import Any
+from typing import Any, cast
 
 from pydantic import BaseModel, JsonValue
 
@@ -43,6 +44,8 @@ from mde_compass.domain import (
     section_hashes,
 )
 from mde_compass.domain.cards import CardProgress, CustomInput, SkipSpec, YouDecide
+from mde_compass.domain.changes import ChangeSource
+from mde_compass.domain.common import ProvenanceType
 from mde_compass.domain.events import (
     AssistantMessage,
     AssumptionDecision,
@@ -86,6 +89,7 @@ from mde_compass.engine.ports import (
     ChangeInput,
     HandoffPort,
     Ports,
+    ProbeKind,
     ResolvedTarget,
     SlotView,
     TurnContext,
@@ -117,6 +121,17 @@ from mde_core.logging import get_logger
 log = get_logger(__name__)
 
 _TENANT: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_tenant", default=None)
+
+
+@contextlib.contextmanager
+def tenant_scope(tenant: str) -> Iterator[None]:
+    """Bind the tenant for call-log writes made outside ``handle_event`` (smoke and eval drivers)."""
+    token = _TENANT.set(tenant)
+    try:
+        yield
+    finally:
+        _TENANT.reset(token)
+
 
 WELCOME_FRAME = "welcome"
 VARIANTS_FRAME = "change_variants"
@@ -356,7 +371,7 @@ class Service:
                     except (NotFound, Conflict, TenantViolation):
                         raise
                     except Exception as exc:
-                        log.exception("compass_turn_failed", session=session_id, event=event.type)
+                        log.exception("compass_turn_failed", session=session_id, inbound=event.type)
                         await self._emit_error(caller.tenant_id, session_id, event.event_id, exc)
                 finally:
                     async with self.store.begin(caller.tenant_id) as uow:
@@ -542,7 +557,7 @@ class Service:
     def _prov(self, turn: _Turn, kind: str, quote: str = "") -> Provenance:
         contributor = getattr(turn.event, "contributor_id", None)
         return Provenance(
-            type=kind,
+            type=cast(ProvenanceType, kind),
             ref=turn.turn_id,
             quote=quote[:300],
             date=self.clock.now(),
@@ -738,7 +753,8 @@ class Service:
         self._rebuild(turn)
         self._go(turn, "idea_received", "UNDERSTANDING")
         self._go(turn, "understood", "UNDERSTANDING")
-        items = [PlaybackItem(key="idea.summary", label=self._label(turn, "idea.summary"), value=_text(turn.slots.get("idea.summary").value if turn.slots.get("idea.summary") else ""), basis="your_words")]  # fmt: skip
+        summary_rec = turn.slots.get("idea.summary")
+        items = [PlaybackItem(key="idea.summary", label=self._label(turn, "idea.summary"), value=_text(summary_rec.value if summary_rec else ""), basis="your_words")]  # fmt: skip
         if hyp.category:
             items.append(
                 PlaybackItem(
@@ -876,7 +892,7 @@ class Service:
             if sd is None or sd.default is None or turn.slots.filled(sid):
                 continue
             turn.slots.write(
-                sid, sd.default, state="assumed", provenance=Provenance(type="pattern", ref=f"catalog:{sid}", date=self.clock.now()),
+                sid, cast(JsonValue, sd.default), state="assumed", provenance=Provenance(type="pattern", ref=f"catalog:{sid}", date=self.clock.now()),
                 confidence=0.5, turn_id=turn.turn_id,
             )  # fmt: skip
 
@@ -960,25 +976,25 @@ class Service:
         turn.brief.search_hints = seed.hints
         turn.out.append(LookupPreview(requests=turn.brief.research_requests))
 
-    async def _run_probes(self, turn: _Turn, kinds: Sequence[str]) -> dict[str, Any]:
+    async def _run_probes(self, turn: _Turn, kinds: Sequence[ProbeKind]) -> dict[str, Any]:
         assert self.ports is not None
         ctx = self._ctx(turn)
         results = await asyncio.gather(
             *(self.ports.prober.probe(ctx, k, turn.brief) for k in kinds)
-        )  # type: ignore[arg-type]
+        )
         return dict(zip(kinds, results, strict=True))
 
     async def _probe(self, turn: _Turn) -> bool:
         """Run the three canaries; assume-fixes are applied (shown for approval), ask-fixes become ONE card.
         Returns True when probing is done (passed or flagged degraded), False when a card was asked."""
-        kinds = ["research", "blueprint", "design"]
+        kinds: list[ProbeKind] = ["research", "blueprint", "design"]
         for _ in range(self.config.gate.probe_repair_rounds + 1):
             results = await self._run_probes(turn, kinds)
             for kind, res in results.items():
                 turn.brief.meta.probes[kind] = res.passed
                 turn.out.append(
                     ProbeResultEvent(
-                        kind=kind,
+                        kind=cast(ProbeKind, kind),
                         passed=res.passed,
                         gaps=[g.question for g in res.gaps],
                         round=turn.brief.meta.probe_rounds + 1,
@@ -1104,7 +1120,7 @@ class Service:
             return
         typical = [o for o in card.options if o.basis == "typical"] or list(card.options)
         picked = [o.id for o in typical[:3]]
-        writes = cards_mod.answer_to_writes(card, picked, None, self.catalog)
+        writes = cards_mod.answer_to_writes(card, cast(JsonValue, picked), None, self.catalog)
         if writes:
             self._apply_card_writes(turn, writes, state="assumed", from_tap=True)
             turn.notice(
@@ -1277,7 +1293,13 @@ class Service:
         return self._t(turn, key) if key else path
 
     async def _apply_change(
-        self, turn: _Turn, ops: Sequence[PatchOp], *, source: str, reason: str = "", what: str = ""
+        self,
+        turn: _Turn,
+        ops: Sequence[PatchOp],
+        *,
+        source: ChangeSource,
+        reason: str = "",
+        what: str = "",
     ) -> bool:
         res = patch_mod.apply_ops(
             turn.brief, list(ops), self.catalog, now=self.clock.now(), turn_id=turn.turn_id
@@ -1307,14 +1329,18 @@ class Service:
         if any(op.path.startswith(RESEED_PATH_PREFIXES) for op in ops) and turn.state != "WELCOME":
             await self._seed(turn)
             cs = cs.model_copy(update={"reseeded_research": True})
-        kinds = [k for k, secs in PROBES_BY_SECTION.items() if secs & set(voided)]
+        kinds: list[ProbeKind] = [
+            cast(ProbeKind, k) for k, secs in PROBES_BY_SECTION.items() if secs & set(voided)
+        ]
         if kinds and turn.brief.meta.probes:
             results = await self._run_probes(turn, kinds)
             for k, r in results.items():
                 turn.brief.meta.probes[k] = r.passed
                 turn.out.append(
-                    ProbeResultEvent(kind=k, passed=r.passed, gaps=[g.question for g in r.gaps])
-                )  # type: ignore[arg-type]
+                    ProbeResultEvent(
+                        kind=cast(ProbeKind, k), passed=r.passed, gaps=[g.question for g in r.gaps]
+                    )
+                )
         turn.change_set = cs
         turn.out.append(
             BriefPatch(
@@ -1775,11 +1801,12 @@ class Service:
             page = await uow.events.list_history(
                 session_id, after_idx=after_idx, limit=limit, q=q, turn_ids=turn_ids
             )
-        return {
+        out: dict[str, JsonValue] = {
             "items": [i.model_dump(mode="json") for i in page.items],
             "next_after_idx": page.next_after_idx,
-            "highlighted_turn_ids": highlighted,
+            "highlighted_turn_ids": cast(JsonValue, highlighted),
         }
+        return out
 
     async def provenance(
         self, caller: Caller, session_id: str, item_id: str
