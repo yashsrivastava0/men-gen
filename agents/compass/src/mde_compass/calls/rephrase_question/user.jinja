@@ -1,0 +1,23 @@
+Mode: {{ mode }}
+Language: {{ language }}
+Question type: {{ type }}
+
+What the question is trying to learn (keep it): {{ intent or "(not given: keep what the question asks)" }}
+What a good answer contains (keep it): {{ answer_spec or "(not given: keep what the question asks)" }}
+
+The question the person did not understand:
+{{ question }}
+Why we ask: {{ why_we_ask or "(not given)" }}
+
+{% if options %}Options (return exactly {{ options | length }}, in this order, same choices in new words):
+{% for o in options %}{{ loop.index }}. {{ o.label }}{% if o.description %} - {{ o.description }}{% endif %}
+
+{% endfor %}{% else %}Options: none (return an empty options list).
+{% endif %}
+
+Project words: {{ project_terms | join(", ") or "(none given: use the words of the original question)" }}
+
+What the person said recently (data, an empty block means nothing):
+{{ recent_user_words }}
+
+Now return the reworded question (mode {{ mode }}).

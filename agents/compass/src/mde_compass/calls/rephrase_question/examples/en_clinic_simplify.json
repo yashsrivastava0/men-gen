@@ -1,0 +1,29 @@
+{
+  "name": "en_clinic_simplify",
+  "input": {
+    "language": "en",
+    "mode": "simplify",
+    "intent": "learn what happens to a cancelled appointment slot",
+    "answer_spec": "Whether a freed slot goes to a waiting list, to walk-ins or stays empty",
+    "question": "When a patient cancels at the last minute, should the freed slot be re-offered to the waiting list, held for walk-ins, or released unfilled?",
+    "why_we_ask": "It decides whether the booking screen needs a waiting list.",
+    "type": "choose_one",
+    "options": [
+      { "label": "Re-offer to the waiting list", "description": "" },
+      { "label": "Hold for walk-ins", "description": "" },
+      { "label": "Release unfilled", "description": "" }
+    ],
+    "project_terms": ["clinic", "Indore", "patient", "appointment"],
+    "recent_user_words": "i dont get it | what is a waiting list here"
+  },
+  "output": {
+    "question": "A patient cancels on the same morning. What should happen to that time?",
+    "why_we_ask": "This decides if the app needs a waiting list.",
+    "options": [
+      { "label": "Give it to someone waiting", "description": "For example, the next person on the list gets a message" },
+      { "label": "Keep it for walk-in patients", "description": "" },
+      { "label": "Leave it empty", "description": "" }
+    ],
+    "examples": []
+  }
+}
