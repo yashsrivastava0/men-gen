@@ -1,0 +1,12 @@
+# Named edge-case scenarios that need document or link intake (a deferred phase; docs/architecture-v3/05 and 11).
+# They are listed here so the matrix is complete; each becomes a scenario file when intake lands.
+deferred:
+  - {id: IN-01, case: 200+ page document, reason: "needs document intake (chunking, map-reduce): the intake package is a stub in this phase"}
+  - {id: IN-02, case: Scanned, handwritten or photographed pages, reason: "needs document intake and a vision pass; the gateway has no image input"}
+  - {id: IN-04, case: Document contradicts the chat, reason: "needs a document source to contradict the chat"}
+  - {id: IN-05, case: Documents contradict each other, reason: "needs two uploaded documents"}
+  - {id: IN-07, case: A PRD that is mostly vision and market text, reason: "needs document intake (classification of a business-context document)"}
+  - {id: IN-08, case: Spreadsheets, Jira CSV, decks, emails, reason: "needs document intake (XLSX, CSV, PPTX, EML parsers)"}
+  - {id: IN-10, case: Private Figma, Drive or Confluence links, reason: "needs link intake and the SSRF-safe URL reader"}
+  - {id: IN-14, case: Password-protected or corrupted file, reason: "needs document intake (file validation and error reporting)"}
+  - {id: IN-15, case: Duplicate uploads, reason: "needs document intake (hash dedupe of sources)"}

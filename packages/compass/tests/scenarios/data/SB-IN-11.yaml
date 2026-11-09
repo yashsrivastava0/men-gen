@@ -1,0 +1,22 @@
+id: SB-IN-11
+title: Mixed languages and scripts in one message
+tags: [language, hinglish]
+steps:
+  - say: "Mujhe ek food delivery app chahiye Pune mein, restaurants ke liye, with Hindi aur English support"
+    expect:
+      state: [UNDERSTANDING, PLAYBACK, INTERVIEWING]
+      event_types: [playback]
+      slots:
+        idea.summary: {filled: true}
+        context.geo: {contains: pune}
+        experience.locales: {contains: [hi, en]}
+  - say: "और customers ko payment ke liye UPI chahiye"
+    note: Devanagari and Latin in one sentence; the chat follows without error
+    expect:
+      no_event_types: [brief_approved]
+  - drive: {}
+    expect:
+      state: BRIEF_REVIEW
+final:
+  slots:
+    idea.summary: {provenance: user_text}

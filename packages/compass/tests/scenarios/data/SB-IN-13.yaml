@@ -1,0 +1,26 @@
+id: SB-IN-13
+title: Declined category (game, trading terminal, AR) is declined early with an alternative
+tags: [safety, capabilities, declined]
+steps:
+  - say: "I want to build a 3D multiplayer racing game"
+    expect:
+      notice_code: declined_category
+      text_any: [game, 3d]
+      slots:
+        declined: {count_min: 1, contains: game}
+  - say: "mujhe ek trading terminal banana hai jisme live charts aur orders hon"
+    note: Hinglish keyword guard
+    expect:
+      notice_code: declined_category
+  - say: "an AR app where people try furniture in their room with augmented reality"
+    expect:
+      notice_code: declined_category
+  - say: "OK then, a companion app for racing game fans: race schedules, results and team news, in Pune"
+    note: a companion app is buildable (the alternative offered); it is not declined again
+    expect:
+      no_notice_code: declined_category
+      slots:
+        idea.summary: {contains: companion}
+final:
+  slots:
+    declined: {count_min: 3}

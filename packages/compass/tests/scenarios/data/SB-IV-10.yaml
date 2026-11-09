@@ -1,0 +1,14 @@
+id: SB-IV-10
+title: Voice run-ons are split into atomic statements and read back as a numbered list
+tags: [voice, echo]
+known_issue: BUG-9
+known_issue_note: "dictated run-ons are echoed as one picked-up line; no numbered read-back list of atomic statements is produced for three or more statements"
+steps:
+  - say_voice: "so i want an app for my clinic in pune where patients can book appointments and doctors can see their schedule and also pay online and get reminders on whatsapp and hindi and english both"
+    expect:
+      state: [UNDERSTANDING, PLAYBACK, INTERVIEWING]
+      notice_code: picked_up
+      text_contains: [pune]
+      text_any: ["1.", "1)", "(1)", "1:"]
+      slots:
+        idea.summary: {provenance: voice}

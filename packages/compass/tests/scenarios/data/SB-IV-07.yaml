@@ -1,0 +1,28 @@
+id: SB-IV-07
+title: Enterprise stakeholders disagree, the slot is disputed and never auto-merged
+tags: [enterprise, conflict]
+mode: enterprise
+contributors:
+  - {id: priya, name: Priya (operations), role: requester}
+  - {id: rahul, name: Rahul (sales), role: requester}
+known_issue: BUG-7
+known_issue_note: "a second contributor's different value for a slot overwrites the first instead of marking it disputed: slots_from_brief never restores SlotRecord.contributor_id, so SlotStore.write cannot see two contributors across turns"
+steps:
+  - say: "We need an internal field service app for our technicians in Pune"
+    as: priya
+    expect:
+      state: [UNDERSTANDING, PLAYBACK, INTERVIEWING]
+  - say: "The app should be in English"
+    as: priya
+    expect:
+      slots:
+        experience.locales: {contains: en}
+  - say: "No, the app must be in Hindi only"
+    as: rahul
+    note: a second contributor gives a different value for the same slot
+    expect:
+      slots:
+        experience.locales: {status: disputed, not_tier: Locked}
+final:
+  slots:
+    experience.locales: {status: disputed}

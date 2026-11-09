@@ -1,0 +1,10 @@
+id: SB-DC-04
+title: The same feature in different words is merged and the merge is shown
+tags: [scope, glossary]
+steps:
+  - say: "I want a food delivery app in Pune. Customers can order food, place an order, do checkout of their cart and buy meals."
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+final:
+  slots:
+    scope.*.name: {match: order, match_max: 2}
