@@ -337,3 +337,145 @@ async def test_the_rolling_summary_is_kept_once_the_ledger_outgrows_the_digest_b
     summarised = {i for t in summary.topics for i in t.fact_ids}
     assert summarised  # facts reach the summary by id
     assert summarised <= {f.id for f in facts}
+
+
+async def test_editing_an_answer_supersedes_its_facts_and_rebuilds_the_slots() -> None:
+    from mde_compass.domain.events import AnswerEdit
+
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None and first.need_ids == ["audience.segments"]
+    await conv.answer(
+        "Office workers in Baner and Hinjewadi who order a daily lunch box", card=first
+    )
+    async with svc.store.begin("t1") as uow:
+        before = [f for f in await uow.facts.list(conv.session_id) if f.qa_card_id == first.id]
+    assert before and all(f.status == "active" for f in before)
+
+    await conv.send(
+        AnswerEdit(
+            event_id="e_edit",
+            card_id=first.id,
+            value=None,
+            custom_text="Students and hostel residents near the college, who want cheap dinners every evening",
+        )
+    )
+    async with svc.store.begin("t1") as uow:
+        facts = [f for f in await uow.facts.list(conv.session_id) if f.qa_card_id == first.id]
+        versions = [
+            q
+            for q in await uow.qa.list(conv.session_id, latest_only=False)
+            if q.card_id == first.id
+        ]
+        brief = (await uow.briefs.get(conv.session_id)).brief
+    # the old facts are kept but superseded; the new answer's facts are active; the history keeps both versions
+    assert {f.id for f in before} <= {f.id for f in facts if f.status == "superseded"}
+    assert any(f.status == "active" and "Students" in f.statement for f in facts)
+    assert sorted((q.version, q.status) for q in versions) == [(1, "superseded"), (2, "answered")]
+    seg = brief.audience["segments"]
+    assert "Students" in str(seg.value) and "Office workers" not in str(seg.value)
+    assert any(p.ref.startswith("FCT-") for p in seg.provenance)
+
+
+async def test_an_answer_cannot_be_edited_after_approval() -> None:
+    from mde_compass.domain.events import AnswerEdit
+
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None
+    await conv.answer(LONG, card=first)
+    # an unknown or still-open card cannot be edited: a notice, no change
+    before = len(conv.events)
+    await conv.send(AnswerEdit(event_id="e_edit2", card_id="Q-999", value="x"))
+    assert any(
+        e.type == "notice" and e.payload["code"] == "edit_unavailable" for e in conv.events[before:]
+    )
+
+
+async def test_a_pivot_supersedes_the_old_direction_and_plans_for_the_new_one() -> None:
+    from mde_compass.engine.ports import ExtractedFact, TurnUnderstanding
+
+    svc = planner_service()
+    assert svc.ports is not None
+    real = svc.ports.understander
+
+    class Pivoting:
+        async def understand(self, ctx, text, **kw):  # type: ignore[no-untyped-def]
+            if text.startswith("Actually"):
+                return TurnUnderstanding(
+                    intent="answer",
+                    flags=["pivot"],
+                    facts=[
+                        ExtractedFact(
+                            type="context",
+                            statement="It is an appointment app for a clinic",
+                            quote="it is for a clinic",
+                            topics=["idea"],
+                        )
+                    ],
+                )
+            return await real.understand(ctx, text, **kw)
+
+    object.__setattr__(svc.ports, "understander", Pivoting())
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None
+    await conv.answer(LONG, card=first)
+    async with svc.store.begin("t1") as uow:
+        old_ids = {
+            f.id
+            for f in await uow.facts.list(conv.session_id)
+            if f.status == "active" and "idea" in f.topics
+        }
+    before = len(conv.events)
+    await conv.say("Actually, it is for a clinic")
+    kinds = [e.type for e in conv.events[before:]]
+    assert (
+        "notice" in kinds and "question_batch" in kinds
+    )  # a notice, then a plan for the new direction
+    assert any(e.payload.get("code") == "pivot" for e in conv.events[before:] if e.type == "notice")
+    async with svc.store.begin("t1") as uow:
+        facts = await uow.facts.list(conv.session_id)
+    assert old_ids and all(
+        f.status == "superseded" for f in facts if f.id in old_ids
+    )  # history kept, not deleted
+    assert any(f.status == "active" and "clinic" in f.statement for f in facts)
+
+
+async def test_a_document_uploaded_mid_interview_adds_facts_with_their_source() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    doc = (
+        "Product notes\n\nWe run a tiffin service in Pune. Customers order a monthly meal plan.\n"
+        "Delivery must finish before 12:30. We need a rider app and an admin panel.\n"
+    )
+    res = await svc.ingest_upload(conv.caller, conv.session_id, "notes.txt", doc.encode())
+    conv.events.extend(res.events)
+    async with svc.store.begin("t1") as uow:
+        facts = await uow.facts.list(conv.session_id)
+    from_doc = [f for f in facts if f.origin == "document"]
+    assert from_doc and all(f.source_ref.startswith("SRC-") and f.claim_id for f in from_doc)
+    assert all(f.status == "active" for f in from_doc)
+
+
+async def test_the_questions_and_answers_list_reads_the_ledger_for_the_history_tab() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    first = conv.last_card()
+    assert first is not None
+    await conv.answer(LONG, card=first)
+    await conv.skip()
+    listing = await svc.qa_list(conv.caller, conv.session_id)
+    items = listing["items"]
+    assert isinstance(items, list) and len(items) >= 2
+    one = next(i for i in items if i["card_id"] == first.id)  # type: ignore[index,union-attr]
+    assert one["status"] == "answered" and LONG[:30] in one["answer"] and one["facts"]  # type: ignore[index,operator]
+    assert one["origin"] == "planner" and one["question"] == first.question  # type: ignore[index]
+    assert any(i["status"] == "skipped" for i in items)  # type: ignore[index,union-attr]

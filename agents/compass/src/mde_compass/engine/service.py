@@ -53,6 +53,7 @@ from mde_compass.domain.cards import CardProgress, CustomInput, SkipSpec, YouDec
 from mde_compass.domain.changes import ChangeSource
 from mde_compass.domain.common import ProvenanceType
 from mde_compass.domain.events import (
+    AnswerEdit,
     AssistantMessage,
     AssumptionDecision,
     BatchAnswer,
@@ -520,6 +521,8 @@ class Service(FlowHooks):
             await self._on_link_added(turn, event)
         elif isinstance(event, BatchAnswer):
             await self._on_batch_answer(turn, event)
+        elif isinstance(event, AnswerEdit):
+            await self._on_answer_edit(turn, event)
         await self._commit(turn)
         return cast("InboundEvent | None", turn.internal)
 
@@ -1599,6 +1602,19 @@ class Service(FlowHooks):
                 chips.append(f"{self._label(turn, w.slot_id)}: {_text(value)}"[:80])
         return chips
 
+    async def _on_answer_edit(self, turn: _Turn, ev: AnswerEdit) -> None:
+        """Edit an earlier answer from the Questions-and-answers list (before approval; after it the change flow
+        applies, with its impact preview)."""
+        if not self.interview.active or turn.state in ("APPROVED", "ARCHIVED"):
+            turn.notice("edit_unavailable", self._t(turn, "notice.edit_unavailable"), warn=True)
+            return
+        await self.interview.on_answer_edit(turn, ev.card_id, ev.value, ev.custom_text)
+        self._rebuild(turn)
+        if turn.state == "BRIEF_REVIEW":
+            await self._open_review(turn)
+        else:
+            await self._advance(turn)
+
     async def _on_batch_answer(self, turn: _Turn, ev: BatchAnswer) -> None:
         """ "Answer all at once": the answers of a whole batch form, read in one pass."""
         if not self.interview.active:
@@ -2272,6 +2288,8 @@ class Service(FlowHooks):
             )
         existing = {sid: rec.value for sid, rec in turn.slots.all().items()}
         plan = docflow.plan_from_claims(res.claims, existing)
+        if self.interview.active:  # the document's statements join the fact ledger
+            self.interview.after_ingest(turn, res.claims, src.id)
         chips: list[str] = []
         for w in plan.writes:
             r = turn.slots.write(
@@ -2482,6 +2500,46 @@ class Service(FlowHooks):
         return diff_briefs(
             a.brief, b.brief, from_version=from_version, to_version=to_version
         ).model_dump(mode="json")
+
+    async def qa_list(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        """The Questions-and-answers list (History tab): every question put to the person, the answer in plain
+        words, its status and the facts it produced, so an answer can be edited from there."""
+        async with self.store.begin(caller.tenant_id) as uow:
+            await uow.sessions.get(session_id)
+            qa = await uow.qa.list(session_id)
+            facts = await uow.facts.list(session_id)
+        by_card: dict[str, list[JsonValue]] = {}
+        for fact in facts:
+            if fact.qa_card_id:
+                by_card.setdefault(fact.qa_card_id, []).append(
+                    {"id": fact.id, "statement": fact.statement, "status": fact.status}
+                )
+        items: list[JsonValue] = []
+        for rec in qa:
+            if rec.status in ("dropped",) or (rec.status == "open" and rec.asked_at is None):
+                continue
+            card = rec.card
+            by_id = {o.id: o.label for o in card.options}
+            picked = rec.answer if isinstance(rec.answer, list) else [rec.answer]
+            words = [by_id[str(p)] for p in picked if str(p) in by_id]
+            if rec.custom_text:
+                words.append(rec.custom_text)
+            elif isinstance(rec.answer, str) and not words and rec.answer.strip():
+                words.append(rec.answer.strip())
+            items.append(
+                {
+                    "card_id": rec.card_id, "version": rec.version, "status": rec.status,
+                    "batch_id": rec.batch_id, "group_id": rec.group_id, "origin": card.origin,
+                    "depth": card.depth, "parent_card_id": rec.parent_card_id, "type": card.type,
+                    "question": card.question, "why_we_ask": card.why_we_ask,
+                    "unlocks": cast(JsonValue, list(card.unlocks)), "need_ids": cast(JsonValue, list(card.need_ids)),
+                    "options": [{"id": o.id, "label": o.label} for o in card.options],
+                    "answer": " | ".join(words), "value": rec.answer, "custom_text": rec.custom_text,
+                    "fallback": card.fallback,
+                    "facts": by_card.get(rec.card_id, []),
+                }
+            )  # fmt: skip
+        return {"items": items}
 
     async def history(
         self,

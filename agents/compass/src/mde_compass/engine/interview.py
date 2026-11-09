@@ -26,6 +26,8 @@ from mde_compass.domain.events import CardEvent, Command, Notice, Progress, Ques
 from mde_compass.domain.interview import (
     BatchGroup,
     BatchRecord,
+    Fact,
+    FactType,
     InterviewBlock,
     InterviewSummary,
     NeedStatus,
@@ -827,7 +829,7 @@ class InterviewController:
         self, turn: _Turn, understood: TurnUnderstanding, text: str, input_mode: str
     ) -> list[str]:
         """A typed or spoken message becomes facts like any answer (casual chat included)."""
-        _, chips = self.ingest(
+        new_ids, chips = self.ingest(
             turn,
             understood,
             sources=[text],
@@ -835,6 +837,8 @@ class InterviewController:
             tap=False,
             input_mode=input_mode,
         )
+        if "pivot" in understood.flags and turn.memory.batches:
+            await self.on_pivot(turn, text, new_ids)
         self.touch(turn)
         return chips
 
@@ -862,6 +866,144 @@ class InterviewController:
             return
         turn.state = "INTERVIEWING"
         self.touch(turn)
+
+    # ------------------------------------------------------------------- editing, pivots, documents
+    async def on_answer_edit(
+        self, turn: _Turn, card_id: str, value: JsonValue, custom: str | None
+    ) -> None:
+        """Edit an earlier answer: a new answer version, the old facts superseded (never deleted), the slots they
+        fed rebuilt from the facts that remain, and the questions still waiting planned afresh."""
+        mem = turn.memory
+        qa = mem.qa_for(card_id)
+        if qa is None or qa.status not in ("answered", "skipped", "you_decide"):
+            turn.notice("edit_unavailable", self.svc._t(turn, "notice.edit_unavailable"), warn=True)
+            return
+        now = self._now()
+        old_facts = [f for f in mem.facts if f.qa_card_id == card_id and f.status == "active"]
+        for fact in old_facts:
+            mem.update_fact(fact.model_copy(update={"status": "superseded", "updated_at": now}))
+        fact_projector.reproject(
+            slots_of(old_facts), mem.facts, turn.slots, self.catalog, turn_id=turn.turn_id, now=now
+        )
+        typed = bool(custom) and value in (None, "", [])
+        item = AnswerItem(qa.card, "answer", value, custom, "text" if typed else "tap")
+        new = qa.model_copy(
+            update={
+                "version": qa.version + 1,
+                "status": "answered",
+                "answer": value,
+                "custom_text": custom,
+                "input_mode": item.input_mode,
+                "answered_at": now,
+            }
+        )
+        mem.supersede_qa(qa, new)
+        statuses = self.statuses(turn)
+        understood = await self._interpret(turn, item, statuses)
+        labels, text = self._labels_and_text(item)
+        self.ingest(
+            turn,
+            understood,
+            sources=[*labels, *([text] if text else [])],
+            source_ref=turn.turn_id,
+            card=qa.card,
+            tap=bool(labels) and not custom,
+        )
+        await self.replan_waiting(turn)
+        self.touch(turn)
+
+    async def replan_waiting(self, turn: _Turn) -> None:
+        """Questions not yet shown are planned again from the current facts (an edit or a pivot can drop or add some)."""
+        mem = turn.memory
+        waiting = [q for q in mem.open_qa() if q.asked_at is None]
+        if not waiting:
+            return
+        for qa in waiting:
+            mem.put_qa(qa.model_copy(update={"status": "dropped"}))
+        statuses = self.statuses(turn)
+        result, _ = await self.plan(turn, "replan", statuses)
+        if result.batch.cards():
+            self._emit_batch(turn, result.batch)
+
+    async def on_pivot(self, turn: _Turn, text: str, new_fact_ids: list[str]) -> None:
+        """ "Actually it is for clinics": the earlier facts about the idea and its audience are superseded (history
+        kept), the hypothesis is made again, and what is still waiting is planned again for the new direction."""
+        assert self.svc.ports is not None
+        mem = turn.memory
+        now = self._now()
+        category = turn.slots.get("idea.category")
+        old_category = text_of(category.value) if category is not None else ""
+        about_idea = {"idea", "audience"}
+        feeds = {
+            "idea.summary",
+            "idea.category",
+            "idea.subcategory",
+            "idea.business_model",
+            "audience.segments",
+        }
+        gone: list[Fact] = []
+        for fact in mem.active_facts():
+            if fact.id in new_fact_ids:
+                continue
+            if set(fact.topics) & about_idea or slots_of([fact]) & feeds:
+                mem.update_fact(fact.model_copy(update={"status": "superseded", "updated_at": now}))
+                gone.append(fact)
+        fact_projector.reproject(
+            slots_of(gone), mem.facts, turn.slots, self.catalog, turn_id=turn.turn_id, now=now
+        )
+        situation = await self.svc.ports.situator.situate(self.svc._ctx(turn), user_text=text)
+        turn.brief.meta.hypothesis = situation.hypothesis
+        turn.notice(
+            "pivot",
+            self.svc._t(
+                turn,
+                "notice.pivot",
+                before=old_category or "?",
+                after=situation.hypothesis.category or "?",
+            ),
+            chips=[situation.hypothesis.category] if situation.hypothesis.category else [],
+        )
+        for qa in [q for q in mem.open_qa() if q.asked_at is None]:
+            mem.put_qa(qa.model_copy(update={"status": "dropped"}))
+        statuses = self.statuses(turn)
+        result, _ = await self.plan(turn, "replan", statuses, pivot_from=old_category or None)
+        self._emit_batch(turn, result.batch)
+        self.touch(turn)
+
+    def after_ingest(self, turn: _Turn, claims: Sequence[Any], source_id: str) -> int:
+        """A document's claims become facts of the ledger (origin ``document``, the quote was verified against the
+        chunk by the intake). Returns how many facts were added."""
+        mem = turn.memory
+        now = self._now()
+        kinds: dict[str, FactType] = {
+            "requirement": "requirement", "constraint": "constraint", "business_context": "context",
+            "goal": "goal", "user_or_role": "role", "rule_or_number": "rule", "glossary_term": "glossary",
+            "example": "example", "open_issue": "context", "preference": "preference", "exclusion": "exclusion",
+        }  # fmt: skip
+        added = 0
+        for claim in claims:
+            if getattr(claim, "status", "") not in ("used", "needs_confirming"):
+                continue
+            st = claim.statement
+            fact = Fact(
+                id=mem.next_fact_id(),
+                type=kinds.get(st.type, "context"),
+                statement=st.text.strip()[:1000] or "(empty)",
+                topics=[],
+                consumers=["all"],
+                confidence=st.confidence,
+                origin="document",
+                source_ref=f"{source_id}:{st.pointer}" if st.pointer else source_id,
+                claim_id=claim.id,
+                quote=st.quote.strip()[:500],
+                unverified_quote=False,
+                created_at=now,
+                updated_at=now,
+            )
+            mem.add_fact(fact)
+            added += 1
+        self.touch(turn)
+        return added
 
     async def ask_gap(self, turn: _Turn, slot_id: str) -> bool:
         """A handoff probe found a gap a consumer cannot work without: ask ONE planned question about it (at most

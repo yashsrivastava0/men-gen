@@ -85,6 +85,11 @@ class InterviewMemory:
         self.qa_writes[(record.card_id, record.version)] = record
         return record
 
+    def supersede_qa(self, old: QaRecord, new: QaRecord) -> QaRecord:
+        """An edited answer: the old version is kept (status ``superseded``), the new one becomes current."""
+        self.qa_writes[(old.card_id, old.version)] = old.model_copy(update={"status": "superseded"})
+        return self.put_qa(new)
+
     def qa_for(self, card_id: str) -> QaRecord | None:
         return next((q for q in self.qa if q.card_id == card_id), None)
 

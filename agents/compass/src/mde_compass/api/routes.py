@@ -265,6 +265,12 @@ async def history(
     )
 
 
+@router.get("/sessions/{session_id}/qa")
+async def qa(session_id: str, caller: CallerDep, service: ServiceDep) -> JSONResponse:
+    """Every question put to the person with the answer in plain words and the facts it produced."""
+    return _json(await service.qa_list(caller, session_id))
+
+
 @router.get("/sessions/{session_id}/provenance/{item_id:path}")
 async def provenance(
     session_id: str, item_id: str, caller: CallerDep, service: ServiceDep

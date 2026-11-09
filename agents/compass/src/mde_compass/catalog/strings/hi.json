@@ -191,5 +191,8 @@
   "intake.duplicate": "यह फ़ाइल मेरे पास पहले से है।",
   "interview.group_fallback": "कुछ ज़रूरी सवाल",
   "section.details": "हमने जो ब्योरे दर्ज किए",
-  "view.empty.details": "अभी कोई अतिरिक्त ब्योरा दर्ज नहीं हुआ।"
+  "view.empty.details": "अभी कोई अतिरिक्त ब्योरा दर्ज नहीं हुआ।",
+  "notice.edit_unavailable": "इस जवाब को अभी बदला नहीं जा सकता।",
+  "notice.pivot": "आपने बताया कि यह अब {after} के लिए है, {before} के लिए नहीं। मैंने अपनी समझ बदल दी।",
+  "notice.nothing_more_to_ask": "अब पूछने के लिए कोई ज़रूरी बात बाकी नहीं है।"
 }

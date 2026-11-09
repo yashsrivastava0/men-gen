@@ -942,6 +942,10 @@ class ScriptedService:
             },
         )
 
+    async def qa_list(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        self._get(caller, session_id)
+        return {"items": []}
+
     async def history(
         self,
         caller: Caller,

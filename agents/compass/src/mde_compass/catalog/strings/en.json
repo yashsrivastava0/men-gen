@@ -191,5 +191,8 @@
   "intake.duplicate": "I already have this file.",
   "interview.group_fallback": "A few quick questions",
   "section.details": "Details we captured",
-  "view.empty.details": "No extra details captured yet."
+  "view.empty.details": "No extra details captured yet.",
+  "notice.edit_unavailable": "That answer cannot be edited right now.",
+  "notice.pivot": "You said this is for {after} now, not {before}. I updated what I understood.",
+  "notice.nothing_more_to_ask": "I have nothing important left to ask."
 }
