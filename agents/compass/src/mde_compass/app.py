@@ -26,9 +26,40 @@ from mde_compass.api.routes import health_router, router
 from mde_compass.api.settings import ApiSettings, load_api_settings
 from mde_compass.engine.ports import CompassService
 
-STATIC_DIR = Path(__file__).resolve().parent / "static_ui"
+REPO_ROOT = Path(__file__).resolve().parents[4]
+WEB_DIR_ENV = "MDE_WEB_DIR"
+DEFAULT_WEB_DIR = REPO_ROOT / "apps" / "web" / "console"
 
-__all__ = ["API_PREFIX", "STATIC_DIR", "create_app", "router"]
+
+def web_dir() -> Path:
+    """The directory of the global front end (the test console) that ``/ui/`` serves.
+
+    ``MDE_WEB_DIR`` when set (a relative path is resolved against the repository root), else
+    ``<repo root>/apps/web/console``. The front end lives outside the agent (Global rules B); this
+    package only serves the files and never imports anything from them.
+    """
+    override = os.environ.get(WEB_DIR_ENV, "").strip()
+    if override:
+        path = Path(override).expanduser()
+        return path if path.is_absolute() else REPO_ROOT / path
+    return DEFAULT_WEB_DIR
+
+
+def _checked_web_dir() -> Path:
+    directory = web_dir()
+    hint = f"Set {WEB_DIR_ENV} to a directory that holds index.html (default: apps/web/console)."
+    if not directory.is_dir():
+        raise FileNotFoundError(f"The test console directory does not exist: {directory}. {hint}")
+    if not (directory / "index.html").is_file():
+        raise FileNotFoundError(
+            f"The test console directory has no index.html: {directory}. {hint}"
+        )
+    return directory
+
+
+STATIC_DIR = web_dir()  # kept for callers that read it; create_app() calls web_dir() itself
+
+__all__ = ["API_PREFIX", "STATIC_DIR", "WEB_DIR_ENV", "create_app", "router", "web_dir"]
 
 
 def _default_factory(memory: bool) -> Callable[[], Any]:
@@ -50,7 +81,12 @@ def create_app(
     settings: ApiSettings | None = None,
     memory: bool | None = None,
 ) -> FastAPI:
-    """Build the app. ``memory`` (default: env ``COMPASS_MEMORY=1``) picks the in-memory store."""
+    """Build the app. ``memory`` (default: env ``COMPASS_MEMORY=1``) picks the in-memory store.
+
+    Raises ``FileNotFoundError`` when the test console directory (``web_dir()``) or its
+    ``index.html`` is missing.
+    """
+    console_dir = _checked_web_dir()
     api_settings = settings or load_api_settings()
     use_memory = memory if memory is not None else os.environ.get("COMPASS_MEMORY") == "1"
 
@@ -81,7 +117,6 @@ def create_app(
     async def root() -> RedirectResponse:
         return RedirectResponse("/ui/", status_code=307)
 
-    if STATIC_DIR.is_dir():
-        app.mount("/ui", StaticFiles(directory=STATIC_DIR, html=True), name="ui")
+    app.mount("/ui", StaticFiles(directory=console_dir, html=True), name="ui")
     app.add_middleware(SecurityAndLimitsMiddleware, limit=lambda: api_settings.max_body_bytes)
     return app

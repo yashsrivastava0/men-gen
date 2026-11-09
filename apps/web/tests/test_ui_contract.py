@@ -1,18 +1,19 @@
-"""UI contract: what app.js reads must exist in the view-model / card / event schemas it renders."""
+"""UI contract: what compass.js reads must exist in the view-model / card / event schemas it renders.
+
+The one place where the console is checked against the agent's own models (test-only imports); the
+console code itself imports nothing and reaches the agent through its HTTP API only.
+"""
 
 from __future__ import annotations
 
 import json
 import re
+from pathlib import Path
 from typing import Any, get_args
 
 import httpx
-import pytest
 from pydantic import TypeAdapter
 
-from mde_compass.api.settings import ApiSettings
-from mde_compass.api.testing import ScriptedService
-from mde_compass.app import STATIC_DIR, create_app
 from mde_compass.catalog.loader import load_catalog
 from mde_compass.domain.cards import CARD_TYPES, Card
 from mde_compass.domain.events import (
@@ -24,12 +25,13 @@ from mde_compass.domain.events import (
 )
 from mde_compass.views.models import BriefViewModel
 
-APP_JS = (STATIC_DIR / "app.js").read_text(encoding="utf-8")
+CONSOLE = Path(__file__).resolve().parents[1] / "console"
+APP_JS = (CONSOLE / "agents" / "compass" / "compass.js").read_text(encoding="utf-8")
 
 
 def _contract() -> dict[str, Any]:
     m = re.search(r"/\*CONTRACT\s*(\{.*?\})\s*CONTRACT\*/", APP_JS, flags=re.S)
-    assert m, "app.js starts with a CONTRACT block"
+    assert m, "compass.js starts with a CONTRACT block"
     return json.loads(m.group(1))  # type: ignore[no-any-return]
 
 
@@ -67,7 +69,7 @@ def test_view_model_keys_exist_in_schema() -> None:
     keys = _contract()["view_model_keys"]
     assert len(keys) > 30
     missing = [k for k in keys if not _resolve(schema, k)]
-    assert not missing, f"app.js reads keys that BriefViewModel does not have: {missing}"
+    assert not missing, f"compass.js reads keys that BriefViewModel does not have: {missing}"
 
 
 def test_card_and_stored_event_keys_exist_in_schema() -> None:
@@ -140,27 +142,22 @@ def test_strings_used_by_the_ui_exist() -> None:
         assert set(re.findall(r"\{(\w+)\}", strings["en"][key])) == names
 
 
-@pytest.fixture
-async def view_json() -> dict[str, Any]:
-    app = create_app(ScriptedService(), settings=ApiSettings())
-    h = {"Authorization": "Bearer dev-token", "X-Tenant-Id": "t1", "X-User-Id": "u1"}
-    async with httpx.AsyncClient(
-        transport=httpx.ASGITransport(app=app), base_url="http://t", headers=h
-    ) as c:
-        sid = (await c.post("/v1/compass/sessions", json={})).json()["id"]
-        await c.post(
+async def _served_view(client: httpx.AsyncClient) -> dict[str, Any]:
+    sid = (await client.post("/v1/compass/sessions", json={})).json()["id"]
+    await client.post(
+        f"/v1/compass/sessions/{sid}/events",
+        json={"type": "user_message", "event_id": "e0", "text": "hi"},
+    )
+    for i in range(8):
+        await client.post(
             f"/v1/compass/sessions/{sid}/events",
-            json={"type": "user_message", "event_id": "e0", "text": "hi"},
+            json={"type": "card_skip", "event_id": f"s{i}", "card_id": "x"},
         )
-        for i in range(8):
-            await c.post(
-                f"/v1/compass/sessions/{sid}/events",
-                json={"type": "card_skip", "event_id": f"s{i}", "card_id": "x"},
-            )
-        return (await c.get(f"/v1/compass/sessions/{sid}/brief/view")).json()  # type: ignore[no-any-return]
+    return (await client.get(f"/v1/compass/sessions/{sid}/brief/view")).json()  # type: ignore[no-any-return]
 
 
-async def test_served_view_model_has_every_key_the_ui_reads(view_json: dict[str, Any]) -> None:
+async def test_served_view_model_has_every_key_the_ui_reads(client: httpx.AsyncClient) -> None:
+    view_json = await _served_view(client)
     vm = BriefViewModel.model_validate(view_json)
     assert vm.sections and vm.sections[0].rows
     for key in _contract()["view_model_keys"]:
