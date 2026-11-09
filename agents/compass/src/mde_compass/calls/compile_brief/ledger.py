@@ -44,6 +44,7 @@ class LedgerFact:
     topic: str  # the first topic of the tag, else ``general``
     statement: str
     consumers: tuple[str, ...] = ()  # only valid consumer names, in the order the line gave them
+    topics: tuple[str, ...] = ()  # every topic of the tag (``topic`` is the first)
 
 
 def _statement(rest: str) -> str:
@@ -68,13 +69,15 @@ def parse_line(line: str) -> LedgerFact | None:
         return None
     fact_id, tag, rest = match.groups()
     fact_type, _, topics = tag.partition("|")
-    topic = next((t.strip() for t in topics.split(",") if t.strip()), GENERAL_TOPIC)
+    listed = tuple(t.strip() for t in topics.split(",") if t.strip())
+    topic = listed[0] if listed else GENERAL_TOPIC
     return LedgerFact(
         fact_id=fact_id,
         type=fact_type.strip(),
         topic=topic,
         statement=_statement(rest),
         consumers=_consumers(rest),
+        topics=listed,
     )
 
 

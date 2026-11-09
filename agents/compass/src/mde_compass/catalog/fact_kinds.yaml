@@ -8,6 +8,9 @@
 #             folded) gets that kind, whatever its type; the first kind in this list wins.
 # view_routes: a consumer tag -> the consumer VIEWS (research, blueprint, design, verify) that receive facts tagged
 #             with it. Every ``Consumer`` value is listed, so a fact tagged for any consumer reaches a view.
+# high_impact_kinds: a drafted typical detail of one of these kinds always needs the person's decision at Gate 1.
+# overlap_stopwords: common words that never count as an overlap when a new Brief item is checked against the fact
+#             it cites (the item's name must share a real word with that fact).
 # compile_groups: how ``cmp.compile_brief`` is split into parallel calls. ``sections`` are Brief sections or slot
 #             groups (the call's targets); a fact is routed to every group that lists its type, its kind or a word of
 #             its topics; a fact that matches none goes to ``general``.
@@ -126,6 +129,10 @@ view_routes:
   qa: [verify]
   change_control: [verify]
   all: [research, blueprint, design, verify]
+
+high_impact_kinds: [compliance]
+
+overlap_stopwords: [with, from, that, this, have, will, your, their, they, them, into, over, also, each, only, then, than, when, what, where, which, there, these, those, being, about, would, could, should, shall, must, able, such, more, most, some, many, very, just, like]
 
 compile_groups:
   idea:

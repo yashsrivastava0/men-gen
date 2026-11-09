@@ -1,0 +1,236 @@
+{
+  "name": "en_per_group_additions",
+  "input": {
+    "language": "en",
+    "ledger": [
+      "# bookings\nFCT-011 [requirement|bookings] Patients can book, move and cancel a visit from the app (from evt_011) | conf 0.90 | stated | quote: \"patients can book, move or cancel a visit from the app\"\nFCT-014 [rule|cancellation] A visit can be cancelled free up to 2 hours before the start (from Q-014) | conf 0.90 | stated | quote: \"cancel for free until 2 hours before\"",
+      "# doctors\nFCT-012 [requirement|doctors] Each doctor sets their own weekly hours and leave days (from evt_012) | conf 0.90 | stated | quote: \"doctors set their own weekly hours and leave\"\nFCT-013 [role|doctors] Doctors see their day's list of patients on a phone (from evt_013) | conf 0.85 | stated | quote: \"doctors check the day's patient list on the phone\"",
+      "# reports\nFCT-015 [requirement|reports] The owner wants a weekly report of visits and no-shows (from evt_015) | conf 0.85 | stated | quote: \"send me a weekly report of visits and no-shows\"\nFCT-016 [context|chat] Okay, that is all for reports (from evt_016) | conf 0.50 | stated | quote: \"ok, that is all for reports\""
+    ],
+    "needs_table": [],
+    "assumptions": [],
+    "asked_list": [],
+    "qa_compact": [],
+    "needs": [],
+    "sections": [
+      "people_and_scope"
+    ],
+    "draft": [],
+    "targets": [
+      {
+        "path": "roles.list",
+        "label": "Roles",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "goal",
+          "permissions"
+        ],
+        "filled": "user"
+      },
+      {
+        "path": "scope.features",
+        "label": "Features",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "intent",
+          "status",
+          "priority",
+          "tier"
+        ],
+        "filled": "user"
+      },
+      {
+        "path": "scope.must_not",
+        "label": "Must not",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": [],
+        "filled": ""
+      }
+    ],
+    "task": "fill",
+    "project": [
+      "idea.summary: A booking app for a family clinic in Indore",
+      "audience.segments: patients, receptionist"
+    ],
+    "existing": [
+      "ROL-001 | roles | Patient",
+      "ROL-002 | roles | Receptionist",
+      "FTR-001 | scope | Book a visit",
+      "FTR-002 | scope | Day schedule"
+    ],
+    "kinds": [
+      {
+        "key": "rule",
+        "description": "A business rule, policy or functional requirement the app must follow or enforce."
+      },
+      {
+        "key": "number",
+        "description": "A quantity, limit, price, percentage, duration or other figure the app depends on."
+      },
+      {
+        "key": "acceptance",
+        "description": "A condition that must hold for a feature to count as done."
+      },
+      {
+        "key": "screen",
+        "description": "A screen, page or view and what it shows or lets the person do."
+      },
+      {
+        "key": "flow",
+        "description": "A sequence of steps a person goes through to get something done."
+      },
+      {
+        "key": "entity",
+        "description": "A thing the app keeps track of (a record, a document, an item) and what is known about it."
+      },
+      {
+        "key": "compliance",
+        "description": "A law, regulation, consent, privacy or certification requirement."
+      },
+      {
+        "key": "nfr",
+        "description": "A quality the app must have (speed, offline use, security, accessibility, reliability, scale)."
+      },
+      {
+        "key": "integration_detail",
+        "description": "An outside system, service or interface and how the app uses it."
+      },
+      {
+        "key": "constraint",
+        "description": "A limit on how the app is built or run (budget, deadline, platform, must use, must not)."
+      },
+      {
+        "key": "example",
+        "description": "A sample case, number or situation that illustrates how something should work."
+      },
+      {
+        "key": "preference",
+        "description": "A taste, style or wish that is not a hard requirement."
+      },
+      {
+        "key": "context",
+        "description": "Background about the business, the people, the place or the goal."
+      },
+      {
+        "key": "other",
+        "description": "A detail that fits none of the kinds above; every agent may need it."
+      }
+    ]
+  },
+  "output": {
+    "items": [],
+    "additions": [
+      {
+        "path": "roles.list",
+        "value_json": "{\"name\": \"Doctor\", \"goal\": \"See the day's list of patients on a phone\"}",
+        "fact_ids": [
+          "FCT-013"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.features",
+        "value_json": "{\"name\": \"Move or cancel a visit\", \"intent\": \"Patients move or cancel a booked visit from the app\"}",
+        "fact_ids": [
+          "FCT-011"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.features",
+        "value_json": "{\"name\": \"Doctor hours and leave\", \"intent\": \"Each doctor sets their own weekly hours and leave days\"}",
+        "fact_ids": [
+          "FCT-012"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.features",
+        "value_json": "{\"name\": \"Weekly visits report\", \"intent\": \"A weekly report of visits and no-shows for the owner\"}",
+        "fact_ids": [
+          "FCT-015"
+        ],
+        "confidence": 0.8
+      }
+    ],
+    "placements": [
+      {
+        "fact_id": "FCT-011",
+        "topic": "bookings",
+        "consumers": [
+          "blueprint",
+          "screens"
+        ],
+        "kind": "flow",
+        "refs": [
+          "FTR-001",
+          "Move or cancel a visit"
+        ]
+      },
+      {
+        "fact_id": "FCT-012",
+        "topic": "doctor_hours",
+        "consumers": [
+          "blueprint",
+          "backend"
+        ],
+        "kind": "rule",
+        "refs": [
+          "Doctor hours and leave",
+          "Doctor"
+        ]
+      },
+      {
+        "fact_id": "FCT-013",
+        "topic": "doctor_day",
+        "consumers": [
+          "screens",
+          "frontend"
+        ],
+        "kind": "screen",
+        "refs": [
+          "Doctor"
+        ]
+      },
+      {
+        "fact_id": "FCT-014",
+        "topic": "cancellation",
+        "consumers": [
+          "blueprint",
+          "backend",
+          "qa"
+        ],
+        "kind": "rule",
+        "refs": [
+          "Move or cancel a visit"
+        ]
+      },
+      {
+        "fact_id": "FCT-015",
+        "topic": "reports",
+        "consumers": [
+          "blueprint",
+          "design"
+        ],
+        "kind": "other",
+        "refs": [
+          "Weekly visits report"
+        ]
+      }
+    ],
+    "not_used": [
+      {
+        "fact_id": "FCT-016",
+        "reason": "closing remark, no content"
+      }
+    ],
+    "summary": "",
+    "pitch": "",
+    "typical": []
+  }
+}

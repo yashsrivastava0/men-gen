@@ -17,7 +17,7 @@ _P = CALL_PROFILES[CALL_ID]
 SPEC: CompassCallSpec[CompileInput, CompileOutput] = CompassCallSpec(
     spec=CallSpec(
         id=CALL_ID,
-        version=1,
+        version=2,
         input_model=CompileInput,
         output_model=CompileOutput,
         system_template="system.jinja",
@@ -35,6 +35,8 @@ SPEC: CompassCallSpec[CompileInput, CompileOutput] = CompassCallSpec(
             "asked_list",
             "qa_compact",
             "draft",
+            "project",
+            "existing",
         ),
         cacheable=False,
         repair=True,

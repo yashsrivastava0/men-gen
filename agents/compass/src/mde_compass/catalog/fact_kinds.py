@@ -82,6 +82,8 @@ class FactKinds:
     topic_words: tuple[tuple[str, frozenset[str]], ...]  # (kind, words), in priority order
     view_routes: dict[str, tuple[str, ...]]
     groups: tuple[CompileGroup, ...]
+    high_impact_kinds: frozenset[str] = frozenset()
+    overlap_stopwords: frozenset[str] = frozenset()
 
 
 def words_of(text: str) -> list[str]:
@@ -196,12 +198,20 @@ def load_fact_kinds() -> FactKinds:
         if not listed or [v for v in listed if v not in VIEW_NAMES]:
             raise CatalogError(f"fact_kinds.yaml: view_routes.{consumer} must name consumer views")
         routes[str(consumer)] = tuple(dict.fromkeys(listed))
+    high = frozenset(_str_list(raw.get("high_impact_kinds") or [], "high_impact_kinds"))
+    if high - set(kinds):
+        raise CatalogError("fact_kinds.yaml: 'high_impact_kinds' lists an unknown kind")
+    stop = frozenset(
+        w.casefold() for w in _str_list(raw.get("overlap_stopwords") or [], "overlap_stopwords")
+    )
     return FactKinds(
         kinds=kinds,
         from_type={str(k): str(v) for k, v in from_type.items()},
         topic_words=topic_words,
         view_routes=routes,
         groups=_groups(raw.get("compile_groups"), kinds),
+        high_impact_kinds=high,
+        overlap_stopwords=stop,
     )
 
 
@@ -261,6 +271,15 @@ def route_groups(fact_type: str, kind: str, topics: Iterable[str] = ()) -> tuple
     return tuple(hit) or (GENERAL_GROUP,)
 
 
+def is_high_impact_kind(kind: str) -> bool:
+    """A drafted detail of this kind always needs the person's decision (it is never a low-impact assumption)."""
+    return kind in load_fact_kinds().high_impact_kinds
+
+
+def overlap_stopwords() -> frozenset[str]:
+    return load_fact_kinds().overlap_stopwords
+
+
 def group(group_id: str) -> CompileGroup:
     return next(g for g in load_fact_kinds().groups if g.id == group_id)
 
@@ -275,10 +294,12 @@ __all__ = [
     "FactKinds",
     "default_consumers",
     "group",
+    "is_high_impact_kind",
     "is_kind",
     "kind_for",
     "load_fact_kinds",
     "normalize_kind",
+    "overlap_stopwords",
     "route_groups",
     "theme_for",
     "views_for",

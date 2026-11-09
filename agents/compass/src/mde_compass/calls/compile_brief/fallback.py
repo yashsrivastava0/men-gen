@@ -7,21 +7,32 @@ its ``[type|topic]`` tag, consumers ``["all"]`` so every downstream agent still 
 nothing is marked not used, and the summary is the first fact's statement cut to 120 characters. An empty ``items``
 list is correct here: the slot values are already in the Brief, written by the projector from each fact's own
 effects when the facts were stored. What the fallback gives up is only the model's reading of the ledger (cleaner
-wording of values, the pitch, routing of facts to the agents that need them).
+wording of values, the pitch, routing of facts to the agents that need them). Each placement carries the ``kind`` the
+kinds file derives from the fact's type and topics (v2). The typical-details task has no floor: it proposes nothing.
 """
 
 from __future__ import annotations
 
 from mde_compass.calls.compile_brief.ledger import ALL, join_text, parse_ledger, short_summary
 from mde_compass.calls.compile_brief.schema import CompileInput, CompileOutput, PlacementWire
+from mde_compass.catalog.fact_kinds import normalize_kind
 
 
 def wire_fallback(inp: CompileInput) -> CompileOutput:
     facts = parse_ledger(join_text(inp.ledger))
+    if inp.task == "typical":
+        # drafting typical details needs the model: the floor invents nothing, so there is nothing to propose
+        return CompileOutput(items=[], placements=[], not_used=[], summary="", pitch="")
     return CompileOutput(
         items=[],
         placements=[
-            PlacementWire(fact_id=f.fact_id, topic=f.topic, consumers=[ALL]) for f in facts
+            PlacementWire(
+                fact_id=f.fact_id,
+                topic=f.topic,
+                consumers=[ALL],
+                kind=normalize_kind("", f.type, f.topics or (f.topic,)),
+            )
+            for f in facts
         ],
         not_used=[],
         summary=short_summary(facts),

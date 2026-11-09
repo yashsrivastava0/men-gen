@@ -89,6 +89,10 @@ class BriefMeta(Strict):
         default_factory=dict
     )  # contributor id -> brief hash approved (enterprise)
     interview: InterviewBlock | None = None  # audit counts; outside the hash and the consumer views
+    # Compile bookkeeping (ADR 0016): call key (``fill:<group>:<n>``, ``typical``, ``text``) -> digest of the inputs
+    # the Brief content was last written from. A section whose digest is unchanged is not compiled again, so a
+    # re-run with the same ledger changes nothing. Bookkeeping about the hash, never content: popped from the hash.
+    compile_digests: dict[str, str] = Field(default_factory=dict)
 
 
 class AppRecord(ItemMeta):

@@ -48,7 +48,8 @@
         "label": "Your idea in one line",
         "value_kind": "text",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "roles.list",
@@ -59,7 +60,8 @@
           "name",
           "goal",
           "permissions"
-        ]
+        ],
+        "filled": ""
       },
       {
         "path": "scope.features",
@@ -72,14 +74,16 @@
           "status",
           "priority",
           "tier"
-        ]
+        ],
+        "filled": ""
       },
       {
         "path": "scope.must_not",
         "label": "What it must not do",
         "value_kind": "text_list",
         "options": [],
-        "fields": []
+        "fields": [],
+        "filled": ""
       },
       {
         "path": "constraints.offline",
@@ -90,7 +94,69 @@
           "partial_offline",
           "online_only"
         ],
-        "fields": []
+        "fields": [],
+        "filled": ""
+      }
+    ],
+    "task": "fill",
+    "project": [],
+    "existing": [],
+    "kinds": [
+      {
+        "key": "rule",
+        "description": "A business rule, policy or functional requirement the app must follow or enforce."
+      },
+      {
+        "key": "number",
+        "description": "A quantity, limit, price, percentage, duration or other figure the app depends on."
+      },
+      {
+        "key": "acceptance",
+        "description": "A condition that must hold for a feature to count as done."
+      },
+      {
+        "key": "screen",
+        "description": "A screen, page or view and what it shows or lets the person do."
+      },
+      {
+        "key": "flow",
+        "description": "A sequence of steps a person goes through to get something done."
+      },
+      {
+        "key": "entity",
+        "description": "A thing the app keeps track of (a record, a document, an item) and what is known about it."
+      },
+      {
+        "key": "compliance",
+        "description": "A law, regulation, consent, privacy or certification requirement."
+      },
+      {
+        "key": "nfr",
+        "description": "A quality the app must have (speed, offline use, security, accessibility, reliability, scale)."
+      },
+      {
+        "key": "integration_detail",
+        "description": "An outside system, service or interface and how the app uses it."
+      },
+      {
+        "key": "constraint",
+        "description": "A limit on how the app is built or run (budget, deadline, platform, must use, must not)."
+      },
+      {
+        "key": "example",
+        "description": "A sample case, number or situation that illustrates how something should work."
+      },
+      {
+        "key": "preference",
+        "description": "A taste, style or wish that is not a hard requirement."
+      },
+      {
+        "key": "context",
+        "description": "Background about the business, the people, the place or the goal."
+      },
+      {
+        "key": "other",
+        "description": "A detail that fits none of the kinds above; every agent may need it."
       }
     ]
   },
@@ -147,7 +213,9 @@
         "consumers": [
           "blueprint",
           "qa"
-        ]
+        ],
+        "kind": "rule",
+        "refs": []
       },
       {
         "fact_id": "FCT-004",
@@ -156,11 +224,15 @@
           "blueprint",
           "backend",
           "verify"
-        ]
+        ],
+        "kind": "rule",
+        "refs": []
       }
     ],
     "not_used": [],
     "summary": "A stock tool for small pharmacy shops with expiry warnings and a morning low-stock list.",
-    "pitch": "Small pharmacy shops get a stock tool that warns the owner when a medicine is close to expiry and prepares a low-stock list every morning. It keeps working for a day without internet, and in version one it does not send orders to wholesalers."
+    "pitch": "Small pharmacy shops get a stock tool that warns the owner when a medicine is close to expiry and prepares a low-stock list every morning. It keeps working for a day without internet, and in version one it does not send orders to wholesalers.",
+    "additions": [],
+    "typical": []
   }
 }

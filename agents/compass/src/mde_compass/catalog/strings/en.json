@@ -247,5 +247,20 @@
   "ui.interview.fact_disputed": "disputed",
   "ui.interview.fact_not_used": "not used",
   "ui.interview.mock_banner": "MOCK MODE: questions are canned",
-  "notice.assumption_settled": "That one was already settled by an earlier answer."
+  "notice.assumption_settled": "That one was already settled by an earlier answer.",
+  "brief.v2.typical.reason": "Apps like this usually have it, and you did not mention it.",
+  "brief.v2.typical.what_changes": "If you say no, it is left out of the plan.",
+  "brief.v2.correction.replaced": "We used “{used}”; you first said “{first}”.",
+  "brief.v2.correction.disputed": "You said both “{first}” and “{used}”; we kept the newer one. Please check.",
+  "brief.v2.correction.disputed_one": "“{first}” does not fit something else you said. Please confirm it.",
+  "brief.v2.correction.reason": "You changed your mind or corrected an earlier answer.",
+  "brief.v2.correction.what_changes": "If this is wrong, tell us the right one and the plan is updated.",
+  "brief.v2.review.reason": "Something in the plan is unclear or does not add up.",
+  "brief.v2.review.what_changes": "We will use your answer instead of our reading.",
+  "brief.v2.review.vague": "“{text}” is too vague to build from; please say what you mean.",
+  "brief.v2.review.undefined": "“{text}” is not explained; please say what it is.",
+  "brief.v2.review.conflicting": "These two do not fit together: {text}.",
+  "brief.v2.review.unrealistic": "This may not be realistic: {text}.",
+  "brief.v2.review.dependency": "This needs something that is not in the plan: {text}.",
+  "brief.v2.review.plausibility": "This does not add up: {text}."
 }
