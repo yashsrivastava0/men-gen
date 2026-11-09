@@ -856,7 +856,7 @@ def test_batch_e_computes_and_reports_every_quality_check(e_report: dict[str, An
 def test_a_declined_idea_is_a_failed_check_not_a_silent_gap() -> None:
     data = lb.load_batch("E")
     games = data.sessions[3].model_copy(
-        update={"idea": "A language-learning app for children with short games and stories"}
+        update={"idea": "I want to build a 3D multiplayer racing game for my friends"}
     )
     report = run(data.model_copy(update={"sessions": (games,)}))
     session = report["sessions"][0]

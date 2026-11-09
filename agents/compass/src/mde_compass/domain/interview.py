@@ -71,6 +71,10 @@ class FactEffect(Strict):
     slot_id: str
     value_json: str = "null"
     mode: EffectMode = "set"
+    # Enterprise: who said it (a contributor id), stamped by code when the fact is built. It lives on the effect
+    # because the effects are already a stored JSON column (no migration); the projector hands it to the slot
+    # store so a second contributor's conflicting value marks the slot disputed instead of replacing it.
+    contributor_id: str | None = None
 
 
 class Fact(Strict):
