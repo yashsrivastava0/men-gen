@@ -240,13 +240,13 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     if exp.equals is not None and not any(_value_of(n) == exp.equals for n in nodes):
         errs.append(f"slot {path}: value should equal {exp.equals!r}; got {_value_of(nodes[0])!r}")
     metas = [n for n in nodes if isinstance(n, dict)]
-    if exp.status and not any(m.get("status") in exp.status for m in metas):
+    if exp.status and not any(m.get("status") in _as_list(exp.status) for m in metas):
         errs.append(
             f"slot {path}: status should be {exp.status}; got {[m.get('status') for m in metas]}"
         )
-    if exp.tier and not any(m.get("tier") in exp.tier for m in metas):
+    if exp.tier and not any(m.get("tier") in _as_list(exp.tier) for m in metas):
         errs.append(f"slot {path}: tier should be {exp.tier}; got {[m.get('tier') for m in metas]}")
-    if exp.not_tier and any(m.get("tier") in exp.not_tier for m in metas):
+    if exp.not_tier and any(m.get("tier") in _as_list(exp.not_tier) for m in metas):
         errs.append(
             f"slot {path}: tier must not be {exp.not_tier}; got {[m.get('tier') for m in metas]}"
         )
@@ -255,7 +255,7 @@ def check_slot(brief: dict[str, Any], path: str, exp: SlotExpect) -> list[str]:
     ):
         errs.append(f"slot {path}: history should keep >= {exp.history_min} earlier values")
     if exp.provenance and not any(
-        p.get("type") in exp.provenance for m in metas for p in m.get("provenance", [])
+        p.get("type") in _as_list(exp.provenance) for m in metas for p in m.get("provenance", [])
     ):
         errs.append(f"slot {path}: provenance should include {exp.provenance}")
     if exp.count_min is not None or exp.count_max is not None:
@@ -296,7 +296,7 @@ async def check_expect(
         errs.append(
             f"an error event was emitted: {err.payload.get('code')} {err.payload.get('message')}"
         )
-    if exp.state and state_after not in exp.state:
+    if exp.state and state_after not in _as_list(exp.state):
         errs.append(f"state should be one of {exp.state}; got {state_after}")
     texts_joined = "\n".join(_texts(events)).lower()
     for needle in _as_list(exp.text_contains):
@@ -326,15 +326,15 @@ async def check_expect(
     last = _last_card_in(events) or card_on_screen
     if exp.no_card and last is not None:
         errs.append(f"no card expected, but card {last.id} ({last.frame}) was shown")
-    if exp.card_frame and (last is None or last.frame not in exp.card_frame):
+    if exp.card_frame and (last is None or last.frame not in _as_list(exp.card_frame)):
         errs.append(
             f"last card frame should be one of {exp.card_frame}; got {last.frame if last else None}"
         )
-    if exp.card_type and (last is None or last.type not in exp.card_type):
+    if exp.card_type and (last is None or last.type not in _as_list(exp.card_type)):
         errs.append(
             f"last card type should be one of {exp.card_type}; got {last.type if last else None}"
         )
-    if exp.card_language and (last is None or last.language not in exp.card_language):
+    if exp.card_language and (last is None or last.language not in _as_list(exp.card_language)):
         errs.append(
             f"last card language should be one of {exp.card_language}; got {last.language if last else None}"
         )

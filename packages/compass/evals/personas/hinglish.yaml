@@ -1,0 +1,12 @@
+id: PERSONA-hinglish
+title: Writes Hinglish in Latin script and Devanagari mixed, taps the recommended option
+persona: {kind: hinglish}
+steps:
+  - say: "Mujhe ek salon booking app chahiye Pune mein, customers aur stylists ke liye, Hindi aur English dono"
+  - tap_recommended: true
+  - say: "payment UPI se hona chahiye aur reminder bhi WhatsApp pe"
+  - tap_recommended: true
+  - say: "और हाँ, ग्राहक अपनी बुकिंग बदल सकें"
+  - drive: {}
+  - accept_all: true
+  - approve: true

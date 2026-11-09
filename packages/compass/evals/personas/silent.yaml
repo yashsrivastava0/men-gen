@@ -1,0 +1,8 @@
+id: PERSONA-silent
+title: Says almost nothing, answers "you decide" to every card, and wants it quick
+persona: {kind: silent, express: true}
+steps:
+  - say: "Quickly, an app for my salon in Pune, asap"
+  - drive: {mode: you_decide}
+  - accept_all: true
+  - approve: true

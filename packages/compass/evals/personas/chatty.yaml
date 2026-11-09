@@ -1,0 +1,12 @@
+id: PERSONA-chatty
+title: Writes long messages with many facts, volunteers answers ahead of the questions
+persona: {kind: chatty}
+steps:
+  - say: "Hi! So I run three bakeries in Pune and Mumbai and my customers keep asking for a way to order cakes from their phones. I want a food delivery app for my bakeries, in English and Marathi, where customers can order cakes, pay by UPI, track the delivery rider and reorder their favourites. Something like Swiggy but only for bakeries. Our staff are not very technical so the shop side must be very simple."
+  - tap_recommended: true
+  - say: "Oh and I forgot, the shop owner should see daily sales on a dashboard, and customers should get offers on their birthday."
+  - tap_recommended: true
+  - say: "By the way the owner is my sister Meera, she approves anything about money, and we have around 40 staff in total."
+  - drive: {}
+  - accept_all: true
+  - approve: true

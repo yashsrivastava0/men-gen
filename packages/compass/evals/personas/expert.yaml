@@ -1,0 +1,12 @@
+id: PERSONA-expert
+title: A product person who names roles, integrations and constraints and types custom answers
+persona: {kind: expert}
+steps:
+  - say: "We are building a B2C marketplace for home chefs in Bengaluru. Roles: customer, chef and admin. MVP: chef onboarding with FSSAI check, menu management, ordering with Razorpay payments, order tracking, ratings. Offline-first for chefs, WhatsApp notifications, English and Kannada. Backend API will be provided by our team."
+  - tap_recommended: true
+  - answer_custom: "a flat 12% commission per order plus a monthly listing fee for premium chefs"
+  - tap_recommended: true
+  - tap_recommended: true
+  - drive: {}
+  - accept_all: true
+  - approve: true
