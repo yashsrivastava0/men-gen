@@ -91,7 +91,13 @@ def validate_idea(item: CorpusIdea, catalog: Catalog | None = None) -> BatchVali
     """The code validators over one idea's batch, with that idea's own words as the project terms."""
     cat = catalog or load_catalog()
     ctx = ValidationContext.build(
-        cat, item.terms, language="en", config=DEFAULT_CONFIG, user_text=item.idea, batch_limit=7
+        cat,
+        item.terms,
+        language="en",
+        config=DEFAULT_CONFIG,
+        user_text=item.idea,
+        batch_limit=7,
+        open_prompt_share=1.0,  # the corpus measures the other rules; the open-prompt cap is tested on its own
     )
     return validate_batch(item.cards, ctx)
 

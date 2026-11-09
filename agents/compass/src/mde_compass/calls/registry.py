@@ -41,6 +41,7 @@ PORT_BY_CALL: dict[str, str] = {
     "update_summary": "summary_updater",
     "compile_brief": "brief_compiler",
     "rephrase_question": "question_rephraser",
+    "decide_answers": "answer_decider",
 }
 PLACEHOLDERS: dict[str, Any] = {
     "chunk_reader": NoChunkReader,

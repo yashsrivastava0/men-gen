@@ -325,7 +325,12 @@ class InterviewController:
         )
         return evidence, list(dict.fromkeys(hints))
 
-    def _vctx(self, turn: _Turn, request: PlanRequest) -> ValidationContext:
+    def _vctx(
+        self,
+        turn: _Turn,
+        request: PlanRequest,
+        statuses: dict[str, NeedStatus] | None = None,
+    ) -> ValidationContext:
         evidence, hints = self._grounding(turn)
         return ValidationContext.build(
             self.catalog,
@@ -342,6 +347,8 @@ class InterviewController:
             evidence=evidence,
             hints=hints,
             batch_limit=max(request.want_max, 1),
+            closing=request.closing,
+            statuses=statuses if self.policy.necessity_check else None,
         )
 
     # -------------------------------------------------------------------------------------- planning
@@ -365,7 +372,7 @@ class InterviewController:
             auditor=ports.question_auditor,
             ctx=ctx,
             request=request,
-            vctx=self._vctx(turn, request),
+            vctx=self._vctx(turn, request, statuses),
             policy=self.policy,
             catalog=self.catalog,
             statuses=statuses,

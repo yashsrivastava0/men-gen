@@ -212,7 +212,8 @@
     "missing_aspects": [],
     "pivot_from": "",
     "style_notes": [],
-    "next_card_n": 4
+    "next_card_n": 4,
+    "followup_candidates": []
   },
   "output": {
     "domain_hypothesis": {
@@ -239,7 +240,6 @@
           "Blueprint: expiry alerts and returns flow"
         ],
         "answer_spec": "What each feature is for and what must be in the first release",
-        "depends_on": [],
         "priority": 1,
         "type": "choose_one",
         "text": "When a medicine is close to expiry, should the tool only warn the shop, or also help return it to the wholesaler?",
@@ -255,7 +255,7 @@
             "label": "Warn and prepare a return to the wholesaler",
             "description": "",
             "basis": "suggestion",
-            "reason": ""
+            "reason": "It saves the shop the manual return paperwork"
           },
           {
             "label": "Warn, and stop it being sold at the counter",
@@ -265,9 +265,8 @@
           }
         ],
         "recommended": "Warn and prepare a return to the wholesaler",
-        "skip_assumes": "Only warn the shop",
-        "followup_hint": "",
-        "examples": []
+        "examples": [],
+        "refines": ""
       },
       {
         "id": "Q-005",
@@ -281,7 +280,6 @@
           "Blueprint: stock data model"
         ],
         "answer_spec": "Whether batch numbers are tracked, and for which medicines",
-        "depends_on": [],
         "priority": 2,
         "type": "choose_one",
         "text": "Do shops need to record batch numbers for every pack, or only for certain medicines?",
@@ -307,9 +305,8 @@
           }
         ],
         "recommended": "",
-        "skip_assumes": "",
-        "followup_hint": "",
-        "examples": []
+        "examples": [],
+        "refines": ""
       },
       {
         "id": "Q-006",
@@ -325,7 +322,6 @@
           "Research: wholesaler ordering tools"
         ],
         "answer_spec": "Which outside services to connect, and what each is for",
-        "depends_on": [],
         "priority": 2,
         "type": "choose_one",
         "text": "When stock runs low, should the tool send the order to the wholesaler, or only prepare a list for the owner to send?",
@@ -341,7 +337,7 @@
             "label": "Prepare a list; the owner sends it",
             "description": "",
             "basis": "suggestion",
-            "reason": ""
+            "reason": "The owner stays in control of what is ordered"
           },
           {
             "label": "Owner decides for each medicine",
@@ -351,9 +347,8 @@
           }
         ],
         "recommended": "Prepare a list; the owner sends it",
-        "skip_assumes": "Prepare a list; the owner sends it",
-        "followup_hint": "",
-        "examples": []
+        "examples": [],
+        "refines": ""
       },
       {
         "id": "Q-007",
@@ -367,20 +362,18 @@
           "Blueprint: import of existing stock lists"
         ],
         "answer_spec": "Existing systems, spreadsheets or APIs to connect to, and what each holds",
-        "depends_on": [],
         "priority": 2,
         "type": "text",
         "text": "Where do shops keep their stock list today, and in what form?",
         "why_we_ask": "If a list already exists, the tool can start from it instead of from zero.",
         "options": [],
         "recommended": "",
-        "skip_assumes": "",
-        "followup_hint": "",
         "examples": [
           "e.g. a billing software the shop already uses",
           "e.g. an Excel sheet",
           "e.g. a paper register"
-        ]
+        ],
+        "refines": ""
       }
     ],
     "covered_needs": [

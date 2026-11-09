@@ -35,7 +35,11 @@ class NeedWire(Wire):
     sufficient: str  # the answer_spec text
     aspects: list[str]
     missing_aspects: list[str]
-    card_type: str  # the kind of card its last-resort fallback uses (a hint for the question type)
+    card_type: str  # the kind of card its registry fallback uses (a hint for the question type)
+    # several answers can be true: the need's own value kind is a list (use pick_many)
+    multi: bool = False
+    # a safe typical default exists and the person said nothing: assume it, do not ask it
+    assume: bool = False
     option_labels: list[str]  # that fallback card's option labels (grounding for choice questions)
     assumed_value: str  # text of the current assumption, or ""
 
@@ -65,7 +69,9 @@ class PlanInput(Wire):
     project_terms: list[
         str
     ]  # words from the idea, facts and glossary: the project's own vocabulary
-    needs: list[NeedWire]  # open needs first; satisfied ones are listed only as context
+    needs: list[
+        NeedWire
+    ]  # the OPEN needs only (missing or partial), most important first, at most 20
     want_min: int
     want_max: int
     group_min: int
@@ -79,6 +85,8 @@ class PlanInput(Wire):
     pivot_from: str  # replan after a pivot: the old category ("" otherwise)
     style_notes: list[str]  # frame style guides and example phrasings for the needs involved
     next_card_n: int  # number the questions Q-<n>, Q-<n+1>, ... from here
+    # needs whose last answer was thin: a follow-up for one of them may be written in this same batch
+    followup_candidates: list[str] = Field(default_factory=list)
     closing: ClosingWire = Field(
         default_factory=ClosingWire
     )  # mode "closing" only; empty otherwise
@@ -89,7 +97,7 @@ class OptionWire(Wire):
     label: str
     description: str  # a short line under the label, or ""
     basis: Basis
-    reason: str  # why this option is offered or recommended, or ""
+    reason: str  # why it is recommended: filled on the recommended option only, "" on the others
 
 
 class QuestionWire(Wire):
@@ -104,16 +112,15 @@ class QuestionWire(Wire):
         str
     ]  # which downstream decision it feeds (Research query, Blueprint roles, Design tone...)
     answer_spec: str  # what a good answer contains
-    depends_on: list[str]  # ids of questions in this batch that should come first
     priority: int  # 1 (most important) to 5
     type: QuestionType
     text: str
     why_we_ask: str
     options: list[OptionWire]  # empty for text, quick_form and upload_or_link
     recommended: str  # the label of the recommended option, or ""
-    skip_assumes: str  # what we assume if the user skips, or ""
-    followup_hint: str  # what to ask if the answer is vague, or ""
     examples: list[str]  # placeholder hints for text questions
+    # a follow-up folded into this batch: the id of the earlier question (see the asked list) it refines, else ""
+    refines: str = ""
 
 
 class FeatureWire(Wire):

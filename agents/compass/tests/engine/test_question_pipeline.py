@@ -72,6 +72,9 @@ def ok(*cards: Card, **kw: Any) -> PlanResult:
 
 
 def vctx(**kw: Any) -> ValidationContext:
+    kw.setdefault(
+        "open_prompt_share", 1.0
+    )  # these tests are about the pipeline, not the open-prompt cap
     return ValidationContext.build(
         CATALOG,
         TERMS,

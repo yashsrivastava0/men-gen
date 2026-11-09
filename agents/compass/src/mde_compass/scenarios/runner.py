@@ -123,7 +123,11 @@ def engine_config(engine: Engine, policy: dict[str, Any] | None = None) -> Any:
 
     # the drivers answer card by card, so scenarios run in the one-at-a-time layout unless a scenario asks for
     # ``default_ui_mode: answer_all`` in its ``policy:`` (ADR 0016 makes the form the product default)
-    base: dict[str, Any] = {"default_ui_mode": "one_at_a_time"}
+    base: dict[str, Any] = {
+        "default_ui_mode": "one_at_a_time",
+        "open_prompt_share": 1.0,  # the scripted fixtures predate the open-prompt cap and the necessity rule
+        "necessity_check": False,
+    }
     interview = dataclasses.replace(
         DEFAULT_CONFIG.interview, engine=engine, **{**base, **(policy or {})}
     )

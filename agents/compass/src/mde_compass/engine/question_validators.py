@@ -23,6 +23,20 @@ Rules (code: meaning)
   ``leading_wording``, ``invented_number``, ``brand_name``, ``multiple_questions``, ``not_a_question`` (a choice card's
   hypothesis must be phrased as a question).
 * ``too_many_recommended`` / ``recommended_not_allowed`` / ``recommended_without_reason``.
+* ``type_fit``: a ``choose_one`` card whose needs all take a list (features, roles, apps, integrations, languages: the
+  slot's own value kind is a list) is rejected: several answers can be true, so it must be ``pick_many`` with a
+  custom input. A card with a ``domain:`` topic or a single-valued need is not judged (it asks a mechanic).
+* ``necessity`` (ADR 0016, point 4): a planned question (not the closing one) must serve at least one OPEN need (missing
+  or partial) that is worth asking: the catalog's ``ask_policy`` is ``ask``, or the need is ``must_confirm``, or the
+  person already said something about it (partial), and its impact is at least ``NECESSITY_MIN_IMPACT``. A follow-up
+  only needs a weak (open) need. A question about a ``domain:`` topic (a project-specific mechanic) is not judged, nor
+  is one when no need statuses are given (``ValidationContext.statuses``). It is rejected when it serves only needs
+  that are satisfied or assumed, or only ``infer`` needs nobody has said anything about, or only low-impact ones.
+* ``too_many_open`` (batch): at most about one question in three may be an open prompt (a follow-up and a question
+  about a ``universal`` need are not counted); the excess, least important first, is rejected. The share is
+  ``ValidationContext.open_prompt_share`` (``1.0`` turns it off); ``build`` takes it from its argument, else from
+  ``InterviewPolicy.open_prompt_share`` when the config has that field, else it is off. The product value is
+  ``OPEN_PROMPT_SHARE``.
 * ``closing_shape`` / ``closing_option_source`` / ``closing_suggestions`` (ADR 0016): the reserved last question is one
   ``priority`` card that serves ``scope.priority`` and ``goals.primary``, keeps its custom input, offers 3..8 options
   (``options_count``), every option is a candidate from the closing context (what the person said or what was assumed)
@@ -42,6 +56,7 @@ from collections.abc import Collection, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from difflib import SequenceMatcher
 from itertools import combinations
+from math import ceil
 from typing import Literal
 
 from mde_compass.catalog.loader import Catalog
@@ -87,6 +102,9 @@ IssueCode = Literal[
     "closing_shape",
     "closing_option_source",
     "closing_suggestions",
+    "type_fit",
+    "too_many_open",
+    "necessity",
 ]
 
 CHOICE_TYPES: frozenset[str] = frozenset({"choose_one", "look_signals", "confirm"})
@@ -97,6 +115,20 @@ QUESTION_MARK_TYPES: frozenset[str] = frozenset(
 EXAMPLE_TYPES: frozenset[str] = frozenset({"open_prompt", "quick_form"})
 DOMAIN_PREFIX = "domain:"
 TEXT_COMPARE_CHARS = 300
+
+PICK_MANY_MIN = 3
+PICK_MANY_MAX = 8
+"""A checklist or ranking offers 3 to 8 options (``choose_one`` has exactly 3). The card rules of the legacy frames
+allow 2 to 14; a planned question is held to the tighter range."""
+LIST_KINDS: frozenset[str] = frozenset({"enum_list", "text_list", "object_list", "locales"})
+"""Slot value kinds that hold several values: several answers can be true for a need of such a kind."""
+NECESSITY_MIN_IMPACT = 3
+"""A question must serve an open need whose catalog impact is at least this (1 to 5): below it nothing downstream
+changes enough to spend one of the person's few questions on it; the default is assumed and shown instead."""
+NEED_OPEN_STATES: tuple[str, ...] = ("missing", "partial")
+OPEN_PROMPT_SHARE = 1 / 3
+"""At most this share of a batch may be open prompts (rounded up, at least one): the product is mostly tap-to-answer."""
+OPEN_TYPES: frozenset[str] = frozenset({"open_prompt", "quick_form"})
 
 # The reserved last question (ADR 0016): what it serves and how it is shaped.
 CLOSING_NEEDS: tuple[str, ...] = ("scope.priority", "goals.primary")
@@ -248,6 +280,10 @@ class ValidationContext:
     closing_candidates: tuple[str, ...] = ()
     closing_suggested: tuple[str, ...] = ()
     closing_max_suggestions: int = CLOSING_MAX_SUGGESTIONS  # options that are not the person's own
+    # the most of a batch that may be open prompts (1.0 turns the cap off)
+    open_prompt_share: float = 1.0
+    # the state of every need (``engine.needs.compute``): what the necessity rule judges against (empty: not judged)
+    statuses: Mapping[str, NeedStatus] = field(default_factory=dict)
 
     @classmethod
     def build(
@@ -263,8 +299,17 @@ class ValidationContext:
         hints: Iterable[str] = (),
         batch_limit: int | None = None,
         closing: ClosingContext | None = None,
+        open_prompt_share: float | None = None,
+        statuses: Mapping[str, NeedStatus] | None = None,
     ) -> ValidationContext:
         cfg = config or CompassConfig()
+        # the cap on open prompts is a policy knob: an explicit argument wins, then ``InterviewPolicy.open_prompt_share``
+        # when the config has it (one third in the product, see ``OPEN_PROMPT_SHARE``), else no cap
+        share = (
+            open_prompt_share
+            if open_prompt_share is not None
+            else float(getattr(cfg.interview, "open_prompt_share", 1.0))
+        )
         return cls(
             terms=frozenset(terms),
             catalog=catalog,
@@ -279,6 +324,8 @@ class ValidationContext:
             closing_candidates=closing_candidates(closing),
             closing_suggested=closing_suggested(closing),
             closing_max_suggestions=closing_suggestion_cap(closing),
+            open_prompt_share=share,
+            statuses=dict(statuses or {}),
         )
 
     def effective_batch_limit(self) -> int:
@@ -550,29 +597,91 @@ def _check_options(card: Card, ctx: ValidationContext) -> list[Issue]:
         )
     elif card.type == "look_signals" and len(options) != want:
         issues.append(Issue("options_count", f"look_signals needs exactly {want} options"))
-    elif card.type == "pick_many" and not (
-        card_rules.CHECKLIST_MIN <= len(options) <= card_rules.CHECKLIST_MAX
-    ):
+    elif card.type == "pick_many" and not (PICK_MANY_MIN <= len(options) <= PICK_MANY_MAX):
         issues.append(
-            Issue(
-                "options_count",
-                f"a checklist needs {card_rules.CHECKLIST_MIN}..{card_rules.CHECKLIST_MAX} options",
-            )
+            Issue("options_count", f"a checklist needs {PICK_MANY_MIN}..{PICK_MANY_MAX} options")
         )
-    elif card.type == "priority" and not (
-        card_rules.RANK_MIN <= len(options) <= card_rules.CHECKLIST_MAX
-    ):
+    elif card.type == "priority" and not (PICK_MANY_MIN <= len(options) <= PICK_MANY_MAX):
         issues.append(
-            Issue(
-                "options_count",
-                f"a ranking needs {card_rules.RANK_MIN}..{card_rules.CHECKLIST_MAX} options",
-            )
+            Issue("options_count", f"a ranking needs {PICK_MANY_MIN}..{PICK_MANY_MAX} options")
         )
     elif card.type == "confirm" and not options:
         issues.append(Issue("options_count", "a confirmation needs at least one option"))
     if card.type in EXAMPLE_TYPES and not any(e.strip() for e in card.examples):
         issues.append(Issue("missing_examples", f"a {card.type} question needs example hints"))
     return issues
+
+
+def is_multi(slot_id: str, catalog: Catalog) -> bool:
+    """Can several answers be true for this need? Decided by the need's own value kind (a list), never by a domain
+    word: features, roles, apps, integrations, languages and so on all come from the catalog's data."""
+    slot = catalog.slots.get(slot_id)
+    return slot is not None and slot.value_schema.kind in LIST_KINDS
+
+
+def _check_type_fit(card: Card, ctx: ValidationContext) -> list[Issue]:
+    """A single-select card for needs that all take a list is the wrong card. A ``domain:`` topic or a single-valued
+    need in the mix means the question asks a mechanic with exclusive alternatives, which ``choose_one`` fits."""
+    if card.type != "choose_one" or not card.need_ids:
+        return []
+    if not all(is_multi(n, ctx.catalog) for n in card.need_ids):
+        return []
+    return [
+        Issue(
+            "type_fit",
+            f"choose_one cannot hold the answers for {', '.join(card.need_ids)}: more than one can be true, "
+            "so use pick_many (3 to 8 options) with a custom input",
+        )
+    ]
+
+
+def ask_eligible(need_id: str, ctx: ValidationContext) -> bool:
+    """Is this need still worth a question? It is open (missing or partial), its impact reaches the floor, and either
+    the catalog says only the person can answer it (``ask_policy == ask``), or it is ``must_confirm``, or the person
+    already said something about it (partial). A need with no status is not eligible."""
+    status = ctx.statuses.get(need_id)
+    slot = ctx.catalog.slots.get(need_id)
+    if status is None or slot is None or status.state not in NEED_OPEN_STATES:
+        return False
+    if status.impact < NECESSITY_MIN_IMPACT:
+        return False
+    return slot.ask_policy == "ask" or slot.must_confirm or status.state == "partial"
+
+
+def _check_necessity(card: Card, ctx: ValidationContext) -> list[Issue]:
+    """Only what the person alone can answer and what changes what is built is asked; the rest is assumed and shown."""
+    if card.origin == "closing" or not ctx.statuses:
+        return []
+    needs = [n for n in card.need_ids if n]
+    if not needs or any(n.startswith(DOMAIN_PREFIX) for n in needs):
+        return []  # a mechanic only this project has: the other rules judge it
+    judged = [n for n in needs if n in ctx.statuses]
+    if not judged:
+        return []  # no information about these needs
+    if card.origin == "followup" or card.parent_card_id is not None:
+        if any(ctx.statuses[n].state in NEED_OPEN_STATES for n in judged):
+            return []  # refines a weak answer
+        return [Issue("necessity", f"a follow-up for {', '.join(judged)}, which is no longer open")]
+    if any(ask_eligible(n, ctx) for n in judged):
+        return []
+    reasons = []
+    for need in judged:
+        status, slot = ctx.statuses[need], ctx.catalog.slots.get(need)
+        if status.state not in NEED_OPEN_STATES:
+            reasons.append(f"{need} is already {status.state}")
+        elif status.impact < NECESSITY_MIN_IMPACT:
+            reasons.append(f"{need} has impact {status.impact} (below {NECESSITY_MIN_IMPACT})")
+        elif slot is not None and slot.ask_policy == "infer":
+            reasons.append(
+                f"{need} has a safe default and the person has not said anything about it"
+            )
+    return [
+        Issue(
+            "necessity",
+            "it asks nothing the person alone must answer: " + "; ".join(reasons) + ". "
+            "Assume it and show the assumption instead",
+        )
+    ]
 
 
 def _check_closing(card: Card, ctx: ValidationContext) -> list[Issue]:
@@ -814,6 +923,8 @@ def validate_question(card: Card, ctx: ValidationContext) -> list[Issue]:
         *_check_duplicates(card, ctx),
         *_check_lengths(card, ctx),
         *_check_options(card, ctx),
+        *_check_type_fit(card, ctx),
+        *_check_necessity(card, ctx),
         *_check_closing(card, ctx),
         *_check_recommended(card),
         *_check_wording_and_basis(card, ctx),
@@ -872,7 +983,41 @@ def validate_batch(cards: Sequence[Card], ctx: ValidationContext) -> BatchValida
         closing_taken = closing_taken or card.origin == "closing"
         planned.append(LedgerEntry.from_card(card))
         per_group[group] = per_group.get(group, 0) + 1
+    excess = _open_excess(
+        accepted, min(len(cards), batch_limit), ctx.open_prompt_share, ctx.catalog
+    )
+    if excess:
+        for card in accepted:
+            if card.id in excess:
+                issue = Issue(
+                    "too_many_open",
+                    f"at most about one question in three may be an open prompt; {card.id} is one of the "
+                    "least important of the open ones",
+                )
+                by_card.setdefault(card.id, []).append(issue)
+                rejected.append(
+                    RejectedQuestion(card_id=card.id, source="code", reasons=[str(issue)])
+                )
+        accepted = [c for c in accepted if c.id not in excess]
     return BatchValidation(accepted=accepted, rejected=rejected, issues=by_card)
+
+
+def _open_excess(accepted: Sequence[Card], size: int, share: float, catalog: Catalog) -> set[str]:
+    """Ids of the open prompts beyond the share a batch of ``size`` may hold, least important first (the largest
+    ``priority`` number, then the later one). Not counted: a follow-up refining a thin answer, and a question about
+    needs that are free-form by nature (the catalog's ``universal`` ones: the idea in a line, the place, the
+    languages), which a vague first idea needs as broad grounding questions."""
+    limit = max(1, ceil(size * share))
+    opens = [
+        c
+        for c in accepted
+        if c.type in OPEN_TYPES and c.origin != "followup" and not is_universal(c, catalog)
+    ]
+    over = len(opens) - limit
+    if over <= 0:
+        return set()
+    ranked = sorted(enumerate(opens), key=lambda pair: (-pair[1].priority, -pair[0]))
+    return {card.id for _, card in ranked[:over]}
 
 
 # --------------------------------------------------------------------------------------- batch measures

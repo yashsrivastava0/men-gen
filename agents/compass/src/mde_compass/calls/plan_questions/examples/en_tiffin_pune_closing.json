@@ -52,7 +52,8 @@
       "assumptions": [
         "payments are collected outside the app at first"
       ]
-    }
+    },
+    "followup_candidates": []
   },
   "output": {
     "domain_hypothesis": {
@@ -80,7 +81,6 @@
           "QA: what must work on launch day"
         ],
         "answer_spec": "The few things the first version must get right, most important first, plus anything else or what success looks like",
-        "depends_on": [],
         "priority": 1,
         "type": "priority",
         "text": "For the first version of your tiffin service, which of these matters most?",
@@ -130,11 +130,10 @@
           }
         ],
         "recommended": "Weekly meal plans",
-        "skip_assumes": "",
-        "followup_hint": "",
         "examples": [
           "The thing you would be unhappy to launch without"
-        ]
+        ],
+        "refines": ""
       }
     ],
     "covered_needs": [

@@ -71,7 +71,8 @@ def card(
         "question": question,
         "why_we_ask": "This decides how ordering works.",
         "options": options,
-        "need_ids": needs if needs is not None else ["scope.features"],
+        # a mechanic with exclusive alternatives: the planner names its domain topic next to the closest need
+        "need_ids": needs if needs is not None else ["scope.features", "domain:ordering"],
         "intent": intent,
         "language": "en",
         "origin": "planner",
@@ -576,17 +577,17 @@ def _distinct(n: int, group: str | None = None) -> list[Card]:
 
 
 def test_group_and_batch_size_limits() -> None:
-    five_in_one_group = validate_batch(_distinct(5, "G-1"), ctx())
+    five_in_one_group = validate_batch(_distinct(5, "G-1"), ctx(open_prompt_share=1.0))
     assert [c.id for c in five_in_one_group.accepted] == ["Q-001", "Q-002", "Q-003", "Q-004"]
     assert {i.code for i in five_in_one_group.issues["Q-005"]} == {"over_group_size"}
     two_groups = _distinct(8)
     for i, c in enumerate(two_groups):
         two_groups[i] = c.model_copy(update={"group_id": f"G-{i // 4}"})
-    assert len(validate_batch(two_groups, ctx(batch_limit=8)).accepted) == 8
-    capped = validate_batch(two_groups, ctx(batch_limit=5))
+    assert len(validate_batch(two_groups, ctx(batch_limit=8, open_prompt_share=1.0)).accepted) == 8
+    capped = validate_batch(two_groups, ctx(batch_limit=5, open_prompt_share=1.0))
     assert len(capped.accepted) == 5
     assert {i.code for i in capped.issues["Q-006"]} == {"over_batch_size"}
-    assert validate_batch(two_groups, ctx(batch_limit=0)).accepted == []
+    assert validate_batch(two_groups, ctx(batch_limit=0, open_prompt_share=1.0)).accepted == []
 
 
 def test_default_batch_limit_is_the_largest_policy_batch() -> None:
@@ -600,7 +601,9 @@ def test_default_batch_limit_is_the_largest_policy_batch() -> None:
     nine = [*_distinct(8), extra]
     for i, c in enumerate(nine):
         nine[i] = c.model_copy(update={"group_id": f"G-{i // 3}"})
-    assert len(validate_batch(nine, ctx()).accepted) == 5  # the largest tier batch (Thorough: 5)
+    assert (
+        len(validate_batch(nine, ctx(open_prompt_share=1.0)).accepted) == 5
+    )  # the largest tier batch (Thorough: 5)
 
 
 def test_context_build_helper() -> None:
@@ -766,14 +769,14 @@ def test_accepted_questions_never_repeat_an_intent(intents: list[str]) -> None:
         )
         for i, w in enumerate(intents)
     ]
-    result = validate_batch(cards, ctx(batch_limit=20))
+    result = validate_batch(cards, ctx(batch_limit=20, open_prompt_share=1.0))
     seen = [c.intent.lower().strip("!") for c in result.accepted]
     assert len(seen) == len(set(seen))
     assert {c.id for c in result.accepted} | {r.card_id for r in result.rejected} == {
         c.id for c in cards
     }
     assert not {c.id for c in result.accepted} & {r.card_id for r in result.rejected}
-    again = validate_batch(result.accepted, ctx(batch_limit=20))
+    again = validate_batch(result.accepted, ctx(batch_limit=20, open_prompt_share=1.0))
     assert [c.id for c in again.accepted] == [c.id for c in result.accepted]
 
 
@@ -939,3 +942,382 @@ def test_candidate_match(label: str, expected: bool) -> None:
 def test_candidate_match_works_for_hindi() -> None:
     assert candidate_match("साप्ताहिक टिफिन प्लान", ["साप्ताहिक टिफिन प्लान चुनना"])
     assert not candidate_match("वीडियो क्लास", ["साप्ताहिक टिफिन प्लान चुनना"])
+
+
+# ------------------------------------------------------------------------------------ type_fit (v2)
+def _list_slots() -> list[str]:
+    from mde_compass.engine.question_validators import LIST_KINDS
+
+    return [sid for sid, slot in REAL.slots.items() if slot.value_schema.kind in LIST_KINDS]
+
+
+def test_a_single_choice_for_a_need_that_takes_a_list_is_the_wrong_card() -> None:
+    wrong = card(
+        question="Which one feature matters most for your tiffin service?",
+        needs=["scope.features"],
+    )
+    found = [i for i in validate_question(wrong, ctx()) if i.code == "type_fit"]
+    assert (
+        len(found) == 1 and "pick_many" in found[0].message and "scope.features" in found[0].message
+    )
+    right = card(
+        question="Which of these should your tiffin app do?",
+        type="pick_many",
+        options=opts("Daily menu", "Weekly plans", "Rider routes"),
+        needs=["scope.features"],
+    )
+    assert "type_fit" not in codes(right)
+
+
+def test_type_fit_comes_from_the_needs_own_value_kind_for_every_list_need_in_the_catalog() -> None:
+    lists = _list_slots()
+    assert {"scope.features", "roles.list", "integrations.wanted", "apps.list", "locales"} <= set(
+        lists
+    )
+    for need in lists:
+        assert "type_fit" in codes(card(needs=[need]), ctx(catalog=REAL)), need
+    singles = [s for s in REAL.slots if s not in lists]
+    for need in singles:
+        assert "type_fit" not in codes(card(needs=[need]), ctx(catalog=REAL)), need
+
+
+def test_a_mechanic_with_a_domain_topic_or_a_single_valued_need_is_not_judged() -> None:
+    assert "type_fit" not in codes(card(needs=["scope.features", "domain:slot_rules"]))
+    assert "type_fit" not in codes(card(needs=["roles.list", "idea.business_model"]))
+    assert "type_fit" not in codes(card(needs=["idea.business_model"]))
+    assert "type_fit" not in codes(card(needs=[]))  # unmapped_need says it already
+    assert "type_fit" in codes(
+        card(needs=["roles.list", "audience.segments"])
+    )  # every need is a list
+
+
+def test_only_choose_one_is_judged_by_type_fit() -> None:
+    for kind in ("open_prompt", "confirm"):
+        other = card(
+            type=kind,  # type: ignore[arg-type]
+            options=opts("Yes", "No") if kind == "confirm" else [],
+            needs=["scope.features"],
+            question="Is it right that customers choose a tiffin plan?",
+        )
+        assert "type_fit" not in codes(other)
+
+
+# ---------------------------------------------------------------- option counts 3..8 (v2)
+def test_a_checklist_and_a_ranking_offer_three_to_eight_options() -> None:
+    def many(n: int, kind: str = "pick_many") -> Card:
+        return card(
+            type=kind,  # type: ignore[arg-type]
+            options=opts(*[f"Choice {i} tiffin" for i in range(n)]),
+            question="Which of these tiffin things matter?",
+            needs=["scope.features"],
+        )
+
+    for ok in (3, 8):
+        assert "options_count" not in codes(many(ok)) and "options_count" not in codes(
+            many(ok, "priority")
+        )
+    for bad in (2, 9, 14):
+        assert "options_count" in codes(many(bad)), bad
+        assert "options_count" in codes(many(bad, "priority")), bad
+
+
+# ---------------------------------------------------------------- too_many_open (v2)
+def _mixed(types: list[str], **extra: object) -> list[Card]:
+    cards = []
+    for i, kind in enumerate(types):
+        base: dict[str, object] = {
+            "question": f"How does tiffin thing number {i} work for you?",
+            "intent": f"learn tiffin thing {i}",
+            "needs": [f"domain:t{i}"],
+            "group_id": f"G-{i // 3}",
+        }
+        base.update(extra)
+        if kind == "open":
+            cards.append(card(f"Q-{i + 1:03d}", type="open_prompt", **base))  # type: ignore[arg-type]
+        else:
+            cards.append(card(f"Q-{i + 1:03d}", **base))  # type: ignore[arg-type]
+    return cards
+
+
+def test_at_most_about_one_question_in_three_may_be_open() -> None:
+    cards = _mixed(["open", "open", "open", "choice", "choice", "open"])
+    result = validate_batch(cards, ctx(batch_limit=6, open_prompt_share=1 / 3))
+    assert len([c for c in result.accepted if c.type == "open_prompt"]) == 2
+    assert len(result.accepted) == 4  # two open prompts and the two choice questions
+    codes_by = {r.card_id: r.reasons for r in result.rejected}
+    assert len(codes_by) == 2 and all("too_many_open" in r[0] for r in codes_by.values())
+
+
+def test_the_least_important_open_prompts_go_first_then_the_later_ones() -> None:
+    cards = _mixed(["open", "open", "open", "choice", "choice", "choice"])
+    ranked = [
+        c.model_copy(update={"priority": p}) for c, p in zip(cards, (2, 5, 5, 1, 1, 1), strict=True)
+    ]
+    result = validate_batch(ranked, ctx(batch_limit=6, open_prompt_share=1 / 3))
+    assert [r.card_id for r in result.rejected] == ["Q-003"]  # same priority 5: the later one
+    assert [c.id for c in result.accepted] == ["Q-001", "Q-002", "Q-004", "Q-005", "Q-006"]
+    tied = [
+        c.model_copy(update={"priority": p}) for c, p in zip(cards, (1, 5, 3, 1, 1, 1), strict=True)
+    ]
+    assert [
+        r.card_id
+        for r in validate_batch(tied, ctx(batch_limit=6, open_prompt_share=1 / 3)).rejected
+    ] == ["Q-002"]
+
+
+def test_one_open_prompt_is_always_allowed_and_the_cap_can_be_turned_off() -> None:
+    one = _mixed(["open", "choice", "choice"])
+    assert validate_batch(one, ctx(batch_limit=3, open_prompt_share=1 / 3)).rejected == []
+    two = _mixed(["open", "open"])
+    assert len(validate_batch(two, ctx(batch_limit=2, open_prompt_share=1 / 3)).rejected) == 1
+    many = _mixed(["open"] * 4 + ["choice"])
+    assert validate_batch(many, ctx(batch_limit=5)).rejected == []  # the default context has no cap
+    assert validate_batch(many, ctx(batch_limit=5, open_prompt_share=1.0)).rejected == []
+
+
+def test_follow_ups_and_universal_needs_do_not_count_as_open() -> None:
+    cards = _mixed(["open", "open", "open", "choice", "choice", "choice"])
+    followups = [
+        c.model_copy(update={"origin": "followup", "parent_card_id": "Q-900"}) if i > 0 else c
+        for i, c in enumerate(cards)
+    ]
+    assert validate_batch(followups, ctx(batch_limit=6, open_prompt_share=1 / 3)).rejected == []
+    universal = [
+        c.model_copy(
+            update={
+                "need_ids": ["locales"],
+                "question": f"Which languages do your tiffin customers use {i}?",
+            }
+        )
+        if c.type == "open_prompt" and i > 0
+        else c
+        for i, c in enumerate(cards)
+    ]
+    result = validate_batch(universal, ctx(batch_limit=6, open_prompt_share=1 / 3))
+    assert not [r for r in result.rejected if any("too_many_open" in x for x in r.reasons)]
+
+
+def test_the_cap_counts_the_intended_batch_size_not_only_what_survived() -> None:
+    # five asked for, one choice question is rejected as a repeat: 3 open of 4 still exceeds ceil(5/3) = 2
+    cards = _mixed(["open", "open", "open", "choice", "choice"])
+    cards[4] = cards[4].model_copy(update={"intent": cards[3].intent})
+    result = validate_batch(cards, ctx(batch_limit=5, open_prompt_share=1 / 3))
+    reasons = " ".join(x for r in result.rejected for x in r.reasons)
+    assert "duplicate_intent" in reasons and "too_many_open" in reasons
+
+
+def test_the_share_comes_from_the_build_argument_then_the_policy_then_off() -> None:
+    assert (
+        ValidationContext.build(CAT, TERMS).open_prompt_share == 1 / 3
+    )  # the product default (InterviewPolicy)
+    assert (
+        ValidationContext.build(CAT, TERMS, open_prompt_share=1.0).open_prompt_share == 1.0
+    )  # off
+    assert ValidationContext.build(CAT, TERMS, open_prompt_share=1 / 3).open_prompt_share == 1 / 3
+
+    from types import SimpleNamespace
+
+    cfg = SimpleNamespace(
+        interview=SimpleNamespace(open_prompt_share=0.5), questions=QuestionPolicy()
+    )
+    built = ValidationContext.build(CAT, TERMS, config=cfg)  # type: ignore[arg-type]
+    assert built.open_prompt_share == 0.5
+    assert (
+        ValidationContext.build(CAT, TERMS, config=cfg, open_prompt_share=1.0).open_prompt_share
+        == 1.0
+    )  # type: ignore[arg-type]
+
+
+# ------------------------------------------------------------------------- necessity (v2, ADR 0016)
+def status(need: str, state: str = "missing", impact: int | None = None) -> NeedStatus:
+    slot = REAL.slots[need]
+    return NeedStatus(
+        need_id=need,
+        state=state,  # type: ignore[arg-type]
+        impact=impact if impact is not None else slot.impact,
+        level=slot.level,
+    )
+
+
+def necessity_ctx(*statuses: NeedStatus, **kw: object) -> ValidationContext:
+    return ctx(statuses={s.need_id: s for s in statuses}, **kw)
+
+
+def asks(need: str, **kw: object) -> Card:
+    """A question for one need, worded so that only the necessity rule can find fault with it."""
+    return card(
+        question="Which of these does your tiffin service need?",
+        type="pick_many",
+        options=opts("Daily menu", "Weekly plans", "Rider routes"),
+        needs=[need],
+        **kw,  # type: ignore[arg-type]
+    )
+
+
+def test_the_catalog_marks_only_safe_defaults_as_infer() -> None:
+    from mde_compass.catalog.loader import SlotDef
+
+    infer = {sid for sid, s in REAL.slots.items() if s.ask_policy == "infer"}
+    assert infer == {
+        "context.scale_launch",
+        "look.tone_words",
+        "look.density_mode",
+        "devices.profile",
+        "integrations.mode",
+        "constraints.offline",
+        "constraints.performance",
+        "constraints.accessibility",
+    }
+    for sid in infer:
+        slot = REAL.slots[sid]
+        assert slot.default is not None and slot.risk == "low" and not slot.must_confirm, sid
+    assert all(s.ask_policy == "ask" for s in REAL.slots.values() if s.must_confirm)
+    base = REAL.slots["integrations.mode"].model_dump()
+    for bad in ({"default": None}, {"must_confirm": True}, {"risk": "high"}):
+        with pytest.raises(ValueError, match="ask_policy infer"):
+            SlotDef.model_validate({**base, **bad})
+    assert (
+        SlotDef.model_validate({**base, "ask_policy": "ask", "default": None}).ask_policy == "ask"
+    )
+
+
+def test_without_need_statuses_nothing_is_judged() -> None:
+    assert "necessity" not in codes(asks("look.density_mode"), ctx())
+
+
+def test_a_question_for_an_open_need_the_person_alone_can_answer_is_necessary() -> None:
+    assert "necessity" not in codes(asks("scope.features"), necessity_ctx(status("scope.features")))
+    assert "necessity" not in codes(
+        asks("scope.features"), necessity_ctx(status("scope.features", "partial"))
+    )
+
+
+@pytest.mark.parametrize("state", ["satisfied", "assumed"])
+def test_a_question_for_a_need_already_settled_is_rejected(state: str) -> None:
+    found = [
+        i
+        for i in validate_question(
+            asks("scope.features"), necessity_ctx(status("scope.features", state))
+        )
+        if i.code == "necessity"
+    ]
+    assert len(found) == 1 and f"scope.features is already {state}" in found[0].message
+
+
+def test_a_need_below_the_impact_floor_is_not_worth_a_question() -> None:
+    from mde_compass.engine.question_validators import NECESSITY_MIN_IMPACT
+
+    assert NECESSITY_MIN_IMPACT == 3
+    low = status("idea.differentiator", impact=2)
+    found = [
+        i
+        for i in validate_question(asks("idea.differentiator"), necessity_ctx(low))
+        if i.code == "necessity"
+    ]
+    assert found and "below 3" in found[0].message
+    at_floor = status("idea.problem_value", impact=NECESSITY_MIN_IMPACT)
+    assert "necessity" not in codes(asks("idea.problem_value"), necessity_ctx(at_floor))
+
+
+def test_a_need_with_a_safe_default_is_assumed_not_asked_unless_the_person_said_something() -> None:
+    nothing = necessity_ctx(status("integrations.mode", "missing"))
+    found = [
+        i for i in validate_question(asks("integrations.mode"), nothing) if i.code == "necessity"
+    ]
+    assert found and "safe default" in found[0].message
+    said = necessity_ctx(status("integrations.mode", "partial"))
+    assert "necessity" not in codes(
+        asks("integrations.mode"), said
+    )  # something was said: refine it
+    # the same need with a risky policy would be asked: must_confirm needs are always eligible
+    risky = necessity_ctx(status("auth.methods", "missing"))
+    assert REAL.slots["auth.methods"].must_confirm and "necessity" not in codes(
+        asks("auth.methods"), risky
+    )
+
+
+def test_one_eligible_need_is_enough_and_the_others_may_be_settled() -> None:
+    both = necessity_ctx(status("scope.features", "satisfied"), status("roles.list", "missing"))
+    assert "necessity" not in codes(
+        asks("scope.features").model_copy(update={"need_ids": ["scope.features", "roles.list"]}),
+        both,
+    )
+    none = necessity_ctx(status("scope.features", "satisfied"), status("roles.list", "assumed"))
+    c = asks("scope.features").model_copy(update={"need_ids": ["scope.features", "roles.list"]})
+    message = next(i.message for i in validate_question(c, none) if i.code == "necessity")
+    assert (
+        "scope.features is already satisfied" in message
+        and "roles.list is already assumed" in message
+    )
+
+
+def test_a_project_specific_mechanic_a_closing_question_and_unknown_needs_are_not_judged() -> None:
+    settled = necessity_ctx(status("scope.features", "satisfied"))
+    mechanic = asks("scope.features").model_copy(
+        update={"need_ids": ["scope.features", "domain:slot_rules"]}
+    )
+    assert "necessity" not in codes(mechanic, settled)
+    only_domain = asks("scope.features").model_copy(update={"need_ids": ["domain:slot_rules"]})
+    assert "necessity" not in codes(only_domain, settled)
+    unknown = necessity_ctx(status("roles.list"))  # no status for the need the card serves
+    assert "necessity" not in codes(asks("scope.features"), unknown)
+    closing_settled = necessity_ctx(
+        status("scope.priority", "satisfied"), status("goals.primary", "satisfied")
+    )
+    assert "necessity" not in codes(closing_card(), closing_settled)
+
+
+def test_a_follow_up_needs_only_a_weak_need() -> None:
+    weak = necessity_ctx(status("roles.list", "partial"))
+    follow = asks("roles.list", origin="followup", parent_card_id="Q-001")
+    assert "necessity" not in codes(follow, weak)
+    low = necessity_ctx(status("roles.list", "partial", impact=2))
+    assert "necessity" not in codes(follow, low)  # a follow-up is not held to the floor
+    done = necessity_ctx(status("roles.list", "satisfied"))
+    found = [i for i in validate_question(follow, done) if i.code == "necessity"]
+    assert found and "no longer open" in found[0].message
+
+
+def test_the_necessity_rule_runs_in_a_batch_and_names_the_rejected_question() -> None:
+    settled = asks("scope.features")
+    open_one = asks("roles.list").model_copy(
+        update={
+            "id": "Q-002",
+            "intent": "learn the roles",
+            "question": "Who signs in to your tiffin app?",
+        }
+    )
+    result = validate_batch(
+        [settled, open_one],
+        necessity_ctx(status("scope.features", "satisfied"), status("roles.list"), batch_limit=5),
+    )
+    assert [c.id for c in result.accepted] == ["Q-002"]
+    assert any("necessity" in reason for r in result.rejected for reason in r.reasons)
+
+
+def test_build_takes_the_statuses() -> None:
+    built = ValidationContext.build(
+        CAT, TERMS, statuses={"scope.features": status("scope.features")}
+    )
+    assert (
+        set(built.statuses) == {"scope.features"}
+        and ValidationContext.build(CAT, TERMS).statuses == {}
+    )
+
+
+def test_the_hand_written_corpus_questions_are_all_necessary_when_every_need_is_open() -> None:
+    """The first batches of the five corpus ideas are the questions that SHOULD be accepted: with every need open
+    (missing, at its catalog impact) none is rejected as unnecessary."""
+    from pathlib import Path
+
+    from mde_compass.scenarios.corpus import load_corpus
+
+    path = Path(__file__).parents[1] / "scenarios/data/corpus/first_batches.yaml"
+    every = {sid: status(sid) for sid in REAL.slots}
+    for key, item in load_corpus(path, REAL).items():
+        ctx_ = ValidationContext.build(
+            REAL, item.terms, user_text=item.idea, batch_limit=7, statuses=every
+        )
+        result = validate_batch(item.cards, ctx_)
+        reasons = [r for rej in result.rejected for r in rej.reasons if "necessity" in r]
+        assert reasons == [], (key, reasons)

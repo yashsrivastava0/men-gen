@@ -32,6 +32,7 @@ ideas:
           intent: learn who carries the tiffins to the offices
           serves:
           - roles.list
+          - domain:delivery_staff
           type: choose_one
           text: 'Who carries the tiffins from your kitchen to the offices: your own riders, independent riders, or both?'
           why_we_ask: The kind of rider decides what the rider screens must show and pay.
@@ -162,6 +163,7 @@ ideas:
           intent: learn who may change a booked appointment
           serves:
           - roles.list
+          - domain:change_permissions
           type: choose_one
           text: 'Who may change a booked clinic appointment: the receptionist only, patient and receptionist, or the doctor too?'
           why_we_ask: Changing rights decide the roles and the screens for each of them.
@@ -182,6 +184,7 @@ ideas:
           intent: learn how much patient health detail the clinic app keeps
           serves:
           - data.sensitive
+          - domain:visit_detail
           type: choose_one
           text: Should the clinic app keep only names and appointment times, or also short visit reasons?
           why_we_ask: Health details need extra care and decide what the app may store.

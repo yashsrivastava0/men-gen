@@ -34,7 +34,7 @@ calls:
         - group_id: G2
           group_title: Look and feel
           intent: choose how the tiffin menu should be shown
-          serves: [look.visual_references]
+          serves: [look.visual_references, "domain:menu_layout"]
           answer_spec: How the menu should look.
           type: choose_one
           text: "How should your tiffin menu look in the app?"
@@ -50,7 +50,7 @@ calls:
         - group_id: G2
           group_title: Look and feel
           intent: choose how the tiffin menu should be shown
-          serves: [look.visual_references]
+          serves: [look.visual_references, "domain:menu_layout"]
           answer_spec: How the menu should look.
           type: choose_one
           text: "How should your tiffin menu look in the app?"

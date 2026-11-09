@@ -53,7 +53,7 @@ from pathlib import Path
 from typing import Any, Literal
 
 import yaml
-from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+from pydantic import BaseModel, ConfigDict, ValidationError, field_validator, model_validator
 
 from mde_compass.domain.interview import AnswerSpec
 
@@ -155,6 +155,9 @@ class SlotDef(_Model):
     brief_path: str
     order: int
     must_confirm: bool = False
+    # ``infer``: a typical default is safe and low risk, so the interview does not ask unless the person already said
+    # something about it; the engine assumes the default visibly. ``ask``: only the person can answer it.
+    ask_policy: Literal["ask", "infer"] = "ask"
     fallback_card: FallbackCard
     # Needs Registry (build prompt 02): what a *sufficient* answer contains for the slot's consumers. The
     # planner and the interpreter read it; code computes the need status from it (engine.needs).
@@ -163,6 +166,17 @@ class SlotDef(_Model):
         False  # a question serving it needs no project term (for example "which languages")
     )
     domain_topics: list[str] = []  # project-specific topics a question for it usually probes
+
+    @model_validator(mode="after")
+    def _infer_needs_a_safe_default(self) -> SlotDef:
+        """``infer`` means "assume the default and show it": that needs a default, and never a risky or confirmed need."""
+        if self.ask_policy == "infer" and (
+            self.default is None or self.must_confirm or self.risk == "high"
+        ):
+            raise ValueError(
+                f"{self.id}: ask_policy infer needs a catalog default, no must_confirm and risk below high"
+            )
+        return self
 
 
 class FrameDef(_Model):

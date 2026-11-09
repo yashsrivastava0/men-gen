@@ -41,7 +41,7 @@ calls:
         - group_id: G1
           group_title: Aapke customers
           intent: learn how customers sign in to the tiffin app
-          serves: [auth.methods]
+          serves: [auth.methods, "domain:sign_in"]
           answer_spec: Sign-in ka tareeka.
           type: choose_one
           text: "Tiffin app me customers kaise sign in karein?"

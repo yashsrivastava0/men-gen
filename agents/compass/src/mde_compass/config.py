@@ -61,6 +61,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.plan_questions", "low", 5000, "writer", "standard", 90),
         _p("cmp.audit_questions", "medium", 3000, "critic", "standard", 60),
         _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
+        _p("cmp.decide_answers", "low", 2000, "writer", "standard", 30),
         _p("cmp.compile_brief", "low", 12000, "writer", "standard", 120),
         _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
     )
@@ -103,6 +104,11 @@ class InterviewPolicy:
     # the layout of a planned batch: one form, submitted once (ADR 0016). Drivers that answer card by card (the
     # scenario runner, the persona and live-batch players) ask for ``one_at_a_time`` explicitly.
     default_ui_mode: Literal["one_at_a_time", "answer_all"] = "answer_all"
+    # question quality rules the product enforces (ADR 0016): at most this share of a batch may be open prompts (the
+    # product is mostly tap-to-answer), and a question must serve a need that is open, ask-eligible and above an
+    # impact floor (the necessity rule). Scripted scenario fixtures predate them and switch them off in the runner.
+    open_prompt_share: float = 1 / 3
+    necessity_check: bool = True
     # question budgets (follow-ups included)
     quick_max: int = 7  # the tier targets (ADR 0016); the closing question is one of them
     standard_max: int = 12

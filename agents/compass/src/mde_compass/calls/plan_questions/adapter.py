@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import re
 
 from mde_compass.calls.base import CallRunner
 from mde_compass.calls.plan_questions.fallback import fallback_batch
@@ -33,19 +34,25 @@ from mde_compass.engine.question_validators import (
     closing_candidates,
     closing_suggested,
     closing_suggestion_cap,
+    is_multi,
 )
 from mde_core.redact import redact_text
 
 PLACEHOLDER_BATCH_ID = "BAT-000"
 """The adapter does not own ids: the engine replaces this with the stored batch id (``BatchRepo.next_id``)."""
 MAX_OPTIONS = 8
+MAX_NEEDS = 20
+"""The planner sees at most this many open needs (the most important ones): the table is the biggest part of its
+input, and a batch asks 3 to 5 questions."""
+_OPEN = ("missing", "partial")
+# the page cannot render the fields of a form card, so a planned quick form is asked as an open question
 _TYPE: dict[str, CardType] = {
     "choose_one": "choose_one",
     "pick_many": "pick_many",
     "priority": "priority",
     "confirm": "confirm",
     "text": "open_prompt",
-    "quick_form": "quick_form",
+    "quick_form": "open_prompt",
     "upload_or_link": "upload_or_link",
 }
 
@@ -74,9 +81,42 @@ def _need_wire(catalog: Catalog, need: NeedBrief, lang: str) -> NeedWire:
         aspects=list(need.aspects),
         missing_aspects=list(need.missing_aspects),
         card_type=card_type,
+        multi=is_multi(need.need_id, catalog),
+        assume=assume_by_default(catalog, need),
         option_labels=labels,
         assumed_value=_assumed_text(need.assumed_value),
     )
+
+
+def assume_by_default(catalog: Catalog, need: NeedBrief) -> bool:
+    """A need with a safe typical default (``ask_policy: infer``) that the person has said nothing about: it is
+    assumed and shown, not asked. The ``necessity`` validator rejects a question that serves only such needs."""
+    slot = catalog.slots.get(need.need_id)
+    return (
+        slot is not None
+        and slot.ask_policy == "infer"
+        and not slot.must_confirm
+        and need.state == "missing"
+    )
+
+
+def worth_listing(need: NeedBrief) -> bool:
+    """Open: missing or partial. (A need below the necessity floor stays in the table, last: the ``necessity``
+    validator, not the table, rejects a question that serves only such needs, and the table is cut at
+    ``MAX_NEEDS`` by impact anyway.)"""
+    return need.state in _OPEN
+
+
+def open_needs(catalog: Catalog, request: PlanRequest) -> list[NeedBrief]:
+    """The needs the planner is shown: the open ones that matter (see ``worth_listing``; satisfied and assumed needs
+    are left out because the facts say it, and a shorter table is a faster call), plus any need it is told to focus
+    on; the focus first, then by impact and catalog order, at most ``MAX_NEEDS``. A need with a safe default stays
+    in the table, marked ``assume``, so the planner can list it in ``assumed_instead``."""
+    order = {sid: i for i, sid in enumerate(catalog.slot_ids_by_order())}
+    focus = set(request.focus_needs)
+    pool = [n for n in request.needs if worth_listing(n) or n.need_id in focus]
+    pool.sort(key=lambda n: (n.need_id not in focus, -n.impact, order.get(n.need_id, 999)))
+    return pool[:MAX_NEEDS]
 
 
 def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
@@ -99,7 +139,7 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
         # the closing question is built from the closing context, not from the needs table
         needs=[]
         if request.mode == "closing"
-        else [_need_wire(catalog, n, lang) for n in request.needs],
+        else [_need_wire(catalog, n, lang) for n in open_needs(catalog, request)],
         want_min=request.want_min,
         want_max=request.want_max,
         group_min=request.group_min,
@@ -113,6 +153,7 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
         pivot_from=request.pivot_from or "",
         style_notes=list(request.style_notes),
         next_card_n=request.next_card_n,
+        followup_candidates=list(request.followup_candidates),
         closing=ClosingWire(
             features=_clean_list(closing.features if closing else []),
             suggested_features=_clean_list(closing.suggested_features if closing else []),
@@ -132,6 +173,21 @@ def _clean_list(items: list[str]) -> list[str]:
 _FREE_TYPES = {"text", "quick_form", "upload_or_link"}
 
 
+_ASKED_ID = re.compile(r"\bQ-\d{3,}\b")
+
+
+def _parent(q: QuestionWire, request: PlanRequest) -> tuple[str | None, int]:
+    """``(parent card id, depth)``: the focus question of a follow-up call, or the earlier question this one
+    ``refines`` (folded into a bigger batch). A ``refines`` that is not in the asked list is ignored: the question is
+    then an ordinary one (never fatal, never a link to a question that does not exist)."""
+    if request.mode == "followup":
+        return (request.focus.card_id if request.focus else None), request.followup_depth
+    target = q.refines.strip()
+    if target and target in _ASKED_ID.findall(request.context.asked_list):
+        return target, 1
+    return None, 0
+
+
 def _card(
     catalog: Catalog, q: QuestionWire, *, number: int, group_id: str, request: PlanRequest
 ) -> Card:
@@ -148,7 +204,7 @@ def _card(
         if q.type not in _FREE_TYPES
     ]
     recommended = next((o for o in options if o.recommended), None)
-    followup = request.mode == "followup"
+    parent, depth = _parent(q, request)
     return Card(
         id=f"Q-{number:03d}",
         frame="planned",
@@ -166,11 +222,10 @@ def _card(
         intent=q.intent,
         unlocks=list(q.unlocks),
         answer_spec=q.answer_spec,
-        followup_hint=q.followup_hint,
         examples=list(q.examples),
-        parent_card_id=request.focus.card_id if followup and request.focus else None,
-        depth=request.followup_depth if followup else 0,
-        origin="followup" if followup else "planner",
+        parent_card_id=parent,
+        depth=depth,
+        origin="followup" if parent or request.mode == "followup" else "planner",
         priority=max(
             1, min(5, q.priority)
         ),  # an ordering hint: an out-of-range value is clamped, never fatal

@@ -491,6 +491,7 @@ class QuestionAuditor(Protocol):
 class DecideOption(Strict):
     id: str
     label: str
+    basis: str = ""  # the option's basis (typical, your_words, ...): the deterministic choice prefers "typical"
 
 
 class DecideItem(Strict):
@@ -639,6 +640,9 @@ class Ports:
     summary_updater: SummaryUpdater
     brief_compiler: BriefCompiler
     question_rephraser: QuestionRephraser
+    answer_decider: (
+        AnswerDecider  # "you decide" for questions without a usable recommendation (ADR 0016)
+    )
 
 
 # --- hand-off ---------------------------------------------------------------------------------------

@@ -23,8 +23,10 @@ The person's answer: {{ focus_answer }}
 {% endif %}{% endif %}
 {% if focus_needs %}Work on these needs first: {{ focus_needs | join(", ") }}
 {% endif %}
-Needs (open first), each with what a sufficient answer contains:
-{% for n in needs %}- {{ n.need_id }} [{{ n.state }}, impact {{ n.impact }}, {{ n.level }}] {{ n.label }}: {{ n.sufficient }}{% if n.missing_aspects %} Missing: {{ n.missing_aspects | join(", ") }}.{% endif %}{% if n.assumed_value %} Currently assumed: {{ n.assumed_value }}.{% endif %}{% if n.option_labels %} Typical options for a choice: {{ n.option_labels | join(" / ") }}.{% endif %}
+{% if followup_candidates %}Thin answers (a follow-up may be folded into this batch): {{ followup_candidates | join(", ") }}
+{% endif %}
+Open needs, most important first, each with what a sufficient answer contains:
+{% for n in needs %}- {{ n.need_id }} [{{ n.state }}, impact {{ n.impact }}, {{ n.level }}, type {{ "pick_many" if n.multi else n.card_type }}{% if n.assume %}, ASSUME by default{% endif %}] {{ n.label }}: {{ n.sufficient }}{% if n.missing_aspects %} Missing: {{ n.missing_aspects | join(", ") }}.{% endif %}{% if n.assumed_value %} Currently assumed: {{ n.assumed_value }}.{% endif %}{% if n.option_labels %} Typical options for a choice: {{ n.option_labels | join(" / ") }}.{% endif %}
 
 {% endfor %}
 {% if style_notes %}Style notes for these needs:

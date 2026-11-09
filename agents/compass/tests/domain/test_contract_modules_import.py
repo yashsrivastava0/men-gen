@@ -28,10 +28,10 @@ def test_every_call_has_a_profile_and_a_port() -> None:
     from mde_compass.engine.ports import Ports
 
     assert (
-        len(CALL_PROFILES) == 17
-    )  # twelve from the first build + five for the AI-planned interview
+        len(CALL_PROFILES) == 18
+    )  # twelve from the first build + five for the AI-planned interview + decide_answers (v2)
     assert all(cid.startswith("cmp.") for cid in CALL_PROFILES)
-    assert len(Ports.__dataclass_fields__) == 17  # type: ignore[attr-defined]
+    assert len(Ports.__dataclass_fields__) == 18  # type: ignore[attr-defined]
 
 
 def test_view_model_sections_match_the_prompt() -> None:
