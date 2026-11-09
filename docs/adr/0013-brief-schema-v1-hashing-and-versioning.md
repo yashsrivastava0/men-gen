@@ -28,3 +28,10 @@ The Brief is the only product of Compass and the input of every agent below it. 
 
 - Hash stability is covered by tests (key order, volatile fields, bookkeeping do not move hashes; a changed section moves only its own hash).
 - `meta` is inside the whole hash, so changing the situation profile changes it; sections stay stable.
+
+## Amendment (2026-11-09): hash scope and baseline labels
+
+- `brief_hash` covers the whole content including `meta`, `search_hints`, `summary` and `pitch`, but **excludes** bookkeeping about the hash itself: `version`, `ids`, `readiness` and `meta.approvals` (who approved which hash). Recording an approval must not change the hash it approves; before this amendment it did, and enterprise approval could not complete (BUG-2, D-087). The 19 section hashes are unchanged.
+- The first approval is labelled `B-G1`; a later re-approval of a changed Brief is labelled `B-G1-v<version>`; re-approving an unchanged, already-approved Brief is a no-op. A label is written once and an approved version is never mutated.
+- A `disputed` slot (two contributors disagree) is never Locked.
+

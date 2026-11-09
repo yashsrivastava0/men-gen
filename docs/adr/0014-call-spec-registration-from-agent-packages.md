@@ -27,3 +27,8 @@ The gateway pipeline takes the spec object (`Gateway.run(spec, input, ctx)`); th
 
 - The gateway never imports Compass; Compass imports only the gateway's public client API and `StaticRegistry`.
 - Vision and streaming are not available through the gateway today (`ProviderRequest` is text only, no streaming): image intake and `assistant_delta` are reported as unsupported until the gateway grows them.
+
+## Amendment (2026-11-09): what the call folders actually contain
+
+Built and verified, all twelve calls: each `calls/<name>/` folder holds `spec.py`, `schema.py`, **two** templates (`system.jinja` and `user.jinja`, because the gateway renders a system and a user prompt; examples are inline in `system.jinja` and also in `examples/*.json`), `fallback.py` (the pure deterministic fallback, also the mock handler), `validate.py` or validators in the spec, `mock.py`, `adapter.py` (the class implementing the engine port, discovered by `calls/registry.py` by its `*Adapter` name), and a per-call data file (`rules.yaml` or `templates.yaml`). Tests live in `packages/compass/tests/calls/<name>/`, not in the folder. All twelve folders exist; the three intake-side calls (`read_chunk`, `merge_claims`, `scan_ambiguity`) are no longer placeholders.
+

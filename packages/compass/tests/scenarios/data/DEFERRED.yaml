@@ -1,5 +1,7 @@
 # Named edge-case scenarios that need document or link intake (a deferred phase; docs/architecture-v3/05 and 11).
-# They are listed here so the matrix is complete; each becomes a scenario file when intake lands.
+# Intake is built (packages/compass/src/mde_compass/intake, wired into the service). IN-10 (private links), IN-14
+# (corrupt or password-protected files) and IN-15 (duplicate uploads) are covered by tests/scenarios/test_intake_flow.py
+# and tests/intake; the rest still need an upload step in the YAML runner and a live-quality reader.
 deferred:
   - {id: IN-01, case: 200+ page document, reason: "needs document intake (chunking, map-reduce): the intake package is a stub in this phase"}
   - {id: IN-02, case: Scanned, handwritten or photographed pages, reason: "needs document intake and a vision pass; the gateway has no image input"}
@@ -7,6 +9,3 @@ deferred:
   - {id: IN-05, case: Documents contradict each other, reason: "needs two uploaded documents"}
   - {id: IN-07, case: A PRD that is mostly vision and market text, reason: "needs document intake (classification of a business-context document)"}
   - {id: IN-08, case: Spreadsheets, Jira CSV, decks, emails, reason: "needs document intake (XLSX, CSV, PPTX, EML parsers)"}
-  - {id: IN-10, case: Private Figma, Drive or Confluence links, reason: "needs link intake and the SSRF-safe URL reader"}
-  - {id: IN-14, case: Password-protected or corrupted file, reason: "needs document intake (file validation and error reporting)"}
-  - {id: IN-15, case: Duplicate uploads, reason: "needs document intake (hash dedupe of sources)"}

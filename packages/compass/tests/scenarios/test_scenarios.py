@@ -53,8 +53,10 @@ def test_every_named_scenario_is_implemented_or_deferred() -> None:
         "IN-05",
         "IN-07",
         "IN-08",
-        "IN-10",
-        "IN-14",
-        "IN-15",
     } <= deferred
     assert not (deferred & have), "a deferred id also has a scenario file"
+    # IN-10 (private links), IN-14 (corrupt files) and IN-15 (duplicates) are exercised against the real
+    # service in test_intake_flow.py, not by a YAML script (the runner has no upload step yet).
+    flow = (Path(__file__).parent / "test_intake_flow.py").read_text()
+    for needle in ("private_link_is_refused", "corrupt_file_is_reported", "same_file_twice"):
+        assert needle in flow, needle
