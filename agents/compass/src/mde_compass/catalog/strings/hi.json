@@ -246,5 +246,6 @@
   "ui.interview.fact_superseded": "बदला गया",
   "ui.interview.fact_disputed": "विवादित",
   "ui.interview.fact_not_used": "उपयोग में नहीं",
-  "ui.interview.mock_banner": "MOCK MODE: प्रश्न पहले से तैयार हैं"
+  "ui.interview.mock_banner": "MOCK MODE: प्रश्न पहले से तैयार हैं",
+  "notice.assumption_settled": "यह पहले ही किसी पिछले उत्तर से तय हो चुका है।"
 }

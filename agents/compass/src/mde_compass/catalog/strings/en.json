@@ -246,5 +246,6 @@
   "ui.interview.fact_superseded": "replaced",
   "ui.interview.fact_disputed": "disputed",
   "ui.interview.fact_not_used": "not used",
-  "ui.interview.mock_banner": "MOCK MODE: questions are canned"
+  "ui.interview.mock_banner": "MOCK MODE: questions are canned",
+  "notice.assumption_settled": "That one was already settled by an earlier answer."
 }

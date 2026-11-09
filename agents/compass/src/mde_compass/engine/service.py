@@ -2071,6 +2071,11 @@ class Service(FlowHooks):
     async def _on_assumption(self, turn: _Turn, ev: AssumptionDecision) -> None:
         asm = next((a for a in turn.brief.assumptions if a.id == ev.id), None)
         if asm is None:
+            if turn.brief.ids.is_deleted(
+                ev.id
+            ):  # settled by another answer meanwhile: not an error
+                turn.notice("assumption_settled", self._t(turn, "notice.assumption_settled"))
+                return
             raise NotFound(f"assumption {ev.id}")
         if ev.decision == "accept":
             ops = [
