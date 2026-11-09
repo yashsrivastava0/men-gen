@@ -233,3 +233,107 @@ async def test_the_budget_commands_set_the_interview_depth(name: str) -> None:
     assert brief.meta.interview is not None and brief.meta.interview.budget == name.removeprefix(
         "budget_"
     )
+
+
+async def test_the_brief_is_built_from_the_ledger_and_no_fact_is_lost() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    assert await finish(conv, svc) == "BRIEF_REVIEW"
+    async with svc.store.begin("t1") as uow:
+        brief = (await uow.briefs.get(conv.session_id)).brief
+        facts = await uow.facts.list(conv.session_id)
+    active = [f for f in facts if f.status == "active"]
+    assert active, "the interview must have produced facts"
+    placed = {d.id for d in brief.domain_facts}
+    cited = {
+        p.ref
+        for section in (brief.idea, brief.context, brief.audience, brief.experience, brief.access)
+        for item in section.values()
+        for p in item.provenance
+        if p.ref.startswith("FCT-")
+    }
+    not_used = {f.id for f in facts if f.status == "not_used"}
+    # fact coverage: every active fact is placed in the Brief, cited by a slot, or marked not_used
+    assert {f.id for f in active} <= placed | cited | not_used
+    block = brief.meta.interview
+    assert block is not None and block.coverage == 1.0 and block.facts_active == len(active)
+    for row in brief.domain_facts:
+        assert row.consumers and row.statement and row.id.startswith("FCT-")
+        assert (row.tier == "Locked") == (row.id in {f.id for f in active if f.supports_locked()})
+
+
+async def test_consumer_views_carry_the_facts_and_never_the_words_of_the_chat() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    assert await finish(conv, svc) == "BRIEF_REVIEW"
+    async with svc.store.begin("t1") as uow:
+        brief = (await uow.briefs.get(conv.session_id)).brief
+        facts = [f for f in await uow.facts.list(conv.session_id) if f.status == "active"]
+    import json
+
+    from mde_compass.views.consumers import build_handoff
+
+    handoff = json.dumps(build_handoff(brief), ensure_ascii=False)
+    assert '"domain_facts"' in handoff
+    assert '"quote"' not in handoff and "evt_" not in handoff
+    for fact in facts:
+        if fact.quote and len(fact.quote) > 25 and fact.quote not in fact.statement:
+            assert fact.quote not in handoff  # the verbatim words never reach a consumer
+
+
+def small_budget_service() -> Service:
+    """Tiny context budgets, so the chunked compile and the rolling summary are exercised by a short session."""
+    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="planner")
+    context = dataclasses.replace(
+        DEFAULT_CONFIG.context, compile_ceiling=60, compile_chunk_facts=4, fact_digest=60
+    )
+    config = dataclasses.replace(DEFAULT_CONFIG, interview=interview, context=context)
+    return build_service(memory=True, clock=FakeClock(), compass_config=config)
+
+
+async def test_an_oversized_ledger_is_compiled_in_chunks_then_reconciled_and_nothing_is_lost() -> (
+    None
+):
+    svc = small_budget_service()
+    assert svc.ports is not None
+    calls: list[tuple[int, bool]] = []
+    real = svc.ports.brief_compiler.compile_brief
+
+    async def spy(ctx, request):  # type: ignore[no-untyped-def]
+        calls.append((request.ledger.count("FCT-"), request.draft is not None))
+        return await real(ctx, request)
+
+    object.__setattr__(
+        svc.ports, "brief_compiler", type("Spy", (), {"compile_brief": staticmethod(spy)})()
+    )
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    assert await finish(conv, svc) == "BRIEF_REVIEW"
+    assert len(calls) >= 3 and calls[-1][1] is True and not any(draft for _, draft in calls[:-1])
+    assert all(n <= 4 for n, _ in calls[:-1])  # chunks of at most four facts
+    assert calls[-1][0] == max(n for n, _ in calls)  # the consistency pass sees the whole ledger
+    async with svc.store.begin("t1") as uow:
+        brief = (await uow.briefs.get(conv.session_id)).brief
+        facts = [f for f in await uow.facts.list(conv.session_id) if f.status == "active"]
+    assert {f.id for f in facts} <= {d.id for d in brief.domain_facts} | {
+        p.ref
+        for sec in (brief.idea, brief.context, brief.audience, brief.experience, brief.access)
+        for item in sec.values()
+        for p in item.provenance
+    }
+
+
+async def test_the_rolling_summary_is_kept_once_the_ledger_outgrows_the_digest_budget() -> None:
+    svc = small_budget_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    assert await finish(conv, svc) == "BRIEF_REVIEW"
+    async with svc.store.begin("t1") as uow:
+        summary = await uow.summaries.get(conv.session_id)
+        facts = await uow.facts.list(conv.session_id)
+    assert summary is not None and summary.topics and summary.version >= 1
+    summarised = {i for t in summary.topics for i in t.fact_ids}
+    assert summarised  # facts reach the summary by id
+    assert summarised <= {f.id for f in facts}

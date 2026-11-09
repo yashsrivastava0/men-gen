@@ -162,6 +162,7 @@ class ContextBudgets:
     asked_list: int = 1500
     last_qa: int = 1500
     last_qa_count: int = 4
+    compile_chunk_facts: int = 120  # facts per compile call above the ceiling (~150 placements fit)
     compile_ceiling: int = (
         60_000  # above this, compile_brief works per section, then one consistency pass
     )

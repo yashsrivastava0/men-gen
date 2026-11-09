@@ -1444,6 +1444,9 @@ class Service(FlowHooks):
     async def _open_review(self, turn: _Turn) -> None:
         assert self.ports is not None
         self._rebuild(turn)
+        await self.interview.compile(
+            turn
+        )  # the Brief from the whole fact ledger (planner engine only)
         compiled = await self.ports.compiler.compile(self._ctx(turn), turn.brief)
         turn.brief.summary = compiled.summary
         turn.brief.pitch = compiled.pitch

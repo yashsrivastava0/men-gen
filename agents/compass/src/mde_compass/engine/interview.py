@@ -27,6 +27,7 @@ from mde_compass.domain.interview import (
     BatchGroup,
     BatchRecord,
     InterviewBlock,
+    InterviewSummary,
     NeedStatus,
     PlannedBatch,
     PlannerMode,
@@ -37,7 +38,7 @@ from mde_compass.engine import fact_projector, interview_policy
 from mde_compass.engine import facts as facts_mod
 from mde_compass.engine import needs as needs_mod
 from mde_compass.engine import terms as terms_mod
-from mde_compass.engine.context_pack import build_context
+from mde_compass.engine.context_pack import build_context, estimate_tokens, full_ledger, ledger_line
 from mde_compass.engine.interview_support import (
     build_fact,
     counts_by_need,
@@ -57,6 +58,7 @@ from mde_compass.engine.ports import (
     PlanContext,
     PlanRequest,
     SlotUpdate,
+    SummaryRequest,
     TurnUnderstanding,
 )
 from mde_compass.engine.question_pipeline import PipelineResult, plan_validated
@@ -444,6 +446,7 @@ class InterviewController:
         self, turn: _Turn, statuses: dict[str, NeedStatus], *, said_enough: bool = False
     ) -> Literal["asked", "done"]:
         mem = turn.memory
+        await self.refresh_summary(turn)
         new_facts = sum(1 for f in mem.facts if f.id in mem.new_fact_ids)
         decision = interview_policy.stop_decision(
             statuses=statuses,
@@ -874,6 +877,49 @@ class InterviewController:
         shown = self.show_next(turn)
         self.touch(turn)
         return shown
+
+    def count_fallback(self, turn: _Turn, n: int = 1) -> None:
+        """A fallback is a failure: it is counted in the audit block (live batches must show zero)."""
+        block = self.block(turn)
+        turn.memory.fallbacks += n
+        turn.brief.meta.interview = block.model_copy(
+            update={"fallback_count": block.fallback_count + n}
+        )
+
+    async def compile(self, turn: _Turn) -> None:
+        """Build the Brief from the whole fact ledger (the start of Brief review)."""
+        from mde_compass.engine.interview_compile import compile_ledger
+
+        if self.active:
+            await compile_ledger(self, turn)
+
+    async def refresh_summary(self, turn: _Turn) -> None:
+        """Keep the rolling summary current once the ledger outgrows half of the digest budget (it is only ever
+        used beyond the budget, and it never replaces the ledger)."""
+        assert self.svc.ports is not None
+        mem = turn.memory
+        cfg = self.svc.config.context
+        if (
+            estimate_tokens(full_ledger(mem.active_facts()), cfg.chars_per_token)
+            < cfg.fact_digest // 2
+        ):
+            return
+        done = mem.summary.through_fact_id if mem.summary else ""
+        fresh = [f for f in mem.active_facts() if f.id > done]
+        if not fresh:
+            return
+        result = await self.svc.ports.summary_updater.update(
+            self.svc._ctx(turn),
+            SummaryRequest(
+                language=turn.lang,
+                previous=mem.summary or InterviewSummary(),
+                new_facts_digest="\n".join(ledger_line(f) for f in fresh),
+                through_fact_id=fresh[-1].id,
+            ),
+        )
+        mem.set_summary(result.summary, self._now())
+        if result.used_fallback:
+            self.count_fallback(turn)
 
     def set_ui_mode(self, turn: _Turn, mode: Literal["one_at_a_time", "answer_all"]) -> None:
         block = self.block(turn)
