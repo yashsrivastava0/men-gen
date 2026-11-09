@@ -285,5 +285,11 @@
   "ui.v2.rank_title": "Your top picks, most important first",
   "ui.v2.rank_up": "Move up: {label}",
   "ui.v2.rank_down": "Move down: {label}",
-  "ui.v2.rank_remove": "Remove from your picks: {label}"
+  "ui.v2.rank_remove": "Remove from your picks: {label}",
+  "ui.v2.you_decide_on": "We will decide this one for you.",
+  "ui.v2.decide_rest": "Decide the rest for me",
+  "ui.v2.decide_rest_confirm": "We will decide every question you leave open and list each choice under “We assumed” for your approval. The answers you filled in are kept.",
+  "ui.v2.decide_rest_yes": "Yes, decide the rest",
+  "ui.v2.cancel": "Cancel",
+  "ui.v2.form_done_rest": "{count} answers sent. We decided the rest for you."
 }

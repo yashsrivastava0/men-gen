@@ -387,3 +387,8 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
 .rank-box { display: grid; gap: 4px; }
 .rank-list { margin: 0; padding: 0; list-style: none; display: grid; gap: 4px; }
 .rank-row { display: grid; grid-template-columns: 24px minmax(0, 1fr) auto auto auto; gap: 4px; align-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 4px 8px; }
+
+/* "You decide" and "Decide the rest for me" */
+.you-decide-note { align-self: center; }
+.decide-confirm { display: grid; gap: var(--s1); padding: var(--s1) var(--s2); border: 1px solid var(--accent); border-radius: var(--radius-sm); background: var(--accent-soft); font-size: 14px; }
+.decide-confirm p { margin: 0; }

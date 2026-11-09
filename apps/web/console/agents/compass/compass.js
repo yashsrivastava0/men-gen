@@ -27,6 +27,11 @@
     "batch_id", "ui_mode", "groups", "groups[].id", "groups[].title", "groups[].cards", "total",
     "progress", "progress.tier", "progress.target", "progress.committed", "progress.closing"
   ],
+  "batch_answer_keys": [
+    "batch_id", "answers", "answers[].card_id", "answers[].action", "answers[].value", "answers[].custom_text",
+    "decide_rest"
+  ],
+  "batch_answer_actions": ["answer", "skip", "you_decide", "none"],
   "qa_item_keys": [
     "items", "card_id", "status", "origin", "depth", "parent_card_id", "type", "question", "options",
     "answer", "value", "custom_text", "fallback", "facts", "facts[].statement", "facts[].status"
@@ -195,6 +200,12 @@ CONTRACT*/
     "ui.v2.rank_up": "Move up: {label}",
     "ui.v2.rank_down": "Move down: {label}",
     "ui.v2.rank_remove": "Remove from your picks: {label}",
+    "ui.v2.you_decide_on": "We will decide this one for you.",
+    "ui.v2.decide_rest": "Decide the rest for me",
+    "ui.v2.decide_rest_confirm": "We will decide every question you leave open and list each choice under “We assumed” for your approval. The answers you filled in are kept.",
+    "ui.v2.decide_rest_yes": "Yes, decide the rest",
+    "ui.v2.cancel": "Cancel",
+    "ui.v2.form_done_rest": "{count} answers sent. We decided the rest for you.",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -820,11 +831,14 @@ CONTRACT*/
     item.appendChild(controls);
     var err = h("div", { class: "approval-error", role: "alert" });
     var youBtn = null;
+    var youNote = h("span", { class: "hint you-decide-note", role: "status", "aria-live": "polite" });
+    /** "You decide" is the one switch of a question: its inputs are disabled and it is sent as you_decide. */
     function setAction(action) {
       entry.action = action;
       item.classList.toggle("is-off", action !== "answer");
       Array.prototype.forEach.call(controls.querySelectorAll("input, textarea, button"), function (c) { c.disabled = action !== "answer"; });
       if (youBtn) { youBtn.setAttribute("aria-pressed", action === "you_decide" ? "true" : "false"); }
+      youNote.textContent = action === "you_decide" ? t("ui.v2.you_decide_on") : "";
       err.textContent = "";
       onChange();
     }
@@ -833,6 +847,7 @@ CONTRACT*/
       youBtn = h("button", { class: "toggle", type: "button", "aria-pressed": "false", text: t("ui.you_decide"),
         on: { click: function () { setAction(entry.action === "you_decide" ? "answer" : "you_decide"); } } });
       toggles.appendChild(youBtn);
+      toggles.appendChild(youNote);
     }
     if (toggles.childNodes.length) { item.appendChild(toggles); }
     item.appendChild(err);
@@ -892,13 +907,31 @@ CONTRACT*/
     var retry = h("button", { class: "btn btn-primary form-retry", type: "button", text: t("ui.v2.retry"), on: { click: function () { submitForm(f, f.lastDecideRest); } } });
     var error = h("div", { class: "form-error", role: "alert", hidden: true }, errText, retry);
     var send = h("button", { class: "btn btn-primary send-all", type: "button", text: sendLabel(f), on: { click: function () { submitForm(f, false); } } });
-    var bar = h("div", { class: "form-actions" }, summary, status, error,
-      h("div", { class: "row-actions" }, send));
+    var decide = h("button", { class: "btn decide-rest", type: "button", "aria-expanded": "false", "aria-controls": "decide-confirm-" + f.batchId,
+      text: t("ui.v2.decide_rest"), on: { click: function () { toggleDecideConfirm(f, true); } } });
+    var yes = h("button", { class: "btn btn-primary decide-rest-yes", type: "button", text: t("ui.v2.decide_rest_yes"),
+      on: { click: function () { toggleDecideConfirm(f, false); submitForm(f, true); } } });
+    var cancel = h("button", { class: "btn", type: "button", text: t("ui.v2.cancel"), on: { click: function () { toggleDecideConfirm(f, false); decide.focus(); } } });
+    var confirmBox = h("div", { class: "decide-confirm", id: "decide-confirm-" + f.batchId, role: "group", "aria-label": t("ui.v2.decide_rest"), hidden: true },
+      h("p", { text: t("ui.v2.decide_rest_confirm") }), h("div", { class: "row-actions" }, yes, cancel));
+    confirmBox.addEventListener("keydown", function (e) {
+      if (e.key === "Escape") { e.stopPropagation(); toggleDecideConfirm(f, false); decide.focus(); }
+    });
+    var bar = h("div", { class: "form-actions" }, summary, status, error, confirmBox,
+      h("div", { class: "row-actions" }, send, decide));
     el.appendChild(h("p", { class: "hint form-helper", text: t("ui.v2.form_helper") }));
     el.appendChild(bar);
-    f.ui = { count: count, summary: summary, status: status, error: error, errText: errText, retry: retry, send: send, title: title, bar: bar };
+    f.ui = { count: count, summary: summary, status: status, error: error, errText: errText, retry: retry, send: send, title: title, bar: bar,
+      decide: decide, confirm: confirmBox, yes: yes };
     refreshForm(f);
     return el;
+  }
+
+  /** "Decide the rest for me" asks first, in one line, what will happen. */
+  function toggleDecideConfirm(f, open) {
+    f.ui.confirm.hidden = !open;
+    f.ui.decide.setAttribute("aria-expanded", open ? "true" : "false");
+    if (open) { f.ui.yes.focus(); }
   }
 
   /** The reply to a failed send, in plain words. */
@@ -915,6 +948,7 @@ CONTRACT*/
     f.el.setAttribute("aria-busy", on ? "true" : "false");
     Array.prototype.forEach.call(f.el.querySelectorAll(".qgroup"), function (g) { g.disabled = on; });
     f.ui.send.disabled = on;
+    f.ui.decide.disabled = on;
     f.ui.send.textContent = on ? t("ui.v2.sending") : sendLabel(f);
     f.ui.status.textContent = on ? t("ui.v2.sending") : "";
     if (on) { f.ui.error.hidden = true; }
@@ -925,20 +959,20 @@ CONTRACT*/
       request keeps every answer and offers Retry (the same event id when nothing changed, so it is never applied twice). */
   function submitForm(f, decideRest) {
     if (f.sending || f.confirmed) { return; }
-    var missing = I.missingRequired(f.cards, f.draft);
+    var missing = decideRest ? [] : I.missingRequired(f.cards, f.draft);   // "decide the rest" hands even a required one over
     if (missing.length) {
       missing.forEach(function (c) { f.items[c.id].showRequired(); });
       f.items[missing[0].id].focus();
       return;
     }
-    var payload = I.buildBatchPayload(f.batchId, f.cards, f.draft, { decideRest: false });
+    var payload = I.buildBatchPayload(f.batchId, f.cards, f.draft, { decideRest: !!decideRest });
     var key = JSON.stringify(payload);
     var eventId = f.failed && f.failed.key === key ? f.failed.eventId : randomId();
     f.answers = payload.answers;
-    f.decideRest = false;
-    f.lastDecideRest = false;
+    f.decideRest = !!decideRest;
+    f.lastDecideRest = !!decideRest;
     setFormBusy(f, true);
-    window.compassSend.batchAnswer(f.batchId, payload.answers, { eventId: eventId, onAck: function () { confirmForm(f); }, onError: function (err) {
+    window.compassSend.batchAnswer(f.batchId, payload.answers, { decideRest: !!decideRest, eventId: eventId, onAck: function () { confirmForm(f); }, onError: function (err) {
       if (f.confirmed) { return; }   // the stream already showed the next questions: the server has the answers
       f.failed = { key: key, eventId: eventId };
       setFormBusy(f, false);
@@ -964,11 +998,13 @@ CONTRACT*/
         : a.action === "none" ? [t("ui.v2.line_none"), a.custom_text].filter(Boolean).join(": ") : cardSummary(c, a.value, a.custom_text);
       return c.question + " — " + said;
     });
+    if (f.decideRest) { lines.push(t("ui.v2.decide_rest")); }
     if (lines.length) { addMsg("user", lines.join("\n")); }
     clear(f.el);
     f.el.className = "qcard done";
     f.el.removeAttribute("aria-busy");
-    f.el.appendChild(h("div", { class: "small muted", text: t("ui.interview.form_sent", { count: f.answers.length }) }));
+    f.el.appendChild(h("div", { class: "small muted",
+      text: t(f.decideRest ? "ui.v2.form_done_rest" : "ui.interview.form_sent", { count: f.answers.length }) }));
     releaseForm(f);
   }
   function releaseForm(f) {

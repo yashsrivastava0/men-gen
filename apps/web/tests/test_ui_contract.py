@@ -20,6 +20,8 @@ from mde_compass.domain.cards import CARD_TYPES, Card
 from mde_compass.domain.events import (
     INBOUND_ADAPTER,
     OUTBOUND_ADAPTER,
+    BatchAnswer,
+    BatchAnswerItem,
     CommandName,
     InboundEvent,
     OutboundEvent,
@@ -94,6 +96,41 @@ def test_batch_keys_exist_in_the_question_batch_schema() -> None:
     assert [k for k in keys if not _resolve(schema, k)] == []
 
 
+def test_batch_progress_is_optional_and_the_page_never_names_the_cap() -> None:
+    """``progress`` arrives with the v2 engine; the page reads tier, target, committed and closing, never the cap."""
+    schema = QuestionBatch.model_json_schema()
+    keys = _contract()["batch_keys"]
+    assert {
+        "progress",
+        "progress.tier",
+        "progress.target",
+        "progress.committed",
+        "progress.closing",
+    } <= set(keys)
+    assert "progress.hard_cap" not in keys
+    assert "progress" not in schema.get("required", []), "older servers omit it"
+    assert "progress" in schema["properties"]
+
+
+def test_the_batch_answer_the_form_sends_is_the_servers_batch_answer() -> None:
+    """Every key and action the form puts in a ``batch_answer`` exists on the server model (ADR 0016)."""
+    contract = _contract()
+    schema = BatchAnswer.model_json_schema()
+    assert [k for k in contract["batch_answer_keys"] if not _resolve(schema, k)] == []
+    assert "decide_rest" in contract["batch_answer_keys"]
+    assert set(contract["batch_answer_actions"]) == set(
+        get_args(BatchAnswerItem.model_fields["action"].annotation)
+    )
+    body = APP_JS.split("CONTRACT*/", 1)[1] + HELPER_JS
+    for action in contract["batch_answer_actions"]:
+        assert re.search(rf"""["']{action}["']""", body), (
+            f"the form never sends the {action} action"
+        )
+    # "decide_rest" is only put in the body when asked for, so an older server never sees it
+    assert "if (o.decideRest) { body.decide_rest = true; }" in body
+    assert "if (decideRest) { body.decide_rest = true; }" in body
+
+
 def test_qa_item_keys_are_the_ones_the_service_puts_in_the_list() -> None:
     """GET /qa is a plain dict (no model), so its keys are pinned to the code that builds it."""
     source = inspect.getsource(Service.qa_list)
@@ -128,6 +165,7 @@ def test_every_contract_key_is_actually_read_by_the_code() -> None:
         + contract["card_keys"]
         + contract["stored_event_keys"]
         + contract["batch_keys"]
+        + contract["batch_answer_keys"]
         + contract["qa_item_keys"]
     )
     for key in keys:

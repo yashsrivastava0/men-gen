@@ -302,6 +302,47 @@ def test_a_form_question_without_fields_reads_like_an_open_question_everywhere()
     )
 
 
+# ---- Compass v2: "You decide" and "Decide the rest for me" ---------------------------------------------------
+
+
+def test_every_question_has_one_you_decide_switch_that_disables_its_inputs() -> None:
+    item = function_body("formItem")
+    assert (
+        't("ui.you_decide")' in item
+        and 'setAction(entry.action === "you_decide" ? "answer" : "you_decide")' in item
+    )
+    assert 'c.disabled = action !== "answer"' in item, "its inputs are disabled while it is on"
+    assert "ui.v2.you_decide_on" in item and '"aria-pressed"' in item
+    assert "card.must_confirm" in item, "a risky question cannot be left to us"
+    assert "skip" not in item.lower().replace("skipped", ""), (
+        "a blank question is the skip: no second switch"
+    )
+    assert "I.answerFor(card, e)" in HELPER or "answerFor(card, entryOf(draft, card))" in HELPER
+
+
+def test_decide_the_rest_asks_in_one_line_then_sends_the_filled_in_answers_with_the_flag() -> None:
+    build = function_body("buildForm")
+    for token in ("decide-rest", "decide-rest-yes", "decide-confirm", "ui.v2.decide_rest_confirm"):
+        assert token in build, token
+    assert '"aria-expanded"' in build and 'e.key === "Escape"' in build, (
+        "keyboard: Escape closes it"
+    )
+    assert "toggleDecideConfirm(f, true)" in build and "submitForm(f, true)" in build
+    submit = function_body("submitForm")
+    assert "{ decideRest: !!decideRest }" in submit and "decideRest: !!decideRest" in submit
+    assert "decideRest ? [] : I.missingRequired" in submit
+    assert "f.ui.decide.disabled = on" in function_body("setFormBusy")
+    confirm = function_body("confirmForm")
+    assert "ui.v2.form_done_rest" in confirm and "f.decideRest" in confirm
+    # the page never offers the old "finish with defaults" command: decide_rest replaces it in the form
+    assert "finish_with_defaults" not in JS.split("CONTRACT*/", 1)[1]
+    strings = load_catalog().strings
+    assert "We assumed" in strings["en"]["ui.v2.decide_rest_confirm"], (
+        "the real heading of the Brief section"
+    )
+    assert strings["en"]["section.assumed"] == "We assumed"
+
+
 def test_the_layout_toggle_is_gone_and_ask_more_lives_near_the_composer() -> None:
     bar = re.search(r'<div id="interview-bar".*?</div>', HTML, flags=re.S)
     assert bar, "the interview bar is in the fragment"
