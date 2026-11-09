@@ -1,0 +1,53 @@
+# Variant of SB-QP-02: the confirmation option is labelled as coming from the document (basis your_document).
+# The document already states the roles, the features, the hours and the payment provider. The model asks to
+# confirm the one thing it is unsure of (the main customer group) and two gaps the document leaves open.
+calls:
+  cmp.read_chunk:
+    - mock: true
+  cmp.merge_claims:
+    - mock: true
+  cmp.plan_questions:
+    - defer_rest: "the document already answers this"
+      domain_hypothesis:
+        category: delivery
+        subcategory: tiffin meal-plan delivery
+        business_model_candidates: [monthly meal plan]
+        likely_roles: [customer, rider, kitchen manager, admin]
+        hard_parts: [lunch deadline of 12:30, riders paid per delivery]
+        confidence: 0.85
+      questions:
+        - group_id: G1
+          group_title: Checking what we read
+          intent: confirm the main customer group from the document
+          serves: [audience.segments]
+          type: confirm
+          options:
+            - {label: "Yes, office workers in Baner and Hinjewadi", basis: your_document, reason: "Your document says so in its second line"}
+            - "Not only them"
+          recommended: "Yes, office workers in Baner and Hinjewadi"
+          text: "Your document says office workers in Baner and Hinjewadi order the monthly plan. Is that your main group?"
+          why_we_ask: We would rather confirm than ask again what you already wrote.
+          unlocks: ["Blueprint: roles"]
+          answer_spec: Yes, or who else.
+        - group_id: G2
+          group_title: What the document leaves open
+          intent: learn how riders are paid and when
+          serves: ["domain:rider_payout"]
+          type: text
+          text: "Riders are paid per delivery: who pays them and how often, daily or weekly?"
+          why_we_ask: Rider payouts decide what the kitchen manager and admin need to see.
+          unlocks: ["Blueprint: payout screens"]
+          answer_spec: Who pays, per delivery amount and payout cycle.
+          examples: ["We pay weekly in cash, 25 rupees per tiffin"]
+        - group_id: G2
+          group_title: What the document leaves open
+          intent: learn what happens to a paused monthly plan
+          serves: ["domain:plan_pause"]
+          type: text
+          text: "When a customer pauses the monthly tiffin plan for holidays, do they get a refund or extra days?"
+          why_we_ask: Pausing is in your features, and the rule decides how payments are shown.
+          unlocks: ["Blueprint: plan rules"]
+          answer_spec: The rule for a paused plan.
+          examples: ["Unused days are added at the end of the month"]
+  cmp.audit_questions:
+    - pass_all: true

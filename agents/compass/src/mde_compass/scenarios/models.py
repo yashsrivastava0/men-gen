@@ -36,6 +36,10 @@ ACTIONS: tuple[str, ...] = (
     "pause",
     "resume",
     "drive",  # {mode: tap_recommended|you_decide|skip, until: STATE, max: n}
+    "upload",  # {name, text}: a document added mid-interview (planner path)
+    "edit_answer",  # {card: first|last|Q-003, value, custom}: edit an earlier answer (planner path)
+    "say_many",  # [text, ...]: several typed messages, one turn each
+    "answer_texts",  # [text, ...]: typed answers to the cards on screen, one per card, in order
 )
 
 
@@ -69,6 +73,126 @@ class SlotExpect(BaseModel):
     @classmethod
     def _listify(cls, v: Any) -> Any:
         return [v] if isinstance(v, str) else v
+
+
+class FactsExpect(BaseModel):
+    """Checks on the fact ledger (planner path). Texts match statement or quote, case-insensitively."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    count_min: int | None = None  # all facts, whatever their status
+    count_max: int | None = None
+    active_min: int | None = None
+    active_contains: list[str] = Field(default_factory=list)
+    active_not_contains: list[str] = Field(default_factory=list)
+    superseded_contains: list[str] = Field(default_factory=list)
+    superseded_min: int | None = None
+    disputed_min: int | None = None
+    ids_gapless: bool | None = None  # FCT-001..N with no gap and no reuse
+    unverified_max: int | None = None  # facts whose quote was not found in its source
+    unverified_min: int | None = None
+    none_deleted: bool | None = (
+        None  # a fact seen in an earlier step is still there (history is kept)
+    )
+    coverage: float | None = None  # share of active facts used by a Brief item or marked not_used
+
+
+class QaExpect(BaseModel):
+    """Checks on the question and answer ledger (planner path)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    shown_min: int | None = None  # questions the person was shown (follow-ups included)
+    shown_max: int | None = None
+    followups: int | None = None  # exactly this many follow-ups were shown
+    followups_max: int | None = None
+    no_repeats: bool | None = None  # no two shown questions share wording or intent
+    statuses: dict[str, str] = Field(default_factory=dict)  # card id -> status (newest version)
+    versions: dict[str, int] = Field(default_factory=dict)  # card id -> how many versions are kept
+    dropped_min: int | None = None
+    shown_contains: list[str] = Field(default_factory=list)  # some shown question contains the text
+    shown_not_contains: list[str] = Field(default_factory=list)
+    first_contains: list[str] = Field(default_factory=list)  # the first question shown contains it
+    asked_needs: list[str] = Field(default_factory=list)  # some shown question serves this need
+    not_asked_needs: list[str] = Field(default_factory=list)  # no shown question serves this need
+    first_serves: list[str] = Field(
+        default_factory=list
+    )  # the first question serves one of these needs
+    origins_include: list[str] = Field(default_factory=list)  # planner | followup | fallback
+    options_language: str | None = (
+        None  # every option label of the last card is in this script (en | hi)
+    )
+    project_term_share_min: float | None = None  # of the non-universal questions shown
+
+
+class InterviewExpect(BaseModel):
+    """Checks on the audit block ``meta.interview`` and the planner runs (planner path)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    fallback_count: int | None = None
+    stop_reason: list[str] | str | None = None  # contains any of these
+    batches_min: int | None = None
+    batches_max: int | None = None
+    budget: str | None = None
+    rejected_min: int | None = None  # questions rejected by code or auditor across all runs
+    rejected_codes: list[str] = Field(default_factory=list)  # each appears in some rejection reason
+    auditor_rejected_min: int | None = None
+    repaired: bool | None = None  # some run was repaired
+    fallback_batches: int | None = None  # batches that used the flagged fallback
+    backlog_min: int | None = None  # items moved to the backlog
+    batch_sizes_max: int | None = None  # no accepted batch is larger than this
+
+    @field_validator("stop_reason")
+    @classmethod
+    def _listify(cls, v: Any) -> Any:
+        return [v] if isinstance(v, str) else v
+
+
+class CallsExpect(BaseModel):
+    """How often the engine called each model call (planner path with a provider fixture or a traced gateway)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    counts: dict[str, int] = Field(default_factory=dict)  # exact, per call id
+    at_least: dict[str, int] = Field(default_factory=dict)
+    at_most: dict[str, int] = Field(default_factory=dict)
+    modes: dict[str, list[str]] = Field(
+        default_factory=dict
+    )  # call id -> modes seen, in order (cmp.plan_questions)
+    input_contains: dict[str, list[str]] = Field(
+        default_factory=dict
+    )  # call id -> texts in the LAST input sent
+    consumed: bool | None = (
+        None  # every scripted answer was used (the runner always checks this at the end)
+    )
+
+
+class BatchExpect(BaseModel):
+    """Checks on the last ``question_batch`` event of the step: the batch the person is given (planner path)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    mode: str | None = None  # initial | followup | replan | deepen | simplify
+    total_min: int | None = None
+    total_max: int | None = None
+    groups_min: int | None = None
+    groups_max: int | None = None
+    group_size_max: int | None = None
+    titles_filled: bool | None = None  # every group has a title
+    first_serves: list[str] = Field(
+        default_factory=list
+    )  # the first question serves one of these needs
+    first_contains: list[str] = Field(
+        default_factory=list
+    )  # ... and its text contains one of these words
+    lead: int = 2  # how many of the first questions the two checks below look at
+    lead_types_not: list[str] = Field(default_factory=list)  # none of them has one of these types
+    lead_serves_only: list[str] = Field(default_factory=list)  # all of them serve only these needs
+    types_include: list[str] = Field(
+        default_factory=list
+    )  # some question of the batch has each type
+    ui_mode: str | None = None  # one_at_a_time | answer_all
 
 
 class Expect(BaseModel):
@@ -111,6 +235,22 @@ class Expect(BaseModel):
     version_unchanged: bool | None = None
     no_error: bool | None = None  # default True for every step: no `error` events
     slots: dict[str, SlotExpect] = Field(default_factory=dict)
+    # --- the interview memory (planner path) --------------------------------------------------------------
+    facts: FactsExpect | None = None
+    qa: QaExpect | None = None
+    interview: InterviewExpect | None = None
+    calls: CallsExpect | None = None
+    batch: BatchExpect | None = None
+    brief_contains: list[str] = Field(default_factory=list)  # anywhere in the Brief's content
+    brief_not_contains: list[str] = Field(default_factory=list)
+    domain_facts_contains: list[str] = Field(default_factory=list)  # in a domain_facts row
+    event_order: list[str] = Field(
+        default_factory=list
+    )  # these event types, in this order, in this step
+    assumptions_min: int | None = None  # Brief assumptions
+    blockers_contain: list[str] = Field(
+        default_factory=list
+    )  # the last brief_ready blockers mention these
 
     @field_validator(
         "state",
@@ -192,6 +332,9 @@ class Scenario(BaseModel):
     # hand-written model outputs per call id (a file under ``providers/``, relative to the scenario directory).
     # Empty means "providers/<id>.yaml if it exists". Planner path only.
     provider: str = ""
+    source_dir: str = Field(
+        default="", exclude=True
+    )  # set by the loader: where the YAML was read from
     persona: dict[str, Any] = Field(default_factory=dict)  # eval metadata (kind, flags)
     steps: list[Step]
     final: Expect | None = None  # checked after the last step

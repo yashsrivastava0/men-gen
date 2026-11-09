@@ -29,7 +29,7 @@ from mde_compass.engine.question_validators import is_universal
 from mde_compass.testing import Conversation
 
 FCT_REF = re.compile(r"^FCT-\d{3,}$")
-SHOWN_STATUSES = ("answered", "skipped", "you_decide", "assumed", "dropped", "superseded")
+SHOWN_STATUSES = ("answered", "skipped", "you_decide", "assumed", "superseded")
 
 
 @dataclass

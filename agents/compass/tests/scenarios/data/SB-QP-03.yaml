@@ -1,0 +1,41 @@
+id: SB-QP-03
+title: A domain the model is unsure about starts with a typical day and the apps people use, before any mechanics
+tags: [planner, initial, novel-domain]
+engines: [planner]
+steps:
+  - say: "We are a beekeeping cooperative in Wayanad and want an app so our members can sell honey"
+    expect:
+      event_order: [playback, question_batch, card]
+      batch:
+        mode: initial
+        total_min: 5
+        total_max: 7
+        groups_min: 2
+        groups_max: 3
+        titles_filled: true
+        first_contains: [typical day]
+        lead: 2
+        lead_types_not: [choose_one, pick_many, priority]
+      calls:
+        counts: {cmp.plan_questions: 1}
+        input_contains:
+          cmp.plan_questions: [beekeeping, wayanad, honey, cooperative]
+      slots:
+        meta.hypothesis.confidence: {equals: 0.2}
+      qa:
+        first_contains: [typical day]
+        shown_max: 1
+  - answer_texts:
+      - "Each morning members bring honey in drums to our collection centre in Kalpetta, where it is weighed and tested for purity, then we pack jars and sell to shops and tourists"
+    expect:
+      facts:
+        active_contains: ["collection centre", "tested for purity"]
+        unverified_max: 0
+      qa:
+        shown_contains: ["apps do your cooperative members"]
+        shown_max: 2
+      calls:
+        counts: {cmp.plan_questions: 1, cmp.understand_turn: 2}
+final:
+  interview: {fallback_count: 0}
+  facts: {ids_gapless: true}

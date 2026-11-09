@@ -18,6 +18,7 @@ import yaml
 
 from mde_compass.domain import Card, StoredEvent
 from mde_compass.domain.events import (
+    AnswerEdit,
     AssumptionDecision,
     BriefEdit,
     BriefFeedback,
@@ -123,6 +124,21 @@ def engine_config(engine: Engine) -> Any:
     return dataclasses.replace(DEFAULT_CONFIG, interview=interview)
 
 
+def new_scripted_service(engine: Engine, script: Any) -> tuple[Any, Any]:
+    """A planner service whose model calls come from a provider fixture; returns the service and the gateway
+    (``HybridGateway``: its ``trace`` lists the calls, ``assert_consumed`` checks the script was used up)."""
+    from mde_compass.compose import build_service
+    from mde_compass.scenarios.providers import hybrid_for
+    from mde_core.clock import FakeClock
+
+    clock = FakeClock()
+    gateway = hybrid_for(script, clock)
+    service = build_service(
+        memory=True, clock=clock, compass_config=engine_config(engine), gateway=cast(Any, gateway)
+    )
+    return service, gateway
+
+
 def new_service(engine: Engine = "legacy", *, gateway: Any | None = None) -> Any:
     """A fresh real Service: mock mode, in-memory store, a fake clock (the gateway rate limiter then never waits).
 
@@ -139,7 +155,8 @@ def new_service(engine: Engine = "legacy", *, gateway: Any | None = None) -> Any
 # ---------------------------------------------------------------------------------------- loading
 def load_scenario(path: Path | str) -> Scenario:
     raw = yaml.safe_load(Path(path).read_text(encoding="utf-8"))
-    return Scenario.model_validate(raw)
+    scn = Scenario.model_validate(raw)
+    return scn.model_copy(update={"source_dir": str(Path(path).resolve().parent)})
 
 
 def load_dir(directory: Path | str, pattern: str = "*.yaml") -> list[tuple[Path, Scenario]]:
@@ -360,6 +377,7 @@ async def check_expect(
     version_after: int,
     card_on_screen: Card | None = None,
     engine: str = "legacy",
+    gateway: Any | None = None,
 ) -> list[str]:
     exp = exp or Expect()
     errs: list[str] = []
@@ -486,15 +504,364 @@ async def check_expect(
         brief = await conv.brief()
         for path, sx in exp.slots.items():
             errs.extend(check_slot(brief, path, sx, engine))
+    errs.extend(await check_memory(exp, conv=conv, events=events, gateway=gateway))
+    return errs
+
+
+# ---------------------------------------------------------------------------- the interview memory
+def _has(texts: Sequence[str], needle: str) -> bool:
+    return any(needle.lower() in t.lower() for t in texts)
+
+
+def _fact_texts(facts: Sequence[Any]) -> list[str]:
+    return [f"{f.statement} | {f.quote}" for f in facts]
+
+
+def check_facts(exp: Any, data: Any) -> list[str]:
+    from mde_compass.scenarios import ledger
+
+    errs: list[str] = []
+    facts = data.facts
+    active = [f for f in facts if f.status == "active"]
+    if exp.count_min is not None and len(facts) < exp.count_min:
+        errs.append(f"facts: at least {exp.count_min} expected, got {len(facts)}")
+    if exp.count_max is not None and len(facts) > exp.count_max:
+        errs.append(f"facts: at most {exp.count_max} expected, got {len(facts)}")
+    if exp.active_min is not None and len(active) < exp.active_min:
+        errs.append(f"facts: at least {exp.active_min} active expected, got {len(active)}")
+    for needle in exp.active_contains:
+        if not _has(_fact_texts(active), needle):
+            errs.append(f"facts: no ACTIVE fact contains {needle!r}: {_fact_texts(active)[:6]}")
+    for needle in exp.active_not_contains:
+        if _has(_fact_texts(active), needle):
+            errs.append(f"facts: an active fact still contains {needle!r}")
+    superseded = [f for f in facts if f.status == "superseded"]
+    for needle in exp.superseded_contains:
+        if not _has(_fact_texts(superseded), needle):
+            errs.append(
+                f"facts: no SUPERSEDED fact contains {needle!r}: {_fact_texts(superseded)[:6]}"
+            )
+    if exp.superseded_min is not None and len(superseded) < exp.superseded_min:
+        errs.append(
+            f"facts: at least {exp.superseded_min} superseded expected, got {len(superseded)}"
+        )
+    disputed = [f for f in facts if f.status == "disputed"]
+    if exp.disputed_min is not None and len(disputed) < exp.disputed_min:
+        errs.append(f"facts: at least {exp.disputed_min} disputed expected, got {len(disputed)}")
+    if exp.ids_gapless:
+        want = [f"FCT-{i:03d}" for i in range(1, len(facts) + 1)]
+        got = [f.id for f in facts]
+        if got != want:
+            errs.append(
+                f"facts: ids should run FCT-001..{len(facts):03d} without gaps or reuse; got {got}"
+            )
+    bad = [f.id for f in facts if f.unverified_quote]
+    if exp.unverified_max is not None and len(bad) > exp.unverified_max:
+        errs.append(f"facts: at most {exp.unverified_max} unverified quotes expected, got {bad}")
+    if exp.unverified_min is not None and len(bad) < exp.unverified_min:
+        errs.append(f"facts: at least {exp.unverified_min} unverified quotes expected, got {bad}")
+    if exp.coverage is not None:
+        cov = ledger.coverage(data)
+        if cov.ratio < exp.coverage:
+            errs.append(
+                f"facts: coverage {cov.ratio:.2f} < {exp.coverage}; unreferenced {cov.unreferenced}"
+            )
+    return errs
+
+
+def check_qa(exp: Any, data: Any, catalog: Any) -> list[str]:
+    from mde_compass.scenarios import ledger
+
+    errs: list[str] = []
+    shown = data.shown_cards()
+    n = len(shown)
+    if exp.shown_min is not None and n < exp.shown_min:
+        errs.append(f"qa: at least {exp.shown_min} questions shown expected, got {n}")
+    if exp.shown_max is not None and n > exp.shown_max:
+        errs.append(
+            f"qa: at most {exp.shown_max} questions shown expected, got {n}: {[c.id for c in shown]}"
+        )
+    follow = sum(1 for c in shown if c.origin == "followup")
+    if exp.followups is not None and follow != exp.followups:
+        errs.append(f"qa: exactly {exp.followups} follow-ups expected, got {follow}")
+    if exp.followups_max is not None and follow > exp.followups_max:
+        errs.append(f"qa: at most {exp.followups_max} follow-ups expected, got {follow}")
+    if exp.no_repeats:
+        repeats = ledger.repeated_questions(shown)
+        if repeats:
+            errs.append(f"qa: repeated questions {repeats}")
+    by_id = {q.card_id: q for q in data.qa}
+    for cid, status in exp.statuses.items():
+        got = by_id[cid].status if cid in by_id else "(no such question)"
+        if got != status:
+            errs.append(f"qa: {cid} should be {status}; got {got}")
+    for cid, count in exp.versions.items():
+        got_n = sum(1 for q in data.qa_versions if q.card_id == cid)
+        if got_n != count:
+            errs.append(f"qa: {cid} should keep {count} versions; got {got_n}")
+    dropped = sum(1 for q in data.qa if q.status == "dropped")
+    if exp.dropped_min is not None and dropped < exp.dropped_min:
+        errs.append(f"qa: at least {exp.dropped_min} questions dropped expected, got {dropped}")
+    texts = [f"{c.question} | {' | '.join(o.label for o in c.options)}" for c in shown]
+    for needle in exp.shown_contains:
+        if not _has(texts, needle):
+            errs.append(f"qa: no shown question contains {needle!r}")
+    for needle in exp.shown_not_contains:
+        if _has(texts, needle):
+            errs.append(f"qa: a shown question contains {needle!r}")
+    first = shown[0] if shown else None
+    for needle in exp.first_contains:
+        if first is None or needle.lower() not in first.question.lower():
+            errs.append(
+                f"qa: the first question should contain {needle!r}; got {first.question if first else None!r}"
+            )
+    if exp.first_serves and (first is None or not set(first.need_ids) & set(exp.first_serves)):
+        errs.append(
+            f"qa: the first question should serve one of {exp.first_serves}; got {first.need_ids if first else None}"
+        )
+    served = {need for c in shown for need in c.need_ids}
+    for need in exp.asked_needs:
+        if need not in served:
+            errs.append(f"qa: no shown question serves {need}; they serve {sorted(served)}")
+    for need in exp.not_asked_needs:
+        if need in served:
+            errs.append(f"qa: a question serving {need} was shown, but the facts already answer it")
+    origins = {c.origin for c in shown}
+    for origin in exp.origins_include:
+        if origin not in origins:
+            errs.append(f"qa: no {origin} question was shown; origins: {sorted(origins)}")
+    if exp.project_term_share_min is not None:
+        with_term, scored, missing = ledger.project_term_report(
+            data.planned_cards(), ledger.terms_of(data), catalog
+        )
+        share = with_term / scored if scored else 1.0
+        if share < exp.project_term_share_min:
+            errs.append(
+                f"qa: project-term share {share:.2f} < {exp.project_term_share_min}; without a term: {missing}"
+            )
+    return errs
+
+
+def check_interview(exp: Any, data: Any) -> list[str]:
+    from mde_compass.scenarios import ledger
+
+    errs: list[str] = []
+    block = data.brief.meta.interview
+    if exp.fallback_count is not None:
+        got = block.fallback_count if block is not None else 0
+        if got != exp.fallback_count:
+            errs.append(f"interview: fallback_count should be {exp.fallback_count}; got {got}")
+    if exp.stop_reason and (
+        block is None or not any(r in block.stop_reason for r in exp.stop_reason)
+    ):
+        errs.append(
+            f"interview: stop_reason should contain one of {exp.stop_reason}; got {block.stop_reason if block else None!r}"
+        )
+    if exp.budget and (block is None or block.budget != exp.budget):
+        errs.append(
+            f"interview: budget should be {exp.budget}; got {block.budget if block else None}"
+        )
+    nb = len(data.batches)
+    if exp.batches_min is not None and nb < exp.batches_min:
+        errs.append(f"interview: at least {exp.batches_min} planner batches expected, got {nb}")
+    if exp.batches_max is not None and nb > exp.batches_max:
+        errs.append(f"interview: at most {exp.batches_max} planner batches expected, got {nb}")
+    rejected = [r for b in data.batches for r in b.rejected]
+    if exp.rejected_min is not None and len(rejected) < exp.rejected_min:
+        errs.append(
+            f"interview: at least {exp.rejected_min} rejected questions expected, got {len(rejected)}"
+        )
+    reasons = [x for r in rejected for x in r.reasons]
+    for code in exp.rejected_codes:
+        if not _has(reasons, code):
+            errs.append(f"interview: no rejection mentions {code!r}; reasons: {reasons[:8]}")
+    audited = [r for r in rejected if r.source == "auditor"]
+    if exp.auditor_rejected_min is not None and len(audited) < exp.auditor_rejected_min:
+        errs.append(
+            f"interview: at least {exp.auditor_rejected_min} auditor rejections expected, got {len(audited)}"
+        )
+    if exp.repaired is not None and any(b.repaired for b in data.batches) != exp.repaired:
+        errs.append(f"interview: repaired should be {exp.repaired}")
+    fb = sum(1 for b in data.batches if b.used_fallback)
+    if exp.fallback_batches is not None and fb != exp.fallback_batches:
+        errs.append(f"interview: {exp.fallback_batches} fallback batches expected, got {fb}")
+    if exp.backlog_min is not None:
+        backlog = sum(len(b.output.get("backlog") or []) for b in data.batches)  # type: ignore[arg-type]
+        if backlog < exp.backlog_min:
+            errs.append(
+                f"interview: at least {exp.backlog_min} backlog items expected, got {backlog}"
+            )
+    if exp.batch_sizes_max is not None:
+        for b in data.batches:
+            if len(b.accepted) > exp.batch_sizes_max:
+                errs.append(
+                    f"interview: batch {b.id} holds {len(b.accepted)} questions, more than {exp.batch_sizes_max}"
+                )
+    _ = ledger
+    return errs
+
+
+def check_batch(exp: Any, events: Sequence[StoredEvent]) -> list[str]:
+    batches = [e for e in events if e.type == "question_batch"]
+    if not batches:
+        return ["batch: no question_batch event in this step"]
+    payload = batches[-1].payload
+    groups = cast(list[dict[str, Any]], payload.get("groups") or [])
+    cards = [c for g in groups for c in cast(list[dict[str, Any]], g.get("cards") or [])]
+    errs: list[str] = []
+    if exp.mode and payload.get("mode") != exp.mode:
+        errs.append(f"batch: mode should be {exp.mode}; got {payload.get('mode')}")
+    if exp.ui_mode and payload.get("ui_mode") != exp.ui_mode:
+        errs.append(f"batch: ui_mode should be {exp.ui_mode}; got {payload.get('ui_mode')}")
+    if exp.total_min is not None and len(cards) < exp.total_min:
+        errs.append(f"batch: at least {exp.total_min} questions expected, got {len(cards)}")
+    if exp.total_max is not None and len(cards) > exp.total_max:
+        errs.append(f"batch: at most {exp.total_max} questions expected, got {len(cards)}")
+    if exp.groups_min is not None and len(groups) < exp.groups_min:
+        errs.append(f"batch: at least {exp.groups_min} groups expected, got {len(groups)}")
+    if exp.groups_max is not None and len(groups) > exp.groups_max:
+        errs.append(f"batch: at most {exp.groups_max} groups expected, got {len(groups)}")
+    if exp.group_size_max is not None:
+        for g in groups:
+            if len(g.get("cards") or []) > exp.group_size_max:
+                errs.append(
+                    f"batch: group {g.get('id')} holds more than {exp.group_size_max} questions"
+                )
+    if exp.titles_filled and any(not str(g.get("title", "")).strip() for g in groups):
+        errs.append("batch: every group needs a title")
+    first = cards[0] if cards else None
+    if exp.first_serves and (
+        first is None or not set(first.get("need_ids", [])) & set(exp.first_serves)
+    ):
+        errs.append(
+            f"batch: the first question should serve one of {exp.first_serves}; got {first.get('need_ids') if first else None}"
+        )
+    if exp.first_contains and (
+        first is None
+        or not any(w.lower() in str(first.get("question", "")).lower() for w in exp.first_contains)
+    ):
+        errs.append(
+            f"batch: the first question should contain one of {exp.first_contains}; got {first.get('question') if first else None!r}"
+        )
+    lead = cards[: exp.lead]
+    for c in lead:
+        if c.get("type") in exp.lead_types_not:
+            errs.append(
+                f"batch: a lead question has type {c.get('type')}, which is too detailed to open with"
+            )
+        if exp.lead_serves_only and not set(c.get("need_ids", [])) <= set(exp.lead_serves_only):
+            errs.append(
+                f"batch: lead question {c.get('id')} serves {c.get('need_ids')}, not only {exp.lead_serves_only}"
+            )
+    types = {c.get("type") for c in cards}
+    for t in exp.types_include:
+        if t not in types:
+            errs.append(
+                f"batch: no {t} question in the batch; types {sorted(str(x) for x in types)}"
+            )
+    return errs
+
+
+def check_calls(exp: Any, gateway: Any) -> list[str]:
+    errs: list[str] = []
+    if gateway is None:
+        return ["calls: this scenario has no traced gateway (give it a provider fixture)"]
+    for spec_id, n in exp.counts.items():
+        if gateway.called(spec_id) != n:
+            errs.append(
+                f"calls: {spec_id} should be called {n} times; got {gateway.called(spec_id)}"
+            )
+    for spec_id, n in exp.at_least.items():
+        if gateway.called(spec_id) < n:
+            errs.append(
+                f"calls: {spec_id} should be called at least {n} times; got {gateway.called(spec_id)}"
+            )
+    for spec_id, n in exp.at_most.items():
+        if gateway.called(spec_id) > n:
+            errs.append(
+                f"calls: {spec_id} should be called at most {n} times; got {gateway.called(spec_id)}"
+            )
+    for spec_id, modes in exp.modes.items():
+        seen = [getattr(i, "mode", None) for s, i in gateway.inputs if s == spec_id]
+        if seen != modes:
+            errs.append(f"calls: {spec_id} modes should be {modes}; got {seen}")
+    for spec_id, needles in exp.input_contains.items():
+        last = gateway.last_input(spec_id)
+        text = last.model_dump_json() if last is not None else ""
+        for needle in needles:
+            if needle.lower() not in text.lower():
+                errs.append(f"calls: the last {spec_id} input should contain {needle!r}")
+    return errs
+
+
+async def check_memory(
+    exp: Expect, *, conv: Conversation, events: Sequence[StoredEvent], gateway: Any | None
+) -> list[str]:
+    """The checks that read the interview memory (facts, Q&A, planner runs, Brief text) and the model calls."""
+    errs: list[str] = []
+    if exp.event_order:
+        types = [e.type for e in events]
+        pos = -1
+        for t in exp.event_order:
+            nxt = next((i for i in range(pos + 1, len(types)) if types[i] == t), None)
+            if nxt is None:
+                errs.append(f"event order {exp.event_order} not found in {types}")
+                break
+            pos = nxt
+    if exp.blockers_contain:
+        readies = [e for e in events if e.type == "brief_ready"]
+        raw_blockers = cast(list[Any], readies[-1].payload.get("blockers", []) if readies else [])
+        blockers = " ".join(str(b) for b in raw_blockers)
+        for needle in exp.blockers_contain:
+            if needle.lower() not in blockers.lower():
+                errs.append(f"the Gate 1 blockers should mention {needle!r}; got {blockers!r}")
+    if exp.calls is not None:
+        errs.extend(check_calls(exp.calls, gateway))
+    if exp.batch is not None:
+        errs.extend(check_batch(exp.batch, events))
+    wants_data = bool(
+        exp.facts or exp.qa or exp.interview or exp.brief_contains or exp.brief_not_contains
+        or exp.domain_facts_contains or exp.assumptions_min is not None
+    )  # fmt: skip
+    if not wants_data:
+        return errs
+    from mde_compass.catalog import load_catalog
+    from mde_compass.scenarios import ledger
+
+    data = await ledger.load_session(conv)
+    if exp.facts:
+        errs.extend(check_facts(exp.facts, data))
+    if exp.qa:
+        errs.extend(check_qa(exp.qa, data, load_catalog()))
+    if exp.interview:
+        errs.extend(check_interview(exp.interview, data))
+    for needle in exp.brief_contains:
+        if not ledger.needle_in_brief(data.brief, needle):
+            errs.append(f"the Brief should contain {needle!r} somewhere")
+    for needle in exp.brief_not_contains:
+        if ledger.needle_in_brief(data.brief, needle):
+            errs.append(f"the Brief should NOT contain {needle!r}")
+    if exp.domain_facts_contains:
+        rows = [f"{d.statement} | {d.quote}" for d in data.brief.domain_facts]
+        for needle in exp.domain_facts_contains:
+            if not _has(rows, needle):
+                errs.append(f"domain_facts should contain {needle!r}; rows: {rows[:6]}")
+    if exp.assumptions_min is not None and len(data.brief.assumptions) < exp.assumptions_min:
+        errs.append(
+            f"the Brief should hold at least {exp.assumptions_min} assumptions; has {len(data.brief.assumptions)}"
+        )
     return errs
 
 
 # --------------------------------------------------------------------------------------------- execution
 class _Runner:
-    def __init__(self, conv: Conversation, scenario: Scenario, engine: str = "legacy") -> None:
+    def __init__(
+        self, conv: Conversation, scenario: Scenario, engine: str = "legacy", gateway: Any = None
+    ) -> None:
         self.conv = conv
         self.scn = scenario
         self.engine = engine
+        self.gateway = gateway
         self._n = 0
         self.answers: list[
             tuple[str, Card]
@@ -593,6 +960,18 @@ class _Runner:
                     else (opts[0] if opts else "to be decided")
                 )
                 await self.conv.send(BriefEdit(event_id=self.eid(), item_id=slot.brief_path, value=value, contributor_id=who))  # fmt: skip
+
+    def _card_ref(self, ref: Any) -> str:
+        """``first`` / ``last`` question shown, or a card id (``Q-003``)."""
+        planned = [
+            Card.model_validate(e.payload["card"]) for e in self.conv.events if e.type == "card"
+        ]
+        planned = [c for c in planned if c.frame not in NON_QUESTION_FRAMES]
+        if ref == "first" and planned:
+            return planned[0].id
+        if ref == "last" and planned:
+            return planned[-1].id
+        return str(ref)
 
     async def _feedback_target(self, arg: Any) -> str:
         """``target`` as written; on the planner path ``planner_target: slot:<slot id>`` names the assumption by its
@@ -797,6 +1176,36 @@ class _Runner:
         if a == "switch":
             await conv.send(ContributorSwitch(event_id=self.eid(), contributor_id=str(arg)))
             return "other"
+        if a == "upload":
+            spec = arg if isinstance(arg, dict) else {}
+            res = await conv.service.ingest_upload(
+                conv.caller,
+                conv.session_id,
+                str(spec.get("name", "notes.txt")),
+                str(spec["text"]).encode(),
+            )
+            conv.events.extend(res.events)
+            return "other"
+        if a == "edit_answer":
+            spec = arg if isinstance(arg, dict) else {}
+            await conv.send(
+                AnswerEdit(
+                    event_id=self.eid(),
+                    card_id=self._card_ref(spec.get("card", "first")),
+                    value=spec.get("value"),
+                    custom_text=spec.get("custom"),
+                    contributor_id=who,
+                )
+            )
+            return "other"
+        if a == "say_many":
+            for text in cast(list[Any], arg):
+                await self.execute(Step(action="say", arg=text, contributor=who))
+            return "text"
+        if a == "answer_texts":
+            for text in cast(list[Any], arg):
+                await self._answer(None, custom=str(text), who=who)
+            return "custom"
         if a == "drive":
             spec = arg if isinstance(arg, dict) else {}
             mode = spec.get("mode", "tap_recommended")
@@ -848,15 +1257,23 @@ async def run_scenario(
     ``engine`` picks the question engine of a service built here; for a service passed in (or made by
     ``service_factory``) the engine is read from its configuration, so the frame translation always matches."""
     svc: Any = service
+    gateway: Any = None
     if svc is None:
-        svc = service_factory() if service_factory is not None else new_service(engine or "legacy")
+        if service_factory is not None:
+            svc = service_factory()
+        elif (engine or "legacy") == "planner" and (script := _provider_for(scn)) is not None:
+            svc, gateway = new_scripted_service("planner", script)
+            svc.scripted_gateway = gateway
+        else:
+            svc = new_service(engine or "legacy")
     service = svc
     engine = cast(Engine, svc.config.interview.engine)
+    gateway = gateway or getattr(svc, "scripted_gateway", None)
     conv = await Conversation.start(svc, mode=scn.mode, locale=scn.locale)
     result = RunResult(scenario=scn, conv=conv)
     if scn.contributors:
         await _register_contributors(service, conv, scn)
-    runner = _Runner(conv, scn, engine)
+    runner = _Runner(conv, scn, engine, gateway)
     for i, step in enumerate(scn.steps):
         before_n = len(conv.events)
         state_before = await conv.state()
@@ -883,6 +1300,7 @@ async def run_scenario(
                 step.expect, conv=conv, events=events, state_after=state_after,
                 version_before=version_before, version_after=version_after,
                 card_on_screen=conv.last_card() if step.action == "drive" else None, engine=engine,
+                gateway=gateway,
             )  # fmt: skip
         if errors:
             result.failure = _format_failure(scn, i, step, errors, events, conv.events)
@@ -897,12 +1315,28 @@ async def run_scenario(
         errors = await check_expect(
             scn.final, conv=conv, events=[], state_after=await conv.state(),
             version_before=0, version_after=int((await conv.brief())["version"]), engine=engine,
+            gateway=gateway,
         )  # fmt: skip
         if errors:
             last = Step(action="final", arg=None, expect=scn.final)
             result.failure = _format_failure(scn, len(scn.steps), last, errors, [], conv.events)
             result.failed_step = len(scn.steps)
+    if result.failure is None and gateway is not None and hasattr(gateway, "unconsumed"):
+        left = gateway.unconsumed()
+        if left:  # strict: an answer nobody asked for means the script and the engine disagree
+            result.failure = f"{scn.id}: scripted model answers never used: {left}"
+            result.failed_step = len(scn.steps)
     return result
+
+
+def _provider_for(scn: Scenario) -> Any | None:
+    """The scenario's provider fixture (``providers/<id>.yaml`` or the file named by ``provider:``), if any."""
+    from mde_compass.scenarios.providers import find_provider, load_provider
+
+    if not scn.source_dir:
+        return None
+    found = find_provider(scn.source_dir, scn.id, scn.provider)
+    return load_provider(found) if found is not None else None
 
 
 async def _register_contributors(service: Any, conv: Conversation, scn: Scenario) -> None:
