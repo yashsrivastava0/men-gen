@@ -494,3 +494,55 @@ async def test_a_scripted_gateway_can_replace_the_model_for_exact_behaviour_test
     result = await conv.say(IDEA)
     assert gateway.calls and gateway.calls[0][0] == "cmp.understand_turn"
     assert any(e.type == "error" for e in result.events)
+
+
+async def test_i_do_not_understand_rewrites_the_question_once_then_a_second_time_decides() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    card = conv.last_card()
+    assert card is not None
+    await conv.say("I don't understand")
+    again = conv.last_card()
+    assert again is not None and again.id == card.id and again.rephrased == 1
+    assert again.question != card.question and "[mock] rephrased" in again.question
+    assert [o.id for o in again.options] == [
+        o.id for o in card.options
+    ]  # the choices keep their meaning
+    await conv.say("what do you mean")
+    third = conv.last_card()
+    assert third is not None and third.id == card.id and third.rephrased == 2
+    await conv.say("please explain")  # a third request: not pushed, "You decide" assumes visibly
+    assert conv.last_card() is not None and conv.last_card().id != card.id  # type: ignore[union-attr]
+    assert any(
+        e.type == "notice" and e.payload["code"] == "simplified_decided" for e in conv.events
+    )
+    async with svc.store.begin("t1") as uow:
+        qa = {q.card_id: q for q in await uow.qa.list(conv.session_id)}
+    assert qa[card.id].status == "you_decide"
+
+
+async def test_i_do_not_know_simplifies_once_then_you_decide() -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    card = conv.last_card()
+    assert card is not None
+    await conv.say("I don't know")
+    simpler = conv.last_card()
+    assert simpler is not None and simpler.id == card.id and "[mock] simpler" in simpler.question
+    await conv.say("not sure")
+    nxt = conv.last_card()
+    assert nxt is not None and nxt.id != card.id
+    assert any(
+        e.type == "notice" and e.payload["code"] == "simplified_decided" for e in conv.events
+    )
+
+
+async def test_help_phrases_do_nothing_new_on_the_legacy_engine() -> None:
+    from mde_compass.engine.router import route, route_help
+
+    assert route_help("I don't understand") == "explain" and route_help("pata nahi") == "dont_know"
+    assert route_help("समझ नहीं आया") == "explain" and route_help("I run a clinic in Indore") is None
+    # the legacy router does not know these kinds at all
+    assert route("I don't understand", has_pending_card=True) is None

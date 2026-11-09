@@ -110,6 +110,7 @@ from mde_compass.engine.ports import (
     TurnResult,
 )
 from mde_compass.engine.router import route as route_text
+from mde_compass.engine.router import route_help
 from mde_compass.engine.slots import SlotStore
 from mde_compass.engine.validate import must_slots_missing
 from mde_compass.intake import (
@@ -769,6 +770,14 @@ class Service(FlowHooks):
         if turn.state == "PAUSED":  # a message while paused is an implicit resume, never silence
             turn.state = turn.session.resume_state or "INTERVIEWING"
             turn.say(self._t(turn, "notice.paused_resumed"))
+        pending_now = turn.pending_card()
+        if self.interview.active and pending_now is not None and pending_now.frame == "planned":
+            help_kind = route_help(text)
+            if help_kind is not None:
+                if await self.interview.on_help(turn, pending_now, help_kind):
+                    self._rebuild(turn)
+                    await self._advance(turn)
+                return
         route = route_text(
             text, has_pending_card=turn.pending_card() is not None, language=turn.lang
         )

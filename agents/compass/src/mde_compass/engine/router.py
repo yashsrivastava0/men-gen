@@ -128,6 +128,26 @@ def find_phrase(norm: str, phrases: tuple[str, ...], *, min_words: int = 1) -> s
     return None
 
 
+HelpKind = Literal["explain", "dont_know"]
+
+
+def route_help(text: str) -> HelpKind | None:
+    """ "I do not understand" / "I do not know" about the question on screen. Used only by the planned interview
+    (the legacy router never sees these kinds), so the older behaviour and its tests are untouched."""
+    norm = normalize(text[:500])
+    if not norm or len(norm.split()) > 8:
+        return None
+    ph = load_phrases()
+    for kind in ("explain", "dont_know"):
+        phrases = ph.intents[kind]
+        if (
+            is_exact(norm, phrases) is not None
+            or find_phrase(norm, phrases, min_words=2) is not None
+        ):
+            return kind  # type: ignore[return-value]
+    return None
+
+
 def route(text: str, *, has_pending_card: bool, language: str = "en") -> Route | None:
     """The fast path for ``text``, or ``None`` when it needs the understander."""
     del language  # tables cover every language; see the module docstring

@@ -95,6 +95,7 @@ class Card(Strict):
     parent_card_id: str | None = None  # a follow-up points at the question it refines
     depth: int = Field(default=0, ge=0)  # follow-up depth (0 = a base question)
     origin: QuestionOrigin = "frame"
+    rephrased: int = Field(default=0, ge=0)  # times it was rewritten after "I do not understand"
 
     def recommended_option(self) -> CardOption | None:
         for option in self.options:

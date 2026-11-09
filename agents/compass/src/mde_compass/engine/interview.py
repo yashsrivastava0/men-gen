@@ -59,6 +59,7 @@ from mde_compass.engine.ports import (
     ExtractedFact,
     PlanContext,
     PlanRequest,
+    RephraseRequest,
     SlotUpdate,
     SummaryRequest,
     TurnUnderstanding,
@@ -866,6 +867,45 @@ class InterviewController:
             return
         turn.state = "INTERVIEWING"
         self.touch(turn)
+
+    async def on_help(self, turn: _Turn, card: Card, kind: str) -> bool:
+        """ "I do not understand" or "I do not know" about the question on screen. The first time the question is
+        rewritten (explain: same question in other words; don't know: a simpler one with an example). The second
+        time the person is not pushed: "You decide" assumes visibly. Returns True when the question is settled
+        (the interview moves on), False when a rewritten question is on screen."""
+        assert self.svc.ports is not None
+        mem = turn.memory
+        qa = mem.qa_for(card.id)
+        if qa is not None:
+            card = qa.card  # the latest wording and rewrite count, not the card as first stored
+        limit = 2 if kind == "explain" else 1
+        if qa is None or card.rephrased >= limit:
+            await self.on_answers(turn, [AnswerItem(card, "you_decide")])
+            turn.notice("simplified_decided", self.svc._t(turn, "notice.simplified_decided"))
+            return True
+        result = await self.svc.ports.question_rephraser.rephrase(
+            self.svc._ctx(turn),
+            RephraseRequest(
+                card=card,
+                mode="simplify" if kind == "dont_know" else "rephrase",
+                language=turn.lang,
+                project_terms=sorted(self._terms(turn)),
+            ),
+        )
+        if result.used_fallback:
+            self.count_fallback(turn)
+        new = card.model_copy(
+            update={
+                "question": result.question,
+                "why_we_ask": result.why_we_ask or card.why_we_ask,
+                "options": result.options or card.options,
+                "examples": result.examples or card.examples,
+                "rephrased": card.rephrased + 1,
+            }
+        )
+        mem.put_qa(qa.model_copy(update={"card": new}))
+        turn.out.append(CardEvent(card=new))
+        return False
 
     # ------------------------------------------------------------------- editing, pivots, documents
     async def on_answer_edit(
