@@ -420,6 +420,66 @@
     seen[ev.seq] = true;
     return true;
   }
+  // ---- waiting: what the page says while the server works ----------------------------------------------------
+
+  /** One staged line per phase: [seconds since the request went out, string key]. The page shows the line with the
+      largest `seconds` that has passed, so every phase ends in the "still working" fallbacks. */
+  var WAIT = {
+    idea: [[0, "ui.typing_read"], [7, "ui.typing_plan"], [20, "ui.typing_check"], [45, "ui.typing_long"], [90, "ui.v2.wait_very_long"]],
+    answers: [[0, "ui.v2.wait_answers_read"], [6, "ui.v2.wait_answers_plan"], [20, "ui.typing_check"], [45, "ui.typing_long"], [90, "ui.v2.wait_very_long"]],
+    brief: [[0, "ui.v2.wait_brief_write"], [12, "ui.v2.wait_brief_check"], [40, "ui.typing_long"], [90, "ui.v2.wait_very_long"]],
+    decide: [[0, "ui.v2.wait_decide"], [10, "ui.v2.wait_brief_write"], [35, "ui.v2.wait_brief_check"], [60, "ui.typing_long"], [100, "ui.v2.wait_very_long"]],
+    document: [[0, "ui.v2.wait_document"], [10, "ui.v2.wait_document_points"], [40, "ui.typing_long"], [90, "ui.v2.wait_very_long"]],
+    edit: [[0, "ui.v2.wait_edit"], [25, "ui.typing_long"], [90, "ui.v2.wait_very_long"]],
+    more: [[0, "ui.v2.wait_more"], [20, "ui.typing_check"], [45, "ui.typing_long"], [90, "ui.v2.wait_very_long"]],
+    generic: [[0, "ui.typing"], [8, "ui.v2.wait_working"], [45, "ui.typing_long"], [90, "ui.v2.wait_very_long"]]
+  };
+  function waitSchedule(phase) { return WAIT[phase] || WAIT.generic; }
+  /** The string key to show `elapsed` seconds into a phase. */
+  function waitKey(phase, elapsed) {
+    var steps = waitSchedule(phase);
+    var key = steps[0][1];
+    steps.forEach(function (st) { if (elapsed >= st[0]) { key = st[1]; } });
+    return key;
+  }
+  /** What is the server doing for this request? From what was just sent: the first idea, an answer to a batch, the
+      closing answer (the Brief is written next), "decide the rest", a document, an edit. ctx: {hasBatch, closing}. */
+  function phaseFor(ev, ctx) {
+    var c = ctx || {};
+    switch (ev && ev.type) {
+      case "user_message": return c.hasBatch ? "answers" : "idea";
+      case "batch_answer": return ev.decide_rest ? "decide" : (c.closing ? "brief" : "answers");
+      case "card_answer": case "card_skip": case "card_you_decide": return c.closing ? "brief" : "answers";
+      case "answer_edit": case "brief_edit": case "brief_feedback": case "assumption_decision": case "lookup_edit": return "edit";
+      case "upload_added": case "link_added": return "document";
+      case "command":
+        if (ev.name === "ask_more") { return "more"; }
+        if (ev.name === "finish_with_defaults") { return "decide"; }
+        if (ev.name === "prepare_questions") { return "idea"; }
+        return "generic";
+      default: return "generic";
+    }
+  }
+  /** The context phaseFor needs, from the batches the page knows: has the interview started, and is the batch or card
+      being answered the reserved closing question? */
+  function phaseContext(batches, ev) {
+    var closing = false;
+    (batches || []).forEach(function (b) {
+      if (ev && ev.type === "batch_answer" && b.batch_id === ev.batch_id) { closing = isClosingBatch(b); }
+      else if (ev && ev.card_id) {
+        flatCards(b.groups || []).forEach(function (c) { if (c.id === ev.card_id && isClosingCard(c)) { closing = true; } });
+      }
+    });
+    return { hasBatch: !!(batches && batches.length), closing: closing };
+  }
+  /** A `progress` event can name a stage the server has moved on to; the wait line follows it. */
+  function phaseForStage(stage) {
+    var st = String(stage || "").toLowerCase();
+    if (st === "brief" || st === "compile" || st === "compiling" || st === "review") { return "brief"; }
+    if (st === "document" || st === "intake" || st === "upload") { return "document"; }
+    return null;
+  }
+
   /** Seconds to wait before the next stream reconnect: 1, 2, 4, 8 up to 15. */
   function reconnectDelay(attempt) { return Math.min(15, Math.pow(2, Math.max(0, attempt || 0))); }
 
@@ -559,6 +619,8 @@
     togglePick: togglePick, allSelected: allSelected, toggleSelectAll: toggleSelectAll, toggleNone: toggleNone,
     movePick: movePick, sanitizeEntry: sanitizeEntry, carryDraft: carryDraft, upsertBatch: upsertBatch,
     sameQuestions: sameQuestions, registerEvent: registerEvent, reconnectDelay: reconnectDelay,
+    WAIT: WAIT, waitSchedule: waitSchedule, waitKey: waitKey, phaseFor: phaseFor, phaseContext: phaseContext,
+    phaseForStage: phaseForStage,
     qaStatus: qaStatus, qaCanEdit: qaCanEdit, qaIndent: qaIndent, qaAnswerText: qaAnswerText,
     qaEditModel: qaEditModel, qaEditPayload: qaEditPayload, qaFactLine: qaFactLine,
     changedRows: changedRows, pulseKey: pulseKey, ackHasNotice: ackHasNotice

@@ -343,6 +343,35 @@ def test_decide_the_rest_asks_in_one_line_then_sends_the_filled_in_answers_with_
     assert strings["en"]["section.assumed"] == "We assumed"
 
 
+# ---- Compass v2: honest waiting ----------------------------------------------------------------------------------
+
+
+def test_the_wait_line_follows_the_phase_of_the_request_and_is_a_polite_live_region() -> None:
+    assert "TYPING_STEPS" not in JS, "the fixed 6/18/45/90 schedule is gone"
+    start = function_body("startTypingStory")
+    assert (
+        "I.waitSchedule(typingPhase)" in start
+        and "window.setTimeout(show, step[0] * 1000)" in start
+    )
+    assert "if (step[0] === 0) { show(); }" in start, (
+        "the first line shows at once, not after a silence"
+    )
+    set_typing = function_body("setTyping")
+    assert "startTypingStory(phase)" in set_typing and "stopTypingStory()" in set_typing
+    post = function_body("postEvent")
+    assert "I.phaseFor(ev, I.phaseContext(state.batches, ev))" in post, (
+        "chosen from what was just sent"
+    )
+    assert "if (!o.quiet)" in post, "a quick command does not flash the dots"
+    assert (
+        "followStage(p.stage)"
+        in JS.split("    progress: function (p) {", 1)[1].split("brief_patch:", 1)[0]
+    )
+    assert "I.phaseForStage(stage)" in function_body("followStage")
+    tag = element("typing-text")
+    assert 'role="status"' in tag and 'aria-live="polite"' in tag
+
+
 def test_the_layout_toggle_is_gone_and_ask_more_lives_near_the_composer() -> None:
     bar = re.search(r'<div id="interview-bar".*?</div>', HTML, flags=re.S)
     assert bar, "the interview bar is in the fragment"

@@ -845,6 +845,121 @@ def test_a_batch_sent_again_replaces_its_copy_and_events_are_drawn_once() -> Non
     assert got["delays"] == [1, 2, 4, 8, 15, 15]
 
 
+# ---- Compass v2: honest waiting ------------------------------------------------------------------------------
+
+
+def test_the_wait_phase_comes_from_what_was_just_sent() -> None:
+    got = run_js(
+        """
+        const f = (ev, ctx) => I.phaseFor(ev, ctx);
+        return {
+          idea: f({ type: "user_message" }, { hasBatch: false }),
+          later: f({ type: "user_message" }, { hasBatch: true }),
+          answers: f({ type: "batch_answer", batch_id: "B1", answers: [] }, { closing: false }),
+          closing: f({ type: "batch_answer", batch_id: "B9", answers: [] }, { closing: true }),
+          rest: [f({ type: "batch_answer", decide_rest: true }, { closing: true }), f({ type: "command", name: "finish_with_defaults" })],
+          cards: [f({ type: "card_answer" }, {}), f({ type: "card_skip" }, { closing: true }), f({ type: "card_you_decide" }, {})],
+          edit: ["answer_edit", "brief_edit", "brief_feedback", "assumption_decision", "lookup_edit"].map((x) => f({ type: x })),
+          document: [f({ type: "upload_added" }), f({ type: "link_added" })],
+          commands: [f({ type: "command", name: "ask_more" }), f({ type: "command", name: "prepare_questions" }), f({ type: "command", name: "undo" })],
+          other: [f({ type: "nonsense" }), f(null), f(undefined, undefined)],
+        };
+        """
+    )
+    assert got["idea"] == "idea" and got["later"] == "answers"
+    assert got["answers"] == "answers" and got["closing"] == "brief"
+    assert got["rest"] == ["decide", "decide"]
+    assert got["cards"] == ["answers", "brief", "answers"]
+    assert got["edit"] == ["edit"] * 5 and got["document"] == ["document", "document"]
+    assert got["commands"] == ["more", "idea", "generic"] and got["other"] == ["generic"] * 3
+
+
+def test_the_phase_context_knows_when_the_closing_question_is_being_answered() -> None:
+    got = run_js(
+        """
+        const closingCard = card("Z", "priority", { origin: "closing" });
+        const normal = batch([{ id: "g", title: "", cards: [card("A", "choose_one")] }], { batch_id: "B1" });
+        const last = batch([{ id: "g", title: "", cards: [closingCard] }], { batch_id: "B2" });
+        const flagged = batch([{ id: "g", title: "", cards: [card("Y", "open_prompt")] }], { batch_id: "B3", progress: { closing: true, committed: 4 } });
+        const batches = [normal, last, flagged];
+        return {
+          none: I.phaseContext([], { type: "user_message" }),
+          normal: I.phaseContext(batches, { type: "batch_answer", batch_id: "B1" }),
+          closing: I.phaseContext(batches, { type: "batch_answer", batch_id: "B2" }),
+          flagged: I.phaseContext(batches, { type: "batch_answer", batch_id: "B3" }),
+          card: I.phaseContext(batches, { type: "card_answer", card_id: "Z" }),
+          cardNormal: I.phaseContext(batches, { type: "card_answer", card_id: "A" }),
+          nothing: I.phaseContext(null, null),
+        };
+        """
+    )
+    assert got["none"] == {"hasBatch": False, "closing": False}
+    assert got["normal"] == {"hasBatch": True, "closing": False}
+    assert got["closing"]["closing"] is True and got["flagged"]["closing"] is True
+    assert got["card"]["closing"] is True and got["cardNormal"]["closing"] is False
+    assert got["nothing"] == {"hasBatch": False, "closing": False}
+
+
+def test_each_phase_has_staged_lines_that_end_in_the_still_working_fallbacks() -> None:
+    got = run_js(
+        """
+        const phases = Object.keys(I.WAIT);
+        const at = (p, s) => I.waitKey(p, s);
+        return { phases: phases, keys: [].concat(...phases.map((p) => I.waitSchedule(p).map((x) => x[1]))),
+                 starts: phases.map((p) => I.waitSchedule(p)[0][0]),
+                 ordered: phases.every((p) => I.waitSchedule(p).every((x, i, a) => i === 0 || x[0] > a[i - 1][0])),
+                 idea: [0, 6, 7, 19, 21, 44, 46, 89, 91].map((s) => at("idea", s)),
+                 answers: [0, 5, 6].map((s) => at("answers", s)), brief: [0, 11, 12, 500].map((s) => at("brief", s)),
+                 last: phases.map((p) => at(p, 1000)), unknown: at("nope", 0) };
+        """
+    )
+    assert set(got["phases"]) == {
+        "idea",
+        "answers",
+        "brief",
+        "decide",
+        "document",
+        "edit",
+        "more",
+        "generic",
+    }
+    assert set(got["starts"]) == {0}, "every phase says something at once, not after a silence"
+    assert got["ordered"] is True
+    strings = load_catalog().strings
+    for lang in ("en", "hi"):
+        assert [k for k in set(got["keys"]) if k not in strings[lang]] == []
+    assert got["idea"][:3] == ["ui.typing_read", "ui.typing_read", "ui.typing_plan"]
+    assert got["idea"][3:5] == ["ui.typing_plan", "ui.typing_check"]
+    assert (
+        got["idea"][5:7] == ["ui.typing_check", "ui.typing_long"]
+        and got["idea"][-1] == "ui.v2.wait_very_long"
+    )
+    assert got["answers"] == [
+        "ui.v2.wait_answers_read",
+        "ui.v2.wait_answers_read",
+        "ui.v2.wait_answers_plan",
+    ]
+    assert got["brief"] == [
+        "ui.v2.wait_brief_write",
+        "ui.v2.wait_brief_write",
+        "ui.v2.wait_brief_check",
+        "ui.v2.wait_very_long",
+    ]
+    assert set(got["last"]) == {"ui.v2.wait_very_long"}, (
+        "a long wait always ends in the same honest line"
+    )
+    assert got["unknown"] == "ui.typing"
+
+
+def test_a_progress_stage_can_move_the_wait_line_on() -> None:
+    got = run_js(
+        """
+        return ["brief", "Compile", "review", "document", "intake", "interview", "", null, undefined].map((s) => I.phaseForStage(s));
+        """
+    )
+    assert got == ["brief", "brief", "brief", "document", "document", None, None, None, None]
+
+
 def test_the_helper_exposes_only_what_the_screen_uses() -> None:
     names = run_js("return Object.keys(I).sort();")
     assert {

@@ -206,6 +206,17 @@ CONTRACT*/
     "ui.v2.decide_rest_yes": "Yes, decide the rest",
     "ui.v2.cancel": "Cancel",
     "ui.v2.form_done_rest": "{count} answers sent. We decided the rest for you.",
+    "ui.v2.wait_answers_read": "Reading your answers…",
+    "ui.v2.wait_answers_plan": "Planning your next questions…",
+    "ui.v2.wait_brief_write": "Writing your Brief…",
+    "ui.v2.wait_brief_check": "Checking the Brief is complete and consistent…",
+    "ui.v2.wait_decide": "Deciding the remaining questions for you…",
+    "ui.v2.wait_document": "Reading your document…",
+    "ui.v2.wait_document_points": "Picking out the points that matter…",
+    "ui.v2.wait_edit": "Updating your Brief…",
+    "ui.v2.wait_more": "Planning more questions…",
+    "ui.v2.wait_working": "Working on it…",
+    "ui.v2.wait_very_long": "This is taking longer than usual. We are still working; please keep this page open.",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -344,26 +355,35 @@ CONTRACT*/
   function chipList(items) {
     return h("ul", { class: "chips" }, items.map(function (c) { return h("li", { class: "chip", text: c }); }));
   }
-  // While a slow turn runs (the first questions can take a minute) the hint under the dots says what is going
-  // on in plain words, and says so again when it is taking longer than usual.
+  // While a slow turn runs (the first questions can take a minute, the Brief longer) the line under the dots says in plain
+  // words what is going on. The phase comes from what was just sent (the idea, an answer, the last answer, "decide the
+  // rest", a document, an edit) and the staged lines end in "still working" fallbacks (interview.js WAIT). The line is a
+  // polite live region, so a screen reader hears each change once.
   var typingTimers = [];
-  var TYPING_STEPS = [[6, "ui.typing_read"], [18, "ui.typing_plan"], [45, "ui.typing_check"], [90, "ui.typing_long"]];
+  var typingPhase = "generic";
   function stopTypingStory() {
     typingTimers.forEach(function (id) { window.clearTimeout(id); });
     typingTimers = [];
     $("typing-text").textContent = t("ui.typing");
   }
-  function startTypingStory() {
+  function startTypingStory(phase) {
     stopTypingStory();
-    TYPING_STEPS.forEach(function (step) {
-      typingTimers.push(window.setTimeout(function () { $("typing-text").textContent = t(step[1]); }, step[0] * 1000));
+    typingPhase = phase || "generic";
+    I.waitSchedule(typingPhase).forEach(function (step) {
+      function show() { $("typing-text").textContent = t(step[1]); }
+      if (step[0] === 0) { show(); } else { typingTimers.push(window.setTimeout(show, step[0] * 1000)); }
     });
   }
-  function setTyping(on) {
+  /** The server moved on to another stage (a `progress` event names it): the line follows, unless it already says so. */
+  function followStage(stage) {
+    var phase = I.phaseForStage(stage);
+    if (phase && state.typingCount > 0 && phase !== typingPhase) { startTypingStory(phase); }
+  }
+  function setTyping(on, phase) {
     var before = state.typingCount;
     state.typingCount = Math.max(0, state.typingCount + (on ? 1 : -1));
     $("typing").hidden = state.typingCount === 0;
-    if (before === 0 && state.typingCount > 0) { startTypingStory(); }
+    if (on && (before === 0 || (phase && phase !== typingPhase))) { startTypingStory(phase); }
     if (state.typingCount === 0) { stopTypingStory(); }
     if (state.typingCount) { scrollChat(); }
   }
@@ -1315,6 +1335,7 @@ CONTRACT*/
       addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
     },
     progress: function (p) {
+      followStage(p.stage);   // the wait line follows a stage the server names (the Brief, a document)
       state.progress = p;
       refreshDepth();
       var bar = $("progressbar");
@@ -1392,7 +1413,7 @@ CONTRACT*/
     if (sid !== state.sessionId) { return Promise.resolve(null); }   // another project was opened while this one waited
     var acked = null;
     IN_FLIGHT += 1;
-    if (!o.quiet) { setTyping(true); }
+    if (!o.quiet) { setTyping(true, I.phaseFor(ev, I.phaseContext(state.batches, ev))); }
     return api("POST", "/sessions/" + sid + "/events", ev).then(function (ack) {
       acked = ack;   // the server has the event: a page error while showing its answer must not look like a failed send
       try {

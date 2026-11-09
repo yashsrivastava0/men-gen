@@ -291,5 +291,16 @@
   "ui.v2.decide_rest_confirm": "We will decide every question you leave open and list each choice under “We assumed” for your approval. The answers you filled in are kept.",
   "ui.v2.decide_rest_yes": "Yes, decide the rest",
   "ui.v2.cancel": "Cancel",
-  "ui.v2.form_done_rest": "{count} answers sent. We decided the rest for you."
+  "ui.v2.form_done_rest": "{count} answers sent. We decided the rest for you.",
+  "ui.v2.wait_answers_read": "Reading your answers…",
+  "ui.v2.wait_answers_plan": "Planning your next questions…",
+  "ui.v2.wait_brief_write": "Writing your Brief…",
+  "ui.v2.wait_brief_check": "Checking the Brief is complete and consistent…",
+  "ui.v2.wait_decide": "Deciding the remaining questions for you…",
+  "ui.v2.wait_document": "Reading your document…",
+  "ui.v2.wait_document_points": "Picking out the points that matter…",
+  "ui.v2.wait_edit": "Updating your Brief…",
+  "ui.v2.wait_more": "Planning more questions…",
+  "ui.v2.wait_working": "Working on it…",
+  "ui.v2.wait_very_long": "This is taking longer than usual. We are still working; please keep this page open."
 }
