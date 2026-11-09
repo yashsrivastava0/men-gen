@@ -12,8 +12,10 @@ from mde_compass.engine.flows.locked_edit import value_text
 CAT = load_catalog()
 
 
-def _brief(*, status: str, tier: str, value: str = "fee on each delivery") -> Brief:
-    prov = [Provenance(type="user_tap", ref="evt_1", quote="")]
+def _brief(
+    *, status: str, tier: str, value: str = "fee on each delivery", via: str = "user_tap"
+) -> Brief:
+    prov = [Provenance(type=via, ref="evt_1", quote="")]  # type: ignore[arg-type]
     item = BriefItem(value=value, tier=tier, status=status, provenance=prov, confidence=0.9)  # type: ignore[arg-type]
     return Brief.model_validate({"idea": {"business_model": item.model_dump(mode="json")}})
 

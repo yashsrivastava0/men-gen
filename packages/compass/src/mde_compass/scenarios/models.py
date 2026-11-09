@@ -17,7 +17,7 @@ ACTIONS: tuple[str, ...] = (
     "tap_and_custom",  # {option: id | recommended: true, custom: text}: a tap plus typed words in one answer
     "tap_all",  # every option id of the last card (pick_many / priority)
     "tap_first",  # the first n option ids of the last card
-    "back_edge",  # {slot, reason}: a later stage reopens one slot (typed back-edge hook; a stub today)
+    "back_edge",  # {slot, reason}: a later stage reopens one slot (typed back-edge hook: Service.reopen_slot)
     "you_decide",
     "skip",
     "back",

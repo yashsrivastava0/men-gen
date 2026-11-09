@@ -81,6 +81,10 @@ class FlowHooks:
         async def _commit(self, turn: _Turn) -> None: ...
 
     # ------------------------------------------------------------------ small helpers
+    def _flow_who(self, turn: _Turn) -> str | None:
+        """The contributor speaking (enterprise), so a second contributor's different value is disputed."""
+        return getattr(turn.event, "contributor_id", None)
+
     def _flow_card_id(self, turn: _Turn) -> str:
         return f"Q-{len(turn.asked_cards()) + 1:03d}"
 
@@ -146,7 +150,7 @@ class FlowHooks:
             return
         turn.slots.write(
             references.SLOT, items, state="assumed", provenance=self._prov(turn, "user_text", text[:300]),
-            confidence=0.5, turn_id=turn.turn_id,
+            confidence=0.5, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         for label, quote in new:
             claimed = references.own_business(quote) is not None or (
@@ -254,27 +258,35 @@ class FlowHooks:
 
     # ------------------------------------------------------------------ answers to those cards
     async def _flow_card_answer(self, turn: _Turn, card: Card, ev: Any) -> bool:
-        """Apply the answer to a ranking or reference card built here; False leaves it to the generic path."""
+        """Apply the answer to a ranking or reference card built here; False leaves it to the generic path.
+        An answer that says nothing usable (no option, no ranked feature) shows the same card again."""
         if priorities.flow_card(card):
-            self._flow_priority_answer(turn, card, ev)
+            applied = self._flow_priority_answer(turn, card, ev)
         elif references.flow_card(card):
-            self._flow_reference_answer(turn, card, ev)
+            applied = self._flow_reference_answer(turn, card, ev)
         else:
             return False
+        if not applied:
+            turn.notice("not_understood", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
+            turn.out.append(CardEvent(card=card))
+            return True
         self._rebuild(turn)
         await self._advance(turn)
         return True
 
-    def _flow_priority_answer(self, turn: _Turn, card: Card, ev: Any) -> None:
+    def _flow_priority_answer(self, turn: _Turn, card: Card, ev: Any) -> bool:
         placement = priorities.place(card, ev.value)
+        if not placement.names(priorities.MUST):
+            return False  # nothing chosen: never turn the whole list into "later" on a junk answer
         feats, _ = self._flow_slot(turn, priorities.FEATURES_SLOT)
         prov = self._prov(turn, "user_tap", "")
         turn.slots.write(
             priorities.FEATURES_SLOT, priorities.apply_placement(feats, placement), state="confirmed",
-            provenance=prov, confidence=0.9, turn_id=turn.turn_id,
+            provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         turn.slots.write(
-            priorities.SLOT, priorities.SIGNAL_VALUE, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id
+            priorities.SLOT, priorities.SIGNAL_VALUE, state="confirmed", provenance=prov, confidence=0.9,
+            turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         must, later = placement.names(priorities.MUST), placement.names(priorities.LATER)
         key = "flows.priority.done" if later else "flows.priority.done_all"
@@ -290,28 +302,34 @@ class FlowHooks:
                 {"value": ev.value, "slots": [priorities.SLOT, priorities.FEATURES_SLOT]},
             )
         )  # type: ignore[arg-type]
+        return True
 
-    def _flow_reference_answer(self, turn: _Turn, card: Card, ev: Any) -> None:
+    def _flow_reference_answer(self, turn: _Turn, card: Card, ev: Any) -> bool:
         value, _ = self._flow_slot(turn, references.SLOT)
         prov = self._prov(turn, "user_tap", "")
         answered: dict[str, JsonValue] = {"value": ev.value, "slots": [references.SLOT]}
         if card.type == "choose_one":
             label = references.confirm_label(card, str(ev.value))
-            if label and str(ev.value) == references.OWN_ID:
-                turn.slots.write(references.SLOT, [{"label": label}], state="volunteered", provenance=prov, remove=True, turn_id=turn.turn_id)  # fmt: skip
+            if label is None:
+                return False  # typed words or an unknown option: a business is never assumed to be a reference
+            if str(ev.value) == references.OWN_ID:
+                turn.slots.write(references.SLOT, [{"label": label}], state="volunteered", provenance=prov, remove=True, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
                 turn.notice("reference_own", self._t(turn, "flows.reference.own_noted", name=label))
-            elif label:
+            else:
                 new = references.apply_form(value, {}, labels={label.casefold()})
-                turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id)  # fmt: skip
+                turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
                 turn.notice(
                     "reference_confirmed", self._t(turn, "flows.reference.confirmed", name=label)
                 )
         else:
             form = references.parse_form(card, ev.value)
+            if ev.custom_text:
+                references.add_note(form, card, ev.custom_text)
             asked = {lab.casefold() for o in card.options if (lab := references.option_label(o))}
             new = references.apply_form(value, form, labels=asked)
-            turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id)  # fmt: skip
+            turn.slots.write(references.SLOT, new, state="confirmed", provenance=prov, confidence=0.9, turn_id=turn.turn_id, contributor_id=self._flow_who(turn))  # fmt: skip
         turn.answered.append((card.id, "answered", answered))  # type: ignore[arg-type]
+        return True
 
     # ------------------------------------------------------------------ messages
     async def _flow_on_message(self, turn: _Turn, ev: Any, text: str, understood: Any) -> bool:
@@ -324,7 +342,7 @@ class FlowHooks:
                 turn.slots.write(
                     priorities.SLOT, priorities.SIGNAL_VALUE, state="volunteered",
                     provenance=self._prov(turn, "voice" if ev.input_mode == "voice" else "user_text", quote),
-                    confidence=0.8, turn_id=turn.turn_id,
+                    confidence=0.8, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
                 )  # fmt: skip
         self._flow_phase_apps(turn, text)
         if ev.input_mode == "voice":
@@ -338,28 +356,25 @@ class FlowHooks:
         return False
 
     def _flow_phase_apps(self, turn: _Turn, text: str) -> None:
+        """Five or more apps listed in THIS message: the main two now, the rest as later scope records."""
         held, status = self._flow_slot(turn, apps_scope.APPS_SLOT)
         named = apps_scope.named_apps(text)
-        if len(named) < data.policy().apps_phase_at and status not in ("volunteered", "confirmed"):
+        if len(named) < data.policy().apps_phase_at:
             return
         plan = apps_scope.phase_plan(cast(JsonValue, apps_scope.union(named, held)))
-        if plan is None or not named:  # only when THIS message lists the apps
+        if plan is None:
             return
         status = status if status in ("volunteered", "confirmed") else "volunteered"
         prov = self._prov(turn, "user_text", text[:300])
         turn.slots.write(
-            apps_scope.APPS_SLOT,
-            cast(JsonValue, plan.now),
-            state=status,
-            provenance=prov,
-            confidence=0.7,
-            turn_id=turn.turn_id,
-        )  # type: ignore[arg-type]
+            apps_scope.APPS_SLOT, cast(JsonValue, plan.now), state=status, provenance=prov,  # type: ignore[arg-type]
+            confidence=0.7, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
+        )  # fmt: skip
         feats, _ = self._flow_slot(turn, apps_scope.FEATURES_SLOT)
         records = apps_scope.later_records(plan.later, self._t(turn, "flows.apps.later_intent"))
         turn.slots.write(
             apps_scope.FEATURES_SLOT, apps_scope.merge_features(feats, records), state="volunteered",
-            provenance=prov, confidence=0.7, turn_id=turn.turn_id,
+            provenance=prov, confidence=0.7, turn_id=turn.turn_id, contributor_id=self._flow_who(turn),
         )  # fmt: skip
         pol = data.policy()
         turn.out.append(

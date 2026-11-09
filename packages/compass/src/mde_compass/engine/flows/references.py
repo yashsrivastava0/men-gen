@@ -204,6 +204,15 @@ def parse_form(card: Card, answer: JsonValue) -> dict[str, dict[str, list[str]]]
     return out
 
 
+def add_note(form: dict[str, dict[str, list[str]]], card: Card, text: str) -> None:
+    """Words typed on the form card ("something else") count as what to borrow from the first reference."""
+    first = next((lab for o in card.options if (lab := option_label(o))), None)
+    items = _items(text)
+    if first is not None and items:
+        entry = form.setdefault(first, {"borrow": [], "avoid": []})
+        entry["borrow"] = [*entry["borrow"], *items][:MAX_ITEMS]
+
+
 def apply_form(
     value: JsonValue, form: Mapping[str, Mapping[str, list[str]]], *, labels: set[str] | None = None
 ) -> list[JsonValue]:

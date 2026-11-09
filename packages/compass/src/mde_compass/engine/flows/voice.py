@@ -17,12 +17,11 @@ from functools import lru_cache
 from pydantic import JsonValue
 
 from mde_compass.engine.flows import data
-from mde_compass.engine.language import normalize
+from mde_compass.engine.language import contains_phrase, normalize
 
 _SENTENCE_END = re.compile(r"(?<=[.!?;])\s{1,5}|\n+")
 _NUMBER = re.compile(r"(?<![\w.])\d[\d,]*(?:\.\d+)?(?![\w])")
 _LIST_LINE = re.compile(r"^\s{0,3}(\d{1,2})[.)]\s{1,3}(.{1,400})$")
-_REMOVE_NUMBERS = re.compile(r"\d{1,2}")
 _HIDDEN = {
     "and": "\ue001",
     "aur": "\ue002",
@@ -172,8 +171,9 @@ def numbered(statements: Sequence[str]) -> str:
 
 
 def last_list(lines: Sequence[str]) -> list[str]:
-    """The numbered statements of the most recent assistant message that holds a list (empty when none)."""
-    for line in reversed(lines):
+    """The numbered statements of the latest assistant message that holds a list, looking only at the last two
+    assistant messages so an old read-back is not still "on screen" (empty when none)."""
+    for line in reversed(lines[-2:]):
         items: list[str] = []
         for raw in line.splitlines():
             m = _LIST_LINE.match(raw)
@@ -208,13 +208,23 @@ def removable(value: JsonValue, statement_norm: str) -> JsonValue:
 def removal_request(text: str, count: int) -> list[int]:
     """The 1-based statement numbers the user asks to remove ("remove 2 and 4"), else an empty list.
 
-    A removal is a short message with a removal word and at least one valid number; anything else is a normal
-    message."""
+    A removal is a short message made only of a removal word, numbers and a few filler words ("please remove
+    number 2 and 4"); anything else, such as "remove 2 features", is a normal message."""
     norm = normalize(text[:300])
-    if (
-        len(norm.split()) > 12
-        or data.find_phrase(norm, data.phrases("voice", "remove_words")) is None
-    ):
+    if len(norm.split()) > 12:
         return []
-    nums = [int(n) for n in _REMOVE_NUMBERS.findall(norm)]
+    words = data.phrases("voice", "remove_words")
+    rest = norm
+    found = False
+    for phrase in sorted(words, key=len, reverse=True):
+        if contains_phrase(rest, phrase):
+            found = True
+            rest = re.sub(rf"(?<!\w){re.escape(phrase)}(?!\w)", " ", rest)
+    if not found:
+        return []
+    fillers = set(data.phrases("voice", "remove_fillers"))
+    tokens = rest.split()
+    if any(not (t.isdigit() or t in fillers) for t in tokens):
+        return []
+    nums = [int(t) for t in tokens if t.isdigit() and len(t) <= 2]
     return sorted({n for n in nums if 1 <= n <= count})

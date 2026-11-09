@@ -83,12 +83,15 @@ def test_the_numbered_list_is_read_back_from_the_last_assistant_message() -> Non
     ]
     assert voice.last_list(lines) == ["First one", "Second one", "Third one"]
     assert voice.last_list(["no list here", "2. starts at two"]) == []
+    assert voice.last_list(["1. old list", "second", "third"]) == []  # no longer on screen
 
 
 def test_removal_requests() -> None:
     assert voice.removal_request("remove 2", 5) == [2]
     assert voice.removal_request("please drop number 3 and 4", 5) == [3, 4]
     assert voice.removal_request("2 hatao", 5) == [2]
+    assert voice.removal_request("please remove number 2 and 4", 5) == [2, 4]
+    assert voice.removal_request("remove 2 features", 5) == []  # about something else, not the list
     assert voice.removal_request("remove 9", 5) == []  # not on the list
     assert voice.removal_request("I want a delivery app and remove the login", 5) == []  # no number
     assert voice.removal_request("book 2 tables", 5) == []  # no removal word
