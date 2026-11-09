@@ -262,5 +262,11 @@
   "brief.v2.review.conflicting": "ये दोनों बातें साथ नहीं बैठतीं: {text}।",
   "brief.v2.review.unrealistic": "यह शायद व्यावहारिक न हो: {text}।",
   "brief.v2.review.dependency": "इसके लिए ऐसी चीज़ चाहिए जो योजना में नहीं है: {text}।",
-  "brief.v2.review.plausibility": "यह बात जमती नहीं: {text}।"
+  "brief.v2.review.plausibility": "यह बात जमती नहीं: {text}।",
+  "brief.v2.document.confirm.question": "आपके दस्तावेज़ में हमने ये बातें पढ़ीं: जो सही हैं उन पर निशान लगाइए।",
+  "brief.v2.document.confirm.why": "जिन पर निशान नहीं लगेगा, उन्हें हम तब तक इस्तेमाल नहीं करेंगे जब तक आप सही बात न बताएँ।",
+  "brief.v2.document.confirm.placeholder": "कुछ गलत या छूटा है? यहाँ बताइए।",
+  "brief.v2.document.conflict": "आपके दस्तावेज़ में “{first}” और “{second}” दोनों लिखा है; आपके फ़ैसले तक हमने कोई नहीं लिया।",
+  "brief.v2.document.conflict.reason": "आपके दस्तावेज़ के दो हिस्से आपस में मेल नहीं खाते।",
+  "brief.v2.document.conflict.what_changes": "बताइए कौन सा सही है, योजना वही इस्तेमाल करेगी।"
 }

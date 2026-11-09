@@ -58,7 +58,8 @@ def touches_important_slot(slot_ids: Iterable[str], catalog: Catalog) -> bool:
     )
 
 
-def _theme_of(slot_ids: Iterable[str], catalog: Catalog) -> Theme:
+def theme_of(slot_ids: Iterable[str], catalog: Catalog) -> Theme:
+    """The Gate 1 theme of the first known slot (``Business`` when there is none)."""
     for sid in slot_ids:
         slot = catalog.slots.get(sid)
         if slot is not None:
@@ -187,7 +188,7 @@ def corrections_from_facts(
                 reason=catalog.t("brief.v2.correction.reason", lang),
                 basis="correction",
                 impact="high" if touches_important_slot(slots, catalog) else "low",
-                theme=_theme_of(slots, catalog),
+                theme=theme_of(slots, catalog),
                 what_changes=catalog.t("brief.v2.correction.what_changes", lang),
                 provenance=Provenance(type="assumed", ref=fact.id),
             )
@@ -201,8 +202,8 @@ def _disputed(facts: Sequence[Fact], catalog: Catalog, lang: str) -> list[Assump
     was said both ways, a lone one asks for confirmation."""
     groups: dict[str, list[Fact]] = {}
     for fact in sorted(facts, key=lambda f: fact_number(f.id)):
-        if fact.status != "disputed":
-            continue
+        if fact.status != "disputed" or fact.claim_id:
+            continue  # a conflict inside a document is paired by its claims (``document_facts.conflict_assumptions``)
         slots = _effect_slots([fact])
         key = f"slot:{slots[0]}" if slots else f"topic:{fact.topics[0] if fact.topics else fact.id}"
         groups.setdefault(key, []).append(fact)
@@ -226,7 +227,7 @@ def _disputed(facts: Sequence[Fact], catalog: Catalog, lang: str) -> list[Assump
                 reason=catalog.t("brief.v2.correction.reason", lang),
                 basis="correction",
                 impact="high" if touches_important_slot(slots, catalog) else "low",
-                theme=_theme_of(slots, catalog),
+                theme=theme_of(slots, catalog),
                 what_changes=catalog.t("brief.v2.correction.what_changes", lang),
                 provenance=Provenance(type="assumed", ref=newest.id),
             )
@@ -262,7 +263,7 @@ def review_from_findings(
                 reason=catalog.t("brief.v2.review.reason", lang),
                 basis="review",
                 impact="high" if touches_important_slot(slots, catalog) else "low",
-                theme=_theme_of(slots, catalog),
+                theme=theme_of(slots, catalog),
                 what_changes=catalog.t("brief.v2.review.what_changes", lang),
                 provenance=Provenance(type="assumed", ref=finding.slot_id or ""),
             )

@@ -12,13 +12,15 @@
         "type": "requirement",
         "text": "The app must support Hindi and English.",
         "quote": "The app must support Hindi and English.",
-        "confidence": "high"
+        "confidence": "high",
+        "name": ""
       },
       {
         "type": "requirement",
         "text": "Users should log in with their phone number.",
         "quote": "Users should log in with their phone number.",
-        "confidence": "high"
+        "confidence": "high",
+        "name": ""
       }
     ],
     "injection_suspected": true

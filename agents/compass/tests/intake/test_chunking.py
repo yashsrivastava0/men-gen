@@ -176,3 +176,40 @@ def test_hostile_sections_are_linear() -> None:
     assert chunks and chunks[0].pointer.startswith("lines 0-")
     one_line = chunk_sections([Section(pointer="p", text="a" * 50_000)], source_id="SRC-011")
     assert "".join(c.text for c in one_line) == "a" * 50_000
+
+
+# ------------------------------------------------------------------------ dense tables (ADR 0016)
+def _table(rows: int) -> Section:
+    return Section(
+        pointer="sheet Reqs!A1:C99",
+        text="\n".join(
+            f"REQ-{i:03d} | The app must support item {i} | High" for i in range(1, rows + 1)
+        ),
+        table=True,
+        header="ID | Requirement | Priority",
+        sheet="Reqs",
+        last_col="C",
+        row_numbers=tuple(range(2, rows + 2)),
+        header_row=1,
+    )
+
+
+def test_a_table_chunk_is_closed_after_max_table_rows_with_the_header_repeated() -> None:
+    chunks = chunk_sections([_table(95)], source_id="SRC-020", max_table_rows=40)
+    sizes = [len(c.text.split("\n")) - 1 for c in chunks]  # minus the repeated header row
+    assert sizes == [40, 40, 15]
+    assert all(c.text.startswith("ID | Requirement | Priority") for c in chunks)
+    assert (
+        chunks[1].pointer == "sheet Reqs!A42:C81"
+    )  # the pointer stays honest about the rows it covers
+
+
+def test_without_a_row_cap_a_table_is_cut_only_by_size_as_before() -> None:
+    (chunk,) = chunk_sections([_table(95)], source_id="SRC-021")
+    assert len(chunk.text.split("\n")) == 96
+
+
+def test_the_pipeline_clamps_the_reader_window_and_caps_table_rows() -> None:
+    from mde_compass.intake.pipeline import READER_MAX_TABLE_ROWS, READER_WINDOW_TOKENS
+
+    assert READER_MAX_TABLE_ROWS == 40 and READER_WINDOW_TOKENS == (1500, 2500)

@@ -194,6 +194,7 @@ _ASSUMED_BASES = {
     "typical": ("blueprint", "verify"),
     "correction": ("verify",),
     "review": ("verify",),
+    "document": ("verify",),
 }
 
 

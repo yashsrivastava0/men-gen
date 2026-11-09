@@ -269,9 +269,43 @@ def test_hostile_input_is_linear(text: str) -> None:
     assert time.perf_counter() - started < 3.0
     for st in out.statements:
         assert st.quote in text
-    assert len(out.statements) <= 40
+    assert len(out.statements) <= 60
 
 
 def test_statement_cap() -> None:
     text = "\n".join(f"Users must do thing number {i} today." for i in range(200))
-    assert len(fb.fallback(_inp(text)).statements) == 40
+    assert len(fb.fallback(_inp(text)).statements) == 60
+
+
+# ------------------------------------------------------------------------------- v2 (ADR 0016)
+def test_the_reader_may_name_a_requirement_or_a_role_and_nothing_else() -> None:
+    from mde_compass.calls.read_chunk.adapter import _short_name, to_statements
+    from mde_compass.calls.read_chunk.schema import WireStatement
+
+    def wire(kind: str, name: str) -> WireStatement:
+        return WireStatement(
+            type=kind,
+            text="The app lets riders accept orders.",
+            quote="riders accept orders",
+            confidence="high",
+            name=name,
+        )  # type: ignore[arg-type]
+
+    assert _short_name(wire("requirement", "  Accept   orders "), 80) == "Accept orders"
+    assert _short_name(wire("user_or_role", "Rider"), 80) == "Rider"
+    assert (
+        _short_name(wire("rule_or_number", "Refund window"), 80) == ""
+    )  # only features and roles are named
+    assert _short_name(wire("requirement", "one two three"), 7) == "one two"  # cut at a word
+    chunk = "The app lets riders accept orders."
+    (statement,) = to_statements(chunk, "page 1", [wire("requirement", "Accept orders")])
+    assert statement.quote == "riders accept orders"  # the quote is still the verbatim slice
+
+
+def test_the_statement_cap_is_sixty_and_the_prompt_says_so() -> None:
+    from mde_compass.calls.read_chunk.rules import load_rules
+    from mde_llm_gateway.render import PromptRenderer
+
+    assert load_rules().max_statements == 60
+    prompt = PromptRenderer().render(SPEC.spec, _inp("Users must log in."))
+    assert "At most 60 statements" in prompt.system and "name:" in prompt.system

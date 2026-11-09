@@ -262,5 +262,11 @@
   "brief.v2.review.conflicting": "These two do not fit together: {text}.",
   "brief.v2.review.unrealistic": "This may not be realistic: {text}.",
   "brief.v2.review.dependency": "This needs something that is not in the plan: {text}.",
-  "brief.v2.review.plausibility": "This does not add up: {text}."
+  "brief.v2.review.plausibility": "This does not add up: {text}.",
+  "brief.v2.document.confirm.question": "We read these in your document: tick what is right.",
+  "brief.v2.document.confirm.why": "Anything you leave unticked we will not use until you tell us the right version.",
+  "brief.v2.document.confirm.placeholder": "Something wrong or missing? Tell us here.",
+  "brief.v2.document.conflict": "Your document says both “{first}” and “{second}”; we used neither until you decide.",
+  "brief.v2.document.conflict.reason": "Two parts of your document do not agree.",
+  "brief.v2.document.conflict.what_changes": "Tell us which one is right and the plan uses it."
 }

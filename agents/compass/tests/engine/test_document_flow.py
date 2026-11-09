@@ -29,7 +29,7 @@ def test_used_claims_become_cited_writes_and_the_rest_become_questions() -> None
     plan = plan_from_claims(claims)
     slots = {w.slot_id: w for w in plan.writes}
     assert [f["name"] for f in slots["scope.features"].value] == [  # type: ignore[index,union-attr]
-        "Customers can reorder a previous meal in two",
+        "Customers can reorder a previous meal in two taps",
         "Restaurants can pause new orders",
     ]
     assert slots["roles.list"].provenance.type == "document"
