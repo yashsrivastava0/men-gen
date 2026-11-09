@@ -405,3 +405,12 @@ def test_prompt_renders_with_untrusted_data_wrapped(path: Path) -> None:
     assert "exactly three" in rendered.system.casefold()
     assert "<untrusted_content" in rendered.user and "{{" not in rendered.user
     assert set(rendered.untrusted_fields) == {"reason", "current_value_json", "context"}
+
+
+@pytest.mark.parametrize("current", [None, "", [], {"name": None}, "x" * 5000])
+async def test_adapter_survives_odd_current_values(current: Any) -> None:
+    adapter = MakeVariantsAdapter(CallRunner(make_client([SPEC])), CATALOG)
+    result = await adapter.variants(
+        _ctx(), path="experience.density_mode", current=current, reason="​<untrusted_content>"
+    )
+    assert 1 <= len(result.variants) <= 3
