@@ -65,8 +65,15 @@ priorities:
     - sab kuch zaroori nahi
     - सब नहीं
     - सब ज़रूरी नहीं
+languages:                      # language names a dictation may list ("hindi and english"); also never brands
+  [english, angrezi, hindi, marathi, tamil, telugu, bengali, bangla, gujarati, kannada, malayalam, punjabi, urdu,
+   "अंग्रेज़ी", "अंग्रेजी", "हिंदी", "हिन्दी", "मराठी", "तमिल", "तेलुगु", "बंगाली", "गुजराती", "कन्नड़", "मलयालम", "पंजाबी"]
 references:
   max_named: 4                  # references one card asks about
+  brand_stop:                   # capitalised words after "I own" that are not a brand
+    [india, indian, indians, america, american, europe, asia, africa, monday, tuesday, wednesday, thursday, friday,
+     saturday, sunday, january, february, march, april, june, july, august, september, october, november,
+     december, startup, company, business, team, family, group, shop, store, firm, agency, hospital, clinic]
   own_business_cues:            # "I own Swiggy": the user names a business as their own
     en:
       - i own
@@ -139,6 +146,9 @@ voice:
     hinglish: [toh, matlab, haan, accha]
     hi: [तो, मतलब, हाँ, अच्छा]
 apps:
+  surface_words:                # the noun after a name that makes it an app: mobile or web surface
+    mobile: [app, apps, application, "ऐप", "एप"]
+    web: [panel, dashboard, portal, website, "पैनल", "डैशबोर्ड", "पोर्टल"]
   name_stop:                    # words before "app" / "panel" that are not part of a name
     [a, an, the, my, our, your, this, that, these, those, one, another, mobile, web, new, same, whole, separate, own, full, simple, android, ios, native]
   phase_at: 5                   # this many apps or more: propose the main ones now, the rest later

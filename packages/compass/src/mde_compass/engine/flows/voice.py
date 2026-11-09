@@ -16,8 +16,8 @@ from functools import lru_cache
 
 from pydantic import JsonValue
 
-from mde_compass.calls.understand_turn import lexicon as lx
 from mde_compass.engine.flows import data
+from mde_compass.engine.language import normalize
 
 _SENTENCE_END = re.compile(r"(?<=[.!?;])\s{1,5}|\n+")
 _NUMBER = re.compile(r"(?<![\w.])\d[\d,]*(?:\.\d+)?(?![\w])")
@@ -63,8 +63,7 @@ def _filler_regex() -> re.Pattern[str]:
 
 @lru_cache(maxsize=1)
 def _language_names() -> tuple[str, ...]:
-    names = {lx.normalize(str(n)) for ns in lx.load_lexicon().raw["languages"].values() for n in ns}
-    return tuple(sorted((n for n in names if n), key=len, reverse=True))
+    return tuple(sorted(data.phrases("languages"), key=len, reverse=True))
 
 
 def _protect_lists(text: str) -> str:
@@ -202,7 +201,7 @@ def removable(value: JsonValue, statement_norm: str) -> JsonValue:
         return value
     if len(value) == 1:
         return value
-    named = [i for i in value if (t := lx.normalize(item_text(i))) and t in statement_norm]
+    named = [i for i in value if (t := normalize(item_text(i))) and t in statement_norm]
     return named or None
 
 
@@ -211,7 +210,7 @@ def removal_request(text: str, count: int) -> list[int]:
 
     A removal is a short message with a removal word and at least one valid number; anything else is a normal
     message."""
-    norm = lx.normalize(text[:300])
+    norm = normalize(text[:300])
     if (
         len(norm.split()) > 12
         or data.find_phrase(norm, data.phrases("voice", "remove_words")) is None

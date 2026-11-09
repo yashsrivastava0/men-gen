@@ -3,10 +3,13 @@ phased apps, Locked-edit confirm and the typed back-edge. Fast, offline."""
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import Any
 
 import pytest
 
+from mde_compass.domain import PatchOp
+from mde_compass.engine.ports import ChangeProposal
 from mde_compass.testing import Conversation
 from mde_core.errors import NotFound
 
@@ -231,6 +234,7 @@ async def test_a_locked_edit_asks_first_and_the_answer_applies_it(service) -> No
     card = conv.last_card()
     assert (await conv.brief())["version"] == v
     assert "monthly plan for restaurants" in card.question and "research" in card.why_we_ask
+    assert "Your idea" in card.why_we_ask  # the section the value sits under
     await conv.answer("A")
     brief = await conv.brief()
     assert brief["version"] == v + 1
@@ -252,6 +256,30 @@ async def test_an_edit_of_a_value_that_is_not_locked_applies_at_once(service) ->
     await conv.edit("idea.summary", "A food delivery app for Pune restaurants and their regulars")
     assert (await conv.brief())["version"] == v + 1
     assert conv.of_type("brief_patch")
+
+
+class _LockedChange:
+    """A change interpreter that rewrites the Locked business model (what the model would propose)."""
+
+    async def interpret(self, ctx: Any, change: Any, brief: Any) -> ChangeProposal:
+        op = PatchOp(op="set", path="idea.business_model", value="a monthly plan for restaurants")
+        return ChangeProposal(
+            understood=True, ops=[op], touches_locked=["idea.business_model"], confidence=0.9
+        )
+
+
+async def test_a_chat_change_of_a_locked_value_asks_first_too(service) -> None:
+    conv = await _review(service)
+    service.bind_ports(replace(service.ports, change_interpreter=_LockedChange()))
+    before = await conv.brief()
+    await conv.say("please change the business model to a monthly plan for restaurants")
+    card = conv.last_card()
+    assert card is not None and "monthly plan for restaurants" in card.question
+    assert (await conv.brief())["_hash"] == before["_hash"]  # nothing applied yet
+    await conv.answer("A")
+    assert (await conv.brief())["idea"]["business_model"][
+        "value"
+    ] == "a monthly plan for restaurants"
 
 
 async def test_an_equal_value_is_not_asked_about(service) -> None:

@@ -20,7 +20,6 @@ from typing import Any
 
 from pydantic import JsonValue
 
-from mde_compass.calls.understand_turn import lexicon as lx
 from mde_compass.catalog.loader import Catalog
 from mde_compass.domain.cards import (
     Card,
@@ -31,6 +30,7 @@ from mde_compass.domain.cards import (
     YouDecide,
 )
 from mde_compass.engine.flows import data
+from mde_compass.engine.language import normalize
 
 FRAME = "apps_you_like"
 SLOT = "scope.references"
@@ -65,12 +65,7 @@ def _own_regex() -> re.Pattern[str]:
 
 @lru_cache(maxsize=1)
 def _stop() -> frozenset[str]:
-    lex = lx.load_lexicon()
-    out = {lx.normalize(w) for w in lex.raw["geo_stop"]}
-    out |= {lx.normalize(w) for w in lex.raw["countries"]}
-    out |= {lx.normalize(str(n)) for names in lex.raw["languages"].values() for n in names}
-    out |= {lx.normalize(w) for w in lex.raw["reference_stop"]}
-    return frozenset(out)
+    return frozenset(data.phrases("references", "brand_stop") + data.phrases("languages"))
 
 
 def own_business(text: str) -> tuple[str, str] | None:
@@ -79,7 +74,7 @@ def own_business(text: str) -> tuple[str, str] | None:
     if m is None:
         return None
     brand = m.group(1).strip()
-    words = [w for w in brand.split() if lx.normalize(w) not in _stop()]
+    words = [w for w in brand.split() if normalize(w) not in _stop()]
     if not words:
         return None
     return " ".join(words), m.group(0).strip()[:200]

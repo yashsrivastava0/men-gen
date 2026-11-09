@@ -123,8 +123,9 @@ def build_card(
     card_id: str,
     language: str,
     frame: str,
+    section: str = "",
 ) -> Card:
-    """The one-tap confirm card with the impact preview."""
+    """The one-tap confirm card with the impact preview (the consumers that plan from it, and its section)."""
     t = catalog.t
     slot, new_value = changes[0]
     item = _item(brief, slot.brief_path)
@@ -142,7 +143,7 @@ def build_card(
     ]  # fmt: skip
     return Card(
         id=card_id, frame=frame, slots=[s.id for s, _ in changes], type="choose_one",
-        question=question, why_we_ask=t("flows.locked.impact", language, consumers=consumers),
+        question=question, why_we_ask=t("flows.locked.impact", language, consumers=consumers, section=section or labels),
         options=options, custom_input=CustomInput(enabled=False), you_decide=YouDecide(enabled=False),
         skip=SkipSpec(enabled=False), progress=CardProgress(n=0, of_about=0), language=language,
         must_confirm=True,

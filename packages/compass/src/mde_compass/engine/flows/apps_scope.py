@@ -15,8 +15,8 @@ from typing import Any
 
 from pydantic import JsonValue
 
-from mde_compass.calls.understand_turn import lexicon as lx
 from mde_compass.engine.flows import data
+from mde_compass.engine.language import normalize
 
 SOURCE = "later_phase_app"
 APPS_SLOT = "apps.list"
@@ -35,8 +35,8 @@ def _name(item: Any) -> str:
 
 @lru_cache(maxsize=1)
 def _named_regex() -> tuple[re.Pattern[str], dict[str, str]]:
-    surfaces = lx.load_lexicon().raw["surface_words"]
-    kind_of = {lx.normalize(str(w)): str(kind) for kind, words in surfaces.items() for w in words}
+    surfaces = data.load_flows()["apps"]["surface_words"]
+    kind_of = {normalize(str(w)): str(kind) for kind, words in surfaces.items() for w in words}
     alt = "|".join(re.escape(w) for w in sorted(kind_of, key=len, reverse=True))
     # "<name word> <app noun>": literal alternation, one bounded gap, linear
     return re.compile(
@@ -50,12 +50,12 @@ def named_apps(text: str) -> list[dict[str, Any]]:
     Needed beside the understander's own list because a rule-based understander only knows a few role words;
     the split below must see every app the user listed."""
     pattern, kind_of = _named_regex()
-    stop = {lx.normalize(w) for w in data.load_flows()["apps"]["name_stop"]}
+    stop = {normalize(w) for w in data.load_flows()["apps"]["name_stop"]}
     out: list[dict[str, Any]] = []
     seen: set[str] = set()
     for m in pattern.finditer(text[: data.SCAN_LIMIT]):
         word, noun = m.group(1), m.group(2)
-        if lx.normalize(word) in stop:
+        if normalize(word) in stop:
             continue
         name = f"{word} {noun}"
         if name.casefold() in seen:
@@ -64,7 +64,7 @@ def named_apps(text: str) -> list[dict[str, Any]]:
         out.append(
             {
                 "name": name,
-                "surface": "web" if kind_of.get(lx.normalize(noun)) == "web" else "mobile",
+                "surface": "web" if kind_of.get(normalize(noun)) == "web" else "mobile",
             }
         )
     return out

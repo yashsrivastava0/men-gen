@@ -17,6 +17,7 @@ Hooks, in the order a turn meets them:
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, cast
 
@@ -65,9 +66,11 @@ class FlowHooks:
         ports: Ports | None
         store: Store
         clock: Clock
+        _locks: dict[str, asyncio.Lock]
 
         def _t(self, turn: _Turn, key: str, **values: str | int) -> str: ...
         def _label(self, turn: _Turn, slot_id: str) -> str: ...
+        def _section_label(self, turn: _Turn, path: str) -> str: ...
         def _prov(self, turn: _Turn, kind: str, quote: str = "") -> Any: ...
         def _question_n(self, turn: _Turn) -> int: ...
         def _rebuild(self, turn: _Turn) -> None: ...
@@ -115,8 +118,9 @@ class FlowHooks:
 
     # ------------------------------------------------------------------ references
     def _flow_filter_updates(self, updates: Sequence[Any]) -> list[Any]:
-        """Reference updates from the understander are handled by ``_flow_references`` (assumed, then confirmed)."""
-        return [u for u in updates if u.slot_id != references.SLOT]
+        """Reference updates from the understander are handled by ``_flow_references`` (assumed, then confirmed);
+        explicit removals still go through the slot store."""
+        return [u for u in updates if u.slot_id != references.SLOT or u.remove]
 
     def _flow_references(self, turn: _Turn, names: Sequence[str], text: str) -> None:
         """Store the references this message names as ``assumed`` and say what needs saying, once."""
@@ -438,7 +442,11 @@ class FlowHooks:
         changes = locked_edit.changed_locked(turn.brief, self.catalog, ops)
         if not changes:
             return False
-        card = locked_edit.build_card(turn.brief, changes, catalog=self.catalog, card_id=self._flow_card_id(turn), language=turn.lang, frame=VARIANTS_FRAME)  # fmt: skip
+        card = locked_edit.build_card(
+            turn.brief, changes, catalog=self.catalog, card_id=self._flow_card_id(turn),
+            language=turn.lang, frame=VARIANTS_FRAME,
+            section=self._section_label(turn, changes[0][0].brief_path),
+        )  # fmt: skip
         turn.asked.append((card, {"frame": VARIANTS_FRAME, "reason": "locked_change"}))
         turn.out.append(CardEvent(card=card))
         return True
@@ -459,8 +467,6 @@ class FlowHooks:
 
         At most ``config.gate.max_back_edge_loops`` such questions per session, then a notice and nothing else.
         The card is answered like any variant pick (a new value, or "Keep what I said")."""
-        import asyncio
-
         from mde_compass.engine import service as svc
         from mde_core.errors import Conflict, NotFound
         from mde_core.ids import new_id
@@ -471,8 +477,7 @@ class FlowHooks:
             raise NotFound(f"slot {slot_id}")
         token = svc._TENANT.set(caller.tenant_id)
         try:
-            locks: dict[str, asyncio.Lock] = self._locks  # type: ignore[attr-defined]
-            async with locks.setdefault(session_id, asyncio.Lock()):
+            async with self._locks.setdefault(session_id, asyncio.Lock()):
                 async with self.store.begin(caller.tenant_id) as uow:
                     session = await uow.sessions.get(session_id)
                     if not await uow.sessions.try_begin_turn(session_id):

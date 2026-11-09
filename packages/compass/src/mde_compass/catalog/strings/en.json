@@ -165,7 +165,7 @@
   "flows.apps.phased": "That is a lot for one launch. I suggest two now: {now}. The rest can be later phases: {later}. Tell me if you would pick differently.",
   "flows.apps.later_intent": "A later phase",
   "flows.locked.question": "You confirmed {label} as \"{current}\". Change it to \"{new}\"?",
-  "flows.locked.impact": "Plans that depend on this: {consumers}.",
+  "flows.locked.impact": "Plans that depend on this: {consumers}. It sits under: {section}.",
   "flows.locked.apply": "Yes, change it",
   "flows.locked.keep": "No, keep it",
   "flows.locked.keep_reason": "Nothing else has to be redone.",

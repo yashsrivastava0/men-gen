@@ -165,7 +165,7 @@
   "flows.apps.phased": "एक साथ लॉन्च के लिए यह बहुत ज़्यादा है। मेरा सुझाव है कि अभी दो ऐप लें: {now}। बाकी बाद के चरणों में रखें: {later}। कुछ और चुनना हो तो बताइए।",
   "flows.apps.later_intent": "बाद का चरण",
   "flows.locked.question": "आपने {label} को \"{current}\" तय किया था। क्या इसे \"{new}\" कर दें?",
-  "flows.locked.impact": "इस पर निर्भर योजनाएँ: {consumers}।",
+  "flows.locked.impact": "इस पर निर्भर योजनाएँ: {consumers}। यह इस हिस्से में है: {section}।",
   "flows.locked.apply": "हाँ, बदल दीजिए",
   "flows.locked.keep": "नहीं, ऐसे ही रखिए",
   "flows.locked.keep_reason": "बाकी कुछ दोबारा नहीं करना पड़ेगा।",
