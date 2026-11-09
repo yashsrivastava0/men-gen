@@ -698,18 +698,22 @@ class InterviewController:
             own_needs=frozenset(card.need_ids) if card is not None else frozenset(),
         )
         origin = "tap" if tap else "stated"
+        speaker = getattr(turn.event, "contributor_id", None)  # enterprise: who said it (BUG-22)
         new_ids: list[str] = []
         chips: list[str] = []
         for ef in extracted:
-            fact = build_fact(
-                ef,
-                fact_id=mem.next_fact_id(),
-                sources=sources,
-                source_ref=source_ref,
-                card_id=card.id if card else None,
-                origin=origin,
-                now=now,
-                min_quote_chars=self.policy.min_quote_chars,
+            fact = facts_mod.with_contributor(
+                build_fact(
+                    ef,
+                    fact_id=mem.next_fact_id(),
+                    sources=sources,
+                    source_ref=source_ref,
+                    card_id=card.id if card else None,
+                    origin=origin,
+                    now=now,
+                    min_quote_chars=self.policy.min_quote_chars,
+                ),
+                speaker,
             )
             mem.add_fact(fact)
             new_ids.append(fact.id)
