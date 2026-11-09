@@ -1036,15 +1036,99 @@ class InterviewController:
         self.touch(turn)
 
     def _assume_for(self, turn: _Turn, card: Card) -> None:
-        """ "You decide": take the card's recommended option, else assume each of its needs visibly."""
-        writes = cards_mod.you_decide_writes(card)
+        """ "You decide" for one question (ADR 0016). An option card takes the planner's recommended option (or the one
+        ``assumes`` names): the slot gets that value as an ASSUMPTION when the label is the catalog's, the ledger gets
+        an assumption fact and "We assumed" a row the person can change. Anything the options do not settle falls
+        back to the catalog default, as before. A person's own value always wins over an assumption (the slot store
+        refuses to overwrite it)."""
+        try:
+            writes = cards_mod.you_decide_writes(card)
+        except (
+            cards_mod.CardRefused
+        ):  # a must-confirm card: decided, but listed as a HIGH-impact assumption to approve
+            writes = []
         if writes:
             self.svc._apply_card_writes(turn, writes, state="assumed", from_tap=True)
             picked = ", ".join(text_of(w.value) for w in writes)
             turn.notice("assumed", self.svc._t(turn, "card.assumed_collapsed", value=picked))
-        else:
-            for need in card.need_ids:
-                self.svc._assume_need(turn, need)
+            return
+        chosen = self._decided_options(card)
+        if chosen:
+            self._record_decision(turn, card, chosen)
+        for need in card.need_ids:
+            self.svc._assume_need(turn, need)
+
+    @staticmethod
+    def _decided_options(card: Card) -> list[Any]:
+        """The options "you decide" lands on: the one ``assumes`` names, else the recommended, else the ticked, else
+        the first typical option, else the first. None for a question without options."""
+        if not card.options:
+            return []
+        for pick in (
+            [o for o in card.options if o.id == card.you_decide.assumes],
+            [o for o in card.options if o.recommended],
+            [o for o in card.options if o.ticked],
+            [o for o in card.options if o.basis == "typical"][:1],
+            card.options[:1],
+        ):
+            if pick:
+                return pick
+        return []
+
+    def _record_decision(self, turn: _Turn, card: Card, chosen: Sequence[Any]) -> None:
+        labels = [_untag(o.label) for o in chosen]
+        now = self._now()
+        # the slot, when the chosen label is the catalog's own option (an enumerated need)
+        match = self._registry_match(AnswerItem(card, "answer", [o.id for o in chosen]))
+        for upd in match.slot_updates if match is not None else []:
+            if not turn.slots.filled(upd.slot_id):
+                turn.slots.write(
+                    upd.slot_id,
+                    upd.value,
+                    state="assumed",
+                    provenance=Provenance(
+                        type="model_knowledge", ref=f"you_decide:{card.id}", date=now
+                    ),
+                    confidence=0.5,
+                    turn_id=turn.turn_id,
+                )
+        statement = f"{(card.intent or card.question).strip().rstrip('?')}: {', '.join(labels)}"
+        turn.memory.add_fact(
+            Fact(
+                id=turn.memory.next_fact_id(),
+                type="preference",
+                statement=statement[:1000],
+                topics=[n for n in card.need_ids if n.startswith("domain:")],
+                consumers=["all"],
+                confidence=0.4,
+                status="active",
+                origin="assumption",
+                source_ref=turn.turn_id,
+                qa_card_id=card.id,
+                created_at=now,
+                updated_at=now,
+            )
+        )
+        turn.brief.assumptions.append(
+            AssumptionRecord(
+                id=turn.brief.ids.allocate("ASM"),
+                claim=self.svc._t(
+                    turn,
+                    "decide.claim",
+                    question=card.question.strip(),
+                    answer=", ".join(labels),
+                ),
+                reason=self.svc._t(turn, "decide.reason"),
+                basis="model_knowledge",
+                impact="high" if card.must_confirm else "low",
+                what_changes=self.svc._t(turn, "decide.changes"),
+                tier="Default",
+                provenance=[Provenance(type="model_knowledge", ref=card.id)],
+                confidence=0.4,
+                status="assumed",
+            )
+        )
+        turn.notice("assumed", self.svc._t(turn, "card.assumed_collapsed", value=", ".join(labels)))
 
     async def _follow_ups(
         self,

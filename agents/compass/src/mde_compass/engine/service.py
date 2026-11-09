@@ -1704,11 +1704,18 @@ class Service(FlowHooks):
             )
         for qa in self.interview.pending(turn):
             if qa.batch_id == ev.batch_id and qa.card_id not in closed:
-                items.append(AnswerItem(qa.card, "skip"))
-        if not items:
+                # "decide the rest": what the form left blank is decided for the person, otherwise it is skipped
+                items.append(AnswerItem(qa.card, "you_decide" if ev.decide_rest else "skip"))
+        if not items and not ev.decide_rest:
             return  # everything in it was answered already: a no-op, never a second batch
-        await self.interview.on_answers(turn, items)
-        self._rebuild(turn)
+        if items:
+            await self.interview.on_answers(turn, items)
+            self._rebuild(turn)
+        if ev.decide_rest:
+            await self._finish_with_defaults(
+                turn
+            )  # every other question is decided too, the interview ends
+            return
         await self._advance(turn)
 
     async def _on_card_skip(self, turn: _Turn, ev: CardSkip) -> None:
@@ -1933,7 +1940,8 @@ class Service(FlowHooks):
             self.interview.finish(turn, FINISHED_BY_PERSON, [])
             turn.slots_defaulted = True  # type: ignore[attr-defined]
             turn.notice("finish_defaults", self._t(turn, "notice.finish_defaults"))
-            self._assume_required(turn)
+            self._derive_subcategory(turn)
+            self._assume_defaults(turn)  # the required and the should-level defaults, to a fixpoint
             self._go(turn, "queue_empty", "SEEDING")
             await self._advance(turn)
             return
