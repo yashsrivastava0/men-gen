@@ -114,17 +114,20 @@ Engine = Literal["legacy", "planner"]
 ENGINES: tuple[Engine, ...] = ("legacy", "planner")
 
 
-def engine_config(engine: Engine) -> Any:
-    """The default configuration with the question engine set (the planner path is selected by this one field)."""
+def engine_config(engine: Engine, policy: dict[str, Any] | None = None) -> Any:
+    """The default configuration with the question engine set (the planner path is selected by this one field).
+    ``policy`` overrides fields of ``InterviewPolicy`` for one scenario (``policy:`` in its YAML)."""
     import dataclasses
 
     from mde_compass.config import DEFAULT_CONFIG
 
-    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine=engine)
+    interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine=engine, **(policy or {}))
     return dataclasses.replace(DEFAULT_CONFIG, interview=interview)
 
 
-def new_scripted_service(engine: Engine, script: Any) -> tuple[Any, Any]:
+def new_scripted_service(
+    engine: Engine, script: Any, policy: dict[str, Any] | None = None
+) -> tuple[Any, Any]:
     """A planner service whose model calls come from a provider fixture; returns the service and the gateway
     (``HybridGateway``: its ``trace`` lists the calls, ``assert_consumed`` checks the script was used up)."""
     from mde_compass.compose import build_service
@@ -134,7 +137,10 @@ def new_scripted_service(engine: Engine, script: Any) -> tuple[Any, Any]:
     clock = FakeClock()
     gateway = hybrid_for(script, clock)
     service = build_service(
-        memory=True, clock=clock, compass_config=engine_config(engine), gateway=cast(Any, gateway)
+        memory=True,
+        clock=clock,
+        compass_config=engine_config(engine, policy),
+        gateway=cast(Any, gateway),
     )
     return service, gateway
 
@@ -1273,7 +1279,7 @@ async def run_scenario(
         if service_factory is not None:
             svc = service_factory()
         elif (engine or "legacy") == "planner" and (script := _provider_for(scn)) is not None:
-            svc, gateway = new_scripted_service("planner", script)
+            svc, gateway = new_scripted_service("planner", script, scn.policy)
             svc.scripted_gateway = gateway
         else:
             svc = new_service(engine or "legacy")

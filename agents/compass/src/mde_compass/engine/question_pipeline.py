@@ -211,7 +211,15 @@ async def plan_validated(
         else []
     )
     # one repair call for rejected questions and for must/high-impact needs nobody accounted for
-    if (rejected or uncovered) and policy.repair_attempts > 0 and request.mode != "simplify":
+    # a repair round costs a plan call and an audit call (about 30 s live): it is only worth it when too few
+    # questions survived to fill the batch; gaps the first batch left are planned by the next replan
+    short = len(cards) < max(request.want_min, 1) or not policy.repair_only_when_short
+    if (
+        (rejected or uncovered)
+        and short
+        and policy.repair_attempts > 0
+        and request.mode != "simplify"
+    ):
         focus = list(
             dict.fromkeys(
                 [

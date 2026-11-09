@@ -336,6 +336,9 @@ class Scenario(BaseModel):
     engines: list[str] = Field(default_factory=lambda: ["legacy", "planner"])
     engines_reason: str = ""
     # a strict xfail on the planner path only (the legacy path passes): the planner path has a product defect
+    policy: dict[str, Any] = Field(
+        default_factory=dict
+    )  # InterviewPolicy fields for this scenario only
     planner_known_issue: str | None = None
     planner_known_issue_note: str = ""
     # hand-written model outputs per call id (a file under ``providers/``, relative to the scenario directory).

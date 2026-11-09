@@ -1,6 +1,7 @@
 id: SB-QP-13
 title: Duplicates, generic, technology and over-long batches are cut by code and auditor, repaired once, truncated, extras kept
 tags: [planner, validators, auditor, repair, backlog]
+policy: {repair_only_when_short: false}  # this scenario is about the repair round
 engines: [planner]
 steps:
   - say: "I want an app for my tiffin delivery service in Pune"

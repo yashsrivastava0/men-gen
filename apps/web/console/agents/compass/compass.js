@@ -80,7 +80,7 @@ CONTRACT*/
     "ui.where_from": "Where did this come from?", "ui.updated_tag": "Updated",
     "ui.undo_toast": "Change saved. Undo?", "ui.send": "Send", "ui.type_here": "Type your answer here",
     "ui.mic": "Speak your answer", "ui.upload": "Upload a file", "ui.spent_cap": "Spent {spent} of {cap}",
-    "ui.brief_tab": "Brief", "ui.language": "Language", "ui.mode": "Mode", "ui.typing": "Compass is thinking",
+    "ui.brief_tab": "Brief", "ui.language": "Language", "ui.mode": "Mode", "ui.typing": "Compass is thinking", "ui.typing_read": "Reading your idea…", "ui.typing_plan": "Choosing the questions that matter for your app…", "ui.typing_check": "Checking the questions are clear and useful…", "ui.typing_long": "Still working. This one is taking a little longer than usual.",
     "progress.question_n_of_about": "Question {n} of about {total}",
     "card.why_we_ask": "Why we ask: {reason}", "card.assumed_collapsed": "Assumed: {value}",
     "card.custom_placeholder": "Something else: type it, or tap the mic",
@@ -279,9 +279,27 @@ CONTRACT*/
   function chipList(items) {
     return h("ul", { class: "chips" }, items.map(function (c) { return h("li", { class: "chip", text: c }); }));
   }
+  // While a slow turn runs (the first questions can take a minute) the hint under the dots says what is going
+  // on in plain words, and says so again when it is taking longer than usual.
+  var typingTimers = [];
+  var TYPING_STEPS = [[6, "ui.typing_read"], [18, "ui.typing_plan"], [45, "ui.typing_check"], [90, "ui.typing_long"]];
+  function stopTypingStory() {
+    typingTimers.forEach(function (id) { window.clearTimeout(id); });
+    typingTimers = [];
+    $("typing-text").textContent = t("ui.typing");
+  }
+  function startTypingStory() {
+    stopTypingStory();
+    TYPING_STEPS.forEach(function (step) {
+      typingTimers.push(window.setTimeout(function () { $("typing-text").textContent = t(step[1]); }, step[0] * 1000));
+    });
+  }
   function setTyping(on) {
+    var before = state.typingCount;
     state.typingCount = Math.max(0, state.typingCount + (on ? 1 : -1));
     $("typing").hidden = state.typingCount === 0;
+    if (before === 0 && state.typingCount > 0) { startTypingStory(); }
+    if (state.typingCount === 0) { stopTypingStory(); }
     if (state.typingCount) { scrollChat(); }
   }
 

@@ -122,6 +122,9 @@ class InterviewPolicy:
     # validators and auditor
     audit_min_specificity: int = 3  # reject below this, or any flag
     repair_attempts: int = 1  # one repair call for rejected questions, then drop
+    repair_only_when_short: bool = (
+        True  # repair only when fewer than want_min questions survived (live: saves ~30 s)
+    )
     min_accepted_share: float = (
         0.5  # fewer accepted than this share of a batch triggers the repair call
     )
