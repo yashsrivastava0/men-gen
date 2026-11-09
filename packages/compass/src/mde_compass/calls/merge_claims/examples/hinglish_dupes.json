@@ -1,0 +1,83 @@
+{
+  "name": "hinglish_dupes",
+  "input": {
+    "source_id": "SRC-001",
+    "language": "en",
+    "statements": [
+      {
+        "idx": 0,
+        "type": "requirement",
+        "text": "Order par 10% chhoot milegi",
+        "confidence": "high"
+      },
+      {
+        "idx": 1,
+        "type": "requirement",
+        "text": "order par 10% chhoot milegi.",
+        "confidence": "high"
+      },
+      {
+        "idx": 2,
+        "type": "open_issue",
+        "text": "Payment ka tareeka abhi tay nahi",
+        "confidence": "high"
+      },
+      {
+        "idx": 3,
+        "type": "exclusion",
+        "text": "App mein login nahi chahiye",
+        "confidence": "high"
+      },
+      {
+        "idx": 4,
+        "type": "requirement",
+        "text": "App mein login chahiye",
+        "confidence": "high"
+      }
+    ]
+  },
+  "output": {
+    "decisions": [
+      {
+        "idx": 0,
+        "status": "used",
+        "duplicate_of": null,
+        "slot_hint": "scope.features"
+      },
+      {
+        "idx": 1,
+        "status": "duplicate",
+        "duplicate_of": 0,
+        "slot_hint": "scope.features"
+      },
+      {
+        "idx": 2,
+        "status": "needs_confirming",
+        "duplicate_of": null,
+        "slot_hint": null
+      },
+      {
+        "idx": 3,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": "scope.must_not"
+      },
+      {
+        "idx": 4,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": "scope.features"
+      }
+    ],
+    "conflicts": [
+      {
+        "a": 3,
+        "b": 4,
+        "reason": "negation"
+      }
+    ],
+    "tbd_idx": [
+      2
+    ]
+  }
+}

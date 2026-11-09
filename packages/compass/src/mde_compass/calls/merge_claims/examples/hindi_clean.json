@@ -1,0 +1,39 @@
+{
+  "name": "hindi_clean",
+  "input": {
+    "source_id": "SRC-001",
+    "language": "en",
+    "statements": [
+      {
+        "idx": 0,
+        "type": "goal",
+        "text": "हमारा लक्ष्य दिल्ली में 500 दुकानें जोड़ना है।",
+        "confidence": "high"
+      },
+      {
+        "idx": 1,
+        "type": "user_or_role",
+        "text": "ग्राहक ऑर्डर देख सकें",
+        "confidence": "high"
+      }
+    ]
+  },
+  "output": {
+    "decisions": [
+      {
+        "idx": 0,
+        "status": "used",
+        "duplicate_of": null,
+        "slot_hint": "goals.primary"
+      },
+      {
+        "idx": 1,
+        "status": "used",
+        "duplicate_of": null,
+        "slot_hint": "roles.list"
+      }
+    ],
+    "conflicts": [],
+    "tbd_idx": []
+  }
+}

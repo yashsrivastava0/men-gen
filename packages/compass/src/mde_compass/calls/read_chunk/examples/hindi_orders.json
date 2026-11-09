@@ -1,0 +1,32 @@
+{
+  "name": "hindi_orders",
+  "input": {
+    "chunk_text": "ग्राहक बिना लॉगिन के ऑर्डर देख सकें। भुगतान का तरीका अभी तय नहीं।\nहमारा लक्ष्य दिल्ली में 500 दुकानें जोड़ना है।",
+    "pointer": "page 1",
+    "language": "hi",
+    "idea_hint": ""
+  },
+  "output": {
+    "statements": [
+      {
+        "type": "requirement",
+        "text": "ग्राहक बिना लॉगिन के ऑर्डर देख सकें।",
+        "quote": "ग्राहक बिना लॉगिन के ऑर्डर देख सकें।",
+        "confidence": "high"
+      },
+      {
+        "type": "open_issue",
+        "text": "भुगतान का तरीका अभी तय नहीं।",
+        "quote": "भुगतान का तरीका अभी तय नहीं।",
+        "confidence": "high"
+      },
+      {
+        "type": "goal",
+        "text": "हमारा लक्ष्य दिल्ली में 500 दुकानें जोड़ना है।",
+        "quote": "हमारा लक्ष्य दिल्ली में 500 दुकानें जोड़ना है।",
+        "confidence": "high"
+      }
+    ],
+    "injection_suspected": false
+  }
+}

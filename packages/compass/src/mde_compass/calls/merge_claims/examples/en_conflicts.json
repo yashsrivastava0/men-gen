@@ -1,0 +1,141 @@
+{
+  "name": "en_conflicts",
+  "input": {
+    "source_id": "SRC-001",
+    "language": "en",
+    "statements": [
+      {
+        "idx": 0,
+        "type": "requirement",
+        "text": "Users must log in with OTP",
+        "confidence": "high"
+      },
+      {
+        "idx": 1,
+        "type": "requirement",
+        "text": "Users must not log in with OTP",
+        "confidence": "high"
+      },
+      {
+        "idx": 2,
+        "type": "rule_or_number",
+        "text": "Refunds are processed within 7 days.",
+        "confidence": "high"
+      },
+      {
+        "idx": 3,
+        "type": "rule_or_number",
+        "text": "Refunds are processed within 14 days.",
+        "confidence": "high"
+      },
+      {
+        "idx": 4,
+        "type": "rule_or_number",
+        "text": "refunds are processed within 7 days",
+        "confidence": "high"
+      },
+      {
+        "idx": 5,
+        "type": "open_issue",
+        "text": "Delivery fee is TBD.",
+        "confidence": "high"
+      },
+      {
+        "idx": 6,
+        "type": "preference",
+        "text": "Maybe a dark theme",
+        "confidence": "low"
+      },
+      {
+        "idx": 7,
+        "type": "requirement",
+        "text": "The app works offline",
+        "confidence": "high"
+      },
+      {
+        "idx": 8,
+        "type": "requirement",
+        "text": "The app works online only",
+        "confidence": "high"
+      }
+    ]
+  },
+  "output": {
+    "decisions": [
+      {
+        "idx": 0,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": "scope.features"
+      },
+      {
+        "idx": 1,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": "scope.features"
+      },
+      {
+        "idx": 2,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": null
+      },
+      {
+        "idx": 3,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": null
+      },
+      {
+        "idx": 4,
+        "status": "duplicate",
+        "duplicate_of": 2,
+        "slot_hint": null
+      },
+      {
+        "idx": 5,
+        "status": "needs_confirming",
+        "duplicate_of": null,
+        "slot_hint": null
+      },
+      {
+        "idx": 6,
+        "status": "needs_confirming",
+        "duplicate_of": null,
+        "slot_hint": null
+      },
+      {
+        "idx": 7,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": "scope.features"
+      },
+      {
+        "idx": 8,
+        "status": "conflicting",
+        "duplicate_of": null,
+        "slot_hint": "scope.features"
+      }
+    ],
+    "conflicts": [
+      {
+        "a": 0,
+        "b": 1,
+        "reason": "negation"
+      },
+      {
+        "a": 2,
+        "b": 3,
+        "reason": "number"
+      },
+      {
+        "a": 7,
+        "b": 8,
+        "reason": "antonym"
+      }
+    ],
+    "tbd_idx": [
+      5
+    ]
+  }
+}

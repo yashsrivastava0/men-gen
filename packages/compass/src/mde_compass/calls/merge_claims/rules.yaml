@@ -1,0 +1,63 @@
+# Rule tables for the deterministic merger (cmp.merge_claims fallback and mock; also reused by the ambiguity
+# scanner for contradictions). Data, not logic (hard rule 8). Languages: en, hi, hinglish.
+version: 1
+limits:
+  max_statements: 300         # more than this is merged by code only (no model call)
+  candidate_df_cutoff: 60     # tokens in more statements than this do not generate conflict candidates
+  min_shared_tokens: 2        # statements need this many shared content tokens to be compared
+  min_similarity: 0.6         # Jaccard over content tokens (antonym words excluded) to count as "same subject"
+  low_confidence_below: 0.5   # statements below this need confirming
+stopwords:
+  en: [a, an, the, is, are, be, will, to, of, in, on, at, for, and, or, with, by, it, its, this, that, we, our, all, any, can, may, also, as, from]
+  hi: [है, हैं, का, की, के, में, से, को, और, पर, यह, वह, एक, भी, तो]
+  hinglish: [hai, hain, ka, ki, ke, mein, se, ko, aur, par, yeh, woh, ek, bhi, to, hi, hum, hamare]
+modals:
+  en: [must, shall, should, need, needs, needed, required, require, requires, want, wants, have, has, do, does, did, allow, allows, support, supports, only]
+  hi: [चाहिए, होना, सकें, सके]
+  hinglish: [chahiye, hona, sakein, sake, honi]
+negations:
+  en: [not, no, never, without, cannot, "can't", "won't", "don't", "doesn't", "isn't", "aren't", "shouldn't", "mustn't", "wasn't", neither, nor, exclude, excluded]
+  hi: [नहीं, नही, बिना, मत]
+  hinglish: [nahi, nahin, bina, mat, bagair]
+# Opposite values for the same subject ("public"/"private"); each pair is symmetric.
+antonyms:
+  - [allow, forbid]
+  - [allowed, forbidden]
+  - [enable, disable]
+  - [enabled, disabled]
+  - [required, optional]
+  - [mandatory, optional]
+  - [online, offline]
+  - [public, private]
+  - [free, paid]
+  - [include, exclude]
+  - [included, excluded]
+  - [increase, decrease]
+  - [daily, weekly]
+  - [weekly, monthly]
+  - [instant, delayed]
+  - [allowed, blocked]
+  - [show, hide]
+  - [shown, hidden]
+  - [ऑनलाइन, ऑफलाइन]
+  - [online, ऑफलाइन]
+  - [मुफ्त, भुगतान]
+  - [muft, paid]
+  - [anivarya, optional]
+tbd_markers:
+  en: [tbd, tbc, tba, to be decided, to be confirmed, to be determined, not decided, yet to decide, undecided]
+  hi: [तय नहीं, अभी तय नहीं, बाद में तय, तय होना बाकी]
+  hinglish: [tay nahi, baad mein tay, abhi tay nahi, decide nahi]
+# the Brief slot each statement type usually informs (validated against the catalog by the adapter)
+slot_hints:
+  requirement: scope.features
+  goal: goals.primary
+  user_or_role: roles.list
+  glossary_term: glossary.terms
+  exclusion: scope.must_not
+  constraint: constraints.must_use
+  business_context: idea.problem_value
+  rule_or_number: null
+  example: null
+  open_issue: null
+  preference: null
