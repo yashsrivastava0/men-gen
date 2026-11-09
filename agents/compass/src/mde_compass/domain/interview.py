@@ -95,6 +95,9 @@ class Fact(Strict):
     supersedes: list[str] = Field(default_factory=list)
     not_used_reason: str = ""  # required when status == "not_used" (for example "small talk")
     effects: list[FactEffect] = Field(default_factory=list)
+    # Which parts of which needs this fact answers, as "need_id:aspect" entries ("need_id:*" = a complete
+    # answer, which is what a tapped option is). Code computes need status from these (engine.needs).
+    aspects: list[str] = Field(default_factory=list)
     created_at: datetime | None = None
     updated_at: datetime | None = None
 

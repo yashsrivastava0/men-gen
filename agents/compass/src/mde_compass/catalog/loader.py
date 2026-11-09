@@ -2,7 +2,8 @@
 
 The catalog is a set of data files next to this module:
 
-* ``slots.yaml``        every slot Compass can fill, with a bilingual fallback card
+* ``slots.yaml``        the Needs Registry: every slot Compass can fill (what the downstream agents need), its
+                        ``answer_spec`` (what a sufficient answer contains) and a bilingual last-resort fallback card
 * ``frames/*.yaml``     one question frame per file
 * ``families.yaml``     neutral capability families (seeds, not archetypes)
 * ``capabilities.yaml`` tier B capabilities and declined categories, with keyword guards
@@ -53,6 +54,8 @@ from typing import Any, Literal
 
 import yaml
 from pydantic import BaseModel, ConfigDict, ValidationError, field_validator
+
+from mde_compass.domain.interview import AnswerSpec
 
 CATALOG_DIR = Path(__file__).resolve().parent
 
@@ -153,6 +156,13 @@ class SlotDef(_Model):
     order: int
     must_confirm: bool = False
     fallback_card: FallbackCard
+    # Needs Registry (build prompt 02): what a *sufficient* answer contains for the slot's consumers. The
+    # planner and the interpreter read it; code computes the need status from it (engine.needs).
+    answer_spec: AnswerSpec | None = None
+    universal: bool = (
+        False  # a question serving it needs no project term (for example "which languages")
+    )
+    domain_topics: list[str] = []  # project-specific topics a question for it usually probes
 
 
 class FrameDef(_Model):
@@ -166,6 +176,9 @@ class FrameDef(_Model):
     max_question_words: int = 20
     max_option_words: int = 8
     guidance: str
+    # The planner uses a frame as a style guide and few-shot material, not as a script (build prompt 02).
+    style_guide: str | None = None  # None until written; the text scan rejects empty strings
+    examples: list[str] = []
 
 
 class Feature(_Model):
