@@ -76,6 +76,8 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 
 Related hard limits: no SQLite anywhere (not even tests); no `.md` outside `README.md`, `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md`, `.claude/**`, `docs/**` (prompt templates are `.jinja`); money is `Decimal` or integer micro-dollars, never float; timestamps are timezone-aware UTC; IDs are prefixed ULIDs (`ses_`, `evt_`, `call_`). The second key for live calls (`ALLOW_LIVE_LLM=1` in the process environment) is the user's decision, never an agent's (D-069): do not look for a way around the live-call hook.
 
+Commit policy, tags, branch and merge rules, and the `agents/` and `apps/web/` repository layout: `docs/implementation/GLOBAL_RULES.md` (applies first; the owner's recorded overrides are at its end).
+
 ## Resume protocol (context gets compacted; the job is long)
 
 At the start of every session or after compaction: read `docs/implementation/BRIEF.md`, `docs/product/context-engine-spec.md`, `docs/implementation/PROGRESS.md` and `DECISIONS.md`; run `git log --oneline -20` and `git status`; continue from the first unchecked item. After every finished task tick it in `PROGRESS.md` (one line, with commit hash) and commit. Never rely on memory of earlier turns.
