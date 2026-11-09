@@ -221,6 +221,25 @@ async def test_switching_the_layout_mid_batch_shows_the_rest_of_the_batch_again(
     assert not [e for e in conv.events[before:] if e.type in ("question_batch", "card")]
 
 
+@pytest.mark.parametrize("how", ["command", "words"])
+async def test_finish_with_defaults_and_thats_enough_stop_the_interview(how: str) -> None:
+    svc = planner_service()
+    conv = await Conversation.start(svc)
+    await conv.say(IDEA)
+    await conv.tap_recommended()
+    if how == "command":
+        await conv.command("finish_with_defaults")
+    else:
+        await conv.say("that's enough")
+    assert (await svc.get_session(conv.caller, conv.session_id)).state == "BRIEF_REVIEW"
+    async with svc.store.begin("t1") as uow:
+        qa = await uow.qa.list(conv.session_id)
+        brief = (await uow.briefs.get(conv.session_id)).brief
+    assert not [q for q in qa if q.status == "open"]  # nothing is left waiting
+    assert brief.meta.interview is not None and brief.meta.interview.stop_reason
+    assert brief.assumptions  # what was not asked is a visible assumption
+
+
 async def test_resending_an_event_is_acknowledged_and_ignored() -> None:
     svc = planner_service()
     conv = await Conversation.start(svc)

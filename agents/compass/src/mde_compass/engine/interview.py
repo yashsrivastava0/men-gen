@@ -75,6 +75,9 @@ BudgetName = Literal["quick", "standard", "thorough"]
 PLAN_KINDS = ("initial", "followup", "replan", "deepen", "simplify")
 
 
+FINISHED_BY_PERSON = "the person asked to finish with defaults"
+
+
 @dataclass
 class AnswerItem:
     card: Card
@@ -471,6 +474,11 @@ class InterviewController:
         self.show_next(turn)
         self.touch(turn)
         return "asked"
+
+    def person_finished(self, turn: _Turn) -> bool:
+        """The person asked to stop and use defaults: no further question may be put to them (probe gaps are assumed)."""
+        block = turn.brief.meta.interview
+        return self.active and block is not None and block.stop_reason == FINISHED_BY_PERSON
 
     def finish(self, turn: _Turn, reason: str, remaining: Sequence[str]) -> None:
         """Stop asking: what is still open becomes visible assumptions (never silence)."""

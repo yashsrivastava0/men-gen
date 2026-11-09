@@ -94,7 +94,7 @@ from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
 from mde_compass.engine.flows.hooks import FlowHooks
-from mde_compass.engine.interview import AnswerItem, InterviewController
+from mde_compass.engine.interview import FINISHED_BY_PERSON, AnswerItem, InterviewController
 from mde_compass.engine.interview_state import InterviewMemory
 from mde_compass.engine.language import detect_language
 from mde_compass.engine.ports import (
@@ -1409,7 +1409,12 @@ class Service(FlowHooks):
                     elif ask_gap is None and gap.slot_id:
                         ask_gap = gap
             self._rebuild(turn)
-            if ask_gap is not None and self.interview.active:
+            if ask_gap is not None and self.interview.person_finished(turn):
+                self._assume_slot(
+                    turn, ask_gap.slot_id, ref="probe"
+                )  # they asked for defaults: no new question
+                self._rebuild(turn)
+            elif ask_gap is not None and self.interview.active:
                 if await self.interview.ask_gap(turn, ask_gap.slot_id):
                     return False
             elif ask_gap is not None:
@@ -1857,6 +1862,16 @@ class Service(FlowHooks):
             turn.out.append(CardEvent(card=pending))
 
     async def _finish_with_defaults(self, turn: _Turn) -> None:
+        if (
+            self.interview.active
+        ):  # the planner path: stop asking, what is open becomes visible assumptions
+            self.interview.finish(turn, FINISHED_BY_PERSON, [])
+            turn.slots_defaulted = True  # type: ignore[attr-defined]
+            turn.notice("finish_defaults", self._t(turn, "notice.finish_defaults"))
+            self._assume_required(turn)
+            self._go(turn, "queue_empty", "SEEDING")
+            await self._advance(turn)
+            return
         queue = self._queue(turn)
         for item in queue:
             if item.action in ("ask", "propose", "assume"):
