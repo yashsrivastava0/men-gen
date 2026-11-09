@@ -1,0 +1,21 @@
+# Cues that a message is about the CHAT language, not the app's languages (BUG-8).
+# A message with a chat cue and no app cue never rewrites the `locales` slot; app locales change only by an
+# explicit answer. Lower-case substrings, checked linearly.
+chat_cues:
+  - talk in
+  - speak in
+  - reply in
+  - chat in
+  - continue in
+  - switch to
+  - answer in
+  - बात करनी
+  - बात करें
+  - बोलो
+  - में जवाब
+  - में ही बात
+app_cues:
+  - app
+  - ऐप
+  - एप
+  - application

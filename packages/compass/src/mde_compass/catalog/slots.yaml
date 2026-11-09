@@ -416,6 +416,8 @@ slots:
   effort: text
   value_schema:
     kind: text_list
+  default:
+  - everyday users
   brief_path: audience.segments
   order: 2
   fallback_card:
@@ -1044,6 +1046,8 @@ slots:
     - friendly_playful
     - professional
   ask_if: filled('audience.segments')
+  default:
+  - calm_simple
   brief_path: experience.tone_words
   order: 6
   fallback_card:

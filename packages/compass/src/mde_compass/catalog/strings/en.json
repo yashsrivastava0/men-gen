@@ -135,5 +135,7 @@
   "change.variants_question": "What would you prefer instead of: {current}?",
   "change.nothing_changed": "I did not change anything.",
   "change.target_unknown": "Which part do you mean?",
-  "brief.ready": "Your Brief is ready. Look it over on the right: tap 'Looks right' if it is correct, or tell me what to change."
+  "brief.ready": "Your Brief is ready. Look it over on the right: tap 'Looks right' if it is correct, or tell me what to change.",
+  "notice.tier_b": "Heads up: {items} need extra engineering. I will plan a simulated version first and list it as a later phase.",
+  "notice.paused_resumed": "Welcome back. I picked up where we left off."
 }

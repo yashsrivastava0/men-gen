@@ -19,8 +19,11 @@ import contextvars
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import datetime
+from functools import lru_cache
+from pathlib import Path
 from typing import Any, cast
 
+import yaml
 from pydantic import BaseModel, JsonValue
 
 from mde_compass.budget import CompassBudget
@@ -191,6 +194,26 @@ def _text(value: JsonValue) -> str:
     if isinstance(value, dict):
         return ", ".join(f"{k}: {_text(v)}" for k, v in value.items())
     return str(value)
+
+
+@lru_cache(maxsize=1)
+def _chat_language_cues() -> tuple[tuple[str, ...], tuple[str, ...]]:
+    data = yaml.safe_load(
+        (Path(__file__).parent / "chat_language.yaml").read_text(encoding="utf-8")
+    )
+    return tuple(data["chat_cues"]), tuple(data["app_cues"])
+
+
+def _is_chat_language_switch(text: str) -> bool:
+    """True when the message is about the chat language only (never about the app's languages)."""
+    low = text.lower()
+    chat, app = _chat_language_cues()
+    return any(c in low for c in chat) and not any(a in low for a in app)
+
+
+def _idea_like(text: str) -> bool:
+    """A first message must carry some content before it can become the idea (a bare "yes" cannot)."""
+    return len(text.split()) >= 3 or len(text.strip()) >= 20
 
 
 @dataclass
@@ -451,7 +474,7 @@ class Service:
                 after = page.next_after_idx
         lang = session.locale
         slots = SlotStore(self.catalog, clock=self.clock)
-        slots.load(slots_from_brief(rec.brief, self.catalog, self.clock))
+        slots.load(self._slot_records(rec.brief))
         return _Turn(
             tenant=tenant, session=session, rec=rec, brief=rec.brief.model_copy(deep=True), slots=slots,
             questions=questions, event=event, lang=lang, state=session.state,
@@ -545,13 +568,41 @@ class Service:
 
     def _rebuild(self, turn: _Turn) -> None:
         brief = apply_slots(turn.brief, turn.slots, self.catalog)
+        self._enrich_intents(brief)
         brief = assumptions_mod.sync_assumptions(brief, turn.slots.all(), self.catalog)
         brief.readiness = compute_readiness(brief, self.catalog)
         turn.brief = brief
 
+    def _slot_records(self, brief: Brief) -> list[Any]:
+        """Slot records from the Brief with each record's last contributor restored (enterprise conflicts)."""
+        records = slots_from_brief(brief, self.catalog, self.clock)
+        for rec in records:
+            if rec.contributor_id is None:
+                rec.contributor_id = next(
+                    (p.contributor_id for p in reversed(rec.provenance) if p.contributor_id), None
+                )
+        return records
+
+    def _enrich_intents(self, brief: Brief) -> None:
+        """A feature's intent (the job it does) comes from the family data or the hypothesis when the user
+        only named the feature; custom features stay blank and the blueprint probe asks about them."""
+        intents: dict[str, str] = {}
+        for family in self.catalog.families.values():
+            for feature in family.typical_features:
+                intents[feature.name.en.lower()] = feature.intent
+                intents[feature.name.hi.lower()] = feature.intent
+        hyp = brief.meta.hypothesis
+        if hyp is not None:
+            for hf in hyp.likely_features:
+                if hf.intent:
+                    intents.setdefault(hf.name.lower(), hf.intent)
+        for rec in brief.scope:
+            if not rec.intent:
+                rec.intent = intents.get(rec.name.lower(), "")
+
     def _resync_slots(self, turn: _Turn) -> None:
         slots = SlotStore(self.catalog, clock=self.clock)
-        slots.load(slots_from_brief(turn.brief, self.catalog, self.clock))
+        slots.load(self._slot_records(turn.brief))
         turn.slots = slots
 
     def _prov(self, turn: _Turn, kind: str, quote: str = "") -> Provenance:
@@ -610,6 +661,9 @@ class Service:
         for flag in scr.flags:
             if flag == "secret":
                 turn.notice("secret_redacted", self._t(turn, "error.generic"), warn=True)
+        if turn.state == "PAUSED":  # a message while paused is an implicit resume, never silence
+            turn.state = turn.session.resume_state or "INTERVIEWING"
+            turn.notice("resumed", self._t(turn, "notice.paused_resumed"))
         route = route_text(
             text, has_pending_card=turn.pending_card() is not None, language=turn.lang
         )
@@ -622,7 +676,18 @@ class Service:
         if scr.declined is not None:
             await self._decline(turn, scr.declined)
             return
+        if scr.tier_b:
+            labels = [
+                self.catalog.capabilities[i].label.get(turn.lang)
+                for i in scr.tier_b
+                if i in self.catalog.capabilities
+            ]
+            if labels:
+                turn.notice("tier_b", self._t(turn, "notice.tier_b", items=", ".join(labels)))
         has_draft = turn.slots.filled("idea.summary")
+        if not has_draft and not _idea_like(text):
+            self._ask_idea_card(turn)
+            return
         if turn.state == "BRIEF_REVIEW":
             blockers = self._blockers(turn)
             verdict = gate_mod.classify_yes(
@@ -642,7 +707,15 @@ class Service:
         understood = await self.ports.understander.understand(ctx, text, input_mode=ev.input_mode)
         if understood.language in self.config.supported_languages and not text.isascii():
             turn.lang = understood.language
-        if understood.intent == "change_request" and has_draft and turn.state not in ("WELCOME",):
+        corrected = any(
+            u.basis in ("user_text", "voice") and not u.remove for u in understood.slot_updates
+        )
+        if (
+            understood.intent == "change_request"
+            and has_draft
+            and not corrected
+            and turn.state not in ("WELCOME",)
+        ):
             await self._change_from_text(turn, text, ResolvedTarget())
             return
         if understood.intent in ("question", "price_or_time", "tech_choice", "off_topic"):
@@ -681,6 +754,8 @@ class Service:
         chips: list[str] = []
         for u in updates:
             if u.slot_id not in self.catalog.slots:
+                continue
+            if u.slot_id == "locales" and _is_chat_language_switch(text):
                 continue
             if u.basis in ("user_text", "voice"):
                 state, ptype = "volunteered", u.basis
@@ -1164,13 +1239,44 @@ class Service:
             turn.notice("must_confirm", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
             turn.out.append(CardEvent(card=card))
             return
-        writes = cards_mod.you_decide_writes(card)
+        writes = cards_mod.you_decide_writes(card) or self._default_writes(card)
         self._apply_card_writes(turn, writes, state="assumed", from_tap=True)
         picked = ", ".join(_text(w.value) for w in writes)
         turn.answered.append((card.id, "you_decide", {"slots": [w.slot_id for w in writes]}))  # type: ignore[arg-type]
         turn.notice("assumed", self._t(turn, "card.assumed_collapsed", value=picked))
         self._rebuild(turn)
         await self._advance(turn)
+
+    def _ask_idea_card(self, turn: _Turn) -> None:
+        card = cards_mod.fallback_card(
+            "idea_in_your_words",
+            self.catalog,
+            language=turn.lang,
+            card_id=f"Q-{len(turn.asked_cards()) + 1:03d}",
+            n=1,
+            of_about=self._plan(turn).question_budget,
+        )
+        turn.asked.append(
+            (card, {"frame": "idea_in_your_words", "action": "ask", "reason": "idea"})
+        )
+        turn.out.append(CardEvent(card=card))
+
+    def _default_writes(self, card: Card) -> list[Any]:
+        """Writes for the pattern defaults of the card's slots (listed as assumptions, never Locked)."""
+        out: list[Any] = []
+        for sid in card.slots:
+            sd = self.catalog.slots.get(sid)
+            if sd is not None and sd.default is not None:
+                out.append(
+                    cards_mod.CardWrite(
+                        slot_id=sid,
+                        value=cast(JsonValue, sd.default),
+                        provenance_type="assumed",
+                        custom_text=None,
+                        needs_confirmation=False,
+                    )
+                )
+        return out
 
     async def _on_welcome(self, turn: _Turn, choice: str) -> None:
         turn.answered.append(("Q-001", "answered", choice))
@@ -1730,7 +1836,7 @@ class Service:
             prev = await uow.briefs.get(session_id, rec.version - 1) if rec.version > 1 else None
             baseline = await uow.briefs.get_baseline(session_id)
         slots = SlotStore(self.catalog, clock=self.clock)
-        slots.load(slots_from_brief(rec.brief, self.catalog, self.clock))
+        slots.load(self._slot_records(rec.brief))
         turn_like = _Turn(
             tenant=caller.tenant_id,
             session=session,

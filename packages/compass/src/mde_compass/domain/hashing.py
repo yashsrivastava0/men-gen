@@ -43,6 +43,10 @@ def brief_hash(brief: Brief) -> str:
     data = brief.model_dump(mode="json")
     for key in VOLATILE_TOP_LEVEL:
         data.pop(key, None)
+    # who approved which hash is bookkeeping about the hash itself: recording it must not change it
+    meta = data.get("meta")
+    if isinstance(meta, dict):
+        meta.pop("approvals", None)
     return sha256_hex(canonical_json(data))
 
 
