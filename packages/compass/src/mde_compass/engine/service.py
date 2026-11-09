@@ -149,7 +149,7 @@ def tenant_scope(tenant: str) -> Iterator[None]:
 
 # Frames whose answer is PROPOSED, not asked, once the engine has a value: the playback card shows it for
 # correction and "We assumed" lists it for approval (docs 11: propose, then correct; fewer questions).
-PROPOSED_NOT_ASKED = frozenset({"confirm_kind_of_app", "roles"})
+PROPOSED_NOT_ASKED: dict[str, str] = {"confirm_kind_of_app": "idea.category", "roles": "roles.list"}
 WELCOME_FRAME = "welcome"
 VARIANTS_FRAME = "change_variants"
 SECTION_STRING = {
@@ -925,7 +925,11 @@ class Service:
 
     def _ask_cap(self, turn: _Turn) -> int:
         plan = self._plan(turn)
-        return plan.question_budget if plan.depth == "express" else self.config.questions.hard_cap
+        q = self.config.questions
+        if plan.depth == "express":
+            return plan.question_budget
+        # Large (enterprise) is budgeted per module: the Standard hard cap plus one module's worth
+        return q.hard_cap + q.large_per_module if plan.depth == "large" else q.hard_cap
 
     def _derive_subcategory(self, turn: _Turn) -> None:
         """idea.subcategory is required but no card writes it: assume it from the hypothesis, else from the
@@ -951,6 +955,15 @@ class Service:
     def _assume_required(self, turn: _Turn) -> None:
         """Express: every required slot still empty is assumed (catalog default, else the hypothesis, else the
         first, suggested option) and listed in "We assumed" for approval; never Locked."""
+        for _ in range(
+            6
+        ):  # filling one slot can make another required (ask_if): repeat until a pass adds nothing
+            if self._assume_required_once(turn) == 0:
+                break
+        self._rebuild(turn)
+
+    def _assume_required_once(self, turn: _Turn) -> int:
+        written = 0
         hyp = turn.brief.meta.hypothesis
         for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
             sd = self.catalog.slots[sid]
@@ -975,7 +988,7 @@ class Service:
                     value = self._label_codes(sid, value, turn.lang)
             if value is None or value == []:
                 continue
-            turn.slots.write(
+            res = turn.slots.write(
                 sid,
                 value,
                 state="assumed",
@@ -983,7 +996,8 @@ class Service:
                 confidence=0.4,
                 turn_id=turn.turn_id,
             )
-        self._rebuild(turn)
+            written += 1 if res.applied else 0
+        return written
 
     async def _ask_missing_must(self, turn: _Turn) -> bool:
         """A required slot with no default that is still empty after its frame was asked (a frame batches
@@ -995,17 +1009,22 @@ class Service:
         ):  # "just build it": assume and list everything still required, ask nothing more
             self._assume_required(turn)
             return False
-        cap = plan.question_budget if plan.depth == "express" else self.config.questions.hard_cap
-        over_cap = self._question_n(turn) >= cap
+        over_cap = self._question_n(turn) >= self._ask_cap(turn)
+        answered = {q.card.id for q in turn.questions if q.outcome != "open"}
+        answered.update(card_id for card_id, _, _ in turn.answered)
         counts: dict[str, int] = {}
         for card in turn.asked_cards():
+            if (
+                card.id not in answered
+            ):  # a card the user moved past with free text did not settle its slots
+                continue
             for sid in card.slots:
                 counts[sid] = counts.get(sid, 0) + 1
         for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
             sd = self.catalog.slots[sid]
             if sd.default is not None or counts.get(sid, 0) >= 2:
                 continue
-            if over_cap and not sd.must_confirm:
+            if over_cap and not sd.must_confirm and plan.depth != "large":
                 continue
             frame = next((f for f in self.catalog.frames.values() if sid in f.slots), None)
             if frame is None:
@@ -1048,7 +1067,7 @@ class Service:
             if not (
                 item.frame_id in PROPOSED_NOT_ASKED
                 and item.action in ("ask", "propose")
-                and any(turn.slots.filled(sid) for sid in item.slots)
+                and turn.slots.filled(PROPOSED_NOT_ASKED[item.frame_id])
                 and not (hybrid and item.frame_id == "confirm_kind_of_app")
             )
         ]

@@ -188,7 +188,10 @@ def _pct(num: int, den: int) -> float | None:
 
 def aggregate(outcomes: list[PersonaOutcome]) -> dict[str, Any]:
     """The JSON report: metrics, target verdicts and the per-persona rows."""
-    qs = [o.questions for o in outcomes if o.reached_review]
+    # Standard and Express sessions are measured against the 7 / 10 / 5 question targets. A Large (enterprise)
+    # session is budgeted per module (spec 6.3), so it is reported separately instead of being averaged in.
+    qs = [o.questions for o in outcomes if o.reached_review and o.kind != "enterprise"]
+    large = [o.questions for o in outcomes if o.reached_review and o.kind == "enterprise"]
     express = [o.questions for o in outcomes if o.reached_review and o.express]
     tap = sum(o.answers.get("tap", 0) for o in outcomes)
     custom = sum(o.answers.get("custom", 0) for o in outcomes)
@@ -212,6 +215,7 @@ def aggregate(outcomes: list[PersonaOutcome]) -> dict[str, Any]:
             "median": statistics.median(qs) if qs else None,
             "max": max(qs) if qs else None,
             "express_max": max(express) if express else None,
+            "large_max": max(large) if large else None,
             "per_persona": {o.id: o.questions for o in outcomes},
         },
         "answers": {

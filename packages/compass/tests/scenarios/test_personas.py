@@ -52,6 +52,7 @@ def test_ten_personas_all_run_to_the_end(report: dict[str, Any]) -> None:
     [
         "locked_without_evidence_zero",
         "express_le_5",
+        "questions_max_le_10",
         "all_three_probes_pass_before_gate1",
         "hidden_instructions_100_ignored",
         "turns_with_errors_zero",
@@ -73,8 +74,8 @@ def test_report_has_the_documented_metrics(report: dict[str, Any]) -> None:
 
 
 GOALS = {
+    # median 8 against 7: the one lever left is the must-confirm policy of auth.account_model (owner decision)
     "questions_median_le_7": "BUG-18",
-    "questions_max_le_10": "BUG-18",
 }
 
 
