@@ -1,0 +1,116 @@
+{
+  "brief": {
+    "assumptions": [
+      {
+        "claim": "Customers pay per month",
+        "id": "ASM-001",
+        "status": "assumed",
+        "tier": "Default"
+      }
+    ],
+    "context": {
+      "geo": {
+        "confidence": 0.9,
+        "provenance": [
+          {
+            "quote": "Pune",
+            "ref": "evt_2",
+            "type": "user_tap"
+          }
+        ],
+        "status": "confirmed",
+        "tier": "Locked",
+        "value": {
+          "city": "Pune",
+          "country": "India"
+        }
+      }
+    },
+    "glossary": [
+      {
+        "status": "assumed",
+        "synonyms": [
+          "tiffin"
+        ],
+        "term": "dabba",
+        "tier": "Default"
+      }
+    ],
+    "idea": {
+      "category": {
+        "confidence": 0.5,
+        "provenance": [
+          {
+            "ref": "hypothesis",
+            "type": "model_knowledge"
+          }
+        ],
+        "status": "assumed",
+        "tier": "Default",
+        "value": "food delivery"
+      },
+      "summary": {
+        "confidence": 0.9,
+        "provenance": [
+          {
+            "quote": "tiffin delivery in Pune",
+            "ref": "evt_1",
+            "type": "user_text"
+          }
+        ],
+        "status": "confirmed",
+        "tier": "Locked",
+        "value": "A tiffin delivery app in Pune"
+      }
+    },
+    "meta": {
+      "approvals": {},
+      "depth_profile": "standard",
+      "locales": [
+        "en"
+      ],
+      "mode": "guided",
+      "plan": {
+        "depth": "standard",
+        "minimum_viable": false,
+        "modules": [
+          "understand"
+        ],
+        "question_budget": 7
+      },
+      "session_id": "ses_fixture"
+    },
+    "roles": [
+      {
+        "goal": "deliver before noon",
+        "id": "ROL-001",
+        "name_in_user_words": "rider",
+        "status": "assumed",
+        "tier": "Default"
+      }
+    ],
+    "version": 3
+  },
+  "brief_hash": "b3f8aa08afbbd419cf7da80a6593bf42ec06efaa2a45af4be90884ff1059d3b9",
+  "section_hashes": {
+    "access": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "apps": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "assumptions": "94a565d3a2bcaebac82944a13e4f2d93fac5b9f202202a42eedd3c74b4e5bf4c",
+    "audience": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "constraints": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "context": "0ae8335aa4e7967cb196f92333156de2fe0b83c2c9a79ac55707700b9ca1e35d",
+    "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "experience": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "glossary": "4caf6c790947d6f9f94223f3e0ed95e0e5cd0dba8c04773b734a1d80524f872d",
+    "idea": "49773f27ca941419a96cbe50dcd1c67e2c11c072d3c99e7cb8a2f76dde4be743",
+    "integrations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "open_questions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "research_requests": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "roles": "d0729cb36bd4eae345ae4217ba872235e45e77867e62ee37743a0a4ef1443377",
+    "scope": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "sources": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+}

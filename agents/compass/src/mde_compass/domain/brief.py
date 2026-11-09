@@ -14,6 +14,7 @@ from pydantic import Field
 
 from mde_compass.domain.common import BriefItem, ItemMeta, Strict
 from mde_compass.domain.ids import IdLedger
+from mde_compass.domain.interview import InterviewBlock
 from mde_compass.domain.research import ResearchRequest, SearchHints
 from mde_compass.domain.situation import DiscoveryPlan, DomainHypothesis, SituationProfile
 
@@ -34,6 +35,7 @@ SECTION_KEYS: tuple[str, ...] = (
     "data",
     "constraints",
     "glossary",
+    "domain_facts",
     "assumptions",
     "open_questions",
     "research_requests",
@@ -41,6 +43,11 @@ SECTION_KEYS: tuple[str, ...] = (
     "sources",
     "declined",
 )
+# Sections that join the hashes only once they hold something, so a Brief written before they existed keeps its
+# hash and its approvals (ADR 0015).
+OPTIONAL_SECTIONS: tuple[str, ...] = ("domain_facts",)
+# Sections edited by their own engine, never by a patch: the facts are the user's answers, change the answer.
+READ_ONLY_SECTIONS: tuple[str, ...] = ("domain_facts",)
 DICT_SECTIONS: tuple[str, ...] = (
     "idea",
     "context",
@@ -54,7 +61,8 @@ LIST_SECTIONS: tuple[str, ...] = tuple(s for s in SECTION_KEYS if s not in DICT_
 ID_FIELD_BY_SECTION: dict[str, str] = {
     s: "id"
     for s in LIST_SECTIONS
-    if s not in ("glossary", "references", "integrations", "declined")
+    # domain_facts ids (FCT-###) belong to the fact ledger, not to the Brief's IdLedger
+    if s not in ("glossary", "references", "integrations", "declined", "domain_facts")
 }
 
 FeatureStatus = Literal["in", "later", "out", "unsupported", "needs-engineering"]
@@ -80,6 +88,7 @@ class BriefMeta(Strict):
     approvals: dict[str, str] = Field(
         default_factory=dict
     )  # contributor id -> brief hash approved (enterprise)
+    interview: InterviewBlock | None = None  # audit counts; outside the hash and the consumer views
 
 
 class AppRecord(ItemMeta):
@@ -136,6 +145,20 @@ class GlossaryRecord(ItemMeta):
     term: str
     synonyms: list[str] = Field(default_factory=list)
     avoid: list[str] = Field(default_factory=list)
+
+
+class DomainFact(ItemMeta):
+    """A fact from the Interview Memory as the Brief carries it: typed, with provenance and the downstream agents
+    that need it, so domain details that fit no fixed field still reach Research, Blueprint and Design."""
+
+    id: str  # FCT-###
+    type: str
+    statement: str
+    topics: list[str] = Field(default_factory=list)
+    entities: list[str] = Field(default_factory=list)
+    consumers: list[str] = Field(default_factory=list)
+    source: str = ""  # the question or source it came from (Q-###, SRC-###, evt_...)
+    quote: str = ""  # the user's verbatim words
 
 
 class AssumptionRecord(ItemMeta):
@@ -210,6 +233,7 @@ class Brief(Strict):
     data: dict[str, BriefItem] = Field(default_factory=dict)
     constraints: dict[str, BriefItem] = Field(default_factory=dict)
     glossary: list[GlossaryRecord] = Field(default_factory=list)
+    domain_facts: list[DomainFact] = Field(default_factory=list)
     assumptions: list[AssumptionRecord] = Field(default_factory=list)
     open_questions: list[OpenQuestion] = Field(default_factory=list)
     research_requests: list[ResearchRequest] = Field(default_factory=list)

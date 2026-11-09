@@ -13,7 +13,7 @@ from typing import Any
 
 from pydantic import BaseModel
 
-from mde_compass.domain.brief import SECTION_KEYS, Brief
+from mde_compass.domain.brief import OPTIONAL_SECTIONS, SECTION_KEYS, Brief
 
 # Bookkeeping, not content: changing these must not change a hash.
 VOLATILE_TOP_LEVEL: frozenset[str] = frozenset({"version", "ids", "readiness"})
@@ -47,12 +47,27 @@ def brief_hash(brief: Brief) -> str:
     meta = data.get("meta")
     if isinstance(meta, dict):
         meta.pop("approvals", None)
+        meta.pop("interview", None)  # audit counts about the interview, never content (ADR 0015)
+        plan = meta.get("plan")
+        if isinstance(plan, dict) and plan.get("interview_budget") is None:
+            plan.pop(
+                "interview_budget", None
+            )  # a Brief that never chose one hashes as it always did
+    for key in OPTIONAL_SECTIONS:
+        if not data.get(key):
+            data.pop(key, None)  # an empty optional section is not part of the content
     return sha256_hex(canonical_json(data))
 
 
 def section_hashes(brief: Brief) -> dict[str, str]:
     data = brief.model_dump(mode="json")
-    return {key: sha256_hex(canonical_json(data[key])) for key in SECTION_KEYS}
+    return {
+        key: sha256_hex(canonical_json(data[key]))
+        for key in SECTION_KEYS
+        if not (
+            key in OPTIONAL_SECTIONS and not data[key]
+        )  # absent while empty; absent == absent below
+    }
 
 
 def changed_sections(before: dict[str, str], after: dict[str, str]) -> list[str]:

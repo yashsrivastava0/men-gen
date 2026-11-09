@@ -18,6 +18,7 @@ from mde_compass.domain.brief import (
     AssumptionRecord,
     Brief,
     DeclinedRecord,
+    DomainFact,
     FeatureRecord,
     GlossaryRecord,
     IntegrationRecord,
@@ -317,6 +318,23 @@ def _glossary_row(ctx: _Ctx, term: GlossaryRecord) -> ViewRow:
     )
 
 
+def _fact_row(ctx: _Ctx, fact: DomainFact) -> ViewRow:
+    """A captured detail: read from the user's answers, so it is shown but not edited here."""
+    row_id = f"domain_facts.{fact.id}"
+    topic = fact.topics[0] if fact.topics else fact.type
+    return ViewRow(
+        id=row_id,
+        label=topic,
+        value=text_value(fact.statement),
+        badges=badges_for(fact, ctx.labels),
+        tier=fact.tier,
+        editable=False,
+        history_available=_has_history(fact),
+        changed=ctx.is_changed(row_id),
+        group=topic,
+    )
+
+
 def _assumption_row(ctx: _Ctx, a: AssumptionRecord) -> ViewRow:
     row_id = f"assumptions.{a.id}"
     chip = [ctx.t(f"view.impact.{a.impact}")]
@@ -431,6 +449,9 @@ def _section_rows(ctx: _Ctx) -> dict[str, list[ViewRow]]:
         "integrations_data": _integrations_rows(ctx),
         "limits": _dict_rows(ctx, "constraints", b.constraints),
         "words": [_glossary_row(ctx, g) for g in b.glossary],
+        "details": [
+            _fact_row(ctx, f) for f in sorted(b.domain_facts, key=lambda f: (f.topics[:1], f.id))
+        ],
         "assumed": [_assumption_row(ctx, a) for a in b.assumptions],
         "unknown": [_question_row(ctx, q) for q in b.open_questions],
         "lookup": [_lookup_row(ctx, r) for r in b.research_requests],

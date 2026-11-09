@@ -189,5 +189,7 @@
   "intake.picked_from_doc": "From your document I picked up: {items}",
   "intake.needs_confirming": "Some statements from your documents ({count}) need your confirmation.",
   "intake.duplicate": "I already have this file.",
-  "interview.group_fallback": "A few quick questions"
+  "interview.group_fallback": "A few quick questions",
+  "section.details": "Details we captured",
+  "view.empty.details": "No extra details captured yet."
 }

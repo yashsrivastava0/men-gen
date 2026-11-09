@@ -150,5 +150,5 @@ def test_arbitrary_item_values_never_crash_the_view_or_the_handoff(
     vm = build_view_model(
         brief, catalog=CATALOG, language=lang, session=make_session("PROBING"), blockers=[]
     )
-    assert len(vm.sections) == 14
+    assert len(vm.sections) == 15
     build_handoff(brief)

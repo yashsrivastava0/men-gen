@@ -143,3 +143,24 @@ def test_consumer_views_never_contain_transcript_text(quotes: list[str], hist: l
     for quote in (*quotes, *hist):
         assert quote not in text
     assert "chat transcript" not in text and "evt_" not in text and "ZQX" not in text
+
+
+def test_each_consumer_gets_only_the_facts_tagged_for_it_and_never_the_quote() -> None:
+    brief = rich_brief()
+    views = build_handoff(brief)
+
+    def ids(view: dict[str, object]) -> list[str]:
+        return [f["id"] for f in view.get("domain_facts", [])]  # type: ignore[union-attr,index]
+
+    assert ids(views["blueprint"]) == ["FCT-001"]
+    assert ids(views["verify"]) == ["FCT-001"]
+    assert ids(views["research"]) == ["FCT-002"]
+    assert ids(views["design"]) == ["FCT-003"]
+    fact = views["blueprint"]["domain_facts"][0]  # type: ignore[index]
+    assert set(fact) == {"id", "type", "statement", "topics", "entities"}  # type: ignore[arg-type]
+
+
+def test_a_brief_without_facts_gets_no_domain_facts_key() -> None:
+    brief = rich_brief()
+    brief.domain_facts = []
+    assert all("domain_facts" not in view for view in build_handoff(brief).values())

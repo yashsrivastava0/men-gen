@@ -7,6 +7,7 @@ from pydantic import ValidationError
 
 from mde_compass.domain import (
     INBOUND_ADAPTER,
+    OPTIONAL_SECTIONS,
     OUTBOUND_ADAPTER,
     SECTION_KEYS,
     AppRecord,
@@ -50,7 +51,8 @@ def test_only_the_changed_section_hash_moves() -> None:
     after.apps.append(AppRecord(id="APP-001", name="Customer app"))
     assert brief_hash(before) != brief_hash(after)
     assert changed_sections(section_hashes(before), section_hashes(after)) == ["apps"]
-    assert set(section_hashes(before)) == set(SECTION_KEYS)
+    # an empty optional section (domain_facts) is absent, so Briefs written before it keep their hashes
+    assert set(section_hashes(before)) == set(SECTION_KEYS) - set(OPTIONAL_SECTIONS)
 
 
 def test_locked_needs_evidence_with_a_reference() -> None:

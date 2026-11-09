@@ -29,10 +29,10 @@ def _rows(vm: BriefViewModel):
     return {r.id: r for s in vm.sections for r in s.rows}
 
 
-def test_fourteen_sections_in_fixed_order_with_localized_titles() -> None:
+def test_fifteen_sections_in_fixed_order_with_localized_titles() -> None:
     vm = _build()
     assert [s.id for s in vm.sections] == list(SECTION_IDS)
-    assert len(vm.sections) == 14
+    assert len(vm.sections) == 15
     assert [s.title for s in vm.sections] == [
         CATALOG.t(f"section.{sid}", "en") for sid in SECTION_IDS
     ]
@@ -185,7 +185,7 @@ def test_header_title_idea_line_readiness_and_progress() -> None:
         c.ready and c.label == f"Ready for {CATALOG.t('readiness.' + c.consumer, 'en')}"
         for c in h.readiness
     )
-    assert (h.reviewed, h.of_total) == (2, 14)
+    assert (h.reviewed, h.of_total) == (2, 15)
     assert [s.reviewed for s in vm.sections[:3]] == [True, True, False]
 
 
@@ -241,7 +241,7 @@ def test_hashes_pass_through_and_model_serializes() -> None:
 def test_empty_brief_renders_empty_text_not_a_crash() -> None:
     for lang in ("en", "hi"):
         vm = _build(empty_brief(), language=lang)
-        assert len(vm.sections) == 14
+        assert len(vm.sections) == 15
         assert all(not s.rows and s.empty_text and s.count == 0 for s in vm.sections)
         assert vm.header.title and vm.header.of_total == 0 and not vm.header.readiness[0].ready
         assert vm.footer.approvable  # no blockers were passed in
@@ -282,3 +282,21 @@ def test_hindi_output_has_no_english_labels_for_catalog_driven_text() -> None:
     rows = _rows(vm)
     assert rows["assumptions.ASM-002"].status_chip == "अहम"
     assert rows["assumptions.ASM-002"].group == "उपयोगकर्ता"
+
+
+def test_details_we_captured_is_a_read_only_section_grouped_by_topic() -> None:
+    vm = _build()
+    section = next(s for s in vm.sections if s.id == "details")
+    assert section.title == CATALOG.t("section.details", "en") == "Details we captured"
+    # sorted by topic, then id: "look and feel" < "orders" < "riders"
+    assert [r.id for r in section.rows] == [
+        "domain_facts.FCT-003",
+        "domain_facts.FCT-002",
+        "domain_facts.FCT-001",
+    ]
+    assert all(not r.editable and r.group for r in section.rows)
+    assert {r.group for r in section.rows} == {"orders", "look and feel", "riders"}
+    hi = _build(language="hi")
+    assert next(s for s in hi.sections if s.id == "details").title == CATALOG.t(
+        "section.details", "hi"
+    )

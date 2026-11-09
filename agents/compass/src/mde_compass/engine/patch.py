@@ -37,6 +37,7 @@ from mde_compass.catalog.loader import Catalog
 from mde_compass.domain.brief import (
     DICT_SECTIONS,
     ID_FIELD_BY_SECTION,
+    READ_ONLY_SECTIONS,
     SECTION_KEYS,
     AppRecord,
     AssetRecord,
@@ -450,6 +451,11 @@ def _apply_one(ctx: _Ctx, op: PatchOp) -> tuple[PatchOp, PatchOp]:
     section, _, rest = op.path.partition(".")
     if section not in SECTION_KEYS:
         raise PatchError(f"{op.path}: unknown section {section!r}")
+    if section in READ_ONLY_SECTIONS:
+        raise PatchError(
+            f"{op.path}: {section} is read from your answers and cannot be edited directly; "
+            "change the answer it came from"
+        )
     if section in DICT_SECTIONS:
         if not rest:
             raise PatchError(f"{op.path}: a field name is needed")

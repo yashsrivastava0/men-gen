@@ -112,6 +112,17 @@ def _declined(brief: Brief) -> list[JsonValue]:
     return [_record(d, "what", "reason", "alternative") for d in brief.declined]
 
 
+def _facts(brief: Brief, consumer: str) -> JsonDict:
+    """The domain facts tagged for ``consumer`` (or for everyone): values only, never the quote, the provenance
+    or any chat text. Absent while there are none, so views of a Brief without facts do not change."""
+    rows: list[JsonValue] = [
+        _record(f, "id", "type", "statement", "topics", "entities")
+        for f in brief.domain_facts
+        if consumer in f.consumers or "all" in f.consumers
+    ]
+    return {"domain_facts": rows} if rows else {}
+
+
 def research_view(brief: Brief) -> dict[str, JsonValue]:
     """Idea, geography, languages, audience, references, in-scope feature intents, glossary, the full
     research requests, search hints and declined items."""
@@ -130,6 +141,7 @@ def research_view(brief: Brief) -> dict[str, JsonValue]:
         "research_requests": [json_dump(r) for r in brief.research_requests],
         "search_hints": json_dump(brief.search_hints),
         "declined": _declined(brief),
+        **_facts(brief, "research"),
     }
 
 
@@ -161,6 +173,7 @@ def blueprint_view(brief: Brief) -> dict[str, JsonValue]:
         "access": {k: v.value for k, v in brief.access.items() if v.has_value()},
         "glossary": _glossary(brief),
         "assets": _assets_for(brief, "blueprint"),
+        **_facts(brief, "blueprint"),
     }
 
 
@@ -191,6 +204,7 @@ def design_view(brief: Brief) -> dict[str, JsonValue]:
         "accessibility": _get(brief.constraints, "accessibility"),
         "references": _references(brief),
         "assets": _assets_for(brief, "design"),
+        **_facts(brief, "design"),
     }
 
 
@@ -210,6 +224,7 @@ def verify_view(brief: Brief) -> dict[str, JsonValue]:
         "scope_ledger": _features(brief, None),
         "must_not": must_not,
         "declined": _declined(brief),
+        **_facts(brief, "verify"),
     }
 
 

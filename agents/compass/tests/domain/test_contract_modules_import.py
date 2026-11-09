@@ -37,4 +37,4 @@ def test_every_call_has_a_profile_and_a_port() -> None:
 def test_view_model_sections_match_the_prompt() -> None:
     from mde_compass.views.models import SECTION_IDS
 
-    assert len(SECTION_IDS) == 14 and SECTION_IDS[0] == "idea" and SECTION_IDS[-1] == "cannot_build"
+    assert len(SECTION_IDS) == 15 and SECTION_IDS[0] == "idea" and SECTION_IDS[-1] == "cannot_build"

@@ -252,6 +252,30 @@ class PlannedBatch(Strict):
         return [card for group in self.groups for card in group.cards]
 
 
+class InterviewBlock(Strict):
+    """Counts and coverage of the interview, stored in ``Brief.meta.interview`` for audit. It is bookkeeping about
+    the interview, not content: it never enters the Brief hash and never reaches a consumer view (ADR 0015)."""
+
+    budget: Literal["quick", "standard", "thorough"] = "standard"
+    questions_asked: int = 0
+    followups: int = 0
+    answered: int = 0
+    skipped: int = 0
+    assumed: int = 0
+    batches: int = 0
+    facts_active: int = 0
+    facts_not_used: int = 0
+    facts_unreferenced: int = (
+        0  # active facts no Brief item uses: a defect, placed in domain_facts and counted
+    )
+    coverage: float = Field(
+        default=1.0, ge=0.0, le=1.0
+    )  # share of active facts referenced or marked not_used
+    fallback_count: int = 0  # a fallback is a failure: counted (live batches must show 0)
+    question_ids: list[str] = Field(default_factory=list)
+    stop_reason: str = ""
+
+
 class BatchRecord(Strict):
     """One planner run as stored (``compass_batches``). ``inputs_hash`` makes a replan idempotent."""
 

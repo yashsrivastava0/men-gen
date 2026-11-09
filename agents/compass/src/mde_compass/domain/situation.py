@@ -49,6 +49,9 @@ class DiscoveryPlan(Strict):
     )
     question_budget: int = 7
     minimum_viable: bool = False
+    # build prompt 02: how deep the interview goes (Quick <= 5, Standard <= 12, Thorough <= 25 questions).
+    # None until chosen or defaulted from the situation; stripped from the hash while None (ADR 0015).
+    interview_budget: Literal["quick", "standard", "thorough"] | None = None
 
 
 class HypothesisFeature(Strict):
