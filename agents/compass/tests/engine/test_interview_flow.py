@@ -54,8 +54,8 @@ async def finish(conv: Conversation, svc: Service, limit: int = 40) -> str:
     return (await svc.get_session(conv.caller, conv.session_id)).state
 
 
-def test_the_default_engine_is_still_the_legacy_one_until_the_flip() -> None:
-    assert DEFAULT_CONFIG.interview.engine == "legacy"
+def test_the_default_engine_is_the_planner_and_legacy_is_a_rollback() -> None:
+    assert DEFAULT_CONFIG.interview.engine == "planner"
 
 
 async def test_round_zero_shows_the_playback_then_plans_the_first_batch_in_one_request() -> None:

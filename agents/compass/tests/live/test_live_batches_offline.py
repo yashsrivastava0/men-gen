@@ -12,6 +12,7 @@ Replay tests at the end are skipped, with the reason, until the lead has recorde
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 import json
 from collections.abc import Callable, Iterator
 from datetime import UTC, datetime, timedelta
@@ -23,7 +24,7 @@ import pytest
 from mde_compass import live_batches as lb
 from mde_compass.catalog import load_catalog
 from mde_compass.compose import build_service
-from mde_compass.config import MODEL_ID, BudgetPolicy
+from mde_compass.config import DEFAULT_CONFIG, MODEL_ID, BudgetPolicy
 from mde_compass.domain import Brief, Card, StoredEvent
 from mde_compass.domain.brief import DomainFact
 from mde_compass.domain.cards import CardOption, SkipSpec, YouDecide
@@ -1202,7 +1203,9 @@ def test_a_service_in_the_wrong_mode_stops_the_run_before_any_call() -> None:
 
 def test_the_legacy_engine_cannot_be_measured_by_mistake(monkeypatch: pytest.MonkeyPatch) -> None:
     def legacy() -> Service:
-        return build_service(memory=True, clock=FakeClock())  # default config: the legacy engine
+        interview = dataclasses.replace(DEFAULT_CONFIG.interview, engine="legacy")
+        config = dataclasses.replace(DEFAULT_CONFIG, interview=interview)
+        return build_service(memory=True, clock=FakeClock(), compass_config=config)
 
     monkeypatch.delenv("COMPASS_INTERVIEW_ENGINE", raising=False)
     with pytest.raises(RuntimeError, match="planner engine"):

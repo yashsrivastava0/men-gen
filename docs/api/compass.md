@@ -2,7 +2,7 @@
 
 The HTTP contract of [Compass](../packages/compass.md): sessions, events, the Brief, Gate 1 and the event stream. Hand-written from `agents/compass/src/mde_compass/api/` (`routes.py`, `schemas.py`, `auth.py`, `errors.py`, `middleware.py`, `sse.py`) and the event and card models in `agents/compass/src/mde_compass/domain/` (`events.py`, `cards.py`, `interview.py`, `brief.py`), and checked against the app running in mock mode with the in-memory store. The generated [openapi.json](openapi.json) and the JSON Schemas in `schemas/` describe the Context API and `mde_contracts` only; Compass serves its own OpenAPI at `GET /v1/compass/openapi.json` (the interactive docs are off) and its JSON Schemas are not exported yet. There is no chat UI in the API: a client sends **inbound events** and renders **outbound events**. A test UI ships with it at `/ui/` ([runbook](../runbooks/compass.md)).
 
-Two question engines sit behind the same routes (`InterviewPolicy.engine`, [package page](../packages/compass.md#the-ai-planned-interview)): `legacy` (still the default) asks one frame card at a time; `planner` asks project-specific questions in batches. Every shape below is the same for both; the parts that only the planner engine produces or reads are marked **planner**. The planner engine is switched on with `COMPASS_INTERVIEW_ENGINE=planner` ([runbook](../runbooks/compass.md#3-run-the-app)).
+Two question engines sit behind the same routes (`InterviewPolicy.engine`, [package page](../packages/compass.md#the-ai-planned-interview)): `legacy` (a rollback) asks one frame card at a time; `planner` (the default) asks project-specific questions in batches. Every shape below is the same for both; the parts that only the planner engine produces or reads are marked **planner**. The engine is chosen with `COMPASS_INTERVIEW_ENGINE=planner|legacy` ([runbook](../runbooks/compass.md#3-run-the-app)).
 
 Base URL in development: `http://127.0.0.1:8110`. Run: `just compass-dev` or `uv run python -m mde_compass --port 8110 [--memory]`.
 
@@ -128,7 +128,7 @@ Added for planned questions (**planner**; all optional or defaulted, so every ol
 | `answer_spec`, `followup_hint` | what a good answer contains; what to ask if the answer is vague |
 | `examples` | placeholder hints for a free-text question |
 | `parent_card_id`, `depth` | a follow-up points at the question it refines; `depth` 0 is a base question, 1 or 2 a follow-up |
-| `origin` | `planner`, `followup`, `fallback` (a registry card made by code) or `frame` (the legacy engine; the default) |
+| `origin` | `planner`, `followup`, `fallback` (a registry card made by code) or `frame` (the legacy engine) |
 | `rephrased` | how many times the question was re-worded after "I do not understand" or "I do not know" |
 
 A free-text planner question is an `open_prompt` with `examples` and no options; a question with options is a `choose_one` with exactly three, or a `pick_many`, `priority`, `confirm` or `quick_form`. A re-worded or simplified question is sent again as a `card` event with the same `id` and a higher `rephrased`.

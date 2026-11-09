@@ -52,7 +52,7 @@ async def run_smoke(service: Service) -> SmokeReport:
     conv = await Conversation.start(service)
     await conv.say(IDEA)
     steps = 0
-    while await conv.state() != "BRIEF_REVIEW" and steps < 12 and conv.last_card() is not None:
+    while await conv.state() != "BRIEF_REVIEW" and steps < 30 and conv.last_card() is not None:
         await conv.tap_recommended()
         steps += 1
     # a question, a chat change and a disliked assumption exercise answer / interpret_change / make_variants

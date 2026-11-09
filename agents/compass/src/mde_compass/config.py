@@ -99,7 +99,7 @@ class InterviewPolicy:
     the model only proposes questions. Numbers marked *calibrate* are set from the live planner-quality batch."""
 
     # ``legacy`` is the frame-driven path kept only while the planner path is built (D-090); removed in phase 8.
-    engine: InterviewEngine = "legacy"
+    engine: InterviewEngine = "planner"
     # question budgets (follow-ups included)
     quick_max: int = 5
     standard_max: int = 12

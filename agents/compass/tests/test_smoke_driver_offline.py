@@ -11,8 +11,17 @@ async def test_smoke_driver_exercises_every_call_type_in_mock_mode() -> None:
     assert report.mode == "mock" and not report.errors
     assert report.spent_usd == "0.0000"
     expected = {
-        "cmp.understand_turn", "cmp.situate", "cmp.write_card", "cmp.seed_research",
-        "cmp.probe_handoff", "cmp.compile_text", "cmp.read_chunk", "cmp.merge_claims",
-        "cmp.scan_ambiguity", "cmp.answer", "cmp.interpret_change",
-    }  # fmt: skip
+        "cmp.understand_turn",
+        "cmp.situate",
+        "cmp.plan_questions",
+        "cmp.audit_questions",
+        "cmp.seed_research",
+        "cmp.probe_handoff",
+        "cmp.compile_brief",
+        "cmp.read_chunk",
+        "cmp.merge_claims",
+        "cmp.scan_ambiguity",
+        "cmp.answer",
+        "cmp.interpret_change",
+    }  # fmt: skip  (the planner engine is the default; write_card and compile_text belong to legacy)
     assert expected <= set(report.call_types_seen), set(report.call_types_seen)

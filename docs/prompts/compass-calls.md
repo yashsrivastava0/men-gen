@@ -2,7 +2,7 @@
 
 Hand-written catalog of the seventeen LLM calls of [Compass](../packages/compass.md); all seventeen have a folder: twelve from the first build plus five added by the AI-planned interview (`cmp.plan_questions`, `cmp.audit_questions`, `cmp.update_summary`, `cmp.compile_brief`, `cmp.rephrase_question`; [ADR 0015](../adr/0015-ai-planned-interview-and-interview-memory.md)), and `cmp.understand_turn` is now version 2. It is **not** generated and is separate from the generated [prompt-catalog.md](prompt-catalog.md): Compass specs live in `agents/compass/src/mde_compass/calls/<name>/` and are not registered in `mde_prompts` or `CALL_IO` ([ADR 0014](../adr/0014-call-spec-registration-from-agent-packages.md)). Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md), section 12 (prompting approach) and section 17 (the AI-planned interview). Update this page in the same change as any call.
 
-Two question engines exist while the work is in progress (`InterviewPolicy.engine`, see [the package page](../packages/compass.md#the-ai-planned-interview)). `legacy` is still the default; `planner` is built and switched on with `COMPASS_INTERVIEW_ENGINE=planner`. The table below says which engine uses which call.
+Two question engines exist while the work is in progress (`InterviewPolicy.engine`, see [the package page](../packages/compass.md#the-ai-planned-interview)). `planner` is the default; `legacy` is a rollback (`COMPASS_INTERVIEW_ENGINE=legacy`). The table below says which engine uses which call.
 
 ## Rules every call follows
 
