@@ -79,6 +79,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 
 - [implementation/BRIEF.md](implementation/BRIEF.md): normative for *how* to implement
 - [implementation/AGENT_PROTOCOL.md](implementation/AGENT_PROTOCOL.md): the rules every subagent follows
+- [../apps/web/README.md](../apps/web/README.md): the global front end (console shell, registry, tokens, UI smoke tests, `MDE_WEB_DIR`)
 - [implementation/GLOBAL_RULES.md](implementation/GLOBAL_RULES.md): commit policy, tags, merges, repository layout (`agents/`, `apps/web/`) and the owner's recorded overrides
 - [compass/build-prompts/02-compass-ai-interview-prompt.md](compass/build-prompts/02-compass-ai-interview-prompt.md): the owner's build prompt for the AI-planned interview (verbatim copy); evidence: [compass/evidence/before-first-questions.json](compass/evidence/before-first-questions.json)
 - [implementation/PROGRESS.md](implementation/PROGRESS.md): checklist, ticked with commit hashes

@@ -76,12 +76,12 @@ agents/compass/
     views/         BriefViewModel builder, consumer views, readiness, diffs, provenance
     safety/        screen.py + lexicon.yaml (redaction, injection, unsafe and declined requests)
     api/           routes.py, schemas.py, auth.py, sse.py, errors.py, middleware.py, settings.py
-    static_ui/     index.html, app.js, styles.css (the test UI, no build step)
+    (the test UI is not here: it is the global front end in apps/web/console/, served through MDE_WEB_DIR)
     intake/        parsers (PDF, DOCX, XLSX, PPTX, CSV, TXT, MD, EML), chunking, SSRF-safe URL reader, ingest pipeline
     scenarios/     the YAML scenario runner and the persona metrics
     live_smoke.py  the smoke driver (offline twin test; live batch A)
   evals/           run_personas.py, personas/*.yaml, reports/ (git-ignored)
-  tests/           api, calls/<name>, catalog, domain, engine (+flows), intake, live, safety, scenarios, store, ui_smoke, views
+  tests/           api, calls/<name>, catalog, domain, engine (+flows), intake, live, safety, scenarios, store, views
 ```
 
 Document intake adds `pypdf`, `python-docx`, `openpyxl`, `python-pptx` and `python-multipart` (D-086; permissive licences, no system library, no OCR).
