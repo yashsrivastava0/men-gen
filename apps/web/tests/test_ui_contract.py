@@ -110,7 +110,9 @@ def test_qa_item_keys_are_the_ones_the_service_puts_in_the_list() -> None:
 def test_command_names_the_ui_sends_are_server_commands() -> None:
     names = _contract()["command_names"]
     assert set(names) <= set(get_args(CommandName))
-    assert {"ask_more", "mode_answer_all", "mode_one_at_a_time"} <= set(names)
+    assert {"ask_more", "mode_answer_all"} <= set(names), (
+        "the form layout is the only one the page asks for"
+    )
     assert {"budget_quick", "budget_standard", "budget_thorough"} <= set(names)
     for name in names:
         assert re.search(rf"""["']{name}["']""", ALL_JS.split("CONTRACT*/", 1)[1]), (

@@ -169,17 +169,17 @@ def test_pending_groups_drop_answered_questions_and_empty_groups() -> None:
     }
 
 
-def test_the_form_is_used_only_for_answer_all_with_two_or_more_questions_waiting() -> None:
+def test_the_form_is_the_layout_for_every_planned_question_even_a_batch_of_one() -> None:
     got = run_js(
         GROUPED
         + """
         const loc = I.locate([b], { id: "C" });
         const fu = I.locate([b], { id: "F1", parent_card_id: "C" });
-        return [I.useForm("answer_all", loc, 2), I.useForm("answer_all", loc, 1), I.useForm("one_at_a_time", loc, 5),
-                I.useForm("answer_all", null, 5), I.useForm("answer_all", fu, 5)];
+        return [I.useForm(loc, 3), I.useForm(loc, 1), I.useForm(loc, 0), I.useForm(null, 5), I.useForm(fu, 5)];
         """
     )
-    assert got == [True, False, False, False, False]
+    # a single question of a batch still gets the form; nothing waiting, no batch or a follow-up card does not
+    assert got == [True, True, False, False, False]
 
 
 # ---- the answer-all payload -----------------------------------------------------------------------------
@@ -583,6 +583,266 @@ def test_the_idea_box_waits_for_the_tier_only_in_a_new_project() -> None:
         """
     )
     assert got == [True, False, False, False, False]
+
+
+# ---- Compass v2: numbers, drafts, batches -----------------------------------------------------------------
+
+
+def test_the_form_numbers_come_from_the_optional_progress_and_hide_when_it_is_absent() -> None:
+    got = run_js(
+        """
+        const pr = (extra) => Object.assign({ tier: "quick", target: 7, hard_cap: 10, committed: 6, closing: false }, extra || {});
+        const nums = I.batchNumbers({ progress: pr() }, 3);          // questions 4, 5, 6 of about 7
+        const past = I.batchNumbers({ progress: pr({ committed: 9 }) }, 1);   // past the target: no "of about"
+        const closing = I.batchNumbers({ progress: pr({ committed: 8, closing: true }) }, 1);
+        return {
+          nums: nums, labels: [0, 1, 2].map((i) => I.questionLabel(nums, i, t)),
+          past: I.questionLabel(past, 0, t), closingFlag: closing.closing,
+          absent: [I.batchNumbers({}, 3), I.batchNumbers(null, 3), I.batchNumbers({ progress: { committed: 0 } }, 3)],
+          noLabel: I.questionLabel(null, 0, t),
+          leaked: JSON.stringify(nums).indexOf("hard") >= 0,
+        };
+        """
+    )
+    assert got["nums"] == {"first": 4, "last": 6, "target": 7, "closing": False, "tier": "quick"}
+    assert got["labels"] == [
+        "Question 4 of about 7",
+        "Question 5 of about 7",
+        "Question 6 of about 7",
+    ]
+    assert got["past"] == "Question 9", "past the target the page stops promising a total"
+    assert got["closingFlag"] is True
+    assert got["absent"] == [None, None, None] and got["noLabel"] == ""
+    assert got["leaked"] is False, "the hard cap never leaves the helper"
+
+
+def test_the_closing_question_is_recognised_from_the_batch_or_its_card() -> None:
+    got = run_js(
+        """
+        const closingCard = card("Z", "priority", { origin: "closing" });
+        const b1 = batch([{ id: "g", title: "", cards: [closingCard] }]);
+        const b2 = batch([{ id: "g", title: "", cards: [card("A", "choose_one")] }], { progress: { closing: true, committed: 5 } });
+        const b3 = batch([{ id: "g", title: "", cards: [card("A", "choose_one"), closingCard] }]);
+        return [I.isClosingBatch(b1), I.isClosingBatch(b2), I.isClosingBatch(b3), I.isClosingBatch(null),
+                I.isClosingCard(closingCard), I.isClosingCard(card("A", "choose_one")), I.isClosingCard(null)];
+        """
+    )
+    assert got == [True, True, False, False, True, False, False]
+
+
+def test_a_quick_form_without_fields_reads_like_an_open_question() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const empty = card("F", "quick_form", { options: [] });
+        const withFields = card("G", "quick_form", { options: opts("n") });
+        const confirmEmpty = card("K", "confirm", { options: [] });
+        return {
+          type: [I.effectiveType(empty), I.effectiveType(withFields), I.effectiveType(confirmEmpty), I.effectiveType(card("O", "open_prompt"))],
+          typed: one(empty, entry({ text: "  Opening hours and delivery area  " })),
+          blank: one(empty, entry()),
+          fields: one(withFields, entry({ fields: { n: "Asha" } })),
+        };
+        """
+    )
+    assert got["type"] == ["open_prompt", "quick_form", "open_prompt", "open_prompt"]
+    assert got["typed"] == {
+        "card_id": "F",
+        "action": "answer",
+        "value": "Opening hours and delivery area",
+        "custom_text": None,
+    }
+    assert got["blank"]["action"] == "skip", "blank is skipped, never sent as {}"
+    assert got["fields"]["value"] == {"n": "Asha"}
+
+
+def test_select_all_none_of_these_and_a_typed_answer_work_together() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const m = card("M", "pick_many", { options: opts("a", "b", "c") });
+        const e = entry();
+        I.togglePick(m, e, "c", true); I.togglePick(m, e, "a", true);
+        const ticked = e.picks.slice();                         // option order, not tick order
+        I.toggleSelectAll(m, e);                                // all three
+        const all = e.picks.slice(); const allFlag = I.allSelected(m, e);
+        I.toggleSelectAll(m, e);                                // pressed again: cleared
+        const cleared = e.picks.slice();
+        I.togglePick(m, e, "b", true); e.other = "and cake";
+        const withText = one(m, e);                             // picks and a typed answer together
+        I.toggleNone(m, e);                                     // None of these clears the ticks, keeps the text
+        const none = one(m, e); const afterNone = e.picks.slice();
+        I.togglePick(m, e, "a", true);                          // ticking anything ends "none"
+        const back = one(m, e);
+        const single = card("S", "choose_one", { options: opts("x", "y") });
+        const es = entry(); I.toggleNone(single, es);
+        return { ticked: ticked, all: all, allFlag: allFlag, cleared: cleared, withText: withText, none: none,
+                 afterNone: afterNone, back: back, noneOnSingle: es.none, canAll: [I.canSelectAll(m), I.canSelectAll(single),
+                 I.canSelectAll(card("P", "priority", { options: opts("a", "b") }))] };
+        """
+    )
+    assert got["ticked"] == ["a", "c"] and got["all"] == ["a", "b", "c"] and got["allFlag"] is True
+    assert got["cleared"] == []
+    assert got["withText"] == {
+        "card_id": "M",
+        "action": "answer",
+        "value": ["b"],
+        "custom_text": "and cake",
+    }
+    assert got["none"] == {
+        "card_id": "M",
+        "action": "none",
+        "value": None,
+        "custom_text": "and cake",
+    }
+    assert got["afterNone"] == []
+    assert got["back"]["action"] == "answer" and got["back"]["value"] == ["a"]
+    assert got["noneOnSingle"] is False, "only a pick-several question has None of these"
+    assert got["canAll"] == [True, False, False]
+
+
+def test_none_of_these_alone_is_an_answer_and_counts_as_handled() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const m = card("M", "pick_many", { options: opts("a", "b") });
+        const r = card("R", "pick_many", { options: opts("a", "b"), must_confirm: true });
+        const e = entry({ none: true });
+        const cards = [m, r];
+        const draft = { M: e, R: entry({ none: true }) };
+        return { item: one(m, e), handled: I.handledCount(cards, draft), blank: I.blankCards(cards, draft).length,
+                 missing: I.missingRequired(cards, draft).length };
+        """
+    )
+    assert got["item"] == {"card_id": "M", "action": "none", "value": None, "custom_text": None}
+    assert got["handled"] == 2 and got["blank"] == 0 and got["missing"] == 0
+
+
+def test_the_priority_picks_keep_their_rank_and_can_be_moved() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const p = card("P", "priority", { options: opts("a", "b", "c", "d") });
+        const e = entry();
+        I.togglePick(p, e, "c", true); I.togglePick(p, e, "a", true); I.togglePick(p, e, "d", true);
+        const ranked = e.picks.slice();
+        I.movePick(e, "d", -1); const up = e.picks.slice();
+        I.movePick(e, "c", -1); I.movePick(e, "c", -1); const edge = e.picks.slice();   // already first: stays
+        I.movePick(e, "zzz", 1);
+        I.togglePick(p, e, "a", false); const dropped = e.picks.slice();
+        e.other = "must work offline";
+        return { ranked: ranked, up: up, edge: edge, dropped: dropped, item: one(p, e) };
+        """
+    )
+    assert got["ranked"] == ["c", "a", "d"]
+    assert got["up"] == ["c", "d", "a"]
+    assert got["edge"] == ["c", "d", "a"]
+    assert got["dropped"] == ["c", "d"]
+    assert got["item"]["value"] == ["c", "d"] and got["item"]["custom_text"] == "must work offline"
+
+
+def test_a_blank_question_is_summarised_before_sending_and_sent_as_skipped() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const a = card("A", "open_prompt"); const b = card("B", "open_prompt"); const c = card("C", "choose_one", { options: opts("x") });
+        const d = card("D", "pick_many", { options: opts("x", "y") }); const r = card("R", "open_prompt", { must_confirm: true });
+        const cards = [a, b, c, d, r];
+        const draft = { A: entry({ text: "hello" }), B: entry({ action: "you_decide" }), C: entry(), D: entry({ none: true }), R: entry() };
+        const sum = I.summarizeBlanks(cards, draft);
+        const ids = (l) => l.map((x) => x.id);
+        const allBlank = I.summarizeBlanks([a, b], {});
+        return { answered: ids(sum.answered), decide: ids(sum.decide), none: ids(sum.none), blank: ids(sum.blank),
+                 required: ids(sum.required), total: sum.total, allBlank: ids(allBlank.blank),
+                 sent: I.buildAnswers([a, b, c], draft).map((x) => x.card_id + ":" + x.action) };
+        """
+    )
+    assert got["answered"] == ["A"] and got["decide"] == ["B"] and got["none"] == ["D"]
+    assert got["blank"] == ["C"] and got["required"] == ["R"] and got["total"] == 5
+    assert got["allBlank"] == ["A", "B"]
+    assert got["sent"] == ["A:answer", "B:you_decide", "C:skip"]
+
+
+def test_the_batch_payload_carries_decide_rest_only_when_asked_and_leaves_blanks_out() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const a = card("A", "open_prompt"); const b = card("B", "open_prompt"); const c = card("C", "choose_one", { options: opts("x") });
+        const draft = { A: entry({ text: "hello" }), B: entry(), C: entry({ action: "you_decide" }) };
+        return { plain: I.buildBatchPayload("BAT-1", [a, b, c], draft), rest: I.buildBatchPayload("BAT-1", [a, b, c], draft, { decideRest: true }),
+                 many: I.buildBatchPayload("BAT-1", Array.from({ length: 14 }, (_, i) => card("X" + i, "open_prompt")), {}, { decideRest: false }).answers.length };
+        """
+    )
+    assert got["plain"] == {
+        "type": "batch_answer",
+        "batch_id": "BAT-1",
+        "answers": [
+            {"card_id": "A", "action": "answer", "value": "hello", "custom_text": None},
+            {"card_id": "B", "action": "skip", "value": None, "custom_text": None},
+            {"card_id": "C", "action": "you_decide", "value": None, "custom_text": None},
+        ],
+    }
+    assert "decide_rest" not in got["plain"], (
+        "an older server never sees the field unless it is asked for"
+    )
+    assert got["rest"]["decide_rest"] is True
+    assert [a["card_id"] for a in got["rest"]["answers"]] == ["A", "C"], (
+        "blank B is decided by the server"
+    )
+    assert got["many"] == 12
+
+
+def test_a_new_batch_keeps_what_was_typed_where_the_question_still_exists() -> None:
+    got = run_js(
+        ANSWER
+        + """
+        const old = { A: entry({ text: "kept text" }), B: entry({ choice: "gone", other: "typed" }),
+                      M: entry({ picks: ["a", "zzz"], none: true, other: "extra" }), X: entry({ text: "dropped question" }) };
+        const cards = [card("A", "open_prompt"), card("B", "choose_one", { options: opts("x") }),
+                       card("M", "choose_one", { options: opts("a") }), card("NEW", "open_prompt")];
+        const r = I.carryDraft(old, cards);
+        return { kept: r.kept, a: r.draft.A.text, bChoice: r.draft.B.choice, bOther: r.draft.B.other,
+                 mPicks: r.draft.M.picks, mNone: r.draft.M.none, mOther: r.draft.M.other, fresh: r.draft.NEW.text,
+                 hasX: "X" in r.draft, none: I.carryDraft(null, cards).kept };
+        """
+    )
+    assert got["kept"] == 3 and got["a"] == "kept text"
+    assert got["bChoice"] is None and got["bOther"] == "typed", (
+        "a vanished option is dropped, the text stays"
+    )
+    assert got["mPicks"] == ["a"] or got["mPicks"] == []
+    assert got["mNone"] is False, "a question that cannot say none no longer does"
+    assert (
+        got["mOther"] == "extra"
+        and got["fresh"] == ""
+        and got["hasX"] is False
+        and got["none"] == 0
+    )
+
+
+def test_a_batch_sent_again_replaces_its_copy_and_events_are_drawn_once() -> None:
+    got = run_js(
+        """
+        const b1 = batch([{ id: "g", title: "", cards: [card("A", "open_prompt"), card("B", "open_prompt")] }], { batch_id: "B1" });
+        const b1again = batch([{ id: "g", title: "", cards: [card("A", "open_prompt"), card("B", "open_prompt")] }], { batch_id: "B1" });
+        const b1fewer = batch([{ id: "g", title: "", cards: [card("B", "open_prompt")] }], { batch_id: "B1" });
+        const b2 = batch([{ id: "g", title: "", cards: [card("C", "open_prompt")] }], { batch_id: "B2" });
+        const list = [];
+        I.upsertBatch(list, b1, 3); I.upsertBatch(list, b2, 3); I.upsertBatch(list, b1again, 3);
+        const many = []; for (let i = 0; i < 6; i++) { I.upsertBatch(many, batch([], { batch_id: "N" + i }), 3); }
+        const seen = {};
+        const first = I.registerEvent(seen, { seq: 4 }); const second = I.registerEvent(seen, { seq: 4 });
+        return { ids: list.map((b) => b.batch_id), replaced: list[0] === b1again,
+                 same: [I.sameQuestions(b1, b1again), I.sameQuestions(b1, b1fewer), I.sameQuestions(b1, b2), I.sameQuestions(null, b1)],
+                 capped: many.map((b) => b.batch_id), events: [first, second, I.registerEvent(seen, { seq: 5 }), I.registerEvent(seen, {}), I.registerEvent(seen, null)],
+                 delays: [0, 1, 2, 3, 4, 9].map((n) => I.reconnectDelay(n)) };
+        """
+    )
+    assert got["ids"] == ["B1", "B2"] and got["replaced"] is True
+    assert got["same"] == [True, False, False, False]
+    assert got["capped"] == ["N3", "N4", "N5"]
+    assert got["events"] == [True, False, True, True, True]
+    assert got["delays"] == [1, 2, 4, 8, 15, 15]
 
 
 def test_the_helper_exposes_only_what_the_screen_uses() -> None:

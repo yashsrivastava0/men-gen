@@ -24,14 +24,15 @@
     "progress.of_about", "must_confirm", "fallback", "unlocks", "examples", "parent_card_id", "origin"
   ],
   "batch_keys": [
-    "batch_id", "ui_mode", "groups", "groups[].id", "groups[].title", "groups[].cards", "total"
+    "batch_id", "ui_mode", "groups", "groups[].id", "groups[].title", "groups[].cards", "total",
+    "progress", "progress.tier", "progress.target", "progress.committed", "progress.closing"
   ],
   "qa_item_keys": [
     "items", "card_id", "status", "origin", "depth", "parent_card_id", "type", "question", "options",
     "answer", "value", "custom_text", "fallback", "facts", "facts[].statement", "facts[].status"
   ],
   "command_names": [
-    "ask_more", "mode_answer_all", "mode_one_at_a_time", "budget_quick", "budget_standard", "budget_thorough"
+    "ask_more", "mode_answer_all", "budget_quick", "budget_standard", "budget_thorough"
   ],
   "stored_event_keys": ["direction", "type", "event_id", "turn_id", "seq", "payload"],
   "card_types": [
@@ -57,6 +58,11 @@ CONTRACT*/
      choose_one, look_signals -> the option id;   pick_many, priority -> list of option ids (priority: in order);
      confirm, quick_form -> {option_id: text} (options are the rows / fields);   open_prompt -> the text;
      "Something else" on any card -> value null and custom_text = the text.
+     pick_many / priority also take custom_text next to the picked ids (picks and a typed answer together).
+
+   batch_answer (the batch form, sent once): {batch_id, answers: [{card_id, action: answer|skip|you_decide|none, value,
+   custom_text}], decide_rest?: true}. "none" = "None of these" (custom_text may say what they want instead);
+   decide_rest asks the server to decide every other open question. Blank questions are sent as skip.
 */
 (function () {
   "use strict";
@@ -163,6 +169,24 @@ CONTRACT*/
     "ui.v2.composer_locked": "Choose how many questions first",
     "ui.v2.idea_placeholder": "Describe your app idea here",
     "ui.v2.tier_failed": "We could not save that choice. Please try again.",
+    "ui.v2.form_title": "Your questions",
+    "ui.v2.form_helper": "Nothing is processed until you press the button below. You can change any answer until then.",
+    "ui.v2.question_n_of": "Question {n} of about {total}",
+    "ui.v2.question_n": "Question {n}",
+    "ui.v2.last_question": "Last question",
+    "ui.v2.last_question_note": "This is the last question. Tell us what matters most for the first version; we will write your Brief right after.",
+    "ui.v2.send_answers": "Send my answers",
+    "ui.v2.send_answer": "Send my answer",
+    "ui.v2.send_closing": "Send and write my Brief",
+    "ui.v2.sending": "Sending your answers…",
+    "ui.v2.send_failed": "We could not send your answers. They are still here. Please check your connection and press Retry.",
+    "ui.v2.retry": "Retry",
+    "ui.v2.stale_batch": "The questions changed while you were answering. Please check the questions and press Retry.",
+    "ui.v2.updated_kept": "These questions were updated. We kept what you had typed wherever the question is still there.",
+    "ui.v2.blank_list": "Left blank (question {list}): we will decide those for you.",
+    "ui.v2.all_blank": "Nothing answered yet. If you send now, we will decide all of these for you.",
+    "ui.v2.line_skipped": "Skipped, we decide",
+    "ui.v2.line_none": "None of these",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -194,9 +218,9 @@ CONTRACT*/
     view: null, viewJson: "", lookups: [], progress: null, tab: "brief", streamAbort: null, streamOk: false,
     activeCard: null, typingCount: 0, loadingView: false, viewTimer: null, budget: null, calls: [],
     ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null,
-    batches: [], answered: {}, uiMode: "one_at_a_time", modePending: false, depth: null,
+    batches: [], answered: {}, depth: null,
     qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {},
-    awaitingTier: false, tierEditing: false, welcomeEl: null,
+    awaitingTier: false, tierEditing: false, welcomeEl: null, form: null, submitted: {}, layoutAsked: false,
     networkTrace: [], lastError: null
   };
   var WELCOME_FRAME = "welcome";   // the server's canned first card: the welcome block below replaces it
@@ -337,6 +361,10 @@ CONTRACT*/
   function collapseActive(summary) {
     var a = state.activeCard;
     if (!a) { return; }
+    if (a.form) {   // a form is never collapsed by guesswork: the server has its answers, or it moved on without them
+      if (a.form.sending) { confirmForm(a.form); } else { dropForm(a.form); }
+      return;
+    }
     clear(a.el);
     a.el.className = "qcard done";
     a.el.appendChild(h("div", { class: "small muted", text: summary || a.card.question }));
@@ -345,7 +373,11 @@ CONTRACT*/
   }
 
   function cardSummary(card, value, custom) {
-    if (custom) { return custom; }
+    var base = cardValueText(card, value);
+    if (custom) { return base ? base + ", " + custom : custom; }
+    return base;
+  }
+  function cardValueText(card, value) {
     var opts = card.options || [];
     function label(id) {
       for (var i = 0; i < opts.length; i++) { if (opts[i].id === id) { return opts[i].label; } }
@@ -375,10 +407,14 @@ CONTRACT*/
     if (custom) { body.custom_text = custom; }
     sendEvent(body);
   }
-  // "Answer all at once": one event with the answers of a whole batch form (phase 5 renders the form).
-  function sendBatchAnswer(batchId, answers) {
-    (answers || []).forEach(function (a) { markAnswered(a.card_id); });
-    return sendEvent({ type: "batch_answer", batch_id: batchId, answers: answers });
+  // The batch form: one event with the answers of a whole batch. opts: decideRest (the server decides every other open
+  // question), eventId (a retry of the same answers reuses it: the server ignores a repeated id), onError.
+  function sendBatchAnswer(batchId, answers, opts) {
+    var o = opts || {};
+    var body = { type: "batch_answer", batch_id: batchId, answers: answers };
+    if (o.decideRest) { body.decide_rest = true; }
+    if (o.eventId) { body.event_id = o.eventId; }
+    return sendEvent(body, { onError: o.onError, onAck: o.onAck });
   }
   // Edit an earlier answer from the Questions-and-answers list (phase 5): a new answer version and a replan.
   function sendAnswerEdit(cardId, value, custom) {
@@ -607,40 +643,59 @@ CONTRACT*/
     body.appendChild(row);
   }
 
-  // ---- the answer-all form: a whole batch as one form, grouped by theme -----------------------------------------
+  // ---- the batch form: every planned batch, even a batch of one, is ONE form that is sent once -------------------
   var formSeq = 0;
   function checkInput(type, name, value) { return h("input", { type: type, name: name, value: value }); }
 
-  /** The inputs of one question of the form, bound to its draft entry (what interview.js turns into an answer). */
+  /** The inputs of one question of the form, bound to its draft entry (what interview.js turns into an answer). Every
+      control starts from the entry, so a form that is drawn again keeps what the person typed. */
   function formControls(card, entry, qid, onChange) {
     var wrap = h("div", { class: "qitem-controls" });
-    var type = card.type;
+    var type = I.effectiveType(card);
     var opts = card.options || [];
-    var custom = card.custom_input && card.custom_input.enabled;
     var placeholder = I.examplePlaceholder(card, t) || (card.custom_input && card.custom_input.placeholder) || "";
+    var custom = I.showsCustom(card);
 
+    /** The typed "something else": a text field that is always on screen (no extra click). For a single choice it
+        has its own radio, so the last action (pick or type) is the one that counts. */
     function otherRow(radio) {
       var text = h("input", { type: "text", "aria-label": t("ui.something_else"), placeholder: placeholder || t("card.custom_placeholder") });
+      text.value = entry.other || "";
+      var row = h("div", { class: "form-option form-other" });
+      function sync() { row.classList.toggle("is-idle", !!radio && !!text.value.trim() && entry.choice !== I.OTHER); }
       text.addEventListener("input", function () {
         entry.other = text.value;
         if (radio && text.value.trim() && entry.choice !== I.OTHER) { entry.choice = I.OTHER; radio.checked = true; }
+        sync();
         onChange();
       });
-      var label = radio ? h("label", { class: "form-other-label" }, radio, h("span", { text: t("ui.something_else") })) : null;
-      return h("div", { class: "form-option form-other" }, label, text);
+      if (radio) { row.appendChild(h("label", { class: "form-other-label" }, radio, h("span", { text: t("ui.something_else") }))); }
+      row.appendChild(text);
+      row.syncIdle = sync;
+      sync();
+      return row;
     }
 
     if (type === "choose_one" || type === "look_signals") {
       var group = h("div", { class: "options", role: "radiogroup", "aria-labelledby": qid });
+      var others = [];
       opts.forEach(function (o) {
         var input = checkInput("radio", qid, o.id);
-        input.addEventListener("change", function () { entry.choice = o.id; onChange(); });
+        input.checked = entry.choice === o.id;
+        input.addEventListener("change", function () {
+          entry.choice = o.id;
+          others.forEach(function (r) { r.syncIdle(); });
+          onChange();
+        });
         group.appendChild(h("label", { class: "form-option" }, input, optionBody(o)));
       });
       if (custom) {
         var radio = checkInput("radio", qid, I.OTHER);
-        radio.addEventListener("change", function () { entry.choice = I.OTHER; onChange(); });
-        group.appendChild(otherRow(radio));
+        radio.checked = entry.choice === I.OTHER;
+        radio.addEventListener("change", function () { entry.choice = I.OTHER; others.forEach(function (r) { r.syncIdle(); }); onChange(); });
+        var row = otherRow(radio);
+        others.push(row);
+        group.appendChild(row);
       }
       wrap.appendChild(group);
     } else if (type === "pick_many" || type === "priority") {
@@ -649,16 +704,9 @@ CONTRACT*/
       var checks = h("div", { class: "options", role: "group", "aria-labelledby": qid });
       opts.forEach(function (o) {
         var input = checkInput("checkbox", qid, o.id);
+        input.checked = entry.picks.indexOf(o.id) >= 0;
         boxes.push({ id: o.id, input: input });
-        input.addEventListener("change", function () {
-          if (type === "priority") {
-            entry.picks = entry.picks.filter(function (x) { return x !== o.id; });
-            if (input.checked) { entry.picks.push(o.id); }
-          } else {
-            entry.picks = boxes.filter(function (b) { return b.input.checked; }).map(function (b) { return b.id; });
-          }
-          onChange();
-        });
+        input.addEventListener("change", function () { I.togglePick(card, entry, o.id, input.checked); onChange(); });
         checks.appendChild(h("label", { class: "form-option" }, input, optionBody(o)));
       });
       if (custom) { checks.appendChild(otherRow(null)); }
@@ -666,123 +714,252 @@ CONTRACT*/
     } else if (type === "confirm" || type === "quick_form") {
       opts.forEach(function (o) {
         var input = h("input", { type: "text", "aria-label": o.label, placeholder: type === "quick_form" ? (o.reason || "") : "" });
-        if (type === "confirm") { input.value = o.label; }
+        input.value = entry.fields[o.id] !== undefined ? entry.fields[o.id] : (type === "confirm" ? o.label : "");
         input.addEventListener("input", function () { entry.fields[o.id] = input.value; entry.touched = true; onChange(); });
         wrap.appendChild(h("label", { class: "field" }, type === "confirm" ? null : h("span", { text: o.label }), input,
           type === "confirm" ? basisLabel(o.basis) : null));
       });
       if (type === "confirm") {
         var ok = checkInput("checkbox", qid, "ok");
+        ok.checked = !!entry.confirmed;
         ok.addEventListener("change", function () { entry.confirmed = ok.checked; onChange(); });
         wrap.appendChild(h("label", { class: "form-option" }, ok, h("span", { class: "option-label", text: t("ui.looks_right") })));
       }
     } else if (type === "upload_or_link") {
       var link = h("input", { type: "text", "aria-label": card.question, placeholder: t("ui.interview.form_link_placeholder") });
+      link.value = entry.text || "";
       link.addEventListener("input", function () { entry.text = link.value; onChange(); });
       wrap.appendChild(link);
     } else {
       var area = h("textarea", { rows: "3", "aria-label": card.question, placeholder: placeholder || t("ui.type_here") });
+      area.value = entry.text || "";
       area.addEventListener("input", function () { entry.text = area.value; onChange(); });
       wrap.appendChild(area);
     }
     return wrap;
   }
 
-  /** One question of the form: text, why popover, inputs, and the "You decide" / "Skip" toggles. */
-  function formItem(card, entry, onChange) {
+  /** One question of the form: its number, the question, why it is asked, the inputs, and the "You decide" toggle. */
+  function formItem(card, entry, onChange, label, closing) {
     formSeq += 1;
     var qid = "fq-" + formSeq;
-    var item = h("div", { class: "qitem", role: "group", "aria-labelledby": qid, data: { card: card.id } });
-    var head = h("div", { class: "qitem-head" }, h("span", { class: "q", id: qid, text: card.question }));
+    var item = h("div", { class: "qitem" + (closing ? " qitem-closing" : ""), role: "group", "aria-labelledby": qid, data: { card: card.id } });
+    var head = h("div", { class: "qitem-head" });
+    if (label) { head.appendChild(h("span", { class: "qnum", text: label })); }
+    head.appendChild(h("span", { class: "q", id: qid, text: card.question }));
     if (card.fallback) { head.appendChild(fallbackBadge()); }
     item.appendChild(head);
     var why = whyEl(card);
     if (why) { item.appendChild(why); }
-    item.appendChild(formControls(card, entry, qid, onChange));
+    var controls = formControls(card, entry, qid, onChange);
+    item.appendChild(controls);
     var err = h("div", { class: "approval-error", role: "alert" });
-    var youBtn = null, skipBtn = null;
+    var youBtn = null;
     function setAction(action) {
       entry.action = action;
       item.classList.toggle("is-off", action !== "answer");
-      Array.prototype.forEach.call(item.querySelectorAll("input, textarea"), function (c) { c.disabled = action !== "answer"; });
+      Array.prototype.forEach.call(controls.querySelectorAll("input, textarea, button"), function (c) { c.disabled = action !== "answer"; });
       if (youBtn) { youBtn.setAttribute("aria-pressed", action === "you_decide" ? "true" : "false"); }
-      if (skipBtn) { skipBtn.setAttribute("aria-pressed", action === "skip" ? "true" : "false"); }
       err.textContent = "";
       onChange();
     }
     var toggles = h("div", { class: "qitem-toggles" });
-    if (!card.must_confirm) {
-      if (!card.you_decide || card.you_decide.enabled) {
-        youBtn = h("button", { class: "toggle", type: "button", "aria-pressed": "false", text: t("ui.you_decide"),
-          on: { click: function () { setAction(entry.action === "you_decide" ? "answer" : "you_decide"); } } });
-        toggles.appendChild(youBtn);
-      }
-      if (!card.skip || card.skip.enabled) {
-        skipBtn = h("button", { class: "toggle", type: "button", "aria-pressed": "false", text: t("ui.skip"),
-          on: { click: function () { setAction(entry.action === "skip" ? "answer" : "skip"); } } });
-        toggles.appendChild(skipBtn);
-      }
+    if (!card.must_confirm && (!card.you_decide || card.you_decide.enabled)) {
+      youBtn = h("button", { class: "toggle", type: "button", "aria-pressed": "false", text: t("ui.you_decide"),
+        on: { click: function () { setAction(entry.action === "you_decide" ? "answer" : "you_decide"); } } });
+      toggles.appendChild(youBtn);
     }
     if (toggles.childNodes.length) { item.appendChild(toggles); }
     item.appendChild(err);
+    if (entry.action !== "answer") { setAction(entry.action); }
     return {
       el: item,
       showRequired: function () { err.textContent = t("ui.interview.form_required"); },
+      clearRequired: function () { err.textContent = ""; },
       focus: function () { var c = item.querySelector("input, textarea"); if (c) { c.focus(); } }
     };
   }
 
-  /** The whole batch as one form, grouped by theme, with one "Send all answers" button. */
-  function renderBatchForm(batch, groups) {
-    var cards = I.flatCards(groups);
-    var draft = {};
-    var items = {};
-    cards.forEach(function (c) { draft[c.id] = I.emptyEntry(); });
+  function sendLabel(f) {
+    if (f.closing) { return t("ui.v2.send_closing"); }
+    return f.cards.length === 1 ? t("ui.v2.send_answer") : t("ui.v2.send_answers");
+  }
+  /** The text under the form that says what will happen to the blank questions, before anything is sent. */
+  function blankSummaryText(f) {
+    var sum = I.summarizeBlanks(f.cards, f.draft);
+    if (!sum.blank.length) { return ""; }
+    if (sum.blank.length === f.cards.length) { return t("ui.v2.all_blank"); }
+    var numbers = sum.blank.map(function (c) { return String(f.cards.indexOf(c) + 1 + (f.nums ? f.nums.first - 1 : 0)); });
+    return t("ui.v2.blank_list", { list: numbers.join(", ") });
+  }
+  function refreshForm(f) {
+    f.ui.count.textContent = t("ui.interview.form_progress", { done: I.handledCount(f.cards, f.draft), total: f.cards.length });
+    f.ui.summary.textContent = blankSummaryText(f);
+  }
+
+  /** Build the form for the questions that still wait in a batch. `draft` already holds what was typed before (a form
+      that is drawn again keeps it). */
+  function buildForm(f, note) {
+    var el = h("div", { class: "qcard batch-form", role: "group", "aria-label": t("ui.interview.form_label"), "aria-live": "off",
+      data: { batch: f.batchId } });
+    var title = h("span", { class: "group-chip", tabindex: "-1", text: f.closing ? t("ui.v2.last_question") : t("ui.v2.form_title") });
     var count = h("span", { class: "hint form-count", role: "status", "aria-live": "polite" });
-    var note = h("div", { class: "hint form-note" });
-    var err = h("div", { class: "approval-error", role: "alert" });
-    function refresh() {
-      count.textContent = t("ui.interview.form_progress", { done: I.handledCount(cards, draft), total: cards.length });
-      var blanks = I.blankCards(cards, draft).length;
-      note.textContent = blanks ? t("ui.interview.form_blank_note", { count: blanks }) : "";
-    }
-    var form = h("div", { class: "qcard batch-form", role: "group", "aria-label": t("ui.interview.form_label") });
-    form.appendChild(h("div", { class: "qcard-head" }, h("span", { class: "group-chip", text: t("ui.interview.mode_answer_all") }), count));
-    groups.forEach(function (g) {
+    el.appendChild(h("div", { class: "qcard-head" }, title, count));
+    if (f.closing) { el.appendChild(h("p", { class: "closing-note", text: t("ui.v2.last_question_note") })); }
+    if (note) { el.appendChild(h("p", { class: "hint form-updated", role: "status", text: note })); }
+    var index = 0;
+    f.items = {};
+    f.groups.forEach(function (g) {
       var box = h("fieldset", { class: "qgroup" });
       if (g.title) { box.appendChild(h("legend", { class: "qgroup-title", text: g.title })); }
       g.cards.forEach(function (c) {
-        items[c.id] = formItem(c, draft[c.id], refresh);
-        box.appendChild(items[c.id].el);
+        var label = f.closing && f.cards.length === 1 ? "" : I.questionLabel(f.nums, index, t);
+        var it = formItem(c, f.draft[c.id], function () { f.items[c.id].clearRequired(); refreshForm(f); }, label, I.isClosingCard(c));
+        f.items[c.id] = it;
+        box.appendChild(it.el);
+        index += 1;
       });
-      form.appendChild(box);
+      el.appendChild(box);
     });
-    function send() {
-      err.textContent = "";
-      var missing = I.missingRequired(cards, draft);
-      if (missing.length) {
-        missing.forEach(function (c) { items[c.id].showRequired(); });
-        items[missing[0].id].focus();
-        return;
-      }
-      var answers = I.buildAnswers(cards, draft);
-      var byId = {};
-      cards.forEach(function (c) { byId[c.id] = c; });
-      var lines = answers.map(function (a) {
-        var c = byId[a.card_id];
-        var said = a.action === "skip" ? t("ui.skip") : a.action === "you_decide" ? t("ui.you_decide") : cardSummary(c, a.value, a.custom_text);
-        return c.question + " — " + said;
-      });
-      addMsg("user", lines.join("\n"));
-      collapseActive(t("ui.interview.form_sent", { count: answers.length }));
-      window.compassSend.batchAnswer(batch.batch_id, answers);
+    var summary = h("div", { class: "hint form-summary", role: "status", "aria-live": "polite" });
+    var status = h("div", { class: "hint form-status", role: "status", "aria-live": "polite" });
+    var errText = h("span", { class: "form-error-text" });
+    var retry = h("button", { class: "btn btn-primary form-retry", type: "button", text: t("ui.v2.retry"), on: { click: function () { submitForm(f, f.lastDecideRest); } } });
+    var error = h("div", { class: "form-error", role: "alert", hidden: true }, errText, retry);
+    var send = h("button", { class: "btn btn-primary send-all", type: "button", text: sendLabel(f), on: { click: function () { submitForm(f, false); } } });
+    var bar = h("div", { class: "form-actions" }, summary, status, error,
+      h("div", { class: "row-actions" }, send));
+    el.appendChild(h("p", { class: "hint form-helper", text: t("ui.v2.form_helper") }));
+    el.appendChild(bar);
+    f.ui = { count: count, summary: summary, status: status, error: error, errText: errText, retry: retry, send: send, title: title, bar: bar };
+    refreshForm(f);
+    return el;
+  }
+
+  /** The reply to a failed send, in plain words. */
+  function sendFailureText(err) {
+    var status = err && err.status;
+    if (status === 404 || status === 409 || status === 410) { return t("ui.v2.stale_batch"); }
+    if (status === 429) { return t("error.rate_limited"); }
+    return t("ui.v2.send_failed");
+  }
+
+  function setFormBusy(f, on) {
+    f.sending = on;
+    f.el.classList.toggle("is-sending", on);
+    f.el.setAttribute("aria-busy", on ? "true" : "false");
+    Array.prototype.forEach.call(f.el.querySelectorAll(".qgroup"), function (g) { g.disabled = on; });
+    f.ui.send.disabled = on;
+    f.ui.send.textContent = on ? t("ui.v2.sending") : sendLabel(f);
+    f.ui.status.textContent = on ? t("ui.v2.sending") : "";
+    if (on) { f.ui.error.hidden = true; }
+  }
+
+  /** The one place a form is sent. Nothing leaves the page before the person presses the button; while the request is
+      out the button is disabled (no double submit); nothing collapses until the server has the answers; a failed
+      request keeps every answer and offers Retry (the same event id when nothing changed, so it is never applied twice). */
+  function submitForm(f, decideRest) {
+    if (f.sending || f.confirmed) { return; }
+    var missing = I.missingRequired(f.cards, f.draft);
+    if (missing.length) {
+      missing.forEach(function (c) { f.items[c.id].showRequired(); });
+      f.items[missing[0].id].focus();
+      return;
     }
-    form.appendChild(note);
-    form.appendChild(err);
-    form.appendChild(h("div", { class: "row-actions" },
-      h("button", { class: "btn btn-primary send-all", type: "button", text: t("ui.interview.form_send"), on: { click: send } })));
-    refresh();
-    return form;
+    var payload = I.buildBatchPayload(f.batchId, f.cards, f.draft, { decideRest: false });
+    var key = JSON.stringify(payload);
+    var eventId = f.failed && f.failed.key === key ? f.failed.eventId : randomId();
+    f.answers = payload.answers;
+    f.decideRest = false;
+    f.lastDecideRest = false;
+    setFormBusy(f, true);
+    window.compassSend.batchAnswer(f.batchId, payload.answers, { eventId: eventId, onAck: function () { confirmForm(f); }, onError: function (err) {
+      if (f.confirmed) { return; }   // the stream already showed the next questions: the server has the answers
+      f.failed = { key: key, eventId: eventId };
+      setFormBusy(f, false);
+      f.ui.errText.textContent = sendFailureText(err);
+      f.ui.error.hidden = false;
+      f.ui.retry.focus();
+    } }).then(function (ack) { if (ack) { confirmForm(f); } });
+  }
+
+  /** The server has the answers (the reply came, or it already sent the next questions): now, and only now, the form
+      becomes a line in the chat and its questions count as answered. */
+  function confirmForm(f) {
+    if (!f || f.confirmed) { return; }
+    f.confirmed = true;
+    f.sending = false;
+    f.cards.forEach(function (c) { markAnswered(c.id); });   // a question left out of the form is dropped by the server
+    state.submitted[f.batchId] = true;
+    var byId = {};
+    f.cards.forEach(function (c) { byId[c.id] = c; });
+    var lines = f.answers.map(function (a) {
+      var c = byId[a.card_id];
+      var said = a.action === "skip" ? t("ui.v2.line_skipped") : a.action === "you_decide" ? t("ui.you_decide")
+        : a.action === "none" ? [t("ui.v2.line_none"), a.custom_text].filter(Boolean).join(": ") : cardSummary(c, a.value, a.custom_text);
+      return c.question + " — " + said;
+    });
+    if (lines.length) { addMsg("user", lines.join("\n")); }
+    clear(f.el);
+    f.el.className = "qcard done";
+    f.el.removeAttribute("aria-busy");
+    f.el.appendChild(h("div", { class: "small muted", text: t("ui.interview.form_sent", { count: f.answers.length }) }));
+    releaseForm(f);
+  }
+  function releaseForm(f) {
+    if (state.form === f) { state.form = null; }
+    if (state.activeCard && state.activeCard.form === f) { state.activeCard = null; $("chat-actions").replaceChildren(); }
+  }
+  /** A form the server moved past without an answer (a newer batch replaced it): it just goes away. */
+  function dropForm(f) {
+    if (!f || f.confirmed) { return; }
+    f.confirmed = true;
+    if (f.el.parentNode) { f.el.parentNode.removeChild(f.el); }
+    releaseForm(f);
+  }
+
+  /** An older server may still plan a batch for one-at-a-time display. The form is the only layout, so ask once for
+      the form layout: the server re-sends the batch (same id and questions), which showForm does not redraw. */
+  function ensureFormLayout(batch) {
+    if (batch.ui_mode !== "one_at_a_time" || state.layoutAsked) { return; }
+    state.layoutAsked = true;
+    sendEvent({ type: "command", name: I.modeCommand("answer_all") }, { quiet: true });
+  }
+
+  /** Show the form for a batch (a `question_batch` event, or a `card` of a batch). Idempotent by batch id and
+      questions: the same batch again (a replay after a reconnect, a repeat of the first card) changes nothing; the
+      same batch with other questions, or a newer batch, redraws the form and keeps what was typed where the question
+      still exists. */
+  function showForm(batch, quiet) {
+    if (state.submitted[batch.batch_id]) { return; }   // already sent: a repeat of its events draws nothing
+    var groups = I.pendingGroups(batch, state.answered);
+    var cards = I.flatCards(groups);
+    var old = state.form;
+    if (!cards.length) { return; }
+    if (old && !old.confirmed && old.batchId === batch.batch_id && I.sameQuestions(old.batch, batch)) { old.batch = batch; return; }
+    var carried = null;
+    var hadFocus = !document.activeElement || document.activeElement === document.body;
+    if (old && !old.confirmed) {
+      if (old.sending) { confirmForm(old); }       // the server answered with new questions: it has the answers
+      else { carried = old.draft; hadFocus = hadFocus || old.el.contains(document.activeElement); }
+    }
+    if (state.activeCard && !state.activeCard.form) { collapseActive(); }   // a single card is replaced by the form
+    var kept = I.carryDraft(carried, cards);
+    var f = { batch: batch, batchId: batch.batch_id, groups: groups, cards: cards, draft: kept.draft, nums: I.batchNumbers(batch, cards.length),
+      closing: I.isClosingBatch(batch), sending: false, confirmed: false, failed: null, answers: [], lastDecideRest: false, items: {}, ui: null, el: null };
+    f.el = buildForm(f, carried && kept.kept > 0 ? t("ui.v2.updated_kept") : "");
+    if (old && !old.confirmed && old.el.parentNode && old.batchId === batch.batch_id) {
+      old.el.parentNode.replaceChild(f.el, old.el);   // the same batch, redrawn in place
+      old.confirmed = true;
+    } else {
+      dropForm(old);
+      log().appendChild(f.el);
+    }
+    state.form = f;
+    state.activeCard = { card: cards[0], el: f.el, batch: batch, form: f };
+    renderChatActions(null);
+    f.el.scrollIntoView({ block: "start" });   // a form is read from its top
+    if (hadFocus && !quiet) { f.ui.title.focus({ preventScroll: true }); }
   }
 
   function renderChatActions(card) {
@@ -820,33 +997,13 @@ CONTRACT*/
 
   function renderInterviewBar() {
     var bar = $("interview-bar");
-    var toggle = $("btn-mode-toggle");
     var more = $("btn-ask-more");
     var n = answeredCount();
     bar.hidden = !state.sessionId || isApproved() || (!state.batch && n === 0);
-    bar.setAttribute("aria-label", t("ui.interview.layout_label"));
-    toggle.hidden = !state.batch;
-    toggle.textContent = state.uiMode === "answer_all" ? t("ui.interview.mode_one_at_a_time") : t("ui.interview.mode_answer_all");
-    toggle.disabled = state.modePending;
     more.hidden = n === 0;
     more.textContent = t("ui.interview.ask_more");
-    $("mode-note").textContent = t("ui.interview.mode_note");
   }
 
-  /** Switch between one-at-a-time and the answer-all form. The server applies it at once: it re-sends the
-      unanswered questions of the current batch (a `question_batch` event, then the card events). */
-  function toggleMode() {
-    var next = I.otherMode(state.uiMode);
-    state.modePending = true;
-    renderInterviewBar();
-    sendEvent({ type: "command", name: I.modeCommand(next) }).then(function (ack) {
-      state.modePending = false;
-      if (ack) {
-        state.uiMode = next;
-      }
-      renderInterviewBar();
-    });
-  }
   function askMore() {
     var btn = $("btn-ask-more");
     btn.disabled = true;
@@ -1003,21 +1160,23 @@ CONTRACT*/
       state.deltaEl.appendChild(document.createTextNode(p.text));
       scrollChat();
     },
-    card: function (p) {
+    card: function (p, replay) {
       var card = p.card;
       if (card.frame === WELCOME_FRAME) { return; }   // the welcome block (tier first) replaces the canned first card
       var loc = I.locate(state.batches, card);
-      var groups = loc ? I.pendingGroups(loc.batch, state.answered) : [];
-      var pending = I.flatCards(groups);
-      var inForm = I.useForm(state.uiMode, loc, pending.length) && pending.some(function (c) { return c.id === card.id; });
-      var open = state.activeCard;
-      if (inForm && open && open.batch === loc.batch) { return; }   // the form for this batch is already on screen
+      if (loc && !loc.followup && (state.answered[card.id] || state.submitted[loc.batch.batch_id])) { return; }   // already answered
+      var pending = loc ? I.flatCards(I.pendingGroups(loc.batch, state.answered)) : [];
+      if (I.useForm(loc, pending.length) && pending.some(function (c) { return c.id === card.id; })) {
+        if (!replay) { showForm(loc.batch); }   // a reopened project draws its form once, after the whole log (replayHistory)
+        return;
+      }
+      // a question that belongs to no batch (a follow-up card, an older server) is shown on its own
       collapseActive();
-      var el = inForm ? renderBatchForm(loc.batch, groups) : renderCard(card);
+      var el = renderCard(card);
       log().appendChild(el);
-      state.activeCard = { card: card, el: el, batch: inForm ? loc.batch : null };
-      renderChatActions(inForm ? null : card);
-      if (inForm) { el.scrollIntoView({ block: "start" }); } else { scrollChat(); }   // a form is read from its top
+      state.activeCard = { card: card, el: el, batch: null };
+      renderChatActions(card);
+      scrollChat();
     },
     playback: function (p) {
       var el = h("div", { class: "qcard" }, h("div", { class: "q", text: p.title }));
@@ -1042,13 +1201,14 @@ CONTRACT*/
       log().appendChild(el);
       scrollChat();
     },
-    question_batch: function (p) {
+    question_batch: function (p, replay) {
       state.batch = p;
-      state.batches.push(p);
-      if (state.batches.length > 40) { state.batches.shift(); }
-      state.uiMode = p.ui_mode === "answer_all" ? "answer_all" : "one_at_a_time";
+      I.upsertBatch(state.batches, p, 40);   // a batch that is sent again replaces its earlier copy
       renderInterviewBar();
       renderWelcome();   // the tier can no longer change once questions exist
+      if (replay) { return; }
+      showForm(p);
+      ensureFormLayout(p);
     },
     notice: function (p) {
       addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
@@ -1113,8 +1273,8 @@ CONTRACT*/
   var sendQueue = Promise.resolve();
   /** Post one inbound event. Events of a session go out one at a time, in the order they were made (a command that
       sets the tier must reach the server before the idea does). Resolves to the EventAck, or null when the request
-      failed. opts: quiet (no waiting indicator, for quick commands), onError (called with the error instead of the
-      chat message, so a form can keep its state and offer a retry). A body that already has an event_id keeps it:
+      failed. opts: quiet (no waiting indicator, for quick commands), onAck (called with the reply before it is drawn),
+      onError (called with the error instead of the chat message, so a form can keep its state and offer a retry). A body that already has an event_id keeps it:
       the server ignores a repeated id, so a retry can never be applied twice. */
   function sendEvent(body, opts) {
     if (!state.sessionId) { return Promise.resolve(null); }
@@ -1134,7 +1294,10 @@ CONTRACT*/
     if (!o.quiet) { setTyping(true); }
     return api("POST", "/sessions/" + sid + "/events", ev).then(function (ack) {
       acked = ack;   // the server has the event: a page error while showing its answer must not look like a failed send
-      try { processAck(ack); } catch (e) { noteRenderError(e); }
+      try {
+        if (o.onAck) { o.onAck(ack); }   // before its answer is drawn, so a form closes above the new questions
+        processAck(ack);
+      } catch (e) { noteRenderError(e); }
     }).catch(function (err) {
       if (o.onError) { o.onError(err); return; }
       var el = addMsg("error", friendly(err));
@@ -1880,8 +2043,9 @@ CONTRACT*/
 
     lines.push("### 🖥️ Active View & State");
     lines.push("- **Active Tab**: `" + state.tab + "`");
-    lines.push("- **UI Mode**: `" + state.uiMode + "`");
-    lines.push("- **Active Card ID**: `" + (state.activeCard ? state.activeCard.id : "none") + "`");
+    lines.push("- **Layout**: `batch form (submit once)`" + (state.form ? " | **Open form**: `" + state.form.batchId + "` (" + state.form.cards.length + " questions" + (state.form.sending ? ", sending" : "") + ")" : ""));
+    lines.push("- **Active Card ID**: `" + (state.activeCard && state.activeCard.card ? state.activeCard.card.id : "none") + "`");
+    lines.push("- **Tier**: `" + (state.depth || "not chosen") + "`");
 
     return lines.join("\n");
   }
@@ -2058,7 +2222,7 @@ CONTRACT*/
     stopStream();
     state.sessionId = id; state.lastSeq = 0; state.seen = {}; state.devEvents = []; state.view = null; state.viewJson = "";
     state.lookups = []; state.activeCard = null; state.ui = { panel: null, edit: null, prov: {} }; state.calls = [];
-    state.batch = null; state.batches = []; state.answered = {}; state.uiMode = "one_at_a_time"; state.modePending = false;
+    state.batch = null; state.batches = []; state.answered = {}; state.submitted = {}; state.form = null; state.layoutAsked = false;
     state.depth = null; state.progress = null; state.qa = []; state.qaEdit = null; state.qaAnswered = 0; state.pulsed = {};
     state.awaitingTier = false; state.tierEditing = false; state.welcomeEl = null;
     applyComposerGate();
@@ -2100,17 +2264,14 @@ CONTRACT*/
       var lastCard = null;
       var summary = I.replaySummary(items);
       var answered = summary.answered;
-      state.answered = answered;   // the answer-all form shows only the questions still waiting
+      state.answered = answered;   // the form shows only the questions still waiting
+      state.submitted = summary.submitted;
       state.depth = summary.tier;   // the tier chosen earlier comes back as the chip
       state.awaitingTier = !summary.started && !!state.session && state.session.state === "WELCOME";
       items.forEach(function (ev) {
         if (ev.direction === "in") {
           if (ev.type === "user_message") { addMsg("user", ev.payload.text || ""); }
           else if (ev.type === "card_answer" || ev.type === "batch_answer") { addMsg("user", turnText(ev).text); }
-          else if (ev.type === "command" && ev.payload) {   // the layout the person chose decides how later cards were shown
-            if (ev.payload.name === "mode_answer_all") { state.uiMode = "answer_all"; }
-            if (ev.payload.name === "mode_one_at_a_time") { state.uiMode = "one_at_a_time"; }
-          }
           return;
         }
         if (ev.type === "card" && ev.payload && ev.payload.card && ev.payload.card.frame === WELCOME_FRAME) {
@@ -2118,7 +2279,7 @@ CONTRACT*/
           state.devEvents.push(ev);
           return;
         }
-        if (ev.type === "card" && ev.payload && ev.payload.card && answered[ev.payload.card.id]) {
+        if (ev.type === "card" && ev.payload && ev.payload.card && answered[ev.payload.card.id] && !I.locate(state.batches, ev.payload.card)) {
           var done = h("div", { class: "qcard done" }, h("div", { class: "small muted", text: ev.payload.card.question }));
           log().appendChild(done);
           state.seen[ev.seq] = true; state.lastSeq = Math.max(state.lastSeq, ev.seq);
@@ -2128,6 +2289,8 @@ CONTRACT*/
         onStored(ev, true);
         if (ev.type === "card") { lastCard = ev; }
       });
+      var last = state.batches[state.batches.length - 1];
+      if (last && !state.submitted[last.batch_id]) { showForm(last, true); }   // the form that was still open, drawn once
       return lastCard;
     }).catch(function () { return null; });
   }
@@ -2220,7 +2383,6 @@ CONTRACT*/
     $("btn-dev").addEventListener("click", function () { setDev(!state.devOpen); });
     $("dev-close").addEventListener("click", function () { setDev(false); });
     $("history-close").addEventListener("click", function () { $("history-drawer").hidden = true; });
-    $("btn-mode-toggle").addEventListener("click", toggleMode);
     $("btn-ask-more").addEventListener("click", askMore);
     $("pane-chat").addEventListener("click", function () { setPane("chat"); });
     $("pane-brief").addEventListener("click", function () { setPane("brief"); });

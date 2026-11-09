@@ -363,3 +363,20 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
   .tier-cards { grid-template-columns: minmax(0, 1fr); }
   .tier-card { min-height: 0; }
 }
+
+/* The batch form (Compass v2): numbered questions, one send at the end, a sticky action bar */
+.qnum { font-size: 12px; font-weight: 700; color: var(--muted); flex-basis: 100%; }
+.qitem-head .q { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.qitem-closing { border-color: var(--accent); background: var(--accent-soft); }
+.closing-note { margin: 0; font-size: 14px; color: var(--text); }
+.form-updated { margin: 0; color: var(--warn); }
+.form-helper { margin: 0; }
+.form-actions { position: sticky; bottom: calc(var(--s2) * -1); z-index: 2; display: grid; gap: var(--s1); padding: var(--s1) 0 var(--s1); background: var(--surface); border-top: 1px solid var(--border); }
+.form-actions .hint:empty { display: none; }
+.form-summary { color: var(--text); font-size: 13px; }
+.form-error { display: flex; flex-wrap: wrap; gap: var(--s1); align-items: center; padding: var(--s1) var(--s2); border-radius: var(--radius-sm); background: var(--danger-soft); color: var(--danger); font-size: 14px; }
+.form-error-text { flex: 1; min-width: 180px; }
+.batch-form.is-sending { opacity: 0.85; }
+.batch-form.is-sending .send-all { cursor: progress; }
+.form-other.is-idle { opacity: 0.6; }
+.qgroup:disabled .why-btn { cursor: not-allowed; }

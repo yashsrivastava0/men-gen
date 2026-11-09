@@ -122,8 +122,9 @@ def test_cards_show_their_group_title_and_the_progress_line() -> None:
     assert "I.locate(state.batches, card)" in head and "I.progressLine(" in head
     assert "loc.groupTitle" in head and '"group-chip"' in head and "progress-line" in head
     assert "cardHead(card)" in function_body("renderCard")
-    assert "state.batches.push(p)" in JS and "state.batch = p;" in JS
-    assert 'p.ui_mode === "answer_all"' in JS, "the layout follows the batch, as the server sets it"
+    assert "I.upsertBatch(state.batches, p, 40)" in JS and "state.batch = p;" in JS, (
+        "a batch that is sent again replaces its earlier copy"
+    )
 
 
 def test_a_fallback_card_shows_an_unobtrusive_badge_with_a_tooltip() -> None:
@@ -144,53 +145,122 @@ def test_a_fallback_card_shows_an_unobtrusive_badge_with_a_tooltip() -> None:
 # ---- answer-all form --------------------------------------------------------------------------------------
 
 
-def test_the_answer_all_form_is_built_from_the_batch_and_sent_with_one_button() -> None:
-    form = function_body("renderBatchForm")
-    assert "batch-form" in form and '"qgroup"' in form and '"qgroup-title"' in form
-    assert "send-all" in form and 't("ui.interview.form_send")' in form
-    assert "I.buildAnswers(cards, draft)" in form and "I.missingRequired(cards, draft)" in form
-    assert "window.compassSend.batchAnswer(batch.batch_id, answers)" in form
+def test_every_planned_batch_is_one_form_that_is_sent_once() -> None:
+    build = function_body("buildForm")
+    assert "batch-form" in build and '"qgroup"' in build and '"qgroup-title"' in build
+    assert "send-all" in build and "sendLabel(f)" in build and "g.title" in build
+    assert "ui.v2.form_helper" in build, (
+        "a line says nothing is processed before the button is pressed"
+    )
     controls = function_body("formControls")
     for token in ('"radio"', '"checkbox"', '"textarea"', "I.examplePlaceholder(card, t)"):
         assert token in controls, token
     item = function_body("formItem")
-    assert 't("ui.you_decide")' in item and 't("ui.skip")' in item, "per-question toggles"
-    assert '"you_decide"' in item and '"skip"' in item and "must_confirm" in item
-    assert "g.title" in form
-    # the screen decides between the single card and the form in the card handler
-    handler = JS.split("    card: function (p) {", 1)[1].split("    playback:", 1)[0]
-    assert "I.useForm(state.uiMode" in handler and "renderBatchForm(" in handler
-    assert ".batch-form" in CSS and ".qitem" in CSS and ".toggle" in CSS
+    assert 't("ui.you_decide")' in item and '"you_decide"' in item and "must_confirm" in item
+    # the form is the layout for every question of a batch, a batch of one included
+    handler = JS.split("    card: function (p, replay) {", 1)[1].split("    playback:", 1)[0]
+    assert "I.useForm(loc, pending.length)" in handler and "showForm(loc.batch)" in handler
+    batch_handler = JS.split("    question_batch: function (p, replay) {", 1)[1].split(
+        "    notice:", 1
+    )[0]
+    assert "showForm(p)" in batch_handler and "ensureFormLayout(p)" in batch_handler
+    assert "if (replay) { return; }" in batch_handler, (
+        "a reopened project draws its form once, at the end"
+    )
+    assert "uiMode" not in JS and "one_at_a_time" in function_body("ensureFormLayout"), (
+        "one-at-a-time survives only as the older server's layout, asked away once"
+    )
+    assert ".batch-form" in CSS and ".qitem" in CSS and ".toggle" in CSS and ".form-actions" in CSS
 
 
-def test_the_layout_toggle_and_ask_more_live_near_the_composer() -> None:
+def test_nothing_is_sent_or_collapsed_until_the_person_presses_send_and_the_server_answers() -> (
+    None
+):
+    submit = function_body("submitForm")
+    assert "if (f.sending || f.confirmed) { return; }" in submit, "double-submit guard"
+    assert "setFormBusy(f, true)" in submit and "I.buildBatchPayload(" in submit
+    assert "I.missingRequired(f.cards, f.draft)" in submit
+    assert "window.compassSend.batchAnswer(f.batchId, payload.answers" in submit
+    assert "onAck" in submit and "confirmForm(f)" in submit
+    busy = function_body("setFormBusy")
+    assert "f.ui.send.disabled = on" in busy and "ui.v2.sending" in busy
+    assert '"aria-busy"' in busy and ".qgroup" in busy, "every input waits while the request is out"
+    # a failed POST keeps the form: the state, a plain message and a Retry button, and the same event id when unchanged
+    assert "f.failed = { key: key, eventId: eventId }" in submit
+    assert "f.failed && f.failed.key === key ? f.failed.eventId : randomId()" in submit
+    assert "f.ui.error.hidden = false" in submit and "f.ui.retry.focus()" in submit
+    assert "submitForm(f, f.lastDecideRest)" in function_body("buildForm"), "the Retry button"
+    # the listing of the events the server just sent comes after the form has closed
+    confirm = function_body("confirmForm")
+    assert "markAnswered(c.id)" in confirm and "state.submitted[f.batchId] = true" in confirm
+    assert "if (!f || f.confirmed) { return; }" in confirm, "idempotent"
+    assert "collapse" not in submit.lower().replace("collapses", ""), (
+        "submitting does not collapse anything"
+    )
+    # the request layer keeps a form's own event id and never overlaps two events of a session
+    post = function_body("postEvent")
+    assert "o.onAck" in post and "o.onError" in post
+    assert "if (o.eventId) { body.event_id = o.eventId; }" in function_body("sendBatchAnswer")
+    assert "ui.v2.retry" in HELPER + JS and "ui.v2.send_failed" in function_body("sendFailureText")
+    assert "ui.v2.stale_batch" in function_body("sendFailureText")
+
+
+def test_the_form_says_which_question_it_is_and_which_one_is_last() -> None:
+    build = function_body("buildForm")
+    assert "I.questionLabel(f.nums, index, t)" in build and "ui.v2.last_question_note" in build
+    assert "f.closing" in build and "closing-note" in build
+    show = function_body("showForm")
+    assert "I.batchNumbers(batch, cards.length)" in show and "I.isClosingBatch(batch)" in show
+    assert 'f.el.scrollIntoView({ block: "start" })' in show
+    assert "title.focus" in show or "f.ui.title.focus" in show, "focus follows the new questions"
+    strings = load_catalog().strings["en"]
+    assert strings["ui.v2.question_n_of"] == "Question {n} of about {total}"
+    assert strings["ui.v2.last_question"] == "Last question"
+    assert "hard_cap" not in BODY and "hard_cap" not in HELPER, (
+        "the hard cap is never read, so it can never be shown"
+    )
+
+
+def test_a_batch_that_changes_while_the_form_is_open_keeps_what_was_typed() -> None:
+    show = function_body("showForm")
+    assert "I.sameQuestions(old.batch, batch)" in show, "the same batch again changes nothing"
+    assert "I.carryDraft(carried, cards)" in show and "ui.v2.updated_kept" in show
+    assert "if (old.sending) { confirmForm(old); }" in show, (
+        "new questions after a send mean the server has the answers"
+    )
+    assert "if (state.submitted[batch.batch_id]) { return; }" in show, (
+        "a sent batch is never drawn again"
+    )
+    assert "state.answered[card.id] || state.submitted[loc.batch.batch_id]" in JS, (
+        "nor are its cards"
+    )
+    replay = function_body("replayHistory")
+    assert "showForm(last, true)" in replay and "state.submitted = summary.submitted" in replay
+
+
+def test_an_older_server_that_still_shows_one_at_a_time_is_asked_for_the_form_once() -> None:
+    body = function_body("ensureFormLayout")
+    assert 'batch.ui_mode !== "one_at_a_time"' in body and "state.layoutAsked" in body
+    assert 'I.modeCommand("answer_all")' in body and "quiet: true" in body
+
+
+def test_the_layout_toggle_is_gone_and_ask_more_lives_near_the_composer() -> None:
     bar = re.search(r'<div id="interview-bar".*?</div>', HTML, flags=re.S)
     assert bar, "the interview bar is in the fragment"
-    assert 'id="btn-mode-toggle"' in bar.group(0) and 'id="btn-ask-more"' in bar.group(0)
+    assert 'id="btn-ask-more"' in bar.group(0)
+    assert "btn-mode-toggle" not in HTML + JS and "mode-note" not in HTML + JS
     assert HTML.index('id="interview-bar"') < HTML.index('id="composer"'), "just above the composer"
-    toggle = function_body("toggleMode")
-    assert "I.modeCommand(next)" in toggle and 'type: "command"' in toggle
     assert 'name: "ask_more"' in function_body("askMore")
     replay = function_body("replayHistory")
-    assert 'ev.payload.name === "mode_answer_all"' in replay, (
-        "a reopened project keeps the chosen layout"
-    )
     assert "state.answered = answered" in replay, (
-        "and shows the form only for questions still waiting"
+        "a reopened project shows the form only for questions still waiting"
     )
     render = function_body("renderInterviewBar")
-    assert (
-        't("ui.interview.mode_answer_all")' in render
-        and 't("ui.interview.mode_one_at_a_time")' in render
-    )
     assert "answeredCount()" in render and "isApproved()" in render, (
         "Ask me more: answered, not approved"
     )
-    assert '$("btn-mode-toggle")' in JS and '$("btn-ask-more")' in JS
-    strings = load_catalog().strings["en"]
-    assert strings["ui.interview.mode_answer_all"] == "Answer all at once"
-    assert strings["ui.interview.mode_one_at_a_time"] == "Show one at a time"
-    assert strings["ui.interview.ask_more"] == "Ask me more"
+    assert '$("btn-ask-more")' in JS
+    assert load_catalog().strings["en"]["ui.interview.ask_more"] == "Ask me more"
 
 
 def test_depth_chips_send_the_budget_commands_before_the_first_batch() -> None:
@@ -229,7 +299,7 @@ def test_the_welcome_block_asks_for_the_tier_before_the_idea() -> None:
     assert "ui.v2.tier_change_label" in welcome
     assert (
         "renderWelcome();"
-        in JS.split("    question_batch: function (p) {", 1)[1].split("    notice:", 1)[0]
+        in JS.split("    question_batch: function (p, replay) {", 1)[1].split("    notice:", 1)[0]
     ), "the Change link goes away when the first batch arrives"
     # the idea buttons wait for the tier too
     assert "disabled: locked" in function_body("startButtons")
@@ -278,7 +348,7 @@ def test_choosing_a_tier_sends_the_budget_command_and_rolls_back_when_it_fails()
 
 def test_the_server_welcome_card_is_replaced_by_the_welcome_block() -> None:
     assert 'var WELCOME_FRAME = "welcome";' in JS
-    handler = JS.split("    card: function (p) {", 1)[1].split("var loc", 1)[0]
+    handler = JS.split("    card: function (p, replay) {", 1)[1].split("var loc", 1)[0]
     assert "WELCOME_FRAME" in handler and "return;" in handler
     replay = function_body("replayHistory")
     assert "WELCOME_FRAME" in replay and "I.replaySummary(items)" in replay
