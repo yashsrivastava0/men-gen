@@ -171,6 +171,13 @@ def test_the_layout_toggle_and_ask_more_live_near_the_composer() -> None:
     toggle = function_body("toggleMode")
     assert "I.modeCommand(next)" in toggle and 'type: "command"' in toggle
     assert 'name: "ask_more"' in function_body("askMore")
+    replay = function_body("replayHistory")
+    assert 'ev.payload.name === "mode_answer_all"' in replay, (
+        "a reopened project keeps the chosen layout"
+    )
+    assert "state.answered = answered" in replay, (
+        "and shows the form only for questions still waiting"
+    )
     render = function_body("renderInterviewBar")
     assert (
         't("ui.interview.mode_answer_all")' in render

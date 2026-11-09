@@ -1834,6 +1834,10 @@ CONTRACT*/
         if (ev.direction === "in") {
           if (ev.type === "user_message") { addMsg("user", ev.payload.text || ""); }
           else if (ev.type === "card_answer" || ev.type === "batch_answer") { addMsg("user", turnText(ev).text); }
+          else if (ev.type === "command" && ev.payload) {   // the layout the person chose decides how later cards were shown
+            if (ev.payload.name === "mode_answer_all") { state.uiMode = "answer_all"; }
+            if (ev.payload.name === "mode_one_at_a_time") { state.uiMode = "one_at_a_time"; }
+          }
           return;
         }
         if (ev.type === "card" && ev.payload && ev.payload.card && answered[ev.payload.card.id]) {
