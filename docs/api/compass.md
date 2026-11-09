@@ -27,7 +27,7 @@ Tenant isolation: a session id from another tenant behaves exactly like a missin
 
 * JSON bodies; every error is `{"code": "...", "message": "..."}` (see Errors). `X-Request-Id` is returned on every response (a well-formed client value of 8 to 64 characters is kept, else `req_<ulid>`).
 * Security headers on every response, including SSE, static files and errors: `Content-Security-Policy` (`default-src 'self'; script-src 'self'; ...; frame-ancestors 'none'`), `X-Content-Type-Options: nosniff`, `Referrer-Policy: no-referrer`.
-* Request bodies are limited to 256 KB (`COMPASS_MAX_BODY_BYTES`); larger is `413 payload_too_large`. The `.../uploads` path is exempt from the limit.
+* Request bodies are limited to 256 KB (`COMPASS_MAX_BODY_BYTES`); larger is `413 payload_too_large`. The `.../uploads` path is exempt from that limit and has its own: 15 MB per file, enforced while the bytes are read (`413 too_large`).
 * JSON replies of the Brief and query routes carry `Cache-Control: no-store`.
 * Money is a decimal string in USD (`"0.0000"`), never a float; timestamps are timezone-aware UTC ISO strings; session ids are `ses_<ulid>`.
 * Events are idempotent by `event_id` (1 to 64 characters of `A-Za-z0-9_.:-`, chosen by the client): a repeat is acknowledged with `duplicate: true` and ignored.
@@ -43,7 +43,7 @@ Tenant isolation: a session id from another tenant behaves exactly like a missin
 | `GET /v1/compass/sessions/{id}` | one session | `200` `SessionSummary` |
 | `POST /v1/compass/sessions/{id}/events` | send one inbound event; runs one turn | `200` `EventAck` |
 | `GET /v1/compass/sessions/{id}/stream` | server-sent events, replayable | `200 text/event-stream` |
-| `POST /v1/compass/sessions/{id}/uploads` | document upload (deferred) | `501 not_implemented` |
+| `POST /v1/compass/sessions/{id}/uploads` | upload one document (multipart, field `file`); runs one turn that reads it | `200` `EventAck`; `413 too_large` above 15 MB |
 | `GET /v1/compass/sessions/{id}/brief?version=N` | the canonical `brief.json` of a version (default latest) plus `_hash` and `_section_hashes` | `200` |
 | `GET /v1/compass/sessions/{id}/brief/view?version=N&lang=xx` | the display-ready `BriefViewModel` | `200` |
 | `GET /v1/compass/sessions/{id}/brief/versions` | every saved version | `200 {"versions":[{version, hash, baseline, change_set_id, created_at}]}` |
@@ -53,7 +53,7 @@ Tenant isolation: a session id from another tenant behaves exactly like a missin
 | `POST /v1/compass/sessions/{id}/gate` | a `gate_decision` event; answers with the verdict | `200 {accepted, state, version, brief_hash, baseline, blockers}` |
 | `GET /v1/compass/sessions/{id}/handoff` | the consumer views of the approved version | `200 {version, brief_hash, views}` or `409` before approval |
 | `GET /v1/compass/sessions/{id}/calls?limit=` | the call log (dev) | `200 {"calls":[{call_id, spec_id, outcome, tokens_in, tokens_out, cost_usd, latency_ms}]}` |
-| `GET /v1/compass/budget` | spend against the Compass cap (dev only; 404 in token mode) | `200` (see the note on a known defect) |
+| `GET /v1/compass/budget` | spend against the Compass cap (dev only; 404 in token mode) | `200 {mode, cap_usd, hard_cap_usd, effective_stop_usd, per_session_cap_usd, spent_usd, remaining_usd, spent_micros, calls}` |
 | `GET /v1/compass/strings/{lang}` | UI chrome strings, `en` or `hi`, public, cached 300 s | `200 {language, strings}` |
 | `GET /` , `GET /ui/` | redirect to the test UI, the test UI | `307`, `200` |
 
@@ -75,8 +75,8 @@ Query limits: `version` and `from`/`to` at least 1; `history` `limit` 1 to 200 (
 | `card_answer` | `card_id`, `value` (an option id; a list of ids for `pick_many`; ordered ids for `priority`; a form object; text), `custom_text` |
 | `card_skip`, `card_you_decide` | `card_id` |
 | `card_back` | none |
-| `upload_added` | `source_id` (answered with an "upload not ready" notice) |
-| `link_added` | `url` (at most 2048; same notice) |
+| `upload_added` | `source_id`. Created by the uploads route, not by clients: a bare `upload_added` event with no bytes behind it is answered with an "upload not ready" notice |
+| `link_added` | `url` (at most 2048): the page is read by the SSRF-safe reader and ingested like a document; a refused or unreachable link is explained in an `assistant_message` |
 | `command` | `name`: `undo`, `back`, `pause`, `resume`, `start_over`, `finish_with_defaults`, `show_what_you_know` |
 | `brief_edit` | `item_id` (a path such as `idea.summary`, `access.account_model`, `scope.FTR-004.priority`), `value` |
 | `brief_feedback` | `target` (section key, row id or path), `reason` (`not_what_i_meant`, `too_much`, `something_missing`, `wrong_tone`, `dont_want_assumption`, `other`), `text` (at most 4000) |
@@ -89,7 +89,19 @@ Query limits: `version` and `from`/`to` at least 1; `history` `limit` 1 to 200 (
 
 **`BriefViewModel`** (`/brief/view`): `language`, `session_id`, `header` (`title`, `idea_line`, `version`, `status` `draft`/`in_review`/`approved`, `status_label`, `readiness[]` chips for research, blueprint and design, `reviewed`, `of_total`, `degraded`), `sections[]` (14 ids; each with `title`, `rows[]` of `id`, `label`, `value{kind,text,items}`, `badges`, `tier`, `editable`, `history_available`, `needs_review`, `changed`, `group`, `status_chip`, `description`), `footer` (`primary_label`, `secondary_label`, `approvable`, `blockers[]`), `brief_hash`, `section_hashes`, `changed_since_approval`. Row `id`s are paths in the change grammar, so they can be sent straight back in `brief_edit`. Use `header.status` and the `brief_ready` event to decide whether to offer approval; `footer.approvable` is only meaningful in `in_review`.
 
-**`POST /gate`** body is a `gate_decision` event (it needs `type`, `event_id`, `decision`, `version`, `brief_hash`). The reply is `{accepted, state, version, brief_hash, baseline, blockers[]}`; `accepted` is true only when the session is `APPROVED`. Outside `BRIEF_REVIEW` the verdict is `accepted: false` with a `gate_blocked` notice in the stream.
+**`POST /gate`** body is a `gate_decision` event (it needs `type`, `event_id`, `decision`, `version`, `brief_hash`). The reply is `{accepted, state, version, brief_hash, baseline, blockers[]}`; `accepted` is true only when the session is `APPROVED`. Outside `BRIEF_REVIEW` the verdict is `accepted: false` with a `gate_blocked` notice in the stream. In an enterprise session the approval counts only from a contributor with the role `approver` (the session creates `approver` and `commenter` contributors): send `"contributor_id": "approver"` in the body; until then the reply lists `Waiting for approval from: approver`, and approving does not change the hash. Approving the same, unchanged approved Brief again is a no-op.
+
+## Documents and links
+
+`POST /v1/compass/sessions/{id}/uploads` takes `multipart/form-data` with one file in the field `file` (one file per request; PDF, DOCX, XLSX, PPTX, CSV, TXT, MD or EML; the type is decided by extension and magic bytes). It is one turn like any event: the reply is an `EventAck` with the outbound events it produced, which are also on the stream. A file that cannot be used is **not** an HTTP error: the turn answers with a plain `assistant_message` ("x.pdf looks damaged and I could not read it. Please send another copy; I carried on with the rest."; password protected, unsupported type, too many pages, too many files, session total too large, and a duplicate: "... is the same as a file I already have (SRC-001); I kept the first one."). HTTP errors are only `413 too_large` (more than 15 MB, `{"code":"too_large","message":"That file is larger than 15 MB. Please send a smaller one."}`), `422 validation_failed` (no `file` field) and the usual 401 and 404. Limits: 10 files, 60 MB and 300 pages per session.
+
+When a document is read, the stream carries an `assistant_message` with the summary ("I read brief.txt: read 100%; 4 statements; 2 need confirming; 0 conflict; 1 open question."), a `notice` `picked_up` with chips ("From your document I picked up: Features: ..."), a `notice` `document_instruction_ignored` if the text tried to instruct the assistant, and then the normal next step (a `playback` and a `card`, or the review). The claims land in the Brief with `document` provenance and a verbatim quote (so `GET .../provenance/{item_id}` shows the source id and pointer); open issues become non-blocking open questions; the source is listed in the `sources` section. A first document in `WELCOME` moves the session to `INTAKE`.
+
+Links: send `{"type":"link_added","event_id":"...","url":"https://..."}` as an event. A pasted message over 3,000 characters in a `user_message` is read as a document too. The URL reader refuses anything that is not a public web page (private and internal addresses, credentials in the URL, odd ports; the checks repeat at every redirect) and says so plainly: "I cannot open http://127.0.0.1/admin: it is not a public web page."
+
+```bash
+curl -s -X POST "$B/sessions/$SID/uploads" "${H[@]}" -F "file=@requirements.pdf"
+```
 
 ## Server-sent events
 
@@ -121,11 +133,10 @@ data: {"idx":2,"direction":"out","type":"card","event_id":null,"turn_id":null,"s
 | 405 | `method_not_allowed` | wrong method |
 | 409 | `conflict` | another turn is already running for the session; a stale Brief version |
 | 409 | `gate_error`, `hash_mismatch`, `invalid_transition` | the handoff before approval; an approval for a stale hash; a trigger the state does not allow |
-| 413 | `payload_too_large` | body over the limit |
+| 413 | `payload_too_large`, `too_large` | JSON body over 256 KB; an uploaded file over 15 MB |
 | 422 | `validation_failed` | bad body, unknown event `type` (the message lists the valid tags, never the offending input), bad query |
 | 429 | `budget_exceeded`, `too_many_streams` | the Compass or gateway cap; too many open streams |
 | 500 | `internal_error` | unexpected; a generic message |
-| 501 | `not_implemented` | uploads |
 | 502, 503 | `provider_error`, `circuit_open`, `not_ready` | a model provider problem; the service is not composed |
 
 A failure *inside a turn* (for example a misconfigured live mode) does not change the HTTP status: the turn ends and one `error` event with `code: "turn_failed"` is appended to the stream.
@@ -177,9 +188,10 @@ curl -s $B/sessions/$SID/handoff "${H[@]}"
 
 (The ids, version 13 and the hash above are from one mock run; yours differ. Every value in `curl` is a placeholder; do not put real secrets in a command line or a document.) If you approve with a wrong version or hash, or while a blocker stands, the reply is `{"accepted": false, ..., "blockers": [...]}` and nothing changes. A later edit voids only the sections it touches and returns the session to `BRIEF_REVIEW`; `POST .../events` with `{"type":"command","event_id":"u1","name":"undo"}` reverts the latest change as a new version.
 
-## Known defects (open at the time of writing)
+## Known gaps
 
-* `GET /v1/compass/budget` answers `500 internal_error` with the real service: `Service.__init__` stores the budget object as `self.budget`, which shadows the `budget()` method the route calls. The test UI tolerates it. The same numbers are available as `budget_snapshot()` in process and per session as `spent_usd` on `SessionSummary` and in `/calls`.
 * `GET /brief/view?lang=` is validated but the real service ignores it and uses the session locale.
 * `question_n` and `question_of_about` on `SessionSummary` are always 0.
-* The enterprise multi-approver gate cannot complete yet (see [the package page](../packages/compass.md#known-limitations)).
+* `footer.approvable` in the view model is true outside `in_review`; trust `header.status` and the `brief_ready` event.
+* `budget_warning` and `assistant_delta` events exist in the vocabulary but are never emitted; the Compass spend counter is not reconciled with the gateway ledger (read the ledger with `just budget`).
+* Fixed since the first version of this page: `GET /budget` now answers 200 (the service attribute was renamed `budget_guard`), and the enterprise multi-approver gate completes (`meta.approvals` is excluded from the hash).

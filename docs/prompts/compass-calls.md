@@ -1,6 +1,6 @@
 # Compass call catalog (`cmp.*`)
 
-Hand-written catalog of the LLM calls of [Compass](../packages/compass.md). It is **not** generated and is separate from the generated [prompt-catalog.md](prompt-catalog.md): Compass specs live in `packages/compass/src/mde_compass/calls/<name>/` and are not registered in `mde_prompts` or `CALL_IO` ([ADR 0014](../adr/0014-call-spec-registration-from-agent-packages.md)). Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md), section 12 (prompting approach). Update this page in the same change as any call.
+Hand-written catalog of the twelve LLM calls of [Compass](../packages/compass.md); all twelve have a folder. It is **not** generated and is separate from the generated [prompt-catalog.md](prompt-catalog.md): Compass specs live in `packages/compass/src/mde_compass/calls/<name>/` and are not registered in `mde_prompts` or `CALL_IO` ([ADR 0014](../adr/0014-call-spec-registration-from-agent-packages.md)). Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md), section 12 (prompting approach). Update this page in the same change as any call.
 
 ## Rules every call follows
 
@@ -24,9 +24,9 @@ Hand-written catalog of the LLM calls of [Compass](../packages/compass.md). It i
 | `cmp.answer` | medium | 1500 | writer | standard | 45 s | `Answerer` | `AnswerAdapter` |
 | `cmp.interpret_change` | high | 3500 | writer | deep | 90 s | `ChangeInterpreter` | `InterpretChangeAdapter` |
 | `cmp.make_variants` | high | 2500 | writer | deep | 60 s | `VariantMaker` | `MakeVariantsAdapter` |
-| `cmp.read_chunk` | high | 4000 | writer | deep | 90 s | `ChunkReader` | none: `NoChunkReader` placeholder |
-| `cmp.merge_claims` | high | 6000 | writer | deep | 120 s | `ClaimMerger` | none: `NoClaimMerger` placeholder |
-| `cmp.scan_ambiguity` | high | 3000 | critic | deep | 60 s | `AmbiguityScanner` | none: `NoAmbiguityScanner` placeholder |
+| `cmp.read_chunk` | high | 4000 | writer | deep | 90 s | `ChunkReader` | `ReadChunkAdapter` |
+| `cmp.merge_claims` | high | 6000 | writer | deep | 120 s | `ClaimMerger` | `MergeClaimsAdapter` |
+| `cmp.scan_ambiguity` | high | 3000 | critic | deep | 60 s | `AmbiguityScanner` | `ScanAmbiguityAdapter` |
 
 Tests named below are in `packages/compass/tests/calls/<name>/test_<name>.py`. Run one call with `uv run pytest packages/compass/tests/calls/<name>`.
 
@@ -112,6 +112,33 @@ Tests named below are in `packages/compass/tests/calls/<name>/test_<name>.py`. R
 * **Fallback:** alternatives from the slot's catalog choices, then the families' typical items; returns what is valid, possibly fewer than three (the adapter then adds a "Something else" escape). Never invents a value, statistic or brand.
 * **Must-not tests:** `test_none_equal_to_the_current_value`, `test_near_duplicates_are_rejected`, `test_validator_rejects_wrong_count`, `test_value_must_be_valid_for_the_slot`, `test_basis_must_be_honest`, `test_brand_names_are_rejected_unless_the_user_used_them`, `test_fallback_on_free_text_slot_returns_fewer_without_inventing`, `test_adapter_rejects_duplicates_and_current_and_uses_fallback`.
 
-## Not built: cmp.read_chunk, cmp.merge_claims, cmp.scan_ambiguity
+## cmp.read_chunk
 
-Intake-side calls for document reading (typed statements with source pointers), claim merging (deduplicate, conflicts, coverage such as "read 100%; 187 statements; 31 need confirming; 4 conflict") and an ambiguity scan. Their ports, profiles (`config.CALL_PROFILES`) and domain models (`Statement`, `Claim`, `MergeResult`, `AmbiguityFinding`) exist; the call folders do not. `engine/fallback_ports.py` supplies placeholders that read nothing, merge nothing and flag nothing. They need the document intake (parsers, URL reader, SSRF guard) first; see the deferred list in [PROGRESS.md](../implementation/PROGRESS.md). When built, follow the folder convention in the [package README](../../packages/compass/README.md#add-things).
+* **Version / spec:** v1; untrusted input `chunk_text`; spec validator `validate_output`; fallback key `compass.read_chunk`. Prompt: `system.jinja` (read-only rules, the eleven statement types, three examples in English, Hindi and Hinglish), `user.jinja`.
+* **Purpose:** document intake, step "read": return the typed statements ONE chunk of a user document makes, each with a verbatim quote, so every claim can be cited. It never writes replies, never asks, never decides.
+* **Input (`ReadChunkInput`):** `chunk_text` (untrusted), `pointer` (`page 3`, `heading: Payments`, `sheet Roles!A1:D9`), `language`, `idea_hint` (one line about the app so far, or empty).
+* **Output (`ReadChunkOutput`):** `statements[]` (`type`: requirement, constraint, business_context, goal, user_or_role, rule_or_number, glossary_term, example, open_issue, preference, exclusion; `text` at most 240 characters; `quote` verbatim, at most 300; `confidence` high/medium/low; at most 40), `injection_suspected`.
+* **Validators (`statement_problem`, `keep_valid`, `validate_output`):** the adapter drops a statement whose quote is shorter than 4 or longer than 300 characters, **is not an exact substring of the chunk**, whose text is empty, or whose quote or text looks like an instruction to the reader (`injection_markers` in `rules.yaml`, en, hi, hinglish); repeats of the same type and quote are dropped. The spec validator rejects the whole answer (the fallback runs) only when the model returned statements and none is usable. The adapter maps confidence words to 0.9, 0.6 and 0.3 and builds the domain `Statement` (with the pointer); the model never builds one.
+* **Fallback:** a deterministic sentence, bullet and table-row splitter with keyword typing from `rules.yaml`. Pure and linear; every quote is a slice of the chunk, so it never invents. It is also the mock handler's engine.
+* **Must-not tests** (`tests/calls/read_chunk/test_read_chunk.py`): `test_never_invents_every_quote_is_a_substring`, `test_adapter_drops_invented_quotes_keeps_real_ones`, `test_adapter_uses_fallback_when_every_quote_is_invented`, `test_injected_instruction_makes_no_statement_in_fallback`, `test_injected_instruction_from_a_model_is_dropped_by_code`, `test_hidden_instruction_through_mock_pipeline` (`examples/hidden_instruction.json`), `test_hindi_and_hinglish_injection_markers`, `test_hostile_input_is_linear`.
+
+## cmp.merge_claims
+
+* **Version / spec:** v1; untrusted input `statements`; spec validator `validate_output`; fallback key `compass.merge_claims`. Prompt: labelling rules and three examples (a conflict pair, a duplicate with a TBD, a Hindi and Hinglish duplicate).
+* **Purpose:** document intake, step "merge": label every statement of one source, find contradictions and open issues, so coverage can be reported ("read 100%; 187 statements; 31 need confirming; 4 conflict"). It only labels; it never rewrites, drops or merges a statement away.
+* **Input (`MergeInput`):** `source_id`, `language`, `statements[]` (`idx`, `type`, `text`, `confidence`). Statements are referred to by their position, so the model cannot alter them.
+* **Output (`MergeOutput`):** `decisions[]` (one per `idx`: `status` used, duplicate, conflicting or needs_confirming; `duplicate_of`; `slot_hint` from the slot list), `conflicts[]` (`a`, `b`, `reason`), `tbd_idx[]`.
+* **Validators (`validate_output`):** decisions cover idx 0 to n-1 exactly once; a `duplicate_of` must be an earlier statement and token-overlap at least 0.5 with it; conflict pairs and TBD indices in range and distinct. Any structural violation rejects the whole answer and the deterministic merger runs. Then `assemble` enforces the rules in code whatever the model said: exactly one `Claim` per statement (duplicates stay, marked `duplicate`), every contradiction the rules can see is added to the model's and both sides are marked `conflicting`, open issues, TBD text and low-confidence statements are never `used`, and a slot hint is kept only if it names a real catalog slot. Over the statement limit the code-only path runs and still keeps every statement.
+* **Fallback:** normalised-text de-duplication plus rule-based contradiction detection (same subject with a negation, a different number or an antonym; `conflicts.py`, `rules.yaml`); a conflict is never an excuse to drop anything, both statements are kept and flagged. The adapter assembles domain `Claim`s with their status and `conflicts_with`, a `MergeResult` with the coverage counters.
+* **Must-not tests** (`tests/calls/merge_claims/test_merge_claims.py`): `test_merge_never_drops_a_conflicting_item_even_if_the_model_says_duplicate`, `test_assemble_keeps_every_statement_and_flags_model_conflicts`, `test_assemble_never_marks_open_issue_used_and_validates_slot_hints`, `test_validator_rules`, `test_adapter_falls_back_when_validator_rejects`, `test_injected_instruction_in_a_statement_is_just_data`, `test_over_limit_uses_code_only_and_keeps_all`, `test_many_statements_are_near_linear`.
+
+## cmp.scan_ambiguity
+
+* **Version / spec:** v1; untrusted inputs `items`, `glossary_terms`; spec validator `validate_output`; fallback key `compass.scan_ambiguity`; lane `critic`.
+* **Purpose:** point at things in the Brief that a downstream planner would have to guess: vague wording ("fast", "user friendly" with no number), two lines that clash, an unexplained term or acronym. It reads a digest and can only point; the output has no value field, so it can never change the Brief.
+* **Input (`ScanInput`):** `language`, `items[]` (`slot_id`, `text`: one plain line per Brief value, built from the catalog's `brief_path`), `glossary_terms[]`.
+* **Output (`ScanOutput`):** `findings[]` (`slot_id`, `text`, `kind` vague/conflicting/undefined; at most 12).
+* **Validators (`keep_valid`):** a finding is dropped when its text is empty or over 200 characters, its slot is not in the digest, or (for vague and undefined) its exact words are not in the digest line, or (for conflicting) it shares no token with the digest; duplicates are dropped. The whole answer is rejected, and the fallback runs, only when there are findings and none of them points at the digest.
+* **Fallback:** vague-word and phrase tables (a vague word is not a finding when its line carries a number), undefined short capitalised terms that are not in the glossary or the common-terms list, and contradictions between lines reusing the merger's rules. Pure and linear.
+* **Status:** built, tested and used by the live smoke driver; **`Service` does not call it yet.** The adapter returns domain `AmbiguityFinding`s (`slot_id`, `text`, `kind`).
+* **Must-not tests** (`tests/calls/scan_ambiguity/test_scan_ambiguity.py`): `test_output_has_no_value_field`, `test_scan_never_changes_values`, `test_findings_carry_no_replacement_values`, `test_adapter_drops_findings_that_point_nowhere`, `test_adapter_falls_back_when_no_finding_points_at_the_digest`, `test_conflicting_finding_must_be_grounded`, `test_injected_instruction_in_the_digest_is_data`, `test_hostile_input_is_linear`.
