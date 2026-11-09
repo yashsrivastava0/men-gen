@@ -138,12 +138,12 @@ Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompt
 - [x] Phase 0. Diagnosis and "before" evidence (c9847b6): 30 questions, 9 distinct wordings, 93% shared across five ideas
 - [x] Phase 0a. GLOBAL_RULES (74482f4); doc 11 section 17, AD-29 amended, AD-30 to AD-32, ADR 0015, D-090, D-091
 - [x] Phase 0b. Restructure `packages/compass` -> `agents/compass` (08a1085 moves + config, e19d154 in-package paths, docs paths; D-092)
-- [~] Phase 1. Interview Memory: models and events (bb42c5c), store with migration 0002 and the contract suite (096678e, 135 store tests, 77 integration), `apps/web` port of the UI (1964f73); pending: the pure engine modules (quotes, facts, projector, needs, terms, validators, context pack, policy) in `feat/compass-core`
-- [~] Phase 2. Needs Registry: `answer_spec` for all 44 needs, frame style guides and examples, loader enforcement (3573367); pending: needs status computation (`engine/needs.py`, in `feat/compass-core`)
-- [~] Phase 3. Calls: ports, profiles, placeholders and the per-spec scripted gateway (c27536b), `plan_questions` (db7a0a2); in progress: `audit_questions`, `rephrase_question`, `understand_turn` v2, `update_summary`; pending: `compile_brief`
-- [ ] Phase 4. Engine: fact ingestion under the legacy flow, planner path behind a flag, follow-ups, replan, stop, budgets, edit/pivot/upload, `domain_facts`, compile from the ledger
+- [x] Phase 1. Interview Memory: models and events (bb42c5c), store with migration 0002 and the contract suite (096678e, 135 store tests, 77 integration), `apps/web` port of the UI (1964f73), pure engine modules (81847ec: quotes, facts, projector, needs, terms, validators, context pack, policy); tag `compass/ai-interview-p1`
+- [x] Phase 2. Needs Registry: `answer_spec` for all 44 needs, frame style guides and examples, loader enforcement (3573367), needs status computation (`engine/needs.py`, 81847ec); tag `compass/ai-interview-p2`
+- [x] Phase 3. Calls: ports, profiles, placeholders and the per-spec scripted gateway (c27536b), `plan_questions` (db7a0a2), `audit_questions` + `rephrase_question` (766a07d), `understand_turn` v2 + `update_summary` (48a029c), `compile_brief` (dcdf38c); tag `compass/ai-interview-p3`
+- [x] Phase 4. Engine: facts load and commit with every turn (51967a7), planner path behind the flag (bb9a6a8), follow-ups, replan, stop, budgets, `domain_facts` and compile from the ledger (773a297), edit/pivot/upload/Q&A list (8091fba), help and rephrase (ed417e4); legacy engine still the default until Phase 7; Compass offline suite 2211 passed, 1 xfailed (BUG-18); tag `compass/ai-interview-p4`
 - [ ] Phase 5. UI in `apps/web`: groups, answer-all, why-popover, Ask me more, Q&A editor, MOCK banner, fallback badge
 - [ ] Phase 6. Offline tests: scenario and persona migration, SB-QP-01..20, property tests, needle test, metrics
-- [ ] Phase 6b. Live prerequisites: persisted Compass spend (`reconcile`), batch runner, cassette tests
+- [~] Phase 6b. Live prerequisites: persisted Compass spend from the gateway ledger (2b1d8be, D-093 ceiling USD 3.00 / target 2.00); in progress: batch runner for E, F, G (`feat/compass-live-harness`), cassette tests
 - [ ] Phase 7. Flip to the planner; live batches E, F, G (needs the owner's second key); cassettes
 - [ ] Phase 8. Remove the legacy path, refresh docs, `just ci`, merge `--no-ff`, report
