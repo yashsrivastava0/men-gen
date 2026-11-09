@@ -36,11 +36,13 @@ from mde_compass.domain import (
     ChangeSet,
     Contributor,
     DiscoveryPlan,
+    OpenQuestion,
     PatchOp,
     Provenance,
     ResearchRequest,
     SessionRecord,
     SessionState,
+    SourceRecord,
     StoredEvent,
     brief_hash,
     changed_sections,
@@ -81,6 +83,7 @@ from mde_compass.domain.events import (
 from mde_compass.domain.situation import SituationProfile
 from mde_compass.engine import assumptions as assumptions_mod
 from mde_compass.engine import cards as cards_mod
+from mde_compass.engine import document_flow as docflow
 from mde_compass.engine import gate as gate_mod
 from mde_compass.engine import patch as patch_mod
 from mde_compass.engine import state as state_mod
@@ -103,6 +106,13 @@ from mde_compass.engine.ports import (
 from mde_compass.engine.router import route as route_text
 from mde_compass.engine.slots import SlotStore
 from mde_compass.engine.validate import must_slots_missing
+from mde_compass.intake import (
+    ingest_bytes,
+    ingest_text,
+    ingest_url,
+    is_document_text,
+)
+from mde_compass.intake.pipeline import IngestResult
 from mde_compass.safety.screen import screen
 from mde_compass.store.ports import BriefVersionRecord, CallLogEntry, QuestionRecord, Store
 from mde_compass.views.build import build_view_model
@@ -193,6 +203,9 @@ def _text(value: JsonValue) -> str:
     if isinstance(value, list):
         return ", ".join(_text(v) for v in value)
     if isinstance(value, dict):
+        for key in ("name", "term", "label"):  # a record reads as its name, not as its fields
+            if isinstance(value.get(key), str):
+                return str(value[key])
         return ", ".join(f"{k}: {_text(v)}" for k, v in value.items())
     return str(value)
 
@@ -299,6 +312,9 @@ class Service:
         self.mode_label = mode_label
         self._new_session_id = new_session_id or (lambda: new_id("ses"))
         self._locks: dict[str, asyncio.Lock] = {}
+        self._pending_uploads: dict[str, tuple[str, bytes]] = {}
+        self.url_resolver: Any = None  # tests inject; None means the production resolver
+        self.url_fetcher: Any = None
 
     def bind_ports(self, ports: Ports) -> None:
         self.ports = ports
@@ -463,8 +479,10 @@ class Service:
             await self._on_switch(turn, event)
         elif isinstance(event, GateDecision):
             await self._on_gate(turn, event)
-        elif isinstance(event, (UploadAdded, LinkAdded)):
-            turn.notice("upload_not_ready", self.catalog.t("welcome.upload_not_ready", turn.lang))
+        elif isinstance(event, UploadAdded):
+            await self._on_upload_added(turn, event)
+        elif isinstance(event, LinkAdded):
+            await self._on_link_added(turn, event)
         await self._commit(turn)
 
     async def _load(self, tenant: str, session_id: str, event: InboundEvent) -> _Turn:
@@ -696,6 +714,9 @@ class Service:
             return
         if scr.declined is not None:
             await self._decline(turn, scr.declined)
+            return
+        if is_document_text(text, self.config.intake):
+            await self._ingest_pasted(turn, text)
             return
         if scr.tier_b:
             labels = [
@@ -1814,6 +1835,140 @@ class Service:
         if who is None:
             raise NotFound(f"contributor {ev.contributor_id}")
         turn.notice("speaking_as", self._t(turn, "notice.speaking_as", name=who.name or who.id))
+
+    # ------------------------------------------------------------------ documents and links (intake)
+    async def ingest_upload(
+        self, caller: Caller, session_id: str, filename: str, data: bytes
+    ) -> TurnResult:
+        """An uploaded file is one turn: it becomes a source, its claims become cited Brief writes."""
+        import hashlib
+
+        event_id = "evt_upl_" + hashlib.sha256(filename.encode() + data).hexdigest()[:24]
+        self._pending_uploads[event_id] = (filename, data)
+        try:
+            return await self.handle_event(
+                caller, session_id, UploadAdded(event_id=event_id, source_id="pending")
+            )
+        finally:
+            self._pending_uploads.pop(event_id, None)
+
+    async def _intake_context(self, turn: _Turn) -> tuple[dict[str, str], int, int, int]:
+        async with self.store.begin(turn.tenant) as uow:
+            sources = await uow.sources.list_sources(turn.session.id)
+        hashes = {s.sha256: s.id for s in sources}
+        files = sum(1 for s in sources if s.kind != "url")
+        urls = sum(1 for s in sources if s.kind == "url")
+        return hashes, files, sum(s.bytes for s in sources), urls
+
+    async def _on_upload_added(self, turn: _Turn, ev: UploadAdded) -> None:
+        assert self.ports is not None
+        stash = self._pending_uploads.pop(ev.event_id, None)
+        if stash is None:  # a bare event without bytes (nothing to read)
+            turn.notice("upload_not_ready", self._t(turn, "welcome.upload_not_ready"))
+            return
+        name, data = stash
+        hashes, files, size, _ = await self._intake_context(turn)
+        sid = turn.brief.ids.allocate("SRC")
+        res = await ingest_bytes(
+            name, data, session_id=turn.session.id, source_seq=int(sid.split("-")[1]),
+            existing_hashes=hashes, ports=self.ports, ctx=self._ctx(turn),
+            limits=self.config.intake, session_files=files, session_bytes=size,
+        )  # fmt: skip
+        await self._apply_ingest(turn, res, sid)
+
+    async def _on_link_added(self, turn: _Turn, ev: LinkAdded) -> None:
+        assert self.ports is not None
+        hashes, files, size, urls = await self._intake_context(turn)
+        sid = turn.brief.ids.allocate("SRC")
+        res = await ingest_url(
+            ev.url, session_id=turn.session.id, source_seq=int(sid.split("-")[1]),
+            existing_hashes=hashes, ports=self.ports, ctx=self._ctx(turn),
+            limits=self.config.intake, url_count=urls, session_files=files, session_bytes=size,
+            resolver=self.url_resolver, fetcher=self.url_fetcher,
+        )  # fmt: skip
+        await self._apply_ingest(turn, res, sid)
+
+    async def _ingest_pasted(self, turn: _Turn, text: str) -> None:
+        assert self.ports is not None
+        hashes, files, size, _ = await self._intake_context(turn)
+        sid = turn.brief.ids.allocate("SRC")
+        res = await ingest_text(
+            text, session_id=turn.session.id, source_seq=int(sid.split("-")[1]),
+            existing_hashes=hashes, ports=self.ports, ctx=self._ctx(turn),
+            limits=self.config.intake, session_files=files, session_bytes=size,
+        )  # fmt: skip
+        await self._apply_ingest(turn, res, sid)
+
+    async def _apply_ingest(self, turn: _Turn, res: IngestResult, source_id: str) -> None:
+        if res.status != "ingested" or res.source is None:
+            turn.brief.ids.tombstone(source_id)  # an id that held nothing is never reused
+            turn.say(res.message or self._t(turn, "error.generic"))
+            return
+        async with self.store.begin(turn.tenant) as uow:
+            fresh = await uow.sources.save_source(turn.session.id, res.source, chunks=res.chunks)
+            if fresh:
+                await uow.sources.save_claims(turn.session.id, res.claims)
+        if not fresh:  # a race on the de-duplication
+            turn.brief.ids.tombstone(source_id)
+            turn.say(self._t(turn, "intake.duplicate"))
+            return
+        src = res.source
+        turn.brief.sources.append(
+            SourceRecord(
+                id=src.id, kind=src.kind, name=src.name, sha256=src.sha256, coverage=src.coverage,
+                tier="Locked", status="confirmed", confidence=1.0,
+                provenance=[Provenance(type="document", ref=src.id, quote=src.name, date=self.clock.now())],
+            )
+        )  # fmt: skip
+        turn.say(self._t(turn, "intake.read_summary", name=src.name, summary=res.summary))
+        if res.injection_notes:
+            turn.notice(
+                "document_instruction_ignored", self._t(turn, "intake.injection_note"), warn=True
+            )
+        existing = {sid: rec.value for sid, rec in turn.slots.all().items()}
+        plan = docflow.plan_from_claims(res.claims, existing)
+        chips: list[str] = []
+        for w in plan.writes:
+            r = turn.slots.write(
+                w.slot_id, w.value, state="volunteered", provenance=w.provenance,
+                confidence=w.confidence, turn_id=turn.turn_id,
+            )  # fmt: skip
+            if r.applied:
+                chips.append(f"{self._label(turn, w.slot_id)}: {_text(w.value)}"[:80])
+        if chips:
+            turn.out.append(
+                Notice(code="picked_up", text=self._t(turn, "intake.picked_from_doc", items="; ".join(chips)), chips=chips)
+            )  # fmt: skip
+        for issue in plan.open_issues[:5]:
+            turn.brief.open_questions.append(
+                OpenQuestion(
+                    id=turn.brief.ids.allocate("Q"), text=issue, blocking=False, owner="user"
+                )
+            )
+        if plan.needs_confirming:
+            turn.brief.open_questions.append(
+                OpenQuestion(
+                    id=turn.brief.ids.allocate("Q"), blocking=False, owner="user",
+                    text=self._t(turn, "intake.needs_confirming", count=plan.needs_confirming),
+                )
+            )  # fmt: skip
+        if turn.state == "WELCOME":
+            self._go(turn, "documents_received", "INTAKE")
+        if not turn.slots.filled("idea.summary"):
+            lead = next(
+                (c.statement.text for c in res.claims if c.status == "used"
+                 and c.statement.type in ("business_context", "goal", "requirement")),
+                src.name,
+            )  # fmt: skip
+            turn.slots.write(
+                "idea.summary", lead[:IDEA_CHARS], state="volunteered",
+                provenance=Provenance(type="document", ref=src.id, quote=lead[:200], date=self.clock.now()),
+                confidence=0.6, turn_id=turn.turn_id,
+            )  # fmt: skip
+            await self._first_understanding(turn, lead)
+        else:
+            self._rebuild(turn)
+        await self._advance(turn)
 
     # ------------------------------------------------------------------ Gate 1
     async def _on_gate(self, turn: _Turn, ev: GateDecision) -> None:

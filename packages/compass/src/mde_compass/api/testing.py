@@ -1027,6 +1027,18 @@ class ScriptedService:
             "calls": sum(len(s.calls) for s in self._sessions.values()),
         }
 
+    async def ingest_upload(
+        self, caller: Caller, session_id: str, filename: str, data: bytes
+    ) -> TurnResult:
+        s = self._get(caller, session_id)
+        before = len(s.events)
+        self._emit(
+            s,
+            AssistantMessage(text=f"I read {filename}: {len(data)} bytes.", language="en"),
+            None,
+        )
+        return TurnResult(accepted=True, events=s.events[before:])
+
     async def calls(
         self, caller: Caller, session_id: str, *, limit: int = 30
     ) -> list[dict[str, JsonValue]]:

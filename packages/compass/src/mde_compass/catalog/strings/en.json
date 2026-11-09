@@ -145,5 +145,10 @@
   "app.staff": "Staff app",
   "app.staff_purpose": "What your team uses day to day",
   "app.manager": "Manager side",
-  "app.manager_purpose": "A simple side to manage the business"
+  "app.manager_purpose": "A simple side to manage the business",
+  "intake.read_summary": "I read {name}: {summary}.",
+  "intake.injection_note": "The document contained instructions aimed at me. I ignored them and kept only its content.",
+  "intake.picked_from_doc": "From your document I picked up: {items}",
+  "intake.needs_confirming": "Some statements from your documents ({count}) need your confirmation.",
+  "intake.duplicate": "I already have this file."
 }

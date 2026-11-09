@@ -8,7 +8,7 @@ import inspect
 from decimal import Decimal
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, Query, Request, Response
+from fastapi import APIRouter, Depends, File, Query, Request, Response, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 from pydantic import JsonValue
 
@@ -26,6 +26,7 @@ from mde_compass.api.sse import (
     parse_last_event_id,
 )
 from mde_compass.catalog.loader import SUPPORTED_LANGS, load_catalog
+from mde_compass.config import DEFAULT_CONFIG
 from mde_compass.domain.events import GateDecision, InboundEvent
 from mde_compass.domain.session import SessionRecord
 from mde_compass.engine.ports import Caller, CompassService
@@ -186,13 +187,22 @@ def _acquire_stream(request: Request, caller: Caller, settings: ApiSettings):  #
     return release
 
 
-@router.post("/sessions/{session_id}/uploads")
-async def uploads(session_id: str, caller: CallerDep) -> JSONResponse:
-    """Document intake is deferred: a friendly 501 so the UI can say so."""
-    return JSONResponse(
-        {"code": "not_implemented", "message": "Uploading documents is not available yet."},
-        status_code=501,
-    )
+@router.post("/sessions/{session_id}/uploads", response_model=EventAck)
+async def uploads(
+    session_id: str,
+    caller: CallerDep,
+    service: ServiceDep,
+    file: Annotated[UploadFile, File()],
+) -> EventAck:
+    """One file per request (multipart). The byte cap is enforced while reading, never after."""
+    limit = DEFAULT_CONFIG.intake.max_file_bytes
+    data = await file.read(limit + 1)
+    if len(data) > limit:
+        raise ApiError(
+            413, "too_large", "That file is larger than 15 MB. Please send a smaller one."
+        )
+    result = await service.ingest_upload(caller, session_id, file.filename or "upload", data)
+    return EventAck(accepted=result.accepted, duplicate=result.duplicate, events=result.events)
 
 
 # --- the Brief ---------------------------------------------------------------------------------------

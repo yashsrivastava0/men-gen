@@ -250,7 +250,10 @@ async def test_calls_budget_strings_uploads(client: httpx.AsyncClient, session_i
     assert set(hi["strings"]) == set(en["strings"])
     assert (await client.get(f"{P}/strings/fr")).status_code == 404
     r = await client.post(f"{P}/sessions/{session_id}/uploads", files={"file": ("a.txt", b"hello")})
-    assert r.status_code == 501 and r.json()["code"] == "not_implemented"
+    assert r.status_code == 200 and r.json()["events"][0]["type"] == "assistant_message"
+    assert (
+        await client.post(f"{P}/sessions/nope/uploads", files={"file": ("a.txt", b"hi")})
+    ).status_code == 404
 
 
 async def test_unknown_route_is_error_body(client: httpx.AsyncClient) -> None:

@@ -115,9 +115,15 @@ async def test_body_size_limit() -> None:
         assert r.headers["content-security-policy"] == CSP
         ok = {"type": "user_message", "event_id": "e2", "text": "x" * 500}
         assert (await c.post(f"{P}/sessions/{sid}/events", json=ok)).status_code == 200
-        # uploads are excluded from the limit (intake is deferred, so 501 not 413)
+        # uploads are excluded from the small-body limit: a body that is not multipart is a 422, never a 413
         r = await c.post(f"{P}/sessions/{sid}/uploads", content=b"y" * 9000)
-        assert r.status_code == 501
+        assert r.status_code == 422
+        # a real multipart upload is read and answered
+        r = await c.post(
+            f"{P}/sessions/{sid}/uploads",
+            files={"file": ("notes.txt", b"Customers must be able to reorder.")},
+        )
+        assert r.status_code == 200 and r.json()["events"][0]["type"] == "assistant_message"
 
 
 def test_loopback_detection_and_bind_guard(capsys: pytest.CaptureFixture[str]) -> None:
