@@ -41,7 +41,7 @@ EXPECTED_TABLES = {
     "compass_batches",
 }
 MEMORY_TABLES = {"compass_qa", "compass_facts", "compass_interview_summary", "compass_batches"}
-HEAD = "0002"
+HEAD = "0003"
 
 
 def _dsn(url: URL) -> str:

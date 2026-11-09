@@ -894,6 +894,8 @@ class PgCallLogRepo(_Repo):
                 outcome=entry.outcome,
                 reason=cast("str", clean_json(entry.reason)),
                 at=utc(entry.at) or self.now(),
+                turn_id=entry.turn_id,
+                event_id=entry.event_id,
             )
         )
 
@@ -917,6 +919,8 @@ class PgCallLogRepo(_Repo):
                 outcome=r.outcome,
                 reason=r.reason,
                 at=utc(r.at),
+                turn_id=getattr(r, "turn_id", None),
+                event_id=getattr(r, "event_id", None),
             )
             for r in (await self._s.execute(stmt)).all()
         ]

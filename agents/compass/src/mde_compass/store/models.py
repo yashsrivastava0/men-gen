@@ -415,6 +415,8 @@ class CallLogRow(Base):
     outcome: Mapped[str] = mapped_column(Text, nullable=False)
     reason: Mapped[str] = mapped_column(Text, nullable=False)
     at: Mapped[datetime] = mapped_column(TS, nullable=False)
+    turn_id: Mapped[str | None] = mapped_column(Text, nullable=True)
+    event_id: Mapped[str | None] = mapped_column(Text, nullable=True)
 
 
 # --------------------------------------------------------------------------- interview memory (0002)

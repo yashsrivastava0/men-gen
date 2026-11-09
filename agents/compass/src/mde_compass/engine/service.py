@@ -145,6 +145,7 @@ from mde_core.logging import get_logger
 log = get_logger(__name__)
 
 _TENANT: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_tenant", default=None)
+_TURN_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_turn_id", default=None)
 
 
 @contextlib.contextmanager
@@ -346,6 +347,10 @@ class Service(FlowHooks):
         tenant = _TENANT.get()
         if tenant is None:
             return
+        turn_id = entry.turn_id or _TURN_ID.get()
+        event_id = entry.event_id or _TURN_ID.get()
+        if entry.turn_id != turn_id or entry.event_id != event_id:
+            entry = entry.model_copy(update={"turn_id": turn_id, "event_id": event_id})
         async with self.store.begin(tenant) as uow:
             await uow.call_log.record(session_id, entry)
             await uow.sessions.add_spend(session_id, entry.cost_micros)
@@ -423,6 +428,7 @@ class Service(FlowHooks):
     ) -> TurnResult:
         assert self.ports is not None, "Service.ports is not bound"
         token = _TENANT.set(caller.tenant_id)
+        turn_token = _TURN_ID.set(event.event_id)
         try:
             lock = self._locks.setdefault(session_id, asyncio.Lock())
             async with lock:
@@ -433,6 +439,7 @@ class Service(FlowHooks):
                 # and committed, then the first batch is planned), so the person reads while the planner works.
                 while queue:
                     current = queue.pop(0)
+                    step_token = _TURN_ID.set(current.event_id)
                     async with self.store.begin(caller.tenant_id) as uow:
                         session = await uow.sessions.get(session_id)
                         fresh = await uow.events.record_inbound(
@@ -442,10 +449,12 @@ class Service(FlowHooks):
                             current.model_dump(mode="json"),
                         )
                         if not fresh:
+                            _TURN_ID.reset(step_token)
                             if first:
                                 return TurnResult(accepted=True, duplicate=True)
                             continue
                         if not await uow.sessions.try_begin_turn(session_id):
+                            _TURN_ID.reset(step_token)
                             raise Conflict("a turn is already running for this session")
                         if first:
                             seq_before = session.outbound_seq
@@ -465,6 +474,7 @@ class Service(FlowHooks):
                     finally:
                         async with self.store.begin(caller.tenant_id) as uow:
                             await uow.sessions.end_turn(session_id)
+                        _TURN_ID.reset(step_token)
                     if follow is not None:
                         queue.append(follow)
                     first = False
@@ -472,6 +482,7 @@ class Service(FlowHooks):
                     produced = await uow.events.list_outbound(session_id, after_seq=seq_before)
                 return TurnResult(accepted=True, events=produced)
         finally:
+            _TURN_ID.reset(turn_token)
             _TENANT.reset(token)
 
     def _sanitize(self, event: InboundEvent) -> InboundEvent:
@@ -2723,9 +2734,20 @@ class Service(FlowHooks):
             await uow.sessions.get(session_id)
             entries = await uow.call_log.list(session_id, limit=limit)
         return [
-            {"call_id": e.call_id, "spec_id": e.spec_id, "outcome": e.outcome, "tokens_in": e.tokens_in, "tokens_out": e.tokens_out, "cost_usd": f"{e.cost_micros / 1_000_000:.4f}", "latency_ms": e.latency_ms}
+            {
+                "call_id": e.call_id,
+                "spec_id": e.spec_id,
+                "outcome": e.outcome,
+                "tokens_in": e.tokens_in,
+                "tokens_out": e.tokens_out,
+                "cost_usd": f"{e.cost_micros / 1_000_000:.4f}",
+                "latency_ms": e.latency_ms,
+                "turn_id": e.turn_id,
+                "event_id": e.event_id,
+                "at": e.at.isoformat() if e.at else None,
+            }
             for e in entries
-        ]  # fmt: skip
+        ]
 
 
 __all__ = ["MdeError", "Service", "datetime"]

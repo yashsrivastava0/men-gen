@@ -2210,6 +2210,19 @@ CONTRACT*/
       lines.push("");
     }
 
+    lines.push("### ⏱️ Model Call Latencies & Turn Wall Time");
+    if (!state.calls || !state.calls.length) {
+      lines.push("*(No model calls logged)*\n");
+    } else {
+      lines.push("| Turn / Event | Call Spec | Latency | Tokens (In/Out) | Outcome |");
+      lines.push("|---|---|---|---|---|");
+      state.calls.slice(0, 15).forEach(function (c) {
+        var turn = c.turn_id ? ("`" + c.turn_id.slice(-8) + "`") : (c.event_id ? ("`" + c.event_id.slice(-8) + "`") : "-");
+        lines.push("| " + turn + " | `" + (c.spec_id || "-") + "` | " + (c.latency_ms || 0) + "ms | " + (c.tokens_in || 0) + " / " + (c.tokens_out || 0) + " | `" + (c.outcome || "ok") + "` |");
+      });
+      lines.push("");
+    }
+
     lines.push("### 🖥️ Active View & State");
     lines.push("- **Active Tab**: `" + state.tab + "`");
     lines.push("- **Layout**: `batch form (submit once)`" + (state.form ? " | **Open form**: `" + state.form.batchId + "` (" + state.form.cards.length + " questions" + (state.form.sending ? ", sending" : "") + ")" : ""));

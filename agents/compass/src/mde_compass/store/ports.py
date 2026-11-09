@@ -83,6 +83,8 @@ class CallLogEntry(Strict):
     outcome: Literal["ok", "repaired", "fallback", "error", "cache_hit"] = "ok"
     reason: str = ""
     at: datetime | None = None
+    turn_id: str | None = None
+    event_id: str | None = None
 
 
 class HistoryPage(Strict):
