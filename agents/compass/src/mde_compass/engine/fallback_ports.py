@@ -57,6 +57,9 @@ class UnavailableQuestionPlanner:
             batch=batch, used_fallback=True, reason="cmp.plan_questions is not built yet"
         )
 
+    async def fallback(self, ctx: TurnContext, request: PlanRequest) -> PlanResult:
+        return await self.plan(ctx, request)
+
 
 class UnavailableQuestionAuditor:
     async def audit(self, ctx: TurnContext, request: AuditRequest) -> AuditResult:

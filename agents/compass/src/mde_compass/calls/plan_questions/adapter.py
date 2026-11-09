@@ -221,5 +221,15 @@ class PlanAdapter:
         batch = to_batch(self._catalog, result.output, request)
         return PlanResult(batch=batch, used_fallback=False, repaired=result.repaired)
 
+    async def fallback(self, ctx: TurnContext, request: PlanRequest) -> PlanResult:
+        """The flagged registry cards, without calling the model (used when every planned question was rejected)."""
+        title = self._catalog.t("interview.group_fallback", _lang(request))
+        batch = fallback_batch(
+            self._catalog, request, batch_id=PLACEHOLDER_BATCH_ID, group_title=title
+        )
+        return PlanResult(
+            batch=batch, used_fallback=True, reason="every planned question was rejected"
+        )
+
 
 __all__ = ["PlanAdapter", "build_input", "to_batch"]

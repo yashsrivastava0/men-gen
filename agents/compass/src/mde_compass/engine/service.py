@@ -91,6 +91,7 @@ from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
 from mde_compass.engine.flows.hooks import FlowHooks
+from mde_compass.engine.interview_state import InterviewMemory
 from mde_compass.engine.language import detect_language
 from mde_compass.engine.ports import (
     Caller,
@@ -263,6 +264,10 @@ class _Turn:
     approval: tuple[int, str] | None = None  # (version, label) when a baseline is created
     handoff_views: dict[str, dict[str, JsonValue]] | None = None
     original_text: str = ""
+    memory: InterviewMemory = field(default_factory=InterviewMemory)
+    internal: Any = (
+        None  # an internal event to run right after this turn commits (round 0 planning)
+    )
 
     @property
     def turn_id(self) -> str:
@@ -494,6 +499,12 @@ class Service(FlowHooks):
             session = await uow.sessions.get(session_id)
             rec = await uow.briefs.get(session_id)
             questions = await uow.questions.list(session_id)
+            memory = InterviewMemory(
+                facts=await uow.facts.list(session_id),
+                qa=await uow.qa.list(session_id),
+                batches=await uow.batches.list(session_id),
+                summary=await uow.summaries.get(session_id),
+            )
             transcript: list[TurnLine] = []
             after = 0
             for _ in range(5):
@@ -511,7 +522,7 @@ class Service(FlowHooks):
         return _Turn(
             tenant=tenant, session=session, rec=rec, brief=rec.brief.model_copy(deep=True), slots=slots,
             questions=questions, event=event, lang=lang, state=session.state,
-            transcript=transcript[-self.config.gate.history_slice_turns :],
+            transcript=transcript[-self.config.gate.history_slice_turns :], memory=memory,
         )  # fmt: skip
 
     @staticmethod
@@ -543,6 +554,21 @@ class Service(FlowHooks):
                 await uow.questions.record_asked(sid, card, why)
             for card_id, outcome, answer in turn.answered:
                 await uow.questions.record_answer(sid, card_id, outcome, answer)  # type: ignore[arg-type]
+            mem = turn.memory
+            for fact_id in mem.new_fact_ids:
+                fact = mem.fact(fact_id)
+                if fact is not None:
+                    await uow.facts.add(sid, fact)
+            for fact_id in sorted(mem.changed_fact_ids):
+                fact = mem.fact(fact_id)
+                if fact is not None:
+                    await uow.facts.update(sid, fact)
+            for record in mem.qa_writes.values():
+                await uow.qa.upsert(sid, record)
+            for batch in mem.batch_writes:
+                await uow.batches.add(sid, batch)
+            if mem.summary_write is not None:
+                await uow.summaries.put(sid, mem.summary_write)
             session = await uow.sessions.get(sid)
             session.state = turn.state
             session.locale = turn.lang

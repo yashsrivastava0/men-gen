@@ -98,7 +98,12 @@ CommandName = Literal[
     "finish_with_defaults",
     "show_what_you_know",
     "ask_more",  # "Ask me more": the planner's deepen mode (build prompt 02)
-    "prepare_questions",  # the UI asks for the first batch while the playback card is read
+    "prepare_questions",  # internal: plan the first batch after the playback card was shown
+    "mode_answer_all",  # show each batch as one form
+    "mode_one_at_a_time",  # show a batch one question at a time
+    "budget_quick",  # interview depth: up to 5 questions
+    "budget_standard",  # up to 12 including follow-ups
+    "budget_thorough",  # up to 25, in batches of 6 to 8
 ]
 
 

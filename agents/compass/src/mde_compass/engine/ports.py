@@ -444,6 +444,11 @@ class PlanResult(Strict):
 class QuestionPlanner(Protocol):
     async def plan(self, ctx: TurnContext, request: PlanRequest) -> PlanResult: ...
 
+    async def fallback(self, ctx: TurnContext, request: PlanRequest) -> PlanResult:
+        """The flagged last-resort batch from the Needs Registry (``used_fallback=True``), for when every planned
+        question was rejected. Never invented; follow-up and simplify modes return nothing."""
+        ...
+
 
 class AuditRequest(Strict):
     language: str = "en"

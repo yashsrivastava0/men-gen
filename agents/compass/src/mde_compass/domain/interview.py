@@ -257,6 +257,7 @@ class InterviewBlock(Strict):
     the interview, not content: it never enters the Brief hash and never reaches a consumer view (ADR 0015)."""
 
     budget: Literal["quick", "standard", "thorough"] = "standard"
+    ui_mode: Literal["one_at_a_time", "answer_all"] = "one_at_a_time"
     questions_asked: int = 0
     followups: int = 0
     answered: int = 0
