@@ -58,15 +58,16 @@ def _item(brief: Brief, path: str) -> Any:
 
 
 def is_locked(brief: Brief, path: str) -> bool:
-    """The Brief item at ``path`` holds a value, is Locked and was confirmed by the user's answer (a tap or a
-    typed answer to a card). Words the user volunteered themselves are theirs to edit freely, so they are not
-    asked about again."""
+    """The Brief item at ``path`` holds a value, is Locked and was confirmed by a TAP on a card (docs 05 IV-02:
+    "Locked values need a one-tap confirm"). Words the user typed themselves (volunteered or edited in the
+    Brief) are theirs to change again freely, so they are not asked about."""
     item = _item(brief, path)
     return bool(
         item is not None
         and item.tier == "Locked"
         and item.status == "confirmed"
         and item.has_value()
+        and any(p.type == "user_tap" for p in item.provenance)
     )
 
 
