@@ -123,6 +123,10 @@ def test_planner_personas_all_run_to_the_end(planner_report: dict[str, Any]) -> 
         "quote_verification_100",
         "followup_vague_ge_90",
         "followup_specific_zero",
+        # BUG-24 (a flagged fallback batch repeats the registry cards of an earlier fallback verbatim) is NOT fixed:
+        # the mock planner now marks a single-choice question about a list need with a domain topic (type_fit), which
+        # changed the ten personas' fallbacks, so the metric holds for the moment. Re-pin it if it comes back.
+        "zero_repeated_questions",
     ],
 )
 def test_planner_hard_targets_hold(planner_report: dict[str, Any], target: str) -> None:
@@ -134,10 +138,6 @@ PLANNER_GOALS = {
         "BUG-19",
         "follow-ups planned while batch questions wait, and handoff-gap questions, are not charged to "
         "the budget (Quick 6 of 5, Standard 13 to 16 of 12 and 28 for the answer-all expert, Thorough 27 of 25)",
-    ),
-    "zero_repeated_questions": (
-        "BUG-24",
-        "a flagged fallback batch repeats the registry cards of an earlier fallback verbatim",
     ),
     "fallback_count_zero": (
         "GAP-1",

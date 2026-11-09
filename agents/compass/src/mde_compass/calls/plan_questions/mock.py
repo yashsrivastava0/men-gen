@@ -57,7 +57,15 @@ def _question(
         text = f"{TAG} {n.label}, for your {term} project?"
     options: list[OptionWire] = []
     qtype = "text"
+    serves = [n.need_id]
     if not followup and n.card_type == "choose_one" and len(n.option_labels) >= 3:
+        # The registry card of some list needs (apps, login methods) is a single choice. The mock keeps asking it so,
+        # but as a question about how something works, which is what a domain topic next to the need says
+        # (``type_fit`` judges only a choose_one whose needs ALL take a list). A mock checklist would be the
+        # faithful card, but then the stop pass misses integrations.mode (the Brief compile fills
+        # integrations.wanted after the defaults pass; test_interview_followups): an engine gap to close first.
+        if n.multi:
+            serves.append(f"domain:{n.need_id.replace('.', '_')}_choice")
         qtype = "choose_one"
         options = [
             OptionWire(
@@ -77,20 +85,15 @@ def _question(
             if followup
             else f"learn {n.label.lower()} for {term}"
         ),
-        serves=[n.need_id],
+        serves=serves,
         unlocks=[f"{TAG} Brief: {n.label.lower()}"],
         answer_spec=n.sufficient,
-        depends_on=[],
         priority=max(1, min(5, 6 - n.impact)),
         type=qtype,  # type: ignore[arg-type]
         text=text,
         why_we_ask=f"{TAG} This fills in: {n.label.lower()}.",
         options=options,
-        recommended=options[0].label if options else "",
-        skip_assumes="",
-        followup_hint=f"{TAG} ask about {', '.join(n.missing_aspects)}"
-        if n.missing_aspects
-        else "",
+        recommended=options[0].label if options and qtype == "choose_one" else "",
         examples=[] if options else [f"{TAG} e.g. a short answer about {term}"],
     )
 
@@ -144,15 +147,12 @@ def _closing(inp: PlanInput) -> PlanOutput:
         serves=["scope.priority", "goals.primary"],
         unlocks=[f"{TAG} Brief: first-version priorities"],
         answer_spec=f"{TAG} the few things that must work in the first version of {term}",
-        depends_on=[],
         priority=1,
         type="priority",
         text=f"{TAG} What matters most for the first version of your {term} project?",
         why_we_ask=f"{TAG} It decides what to build first.",
         options=options,
         recommended=options[0].label if own else "",
-        skip_assumes="",
-        followup_hint="",
         examples=[f"{TAG} anything else, or what success would look like"],
     )
     return PlanOutput(

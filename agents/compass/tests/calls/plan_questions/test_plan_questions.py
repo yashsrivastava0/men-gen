@@ -8,7 +8,7 @@ from pathlib import Path
 import pytest
 
 from mde_compass.calls.base import CallRunner
-from mde_compass.calls.plan_questions.adapter import PlanAdapter, build_input, to_batch
+from mde_compass.calls.plan_questions.adapter import MAX_NEEDS, PlanAdapter, build_input, to_batch
 from mde_compass.calls.plan_questions.mock import handle
 from mde_compass.calls.plan_questions.schema import PlanInput, PlanOutput
 from mde_compass.calls.plan_questions.spec import SPEC
@@ -61,7 +61,7 @@ def _request(inp: PlanInput, **changes: object) -> PlanRequest:
 
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.plan_questions" and s.version == 2
+    assert s.id == "cmp.plan_questions" and s.version == 3
     assert s.reasoning_effort == "low" and s.max_output_tokens == 5000 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
     assert "focus_answer" in s.untrusted_inputs and "fact_digest" in s.untrusted_inputs
@@ -295,3 +295,220 @@ def test_open_needs_carry_their_registry_text_into_the_wire_input() -> None:
     wire = build_input(CATALOG, _request(_input(EXAMPLES[0])))
     geo = next(n for n in wire.needs if n.need_id == "context.geo")
     assert geo.sufficient and geo.aspects and geo.level == "must" and geo.card_type
+
+
+# --------------------------------------------------------------------------------- planner quality (v3)
+def _need(need_id: str, state: str = "missing", impact: int = 3) -> NeedBrief:
+    slot = CATALOG.slots[need_id]
+    return NeedBrief(
+        need_id=need_id,
+        label=slot.label.en,
+        sufficient=slot.answer_spec.sufficient if slot.answer_spec else "",
+        state=state,  # type: ignore[arg-type]
+        impact=impact,
+    )
+
+
+def _plain_request(needs: list[NeedBrief], **changes: object) -> PlanRequest:
+    base: dict[str, object] = {
+        "mode": "replan",
+        "context": PlanContext(project_card="a tiffin app", asked_list="Q-001 | answered | x"),
+        "needs": needs,
+        "project_terms": ["tiffin"],
+    }
+    base.update(changes)
+    return PlanRequest.model_validate(base)
+
+
+def test_the_planner_sees_only_the_open_needs_most_important_first() -> None:
+    needs = [
+        _need("locales", "satisfied", 5),
+        _need("look.density_mode", "missing", 2),
+        _need("scope.features", "partial", 5),
+        _need("roles.list", "assumed", 5),
+        _need("context.geo", "missing", 5),
+        _need("brand.name", "missing", 2),
+    ]
+    wire = build_input(CATALOG, _plain_request(needs))
+    ids = [n.need_id for n in wire.needs]
+    assert "locales" not in ids and "roles.list" not in ids  # satisfied and assumed are left out
+    assert ids[:2] == ["context.geo", "scope.features"]  # impact 5 first, catalog order inside
+    assert set(ids[2:]) == {"look.density_mode", "brand.name"}
+
+
+def test_a_focus_need_is_kept_first_even_when_it_is_no_longer_open() -> None:
+    needs = [_need("scope.features", "missing", 5), _need("locales", "satisfied", 5)]
+    wire = build_input(CATALOG, _plain_request(needs, focus_needs=["locales"]))
+    assert [n.need_id for n in wire.needs] == ["locales", "scope.features"]
+
+
+def test_the_need_table_is_capped_at_twenty() -> None:
+    ids = [s for s in CATALOG.slots if not s.startswith("org.")][:30]
+    needs = [_need(i, "missing", 1 + n % 5) for n, i in enumerate(ids)]
+    wire = build_input(CATALOG, _plain_request(needs))
+    assert len(wire.needs) == MAX_NEEDS == 20
+    impacts = [n.impact for n in wire.needs]
+    assert impacts == sorted(impacts, reverse=True)
+
+
+def test_a_need_whose_answers_can_all_be_true_is_marked_multi_from_its_own_value_kind() -> None:
+    """The mark comes from the need's value kind (a list), not from its fallback card: apps and login methods fall
+    back to a single-choice card, but several answers can be true for them. ``card_type`` stays the registry's."""
+    needs = [_need("apps.list"), _need("auth.methods"), _need("idea.business_model")]
+    by_id = {n.need_id: n for n in build_input(CATALOG, _plain_request(needs)).needs}
+    assert CATALOG.slots["apps.list"].fallback_card.type == "choose_one"
+    assert by_id["apps.list"].multi and by_id["apps.list"].card_type == "choose_one"
+    assert by_id["auth.methods"].multi
+    assert not by_id["idea.business_model"].multi  # exactly one answer
+
+
+def test_the_user_prompt_prints_the_type_hint_and_the_thin_answers() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    needs = [_need("scope.features", "partial", 5), _need("idea.business_model")]
+    request = _plain_request(needs, followup_candidates=["audience.segments"])
+    wire = build_input(CATALOG, request)
+    assert wire.followup_candidates == ["audience.segments"]
+    rendered = PromptRenderer().render(SPEC.spec, wire)
+    assert "type pick_many" in rendered.user and "type choose_one" in rendered.user
+    assert "scope.features [partial, impact 5, must, type pick_many]" in rendered.user
+    assert "Thin answers" in rendered.user and "audience.segments" in rendered.user
+    quiet = PromptRenderer().render(SPEC.spec, build_input(CATALOG, _plain_request(needs)))
+    assert "Thin answers" not in quiet.user
+
+
+def test_the_system_prompt_says_when_to_pick_many_and_drops_the_unread_fields() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    system = PromptRenderer().render(SPEC.spec, _input(EXAMPLES[0])).system
+    assert "more than one answer can be true" in system and '"pick_many"' in system
+    assert "exactly three" in system and "3 to 8" in system and "refines" in system
+    for gone in ("followup_hint", "skip_assumes", "depends_on", "quick_form"):
+        assert gone not in system, gone
+
+
+def test_the_output_wire_is_slim_and_still_strict_schema_safe() -> None:
+    from mde_compass.calls.plan_questions.schema import QuestionWire
+    from mde_llm_gateway.strict_schema import to_strict_schema
+
+    fields = set(QuestionWire.model_fields)
+    assert not fields & {"depends_on", "skip_assumes", "followup_hint"} and "refines" in fields
+    schema = to_strict_schema(PlanOutput)
+    question = schema["properties"]["questions"]["items"]  # type: ignore[index]
+    assert "refines" in question["required"]  # every field is required, as the strict schema wants
+
+
+def test_a_planned_quick_form_is_asked_as_an_open_prompt() -> None:
+    raw = EXAMPLES[0]
+    out = _output(raw)
+    form = out.questions[1].model_copy(update={"type": "quick_form"})
+    wire = out.model_copy(update={"questions": [out.questions[0], form]})
+    cards = to_batch(CATALOG, wire, _request(_input(raw))).cards()
+    assert cards[1].type == "open_prompt" and cards[1].options == [] and cards[1].examples
+
+
+def test_every_planned_card_keeps_the_always_on_custom_input() -> None:
+    for raw in EXAMPLES:
+        for card in to_batch(CATALOG, _output(raw), _request(_input(raw))).cards():
+            assert card.custom_input.enabled, card.id
+
+
+def test_a_question_that_refines_an_asked_question_becomes_a_folded_follow_up() -> None:
+    raw = next(e for e in EXAMPLES if e["input"]["mode"] == "replan")
+    out = _output(raw)
+    q0 = out.questions[0].model_copy(update={"refines": "Q-002"})
+    wire = out.model_copy(update={"questions": [q0, *out.questions[1:3]]})
+    context = PlanContext(asked_list="Q-001 | answered | a\nQ-002 | answered | b")
+    request = _request(_input(raw), context=context)
+    first, second, third = to_batch(CATALOG, wire, request).cards()
+    assert first.parent_card_id == "Q-002" and first.depth == 1 and first.origin == "followup"
+    assert second.parent_card_id is None and second.depth == 0 and second.origin == "planner"
+    assert third.origin == "planner"
+
+
+def test_a_refines_that_is_not_an_asked_question_is_ignored_never_fatal() -> None:
+    raw = EXAMPLES[0]
+    out = _output(raw)
+    bogus = out.questions[0].model_copy(update={"refines": "Q-099"})
+    wire = out.model_copy(update={"questions": [bogus]})
+    (card,) = to_batch(
+        CATALOG, wire, _request(_input(raw), context=PlanContext(asked_list="Q-001 | x | y"))
+    ).cards()
+    assert card.parent_card_id is None and card.origin == "planner"
+    (own,) = to_batch(
+        CATALOG,
+        out.model_copy(
+            update={"questions": [out.questions[0].model_copy(update={"refines": "Q-020"})]}
+        ),
+        _request(_input(raw), context=PlanContext(asked_list="Q-001 | x | y")),
+    ).cards()
+    assert own.parent_card_id is None  # a question of the same batch is not an asked question
+
+
+def test_in_followup_mode_the_focus_question_is_the_parent_whatever_refines_says() -> None:
+    raw = next(e for e in EXAMPLES if e["input"]["mode"] == "replan")
+    out = _output(raw)
+    one = out.questions[0].model_copy(update={"refines": "Q-002"})
+    focus = AnswerFocus(card_id="Q-003", question="q", answer_text="a", need_ids=["roles.list"])
+    request = _request(
+        _input(raw),
+        mode="followup",
+        focus=focus,
+        followup_depth=2,
+        context=PlanContext(asked_list="Q-002 | x | y"),
+    )
+    (card,) = to_batch(CATALOG, out.model_copy(update={"questions": [one]}), request).cards()
+    assert card.parent_card_id == "Q-003" and card.depth == 2 and card.origin == "followup"
+
+
+def test_the_mock_never_trips_type_fit_a_list_need_with_a_single_choice_card_names_a_domain_topic() -> (
+    None
+):
+    from mde_compass.engine.question_validators import ValidationContext, validate_batch
+
+    base = _input(EXAMPLES[0])
+    inp = build_input(
+        CATALOG,
+        _request(
+            base,
+            needs=[
+                _need("apps.list"),
+                _need("auth.methods"),
+                _need("idea.business_model", impact=4),
+            ],
+            want_min=3,
+            want_max=3,
+        ),
+    )
+    questions = handle(inp).questions
+    by_need = {q.serves[0]: q for q in questions}
+    assert all(q.type == "choose_one" and len(q.options) == 3 for q in questions)
+    assert by_need["apps.list"].serves == ["apps.list", "domain:apps_list_choice"]
+    assert by_need["idea.business_model"].serves == ["idea.business_model"]
+    cards = to_batch(CATALOG, handle(inp), _request(base, mode="replan", next_card_n=1)).cards()
+    ctx = ValidationContext.build(CATALOG, ["clinic", "mock"], user_text="clinic", batch_limit=5)
+    issues = [i.code for batch in validate_batch(cards, ctx).issues.values() for i in batch]
+    assert "type_fit" not in issues
+
+
+def test_the_golden_examples_follow_the_v2_question_rules() -> None:
+    from mde_compass.engine.question_validators import ValidationContext, validate_batch
+
+    wanted = {"type_fit", "too_many_open", "recommended_without_reason", "recommended_not_allowed"}
+    for raw in EXAMPLES:
+        inp = _input(raw)
+        cards = to_batch(CATALOG, _output(raw), _request(inp)).cards()
+        ctx = ValidationContext.build(
+            CATALOG,
+            inp.project_terms,
+            user_text=inp.project_card,
+            open_prompt_share=1 / 3,
+            batch_limit=8,
+        )
+        found = {
+            issue.code
+            for issues in validate_batch(cards, ctx).issues.values()
+            for issue in issues
+            if issue.code in wanted
+        }
+        assert found == set(), (raw["name"], found)
