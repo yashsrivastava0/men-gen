@@ -127,6 +127,11 @@ def engine_config(engine: Engine, policy: dict[str, Any] | None = None) -> Any:
         "default_ui_mode": "one_at_a_time",
         "open_prompt_share": 1.0,  # the scripted fixtures predate the open-prompt cap and the necessity rule
         "necessity_check": False,
+        "fan_out": False,
+        "parallel_initial_plan": False,
+        "quick_first_batch": (3, 3),
+        "standard_first_batch": (4, 4),
+        "thorough_batch": (5, 5),
     }
     interview = dataclasses.replace(
         DEFAULT_CONFIG.interview, engine=engine, **{**base, **(policy or {})}

@@ -844,8 +844,30 @@ class Service(FlowHooks):
         if await self._flow_voice_remove(turn, text):
             return
         ctx = self._ctx(turn)
-        if self.interview.active and not has_draft:
-            # the idea turn: reading the message and reading the situation do not depend on each other
+        if (
+            self.interview.active
+            and not has_draft
+            and self.interview.policy.parallel_initial_plan
+        ):
+            # the idea turn: reading the message, reading the situation, AND initial planning
+            # do not depend on each other (A1: speed)
+            turn.transcript.append(TurnLine(role="user", text=text))
+
+            async def _initial_plan() -> Any:
+                try:
+                    statuses = self.interview.statuses(turn)
+                    return await self.interview.plan(turn, "initial", statuses)
+                except Exception as exc:
+                    log.warning("initial_plan_parallel_failed", exc=str(exc))
+                    return None
+
+            understood, turn.situation, _ = await asyncio.gather(
+                self.interview.understand_text(turn, text, ev.input_mode),
+                self.ports.situator.situate(ctx, user_text=text),
+                _initial_plan(),
+            )
+            turn.transcript.pop()
+        elif self.interview.active and not has_draft:
             understood, turn.situation = await asyncio.gather(
                 self.interview.understand_text(turn, text, ev.input_mode),
                 self.ports.situator.situate(ctx, user_text=text),

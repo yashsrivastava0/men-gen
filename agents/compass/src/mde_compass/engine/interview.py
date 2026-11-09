@@ -514,18 +514,34 @@ class InterviewController:
     # ------------------------------------------------------------------------------------ round 0
     async def prepare(self, turn: _Turn) -> None:
         """Plan and show the first batch (the internal ``prepare_questions`` turn after the playback card)."""
-        if not self.active or turn.memory.batches:
+        if not self.active:
             return
         statuses = self.statuses(turn)
         self.block(turn)
         turn.brief.meta.plan = self.svc._plan(turn).model_copy(
             update={"interview_budget": self.budget_name(turn)}
         )
-        result, _ = await self.plan(turn, "initial", statuses)
-        hyp = result.batch.domain_hypothesis
+        if turn.memory.batches:
+            # Batch was planned in parallel during the idea turn (A1: speed)
+            batch = PlannedBatch.model_validate(turn.memory.batches[0].output)
+            self._drop_answered(turn, statuses)
+            dropped_ids = {q.card_id for q in turn.memory.qa if q.status == "dropped"}
+            if dropped_ids:
+                groups = [
+                    g.model_copy(
+                        update={"cards": [c for c in g.cards if c.id not in dropped_ids]}
+                    )
+                    for g in batch.groups
+                ]
+                groups = [g for g in groups if g.cards]
+                batch = batch.model_copy(update={"groups": groups})
+        else:
+            result, _ = await self.plan(turn, "initial", statuses)
+            batch = result.batch
+        hyp = batch.domain_hypothesis
         if hyp is not None:
             self.svc._merge_hypothesis(turn, hyp)
-        self._emit_batch(turn, result.batch)
+        self._emit_batch(turn, batch)
         self.touch(turn)
         if not self.show_next(turn):
             self.svc._go(turn, "queue_empty", "SEEDING")
@@ -552,6 +568,16 @@ class InterviewController:
         if turn.reshow_pending and self.reshow_pending(turn):
             self.touch(turn)
             return "asked"
+        if not any(q.asked_at is not None for q in turn.memory.qa):
+            is_prepare = isinstance(turn.event, Command) and turn.event.name == "prepare_questions"
+            if not is_prepare:
+                turn.internal = Command(
+                    event_id=internal_event_id(turn.turn_id, "prepare_questions"),
+                    name="prepare_questions",
+                )
+                return "scheduled"
+            await self.prepare(turn)
+            return "asked" if turn.state == "INTERVIEWING" else "done"
         if self.show_next(turn):
             self.touch(turn)
             return "asked"
@@ -563,16 +589,6 @@ class InterviewController:
                 self.reshow_pending(turn)
             self.touch(turn)
             return "asked"
-        if not turn.memory.batches:
-            is_prepare = isinstance(turn.event, Command) and turn.event.name == "prepare_questions"
-            if not is_prepare:
-                turn.internal = Command(
-                    event_id=internal_event_id(turn.turn_id, "prepare_questions"),
-                    name="prepare_questions",
-                )
-                return "scheduled"
-            await self.prepare(turn)
-            return "asked" if turn.state == "INTERVIEWING" else "done"
         # a batch just ended: audit the gaps, then replan or stop
         return await self._after_batch(turn, statuses)
 
@@ -602,9 +618,10 @@ class InterviewController:
         )
         if decision.stop:
             return await self._close_out(turn, statuses, decision)
-        followup_cands = list(turn.followup_candidates or turn.brief.meta.interview.followup_candidates or [])
+        block = self.block(turn)
+        followup_cands = list(turn.followup_candidates or block.followup_candidates or [])
         turn.followup_candidates = []
-        turn.brief.meta.interview = turn.brief.meta.interview.model_copy(update={"followup_candidates": []})
+        turn.brief.meta.interview = block.model_copy(update={"followup_candidates": []})
         result, _ = await self.plan(turn, "replan", statuses, followup_candidates=followup_cands)
         if not result.batch.cards():
             nothing = interview_policy.StopDecision(
@@ -678,9 +695,10 @@ class InterviewController:
     async def ask_closing(self, turn: _Turn, statuses: dict[str, NeedStatus]) -> bool:
         """Plan and show the closing question. False when the planner could not write one (the interview then
         ends with the closing decided from the ledger)."""
-        followup_cands = list(turn.followup_candidates or turn.brief.meta.interview.followup_candidates or [])
+        block = self.block(turn)
+        followup_cands = list(turn.followup_candidates or block.followup_candidates or [])
         turn.followup_candidates = []
-        turn.brief.meta.interview = turn.brief.meta.interview.model_copy(update={"followup_candidates": []})
+        turn.brief.meta.interview = block.model_copy(update={"followup_candidates": []})
 
         room = self.room(turn)
         followup_room = min(len(followup_cands), room.followup_room, 2)

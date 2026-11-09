@@ -58,8 +58,8 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
         _p("cmp.make_variants", "high", 2500, "writer", "deep", 60),
         # the AI-planned interview (build prompt 02): starting caps, measured in the live batches
-        _p("cmp.plan_questions", "low", 5000, "writer", "standard", 90),
-        _p("cmp.audit_questions", "medium", 3000, "critic", "standard", 60),
+        _p("cmp.plan_questions", "low", 3500, "writer", "standard", 90),
+        _p("cmp.audit_questions", "low", 2000, "critic", "standard", 60),
         _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
         _p("cmp.decide_answers", "low", 2000, "writer", "standard", 30),
         _p("cmp.compile_brief", "low", 12000, "writer", "standard", 120),
@@ -125,6 +125,8 @@ class InterviewPolicy:
     thorough_batch: tuple[int, int] = (5, 5)
     groups_per_batch: tuple[int, int] = (1, 2)
     questions_per_group: tuple[int, int] = (3, 4)
+    fan_out: bool = True
+    parallel_initial_plan: bool = False
     # follow-ups
     followup_max_depth: int = (
         1  # per need: a follow-up is never followed up (a second thin answer is assumed)
@@ -267,6 +269,17 @@ def load_budget_policy(env: Mapping[str, str] | None = None) -> BudgetPolicy:
         if parsed.is_finite() and parsed > 0:
             cap = min(parsed, hard)
     return BudgetPolicy(cap_usd=cap)
+
+
+PRODUCT_INTERVIEW_POLICY = InterviewPolicy(
+    quick_first_batch=(5, 6),
+    standard_first_batch=(5, 6),
+    thorough_batch=(7, 8),
+    groups_per_batch=(1, 3),
+    questions_per_group=(2, 4),
+    fan_out=True,
+    parallel_initial_plan=True,
+)
 
 
 @dataclass(frozen=True)

@@ -18,8 +18,10 @@ The model proposes; code decides. In order:
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
+from typing import Any
 
 from mde_compass.catalog import Catalog
 from mde_compass.config import InterviewPolicy
@@ -178,6 +180,186 @@ def _regroup(original: PlannedBatch, cards: list[Card]) -> list[BatchGroup]:
     return [BatchGroup(id=key, title=titles.get(key, ""), cards=by_group[key]) for key in order]
 
 
+async def _plan_fan_out(
+    *,
+    planner: QuestionPlanner,
+    auditor: QuestionAuditor,
+    ctx: TurnContext,
+    request: PlanRequest,
+    vctx: ValidationContext,
+    policy: InterviewPolicy,
+    catalog: Catalog,
+    statuses: Mapping[str, NeedStatus],
+    obligations: list[str],
+    needs_table: str,
+    asked_list: str,
+) -> PipelineResult:
+    theme_a_groups = {"scope", "audience", "goals", "product", "features", "idea"}
+    needs_a = [
+        n
+        for n in request.needs
+        if getattr(catalog.slots.get(n.need_id), "group", "") in theme_a_groups
+    ]
+    needs_b = [n for n in request.needs if n not in needs_a]
+    if not needs_a or not needs_b:
+        mid = max(1, len(request.needs) // 2)
+        needs_a = request.needs[:mid]
+        needs_b = request.needs[mid:]
+
+    want_max_a = max(2, request.want_max // 2)
+    want_max_b = max(2, request.want_max - want_max_a)
+    want_min_a = max(1, request.want_min // 2)
+    want_min_b = max(1, request.want_min - want_min_a)
+
+    sub_req_a = request.model_copy(
+        update={
+            "needs": needs_a,
+            "focus_needs": [n.need_id for n in needs_a if n.state in ("missing", "partial")],
+            "want_min": want_min_a,
+            "want_max": want_max_a,
+            "next_card_n": request.next_card_n,
+            "group_min": 1,
+            "group_max": 1,
+        }
+    )
+    sub_req_b = request.model_copy(
+        update={
+            "needs": needs_b,
+            "focus_needs": [n.need_id for n in needs_b if n.state in ("missing", "partial")],
+            "want_min": want_min_b,
+            "want_max": want_max_b,
+            "next_card_n": request.next_card_n + 10,
+            "group_min": 1,
+            "group_max": 1,
+        }
+    )
+
+    async def _sub_pipeline(
+        sub_req: PlanRequest,
+    ) -> tuple[PlannedBatch, list[Card], list[RejectedQuestion], bool]:
+        res = PipelineResult(
+            batch=PlannedBatch(batch_id="BAT-000", mode=stored_mode(sub_req.mode))
+        )
+        plan_res = await planner.plan(ctx, sub_req)
+        if plan_res.used_fallback:
+            return plan_res.batch, plan_res.batch.cards(), [], True
+        cards, rejected = await _screen(
+            cards=plan_res.batch.cards(),
+            vctx=vctx,
+            auditor=auditor,
+            ctx=ctx,
+            request=sub_req,
+            needs_table=needs_table,
+            asked_list=asked_list,
+            policy=policy,
+            result=res,
+        )
+        return plan_res.batch, cards, rejected, False
+
+    outcomes = await asyncio.gather(
+        _sub_pipeline(sub_req_a),
+        _sub_pipeline(sub_req_b),
+        return_exceptions=True,
+    )
+
+    batches: list[PlannedBatch] = []
+    all_cards: list[Card] = []
+    all_rejected: list[RejectedQuestion] = []
+    any_fallback = False
+
+    for out in outcomes:
+        if isinstance(out, BaseException):
+            continue
+        batch, cards, rejected, used_fb = out
+        batches.append(batch)
+        all_cards.extend(cards)
+        all_rejected.extend(rejected)
+        if used_fb:
+            any_fallback = True
+
+    if not all_cards:
+        fb = await planner.fallback(ctx, request)
+        return PipelineResult(
+            batch=fb.batch,
+            used_fallback=True,
+            reason=fb.reason or "fan-out produced no valid cards",
+        )
+
+    base_n = request.next_card_n
+    renumbered: list[Card] = []
+    for i, card in enumerate(all_cards):
+        new_id = f"Q-{base_n + i:03d}"
+        renumbered.append(card.model_copy(update={"id": new_id}))
+
+    code_merged = validate_batch(rank_by_priority(renumbered), vctx)
+    valid_cards = in_original_order(code_merged.accepted, renumbered)
+    all_rejected.extend(code_merged.rejected)
+
+    backlog: list[BacklogItem] = []
+    for b in batches:
+        backlog.extend(b.backlog)
+
+    if len(valid_cards) > request.want_max:
+        kept = in_original_order(rank_by_priority(valid_cards)[: request.want_max], valid_cards)
+        kept_ids = {c.id for c in kept}
+        for extra in (c for c in valid_cards if c.id not in kept_ids):
+            backlog.append(
+                BacklogItem(
+                    topic=extra.intent or extra.question,
+                    intent=extra.intent,
+                    serves=list(extra.need_ids),
+                )
+            )
+        valid_cards = kept
+
+    merged_hyp = None
+    hyps = [b.domain_hypothesis for b in batches if b.domain_hypothesis is not None]
+    if hyps:
+        merged_hyp = hyps[0]
+        if len(hyps) > 1:
+            h2 = hyps[1]
+            merged_hyp = merged_hyp.model_copy(
+                update={
+                    "likely_features": list(
+                        dict.fromkeys(merged_hyp.likely_features + h2.likely_features)
+                    ),
+                    "likely_roles": list(dict.fromkeys(merged_hyp.likely_roles + h2.likely_roles)),
+                    "likely_families": list(
+                        dict.fromkeys(merged_hyp.likely_families + h2.likely_families)
+                    ),
+                }
+            )
+
+    groups = _regroup(
+        batches[0]
+        if batches
+        else PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode)),
+        valid_cards,
+    )
+    assumed_instead: list[Any] = []
+    for b in batches:
+        assumed_instead.extend(b.assumed_instead)
+
+    covered_needs = list(dict.fromkeys(c.need_ids[0] for c in valid_cards if c.need_ids))
+
+    merged_batch = PlannedBatch(
+        batch_id="BAT-000",
+        mode=stored_mode(request.mode),
+        groups=groups,
+        covered_needs=covered_needs,
+        assumed_instead=assumed_instead,
+        expert_gaps=[],
+        backlog=backlog,
+        domain_hypothesis=merged_hyp,
+    )
+    return PipelineResult(
+        batch=merged_batch,
+        rejected=all_rejected,
+        used_fallback=any_fallback,
+        planner_calls=len(batches),
+    )
+
+
 async def plan_validated(
     *,
     planner: QuestionPlanner,
@@ -192,6 +374,25 @@ async def plan_validated(
     needs_table: str,
     asked_list: str,
 ) -> PipelineResult:
+    if (
+        policy.fan_out
+        and request.mode in ASKING_MODES
+        and request.want_max >= 5
+        and len(request.needs) >= 2
+    ):
+        return await _plan_fan_out(
+            planner=planner,
+            auditor=auditor,
+            ctx=ctx,
+            request=request,
+            vctx=vctx,
+            policy=policy,
+            catalog=catalog,
+            statuses=statuses,
+            obligations=obligations,
+            needs_table=needs_table,
+            asked_list=asked_list,
+        )
     result = PipelineResult(batch=PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode)))
     first = await planner.plan(ctx, request)
     result.planner_calls = 1

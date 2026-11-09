@@ -127,7 +127,7 @@
       question). Only a question that belongs to no known batch (a legacy single `card` event)
       is shown on its own. */
   function useForm(loc, pendingCount) {
-    return !!loc && pendingCount >= 1;
+    return !!loc && !loc.followup && pendingCount >= 1;
   }
 
   // ---- numbers: "Question 4 of about 7", "Last question" ----------------------------------------------------

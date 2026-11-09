@@ -131,7 +131,7 @@ def _card(
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
     assert s.id == "cmp.audit_questions" and s.version == 3
-    assert s.reasoning_effort == "medium" and s.max_output_tokens == 3000 and s.route == "standard"
+    assert s.reasoning_effort == "low" and s.max_output_tokens == 2000 and s.route == "standard"
     assert SPEC.lane == "critic" and SPEC.timeout_s == 60 and not s.tools
     assert s.untrusted_inputs == ("asked_list",)
     assert set(s.untrusted_inputs) <= set(AuditInput.model_fields)

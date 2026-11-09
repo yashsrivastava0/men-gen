@@ -28,3 +28,4 @@ def upgrade() -> None:
 def downgrade() -> None:
     op.drop_column("compass_call_log", "event_id")
     op.drop_column("compass_call_log", "turn_id")
+

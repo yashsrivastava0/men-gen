@@ -65,6 +65,11 @@ def build_service(
     ):  # the counter is per process; the ledger remembers what earlier batches spent
         budget.reconcile(compass_spent_micros(the_settings.llm_budget_ledger))
 
+    if mode == "live" and compass_config is None:
+        from mde_compass.config import PRODUCT_INTERVIEW_POLICY
+
+        compass_config = CompassConfig(interview=PRODUCT_INTERVIEW_POLICY)
+
     if memory:
         from mde_compass.store import InMemoryStore
 
