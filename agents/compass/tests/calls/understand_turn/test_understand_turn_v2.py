@@ -144,6 +144,13 @@ def test_v2_wire_models_fit_the_strict_schema_limits() -> None:
     to_strict_schema(UnderstandOutput, max_depth=5)
 
 
+def test_everything_derived_from_the_users_words_is_untrusted_data() -> None:
+    assert set(SPEC.spec.untrusted_inputs) == {
+        "text", "recent_turns", "fact_digest", "focus_question", "focus_intent",
+        "focus_selected_labels",
+    }  # fmt: skip
+
+
 def test_every_v2_field_is_required_so_the_strict_schema_has_no_defaults() -> None:
     required_in = {
         "focus_card_id", "focus_question", "focus_intent", "focus_need_ids",
@@ -887,7 +894,7 @@ def test_the_rendered_prompt_wraps_the_digest_and_the_focus_as_data() -> None:
     )
     assert "Facts we already hold" in user and "FCT-002" in user
     assert "Still missing: who, goal" in user and "audience.segments [missing]" in user
-    assert user.count("<untrusted_content") >= 4  # text, question, tapped label, digest
+    assert user.count("<untrusted_content") >= 5  # text, question, intent, tapped label, digest
     assert "&lt;/untrusted_content" in user and "{{" not in rendered.system + user
     for word in ("atomic", "verbatim", "vague", "contradiction", "pivot", "never ask"):
         assert word.lower() in rendered.system.lower(), word

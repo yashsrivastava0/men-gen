@@ -29,9 +29,7 @@ Recent turns, oldest first (context only; update slots only from the message bel
 {% if focus_card_id or focus_need_ids %}
 
 The question this message answers{% if focus_card_id %} ({{ focus_card_id }}){% endif %}: {{ focus_question }}
-{% if focus_intent %}
 What the question wanted to learn: {{ focus_intent }}
-{% endif %}
 {% if focus_need_ids %}
 It serves: {{ focus_need_ids | join(", ") }}
 {% endif %}

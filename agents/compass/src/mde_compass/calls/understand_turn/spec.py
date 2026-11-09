@@ -33,6 +33,7 @@ SPEC: CompassCallSpec[UnderstandInput, UnderstandOutput] = CompassCallSpec(
             "recent_turns",
             "fact_digest",
             "focus_question",
+            "focus_intent",
             "focus_selected_labels",
         ),
         cacheable=False,
