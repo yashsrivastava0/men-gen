@@ -607,6 +607,12 @@ class Service:
             for hf in hyp.likely_features:
                 if hf.intent:
                     intents.setdefault(hf.name.lower(), hf.intent)
+        described = self.catalog.slots.get("scope.features")
+        for option in described.fallback_card.options if described else ():
+            for label in (option.label.en, option.label.hi):
+                intents.setdefault(
+                    label.lower(), label
+                )  # the label already says what people can do
         for rec in brief.scope:
             if not rec.intent:
                 rec.intent = intents.get(rec.name.lower(), "")
@@ -918,8 +924,7 @@ class Service:
         """A required slot with no default that is still empty after its frame was asked (a frame batches
         several slots but one card settles one) gets ONE follow-up card; never more than twice per slot."""
         self._derive_subcategory(turn)
-        if self._question_n(turn) >= self.config.questions.hard_cap:
-            return False
+        over_cap = self._question_n(turn) >= self.config.questions.hard_cap
         counts: dict[str, int] = {}
         for card in turn.asked_cards():
             for sid in card.slots:
@@ -927,6 +932,8 @@ class Service:
         for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
             sd = self.catalog.slots[sid]
             if sd.default is not None or counts.get(sid, 0) >= 2:
+                continue
+            if over_cap and not sd.must_confirm:
                 continue
             frame = next((f for f in self.catalog.frames.values() if sid in f.slots), None)
             if frame is None:
@@ -1257,7 +1264,7 @@ class Service:
             value = (
                 expand_structure(w.value, lambda key: self._t(turn, key))
                 if w.slot_id == "apps.list"
-                else w.value
+                else self._label_codes(w.slot_id, w.value, turn.lang)
             )
             res = turn.slots.write(
                 w.slot_id, value, state=state,  # type: ignore[arg-type]
@@ -1294,6 +1301,27 @@ class Service:
         turn.notice("assumed", self._t(turn, "card.assumed_collapsed", value=picked))
         self._rebuild(turn)
         await self._advance(turn)
+
+    def _label_codes(self, slot_id: str, value: JsonValue, lang: str) -> JsonValue:
+        """For list-type slots a card option's value may be an internal code (``account_profile``): the Brief
+        stores the human label instead. Enum slots keep their codes (the schema validates them)."""
+        sd = self.catalog.slots.get(slot_id)
+        if sd is None or sd.value_schema.kind not in ("object_list", "text_list"):
+            return value
+        labels = {o.value: o.label.get(lang) for o in sd.fallback_card.options if o.value}
+
+        def convert(v: JsonValue) -> JsonValue:
+            if isinstance(v, str) and "_" in v and v in labels:
+                return labels[v]
+            if isinstance(v, dict):
+                name = v.get("name")
+                if isinstance(name, str) and "_" in name and name in labels:
+                    return {**v, "name": labels[name]}
+            return v
+
+        if isinstance(value, list):
+            return [convert(x) for x in value]
+        return convert(value)
 
     def _selected_labels(self, turn: _Turn, slot_ids: Sequence[str]) -> list[str]:
         """Names already chosen for list slots, so a follow-up card offers something new."""

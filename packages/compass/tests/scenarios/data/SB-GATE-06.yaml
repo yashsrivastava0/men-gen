@@ -2,8 +2,6 @@ id: SB-GATE-06
 title: Gate 1 in enterprise mode, the approver's decision on the current hash approves
 tags: [gate, enterprise, approvers]
 mode: enterprise
-known_issue: BUG-2
-known_issue_note: recording an approver's approval writes meta.approvals, and meta is inside the whole-Brief hash, so the hash the approver approved no longer matches (gate_blocked hash_mismatch, version +1 on every attempt); enterprise approval can never complete
 steps:
   - say: "We need an internal field service app for our technicians in Pune, in English"
   - drive: {}
