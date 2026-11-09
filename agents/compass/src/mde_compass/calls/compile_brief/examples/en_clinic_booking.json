@@ -1,0 +1,214 @@
+{
+  "name": "en_clinic_booking",
+  "input": {
+    "language": "en",
+    "ledger": [
+      "# chat\nFCT-006 [context|chat] The person said thank you (from evt_006) | conf 0.50 | stated | quote: \"thanks, that was easy\"\n# language\nFCT-009 [preference|language] Patients mostly speak Hindi and English (from Q-003) | conf 0.90 | stated | quote: \"most patients speak Hindi and English\"\n# location\nFCT-001 [context|location] The business is a family clinic in Indore (from evt_001) | conf 0.90 | stated | entities: clinic | quote: \"an appointment booking app for my family clinic in Indore\"\n# no_shows\nFCT-004 [rule|no_shows] A slot is freed if the patient has not arrived 10 minutes after the start (from Q-004) | conf 0.90 | stated | quote: \"if they don't come within ten minutes, give the slot to someone else\"\n# patients\nFCT-002 [role|patients] Patients choose a doctor and a time slot (from evt_002) | conf 0.90 | stated | consumers: blueprint,screens | quote: \"patients pick a doctor and a time slot\"\n# payments\nFCT-005 [exclusion|payments] No online payment in the first version (from Q-006) | conf 0.90 | stated | quote: \"no online payment for now\"\n# reception\nFCT-003 [role|reception] The receptionist manages the day's schedule (from evt_003) | conf 0.90 | stated | consumers: blueprint,screens | quote: \"the receptionist manages the day's schedule\"\nFCT-010 [goal|reception] The clinic wants fewer phone calls to the reception desk (from evt_010) | conf 0.85 | stated | quote: \"I want fewer phone calls at the reception\"\n# records\nFCT-007 [constraint|records] Visit notes include health details and must stay private (from evt_007) | conf 0.90 | stated | consumers: backend,qa | quote: \"doctors write visit notes with health details, those stay private\"\n# scheduling\nFCT-008 [number|scheduling] The clinic has 6 doctors and 2 of them take walk-ins on Saturdays (from evt_008) | conf 0.90 | stated | entities: doctors | quote: \"we have six doctors, two of them take walk-ins on Saturdays\""
+    ],
+    "needs_table": [
+      "- idea.summary: Your idea in one line\n- idea.problem_value: The problem it solves\n- context.geo: Country and city\n- roles.list: Roles\n- scope.must_not: What it must not do\n- data.sensitive: Sensitive information\n- locales: Languages"
+    ],
+    "needs": [
+      {
+        "need_id": "idea.summary",
+        "label": "Your idea in one line",
+        "sufficient": "One or two sentences that say what the app does and for whom, in the user's own words."
+      },
+      {
+        "need_id": "idea.problem_value",
+        "label": "The problem it solves",
+        "sufficient": "The problem the app solves, for whom, and what is painful about how they cope today."
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several."
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+      },
+      {
+        "need_id": "scope.must_not",
+        "label": "What it must not do",
+        "sufficient": "Anything the app must explicitly not do or include."
+      },
+      {
+        "need_id": "data.sensitive",
+        "label": "Sensitive information",
+        "sufficient": "What sensitive information the app handles, such as health, financial, children's data or ID documents."
+      },
+      {
+        "need_id": "locales",
+        "label": "Languages",
+        "sufficient": "The language the chat uses and the languages the app itself must support, including any right-to-left language."
+      }
+    ],
+    "assumptions": [],
+    "asked_list": [],
+    "qa_compact": [],
+    "sections": [],
+    "draft": [],
+    "targets": [
+      {
+        "path": "idea.summary",
+        "label": "Your idea in one line",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "path": "idea.problem_value",
+        "label": "The problem it solves",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "path": "context.geo",
+        "label": "Country and city",
+        "value_kind": "geo",
+        "options": [],
+        "fields": [
+          "country",
+          "city",
+          "region"
+        ]
+      },
+      {
+        "path": "roles.list",
+        "label": "Roles",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "goal",
+          "permissions"
+        ]
+      },
+      {
+        "path": "scope.must_not",
+        "label": "What it must not do",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": []
+      },
+      {
+        "path": "data.sensitive",
+        "label": "Sensitive information",
+        "value_kind": "enum_list",
+        "options": [
+          "personal_ids",
+          "health",
+          "financial",
+          "none"
+        ],
+        "fields": []
+      },
+      {
+        "path": "locales",
+        "label": "Languages",
+        "value_kind": "locales",
+        "options": [],
+        "fields": []
+      }
+    ]
+  },
+  "output": {
+    "items": [
+      {
+        "path": "idea.summary",
+        "value_json": "\"A booking app for a family clinic in Indore where patients pick a doctor and a time slot\"",
+        "fact_ids": [
+          "FCT-001",
+          "FCT-002"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "path": "idea.problem_value",
+        "value_json": "\"Fewer phone calls to the reception desk\"",
+        "fact_ids": [
+          "FCT-010"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "context.geo",
+        "value_json": "{\"city\": \"Indore\"}",
+        "fact_ids": [
+          "FCT-001"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "path": "roles.list",
+        "value_json": "[{\"name\": \"Patient\", \"goal\": \"Choose a doctor and a time slot\"}, {\"name\": \"Receptionist\", \"goal\": \"Manage the day's schedule\"}]",
+        "fact_ids": [
+          "FCT-002",
+          "FCT-003"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.must_not",
+        "value_json": "[\"Online payment in the first version\"]",
+        "fact_ids": [
+          "FCT-005"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "path": "data.sensitive",
+        "value_json": "[\"health\"]",
+        "fact_ids": [
+          "FCT-007"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "locales",
+        "value_json": "[\"hi\", \"en\"]",
+        "fact_ids": [
+          "FCT-009"
+        ],
+        "confidence": 0.8
+      }
+    ],
+    "placements": [
+      {
+        "fact_id": "FCT-004",
+        "topic": "no_shows",
+        "consumers": [
+          "blueprint",
+          "qa"
+        ]
+      },
+      {
+        "fact_id": "FCT-007",
+        "topic": "records",
+        "consumers": [
+          "backend",
+          "verify"
+        ]
+      },
+      {
+        "fact_id": "FCT-008",
+        "topic": "scheduling",
+        "consumers": [
+          "blueprint",
+          "screens"
+        ]
+      }
+    ],
+    "not_used": [
+      {
+        "fact_id": "FCT-006",
+        "reason": "thanks, no content"
+      }
+    ],
+    "summary": "A booking app for a family clinic in Indore: patients pick a doctor and a time slot.",
+    "pitch": "Patients of your family clinic pick a doctor and a time slot on their phone, and the receptionist manages the day's schedule in one place. Missed slots are freed after ten minutes, visit notes stay private, and there is no online payment in the first version."
+  }
+}

@@ -1,0 +1,166 @@
+{
+  "name": "en_pharmacy_stock_consistency_pass",
+  "input": {
+    "language": "en",
+    "ledger": [
+      "# batches\nFCT-004 [rule|batches] Batch numbers are recorded only for scheduled drugs (from evt_004) | conf 0.90 | stated | quote: \"batch numbers only for scheduled drugs\"\n# business\nFCT-001 [context|business] We make a stock tool for small pharmacy shops (from evt_001) | conf 0.90 | stated | quote: \"we are building a stock tool for small pharmacy shops\"\n# expiry\nFCT-003 [rule|expiry] The tool warns when a medicine is within 60 days of its expiry date (from Q-003) | conf 0.90 | stated | quote: \"warn me when a medicine is within sixty days of expiry\"\n# network\nFCT-005 [constraint|network] Shops often have weak internet, so the tool must keep working offline for a day (from evt_005) | conf 0.90 | stated | consumers: blueprint,frontend,qa | quote: \"the internet is weak in many shops, it must work offline for a day\"\n# reorder\nFCT-006 [requirement|reorder] In version one the tool only prepares a low-stock list and does not send orders to wholesalers (from Q-006) | conf 0.90 | stated | quote: \"for now just make the low stock list, don't send orders to the wholesaler\"\nFCT-007 [preference|reorder] The owner reads the low-stock list every morning (from evt_007) | conf 0.90 | stated | quote: \"I look at the low stock list every morning\"\n# users\nFCT-002 [role|users] The shop owner and one assistant use it (from evt_002) | conf 0.90 | stated | consumers: blueprint,screens | quote: \"the owner and one assistant use it\""
+    ],
+    "needs_table": [
+      "- idea.summary: Your idea in one line\n- roles.list: Roles\n- scope.features: Features\n- scope.must_not: What it must not do\n- constraints.offline: Offline use"
+    ],
+    "needs": [
+      {
+        "need_id": "idea.summary",
+        "label": "Your idea in one line",
+        "sufficient": "One or two sentences that say what the app does and for whom, in the user's own words."
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+      },
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release."
+      },
+      {
+        "need_id": "scope.must_not",
+        "label": "What it must not do",
+        "sufficient": "Anything the app must explicitly not do or include."
+      },
+      {
+        "need_id": "constraints.offline",
+        "label": "Offline use",
+        "sufficient": "Whether the app must work without internet, and which parts."
+      }
+    ],
+    "assumptions": [],
+    "asked_list": [],
+    "qa_compact": [],
+    "sections": [],
+    "draft": [
+      "{\"path\": \"idea.summary\", \"value\": \"A stock tool for small pharmacy shops\", \"fact_ids\": [\"FCT-001\"]}\n{\"path\": \"roles.list\", \"value\": [{\"name\": \"Owner\", \"goal\": \"Run the shop's stock\"}, {\"name\": \"Shop owner\", \"goal\": \"Run the shop's stock\"}, {\"name\": \"Assistant\", \"goal\": \"Help with stock\"}], \"fact_ids\": [\"FCT-002\"]}\n{\"path\": \"scope.features\", \"value\": [{\"name\": \"Expiry warnings\", \"intent\": \"Warn before a medicine expires\", \"status\": \"in\", \"priority\": \"must\"}, {\"name\": \"Send reorders to wholesalers\", \"intent\": \"Order low stock automatically\", \"status\": \"in\", \"priority\": \"must\"}], \"fact_ids\": [\"FCT-003\", \"FCT-006\"]}\n{\"path\": \"constraints.offline\", \"value\": \"online_only\", \"fact_ids\": [\"FCT-005\"]}"
+    ],
+    "targets": [
+      {
+        "path": "idea.summary",
+        "label": "Your idea in one line",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "path": "roles.list",
+        "label": "Roles",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "goal",
+          "permissions"
+        ]
+      },
+      {
+        "path": "scope.features",
+        "label": "Features",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "intent",
+          "status",
+          "priority",
+          "tier"
+        ]
+      },
+      {
+        "path": "scope.must_not",
+        "label": "What it must not do",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": []
+      },
+      {
+        "path": "constraints.offline",
+        "label": "Offline use",
+        "value_kind": "enum",
+        "options": [
+          "full_offline",
+          "partial_offline",
+          "online_only"
+        ],
+        "fields": []
+      }
+    ]
+  },
+  "output": {
+    "items": [
+      {
+        "path": "idea.summary",
+        "value_json": "\"A stock tool for small pharmacy shops\"",
+        "fact_ids": [
+          "FCT-001"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "path": "roles.list",
+        "value_json": "[{\"name\": \"Shop owner\", \"goal\": \"Run the shop's stock and read the low-stock list every morning\"}, {\"name\": \"Assistant\", \"goal\": \"Help the owner with stock\"}]",
+        "fact_ids": [
+          "FCT-002",
+          "FCT-007"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.features",
+        "value_json": "[{\"name\": \"Expiry warnings\", \"intent\": \"Warn when a medicine is within 60 days of its expiry date\", \"status\": \"in\", \"priority\": \"must\"}, {\"name\": \"Low-stock list\", \"intent\": \"Prepare a list of medicines running low for the owner\", \"status\": \"in\", \"priority\": \"must\"}]",
+        "fact_ids": [
+          "FCT-003",
+          "FCT-006",
+          "FCT-007"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.must_not",
+        "value_json": "[\"Sending orders to wholesalers in version one\"]",
+        "fact_ids": [
+          "FCT-006"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "constraints.offline",
+        "value_json": "\"partial_offline\"",
+        "fact_ids": [
+          "FCT-005"
+        ],
+        "confidence": 0.8
+      }
+    ],
+    "placements": [
+      {
+        "fact_id": "FCT-003",
+        "topic": "expiry",
+        "consumers": [
+          "blueprint",
+          "qa"
+        ]
+      },
+      {
+        "fact_id": "FCT-004",
+        "topic": "batches",
+        "consumers": [
+          "blueprint",
+          "backend",
+          "verify"
+        ]
+      }
+    ],
+    "not_used": [],
+    "summary": "A stock tool for small pharmacy shops with expiry warnings and a morning low-stock list.",
+    "pitch": "Small pharmacy shops get a stock tool that warns the owner when a medicine is close to expiry and prepares a low-stock list every morning. It keeps working for a day without internet, and in version one it does not send orders to wholesalers."
+  }
+}
