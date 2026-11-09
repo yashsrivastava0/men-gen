@@ -79,14 +79,18 @@ async def load_session(conv: Conversation, tenant: str = "t1") -> SessionData:
 
 # ------------------------------------------------------------------------------------------ the walk
 def fact_refs(node: Any) -> set[str]:
-    """Every ``FCT-###`` string anywhere in a JSON-like value (a Brief item, a section, a whole Brief)."""
+    """Every ``FCT-###`` string in a JSON-like value (a Brief item, a section, a whole Brief), except inside the
+    ``history`` of an item: an earlier value keeps the evidence it had and is no longer in force."""
     found: set[str] = set()
     if isinstance(node, str):
         if FCT_REF.match(node):
             found.add(node)
     elif isinstance(node, dict):
-        for value in node.values():
-            found |= fact_refs(value)
+        for key, value in node.items():
+            if (
+                key != "history"
+            ):  # earlier values of an item keep the evidence they had: they are not in force
+                found |= fact_refs(value)
     elif isinstance(node, list):
         for value in node:
             found |= fact_refs(value)
@@ -111,7 +115,7 @@ def locked_items(node: Any, path: str = "") -> list[tuple[str, dict[str, Any]]]:
         if node.get("tier") == "Locked":
             found.append((path or "<root>", node))
         for key, value in node.items():
-            if key == "meta":
+            if key in ("meta", "history"):  # earlier values keep the tier and evidence they had
                 continue
             found.extend(locked_items(value, f"{path}.{key}" if path else str(key)))
     elif isinstance(node, list):
@@ -163,7 +167,11 @@ def repeated_questions(cards: list[Card]) -> list[tuple[str, str]]:
         for index, key in ((seen_text, text), (seen_intent, intent)):
             other = index.get(key) if key else None
             is_repeat = (
-                other is not None and other.id != card.id and other.id != card.parent_card_id
+                other is not None
+                and other.id != card.id
+                and other.id
+                != card.parent_card_id  # a follow-up refines its parent: not a repeat of it,
+                and card.id != other.parent_card_id  # whichever of the two the ledger lists first
             )
             if other is not None and is_repeat and (other.id, card.id) not in out:
                 out.append((other.id, card.id))

@@ -386,3 +386,31 @@ def test_audit_reasons_name_each_failure_and_pass_a_clean_verdict() -> None:
         "specificity 2 is below 3", "leading wording", "jargon", "repeats Q-001",
         "this person could not answer it", "it serves no need",
     ]  # fmt: skip
+
+
+# ------------------------------------------------------------------------------- pinned gaps (strict xfail)
+@pytest.mark.xfail(
+    strict=True,
+    reason="GAP-4: InterviewPolicy.high_confidence_closes_need is never read, so a base question about a need "
+    "that facts already satisfy is shown instead of becoming a confirmation (over-asking control, prompt 2.6)",
+)
+async def test_a_question_about_a_need_the_facts_already_satisfy_is_not_shown_as_a_question() -> (
+    None
+):
+    satisfied = {"audience.segments": make_status("audience.segments", "satisfied")}
+    ask_again = make_card(
+        "Q-002",
+        "Who orders your tiffins, and what do they want from the app?",
+        needs=("audience.segments",),
+    )
+    result = await run(StubPlanner(ok(ask_again), ok(good(3))), statuses=satisfied)
+    assert all(c.id != "Q-002" or c.type == "confirm" for c in result.batch.cards())
+
+
+@pytest.mark.xfail(
+    strict=True,
+    reason="GAP-5: the planner's priority (1 to 5) is dropped when the wire question becomes a Card, so a batch "
+    "cut to size keeps the first questions in the planner's order, not the most important ones",
+)
+def test_the_planners_priority_survives_into_the_card_so_truncation_can_use_it() -> None:
+    assert "priority" in Card.model_fields
