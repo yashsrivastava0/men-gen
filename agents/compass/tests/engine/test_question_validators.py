@@ -1119,3 +1119,198 @@ def test_the_share_comes_from_the_build_argument_then_the_policy_then_off() -> N
         ValidationContext.build(CAT, TERMS, config=cfg, open_prompt_share=1.0).open_prompt_share
         == 1.0
     )  # type: ignore[arg-type]
+
+
+# ------------------------------------------------------------------------- necessity (v2, ADR 0016)
+def status(need: str, state: str = "missing", impact: int | None = None) -> NeedStatus:
+    slot = REAL.slots[need]
+    return NeedStatus(
+        need_id=need,
+        state=state,  # type: ignore[arg-type]
+        impact=impact if impact is not None else slot.impact,
+        level=slot.level,
+    )
+
+
+def necessity_ctx(*statuses: NeedStatus, **kw: object) -> ValidationContext:
+    return ctx(statuses={s.need_id: s for s in statuses}, **kw)
+
+
+def asks(need: str, **kw: object) -> Card:
+    """A question for one need, worded so that only the necessity rule can find fault with it."""
+    return card(
+        question="Which of these does your tiffin service need?",
+        type="pick_many",
+        options=opts("Daily menu", "Weekly plans", "Rider routes"),
+        needs=[need],
+        **kw,  # type: ignore[arg-type]
+    )
+
+
+def test_the_catalog_marks_only_safe_defaults_as_infer() -> None:
+    from mde_compass.catalog.loader import SlotDef
+
+    infer = {sid for sid, s in REAL.slots.items() if s.ask_policy == "infer"}
+    assert infer == {
+        "context.scale_launch",
+        "look.tone_words",
+        "look.density_mode",
+        "devices.profile",
+        "integrations.mode",
+        "constraints.offline",
+        "constraints.performance",
+        "constraints.accessibility",
+    }
+    for sid in infer:
+        slot = REAL.slots[sid]
+        assert slot.default is not None and slot.risk == "low" and not slot.must_confirm, sid
+    assert all(s.ask_policy == "ask" for s in REAL.slots.values() if s.must_confirm)
+    base = REAL.slots["integrations.mode"].model_dump()
+    for bad in ({"default": None}, {"must_confirm": True}, {"risk": "high"}):
+        with pytest.raises(ValueError, match="ask_policy infer"):
+            SlotDef.model_validate({**base, **bad})
+    assert (
+        SlotDef.model_validate({**base, "ask_policy": "ask", "default": None}).ask_policy == "ask"
+    )
+
+
+def test_without_need_statuses_nothing_is_judged() -> None:
+    assert "necessity" not in codes(asks("look.density_mode"), ctx())
+
+
+def test_a_question_for_an_open_need_the_person_alone_can_answer_is_necessary() -> None:
+    assert "necessity" not in codes(asks("scope.features"), necessity_ctx(status("scope.features")))
+    assert "necessity" not in codes(
+        asks("scope.features"), necessity_ctx(status("scope.features", "partial"))
+    )
+
+
+@pytest.mark.parametrize("state", ["satisfied", "assumed"])
+def test_a_question_for_a_need_already_settled_is_rejected(state: str) -> None:
+    found = [
+        i
+        for i in validate_question(
+            asks("scope.features"), necessity_ctx(status("scope.features", state))
+        )
+        if i.code == "necessity"
+    ]
+    assert len(found) == 1 and f"scope.features is already {state}" in found[0].message
+
+
+def test_a_need_below_the_impact_floor_is_not_worth_a_question() -> None:
+    from mde_compass.engine.question_validators import NECESSITY_MIN_IMPACT
+
+    assert NECESSITY_MIN_IMPACT == 3
+    low = status("idea.differentiator", impact=2)
+    found = [
+        i
+        for i in validate_question(asks("idea.differentiator"), necessity_ctx(low))
+        if i.code == "necessity"
+    ]
+    assert found and "below 3" in found[0].message
+    at_floor = status("idea.problem_value", impact=NECESSITY_MIN_IMPACT)
+    assert "necessity" not in codes(asks("idea.problem_value"), necessity_ctx(at_floor))
+
+
+def test_a_need_with_a_safe_default_is_assumed_not_asked_unless_the_person_said_something() -> None:
+    nothing = necessity_ctx(status("integrations.mode", "missing"))
+    found = [
+        i for i in validate_question(asks("integrations.mode"), nothing) if i.code == "necessity"
+    ]
+    assert found and "safe default" in found[0].message
+    said = necessity_ctx(status("integrations.mode", "partial"))
+    assert "necessity" not in codes(
+        asks("integrations.mode"), said
+    )  # something was said: refine it
+    # the same need with a risky policy would be asked: must_confirm needs are always eligible
+    risky = necessity_ctx(status("auth.methods", "missing"))
+    assert REAL.slots["auth.methods"].must_confirm and "necessity" not in codes(
+        asks("auth.methods"), risky
+    )
+
+
+def test_one_eligible_need_is_enough_and_the_others_may_be_settled() -> None:
+    both = necessity_ctx(status("scope.features", "satisfied"), status("roles.list", "missing"))
+    assert "necessity" not in codes(
+        asks("scope.features").model_copy(update={"need_ids": ["scope.features", "roles.list"]}),
+        both,
+    )
+    none = necessity_ctx(status("scope.features", "satisfied"), status("roles.list", "assumed"))
+    c = asks("scope.features").model_copy(update={"need_ids": ["scope.features", "roles.list"]})
+    message = next(i.message for i in validate_question(c, none) if i.code == "necessity")
+    assert (
+        "scope.features is already satisfied" in message
+        and "roles.list is already assumed" in message
+    )
+
+
+def test_a_project_specific_mechanic_a_closing_question_and_unknown_needs_are_not_judged() -> None:
+    settled = necessity_ctx(status("scope.features", "satisfied"))
+    mechanic = asks("scope.features").model_copy(
+        update={"need_ids": ["scope.features", "domain:slot_rules"]}
+    )
+    assert "necessity" not in codes(mechanic, settled)
+    only_domain = asks("scope.features").model_copy(update={"need_ids": ["domain:slot_rules"]})
+    assert "necessity" not in codes(only_domain, settled)
+    unknown = necessity_ctx(status("roles.list"))  # no status for the need the card serves
+    assert "necessity" not in codes(asks("scope.features"), unknown)
+    closing_settled = necessity_ctx(
+        status("scope.priority", "satisfied"), status("goals.primary", "satisfied")
+    )
+    assert "necessity" not in codes(closing_card(), closing_settled)
+
+
+def test_a_follow_up_needs_only_a_weak_need() -> None:
+    weak = necessity_ctx(status("roles.list", "partial"))
+    follow = asks("roles.list", origin="followup", parent_card_id="Q-001")
+    assert "necessity" not in codes(follow, weak)
+    low = necessity_ctx(status("roles.list", "partial", impact=2))
+    assert "necessity" not in codes(follow, low)  # a follow-up is not held to the floor
+    done = necessity_ctx(status("roles.list", "satisfied"))
+    found = [i for i in validate_question(follow, done) if i.code == "necessity"]
+    assert found and "no longer open" in found[0].message
+
+
+def test_the_necessity_rule_runs_in_a_batch_and_names_the_rejected_question() -> None:
+    settled = asks("scope.features")
+    open_one = asks("roles.list").model_copy(
+        update={
+            "id": "Q-002",
+            "intent": "learn the roles",
+            "question": "Who signs in to your tiffin app?",
+        }
+    )
+    result = validate_batch(
+        [settled, open_one],
+        necessity_ctx(status("scope.features", "satisfied"), status("roles.list"), batch_limit=5),
+    )
+    assert [c.id for c in result.accepted] == ["Q-002"]
+    assert any("necessity" in reason for r in result.rejected for reason in r.reasons)
+
+
+def test_build_takes_the_statuses() -> None:
+    built = ValidationContext.build(
+        CAT, TERMS, statuses={"scope.features": status("scope.features")}
+    )
+    assert (
+        set(built.statuses) == {"scope.features"}
+        and ValidationContext.build(CAT, TERMS).statuses == {}
+    )
+
+
+def test_the_hand_written_corpus_questions_are_all_necessary_when_every_need_is_open() -> None:
+    """The first batches of the five corpus ideas are the questions that SHOULD be accepted: with every need open
+    (missing, at its catalog impact) none is rejected as unnecessary."""
+    from pathlib import Path
+
+    from mde_compass.scenarios.corpus import load_corpus
+
+    path = Path(__file__).parents[1] / "scenarios/data/corpus/first_batches.yaml"
+    every = {sid: status(sid) for sid in REAL.slots}
+    for key, item in load_corpus(path, REAL).items():
+        ctx_ = ValidationContext.build(
+            REAL, item.terms, user_text=item.idea, batch_limit=7, statuses=every
+        )
+        result = validate_batch(item.cards, ctx_)
+        reasons = [r for rej in result.rejected for r in rej.reasons if "necessity" in r]
+        assert reasons == [], (key, reasons)

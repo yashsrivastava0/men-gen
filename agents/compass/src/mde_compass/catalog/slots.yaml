@@ -305,6 +305,7 @@ slots:
   impact: 3
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum
     options:
@@ -1172,6 +1173,7 @@ slots:
   impact: 4
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum_list
     options:
@@ -1265,6 +1267,7 @@ slots:
   impact: 2
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum
     options:
@@ -1380,6 +1383,7 @@ slots:
   impact: 2
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum
     options:
@@ -1493,6 +1497,7 @@ slots:
   impact: 3
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum
     options:
@@ -1663,6 +1668,7 @@ slots:
   impact: 2
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum
     options:
@@ -1716,6 +1722,7 @@ slots:
   impact: 2
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum
     options:
@@ -1769,6 +1776,7 @@ slots:
   impact: 2
   risk: low
   effort: tap
+  ask_policy: infer
   value_schema:
     kind: enum_list
     options:

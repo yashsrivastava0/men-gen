@@ -36,9 +36,10 @@ class NeedWire(Wire):
     aspects: list[str]
     missing_aspects: list[str]
     card_type: str  # the kind of card its registry fallback uses (a hint for the question type)
-    multi: bool = (
-        False  # several answers can be true: the need's own value kind is a list (use pick_many)
-    )
+    # several answers can be true: the need's own value kind is a list (use pick_many)
+    multi: bool = False
+    # a safe typical default exists and the person said nothing: assume it, do not ask it
+    assume: bool = False
     option_labels: list[str]  # that fallback card's option labels (grounding for choice questions)
     assumed_value: str  # text of the current assumption, or ""
 

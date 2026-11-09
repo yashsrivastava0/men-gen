@@ -17,6 +17,8 @@ For every question return, in the same order and with the same card_id:
 - issues: one short plain-English sentence for each thing that is wrong. At least one issue whenever specific is below 3 or any flag is set. An empty list for a clean question.
 - fix: a SHORT hint (at most about 15 words) on what to change, for example "Name the doctors and the walk-in rule." It is a hint, never a rewritten question: it must not be phrased as a question and must not contain a new question text. "" when there is nothing to fix.
 
+Necessity: for every question also ask yourself whether the person's answer would change what a downstream engine builds (the screens, roles, data, rules or look). If it would change nothing, or it asks what any project can simply assume, it is not specific: score it 2 and say so in issues. There is no field for this; it lowers specific.
+
 Write issues and fix in plain English whatever the language of the questions. Judge the questions in their own language.
 
 A "priority" question asks what matters most for the first version, and its options are the project's own features, goals or constraints. Judge it on the question and its options together: specific when the options are this project's own things (the question text must still name the project), maps_to_need true for scope.priority and goals.primary, answerable when the options are things the person already stated or can weigh. It is a duplicate only when it asks the same thing as an earlier question in other words, not because it lists features that were discussed before.

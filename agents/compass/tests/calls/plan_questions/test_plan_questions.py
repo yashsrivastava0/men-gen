@@ -16,6 +16,7 @@ from mde_compass.calls.plan_questions.validate import structural
 from mde_compass.calls.testing import ScriptedGateway, make_client
 from mde_compass.catalog.loader import load_catalog
 from mde_compass.engine.ports import AnswerFocus, NeedBrief, PlanContext, PlanRequest, TurnContext
+from mde_compass.engine.question_validators import NECESSITY_MIN_IMPACT
 from mde_core.errors import ProviderError
 
 EXAMPLES_DIR = Path(__file__).parents[3] / "src/mde_compass/calls/plan_questions/examples"
@@ -61,7 +62,7 @@ def _request(inp: PlanInput, **changes: object) -> PlanRequest:
 
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.plan_questions" and s.version == 3
+    assert s.id == "cmp.plan_questions" and s.version == 4
     assert s.reasoning_effort == "low" and s.max_output_tokens == 5000 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
     assert "focus_answer" in s.untrusted_inputs and "fact_digest" in s.untrusted_inputs
@@ -323,17 +324,43 @@ def _plain_request(needs: list[NeedBrief], **changes: object) -> PlanRequest:
 def test_the_planner_sees_only_the_open_needs_most_important_first() -> None:
     needs = [
         _need("locales", "satisfied", 5),
-        _need("look.density_mode", "missing", 2),
+        _need("idea.problem_value", "missing", 3),
         _need("scope.features", "partial", 5),
         _need("roles.list", "assumed", 5),
         _need("context.geo", "missing", 5),
-        _need("brand.name", "missing", 2),
+        _need("audience.traits", "missing", 3),
     ]
     wire = build_input(CATALOG, _plain_request(needs))
     ids = [n.need_id for n in wire.needs]
     assert "locales" not in ids and "roles.list" not in ids  # satisfied and assumed are left out
     assert ids[:2] == ["context.geo", "scope.features"]  # impact 5 first, catalog order inside
-    assert set(ids[2:]) == {"look.density_mode", "brand.name"}
+    assert set(ids[2:]) == {"idea.problem_value", "audience.traits"}
+
+
+def test_low_impact_needs_stay_in_the_table_after_the_important_ones() -> None:
+    """The necessity floor is a validator rule, not a filter on the table: a low-impact need is shown last (and cut
+    first when the table is capped), never offered ahead of an important one."""
+    needs = [_need("look.density_mode", "missing", 2), _need("context.geo", "missing", 5)]
+    ids = [n.need_id for n in build_input(CATALOG, _plain_request(needs)).needs]
+    assert ids == ["context.geo", "look.density_mode"] and NECESSITY_MIN_IMPACT == 3
+
+
+def test_a_need_with_a_safe_default_stays_in_the_table_marked_assume() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    needs = [
+        _need("integrations.mode", "missing", 3),  # infer, nothing said
+        _need("look.tone_words", "partial", 4),  # infer, but the person said something
+        _need("scope.features", "missing", 5),
+    ]
+    wire = build_input(CATALOG, _plain_request(needs))
+    by_id = {n.need_id: n for n in wire.needs}
+    assert CATALOG.slots["integrations.mode"].ask_policy == "infer"
+    assert by_id["integrations.mode"].assume and not by_id["look.tone_words"].assume
+    assert not by_id["scope.features"].assume
+    rendered = PromptRenderer().render(SPEC.spec, wire)
+    assert rendered.user.count("ASSUME by default") == 1
+    assert 'marked "ASSUME by default"' in rendered.system and "assumed_instead" in rendered.system
 
 
 def test_a_focus_need_is_kept_first_even_when_it_is_no_longer_open() -> None:
@@ -512,3 +539,21 @@ def test_the_golden_examples_follow_the_v2_question_rules() -> None:
             if issue.code in wanted
         }
         assert found == set(), (raw["name"], found)
+
+
+def test_the_mock_assumes_a_need_marked_assume_instead_of_asking_it() -> None:
+    base = _input(EXAMPLES[0])
+    keep = base.needs[:2]
+    safe = keep[0].model_copy(
+        update={"need_id": "integrations.mode", "label": "How integrations run", "assume": True}
+    )
+    inp = base.model_copy(update={"needs": [safe, keep[1]], "want_min": 1, "want_max": 5})
+    out = handle(inp)
+    assert [q.serves[0] for q in out.questions] == [keep[1].need_id]
+    (assumed,) = out.assumed_instead
+    assert assumed.need_id == "integrations.mode" and assumed.assumption.startswith("[mock]")
+    follow = inp.model_copy(update={"mode": "followup", "focus_needs": ["integrations.mode"]})
+    assert [q.serves[0] for q in handle(follow).questions] == [
+        "integrations.mode"
+    ]  # a follow-up still asks
+    assert handle(follow).assumed_instead == []

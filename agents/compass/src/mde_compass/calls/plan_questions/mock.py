@@ -6,6 +6,7 @@ from __future__ import annotations
 
 from mde_compass.calls.plan_questions.fallback import empty_hypothesis
 from mde_compass.calls.plan_questions.schema import (
+    AssumedInsteadWire,
     NeedWire,
     OptionWire,
     PlanInput,
@@ -36,8 +37,9 @@ def _asked(need: NeedWire, intents: list[str]) -> bool:
 
 def _ordered(inp: PlanInput) -> list[NeedWire]:
     """The open needs (missing or partial) in the context pack, the focus first, then by impact. Outside a
-    follow-up each need is proposed once: one that was already asked is left alone."""
-    pool = [n for n in inp.needs if n.state in OPEN]
+    follow-up each need is proposed once: one that was already asked is left alone. A need marked ``assume`` (a safe
+    default, nothing said) is not asked: ``handle`` lists it in ``assumed_instead``."""
+    pool = [n for n in inp.needs if n.state in OPEN and not (n.assume and inp.mode != "followup")]
     if inp.mode not in ("followup", "simplify"):
         asked = _asked_intents(inp.asked_list)
         pool = [n for n in pool if not _asked(n, asked)]
@@ -192,7 +194,15 @@ def handle(inp: PlanInput) -> PlanOutput:
         domain_hypothesis=empty_hypothesis(),
         questions=questions,
         covered_needs=[q.serves[0] for q in questions],
-        assumed_instead=[],
+        assumed_instead=[
+            AssumedInsteadWire(
+                need_id=n.need_id,
+                assumption=f"{TAG} the typical default for {n.label.lower()}",
+                reason=f"{TAG} a safe default exists and nothing was said about it",
+            )
+            for n in inp.needs
+            if n.assume and inp.mode not in ("followup", "simplify")
+        ],
         expert_gaps=[],
         backlog=[],
     )

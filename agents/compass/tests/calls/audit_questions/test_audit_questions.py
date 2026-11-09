@@ -130,7 +130,7 @@ def _card(
 # ----------------------------------------------------------------------------------------- spec, examples
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.audit_questions" and s.version == 2
+    assert s.id == "cmp.audit_questions" and s.version == 3
     assert s.reasoning_effort == "medium" and s.max_output_tokens == 3000 and s.route == "standard"
     assert SPEC.lane == "critic" and SPEC.timeout_s == 60 and not s.tools
     assert s.untrusted_inputs == ("asked_list",)
@@ -167,6 +167,7 @@ def test_the_prompt_carries_the_rubric_and_the_rules() -> None:
         "do not rewrite questions",
         "Never approve",
         '"priority" question',
+        "whether the person's answer would change what a downstream engine builds",
     ):
         assert needle in system, needle
     assert (

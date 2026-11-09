@@ -82,18 +82,39 @@ def _need_wire(catalog: Catalog, need: NeedBrief, lang: str) -> NeedWire:
         missing_aspects=list(need.missing_aspects),
         card_type=card_type,
         multi=is_multi(need.need_id, catalog),
+        assume=assume_by_default(catalog, need),
         option_labels=labels,
         assumed_value=_assumed_text(need.assumed_value),
     )
 
 
+def assume_by_default(catalog: Catalog, need: NeedBrief) -> bool:
+    """A need with a safe typical default (``ask_policy: infer``) that the person has said nothing about: it is
+    assumed and shown, not asked. The ``necessity`` validator rejects a question that serves only such needs."""
+    slot = catalog.slots.get(need.need_id)
+    return (
+        slot is not None
+        and slot.ask_policy == "infer"
+        and not slot.must_confirm
+        and need.state == "missing"
+    )
+
+
+def worth_listing(need: NeedBrief) -> bool:
+    """Open: missing or partial. (A need below the necessity floor stays in the table, last: the ``necessity``
+    validator, not the table, rejects a question that serves only such needs, and the table is cut at
+    ``MAX_NEEDS`` by impact anyway.)"""
+    return need.state in _OPEN
+
+
 def open_needs(catalog: Catalog, request: PlanRequest) -> list[NeedBrief]:
-    """The needs the planner is shown: only the open ones (missing or partial, plus any need it is told to focus
-    on), the focus first, then by impact and catalog order, at most ``MAX_NEEDS``. What is satisfied or assumed
-    is left out: the facts already say it, and a shorter table is a faster call."""
+    """The needs the planner is shown: the open ones that matter (see ``worth_listing``; satisfied and assumed needs
+    are left out because the facts say it, and a shorter table is a faster call), plus any need it is told to focus
+    on; the focus first, then by impact and catalog order, at most ``MAX_NEEDS``. A need with a safe default stays
+    in the table, marked ``assume``, so the planner can list it in ``assumed_instead``."""
     order = {sid: i for i, sid in enumerate(catalog.slot_ids_by_order())}
     focus = set(request.focus_needs)
-    pool = [n for n in request.needs if n.state in _OPEN or n.need_id in focus]
+    pool = [n for n in request.needs if worth_listing(n) or n.need_id in focus]
     pool.sort(key=lambda n: (n.need_id not in focus, -n.impact, order.get(n.need_id, 999)))
     return pool[:MAX_NEEDS]
 
