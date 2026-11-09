@@ -88,6 +88,7 @@ def fallback_batch(
                     "answer_spec": slot.answer_spec.sufficient if slot.answer_spec else "",
                     "origin": "fallback",
                     "fallback": True,
+                    "priority": max(1, min(5, 6 - slot.impact)),
                 }
             )
         )

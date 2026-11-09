@@ -121,6 +121,30 @@ def test_mock_follows_up_with_exactly_one_question_on_the_focus_need() -> None:
     assert questions[0].id == "Q-009" and questions[0].type == "text" and not questions[0].options
 
 
+def test_mock_does_not_re_propose_a_need_an_earlier_batch_already_asked() -> None:
+    """GAP-1: a real planner reads the asked list and never repeats a need; the mock now behaves the same, so a
+    replan does not hand the validators a batch of repeats (which ends in the flagged fallback)."""
+    inp = _input(EXAMPLES[0])
+    first = handle(inp).questions
+    assert first
+    asked = "\n".join(f"{q.id} | open | {q.intent}" for q in first)
+    second = handle(inp.model_copy(update={"asked_list": asked})).questions
+    assert {n for q in first for n in q.serves}.isdisjoint({n for q in second for n in q.serves})
+
+
+def test_mock_follow_up_may_still_target_a_need_that_was_asked() -> None:
+    inp = _input(EXAMPLES[0])
+    first = handle(inp).questions
+    need = first[0].serves[0]
+    asked = "\n".join(f"{q.id} | open | {q.intent}" for q in first)
+    follow = inp.model_copy(
+        update={"mode": "followup", "focus_needs": [need], "asked_list": asked, "next_card_n": 20}
+    )
+    questions = handle(follow).questions
+    assert len(questions) == 1 and questions[0].serves == [need]
+    assert "learn more about" in questions[0].intent
+
+
 def test_structural_validator_rejects_what_is_not_a_batch() -> None:
     inp = _input(EXAMPLES[0])
     good = _output(EXAMPLES[0])
@@ -170,6 +194,34 @@ def test_to_batch_assigns_ids_letters_and_card_types() -> None:
     assert batch.domain_hypothesis is not None
     assert batch.domain_hypothesis.category.startswith("clinic")
     assert batch.assumed_instead and batch.expert_gaps and batch.backlog
+
+
+def test_the_planners_priority_reaches_the_card_and_a_wild_value_is_clamped_not_fatal() -> None:
+    raw = EXAMPLES[0]
+    out = _output(raw)
+    wire = [q.priority for q in out.questions]
+    cards = to_batch(CATALOG, out, _request(_input(raw))).cards()
+    assert [c.priority for c in cards] == wire and all(1 <= p <= 5 for p in wire)
+    wild = out.model_copy(
+        update={
+            "questions": [
+                out.questions[0].model_copy(update={"priority": 9}),
+                out.questions[1].model_copy(update={"priority": -2}),
+            ]
+        }
+    )
+    clamped = to_batch(CATALOG, wild, _request(_input(raw))).cards()
+    assert [c.priority for c in clamped] == [5, 1]
+
+
+async def test_a_flagged_fallback_card_ranks_by_the_impact_of_its_need() -> None:
+    raw = EXAMPLES[0]
+    gateway = ScriptedGateway(ProviderError("boom"))
+    result = await PlanAdapter(CallRunner(gateway), CATALOG).plan(CTX, _request(_input(raw)))
+    cards = result.batch.cards()
+    assert cards and all(
+        c.priority == max(1, min(5, 6 - CATALOG.slots[c.need_ids[0]].impact)) for c in cards
+    )
 
 
 def test_hypothesis_is_only_kept_for_the_initial_mode() -> None:

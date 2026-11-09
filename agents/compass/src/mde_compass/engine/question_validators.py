@@ -655,10 +655,23 @@ def validate_question(card: Card, ctx: ValidationContext) -> list[Issue]:
     return _dedupe(issues)
 
 
+def rank_by_priority(cards: Iterable[Card]) -> list[Card]:
+    """Cards most important first: the planner's priority (1 is most important), the planner's own order for ties
+    (``sorted`` is stable). What survives a cut to size is the head of this list."""
+    return sorted(cards, key=lambda card: card.priority)
+
+
+def in_original_order(kept: Iterable[Card], original: Sequence[Card]) -> list[Card]:
+    """``kept`` in the order of ``original`` (a cut chooses by priority; the person still reads the planner's
+    order, which groups related questions)."""
+    place = {id(card): index for index, card in enumerate(original)}
+    return sorted(kept, key=lambda card: place.get(id(card), len(place)))
+
+
 def validate_batch(cards: Sequence[Card], ctx: ValidationContext) -> BatchValidation:
-    """Validate a planner batch in order. A question is accepted if it has no issues, does not repeat an earlier
-    accepted question of the batch, and fits the batch size and its group's size (later ones are rejected: the
-    engine sorts by priority first, and rejected extras go to the backlog)."""
+    """Validate a planner batch in the order given. A question is accepted if it has no issues, does not repeat an
+    earlier accepted question of the batch, and fits the batch size and its group's size (later ones are rejected;
+    the pipeline passes the cards ranked by priority, so the extras are the least important)."""
     accepted: list[Card] = []
     rejected: list[RejectedQuestion] = []
     by_card: dict[str, list[Issue]] = {}

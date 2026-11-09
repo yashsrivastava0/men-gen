@@ -141,8 +141,9 @@ PLANNER_GOALS = {
     ),
     "fallback_count_zero": (
         "GAP-1",
-        "the mock planner re-proposes needs it already asked, every question is rejected as a duplicate and "
-        "the flagged fallback runs; the zero-fallback target is for scripted and live planners",
+        "the mock planner no longer re-proposes a need an earlier batch asked (18 fallbacks across the ten mock "
+        "personas before, 13 now) but still ends in the flagged fallback when its fixed wording meets the "
+        "validators; the zero-fallback target is for scripted and live planners",
     ),
 }
 

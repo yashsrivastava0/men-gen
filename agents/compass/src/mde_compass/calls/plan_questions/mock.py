@@ -17,8 +17,30 @@ TAG = "[mock]"
 OPEN = ("missing", "partial")
 
 
+def _asked_intents(asked_list: str) -> list[str]:
+    """The intents in the context pack's asked list (``Q-003 | status | intent`` per line), lower-cased."""
+    out: list[str] = []
+    for line in asked_list.splitlines():
+        parts = line.split(" | ", 2)
+        if len(parts) == 3:
+            out.append(parts[2].strip().casefold())
+    return out
+
+
+def _asked(need: NeedWire, intents: list[str]) -> bool:
+    """Was a question about this need already put (by this mock, or a flagged registry card)? A real planner reads
+    the asked list and never re-proposes a need; neither does the mock, so a replan never repeats itself."""
+    label = need.label.casefold()
+    return any(i.startswith(f"learn {label} for ") or i == f"learn: {label}" for i in intents)
+
+
 def _ordered(inp: PlanInput) -> list[NeedWire]:
+    """The open needs (missing or partial) in the context pack, the focus first, then by impact. Outside a
+    follow-up each need is proposed once: one that was already asked is left alone."""
     pool = [n for n in inp.needs if n.state in OPEN]
+    if inp.mode not in ("followup", "simplify"):
+        asked = _asked_intents(inp.asked_list)
+        pool = [n for n in pool if not _asked(n, asked)]
     pool.sort(
         key=lambda n: (n.need_id not in inp.focus_needs, -n.impact)
     )  # stable: registry order inside
@@ -50,7 +72,11 @@ def _question(
         id=qid,
         group_id=f"G{group}",
         group_title=f"{TAG} Group {group}",
-        intent=f"learn {n.label.lower()} for {term}",
+        intent=(
+            f"learn more about {n.label.lower()} for {term}"
+            if followup
+            else f"learn {n.label.lower()} for {term}"
+        ),
         serves=[n.need_id],
         unlocks=[f"{TAG} Brief: {n.label.lower()}"],
         answer_spec=n.sufficient,
