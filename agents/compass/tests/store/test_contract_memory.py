@@ -35,5 +35,13 @@ def test_contract_registry_is_complete() -> None:
         "briefs_baseline_and_immutability",
         "tenant_isolation",
         "unit_of_work_rollback",
+        # interview memory (ADR 0015)
+        "qa_record_roundtrip",
+        "qa_versions_filters_ordering",
+        "facts_ledger",
+        "facts_next_id_is_never_reused",
+        "facts_concurrent_writers_get_distinct_ids",
+        "summary_put_get",
+        "batches_ledger",
     }
     assert expected <= set(CHECKS)

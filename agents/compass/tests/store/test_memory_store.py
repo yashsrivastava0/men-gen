@@ -7,7 +7,12 @@ import asyncio
 import pytest
 
 from mde_compass.store import testing as f
-from mde_compass.store.common import STALE_TURN_SECONDS, payload_text
+from mde_compass.store.common import (
+    STALE_TURN_SECONDS,
+    id_number,
+    next_numbered_id,
+    payload_text,
+)
 from mde_compass.store.memory import InMemoryStore
 from mde_compass.store.postgres import create_store_engine
 from mde_core.clock import FakeClock
@@ -176,6 +181,18 @@ def test_payload_text_searches_string_values_only() -> None:
     assert "hello world" in text and "árvíztűrő" in text and "v" in text
     assert "text" not in text and "nested" not in text and "5" not in text
     assert payload_text({}) == "" and payload_text([]) == ""
+
+
+def test_numbered_ids_follow_the_highest_number() -> None:
+    assert next_numbered_id("FCT-", []) == "FCT-001"
+    assert next_numbered_id("FCT-", ["FCT-001", "FCT-007", "FCT-003"]) == "FCT-008"
+    assert next_numbered_id("FCT-", ["FCT-0099", "FCT-999"]) == "FCT-1000"
+    assert next_numbered_id("BAT-", ["FCT-050", "BAT-002"]) == "BAT-003"
+    # ids of any other shape are never counted
+    for odd in ("FCT-", "FCT-x1", "fct-005", "FCT-1\n", "FCT-\u0667", " FCT-009"):
+        assert id_number("FCT-", odd) is None, odd
+    assert next_numbered_id("FCT-", ["FCT-002", "FCT-\u0669\u0669\u0669"]) == "FCT-003"
+    assert id_number("FCT-", "FCT-0042") == 42
 
 
 def test_stale_turn_threshold_is_two_minutes() -> None:
