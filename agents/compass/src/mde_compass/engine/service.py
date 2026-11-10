@@ -86,6 +86,7 @@ from mde_compass.domain.events import (
     UserMessage,
 )
 from mde_compass.domain.situation import SituationProfile
+from mde_compass.domain.structure import STRUCTURE_SECTIONS
 from mde_compass.engine import assumptions as assumptions_mod
 from mde_compass.engine import cards as cards_mod
 from mde_compass.engine import document_flow as docflow
@@ -2232,17 +2233,35 @@ class Service(FlowHooks):
                 provenance=[self._prov(turn, "user_text", _text(ev.value))],
             )
         ]
-        await self._apply_change(turn, ops, source="ui_edit", what=ev.item_id)
+        await self._apply_change(
+            turn, ops, source="ui_edit", what=self._edit_label(turn.brief, ev.item_id)
+        )
+
+    @staticmethod
+    def _edit_label(brief: Brief, path: str) -> str:
+        """What a change summary says about an edited path: the record's name and the field for the structure
+        (``Account › name``), the path itself for everything else."""
+        parts = path.split(".")
+        if len(parts) == 3 and parts[0] in STRUCTURE_SECTIONS:
+            for rec in getattr(brief, parts[0], []):
+                if rec.id == parts[1]:
+                    return f"{rec.name} › {parts[2]}"
+        return path
 
     async def _on_structure_action(self, turn: _Turn, ev: StructureAction) -> None:
         """Accept, add, remove, redraft or re-size the structure of the app (ADR 0017). Each action is ONE change set:
         undo restores it whole. Renaming and moving use ``brief_edit``."""
+        named = ""  # the record's name as the person knows it (read before a removal takes it away)
         try:
             if ev.action in ("regenerate", "set_band"):
                 await self.structure.redraft(turn, ev)
                 return
             if not ev.section:
                 raise actions_mod.ActionError("a section is needed")
+            if ev.action != "add":
+                named = str(
+                    getattr(actions_mod.find(turn.brief, ev.section, ev.target), "name", "")
+                )
             if ev.action == "add":
                 ops = actions_mod.add_ops(
                     ev.section, ev.value, [self._prov(turn, "user_text", _text(ev.value))]
@@ -2260,8 +2279,16 @@ class Service(FlowHooks):
         if not ops:
             turn.notice("structure_nothing_to_do", self._t(turn, "change.nothing_changed"))
             return
+        name = (
+            str(ev.value.get("name", ""))
+            if ev.action == "add" and isinstance(ev.value, dict)
+            else named
+        )
         await self._apply_change(
-            turn, ops, source="structure", what=f"{ev.action} {ev.section}.{ev.target}".strip(".")
+            turn,
+            ops,
+            source="structure",
+            what=self._t(turn, f"structure.what.{ev.action}", name=name or ev.target),
         )
 
     async def _on_assumption(self, turn: _Turn, ev: AssumptionDecision) -> None:

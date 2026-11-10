@@ -121,6 +121,40 @@ async def test_a_big_idea_in_the_smallest_tier_is_told_once_and_the_tier_is_neve
     assert b.meta.interview is not None and b.meta.interview.size_band == "small"
 
 
+async def test_a_size_suggestion_offers_one_tap_to_the_tier_that_fits_and_is_said_once(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from mde_compass.engine import structure_derive
+
+    monkeypatch.setattr(structure_derive, "suggest_band", lambda brief, tier_band: "large")
+    svc = build_service(memory=True, clock=FakeClock(), compass_config=config(enabled=True))
+    conv = await Conversation.start(svc)
+    await conv.send(Command(event_id=conv._id(), name="budget_quick"))  # type: ignore[arg-type]
+    await conv.say(IDEA)
+
+    def sent() -> list[dict[str, Any]]:
+        return [
+            e.payload
+            for e in conv.events
+            if e.type == "notice" and e.payload.get("code") == "size_suggestion"
+        ]
+
+    assert len(sent()) == 1
+    tap = sent()[0]
+    assert tap["command"] == "budget_thorough" and tap["command_label"] == "Switch to Enterprise"
+    assert "Enterprise" in tap["text"] and "Small" in tap["text"]
+    b: Brief = (await stored(svc, conv)).brief
+    assert (
+        b.meta.plan is not None and b.meta.plan.interview_budget == "quick"
+    )  # never switched for the person
+    assert b.meta.interview is not None and b.meta.interview.size_suggested == "large"
+    await conv.send(Command(event_id=conv._id(), name=tap["command"]))  # the person taps it
+    b = (await stored(svc, conv)).brief
+    assert b.meta.plan is not None and b.meta.plan.interview_budget == "thorough"
+    assert len(sent()) == 1, "said once, however many turns follow"
+    assert not [e for e in conv.events if e.type == "error"]
+
+
 async def test_a_second_open_of_the_review_is_an_exact_no_op_and_approval_still_works() -> None:
     svc, conv = await review()
     first = await stored(svc, conv)
@@ -300,6 +334,25 @@ async def test_removing_a_module_removes_what_depends_on_it_and_undo_puts_everyt
     back = await current(svc, conv)
     for key in ("modules", "screens", "flows", "entities"):
         assert back.model_dump(mode="json").get(key) == before.model_dump(mode="json").get(key), key
+
+
+async def test_the_change_summary_names_the_record_not_its_path() -> None:
+    svc, conv = await review()
+    b = await current(svc, conv)
+    victim = b.modules[-1]
+    await act(conv, "accept", section="modules", target=b.modules[0].id)
+    await act(conv, "remove", section="modules", target=victim.id)
+    summaries = [e.payload["summary"] for e in conv.events if e.type == "brief_patch"]
+    assert any(f"Accepted {b.modules[0].name}" in s for s in summaries), summaries
+    assert any(f"Removed {victim.name}" in s for s in summaries), summaries
+    assert not any("modules.MOD-" in s for s in summaries), "no raw path in what the person reads"
+    from mde_compass.domain.events import BriefEdit
+
+    await conv.send(
+        BriefEdit(event_id=conv._id(), item_id=f"modules.{b.modules[1].id}.name", value="Orders")
+    )
+    last = [e.payload["summary"] for e in conv.events if e.type == "brief_patch"][-1]
+    assert f"{b.modules[1].name} › name" in last and "MOD-" not in last, last
 
 
 async def test_adding_a_screen_by_hand_is_locked_with_the_persons_words() -> None:

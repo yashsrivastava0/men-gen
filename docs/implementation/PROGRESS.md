@@ -176,6 +176,6 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] S4. Engine step and band logic (inside the seed and scan gather), switches, notices (a2e15ff, with S5 and S6: the three share `engine/service.py`)
 - [x] S5. Gate and edits: `structure_action`, blocker `structure_unreviewed`, Approve All, undo (a2e15ff)
 - [x] S6. Views, API, export (format 2), research guidance (a2e15ff; full offline suite 3321 passed, 3 skipped, 8 xfailed after the section-count fix)
-- [ ] S7. Web: tier cards with size, Structure tab, module rows, strings en and hi
+- [x] S7. Web: tier cards with size, Structure tab, module rows, strings en and hi (full offline suite 3344 passed, 3 skipped, 8 xfailed; real-browser walk-through in headless Chrome)
 - [ ] S8. Optional prefetch (off by default)
 - [ ] S9. Scenarios, live program (plan section 8a), docs, full suite, hand-off

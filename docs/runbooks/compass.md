@@ -67,6 +67,8 @@ COMPASS_MEMORY=1 uv run python -m mde_compass       # same as --memory
 | `MDE_WEB_DIR` | the directory served at `/ui/` (default `apps/web/console`) |
 | `COMPASS_LIVE_BUDGET_USD` | the Compass spend cap, at most 3.00 (live mode only matters; see section 5) |
 
+**The structure in the console (ADR 0017).** With the structure on (`COMPASS_STRUCTURE=on` in mock mode, on by default in live product runs) the tier cards show the app size each tier plans for, and once the Brief is drafted a **Structure** tab appears next to **Brief**: the size banner, one card per area with its screens, the journeys, the data the app keeps, the role by area matrix and the checks that were left. Each area can be accepted, renamed, redrafted with your own words or removed, and "Plan as Small / Medium / Enterprise" redrafts from the same answers; in an Enterprise-size plan every area must be accepted (or use Approve All) before Gate 1. A quick mock check: `COMPASS_STRUCTURE=on uv run python -m mde_compass --memory --port 8110`, pick Thorough, send an idea, answer "decide the rest" and open the Structure tab.
+
 Checks: `curl -s http://127.0.0.1:8110/healthz` returns `{"status":"ok"}`; `/readyz` is 200 as soon as the app has a service or a factory to build one; it does **not** check the database (the service is composed lazily on the first request that needs it). Create a session and read the stream with the curl walk-through in [api/compass.md](../api/compass.md). To follow what the model calls did, open the Developer drawer in the UI or `GET /v1/compass/sessions/{id}/calls`; in mock mode every call shows cost 0.0000.
 
 ### Choosing the engine

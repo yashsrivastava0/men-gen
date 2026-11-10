@@ -32,6 +32,68 @@
     "decide_rest"
   ],
   "batch_answer_actions": ["answer", "skip", "you_decide", "none"],
+  "structure_view_keys": [
+    "drafted",
+    "band",
+    "band.id",
+    "band.label",
+    "band.screens",
+    "band.open_upper",
+    "band.review",
+    "counts",
+    "counts.modules",
+    "counts.screens",
+    "counts.flows",
+    "counts.entities",
+    "verdict",
+    "unreviewed",
+    "review_blocks",
+    "modules",
+    "modules[].id",
+    "modules[].name",
+    "modules[].purpose",
+    "modules[].decision",
+    "modules[].roles",
+    "modules[].entry",
+    "modules[].screens",
+    "modules[].screens[].id",
+    "modules[].screens[].name",
+    "modules[].screens[].purpose",
+    "modules[].screens[].pattern",
+    "modules[].screens[].roles",
+    "modules[].screens[].phase",
+    "flows",
+    "flows[].id",
+    "flows[].name",
+    "flows[].role",
+    "flows[].goal",
+    "flows[].steps",
+    "flows[].steps[].screen",
+    "flows[].steps[].action",
+    "flows[].acceptance",
+    "entities",
+    "entities[].id",
+    "entities[].name",
+    "entities[].purpose",
+    "entities[].module",
+    "entities[].fields",
+    "entities[].fields[].name",
+    "entities[].fields[].type",
+    "entities[].fields[].required",
+    "entities[].states",
+    "entities[].access",
+    "entities[].access[].role",
+    "entities[].access[].level",
+    "matrix",
+    "matrix.roles",
+    "matrix.rows",
+    "matrix.rows[].module",
+    "matrix.rows[].cells",
+    "issues",
+    "issues[].severity",
+    "issues[].text"
+  ],
+  "size_band_keys": ["bands", "bands[].id", "bands[].screens", "bands[].open_upper", "tier_to_band"],
   "qa_item_keys": [
     "items", "card_id", "status", "origin", "depth", "parent_card_id", "type", "question", "options",
     "answer", "value", "custom_text", "fallback", "facts", "facts[].statement", "facts[].status"
@@ -175,6 +237,51 @@ CONTRACT*/
     "ui.v2.composer_locked": "Choose how many questions first",
     "ui.v2.idea_placeholder": "Describe your app idea here",
     "ui.v2.tier_failed": "We could not save that choice. Please try again.",
+    "ui.v2.structure_tab": "Structure",
+    "ui.v2.structure_empty": "The screens and journeys of your app appear here once your Brief is drafted.",
+    "ui.v2.size_range": "{size} app: about {min} to {max} screens",
+    "ui.v2.size_open": "{size} app: {min} screens or more",
+    "ui.v2.structure_counts": "Areas {modules} · Screens {screens} · Journeys {flows} · Data {entities}",
+    "ui.v2.structure_over": "This is bigger than most {size} apps. You can plan it as a bigger app, or remove what you do not need.",
+    "ui.v2.structure_under": "This is smaller than most {size} apps. That is fine for a simple app.",
+    "ui.v2.structure_unreviewed": "{count} areas are not accepted yet.",
+    "ui.v2.structure_unreviewed_blocks": "{count} areas must be accepted before you can approve the Brief.",
+    "ui.v2.plan_as_title": "Plan this app as:",
+    "ui.v2.plan_as": "Plan as {size}",
+    "ui.v2.plan_as_confirm": "This redrafts everything you have not accepted yet. Continue?",
+    "ui.v2.plan_as_yes": "Yes, redraft",
+    "ui.v2.show_screens": "Show the {count} screens",
+    "ui.v2.hide_screens": "Hide the screens",
+    "ui.v2.show_details": "Show details",
+    "ui.v2.hide_details": "Hide details",
+    "ui.v2.accept_module": "Accept this area",
+    "ui.v2.rename": "Rename",
+    "ui.v2.redraft": "Redraft",
+    "ui.v2.redraft_prompt": "What should change? (optional)",
+    "ui.v2.redraft_go": "Redraft this area",
+    "ui.v2.remove": "Remove",
+    "ui.v2.remove_confirm": "Remove {name} and what depends on it?",
+    "ui.v2.remove_yes": "Yes, remove",
+    "ui.v2.structure_flows": "Journeys",
+    "ui.v2.structure_entities": "Data the app keeps",
+    "ui.v2.structure_matrix": "Who can open what",
+    "ui.v2.structure_matrix_hint": "How many screens each kind of person can open, per area.",
+    "ui.v2.structure_checks": "Checks",
+    "ui.v2.issue_error": "Needs attention",
+    "ui.v2.issue_warn": "Worth a look",
+    "ui.v2.phase_extended": "Extended",
+    "ui.v2.phase_later": "Later",
+    "ui.v2.steps_n": "{count} steps",
+    "ui.v2.fields_label": "Fields",
+    "ui.v2.states_label": "States",
+    "ui.v2.access_label": "Who can do what",
+    "ui.v2.level_none": "no access",
+    "ui.v2.level_view": "view",
+    "ui.v2.level_create": "create",
+    "ui.v2.level_edit": "edit",
+    "ui.v2.level_manage": "manage",
+    "ui.v2.open_structure": "See the screens",
+    "ui.v2.starts_at": "Starts at {screen}",
     "ui.v2.form_title": "Your questions",
     "ui.v2.form_helper": "Nothing is processed until you press the button below. You can change any answer until then.",
     "ui.v2.question_n_of": "Question {n} of about {total}",
@@ -263,17 +370,21 @@ CONTRACT*/
     "x.diagnostics": "Diagnostics", "x.copy_claude": "Copy for Claude"
   };
 
+  /** The page-only state of the Brief panel: which row is being edited, which structure card is open, which inline
+      form or confirmation is showing. */
+  function freshUi() { return { panel: null, edit: null, prov: {}, open: {}, sform: null, confirm: null }; }
   var state = {
     cfg: { token: "dev-token", tenant: "demo", user: "demo-user", roles: "" },
     lang: "en", mode: "guided", strings: {}, theme: null,
     sessionId: null, session: null, lastSeq: 0, seen: {}, devEvents: [], devTab: "diagnostics", devOpen: false,
     view: null, viewJson: "", lookups: [], progress: null, tab: "brief", streamAbort: null, streamOk: false,
     activeCard: null, typingCount: 0, loadingView: false, viewTimer: null, budget: null, calls: [],
-    ui: { panel: null, edit: null, prov: {} }, deltaEl: null, lastProbe: [], contributor: "", batch: null,
+    ui: freshUi(), deltaEl: null, lastProbe: [], contributor: "", batch: null,
     batches: [], answered: {}, depth: null,
     qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {},
     awaitingTier: false, tierEditing: false, welcomeEl: null, form: null, submitted: {}, layoutAsked: false,
-    networkTrace: [], lastError: null
+    networkTrace: [], lastError: null,
+    bands: null, structure: null, structureJson: "", structTimer: null, structTab: false
   };
   var WELCOME_FRAME = "welcome";   // the server's canned first card: the welcome block below replaces it
 
@@ -1304,6 +1415,12 @@ CONTRACT*/
     input.placeholder = locked ? t("ui.v2.composer_locked") : (state.awaitingTier ? t("ui.v2.idea_placeholder") : t("ui.type_here"));
     if (locked) { input.setAttribute("aria-describedby", "composer-gate"); } else { input.removeAttribute("aria-describedby"); }
   }
+  /** The app size a tier plans for (its screen range), from GET /size-bands; nothing until it loads. */
+  function tierSize(tierId) {
+    var band = bandOfTier(tierId);
+    if (!band) { return null; }
+    return h("span", { class: "tier-size", text: sizeText(t("size." + band.id), band.screens, band.open_upper) });
+  }
   /** Three large cards: what each tier means in plain words. A button each (keyboard: Tab, Enter or Space). */
   function tierCards() {
     var cards = h("div", { class: "tier-cards", role: "group", "aria-labelledby": "tier-title", "aria-describedby": "tier-help" });
@@ -1312,7 +1429,8 @@ CONTRACT*/
       cards.appendChild(h("button", { class: "tier-card", type: "button", "aria-pressed": state.depth === b.id ? "true" : "false",
         data: { budget: b.id }, on: { click: function () { chooseDepth(b.id); } } },
         h("span", { class: "tier-name", text: lab.name }), h("span", { class: "tier-count", text: lab.hint }),
-        h("span", { class: "tier-desc", text: lab.desc })));
+        h("span", { class: "tier-desc", text: lab.desc }),
+        tierSize(b.id)));
     });
     return h("div", { class: "tier" }, h("div", { class: "tier-title", id: "tier-title", text: t("ui.v2.tier_title") }), cards,
       h("div", { class: "hint", id: "tier-help", text: t("ui.v2.tier_help") }));
@@ -1432,7 +1550,14 @@ CONTRACT*/
       ensureFormLayout(p);
     },
     notice: function (p) {
-      addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
+      var el = addMsg("system", p.text, p.chips || [], p.severity === "warning" ? "msg-warning" : "");
+      if (p.command && p.command_label) {   // a notice that offers one tap (the app looks bigger than the tier: switch it)
+        var btn = h("button", { class: "btn btn-sm notice-action", type: "button", text: p.command_label, on: { click: function () {
+          btn.disabled = true;
+          sendEvent({ type: "command", name: p.command });
+        } } });
+        el.appendChild(btn);
+      }
     },
     progress: function (p) {
       followStage(p.stage);   // the wait line follows a stage the server names (the Brief, a document)
@@ -1656,6 +1781,9 @@ CONTRACT*/
       var json = JSON.stringify(vm);
       state.view = vm;
       if (json !== state.viewJson) { state.viewJson = json; renderBrief(); renderSources(); renderDev(); }
+      var hasTab = hasStructureSection();
+      if (hasTab !== state.structTab) { state.structTab = hasTab; renderTabs(); }
+      scheduleStructure();
     }).catch(function () {
       if (!state.view) { renderBrief(); }
     });
@@ -1791,6 +1919,18 @@ CONTRACT*/
     if (isAssumption) {
       bar.appendChild(h("button", { class: "btn-link", type: "button", text: t("x.accept"), on: { click: function () {
         sendEvent({ type: "assumption_decision", id: row.id.split(".")[1], decision: "accept" });
+      } } }));
+    }
+    if (row.id.indexOf("modules.") === 0) {   // a module of the structure: accept it here, browse and edit it in the Structure tab
+      var mid = row.id.split(".")[1];
+      if ((row.badges || []).some(function (b) { return b.kind === "assumed"; })) {
+        bar.appendChild(h("button", { class: "btn-link", type: "button", text: t("x.accept"), on: { click: function () {
+          sendStructureAction("accept", { section: "modules", target: mid });
+        } } }));
+      }
+      bar.appendChild(h("button", { class: "btn-link", type: "button", text: t("ui.v2.open_structure"), on: { click: function () {
+        state.ui.open[mid] = true;
+        setTab("structure");
       } } }));
     }
     if (row.editable) {
@@ -1973,7 +2113,7 @@ CONTRACT*/
     var reviewAssumedLink = null;
     if (assumedRows > 0) {
       reviewAssumedLink = h("button", { class: "btn btn-link review-assumed-btn", type: "button", text: t("ui.v2.review_assumed", { count: assumedRows }), on: { click: function () {
-        var secEl = document.querySelector('.bsec[data-section="assumed"]');
+        var secEl = document.getElementById("sec-assumed");
         if (secEl) { secEl.scrollIntoView({ behavior: "smooth", block: "start" }); }
         else { openPanel("brief", vm.header.title, null, null); }
       } } });
@@ -2060,6 +2200,262 @@ CONTRACT*/
     var still = !!(window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches);
     if (first && wide && state.tab === "brief" && first.scrollIntoView) {
       first.scrollIntoView({ block: "nearest", behavior: still ? "auto" : "smooth" });
+    }
+  }
+
+  // ---- structure (ADR 0017): the size of the app and its areas, screens, journeys and data ----------------------------------
+  // Everything below is drawn from GET /structure (names are the person's own words, written with textContent only). The
+  // numbers of each size come from GET /size-bands, so the page never hardcodes one.
+  var PHASE_KEYS = { extended: "ui.v2.phase_extended", later: "ui.v2.phase_later" };
+  var LEVEL_KEYS = { none: "ui.v2.level_none", view: "ui.v2.level_view", create: "ui.v2.level_create", edit: "ui.v2.level_edit", manage: "ui.v2.level_manage" };
+  var BAND_ORDER = ["small", "medium", "large"];
+
+  function bandOfTier(tierId) {
+    var d = state.bands;
+    var id = d && d.tier_to_band ? d.tier_to_band[tierId] : null;
+    var list = d && d.bands ? d.bands : [];
+    for (var i = 0; i < list.length; i++) { if (list[i].id === id) { return list[i]; } }
+    return null;
+  }
+  /** The size line of a band, a range ("about N to M screens") or an open end ("N screens or more"): numbers from the server. */
+  function sizeText(label, screens, openUpper) {
+    if (openUpper) { return t("ui.v2.size_open", { size: label, min: screens[0] }); }
+    return t("ui.v2.size_range", { size: label, min: screens[0], max: screens[1] });
+  }
+  function loadBands() {
+    return fetch(BASE + "/size-bands").then(function (r) { return r.ok ? r.json() : null; }).then(function (d) {
+      if (d && d.bands) { state.bands = d; renderWelcome(); }
+    }).catch(function () { /* the tier cards simply show no size */ });
+  }
+
+  function hasStructureSection() {
+    return !!state.view && state.view.sections.some(function (s) { return s.id === "structure"; });
+  }
+  function scheduleStructure() {
+    if (!hasStructureSection() || state.structTimer) { return; }
+    state.structTimer = window.setTimeout(function () { state.structTimer = null; loadStructure(); }, 120);
+  }
+  function loadStructure() {
+    var sid = state.sessionId;
+    if (!sid || !hasStructureSection()) { return Promise.resolve(); }
+    return api("GET", "/sessions/" + encodeURIComponent(sid) + "/structure?lang=" + encodeURIComponent(state.lang)).then(function (vm) {
+      if (sid !== state.sessionId) { return; }
+      var json = JSON.stringify(vm);
+      state.structure = vm;
+      if (json !== state.structureJson) { state.structureJson = json; renderStructure(); }
+    }).catch(function () { if (!state.structure) { renderStructure(); } });
+  }
+  /** One structure action (accept, remove, regenerate, set_band): the reply redraws the Brief and this tab. */
+  function structAct(action, fields) {
+    state.ui.sform = null; state.ui.confirm = null;
+    renderStructure();
+    return sendStructureAction(action, fields);
+  }
+  function renameItem(section, id, name) {
+    state.ui.sform = null;
+    renderStructure();
+    return sendEvent({ type: "brief_edit", item_id: section + "." + id + ".name", value: name });
+  }
+
+  /** A small inline form: a text box with a go button and a cancel (rename, redraft with the person's words). */
+  function inlineForm(kind, id, label, initial, goLabel, onGo) {
+    var input = h("input", { type: "text", class: "sinput", maxlength: "200", "aria-label": label, placeholder: label });
+    input.value = initial || "";
+    function go() { onGo(input.value.trim()); }
+    input.addEventListener("keydown", function (e) { if (e.key === "Enter") { e.preventDefault(); go(); } });
+    return h("div", { class: "sform row-actions" }, input,
+      h("button", { class: "btn btn-sm btn-primary", type: "button", text: goLabel, on: { click: go } }),
+      h("button", { class: "btn btn-sm", type: "button", text: t("ui.v2.cancel"), on: { click: function () { state.ui.sform = null; renderStructure(); } } }));
+  }
+  function formIs(kind, id) { var f = state.ui.sform; return !!f && f.kind === kind && f.id === id; }
+  function openForm(kind, id) { state.ui.sform = { kind: kind, id: id }; state.ui.confirm = null; renderStructure(); var el = document.querySelector(".sform .sinput"); if (el) { el.focus(); } }
+
+  /** Remove with a plain confirmation: a module takes its screens and the steps that used them with it. */
+  function removeControl(section, id, name) {
+    if (state.ui.confirm === id) {
+      return h("span", { class: "sconfirm", role: "alert" },
+        h("span", { class: "small", text: t("ui.v2.remove_confirm", { name: name }) }), " ",
+        h("button", { class: "btn btn-sm btn-danger", type: "button", text: t("ui.v2.remove_yes"), on: { click: function () { structAct("remove", { section: section, target: id }); } } }),
+        h("button", { class: "btn btn-sm", type: "button", text: t("ui.v2.cancel"), on: { click: function () { state.ui.confirm = null; renderStructure(); } } }));
+    }
+    return h("button", { class: "btn-link", type: "button", text: t("ui.v2.remove"), "aria-label": t("ui.v2.remove") + ": " + name,
+      on: { click: function () { state.ui.confirm = id; state.ui.sform = null; renderStructure(); } } });
+  }
+  function renameControl(section, id, name) {
+    return h("button", { class: "btn-link", type: "button", text: t("ui.v2.rename"), "aria-label": t("ui.v2.rename") + ": " + name,
+      on: { click: function () { openForm("rename", id); } } });
+  }
+
+  function structureBanner(vm) {
+    var b = vm.band;
+    var box = h("section", { class: "sbanner", "aria-label": t("ui.v2.structure_tab") });
+    if (b.id) { box.appendChild(h("div", { class: "sband" }, h("span", { class: "chip chip-strong", text: sizeText(b.label, b.screens, b.open_upper) }))); }
+    box.appendChild(h("div", { class: "small muted", text: t("ui.v2.structure_counts", { modules: vm.counts.modules, screens: vm.counts.screens, flows: vm.counts.flows, entities: vm.counts.entities }) }));
+    if (vm.verdict === "over") { box.appendChild(h("div", { class: "small", role: "status", text: t("ui.v2.structure_over", { size: b.label }) })); }
+    if (vm.verdict === "under") { box.appendChild(h("div", { class: "small muted", text: t("ui.v2.structure_under", { size: b.label }) })); }
+    if (vm.unreviewed > 0) {
+      box.appendChild(h("div", { class: "small " + (vm.review_blocks ? "warn-text" : "muted"),
+        text: vm.review_blocks ? t("ui.v2.structure_unreviewed_blocks", { count: vm.unreviewed }) : t("ui.v2.structure_unreviewed", { count: vm.unreviewed }) }));
+    }
+    var row = h("div", { class: "row-actions", role: "group", "aria-label": t("ui.v2.plan_as_title") });
+    row.appendChild(h("span", { class: "small muted", text: t("ui.v2.plan_as_title") }));
+    var bands = (state.bands && state.bands.bands) || [];
+    BAND_ORDER.forEach(function (id) {
+      if (id === b.id) { return; }
+      var name = t("size." + id);
+      var bd = null;
+      bands.forEach(function (x) { if (x.id === id) { bd = x; } });
+      row.appendChild(h("button", { class: "btn btn-sm", type: "button", text: t("ui.v2.plan_as", { size: name }),
+        title: bd ? sizeText(name, bd.screens, bd.open_upper) : null,
+        on: { click: function () { state.ui.confirm = "band:" + id; renderStructure(); } } }));
+    });
+    box.appendChild(row);
+    if (typeof state.ui.confirm === "string" && state.ui.confirm.indexOf("band:") === 0) {
+      var to = state.ui.confirm.slice(5);
+      box.appendChild(h("div", { class: "sconfirm", role: "alert" },
+        h("span", { class: "small", text: t("ui.v2.plan_as_confirm") }), " ",
+        h("button", { class: "btn btn-sm btn-primary", type: "button", text: t("ui.v2.plan_as_yes"), on: { click: function () { structAct("set_band", { band: to }); } } }),
+        h("button", { class: "btn btn-sm", type: "button", text: t("ui.v2.cancel"), on: { click: function () { state.ui.confirm = null; renderStructure(); } } })));
+    }
+    return box;
+  }
+
+  function screenLine(s) {
+    var meta = h("span", { class: "small muted", text: (s.roles || []).join(", ") });
+    var li = h("li", { class: "sscreen", data: { screen: s.id } },
+      h("span", { class: "sscreen-name", text: s.name }), " ",
+      s.pattern ? h("span", { class: "chip", text: s.pattern }) : null, " ",
+      PHASE_KEYS[s.phase] ? h("span", { class: "chip chip-later", text: t(PHASE_KEYS[s.phase]) }) : null, " ", meta);
+    if (s.purpose) { li.appendChild(h("div", { class: "small muted", text: s.purpose })); }
+    var bar = h("div", { class: "row-actions-bar" }, renameControl("screens", s.id, s.name), removeControl("screens", s.id, s.name));
+    li.appendChild(bar);
+    if (formIs("rename", s.id)) {
+      li.appendChild(inlineForm("rename", s.id, t("ui.v2.rename"), s.name, t("x.save"), function (v) { if (v) { renameItem("screens", s.id, v); } }));
+    }
+    return li;
+  }
+
+  function moduleCard(m) {
+    var open = !!state.ui.open[m.id];
+    var accepted = m.decision === "accepted";
+    var card = h("section", { class: "smod" + (accepted ? " accepted" : ""), "aria-label": m.name, data: { module: m.id } });
+    card.appendChild(h("div", { class: "smod-head" }, h("h4", { class: "smod-name", text: m.name }),
+      h("span", { class: "chip", text: accepted ? t("view.decision.accepted") : t("view.decision.proposed") })));
+    if (m.purpose) { card.appendChild(h("p", { class: "small muted", text: m.purpose })); }
+    var facts = [];
+    if (m.roles && m.roles.length) { facts.push(m.roles.join(", ")); }
+    if (m.entry) { facts.push(t("ui.v2.starts_at", { screen: m.entry })); }
+    if (facts.length) { card.appendChild(h("div", { class: "small muted", text: facts.join(" · ") })); }
+    card.appendChild(h("button", { class: "btn-link smod-toggle", type: "button", "aria-expanded": open ? "true" : "false",
+      text: open ? t("ui.v2.hide_screens") : t("ui.v2.show_screens", { count: m.screens.length }),
+      on: { click: function () { state.ui.open[m.id] = !open; renderStructure(); } } }));
+    if (open) {
+      var ul = h("ul", { class: "sscreens" });
+      m.screens.forEach(function (s) { ul.appendChild(screenLine(s)); });
+      card.appendChild(ul);
+    }
+    var bar = h("div", { class: "row-actions" });
+    if (!accepted) {
+      bar.appendChild(h("button", { class: "btn btn-sm btn-primary", type: "button", text: t("ui.v2.accept_module"),
+        on: { click: function () { structAct("accept", { section: "modules", target: m.id }); } } }));
+    }
+    bar.appendChild(renameControl("modules", m.id, m.name));
+    bar.appendChild(h("button", { class: "btn-link", type: "button", text: t("ui.v2.redraft"), "aria-label": t("ui.v2.redraft") + ": " + m.name,
+      on: { click: function () { openForm("redraft", m.id); } } }));
+    bar.appendChild(removeControl("modules", m.id, m.name));
+    card.appendChild(bar);
+    if (formIs("rename", m.id)) {
+      card.appendChild(inlineForm("rename", m.id, t("ui.v2.rename"), m.name, t("x.save"), function (v) { if (v) { renameItem("modules", m.id, v); } }));
+    }
+    if (formIs("redraft", m.id)) {
+      card.appendChild(inlineForm("redraft", m.id, t("ui.v2.redraft_prompt"), "", t("ui.v2.redraft_go"), function (v) {
+        structAct("regenerate", { section: "modules", target: m.id, text: v });
+      }));
+    }
+    return card;
+  }
+
+  function flowItem(f) {
+    var open = !!state.ui.open[f.id];
+    var li = h("li", { class: "sflow", data: { flow: f.id } });
+    li.appendChild(h("div", { class: "brow-top" }, h("strong", { text: f.name }), " ",
+      h("span", { class: "small muted", text: [f.role, t("ui.v2.steps_n", { count: f.steps.length })].filter(Boolean).join(" · ") })));
+    if (f.goal) { li.appendChild(h("div", { class: "small muted", text: f.goal })); }
+    li.appendChild(h("button", { class: "btn-link", type: "button", "aria-expanded": open ? "true" : "false",
+      text: open ? t("ui.v2.hide_details") : t("ui.v2.show_details"),
+      on: { click: function () { state.ui.open[f.id] = !open; renderStructure(); } } }));
+    if (open) {
+      var ol = h("ol", { class: "ssteps" });
+      f.steps.forEach(function (st) { ol.appendChild(h("li", { text: st.screen + (st.action ? ": " + st.action : "") })); });
+      li.appendChild(ol);
+      if (f.acceptance && f.acceptance.length) { li.appendChild(h("ul", { class: "small" }, f.acceptance.map(function (a) { return h("li", { text: a }); }))); }
+    }
+    li.appendChild(h("div", { class: "row-actions-bar" }, removeControl("flows", f.id, f.name)));
+    return li;
+  }
+
+  function entityItem(e) {
+    var open = !!state.ui.open[e.id];
+    var li = h("li", { class: "sentity", data: { entity: e.id } });
+    li.appendChild(h("div", { class: "brow-top" }, h("strong", { text: e.name }), " ",
+      h("span", { class: "small muted", text: [e.module, e.fields.length ? t("ui.v2.fields_label") + " " + e.fields.length : ""].filter(Boolean).join(" · ") })));
+    if (e.purpose) { li.appendChild(h("div", { class: "small muted", text: e.purpose })); }
+    li.appendChild(h("button", { class: "btn-link", type: "button", "aria-expanded": open ? "true" : "false",
+      text: open ? t("ui.v2.hide_details") : t("ui.v2.show_details"),
+      on: { click: function () { state.ui.open[e.id] = !open; renderStructure(); } } }));
+    if (open) {
+      li.appendChild(h("div", { class: "small" }, h("strong", { text: t("ui.v2.fields_label") + ": " }),
+        e.fields.map(function (f) { return f.name + " (" + f.type + (f.required ? "*" : "") + ")"; }).join(", ")));
+      if (e.states && e.states.length) { li.appendChild(h("div", { class: "small" }, h("strong", { text: t("ui.v2.states_label") + ": " }), e.states.join(", "))); }
+      if (e.access && e.access.length) {
+        li.appendChild(h("div", { class: "small" }, h("strong", { text: t("ui.v2.access_label") + ": " }),
+          e.access.map(function (a) { return a.role + " " + (LEVEL_KEYS[a.level] ? t(LEVEL_KEYS[a.level]) : a.level); }).join(", ")));
+      }
+    }
+    li.appendChild(h("div", { class: "row-actions-bar" }, removeControl("entities", e.id, e.name)));
+    return li;
+  }
+
+  function matrixEl(vm) {
+    var m = vm.matrix;
+    if (!m.rows.length || !m.roles.length) { return null; }
+    var head = h("tr", null, h("th", { scope: "col", text: "" }), m.roles.map(function (r) { return h("th", { scope: "col", text: r }); }));
+    var body = m.rows.map(function (row) {
+      return h("tr", null, h("th", { scope: "row", text: row.module }), row.cells.map(function (c) { return h("td", { text: String(c) }); }));
+    });
+    return h("div", { class: "smatrix", tabindex: "0", role: "region", "aria-label": t("ui.v2.structure_matrix") },
+      h("table", null, h("thead", null, head), h("tbody", null, body)));
+  }
+
+  function renderStructure() {
+    var host = $("tab-structure");
+    if (!host) { return; }
+    clear(host);
+    var vm = state.structure;
+    if (!vm || !vm.drafted) { host.appendChild(h("div", { class: "empty", text: t("ui.v2.structure_empty") })); return; }
+    host.appendChild(structureBanner(vm));
+    var mods = h("div", { class: "smods" });
+    vm.modules.forEach(function (m) { mods.appendChild(moduleCard(m)); });
+    host.appendChild(mods);
+    if (vm.flows.length) {
+      var fl = h("ul", { class: "sflows" });
+      vm.flows.forEach(function (f) { fl.appendChild(flowItem(f)); });
+      host.appendChild(h("section", { class: "section" }, h("h3", { text: t("ui.v2.structure_flows") }), fl));
+    }
+    if (vm.entities.length) {
+      var en = h("ul", { class: "sentities" });
+      vm.entities.forEach(function (e) { en.appendChild(entityItem(e)); });
+      host.appendChild(h("section", { class: "section" }, h("h3", { text: t("ui.v2.structure_entities") }), en));
+    }
+    var mx = matrixEl(vm);
+    if (mx) { host.appendChild(h("section", { class: "section" }, h("h3", { text: t("ui.v2.structure_matrix") }), h("p", { class: "small muted", text: t("ui.v2.structure_matrix_hint") }), mx)); }
+    if (vm.issues.length) {
+      var is = h("ul", { class: "sissues" });
+      vm.issues.forEach(function (i) {
+        is.appendChild(h("li", { class: "sissue sissue-" + i.severity },
+          h("span", { class: "chip", text: i.severity === "error" ? t("ui.v2.issue_error") : t("ui.v2.issue_warn") }), " ", i.text));
+      });
+      host.appendChild(h("section", { class: "section" }, h("h3", { text: t("ui.v2.structure_checks") }), is));
     }
   }
 
@@ -2323,15 +2719,18 @@ CONTRACT*/
   }
 
   // ---- tabs and panes -----------------------------------------------------------------------------------------
-  var TABS = [["brief", "x.brief"], ["lookup", "x.lookup_tab"], ["sources", "x.sources_tab"], ["history", "x.history_tab"]];
+  var TABS = [["brief", "x.brief"], ["structure", "ui.v2.structure_tab"], ["lookup", "x.lookup_tab"], ["sources", "x.sources_tab"], ["history", "x.history_tab"]];
+  /** The Structure tab exists once the Brief records a size band (the page then has a structure section). */
+  function tabVisible(id) { return id !== "structure" || hasStructureSection(); }
   function renderTabs() {
     var bar = $("tabs");
     clear(bar);
     TABS.forEach(function (tb) {
+      if (!tabVisible(tb[0])) { return; }
       bar.appendChild(h("button", { class: "tab", type: "button", role: "tab", id: "tabbtn-" + tb[0], "aria-selected": state.tab === tb[0] ? "true" : "false",
         "aria-controls": "tab-" + tb[0], text: t(tb[1]), on: { click: function () { setTab(tb[0]); } } }));
     });
-    TABS.forEach(function (tb) { $("tab-" + tb[0]).hidden = state.tab !== tb[0]; });
+    TABS.forEach(function (tb) { $("tab-" + tb[0]).hidden = state.tab !== tb[0] || !tabVisible(tb[0]); });
   }
   function setTab(name) {
     state.tab = name;
@@ -2340,6 +2739,7 @@ CONTRACT*/
     if (name === "brief" && state.view) { highlightChanged($("tab-brief"), state.view); }
     if (name === "lookup") { renderLookup(); }
     if (name === "sources") { renderSources(); }
+    if (name === "structure") { renderStructure(); loadStructure(); }
   }
   function setPane(name) {
     $("workspace").dataset.pane = name;
@@ -2615,7 +3015,8 @@ CONTRACT*/
   function openSession(id) {
     stopStream();
     state.sessionId = id; state.lastSeq = 0; state.seen = {}; state.devEvents = []; state.view = null; state.viewJson = "";
-    state.lookups = []; state.activeCard = null; state.ui = { panel: null, edit: null, prov: {} }; state.calls = [];
+    state.lookups = []; state.activeCard = null; state.ui = freshUi(); state.calls = [];
+    state.structure = null; state.structureJson = ""; state.structTab = false;
     state.batch = null; state.batches = []; state.answered = {}; state.submitted = {}; state.form = null; state.layoutAsked = false;
     state.depth = null; state.progress = null; state.qa = []; state.qaEdit = null; state.qaAnswered = 0; state.pulsed = {};
     state.awaitingTier = false; state.tierEditing = false; state.welcomeEl = null;
@@ -2810,7 +3211,7 @@ CONTRACT*/
     setInterval(function () { if (state.devOpen) { loadBudget(); loadCalls(); } }, 10000);
     applyChromeStrings();
     renderMeter();
-    loadStrings(state.lang).then(function () { showHome(); loadBudget(); });
+    loadStrings(state.lang).then(function () { showHome(); loadBudget(); loadBands(); });
     if (store.get("compass.dev") === "1") { setDev(true); }
   }
 

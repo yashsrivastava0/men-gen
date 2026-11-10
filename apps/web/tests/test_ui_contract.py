@@ -30,7 +30,7 @@ from mde_compass.domain.events import (
 )
 from mde_compass.domain.interview import FactStatus
 from mde_compass.engine.service import Service
-from mde_compass.views.models import BriefViewModel
+from mde_compass.views.models import BriefViewModel, StructureViewModel
 
 CONSOLE = Path(__file__).resolve().parents[1] / "console"
 APP_JS = (CONSOLE / "agents" / "compass" / "compass.js").read_text(encoding="utf-8")
@@ -79,6 +79,29 @@ def test_view_model_keys_exist_in_schema() -> None:
     assert len(keys) > 30
     missing = [k for k in keys if not _resolve(schema, k)]
     assert not missing, f"compass.js reads keys that BriefViewModel does not have: {missing}"
+
+
+def test_structure_view_keys_exist_in_schema() -> None:
+    schema = StructureViewModel.model_json_schema()
+    keys = _contract()["structure_view_keys"]
+    assert len(keys) > 40
+    missing = [k for k in keys if not _resolve(schema, k)]
+    assert not missing, f"compass.js reads keys that StructureViewModel does not have: {missing}"
+
+
+async def test_the_size_band_keys_the_page_reads_are_in_the_served_answer(
+    anon: httpx.AsyncClient,
+) -> None:
+    body = (await anon.get("/v1/compass/size-bands")).json()
+    for key in _contract()["size_band_keys"]:
+        node: Any = body
+        for raw in key.split("."):
+            token = raw.removesuffix("[]")
+            assert token in node, f"{key}: {token} is not served"
+            node = node[token]
+            if raw.endswith("[]"):
+                assert isinstance(node, list) and node
+                node = node[0]
 
 
 def test_card_and_stored_event_keys_exist_in_schema() -> None:
@@ -167,6 +190,8 @@ def test_every_contract_key_is_actually_read_by_the_code() -> None:
         + contract["batch_keys"]
         + contract["batch_answer_keys"]
         + contract["qa_item_keys"]
+        + contract["structure_view_keys"]
+        + contract["size_band_keys"]
     )
     for key in keys:
         leaf = key.split(".")[-1].removesuffix("[]")

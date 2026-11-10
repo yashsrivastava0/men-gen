@@ -665,5 +665,11 @@ def test_the_readme_documents_the_interview_screens() -> None:
         "ui.v2",
         "WAIT",
         "fileInput",
+        "tab-structure",
+        "tier-size",
+        "size-bands",
+        "structure_action",
+        "smatrix",
+        "notice-action",
     ):
         assert token in README, f"apps/web/README.md does not mention {token}"
