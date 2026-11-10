@@ -1,0 +1,23 @@
+id: SB-ST-02
+title: The deepest tier plans an enterprise-size app, bigger than the small one, still with no check error
+tags: [planner, structure, tiers, large]
+engines: [planner]
+policy: {structure_enabled: true}
+steps:
+  - command: budget_thorough
+  - say: "I run a tiffin service in Pune and want an app for it"
+  - drive: {mode: tap_recommended, until: BRIEF_REVIEW, max: 60}
+    expect:
+      state: BRIEF_REVIEW
+      structure:
+        absent: false
+        band: large
+        source: tier
+        modules_min: 3
+        screens_min: 8
+        flows_min: 1
+        entities_min: 1
+        no_error_issues: true
+        none_locked: true
+final:
+  interview: {fallback_count: 0}

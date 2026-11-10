@@ -448,6 +448,52 @@ def _target_module(work: Brief, issue: checks.Issue, routing: derive.FactRouting
     return work.modules[0].id if work.modules else ""
 
 
+SCREENS_PER_CALL = (
+    12  # a draft_module call writes at most about this many screens: its output cap is the limit
+)
+
+
+def module_groups(inp: StructureInput, plan: merge.Plan, targets: Sequence[Any]) -> list[list[Any]]:
+    """The modules of one wave grouped into calls: at most the band's ``group_size`` modules per call (0 = no limit)
+    and at most ``SCREENS_PER_CALL`` screens (the sum of what the outline asked for), so no answer outgrows the output
+    cap of a call. A module that is bigger than the budget gets a call of its own."""
+    limit = inp.band.group_size or max(1, len(targets))
+    groups: list[list[Any]] = []
+    current: list[Any] = []
+    load = 0
+    for module in targets:
+        want = _target(inp, plan, module)
+        if current and (len(current) >= limit or load + want > SCREENS_PER_CALL):
+            groups.append(current)
+            current, load = [], 0
+        current.append(module)
+        load += want
+    if current:
+        groups.append(current)
+    return groups
+
+
+def _expand(
+    groups: list[list[Any]],
+    results: list[Any],
+    retry: list[tuple[int, list[Any]]],
+    by_module: dict[str, Any],
+) -> tuple[list[list[Any]], list[Any]]:
+    """Replace each failed group by one single-module group per module, with the answer of its own retry."""
+    failed = {k for k, _ in retry}
+    out_groups: list[list[Any]] = []
+    out_results: list[Any] = []
+    for k, (g, r) in enumerate(zip(groups, results, strict=True)):
+        if k in failed:
+            for m in g:
+                out_groups.append([m])
+                out_results.append(by_module[m.id])
+        else:
+            out_groups.append(g)
+            out_results.append(r)
+    return out_groups, out_results
+
+
 async def compute_structure(inp: StructureInput, ports: Ports, ctx: TurnContext) -> StructureResult:
     work = inp.brief
     res = StructureResult(work=work)
@@ -463,6 +509,12 @@ async def compute_structure(inp: StructureInput, ports: Ports, ctx: TurnContext)
     redo_outline = full and (inp.force or not existing or stored.get(OUTLINE_KEY) != odigest)
     if redo_outline:
         out = await ports.structure_outliner.outline(ctx, build_outline_input(inp))
+        if (
+            out.used_fallback
+        ):  # a transient failure (live: the call hung and timed out): once more before the floor
+            res.calls += 1  # the failed call was paid for, but it is not the floor
+            res.notes.append("the outline call failed; it was asked once more")
+            out = await ports.structure_outliner.outline(ctx, build_outline_input(inp))
         _count(res, out)
         plan, _refmap = merge.merge_outline(work, out.output, inp.now)
     else:
@@ -484,10 +536,29 @@ async def compute_structure(inp: StructureInput, ports: Ports, ctx: TurnContext)
             or stored.get(MODULE_KEY + m.id) != module_digest(inp, m.id)
         ):
             targets.append(m)
-    size = inp.band.group_size or max(1, len(targets))
-    groups = [targets[i : i + size] for i in range(0, len(targets), size)]
+    groups = module_groups(inp, plan, targets)
     inputs = [build_module_input(inp, plan, g, instruction=inp.instruction) for g in groups]
-    results = await asyncio.gather(*(ports.structure_drafter.draft(ctx, i) for i in inputs))
+    results = list(await asyncio.gather(*(ports.structure_drafter.draft(ctx, i) for i in inputs)))
+    # a call for several modules that failed (live: the answer hit the output cap, or the call timed out) is asked
+    # again one module at a time, in parallel: a smaller answer fits. Only a module that fails alone gets its floor.
+    retry = [
+        (k, g)
+        for k, (g, r) in enumerate(zip(groups, results, strict=True))
+        if r.used_fallback and len(g) > 1
+    ]
+    if retry:
+        solo_groups = [[m] for _, g in retry for m in g]
+        solo_inputs = [
+            build_module_input(inp, plan, g, instruction=inp.instruction) for g in solo_groups
+        ]
+        solo = await asyncio.gather(*(ports.structure_drafter.draft(ctx, i) for i in solo_inputs))
+        solo_by_module = {g[0].id: r for g, r in zip(solo_groups, solo, strict=True)}
+        for _k, g in retry:
+            res.calls += 1  # the failed call is counted (it was paid for) but it is not a floor: its modules are asked again
+            res.notes.append(
+                f"one call for {len(g)} modules failed; they were asked again one at a time"
+            )
+        groups, results = _expand(groups, results, retry, solo_by_module)
     for g, r in zip(groups, results, strict=True):
         _count(res, r)
         merged = merge.merge_modules(work, r.output, [m.id for m in g], patch=False, now=inp.now)
@@ -538,6 +609,7 @@ async def compute_structure(inp: StructureInput, ports: Ports, ctx: TurnContext)
                 res.drafted.append(m.id)
         if repair_modules:
             merge.assemble_flows(work, plan, seg_fix, det_fix, inp.now, keep_unplanned=True)
+            res.notes += checks.fix_flow_access(work)
             res.notes += checks.apply_fixes(work)
             issues = checks.run_checks(work, inp.band, facts=work.domain_facts, lang=inp.language)
         else:

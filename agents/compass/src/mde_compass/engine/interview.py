@@ -1773,6 +1773,9 @@ class InterviewController:
                 mem.update_fact(fact.model_copy(update={"status": "superseded", "updated_at": now}))
                 gone.append(fact)
         self._reproject(turn, gone)
+        self.svc.structure.clear(
+            turn
+        )  # ADR 0017: the old structure and its pins go; the next draft starts clean
         situation = await self.svc.ports.situator.situate(self.svc._ctx(turn), user_text=text)
         turn.brief.meta.hypothesis = situation.hypothesis
         turn.notice(

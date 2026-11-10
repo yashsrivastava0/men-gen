@@ -204,6 +204,24 @@ class BatchExpect(BaseModel):
     ui_mode: str | None = None  # one_at_a_time | answer_all
 
 
+class StructureExpect(BaseModel):
+    """What the structure of the app (ADR 0017) must look like after a step: size band, counts, no error from the
+    checks of the band, and that the model never locked a record."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    absent: bool | None = None  # no modules, screens, flows or entities at all
+    band: str | None = None  # the size band recorded in meta.interview
+    source: str | None = None  # tier | document | suggested | user
+    modules_min: int | None = None
+    screens_min: int | None = None
+    screens_max: int | None = None
+    flows_min: int | None = None
+    entities_min: int | None = None
+    no_error_issues: bool | None = None  # the checks of the band find no error-severity issue
+    none_locked: bool | None = None  # no structure record is Locked (the model never locks)
+
+
 class Expect(BaseModel):
     """What must hold after a step. Texts are the assistant's messages and notices of that step."""
 
@@ -250,6 +268,7 @@ class Expect(BaseModel):
     interview: InterviewExpect | None = None
     calls: CallsExpect | None = None
     batch: BatchExpect | None = None
+    structure: StructureExpect | None = None
     brief_contains: list[str] = Field(default_factory=list)  # anywhere in the Brief's content
     brief_not_contains: list[str] = Field(default_factory=list)
     domain_facts_contains: list[str] = Field(default_factory=list)  # in a domain_facts row

@@ -265,8 +265,8 @@ async def test_regenerating_one_module_with_an_instruction_leaves_the_rest_alone
 async def test_a_failed_outline_and_a_failed_group_answer_with_flagged_floors() -> None:
     gateway = ScriptedGateway(
         by_spec={
-            "cmp.draft_outline": [ProviderError("boom")],
-            "cmp.draft_module": [ProviderError("boom")] * 4,
+            "cmp.draft_outline": [ProviderError("boom")] * 2,
+            "cmp.draft_module": [ProviderError("boom")] * 12,
             "cmp.review_structure": [ProviderError("boom")],
         }
     )
@@ -275,6 +275,134 @@ async def test_a_failed_outline_and_a_failed_group_answer_with_flagged_floors() 
     assert res.fallbacks >= 2 and res.reasons  # counted: a floor is a failure
     c = derive.counts(res.work)
     assert c.screens > 0 and checks.errors(res.issues) == []  # the floor is still a valid structure
+
+
+class _FailsOnGroups:
+    """A module port that fails every call for more than one module (the live case: the answer hit the output cap)
+    and answers a single module with the real mock handler."""
+
+    def __init__(self, inner: Any, *, fail_alone: bool = False) -> None:
+        self.inner, self.fail_alone = inner, fail_alone
+        self.sizes: list[int] = []
+
+    async def draft(self, ctx: TurnContext, inp: Any) -> Any:
+        self.sizes.append(len(inp.modules))
+        res = await self.inner.draft(ctx, inp)
+        if len(inp.modules) > 1 or self.fail_alone:
+            return res.model_copy(update={"used_fallback": True, "reason": "timed out"})
+        return res
+
+
+def _ports_with(drafter: Any) -> Ports:
+    import dataclasses
+
+    return dataclasses.replace(real_ports(), structure_drafter=drafter)
+
+
+def test_a_wave_is_grouped_by_the_bands_group_size_and_by_the_screens_a_call_can_write() -> None:
+    from types import SimpleNamespace
+
+    mods = [SimpleNamespace(id=f"MOD-{i:03d}") for i in range(1, 8)]
+    big = SimpleNamespace(targets={m.id: 6 for m in mods})
+    inp = make_input(bare(5), "medium")  # group_size 3
+    groups = sd.module_groups(
+        inp, big, mods
+    )  # 6 + 6 = 12: two modules fit one call, a third does not
+    assert [len(g) for g in groups] == [2, 2, 2, 1]
+    small = SimpleNamespace(targets={m.id: 3 for m in mods})
+    assert [len(g) for g in sd.module_groups(inp, small, mods)] == [3, 3, 1]  # the band's own limit
+    assert [len(g) for g in sd.module_groups(make_input(bare(5), "small"), small, mods)] == [
+        4,
+        3,
+    ]  # 12 screens
+    alone = SimpleNamespace(targets={mods[0].id: 40})
+    assert [len(g) for g in sd.module_groups(inp, alone, mods[:1])] == [1]
+    assert sd.module_groups(inp, small, []) == []
+
+
+async def test_a_failed_call_for_several_modules_is_asked_again_one_module_at_a_time() -> None:
+    port = _FailsOnGroups(real_ports().structure_drafter)
+    res = await draft(bare(7), "medium", ports=_ports_with(port))
+    assert max(port.sizes) > 1 and port.sizes.count(1) >= max(
+        port.sizes
+    )  # the group, then each module alone
+    assert res.fallbacks == 0, res.reasons  # the retry succeeded: no module got its floor
+    assert any("asked again one at a time" in n for n in res.notes)
+    assert checks.errors(res.issues) == []
+    assert derive.counts(res.work).screens >= 12
+
+
+class _RepairWritesJourneys:
+    """A module port whose repair call (``issues`` given) answers like a full draft, journey segments included: what
+    a live model does when asked to fix a module."""
+
+    def __init__(self, inner: Any) -> None:
+        self.inner, self.repairs = inner, 0
+
+    async def draft(self, ctx: TurnContext, inp: Any) -> Any:
+        if inp.issues:
+            self.repairs += 1
+            inp = inp.model_copy(update={"issues": []})
+        return await self.inner.draft(ctx, inp)
+
+
+async def test_the_repair_pass_continues_the_flows_it_found_and_never_makes_a_second_copy() -> None:
+    import dataclasses
+
+    finding = ReviewOutput(
+        findings=[
+            FindingOut(
+                code="missing", ids=["FTR-001"], fact_id="", note="There is no way to cancel."
+            )
+        ]
+    )
+    ports = build_ports(CallRunner(_MockWithCritic(finding)), load_catalog())
+    repairing = _RepairWritesJourneys(ports.structure_drafter)
+    res = await draft(
+        bare(8), "medium", ports=dataclasses.replace(ports, structure_drafter=repairing)
+    )
+    assert repairing.repairs >= 1, "the repair pass ran (a finding asked for it)"
+    names = [f.name for f in res.work.flows]
+    assert names and len(names) == len(set(names)), f"the repair pass made copies of flows: {names}"
+    ids = [f.id for f in res.work.flows]
+    assert len(ids) == len(set(ids))
+
+
+class _OutlineHangsOnce:
+    def __init__(self, inner: Any, *, always: bool = False) -> None:
+        self.inner, self.always, self.n = inner, always, 0
+
+    async def outline(self, ctx: TurnContext, inp: Any) -> Any:
+        self.n += 1
+        res = await self.inner.outline(ctx, inp)
+        if self.always or self.n == 1:
+            return res.model_copy(update={"used_fallback": True, "reason": "timed out"})
+        return res
+
+
+async def test_a_failed_outline_is_asked_once_more_and_only_a_second_failure_gets_the_floor() -> (
+    None
+):
+    import dataclasses
+
+    once = _OutlineHangsOnce(real_ports().structure_outliner)
+    res = await draft(
+        bare(6), "medium", ports=dataclasses.replace(real_ports(), structure_outliner=once)
+    )
+    assert once.n == 2 and res.fallbacks == 0, res.reasons
+    assert any("outline call failed" in n for n in res.notes)
+    twice = _OutlineHangsOnce(real_ports().structure_outliner, always=True)
+    res = await draft(
+        bare(6), "medium", ports=dataclasses.replace(real_ports(), structure_outliner=twice)
+    )
+    assert twice.n == 2 and res.fallbacks >= 1 and checks.errors(res.issues) == []
+
+
+async def test_a_module_that_fails_alone_too_gets_its_floor_flagged_and_counted() -> None:
+    port = _FailsOnGroups(real_ports().structure_drafter, fail_alone=True)
+    res = await draft(bare(7), "medium", ports=_ports_with(port))
+    assert res.fallbacks >= 1 and res.reasons
+    assert derive.counts(res.work).screens > 0 and checks.errors(res.issues) == []
 
 
 async def test_a_model_that_returns_garbage_pointers_never_gets_them_into_the_brief() -> None:
@@ -615,3 +743,35 @@ def test_patch_keeps_what_the_call_did_not_return_and_replace_removes_it() -> No
     merge.merge_modules(replaced, only_one(), ["MOD-002"], patch=False, now=NOW)
     assert {s.id for s in replaced.screens if s.module == "MOD-002"} == {"SCR-006"}
     assert {"SCR-007", "SCR-008", "SCR-009", "SCR-010"} <= set(replaced.ids.tombstones)
+
+
+def test_a_floor_journey_is_for_the_role_the_feature_is_about_not_the_first_role() -> None:
+    from mde_compass.calls.structure_floor import journey_role
+    from mde_compass.engine.structure_wire import FeatureWire, RoleWire
+
+    roles = [
+        RoleWire(id="ROL-001", name="admin", goal="run the clinic chain"),
+        RoleWire(id="ROL-002", name="Patients", goal="book appointments"),
+        RoleWire(id="ROL-003", name="Doctors", goal="see patients and write notes"),
+    ]
+
+    def feature(name: str, intent: str = "") -> FeatureWire:
+        return FeatureWire(
+            id="FTR-001",
+            name=name,
+            intent=intent,
+            priority="must",
+            scope_status="in",
+            family="",
+            apps=[],
+        )
+
+    assert journey_role(feature("Doctors write notes"), roles) == "ROL-003"
+    assert journey_role(feature("Appointments", "Patient can book a slot"), roles) == "ROL-002"
+    assert (
+        journey_role(feature("Reports"), roles) == "ROL-002"
+    )  # no match: the first role that is not an admin
+    assert (
+        journey_role(feature("Reports"), roles[:1]) == "ROL-001"
+    )  # only an admin exists: the first role
+    assert journey_role(feature("Reports"), []) == ""

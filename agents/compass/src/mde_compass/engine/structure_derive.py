@@ -320,8 +320,15 @@ def route_facts(brief: Brief, facts: Iterable[DomainFact] | None = None) -> Fact
     routing = FactRouting()
     module_ids = {m.id: module_ids_of(brief, m.id) for m in brief.modules}
     module_words = {m.id: _module_words(brief, m.id) for m in brief.modules}
+    seen: set[tuple[str, str]] = set()
     for fact in brief.domain_facts if facts is None else facts:
         kind = fact.kind or kind_for(fact.type, fact.topics)
+        said = (kind, " ".join(fact.statement.casefold().split()))
+        if (
+            said in seen
+        ):  # the ledger reads the same statement again from each batch: it is one fact
+            continue
+        seen.add(said)
         if kind not in DETAIL_KINDS:
             routing.general.append(fact)
             continue

@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from mde_compass.catalog.loader import load_catalog
 from mde_compass.catalog.structure_patterns import load_structure_patterns, text_for
+from mde_compass.catalog.structure_rules import load_structure_rules
 from mde_compass.engine.structure_checks import slug_key
 from mde_compass.engine.structure_wire import (
     AccessOut,
@@ -27,6 +28,7 @@ from mde_compass.engine.structure_wire import (
     ModuleOutput,
     OutlineInput,
     OutlineOutput,
+    RoleWire,
     ScreenOut,
     SegmentOut,
     StepOut,
@@ -65,6 +67,34 @@ def in_scope(features: list[FeatureWire]) -> list[FeatureWire]:
 
 
 # ------------------------------------------------------------------------------------------------- outline
+
+
+def _stems(text: str) -> set[str]:
+    """Words of four letters or more, cut to five letters, so "doctors" and "doctor" meet."""
+    import re
+
+    return {w[:5] for w in re.findall(r"\w+", text.casefold()) if len(w) >= 4}
+
+
+def journey_role(feature: FeatureWire, roles: list[RoleWire]) -> str:
+    """The role a floor journey is for: the one whose own words (name, goal) share the most with the feature's, else
+    the first role that is not an administrator (the words come from the realism rules' data), else the first role.
+    The people a feature is for are not always the first role of the Brief."""
+    if not roles:
+        return ""
+    want = _stems(f"{feature.name} {feature.intent}")
+    best, best_score = "", 0
+    for role in roles:
+        score = len(want & _stems(f"{role.name} {role.goal}"))
+        if score > best_score:
+            best, best_score = role.id, score
+    if best:
+        return best
+    admin = {w for r in load_structure_rules() if r.id == "admin_role" for w in r.role_words}
+    for role in roles:
+        if not (admin & {w.casefold() for w in role.name.split()}):
+            return role.id
+    return roles[0].id
 
 
 def floor_outline(inp: OutlineInput) -> OutlineOutput:
@@ -146,7 +176,7 @@ def floor_outline(inp: OutlineInput) -> OutlineOutput:
                     JourneyOut(
                         ref=f"j{len(journeys) + 1}",
                         name=f.name,
-                        role=all_roles[0] if all_roles else "",
+                        role=journey_role(f, inp.roles),
                         goal=f.intent or f.name,
                         legs=[ref],
                         owner_module=ref,
@@ -178,7 +208,7 @@ def floor_outline(inp: OutlineInput) -> OutlineOutput:
                     JourneyOut(
                         ref=f"j{len(journeys) + 1}",
                         name=f.name,
-                        role=all_roles[0] if all_roles else "",
+                        role=journey_role(f, inp.roles),
                         goal=f.intent or f.name,
                         legs=[by_id[m.ref].ref],
                         owner_module=m.ref,

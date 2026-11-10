@@ -355,6 +355,70 @@ async def test_the_change_summary_names_the_record_not_its_path() -> None:
     assert f"{b.modules[1].name} › name" in last and "MOD-" not in last, last
 
 
+async def test_a_pivot_clears_the_structure_and_its_pins_and_never_reuses_an_id() -> None:
+    from mde_compass.engine.ports import ExtractedFact, TurnUnderstanding
+
+    svc, conv = await review()
+    assert svc.ports is not None
+    real = svc.ports.understander
+
+    class Pivoting:
+        async def understand(self, ctx, text, **kw):  # type: ignore[no-untyped-def]
+            if text.startswith("Actually"):
+                return TurnUnderstanding(
+                    intent="answer",
+                    flags=["pivot"],
+                    facts=[
+                        ExtractedFact(
+                            type="context",
+                            statement="It is an appointment app for a clinic",
+                            quote="it is for a clinic",
+                            topics=["idea"],
+                        )
+                    ],
+                )
+            return await real.understand(ctx, text, **kw)
+
+    object.__setattr__(svc.ports, "understander", Pivoting())
+    before: Brief = await current(svc, conv)
+    await act(
+        conv, "accept", section="modules", target=before.modules[0].id
+    )  # a pin the pivot must release
+    old_ids = {
+        r.id for sec in ("modules", "screens", "flows", "entities") for r in getattr(before, sec)
+    }
+    await conv.say("Actually, it is for a clinic")
+    after: Brief = await current(svc, conv)
+    assert any(e.payload.get("code") == "pivot" for e in conv.events if e.type == "notice")
+    # the old structure is gone with its pins; if the interview already reached the draft again it is a NEW structure
+    new_ids = {
+        r.id for sec in ("modules", "screens", "flows", "entities") for r in getattr(after, sec)
+    }
+    assert not (new_ids & old_ids), "no id of the old structure comes back"
+    assert all(m.decision == "proposed" for m in after.modules), (
+        "the accept of the old module is released"
+    )
+    assert all(after.ids.is_deleted(i) for i in old_ids), "a cleared id is tombstoned, never reused"
+    assert not [e for e in conv.events if e.type == "error"]
+
+
+async def test_a_repeated_structure_event_is_applied_once() -> None:
+    from mde_compass.domain.events import StructureAction
+
+    svc, conv = await review()
+    b = await current(svc, conv)
+    ev = StructureAction(
+        event_id="evt_same", action="remove", section="modules", target=b.modules[-1].id
+    )
+    first = await conv.send(ev)
+    versions = (await stored(svc, conv)).version
+    again = await conv.send(ev)  # a retried request with the same event id
+    after = await current(svc, conv)
+    assert (await stored(svc, conv)).version == versions
+    assert len(after.modules) == len(b.modules) - 1
+    assert first is not None and again is not None
+
+
 async def test_adding_a_screen_by_hand_is_locked_with_the_persons_words() -> None:
     svc, conv = await review()
     b = await current(svc, conv)

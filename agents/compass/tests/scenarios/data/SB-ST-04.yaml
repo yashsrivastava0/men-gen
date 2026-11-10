@@ -1,0 +1,20 @@
+id: SB-ST-04
+title: In Hindi the plan is drafted too, and a person who decides the rest still gets a reviewable structure
+tags: [planner, structure, hindi, decide-rest]
+engines: [planner]
+policy: {structure_enabled: true}
+steps:
+  - command: budget_standard
+  - say: "मुझे पुणे में अपनी टिफिन सेवा के लिए एक ऐप चाहिए"
+  - drive: {mode: you_decide, until: BRIEF_REVIEW, max: 40}
+    expect:
+      state: BRIEF_REVIEW
+      notice_code: [structure_ready]
+      structure:
+        absent: false
+        band: medium
+        modules_min: 3
+        no_error_issues: true
+        none_locked: true
+final:
+  interview: {fallback_count: 0}

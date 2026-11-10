@@ -63,6 +63,33 @@ class StructureController:
             return False
         return any(f.scope_status == "in" for f in turn.brief.scope)
 
+    def clear(self, turn: _Turn) -> bool:
+        """A pivot ("actually it is for a clinic"): the idea changed, so the old structure goes with everything the
+        person had pinned in it, and the next draft starts clean from the new ledger. Ids are tombstoned, so they are
+        never reused; the size band and the person's own choice of it are kept. Returns whether anything was cleared."""
+        brief = turn.brief
+        if not derive.has_structure(brief):
+            return False
+        for section in actions.SECTION_ROOTS:
+            for rec in getattr(brief, section):
+                brief.ids.tombstone(rec.id)
+            setattr(brief, section, [])
+        for key in [k for k in brief.meta.compile_digests if k.startswith("structure:")]:
+            del brief.meta.compile_digests[key]
+        block = brief.meta.interview
+        if block is not None:
+            brief.meta.interview = block.model_copy(
+                update={
+                    "structure_modules": 0,
+                    "structure_screens": 0,
+                    "structure_flows": 0,
+                    "structure_entities": 0,
+                    "structure_issues": 0,
+                    "size_suggested": "",
+                }
+            )
+        return True
+
     def unreviewed(self, turn: _Turn) -> int:
         """Modules the person has not accepted yet, when the band asks for a hard review (large apps); else 0."""
         if not self.enabled or not turn.brief.modules:

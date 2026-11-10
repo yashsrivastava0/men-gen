@@ -28,7 +28,14 @@ from mde_compass.catalog.structure_patterns import load_structure_patterns, word
 from mde_compass.catalog.structure_rules import Rule, load_check_policy, load_structure_rules
 from mde_compass.domain.brief import Brief, DomainFact
 from mde_compass.domain.common import Provenance
-from mde_compass.domain.structure import EntityField, ScreenEntityUse, ScreenRecord, access_allows
+from mde_compass.domain.structure import (
+    AccessLevel,
+    EntityField,
+    FlowStep,
+    ScreenEntityUse,
+    ScreenRecord,
+    access_allows,
+)
 from mde_compass.engine import structure_derive as derive
 
 Severity = Literal["error", "warn"]
@@ -377,17 +384,27 @@ def _entities(brief: Brief) -> list[Issue]:
             e = by_id.get(use.entity)
             if e is None or not e.access:
                 continue  # unknown: dangling_ref; no access given at all: entity_access_missing
+            levels: dict[str, AccessLevel] = {role: e.access.get(role, "none") for role in s.roles}
+            nobody = not any(access_allows(lv, use.use) for lv in levels.values())
+            blocked: list[str] = []
             for role in s.roles:
-                level = e.access.get(role, "none")
+                level = levels[role]
                 if not access_allows(level, use.use):
-                    out.append(
-                        _issue(
-                            "screen_entity_access_conflict",
-                            (s.id, e.id, role),
-                            module=s.module,
-                            detail=f"{role} can open {s.id}, which {use.use}s {e.id}, but may only {level} it",
-                        )
+                    if level != "none" and use.use != "view" and not nobody:
+                        continue  # one screen, two kinds of person: those with less access only look at it
+                    blocked.append(role)
+            if blocked:  # one issue per screen and entity, naming every role it concerns
+                out.append(
+                    _issue(
+                        "screen_entity_access_conflict",
+                        (s.id, e.id, *blocked),
+                        module=s.module,
+                        detail=(
+                            f"{', '.join(blocked)} can open {s.id}, which {use.use}s {e.id}, "
+                            f"but may only {levels[blocked[0]]} it"
+                        ),
                     )
+                )
     return out
 
 
@@ -698,6 +715,40 @@ def _screen_to_show(screens: Sequence[ScreenRecord], module: str) -> int:
     return 0
 
 
+def fix_flow_access(brief: Brief) -> list[str]:
+    """The last resort after the repair pass, for a journey step its own role cannot open. The module of the screen
+    says who belongs there: when the journey's role is one of the module's roles the model simply left the role off
+    the screen, so it is added; when it is not, the journey strayed into somebody else's work (a customer's order
+    walking through the kitchen's screens) and the step is dropped (a journey left with fewer than two steps goes in
+    ``apply_fixes``). In place; one plain line per change."""
+    done: list[str] = []
+    roles = {r.id for r in brief.roles}
+    module_roles = {m.id: set(m.roles) for m in brief.modules}
+    for k, flow in enumerate(brief.flows):
+        if flow.role not in roles:
+            continue
+        kept: list[FlowStep] = []
+        for step in flow.steps:
+            i = next((n for n, s in enumerate(brief.screens) if s.id == step.screen), -1)
+            if i < 0:
+                kept.append(step)
+                continue
+            s = brief.screens[i]
+            if not s.roles or flow.role in s.roles:
+                kept.append(step)
+            elif flow.role in module_roles.get(s.module, set()):
+                brief.screens[i] = s.model_copy(update={"roles": [*s.roles, flow.role]})
+                kept.append(step)
+                done.append(f"{s.id} can now be opened by {flow.role}, who works in {s.module}")
+            else:
+                done.append(
+                    f"{flow.id} no longer goes through {s.id}: {flow.role} does not work in {s.module}"
+                )
+        if len(kept) != len(flow.steps):
+            brief.flows[k] = flow.model_copy(update={"steps": kept})
+    return done
+
+
 def apply_fixes(brief: Brief) -> list[str]:
     """The deterministic fixes (``fix: code``), in place. Returns one plain line per kind of thing done. Order matters:
     screens of excluded features go first (their flows lose steps), then dangling pointers, then tidying."""
@@ -725,6 +776,52 @@ def apply_fixes(brief: Brief) -> list[str]:
     pruned = _prune_refs(brief)
     if pruned:
         done.append(f"removed {pruned} pointer(s) to records that do not exist")
+    # a role that opens a screen that only SHOWS an entity, where the entity lists no access for that role at all: the
+    # model left the row out (catalogue data such as doctors or clinics); showing it is the least access that works.
+    # An explicit "none" is a contradiction and stays an issue for the repair pass.
+    by_entity = {e.id: i for i, e in enumerate(brief.entities)}
+    added = 0
+    for s in brief.screens:
+        for use in s.entities:
+            idx = by_entity.get(use.entity)
+            if idx is None or use.use != "view" or not brief.entities[idx].access:
+                continue
+            for role in s.roles:
+                if role not in brief.entities[idx].access:
+                    ent = brief.entities[idx]
+                    brief.entities[idx] = ent.model_copy(
+                        update={"access": {**ent.access, role: "view"}}
+                    )
+                    added += 1
+    if added:
+        done.append(
+            f"gave {added} role(s) view access to data their screens show and the entity left out"
+        )
+    # a screen shared by many roles that "shows" an entity most of them may not see (an explicit "none"): the data link
+    # belongs to the one role that does see it, so the screen stops claiming it, as long as another screen shows it
+    shown_on: dict[str, int] = {}
+    for s in brief.screens:
+        for u in s.entities:
+            shown_on[u.entity] = shown_on.get(u.entity, 0) + 1
+    by_ent = {e.id: e for e in brief.entities}
+    dropped = 0
+    for i, s in enumerate(brief.screens):
+        keep: list[ScreenEntityUse] = []
+        for u in s.entities:
+            e = by_ent.get(u.entity)
+            if e is not None and e.access and u.use == "view" and len(s.roles) >= 2:
+                blind = [r for r in s.roles if e.access.get(r, "none") == "none"]
+                if len(blind) * 2 > len(s.roles) and shown_on[u.entity] > 1:
+                    shown_on[u.entity] -= 1
+                    dropped += 1
+                    continue
+            keep.append(u)
+        if len(keep) != len(s.entities):
+            brief.screens[i] = s.model_copy(update={"entities": keep})
+    if dropped:
+        done.append(
+            f"{dropped} shared screen(s) no longer claim data that most of their roles cannot see"
+        )
     # unknown pattern: blank (the model may fill it in the next pass; never guessed)
     for i, s in enumerate(brief.screens):
         if s.pattern and s.pattern not in patterns.patterns:

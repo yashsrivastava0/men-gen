@@ -1,0 +1,24 @@
+id: SB-ST-01
+title: The smallest tier plans a small app, in the Brief at review, with no check error and nothing locked by the model
+tags: [planner, structure, tiers, small]
+engines: [planner]
+policy: {structure_enabled: true}
+steps:
+  - command: budget_quick
+  - say: "I run a tiffin service in Pune and want an app for it"
+  - drive: {mode: tap_recommended, until: BRIEF_REVIEW, max: 40}
+    expect:
+      state: BRIEF_REVIEW
+      structure:
+        absent: false
+        band: small
+        source: tier
+        modules_min: 2
+        screens_min: 4
+        screens_max: 18
+        flows_min: 1
+        entities_min: 1
+        no_error_issues: true
+        none_locked: true
+final:
+  interview: {fallback_count: 0}

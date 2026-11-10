@@ -160,16 +160,25 @@ def new_scripted_service(
     return service, gateway
 
 
-def new_service(engine: Engine = "legacy", *, gateway: Any | None = None) -> Any:
+def new_service(
+    engine: Engine = "legacy",
+    *,
+    gateway: Any | None = None,
+    policy: dict[str, Any] | None = None,
+) -> Any:
     """A fresh real Service: mock mode, in-memory store, a fake clock (the gateway rate limiter then never waits).
 
     ``engine`` picks the question engine (``legacy`` frame queue or the AI ``planner``); ``gateway`` replaces the
-    mock gateway (a ``ScriptedGateway`` with hand-written model outputs)."""
+    mock gateway (a ``ScriptedGateway`` with hand-written model outputs); ``policy`` overrides fields of the
+    ``InterviewPolicy`` (the scenario's ``policy:``)."""
     from mde_compass.compose import build_service
     from mde_core.clock import FakeClock
 
     return build_service(
-        memory=True, clock=FakeClock(), compass_config=engine_config(engine), gateway=gateway
+        memory=True,
+        clock=FakeClock(),
+        compass_config=engine_config(engine, policy),
+        gateway=gateway,
     )
 
 
@@ -526,6 +535,59 @@ async def check_expect(
         for path, sx in exp.slots.items():
             errs.extend(check_slot(brief, path, sx, engine))
     errs.extend(await check_memory(exp, conv=conv, events=events, gateway=gateway))
+    if exp.structure is not None:
+        errs.extend(await check_structure(exp.structure, conv))
+    return errs
+
+
+async def check_structure(sx: Any, conv: Conversation) -> list[str]:
+    """The structure of the app after a step (``structure:`` in a scenario's ``expect``)."""
+    from mde_compass.catalog.size_bands import get_band
+    from mde_compass.domain.brief import Brief
+    from mde_compass.engine import structure_checks as checks
+    from mde_compass.engine import structure_derive as derive
+
+    raw = await conv.brief()
+    brief = Brief.model_validate({k: v for k, v in raw.items() if not k.startswith("_")})
+    errs: list[str] = []
+    has = derive.has_structure(brief)
+    counts = derive.counts(brief)
+    block = brief.meta.interview
+    band = block.size_band if block is not None else ""
+    if sx.absent is True and has:
+        errs.append(f"structure: none expected, got {counts}")
+    if sx.absent is False and not has:
+        errs.append("structure: a draft was expected, there is none")
+    if sx.band is not None and band != sx.band:
+        errs.append(f"structure: band {sx.band!r} expected, got {band!r}")
+    if sx.source is not None and (block.size_source if block is not None else "") != sx.source:
+        errs.append(f"structure: band source {sx.source!r} expected")
+    for name, got, low in (
+        ("modules", counts.modules, sx.modules_min),
+        ("screens", counts.screens, sx.screens_min),
+        ("flows", counts.flows, sx.flows_min),
+        ("entities", counts.entities, sx.entities_min),
+    ):
+        if low is not None and got < low:
+            errs.append(f"structure: at least {low} {name} expected, got {got}")
+    if sx.screens_max is not None and counts.screens > sx.screens_max:
+        errs.append(f"structure: at most {sx.screens_max} screens expected, got {counts.screens}")
+    if sx.no_error_issues is True and has and band in ("small", "medium", "large"):
+        found = checks.run_checks(brief, get_band(band), facts=brief.domain_facts)
+        bad = [f"{i.code} {list(i.ids)}" for i in found if i.severity == "error"]
+        if bad:
+            errs.append(f"structure: error-severity issues left: {bad[:6]}")
+    if sx.none_locked is True:
+        locked = [
+            r.id
+            for sec in ("modules", "screens", "flows", "entities")
+            for r in getattr(brief, sec)
+            if r.tier == "Locked"
+        ]
+        if locked:
+            errs.append(
+                f"structure: the model must never lock a record, but {locked[:6]} are Locked"
+            )
     return errs
 
 
@@ -1305,7 +1367,7 @@ async def run_scenario(
             svc, gateway = new_scripted_service("planner", script, scn.policy)
             svc.scripted_gateway = gateway
         else:
-            svc = new_service(engine or "legacy")
+            svc = new_service(engine or "legacy", policy=scn.policy)
     service = svc
     engine = cast(Engine, svc.config.interview.engine)
     gateway = gateway or getattr(svc, "scripted_gateway", None)

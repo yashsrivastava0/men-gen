@@ -174,13 +174,22 @@ def test_a_role_that_cannot_open_a_step_of_its_own_flow_is_an_error() -> None:
 
 def test_a_role_cannot_edit_what_it_may_only_view() -> None:
     brief = set_screen(
-        sample_app(), "SCR-012", roles=[DOCTOR, PATIENT]
-    )  # patients on the screen that EDITS notes
+        sample_app(), "SCR-012", roles=[PATIENT]
+    )  # patients alone on the screen that EDITS notes: nobody can do the work
     issue = next(
         i for i in checks.run_checks(brief, MEDIUM) if i.code == "screen_entity_access_conflict"
     )
     assert issue.ids == ("SCR-012", "ENT-002", PATIENT)
     assert "may only view" in issue.detail
+
+
+def test_one_screen_for_two_kinds_of_person_lets_those_with_less_access_only_look() -> None:
+    brief = set_screen(
+        sample_app(), "SCR-012", roles=[DOCTOR, PATIENT]
+    )  # the doctor edits the notes on it, the patient has view access and only looks
+    assert not [
+        i for i in checks.run_checks(brief, MEDIUM) if i.code == "screen_entity_access_conflict"
+    ]
 
 
 def test_a_role_with_no_access_to_an_entity_at_all_cannot_use_it_on_a_screen() -> None:
@@ -470,3 +479,139 @@ def test_removing_screens_never_makes_the_checks_crash_and_the_fixes_never_add_a
     assert len(brief.screens) <= before  # the checker prunes and tidies; it never adds a screen
     for i in checks.run_checks(brief, MEDIUM):
         assert i.fix != "code"  # nothing the code can fix is left
+
+
+def _flow_with_foreign_screen(module_has_role: bool):  # type: ignore[no-untyped-def]
+    brief = sample_app()
+    flow = brief.flows[0]
+    step = flow.steps[1]
+    k = next(n for n, s in enumerate(brief.screens) if s.id == step.screen)
+    screen = brief.screens[k]
+    others = [r for r in (PATIENT, DOCTOR, FRONT_DESK) if r != flow.role]
+    brief.screens[k] = screen.model_copy(update={"roles": [others[0]]})
+    m = next(n for n, mod in enumerate(brief.modules) if mod.id == screen.module)
+    if module_has_role:
+        mod_roles = list(dict.fromkeys([*brief.modules[m].roles, flow.role]))
+    else:
+        mod_roles = [r for r in brief.modules[m].roles if r != flow.role] or [others[0]]
+    brief.modules[m] = brief.modules[m].model_copy(update={"roles": mod_roles})
+    assert any(i.code == "flow_role_cannot_access_step" for i in checks.run_checks(brief, MEDIUM))
+    return brief, flow, step
+
+
+def test_a_role_the_module_belongs_to_is_added_to_the_screen_it_was_left_off() -> None:
+    brief, flow, step = _flow_with_foreign_screen(module_has_role=True)
+    notes = checks.fix_flow_access(brief)
+    assert notes and "can now be opened by" in notes[0]
+    screen = next(s for s in brief.screens if s.id == step.screen)
+    assert flow.role in screen.roles
+    assert [s.screen for s in brief.flows[0].steps] == [s.screen for s in flow.steps]  # untouched
+    assert not [
+        i for i in checks.run_checks(brief, MEDIUM) if i.code == "flow_role_cannot_access_step"
+    ]
+    assert checks.fix_flow_access(brief) == []  # nothing more to do
+
+
+def test_a_journey_that_strays_into_somebody_elses_module_loses_that_step_not_the_roles_access() -> (
+    None
+):
+    brief, _flow, step = _flow_with_foreign_screen(module_has_role=False)
+    before_roles = next(s for s in brief.screens if s.id == step.screen).roles
+    notes = checks.fix_flow_access(brief)
+    assert notes and "no longer goes through" in notes[0]
+    assert (
+        next(s for s in brief.screens if s.id == step.screen).roles == before_roles
+    )  # nobody widened
+    assert step.screen not in [s.screen for s in brief.flows[0].steps]
+    assert not [
+        i for i in checks.run_checks(brief, MEDIUM) if i.code == "flow_role_cannot_access_step"
+    ]
+
+
+def test_a_role_the_entity_forgot_gets_view_access_to_data_its_screen_shows_but_no_more() -> None:
+    brief = sample_app()
+    shown = next(s for s in brief.screens if any(u.use == "view" for u in s.entities))
+    use = next(u for u in shown.entities if u.use == "view")
+    k = next(i for i, e in enumerate(brief.entities) if e.id == use.entity)
+    role = shown.roles[0]
+    without = {r: lv for r, lv in brief.entities[k].access.items() if r != role} or {
+        "ROL-999": "view"
+    }
+    brief.entities[k] = brief.entities[k].model_copy(update={"access": without})
+    assert any(i.code == "screen_entity_access_conflict" for i in checks.run_checks(brief, MEDIUM))
+    notes = checks.apply_fixes(brief)
+    assert any("view access" in n for n in notes)
+    assert brief.entities[k].access[role] == "view"
+    assert not [
+        i
+        for i in checks.run_checks(brief, MEDIUM)
+        if i.code == "screen_entity_access_conflict" and role in i.ids[2:] and i.ids[0] == shown.id
+    ]
+    # an explicit "none" is a contradiction, never silently widened
+    explicit = sample_app()
+    j = next(i for i, e in enumerate(explicit.entities) if e.id == use.entity)
+    explicit.entities[j] = explicit.entities[j].model_copy(
+        update={"access": {**explicit.entities[j].access, role: "none"}}
+    )
+    checks.apply_fixes(explicit)
+    assert explicit.entities[j].access[role] == "none"
+
+
+def test_one_issue_names_every_role_that_cannot_see_what_a_shared_screen_shows() -> None:
+    brief = sample_app()
+    shown = next(s for s in brief.screens if any(u.use == "view" for u in s.entities))
+    use = next(u for u in shown.entities if u.use == "view")
+    k = next(i for i, e in enumerate(brief.entities) if e.id == use.entity)
+    brief.entities[k] = brief.entities[k].model_copy(
+        update={"access": {PATIENT: "manage", DOCTOR: "none", FRONT_DESK: "none"}}
+    )
+    i = next(n for n, s in enumerate(brief.screens) if s.id == shown.id)
+    brief.screens[i] = shown.model_copy(update={"roles": [PATIENT, DOCTOR, FRONT_DESK]})
+    found = [
+        x
+        for x in checks.run_checks(brief, MEDIUM)
+        if x.code == "screen_entity_access_conflict"
+        and x.ids[0] == shown.id
+        and x.ids[1] == use.entity
+    ]
+    assert len(found) == 1 and set(found[0].ids[2:]) == {DOCTOR, FRONT_DESK}
+
+
+def test_a_shared_screen_drops_a_data_link_most_roles_cannot_see_only_if_another_screen_shows_it() -> (
+    None
+):
+    brief = sample_app()
+    shown = next(s for s in brief.screens if any(u.use == "view" for u in s.entities))
+    use = next(u for u in shown.entities if u.use == "view")
+    k = next(i for i, e in enumerate(brief.entities) if e.id == use.entity)
+    brief.entities[k] = brief.entities[k].model_copy(
+        update={"access": {PATIENT: "manage", DOCTOR: "none", FRONT_DESK: "none"}}
+    )
+    i = next(n for n, s in enumerate(brief.screens) if s.id == shown.id)
+    brief.screens[i] = shown.model_copy(update={"roles": [PATIENT, DOCTOR, FRONT_DESK]})
+    j = next(
+        n
+        for n, s in enumerate(brief.screens)
+        if s.id != shown.id and not any(u.entity == use.entity for u in s.entities)
+    )
+    brief.screens[j] = brief.screens[j].model_copy(
+        update={"roles": [PATIENT], "entities": [*brief.screens[j].entities, use]}
+    )  # another screen (the patient's own) shows the same data
+    notes = checks.apply_fixes(brief)
+    assert not any(u.entity == use.entity for u in brief.screens[i].entities)
+    assert any(u.entity == use.entity for u in brief.screens[j].entities)
+    assert any("no longer claim" in n for n in notes)
+    # the ONLY screen that shows an entity keeps the link: the person sees the conflict instead of losing the data
+    lone = sample_app()
+    lone.entities[k] = lone.entities[k].model_copy(
+        update={"access": {PATIENT: "manage", DOCTOR: "none", FRONT_DESK: "none"}}
+    )
+    lone.screens = [
+        s.model_copy(update={"entities": [u for u in s.entities if u.entity != use.entity]})
+        if s.id != shown.id
+        else s.model_copy(update={"roles": [PATIENT, DOCTOR, FRONT_DESK]})
+        for s in lone.screens
+    ]
+    checks.apply_fixes(lone)
+    kept = next(s for s in lone.screens if s.id == shown.id)
+    assert any(u.entity == use.entity for u in kept.entities)

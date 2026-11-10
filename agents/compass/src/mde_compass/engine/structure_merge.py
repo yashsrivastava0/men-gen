@@ -500,6 +500,9 @@ def assemble_flows(
         else:
             rec = FlowRecord(id=work.ids.allocate("FLW"), **fields, **draft_meta(now))
         used.add(rec.id)
+        j.flow_id = (
+            rec.id
+        )  # the next assembly (the repair pass) continues this flow instead of making a second one
         out.append(rec)
     for f in work.flows:
         if f.id in used:

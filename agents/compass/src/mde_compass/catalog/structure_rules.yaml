@@ -29,8 +29,8 @@ rules:
           hi: "स्वास्थ्य जानकारी के लिए सहमति और गोपनीयता की स्क्रीन चाहिए।"
       - id: access_log
         words:
-          en: [audit, access log, activity log, history of access]
-          hi: [ऑडिट, एक्सेस लॉग]
+          en: [audit, access log, activity log, history of access, access history, who opened, trail]
+          hi: [ऑडिट, एक्सेस लॉग, एक्सेस इतिहास]
           hinglish: [audit]
         why:
           en: "Health records need a trail of who opened them."

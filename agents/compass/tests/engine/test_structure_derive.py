@@ -246,6 +246,22 @@ def test_a_fact_with_no_refs_goes_to_the_module_it_shares_the_most_real_words_wi
     assert list(routing.by_module) == ["MOD-002"]
 
 
+def test_the_same_statement_read_again_from_each_batch_is_one_fact_for_the_routing() -> None:
+    brief = sample_app()
+    routing = derive.route_facts(
+        brief,
+        facts(
+            ("FCT-1", "rule", "Six clinics in Pune", []),
+            ("FCT-2", "rule", "  six  CLINICS in pune ", []),
+            ("FCT-3", "rule", "Six clinics in Pune", []),
+            ("FCT-4", "compliance", "Data stays in India", []),
+            ("FCT-5", "compliance", "data stays in india", []),
+        ),
+    )
+    assert [f.id for f in routing.orphans] == ["FCT-1"]  # once, not three times
+    assert [f.id for f in routing.general] == ["FCT-4"]
+
+
 def test_a_detail_fact_nobody_received_is_an_orphan_and_a_cross_cutting_one_goes_to_the_outline() -> (
     None
 ):

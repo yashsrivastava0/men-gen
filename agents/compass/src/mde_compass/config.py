@@ -66,7 +66,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
         # the structure of the app (ADR 0017): starting caps, calibrated in the live program (plan 8a). The cap
         # includes reasoning, so it is generous; the timeout stays under the gateway's 60 s per attempt.
-        _p("cmp.draft_outline", "low", 4000, "writer", "standard", 55),
+        _p("cmp.draft_outline", "low", 4000, "writer", "standard", 40),
         _p("cmp.draft_module", "low", 5000, "writer", "standard", 55),
         _p("cmp.review_structure", "low", 2500, "critic", "standard", 45),
     )

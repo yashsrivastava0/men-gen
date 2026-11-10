@@ -37,7 +37,7 @@ Two question engines exist while the work is in progress (`InterviewPolicy.engin
 | `cmp.compile_brief` | low | 8000 | writer | deep | 150 s | `BriefCompiler` | `CompileAdapter` | planner |
 | `cmp.rephrase_question` | medium | 1500 | writer | standard | 45 s | `QuestionRephraser` | `RephraseAdapter` | planner |
 | `cmp.decide_answers` | low | 2000 | writer | standard | 30 s | `AnswerDecider` | `DecideAdapter` | planner |
-| `cmp.draft_outline` | low | 4000 | writer | standard | 55 s | `StructureOutliner` | `OutlineAdapter` | planner |
+| `cmp.draft_outline` | low | 4000 | writer | standard | 40 s | `StructureOutliner` | `OutlineAdapter` | planner |
 | `cmp.draft_module` | low | 5000 | writer | standard | 55 s | `StructureModuleDrafter` | `ModuleAdapter` | planner |
 | `cmp.review_structure` | low | 2500 | critic | standard | 45 s | `StructureReviewer` | `ReviewAdapter` | planner |
 
@@ -230,7 +230,7 @@ Three calls draft and review the structure of the app (modules, screens, flows, 
 
 ### cmp.draft_outline
 
-* **Version / spec:** v1; effort low, 4000 tokens, 55 s; untrusted inputs `project_card`, `features`, `roles`, `apps`, `integrations`, `org`, `fact_digest`, `seeds`, `pinned`, `instruction`; validator `structural` (no modules for in-scope features, duplicate or empty refs, a nameless module); fallback `compass.draft_outline`.
+* **Version / spec:** v1; effort low, 4000 tokens, 40 s (live: about 15 s typical; a call that hangs is asked once more before the floor); untrusted inputs `project_card`, `features`, `roles`, `apps`, `integrations`, `org`, `fact_digest`, `seeds`, `pinned`, `instruction`; validator `structural` (no modules for in-scope features, duplicate or empty refs, a nameless module); fallback `compass.draft_outline`.
 * **Purpose:** the short, serial step: the modules (areas), the entity NAMES and the journeys (with legs, a module may repeat) of the app. The shared vocabulary is frozen here so the module calls can run in parallel. Field detail is deliberately not here (it would make this call about 3.5K tokens at large size).
 * **Input (`OutlineInput`):** `language`, `band` (the size band as numbers: guidance, not a quota), `project_card`, `features[]` (id, name, intent, priority, scope_status, family, apps), `roles[]`, `apps[]`, `integrations`, `auth_methods`, `org`, `fact_digest`, `seeds[]` (things the person or a document said about screens, flows, entities), `pinned[]` (accepted or written by the person: kept exactly), `instruction`.
 * **Output (`OutlineOutput`):** `modules[]` (ref, kind, name, purpose, apps, features, roles, screen_target), `entities[]` (ref, name, purpose, owner_module), `journeys[]` (ref, name, role, goal, legs, owner_module).
@@ -239,7 +239,7 @@ Three calls draft and review the structure of the app (modules, screens, flows, 
 ### cmp.draft_module
 
 * **Version / spec:** v1; effort low, 5000 tokens, 55 s; untrusted inputs the group, the vocabulary, roles, apps, features, journeys, existing screens, facts, instruction and issues; validator `structural` (a requested module with no screens, two screens with one ref, a nameless screen).
-* **Purpose:** one call per module GROUP (all modules for small, 3 for medium, 2 for large), in parallel: the screens, the journey segments over them, and the fields, states and access of the entities the group owns. Also the repair-and-expansion call: `issues` lists machine-written problems (a role that cannot open a step of its own journey, a thin feature, a detail no module received) and `instruction` carries the person's own words for a regeneration.
+* **Purpose:** one call per module GROUP (at most all modules for small, 3 for medium, 2 for large, and never more screens than the call can write: the groups are built from the outline's screen targets, about 12 screens per call, so an answer never outgrows the output cap; a call for several modules that fails is asked again one module at a time before any module gets its floor), in parallel: the screens, the journey segments over them, and the fields, states and access of the entities the group owns. Also the repair-and-expansion call: `issues` lists machine-written problems (a role that cannot open a step of its own journey, a thin feature, a detail no module received) and `instruction` carries the person's own words for a regeneration.
 * **Output (`ModuleOutput`, flat):** `screens[]`, `uses[]` (screen, entity, view|create|edit), `entries[]`, `segments[]` (journey, leg, module, steps), `entities[]` (ref, key, states), `fields[]`, `access[]` (entity, role, level), `journeys[]` (acceptance, alternates).
 * **Floor / mock:** the patterns of `structure_patterns.yaml` for each feature of each module (2, 3 or 4 per feature by band) named with the feature's own words, segments over them, minimal fields, and access that is consistent by construction.
 

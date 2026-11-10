@@ -131,6 +131,18 @@ A live Compass call needs three things in the environment of the process that ma
 
 Who may run what, the external dashboard backstop, the order of batches, the tripwires and how to read the ledger are in [live-llm-budget.md](live-llm-budget.md). Read it before any live work.
 
+### Batch H: the structure drafted on a recorded ledger (ADR 0017)
+
+`mde_compass.live_structure` runs only the structure calls (outline, module groups, critic, one repair pass) on the Brief and the active facts of a recorded session, so the structure can be calibrated for about USD 0.01 to 0.03 a run instead of paying for a whole interview. The inputs are `delhi` and `pune` (the two real exports of `docs/compass/outputs`) and `hospital` (a Thorough session with a ten-role document, the enterprise-size case), or the path of any export.
+
+```
+uv run python -m mde_compass.live_structure --replay pune --band medium --mock        # offline, free
+uv run python -m mde_compass.live_structure --replay hospital --band large --dry-run  # plan only, no call
+LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python -m mde_compass.live_structure --replay hospital --band large   # owner's second key
+```
+
+It prints the wall-clock of every call, fallbacks, cost, the counts against the band, the checks that are left and the structure as plain text (every module with its screens and roles, the flows with their acceptance lines, the entities with fields and access) for a manual realism review; the full report goes to `agents/compass/evals/reports/` (git-ignored). A live run goes through the same `preflight` as every batch (allowance against the ledger, the switches in the outer environment).
+
 ### The numbers
 
 | What | Value | Where it lives |

@@ -145,3 +145,60 @@ def test_a_scenario_can_be_limited_to_one_engine_and_must_name_a_known_one() -> 
     assert scn.engines == ["planner"]
     with pytest.raises(ValueError):
         Scenario.model_validate({"id": "SB-X-1", "engines": ["robot"], "steps": [{"say": "hi"}]})
+
+
+# ---------------------------------------------------------------------------------- the structure expectation
+
+
+async def _structured_conv(*, enabled: bool):  # type: ignore[no-untyped-def]
+    from mde_compass.domain.events import Command
+    from mde_compass.scenarios.runner import new_service
+    from mde_compass.testing import Conversation
+
+    svc = new_service("planner", policy={"structure_enabled": enabled})
+    conv = await Conversation.start(svc)
+    await conv.send(Command(event_id=conv._id(), name="budget_quick"))  # type: ignore[arg-type]
+    await conv.say("I run a tiffin service in Pune and want an app for it")
+    await conv.drive_to_review(max_steps=40)
+    return conv
+
+
+async def test_the_structure_expectation_passes_for_what_is_there_and_names_what_is_not() -> None:
+    from mde_compass.scenarios.models import StructureExpect
+    from mde_compass.scenarios.runner import check_structure
+
+    conv = await _structured_conv(enabled=True)
+    good = StructureExpect(
+        absent=False,
+        band="small",
+        source="tier",
+        modules_min=1,
+        screens_min=1,
+        no_error_issues=True,
+        none_locked=True,
+    )
+    assert await check_structure(good, conv) == []
+    wrong = StructureExpect(absent=True, band="large", screens_min=500, screens_max=1)
+    errs = await check_structure(wrong, conv)
+    assert len(errs) == 4 and any("band 'large' expected" in e for e in errs)
+    assert any("none expected" in e for e in errs) and any(
+        "at least 500 screens" in e for e in errs
+    )
+
+
+async def test_the_structure_expectation_sees_a_session_without_a_draft() -> None:
+    from mde_compass.scenarios.models import StructureExpect
+    from mde_compass.scenarios.runner import check_structure
+
+    conv = await _structured_conv(enabled=False)
+    assert await check_structure(StructureExpect(absent=True), conv) == []
+    errs = await check_structure(StructureExpect(absent=False, modules_min=1), conv)
+    assert any("a draft was expected" in e for e in errs)
+
+
+def test_a_scenarios_policy_reaches_a_service_made_without_a_provider_fixture() -> None:
+    from mde_compass.scenarios.runner import new_service
+
+    assert new_service("planner").config.interview.structure_enabled is False
+    on = new_service("planner", policy={"structure_enabled": True})
+    assert on.config.interview.structure_enabled is True

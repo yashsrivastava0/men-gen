@@ -106,3 +106,7 @@ A missing cassette raises `CassetteMissing` naming the spec and the key; replay 
 * Ledger total differs from the dashboard after L0: check the unverified items in the architecture page (search content tokens, cache-write tokens, timed-out requests) and adjust `pricing.yaml` before more spend.
 
 More failure modes (database, tests, worktrees, the hook's false positives): [troubleshooting](troubleshooting.md).
+
+## Batch H: structure replay (ADR 0017)
+
+`uv run python -m mde_compass.live_structure --replay <delhi|pune|hospital|path> --band <small|medium|large>` runs only the structure calls on a recorded Brief and ledger (about USD 0.01 to 0.03 a run; default allowance USD 0.10). It uses the same `preflight` as batches E to G, so a live run needs `LLM_MODE=live` and the second key in the outer environment; `--mock` and `--dry-run` need neither. See [compass.md](compass.md#batch-h-the-structure-drafted-on-a-recorded-ledger-adr-0017).

@@ -177,5 +177,5 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] S5. Gate and edits: `structure_action`, blocker `structure_unreviewed`, Approve All, undo (a2e15ff)
 - [x] S6. Views, API, export (format 2), research guidance (a2e15ff; full offline suite 3321 passed, 3 skipped, 8 xfailed after the section-count fix)
 - [x] S7. Web: tier cards with size, Structure tab, module rows, strings en and hi (full offline suite 3344 passed, 3 skipped, 8 xfailed; real-browser walk-through in headless Chrome)
-- [ ] S8. Optional prefetch (off by default)
-- [ ] S9. Scenarios, live program (plan section 8a), docs, full suite, hand-off
+- [ ] S8. Optional prefetch (off by default): NOT built on purpose (D-123): the structure runs inside the seed and scan wave and measured 45 to 75 s live
+- [x] S9. Scenarios SB-ST-01 to 04 (+ `structure` expectation and policy forwarding), batch H (`live_structure`, three replays), live program (D-123: ~USD 0.21), docs; final suite below

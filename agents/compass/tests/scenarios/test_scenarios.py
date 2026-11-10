@@ -54,7 +54,7 @@ def test_engine_limits_are_few_and_always_explained() -> None:
     limited = {}
     for path in sorted(DATA.glob("SB-*.yaml")):
         scn = load_scenario(path)
-        if scn.engines != ["legacy", "planner"] and not scn.id.startswith("SB-QP-"):
+        if scn.engines != ["legacy", "planner"] and not scn.id.startswith(("SB-QP-", "SB-ST-")):
             limited[scn.id] = scn
     assert set(limited) == LEGACY_ONLY
     for scn in limited.values():
