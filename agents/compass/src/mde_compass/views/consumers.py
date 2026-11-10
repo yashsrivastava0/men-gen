@@ -18,6 +18,7 @@ from mde_compass.domain.brief import AssetRecord, Brief, DomainFact, FeatureReco
 from mde_compass.domain.common import BriefItem
 from mde_compass.engine.brief_builder import target_of
 from mde_compass.views.paths import is_empty_value, json_dump
+from mde_compass.views.structure_view import research_guidance_block, structure_block
 
 JsonDict = dict[str, JsonValue]
 
@@ -229,6 +230,7 @@ _ASSUMED_BASES = {
     "review": ("verify",),
     "document": ("verify",),
     "gap": ("verify",),
+    "structure": ("blueprint", "verify"),
 }
 
 
@@ -262,6 +264,8 @@ def research_view(brief: Brief) -> dict[str, JsonValue]:
         "search_hints": json_dump(brief.search_hints),
         "declined": _declined(brief),
         **_org(brief, "research"),
+        **research_guidance_block(brief),  # ADR 0017: what kind of app this is and how deep to go
+        **structure_block(brief, "research"),
         **_facts(brief, "research"),
     }
 
@@ -308,6 +312,7 @@ def blueprint_view(brief: Brief) -> dict[str, JsonValue]:
         **_org(brief, "blueprint"),
         **({"unlinked_details": unlinked} if unlinked else {}),
         **_assumed_details(brief, "blueprint"),
+        **structure_block(brief, "blueprint"),
         **_facts(brief, "blueprint"),
     }
 
@@ -340,6 +345,7 @@ def design_view(brief: Brief) -> dict[str, JsonValue]:
         "references": _references(brief),
         "assets": _assets_for(brief, "design"),
         **_org(brief, "design"),
+        **structure_block(brief, "design"),
         **_facts(brief, "design"),
     }
 
@@ -362,6 +368,7 @@ def verify_view(brief: Brief) -> dict[str, JsonValue]:
         "declined": _declined(brief),
         **_org(brief, "verify"),
         **_assumed_details(brief, "verify"),
+        **structure_block(brief, "verify"),
         **_facts(brief, "verify"),
     }
 

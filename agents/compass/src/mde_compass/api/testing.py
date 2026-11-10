@@ -50,9 +50,12 @@ from mde_compass.domain.events import (
     StoredEvent,
     UserMessage,
 )
+from mde_compass.domain.interview import InterviewBlock
 from mde_compass.domain.research import ResearchRequest
 from mde_compass.domain.session import Mode, SessionRecord
+from mde_compass.engine import structure_derive as _derive
 from mde_compass.engine.ports import Caller, TurnResult
+from mde_compass.engine.structure_testing import sample_app
 from mde_compass.views.models import (
     BriefViewModel,
     ReadinessChip,
@@ -63,6 +66,7 @@ from mde_compass.views.models import (
     ViewSection,
     ViewValue,
 )
+from mde_compass.views.structure_view import build_structure_view, structure_export
 from mde_core.errors import Conflict, HashMismatch, NotFound
 
 _T0 = datetime(2026, 11, 9, 3, 0, tzinfo=UTC)
@@ -1083,6 +1087,60 @@ class ScriptedService:
         return cast(
             dict[str, JsonValue],
             {"version": s.version, "brief_hash": s.approved_hash, "views": views},
+        )
+
+    # --- structure (ADR 0017): every scripted session holds the same small valid clinic app -------
+
+    def _structure_brief(self, caller: Caller, session_id: str) -> Any:
+        self._get(caller, session_id)
+        brief = sample_app()
+        brief.meta.interview = InterviewBlock(size_band="medium", size_source="tier")
+        return brief
+
+    async def structure_view(
+        self, caller: Caller, session_id: str, *, language: str | None = None
+    ) -> dict[str, JsonValue]:
+        s = self._get(caller, session_id)
+        brief = self._structure_brief(caller, session_id)
+        view = build_structure_view(
+            brief,
+            catalog=load_catalog(),
+            language=language or s.rec.locale,
+            band="medium",
+            source="tier",
+            enabled=True,
+            session_id=session_id,
+        )
+        return cast(dict[str, JsonValue], view.model_dump(mode="json"))
+
+    async def structure_outline(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        return _derive.outline(self._structure_brief(caller, session_id))
+
+    async def structure_slice(
+        self, caller: Caller, session_id: str, module_id: str
+    ) -> dict[str, JsonValue]:
+        brief = self._structure_brief(caller, session_id)
+        try:
+            return _derive.module_slice(brief, module_id)
+        except KeyError as exc:
+            raise NotFound(f"modules.{module_id}: no such record") from exc
+
+    async def export_full(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        s = self._get(caller, session_id)
+        brief = self._structure_brief(caller, session_id)
+        return cast(
+            dict[str, JsonValue],
+            {
+                "export": {
+                    "format": "compass-full-output",
+                    "format_version": 2,
+                    "session_id": session_id,
+                    "brief_version": s.version,
+                    "brief_hash": self._hash(s),
+                },
+                "brief": {"rows": s.rows},
+                "structure": structure_export(brief),
+            },
         )
 
     async def budget(self) -> dict[str, JsonValue]:

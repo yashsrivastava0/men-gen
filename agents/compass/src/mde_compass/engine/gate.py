@@ -61,6 +61,7 @@ def gate_blockers(
     supplied_hash: str | None = None,
     current_hash: str,
     current_version: int,
+    structure_unreviewed: int = 0,
 ) -> list[Blocker]:
     """Everything that currently blocks approval (empty means the gate may open)."""
     blockers: list[Blocker] = []
@@ -68,6 +69,16 @@ def gate_blockers(
         blockers.append(
             Blocker(
                 "must_slots_empty", "blocker.must_slots_empty", {"items": ", ".join(must_missing)}
+            )
+        )
+    if (
+        structure_unreviewed
+    ):  # ADR 0017: a large app's modules are each accepted (or Approve All) before Gate 1
+        blockers.append(
+            Blocker(
+                "structure_unreviewed",
+                "blocker.structure_unreviewed",
+                {"count": str(structure_unreviewed)},
             )
         )
     unreviewed = review(brief).unreviewed_high_ids

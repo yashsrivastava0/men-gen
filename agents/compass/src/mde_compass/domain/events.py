@@ -136,6 +136,22 @@ class AssumptionDecision(_InboundBase):
     value: JsonValue = None  # the new value when decision == "change"
 
 
+class StructureAction(_InboundBase):
+    """What a single ``brief_edit`` cannot do to the structure of the app (ADR 0017): accept a record (a module with
+    everything in it), add a record, remove one with what depends on it, redraft a module with the person's own words,
+    or plan the app for another size band. Renaming and moving use ``brief_edit`` (one ``set`` op)."""
+
+    type: Literal["structure_action"] = "structure_action"
+    action: Literal["accept", "add", "remove", "regenerate", "set_band"]
+    section: Literal["modules", "screens", "flows", "entities"] | None = None
+    target: str = (
+        ""  # the record id (MOD-001 ...); "" for regenerate = every module that is not pinned
+    )
+    text: str = Field(default="", max_length=2000)  # regenerate: the person's own request
+    band: Literal["small", "medium", "large"] | None = None  # set_band
+    value: JsonValue = None  # add: the new record's fields (no id: code allocates it)
+
+
 class LookupEdit(_InboundBase):
     type: Literal["lookup_edit"] = "lookup_edit"
     action: Literal["add", "remove"]
@@ -186,6 +202,7 @@ InboundEvent = Annotated[
     | BriefEdit
     | BriefFeedback
     | AssumptionDecision
+    | StructureAction
     | LookupEdit
     | ContributorSwitch
     | GateDecision
@@ -264,6 +281,9 @@ class Notice(Strict):
     text: str
     chips: list[str] = Field(default_factory=list)
     severity: Literal["info", "warning"] = "info"
+    # ADR 0017: a command the page offers as a one-tap button on this notice (``budget_standard``, ...), with its label
+    command: str = ""
+    command_label: str = ""
 
 
 class Progress(Strict):

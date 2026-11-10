@@ -355,5 +355,21 @@
   "brief.v2.document.conflict.what_changes": "बताइए कौन सा सही है, योजना वही इस्तेमाल करेगी।",
   "brief.v2.gap.assume": "हम {what} नहीं जान सके; हमारा सुझाव है {value}।",
   "brief.v2.gap.reason": "इसके बिना अगला चरण शुरू नहीं हो सकता था।",
-  "brief.v2.gap.what_changes": "सही बात बताइए, योजना वही इस्तेमाल करेगी।"
+  "brief.v2.gap.what_changes": "सही बात बताइए, योजना वही इस्तेमाल करेगी।",
+  "size.small": "छोटा",
+  "size.medium": "मध्यम",
+  "size.large": "एंटरप्राइज़",
+  "notice.size_suggestion": "यह {tier} योजना के लिए तय ऐप से बड़ा लगता है। {suggested} में कुछ और सवाल पूछे जाते हैं और स्क्रीन की पूरी योजना बनती है।",
+  "notice.size_suggestion_action": "{suggested} पर जाएँ",
+  "notice.structure_over_band": "योजना में {n} स्क्रीन हैं, जो {band} ऐप में आम तौर पर होने वालों से ज़्यादा हैं। आप इसे {bigger} की तरह रख सकते हैं, या जो नहीं चाहिए उसे हटा सकते हैं।",
+  "notice.structure_floor": "AI कॉल विफल होने से योजना के {n} हिस्से सादे विकल्प से बने हैं। कृपया उन्हें ध्यान से देखें।",
+  "notice.structure_ready": "मैंने आपके ऐप की संरचना बनाई है: {modules} हिस्से, {screens} स्क्रीन, {flows} यात्राएँ और {entities} तरह का डेटा। मंज़ूर करने से पहले इसे देख लीजिए।",
+  "brief.structure.issue_reason": "स्क्रीन की योजना जाँचते समय मिला",
+  "blocker.structure_unreviewed": "ऐप की योजना के {count} हिस्सों को अभी आपकी नज़र चाहिए (हर एक को मंज़ूर करें, या सभी को मंज़ूर करें)",
+  "notice.structure_redrafted": "फिर से बनाया: {what}।",
+  "notice.structure_band_set": "इस ऐप की योजना {band} ऐप के रूप में बन रही है।",
+  "view.structure.counts": "{screens} स्क्रीन, {flows} यात्राएँ, {entities} तरह का डेटा",
+  "view.empty.structure": "स्क्रीन की योजना अभी बनी नहीं है।",
+  "view.decision.accepted": "मंज़ूर",
+  "view.decision.proposed": "प्रस्तावित"
 }

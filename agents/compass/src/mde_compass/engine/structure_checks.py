@@ -52,9 +52,14 @@ class Issue:
         return f"{self.code} {' '.join(self.ids)}: {self.detail}".strip()
 
 
-def _issue(code: str, ids: Sequence[str] = (), *, module: str = "", detail: str = "") -> Issue:
+def make_issue(code: str, ids: Sequence[str] = (), *, module: str = "", detail: str = "") -> Issue:
+    """An issue with the severity and the fixer the policy file gives its code."""
     policy = load_check_policy()[code]
-    return Issue(code, policy.severity, policy.fix, tuple(ids), module, detail)  # type: ignore[arg-type]
+    severity: Severity = "error" if policy.severity == "error" else "warn"
+    return Issue(code, severity, policy.fix, tuple(ids), module, detail)
+
+
+_issue = make_issue
 
 
 # ------------------------------------------------------------------------------------------------ helpers
@@ -72,7 +77,7 @@ def slug_key(text: str, fallback: str) -> str:
 
 
 def _name_words(name: str) -> set[str]:
-    return {w for w in words_of(name) if len(w) > 1}
+    return {w for w in words_of(name) if len(w) > 1 or w.isdigit()}
 
 
 def _text_of(*parts: str) -> str:
@@ -435,6 +440,8 @@ def _coverage(brief: Brief, band: SizeBand) -> list[Issue]:
         screens_per_module[s.module] = screens_per_module.get(s.module, 0) + 1
     for m in brief.modules:
         n = screens_per_module.get(m.id, 0)
+        if m.kind:
+            continue  # a standard module (account, notifications, help, administration) is small by nature
         if 0 < n < band.module_screens_min:
             out.append(
                 _issue(
@@ -815,6 +822,7 @@ __all__ = [
     "by_module",
     "downgrade_unsupported",
     "errors",
+    "make_issue",
     "needs_model",
     "run_checks",
     "slug_key",

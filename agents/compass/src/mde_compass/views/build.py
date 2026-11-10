@@ -30,6 +30,7 @@ from mde_compass.domain.brief import (
 from mde_compass.domain.common import BriefItem, ItemMeta
 from mde_compass.domain.research import ResearchRequest
 from mde_compass.domain.session import SessionRecord
+from mde_compass.domain.structure import ModuleRecord
 from mde_compass.store.ports import BriefVersionRecord
 from mde_compass.views.diff import changed_paths as diff_changed_paths
 from mde_compass.views.format import (
@@ -361,6 +362,34 @@ def _assumption_row(ctx: _Ctx, a: AssumptionRecord) -> ViewRow:
     )
 
 
+def _module_row(ctx: _Ctx, m: ModuleRecord) -> ViewRow:
+    """One row per module (ADR 0017): what it holds in a line, the person's accept in the row's actions. The deeper
+    browsing and editing is the Structure tab."""
+    row_id = f"modules.{m.id}"
+    b = ctx.brief
+    screens = sum(1 for s in b.screens if s.module == m.id)
+    inside = {s.id for s in b.screens if s.module == m.id}
+    flows = sum(1 for f in b.flows if any(st.screen in inside for st in f.steps))
+    entities = sum(1 for e in b.entities if e.module == m.id)
+    counts = ctx.t(
+        "view.structure.counts", screens=str(screens), flows=str(flows), entities=str(entities)
+    )
+    accepted = m.decision == "accepted"
+    return ViewRow(
+        id=row_id,
+        label=m.name,
+        value=text_value(counts),
+        badges=badges_for(m, ctx.labels, extra=[] if accepted else ["assumed"]),
+        tier=m.tier,
+        editable=False,
+        history_available=_has_history(m),
+        needs_review=False,
+        changed=ctx.is_changed(row_id),
+        status_chip=ctx.t(f"view.decision.{m.decision}"),
+        description=m.purpose,
+    )
+
+
 def _question_row(ctx: _Ctx, q: OpenQuestion) -> ViewRow:
     row_id = f"open_questions.{q.id}"
     return ViewRow(
@@ -446,6 +475,7 @@ def _section_rows(ctx: _Ctx) -> dict[str, list[ViewRow]]:
         "who": _who_rows(ctx),
         "apps_roles": _apps_roles_rows(ctx),
         "features": _features_rows(ctx),
+        "structure": [_module_row(ctx, m) for m in b.modules],
         "look": _look_rows(ctx),
         "access": _dict_rows(ctx, "access", b.access),
         "integrations_data": _integrations_rows(ctx),
@@ -581,8 +611,12 @@ def build_view_model(
     reviewed = set(reviewed_sections)
 
     sections: list[ViewSection] = []
+    block = brief.meta.interview
+    structure_on = block is not None and block.size_band in ("small", "medium", "large")
     for sid in SECTION_IDS:
         rows = rows_by_section[sid]
+        if sid == "structure" and not rows and not structure_on:
+            continue  # a Brief that never held a structure (or from before it existed) has no such section
         sections.append(
             ViewSection(
                 id=sid,  # type: ignore[arg-type]

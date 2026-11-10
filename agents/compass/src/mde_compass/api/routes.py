@@ -26,6 +26,7 @@ from mde_compass.api.sse import (
     parse_last_event_id,
 )
 from mde_compass.catalog.loader import SUPPORTED_LANGS, load_catalog
+from mde_compass.catalog.size_bands import load_size_bands
 from mde_compass.config import DEFAULT_CONFIG
 from mde_compass.domain.events import ApproveAll, GateDecision, InboundEvent
 from mde_compass.domain.session import SessionRecord
@@ -313,6 +314,36 @@ async def export_full(session_id: str, caller: CallerDep, service: ServiceDep) -
     )
 
 
+@router.get("/sessions/{session_id}/structure")
+async def structure_view(
+    session_id: str,
+    caller: CallerDep,
+    service: ServiceDep,
+    lang: Annotated[str | None, Query(pattern=r"^[a-z]{2}$")] = None,
+) -> JSONResponse:
+    """The Structure tab (ADR 0017): modules, screens, journeys, data, who can open what, the size band and the issues."""
+    if lang is not None and lang not in SUPPORTED_LANGS:
+        raise ApiError(422, "validation_failed", "Unsupported language.")
+    return _json(await service.structure_view(caller, session_id, language=lang))
+
+
+@router.get("/sessions/{session_id}/structure/outline")
+async def structure_outline(
+    session_id: str, caller: CallerDep, service: ServiceDep
+) -> JSONResponse:
+    """Ids and names only: the first thing a downstream reader takes (about 1-2K tokens even for a 60-screen app)."""
+    return _json(await service.structure_outline(caller, session_id))
+
+
+@router.get("/sessions/{session_id}/structure/modules/{module_id}")
+async def structure_slice(
+    session_id: str, module_id: str, caller: CallerDep, service: ServiceDep
+) -> JSONResponse:
+    """One module with what a downstream call needs to build it: its screens, the journeys that touch them, the data
+    they use, who may do what, the features served and the detail facts routed to it (values only)."""
+    return _json(await service.structure_slice(caller, session_id, module_id))
+
+
 @router.post("/sessions/{session_id}/decide-preview")
 async def decide_preview(session_id: str, caller: CallerDep, service: ServiceDep) -> JSONResponse:
     """Stateless AI preview for the open batch form (ADR 0016 / A5 / A9)."""
@@ -329,6 +360,31 @@ async def budget(request: Request, caller: CallerDep, service: ServiceDep) -> JS
         raise ApiError(404, "not_found", "Not found.")
     data: dict[str, JsonValue] = await service.budget()
     return _json(data)
+
+
+@router.get("/size-bands")
+async def size_bands() -> JSONResponse:
+    """The app sizes the tiers map to (ADR 0017): screens, modules, review and research depth per band, and which tier
+    maps to which band; public static data, so the page never hardcodes a number."""
+    data = load_size_bands()
+    return JSONResponse(
+        {
+            "bands": [
+                {
+                    "id": b.id,
+                    "tier": b.tier,
+                    "screens": list(b.screens),
+                    "modules": list(b.modules),
+                    "open_upper": b.open_upper,
+                    "review": b.review,
+                    "research": {"depth": b.research.depth, "searches": b.research.searches},
+                }
+                for b in data.bands.values()
+            ],
+            "tier_to_band": data.tier_to_band,
+        },
+        headers={"Cache-Control": "public, max-age=300"},
+    )
 
 
 @router.get("/strings/{lang}")

@@ -63,6 +63,7 @@ COMPASS_MEMORY=1 uv run python -m mde_compass       # same as --memory
 | `COMPASS_MEMORY=1` | in-memory store |
 | `DATABASE_URL` | PostgreSQL URL (default: the private cluster) |
 | `COMPASS_INTERVIEW_ENGINE` | `legacy` or `planner`: which question engine runs (see below); read when the service is built, so restart the server after changing it |
+| `COMPASS_STRUCTURE` | `on` or `off`: draft the structure of the app (modules, screens, flows, entities, ADR 0017) while the Brief is built. On in live product runs; for a mock run set `COMPASS_STRUCTURE=on` (`COMPASS_STRUCTURE=on uv run python -m mde_compass --memory --port 8110`). Read when the service is built |
 | `MDE_WEB_DIR` | the directory served at `/ui/` (default `apps/web/console`) |
 | `COMPASS_LIVE_BUDGET_USD` | the Compass spend cap, at most 3.00 (live mode only matters; see section 5) |
 

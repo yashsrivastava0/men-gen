@@ -169,6 +169,11 @@ class InterviewPolicy:
         0.8  # a fact at or above this closes its need (becomes a confirmation)
     )
     understand_concurrency: int = 4  # answer-all form: parallel understand_turn calls
+    # ADR 0017: draft the structure of the app (modules, screens, flows, entities) while the Brief is built. Off by
+    # default so every test and scenario keeps its call counts; on in the live product policy. ``structure_prefetch``
+    # starts the draft while the closing question is on screen (optional, off until a live run shows it pays).
+    structure_enabled: bool = False
+    structure_prefetch: bool = False
 
     def budget_max(self, budget: InterviewBudget) -> int:
         return {
@@ -286,6 +291,7 @@ PRODUCT_INTERVIEW_POLICY = InterviewPolicy(
     fan_out=True,
     parallel_initial_plan=True,
     deterministic_taps=True,
+    structure_enabled=True,
 )
 
 

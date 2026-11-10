@@ -28,13 +28,22 @@ def test_every_call_has_a_profile_and_a_port() -> None:
     from mde_compass.engine.ports import Ports
 
     assert (
-        len(CALL_PROFILES) == 18
+        len(CALL_PROFILES) == 21
     )  # twelve from the first build + five for the AI-planned interview + decide_answers (v2)
     assert all(cid.startswith("cmp.") for cid in CALL_PROFILES)
-    assert len(Ports.__dataclass_fields__) == 18  # type: ignore[attr-defined]
+    assert len(Ports.__dataclass_fields__) == 21  # type: ignore[attr-defined]
 
 
 def test_view_model_sections_match_the_prompt() -> None:
     from mde_compass.views.models import SECTION_IDS
 
-    assert len(SECTION_IDS) == 15 and SECTION_IDS[0] == "idea" and SECTION_IDS[-1] == "cannot_build"
+    # the 15 sections of the prompt, plus ``structure`` (ADR 0017) right after ``features``; the page shows that one only
+    # for a Brief that records a size band (tests/views/test_build.py)
+    assert len(SECTION_IDS) == 16 and SECTION_IDS[0] == "idea" and SECTION_IDS[-1] == "cannot_build"
+    assert [s for s in SECTION_IDS if s != "structure"][:4] == [
+        "idea",
+        "who",
+        "apps_roles",
+        "features",
+    ]
+    assert SECTION_IDS[SECTION_IDS.index("features") + 1] == "structure"

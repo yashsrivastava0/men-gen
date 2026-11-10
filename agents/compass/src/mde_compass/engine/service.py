@@ -81,6 +81,7 @@ from mde_compass.domain.events import (
     PlaybackItem,
     ProbeResultEvent,
     Progress,
+    StructureAction,
     UploadAdded,
     UserMessage,
 )
@@ -94,6 +95,8 @@ from mde_compass.engine import patch as patch_mod
 from mde_compass.engine import probe_gaps as probe_gaps_mod
 from mde_compass.engine import review as review_mod
 from mde_compass.engine import state as state_mod
+from mde_compass.engine import structure_actions as actions_mod
+from mde_compass.engine import structure_derive as derive_mod
 from mde_compass.engine import voi as voi_mod
 from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
@@ -125,6 +128,7 @@ from mde_compass.engine.ports import (
 from mde_compass.engine.router import route as route_text
 from mde_compass.engine.router import route_help
 from mde_compass.engine.slots import SlotStore
+from mde_compass.engine.structure_controller import StructureController
 from mde_compass.engine.validate import must_slots_missing
 from mde_compass.intake import (
     ingest_bytes,
@@ -140,6 +144,7 @@ from mde_compass.views.consumers import build_handoff
 from mde_compass.views.diff import diff_briefs
 from mde_compass.views.provenance import provenance_for
 from mde_compass.views.readiness import compute_readiness
+from mde_compass.views.structure_view import build_structure_view, structure_export
 from mde_core.clock import Clock, SystemClock
 from mde_core.errors import (
     Conflict,
@@ -356,6 +361,7 @@ class Service(FlowHooks):
         self.url_resolver: Any = None  # tests inject; None means the production resolver
         self.url_fetcher: Any = None
         self.interview = InterviewController(self)
+        self.structure = StructureController(self)  # ADR 0017: modules, screens, flows, entities
 
     def bind_ports(self, ports: Ports) -> None:
         self.ports = ports
@@ -546,6 +552,8 @@ class Service(FlowHooks):
             await self._on_feedback(turn, event)
         elif isinstance(event, AssumptionDecision):
             await self._on_assumption(turn, event)
+        elif isinstance(event, StructureAction):
+            await self._on_structure_action(turn, event)
         elif isinstance(event, LookupEdit):
             await self._on_lookup(turn, event)
         elif isinstance(event, ContributorSwitch):
@@ -784,6 +792,7 @@ class Service(FlowHooks):
             supplied_hash=supplied_hash,
             current_hash=cur_hash,
             current_version=cur_version,
+            structure_unreviewed=self.structure.unreviewed(turn),
         )
 
     def _blocker_lines(self, turn: _Turn, blockers: Sequence[gate_mod.Blocker]) -> list[str]:
@@ -1015,6 +1024,9 @@ class Service(FlowHooks):
         if hyp.subcategory and not turn.slots.filled("idea.subcategory"):
             turn.slots.write("idea.subcategory", hyp.subcategory, state="assumed", provenance=Provenance(type="model_knowledge", ref="hypothesis", date=self.clock.now()), confidence=hyp.confidence, turn_id=turn.turn_id)  # fmt: skip
         self._rebuild(turn)
+        self.structure.suggest(
+            turn
+        )  # the idea asks for a bigger app than the tier plans for: say so once
         self._go(turn, "idea_received", "UNDERSTANDING")
         self._go(turn, "understood", "UNDERSTANDING")
         summary_rec = turn.slots.get("idea.summary")
@@ -1075,10 +1087,18 @@ class Service(FlowHooks):
                 await self._compile_brief(
                     turn
                 )  # research seeding and the probes read the full Brief
-                # the ambiguity scan only needs the compiled Brief: it runs while research is seeded
-                _, turn.scan_findings = await asyncio.gather(
-                    self._seed(turn), review_mod.scan_findings(self, turn)
+                self.structure.prepare(
+                    turn
+                )  # the size band: research depth and the draft both read it
+                # the ambiguity scan only needs the compiled Brief: it runs while research is seeded, and the
+                # structure of the app is drafted in the same wave (it reads a snapshot and applies after it, because
+                # ``_seed`` rebuilds ``turn.brief``; ADR 0017)
+                _, turn.scan_findings, structure = await asyncio.gather(
+                    self._seed(turn),
+                    review_mod.scan_findings(self, turn),
+                    self.structure.compute(turn),
                 )
+                self.structure.apply(turn, structure)
             else:
                 await self._seed(turn)
             self._go(turn, "research_seeded", "PROBING")
@@ -1573,6 +1593,9 @@ class Service(FlowHooks):
     async def _open_review(self, turn: _Turn) -> None:
         assert self.ports is not None
         await self._compile_brief(turn)
+        await self.structure.run(
+            turn
+        )  # a digest no-op unless an input changed since it was drafted (ADR 0017)
         await self._flag_ambiguity(turn)
         blockers = self._blockers(turn)
         lines = self._blocker_lines(turn, blockers)
@@ -2063,6 +2086,22 @@ class Service(FlowHooks):
         if res.errors:
             turn.notice("change_failed", self._t(turn, "change.nothing_changed"), warn=True)
             return False
+        return await self._finish_change(
+            turn, res, list(ops), source=source, reason=reason, what=what
+        )
+
+    async def _finish_change(
+        self,
+        turn: _Turn,
+        res: Any,
+        ops: Sequence[PatchOp],
+        *,
+        source: ChangeSource,
+        reason: str = "",
+        what: str = "",
+    ) -> bool:
+        """Everything after a change was applied to a Brief: the change set, the rebuild, the voided sections, research
+        and probes, the events and the state. ``res`` is a ``PatchResult`` (its ``brief`` is the Brief after the change)."""
         where = self._section_label(turn, ops[0].path) if ops else ""
         summary = self._t(turn, "change.updated", where=where, what=what or ops[0].path)
         n = len(turn.questions) + 0  # unique per session via the store's change-set count below
@@ -2194,6 +2233,36 @@ class Service(FlowHooks):
             )
         ]
         await self._apply_change(turn, ops, source="ui_edit", what=ev.item_id)
+
+    async def _on_structure_action(self, turn: _Turn, ev: StructureAction) -> None:
+        """Accept, add, remove, redraft or re-size the structure of the app (ADR 0017). Each action is ONE change set:
+        undo restores it whole. Renaming and moving use ``brief_edit``."""
+        try:
+            if ev.action in ("regenerate", "set_band"):
+                await self.structure.redraft(turn, ev)
+                return
+            if not ev.section:
+                raise actions_mod.ActionError("a section is needed")
+            if ev.action == "add":
+                ops = actions_mod.add_ops(
+                    ev.section, ev.value, [self._prov(turn, "user_text", _text(ev.value))]
+                )
+            elif ev.action == "accept":
+                ops = actions_mod.accept_ops(
+                    turn.brief, ev.section, ev.target, actions_mod.not_evidence(turn.turn_id)
+                )
+            else:
+                ops = actions_mod.remove_ops(
+                    turn.brief, ev.section, ev.target, actions_mod.not_evidence(turn.turn_id)
+                )
+        except actions_mod.ActionError as exc:
+            raise NotFound(str(exc)) from exc
+        if not ops:
+            turn.notice("structure_nothing_to_do", self._t(turn, "change.nothing_changed"))
+            return
+        await self._apply_change(
+            turn, ops, source="structure", what=f"{ev.action} {ev.section}.{ev.target}".strip(".")
+        )
 
     async def _on_assumption(self, turn: _Turn, ev: AssumptionDecision) -> None:
         asm = next((a for a in turn.brief.assumptions if a.id == ev.id), None)
@@ -2621,7 +2690,11 @@ class Service(FlowHooks):
         pending_asms = [
             a for a in turn.brief.assumptions if a.decision not in ("accepted", "rejected")
         ]
-        if pending_asms:
+        # the structure of the app is approved in the SAME change set (one change set per turn): accepted, never Locked
+        structure_ops = actions_mod.accept_all_ops(
+            turn.brief, actions_mod.not_evidence(turn.turn_id)
+        )
+        if pending_asms or structure_ops:
             ops = [
                 PatchOp(
                     op="set",
@@ -2631,16 +2704,18 @@ class Service(FlowHooks):
                 )
                 for a in pending_asms
             ]
+            ops += structure_ops
             await self._apply_change(
                 turn,
                 ops,
                 source="approve_all",
-                what=f"Accepted {len(pending_asms)} assumptions",
+                what=f"Accepted {len(pending_asms)} assumptions and {len(structure_ops)} parts of the structure",
             )
-            turn.notice(
-                "assumptions_all_accepted",
-                self._t(turn, "notice.assumptions_all_accepted", count=len(pending_asms)),
-            )
+            if pending_asms:
+                turn.notice(
+                    "assumptions_all_accepted",
+                    self._t(turn, "notice.assumptions_all_accepted", count=len(pending_asms)),
+                )
 
         cur_hash = brief_hash(turn.brief)
         cur_version = turn.rec.version + (1 if cur_hash != turn.rec.hash else 0)
@@ -2752,6 +2827,46 @@ class Service(FlowHooks):
             a.brief, b.brief, from_version=from_version, to_version=to_version
         ).model_dump(mode="json")
 
+    async def _structure_brief(
+        self, caller: Caller, session_id: str
+    ) -> tuple[SessionRecord, BriefVersionRecord]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            return await uow.sessions.get(session_id), await uow.briefs.get(session_id)
+
+    async def structure_view(
+        self, caller: Caller, session_id: str, *, language: str | None = None
+    ) -> dict[str, JsonValue]:
+        """The Structure tab of the page (ADR 0017): modules with their screens, journeys, data, who can open what,
+        the size band and what is still wrong."""
+        session, rec = await self._structure_brief(caller, session_id)
+        block = rec.brief.meta.interview
+        band, source = derive_mod.band_of_brief(rec.brief)
+        view = build_structure_view(
+            rec.brief,
+            catalog=self.catalog,
+            language=language or session.locale,
+            band=band,
+            source=source,
+            enabled=self.config.interview.structure_enabled,
+            session_id=session_id,
+            suggested=block.size_suggested if block is not None else "",
+        )
+        return cast("dict[str, JsonValue]", view.model_dump(mode="json"))
+
+    async def structure_outline(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        _, rec = await self._structure_brief(caller, session_id)
+        return derive_mod.outline(rec.brief)
+
+    async def structure_slice(
+        self, caller: Caller, session_id: str, module_id: str
+    ) -> dict[str, JsonValue]:
+        """One module with everything a downstream call needs to build it (values only)."""
+        _, rec = await self._structure_brief(caller, session_id)
+        try:
+            return derive_mod.module_slice(rec.brief, module_id)
+        except KeyError as exc:
+            raise NotFound(f"modules.{module_id}: no such record") from exc
+
     async def export_full(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
         """The complete output of a Compass session for the next engine (the research agent): the Brief with its hash
         and versions, the four consumer views, the whole interview (every question with its answer, every fact with
@@ -2792,7 +2907,7 @@ class Service(FlowHooks):
         out: dict[str, Any] = {
             "export": {
                 "format": "compass-full-output",
-                "format_version": 1,
+                "format_version": 2,
                 "exported_at": datetime.now(UTC).isoformat(),
                 "session_id": session_id,
                 "brief_version": rec.version,
@@ -2805,11 +2920,17 @@ class Service(FlowHooks):
                     "consumer_views": "what each downstream engine reads: research, blueprint, design, verify (values only, no quotes)",
                     "interview": "every question and answer (qa), every fact with verbatim quote, origin and status (facts), the rolling summary",
                     "sources": "documents the person gave and the claims read from them",
+                    "structure": "the user-approved structure of the app (ADR 0017): size band and source, counts, an outline (ids and names), one slice per module (screens, the journeys that touch them, the data they use, who may do what, the features served, the detail facts routed to it), the role by module matrix, navigation edges taken from the journeys, the issues left, and the research guidance; absent for a Brief without a structure",
                 },
             },
             "session": session.model_dump(mode="json"),
             "brief": {**brief, "_hash": rec.hash, "_section_hashes": rec.section_hashes},
             "consumer_views": cast(JsonValue, build_handoff(rec.brief)),
+            **(
+                {"structure": structure_export(rec.brief)}
+                if derive_mod.has_structure(rec.brief)
+                else {}
+            ),
             "brief_versions": [v.model_dump(mode="json") for v in versions],
             "interview": {
                 "qa": [q.model_dump(mode="json") for q in qa],

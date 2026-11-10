@@ -6,6 +6,8 @@ import json
 
 from mde_compass.catalog.loader import load_catalog
 from mde_compass.domain.hashing import brief_hash, section_hashes
+from mde_compass.domain.interview import InterviewBlock
+from mde_compass.engine.structure_testing import sample_app
 from mde_compass.store.ports import BriefVersionRecord
 from mde_compass.views.build import build_view_model
 from mde_compass.views.models import SECTION_IDS, BriefViewModel
@@ -30,13 +32,52 @@ def _rows(vm: BriefViewModel):
 
 
 def test_fifteen_sections_in_fixed_order_with_localized_titles() -> None:
+    """A Brief that never held a structure has the 15 sections it always had (no ``structure`` section)."""
     vm = _build()
-    assert [s.id for s in vm.sections] == list(SECTION_IDS)
+    expected = [sid for sid in SECTION_IDS if sid != "structure"]
+    assert [s.id for s in vm.sections] == expected
     assert len(vm.sections) == 15
-    assert [s.title for s in vm.sections] == [
-        CATALOG.t(f"section.{sid}", "en") for sid in SECTION_IDS
-    ]
+    assert [s.title for s in vm.sections] == [CATALOG.t(f"section.{sid}", "en") for sid in expected]
     assert all(s.count == len(s.rows) and s.rows for s in vm.sections)
+
+
+def test_structure_section_appears_with_a_structure_in_its_fixed_place() -> None:
+    brief = sample_app()
+    vm = _build(brief)
+    ids = [s.id for s in vm.sections]
+    assert ids.index("structure") == ids.index("features") + 1
+    section = vm.sections[ids.index("structure")]
+    assert section.title == CATALOG.t("section.structure", "en")
+    assert [r.id for r in section.rows] == [f"modules.{m.id}" for m in brief.modules]
+    first = section.rows[0]
+    assert first.label == brief.modules[0].name
+    assert first.editable is False
+    assert first.status_chip == CATALOG.t("view.decision.proposed", "en")
+    assert [b.kind for b in first.badges] == ["assumed"]  # proposed = still to look at
+
+
+def test_accepted_module_row_shows_accepted_without_the_assumed_badge() -> None:
+    brief = sample_app()
+    brief.modules[0] = brief.modules[0].model_copy(update={"decision": "accepted"})
+    row = _rows(_build(brief))["modules.MOD-001"]
+    assert row.status_chip == CATALOG.t("view.decision.accepted", "en")
+    assert "assumed" not in [b.kind for b in row.badges]
+
+
+def test_structure_section_in_hindi() -> None:
+    vm = _build(sample_app(), language="hi")
+    section = next(s for s in vm.sections if s.id == "structure")
+    assert section.title == CATALOG.t("section.structure", "hi")
+    assert section.title != CATALOG.t("section.structure", "en")
+    assert section.rows[0].status_chip == CATALOG.t("view.decision.proposed", "hi")
+
+
+def test_band_recorded_but_nothing_drafted_shows_an_empty_structure_section() -> None:
+    brief = rich_brief()
+    brief.meta.interview = InterviewBlock(size_band="small", size_source="tier")
+    section = next(s for s in _build(brief).sections if s.id == "structure")
+    assert section.rows == [] and section.count == 0
+    assert section.empty_text == CATALOG.t("view.empty.structure", "en")
 
 
 def test_hindi_labels_render() -> None:

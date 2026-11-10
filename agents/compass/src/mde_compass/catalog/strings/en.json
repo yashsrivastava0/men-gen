@@ -355,5 +355,21 @@
   "brief.v2.document.conflict.what_changes": "Tell us which one is right and the plan uses it.",
   "brief.v2.gap.assume": "We could not tell {what}; we suggest {value}.",
   "brief.v2.gap.reason": "A later step could not start without it.",
-  "brief.v2.gap.what_changes": "Tell us the right one and the plan uses it."
+  "brief.v2.gap.what_changes": "Tell us the right one and the plan uses it.",
+  "size.small": "Small",
+  "size.medium": "Medium",
+  "size.large": "Enterprise",
+  "notice.size_suggestion": "This sounds like a bigger app than the {tier} plan is meant for. {suggested} asks a few more questions and drafts a fuller plan of screens.",
+  "notice.size_suggestion_action": "Switch to {suggested}",
+  "notice.structure_over_band": "The plan has {n} screens, more than a {band} app usually has. You can plan it as {bigger}, or remove what you do not need.",
+  "notice.structure_floor": "{n} part(s) of the plan were drafted by a simple fallback because the AI call failed. Please review them carefully.",
+  "notice.structure_ready": "I drafted the structure of your app: {modules} areas, {screens} screens, {flows} journeys and {entities} kinds of data. Please look it over before you approve.",
+  "brief.structure.issue_reason": "Found while checking the plan of screens",
+  "blocker.structure_unreviewed": "{count} parts of the app plan still need your look (accept each, or use Approve all)",
+  "notice.structure_redrafted": "Redrafted: {what}.",
+  "notice.structure_band_set": "Planning this app as a {band} app.",
+  "view.structure.counts": "{screens} screens, {flows} journeys, {entities} kinds of data",
+  "view.empty.structure": "The plan of screens is not drafted yet.",
+  "view.decision.accepted": "Accepted",
+  "view.decision.proposed": "Proposed"
 }

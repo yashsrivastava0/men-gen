@@ -20,7 +20,15 @@ from mde_compass.domain.common import Provenance, Strict
 
 OpName = Literal["set", "add", "remove", "clear"]
 ChangeSource = Literal[
-    "ui_edit", "feedback", "chat", "assumption", "lookup", "undo", "engine", "approve_all"
+    "ui_edit",
+    "feedback",
+    "chat",
+    "assumption",
+    "lookup",
+    "undo",
+    "engine",
+    "approve_all",
+    "structure",
 ]
 FeedbackReason = Literal[
     "not_what_i_meant",

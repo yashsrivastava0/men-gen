@@ -38,6 +38,12 @@ def resolve_config(config: CompassConfig | None = None) -> CompassConfig:
     engine = os.environ.get("COMPASS_INTERVIEW_ENGINE", "").strip().lower()
     if engine in ("legacy", "planner"):
         cfg = replace(cfg, interview=replace(cfg.interview, engine=engine))  # type: ignore[arg-type]
+    structure = os.environ.get("COMPASS_STRUCTURE", "").strip().lower()
+    if structure in (
+        "on",
+        "off",
+    ):  # ADR 0017: the structure draft, for mock runs and the owner's browser
+        cfg = replace(cfg, interview=replace(cfg.interview, structure_enabled=structure == "on"))
     return cfg
 
 

@@ -48,7 +48,7 @@
   "inbound_events": [
     "user_message", "card_answer", "card_skip", "card_you_decide", "card_back", "upload_added", "link_added",
     "command", "brief_edit", "brief_feedback", "assumption_decision", "lookup_edit", "contributor_switch",
-    "gate_decision", "batch_answer", "answer_edit", "approve_all"
+    "gate_decision", "batch_answer", "answer_edit", "approve_all", "structure_action"
   ],
   "outbound_events": [
     "assistant_message", "assistant_delta", "card", "question_batch", "playback", "notice", "progress", "brief_patch",
@@ -485,7 +485,16 @@ CONTRACT*/
     if (custom) { body.custom_text = custom; }
     return sendEvent(body);
   }
-  window.compassSend = { batchAnswer: sendBatchAnswer, answerEdit: sendAnswerEdit };
+  // The structure of the app (ADR 0017): accept, add, remove, regenerate a module or plan for another size.
+  // fields: section, target, text, band, value. A plain rename or move is a brief_edit, not this.
+  function sendStructureAction(action, fields) {
+    var body = { type: "structure_action", action: action };
+    var f = fields || {};
+    ["section", "target", "text", "band"].forEach(function (k) { if (f[k]) { body[k] = f[k]; } });
+    if (f.value !== undefined && f.value !== null) { body.value = f.value; }
+    return sendEvent(body);
+  }
+  window.compassSend = { batchAnswer: sendBatchAnswer, answerEdit: sendAnswerEdit, structureAction: sendStructureAction };
   function micSupported() { return !!(window.SpeechRecognition || window.webkitSpeechRecognition); }
   function startDictation(target, done) {
     var Rec = window.SpeechRecognition || window.webkitSpeechRecognition;

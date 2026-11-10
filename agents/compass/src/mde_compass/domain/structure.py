@@ -50,6 +50,7 @@ class ModuleRecord(ItemMeta):
 
     id: str  # MOD-###
     name: str
+    kind: str = ""  # "" for an ordinary module; "account" or "support:<id>" for a standard one the app needs
     purpose: str = ""
     apps: list[str] = Field(default_factory=list)  # APP-###
     features: list[str] = Field(default_factory=list)  # FTR-### the module delivers
