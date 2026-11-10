@@ -456,3 +456,290 @@ def test_projection_never_writes_a_non_fact_ref_and_is_replayable(
     reproject(list(before), facts, s, CATALOG, turn_id="evt_3", now=NOW)
     after = {k: r.value for k, r in s.all().items() if s.filled(k)}
     assert after == {k: v for k, v in before.items() if s.filled(k)}
+
+
+# ------------------------------------------------- a fact about some elements never wipes the person's list (live bug)
+def _names(slots: SlotStore, slot_id: str) -> list[str]:
+    rec = slots.get(slot_id)
+    assert rec is not None and isinstance(rec.value, list)
+    return [str(v["name"]) for v in rec.value if isinstance(v, dict)]
+
+
+def test_one_element_sets_by_later_facts_join_the_features_instead_of_replacing_them() -> None:
+    """The Sunrise Yoga session: six features were stated, then each answer of the closing step arrived as a ``set`` of
+    ONE feature and the list ended as the last one."""
+    s = store()
+    six = [
+        {"name": n, "intent": n}
+        for n in (
+            "Weekly class timetable",
+            "Class booking",
+            "Class packs",
+            "Reminders",
+            "Class management",
+            "Attendance list",
+        )
+    ]
+    run(mk(2, [eff("scope.features", six)]), s)
+    run(
+        mk(26, [eff("scope.features", [{"name": "Weekly class timetable", "priority": "must"}])]), s
+    )
+    run(mk(27, [eff("scope.features", [{"name": "Class booking", "priority": "must"}])]), s)
+    run(
+        mk(28, [eff("scope.features", [{"name": "Class packs and credits", "priority": "must"}])]),
+        s,
+    )
+    run(mk(30, [eff("scope.features", [{"name": "Class reminders", "priority": "later"}])]), s)
+    run(mk(31, [eff("scope.features", [{"name": "Member check-in", "priority": "later"}])]), s)
+    rec = s.get("scope.features")
+    assert rec is not None and isinstance(rec.value, list)
+    names = _names(s, "scope.features")
+    assert names == [
+        "Weekly class timetable",
+        "Class booking",
+        "Class packs",  # the person's own name stays; "Class packs and credits" is the same feature
+        "Reminders",
+        "Class management",
+        "Attendance list",
+        "Member check-in",  # the only really new one is added
+    ]
+    by_name = {str(v["name"]): v for v in rec.value if isinstance(v, dict)}
+    assert by_name["Weekly class timetable"]["priority"] == "must"
+    assert by_name["Class packs"]["priority"] == "must"
+    assert by_name["Reminders"]["priority"] == "later"
+    assert by_name["Member check-in"]["priority"] == "later"
+
+
+def test_an_answer_card_that_lists_roles_does_not_erase_the_roles_the_person_named() -> None:
+    s = store()
+    run(mk(16, [eff("roles.list", [{"name": "Instructors", "goal": "check who has booked"}])]), s)
+    run(
+        mk(
+            17,
+            [eff("roles.list", [{"name": "Studio manager", "goal": "manage the studio"}], "add")],
+        ),
+        s,
+    )
+    labels = [
+        {"name": n}
+        for n in (
+            "Members book classes",
+            "Instructors manage classes",
+            "Manager handles the studio",
+        )
+    ]
+    run(mk(24, [eff("roles.list", labels)]), s)
+    names = _names(s, "roles.list")
+    assert names[:2] == [
+        "Instructors",
+        "Studio manager",
+    ]  # still there, under the person's own words
+    assert (
+        "Members book classes" in names and len(names) == 3
+    )  # the two repeats were not added again
+    rec = s.get("roles.list")
+    assert rec is not None and isinstance(rec.value, list)
+    assert rec.value[0]["goal"] == "check who has booked"  # and they kept what they said
+
+
+def test_an_assumed_list_is_still_replaced_by_the_persons_own_elements() -> None:
+    from mde_compass.domain.common import Provenance
+
+    s = store()
+    s.write(
+        "scope.features",
+        [{"name": "Chat"}, {"name": "Maps"}],
+        state="assumed",
+        provenance=Provenance(type="assumed", ref="", date=NOW),
+        turn_id="evt_0",
+    )
+    run(mk(1, [eff("scope.features", [{"name": "Booking", "priority": "must"}])]), s)
+    assert _names(s, "scope.features") == ["Booking"]
+
+
+def test_a_correction_that_supersedes_the_old_facts_still_replaces_the_list() -> None:
+    s = store()
+    old = mk(1, [eff("scope.features", [{"name": "Chat"}, {"name": "Maps"}])])
+    run(old, s)
+    new = mk(2, [eff("scope.features", [{"name": "Booking"}])])
+    old_out, new_out = supersede(old, new, now=NOW)
+    reproject(["scope.features"], [old_out, new_out], s, CATALOG, turn_id="evt_2", now=NOW)
+    assert _names(s, "scope.features") == ["Booking"]
+
+
+# ----------------------------------------------- the people of an app the person named are roles of the Brief (live bug)
+def test_an_app_named_after_its_people_makes_their_role_and_keeps_the_roles_already_named() -> None:
+    """Sunrise Yoga: "Members use a mobile app" made an app called Members and no role, so every screen of the
+    structure ended up for the only role there was (Instructors)."""
+    s = store()
+    run(mk(16, [eff("roles.list", [{"name": "Instructors", "goal": "see who has booked"}])]), s)
+    run(
+        mk(
+            12,
+            [
+                eff(
+                    "apps.list",
+                    [{"name": "Members", "purpose": "Use the app", "surface": "mobile"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    run(
+        mk(
+            13,
+            [
+                eff(
+                    "apps.list",
+                    [{"name": "Staff", "purpose": "Use the app", "surface": "mobile"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    run(
+        mk(
+            14,
+            [
+                eff(
+                    "apps.list",
+                    [{"name": "Manager", "purpose": "Use the panel", "surface": "web"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    assert _names(s, "roles.list") == ["Instructors", "Members", "Staff", "Manager"]
+    assert _names(s, "apps.list") == ["Members", "Staff", "Manager"]
+    rec = s.get("roles.list")
+    assert rec is not None and isinstance(rec.value, list)
+    assert rec.value[1]["goal"] == "Use the app"  # the app's purpose is the role's goal
+
+
+def test_an_app_named_for_a_way_of_using_it_makes_no_role() -> None:
+    s = store()
+    run(
+        mk(
+            1,
+            [
+                eff(
+                    "apps.list",
+                    [{"name": "Customer app"}, {"name": "Admin web panel"}, {"name": "Riders"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    assert _names(s, "roles.list") == ["Riders"] if s.get("roles.list") else True
+    rec = s.get("roles.list")
+    assert rec is not None and [v["name"] for v in rec.value if isinstance(v, dict)] == ["Riders"]  # type: ignore[union-attr]
+
+
+def test_replaying_the_apps_from_the_facts_does_not_double_the_role_made_from_them() -> None:
+    s = store()
+    fact = mk(12, [eff("apps.list", [{"name": "Members", "purpose": "Use the app"}], "add")])
+    run(fact, s)
+    reproject(["apps.list"], [fact], s, CATALOG, turn_id="evt_2", now=NOW)
+    assert _names(s, "apps.list") == ["Members"]
+    assert _names(s, "roles.list") == ["Members"]
+
+
+def test_the_closing_answers_set_the_priority_of_the_features_they_name_and_make_no_copies() -> (
+    None
+):
+    """Sunrise Yoga, run 4: eleven features were stated; the closing step then arrived as facts that named features by
+    the card's labels ("Weekly timetable and booking" must, "Reminders" later) and every one became a second feature."""
+    s = store()
+    stated = [
+        "Weekly class timetable",
+        "Class booking",
+        "Class packs",
+        "Reminders",
+        "Class management",
+        "Attendance list",
+    ]
+    run(mk(3, [eff("scope.features", [{"name": n, "intent": n} for n in stated])]), s)
+    run(mk(8, [eff("scope.features", [{"name": "Cancel a spot", "priority": "nice"}], "add")]), s)
+    run(
+        mk(
+            9,
+            [
+                eff(
+                    "scope.features",
+                    [{"name": "Check class-pack credits", "priority": "nice"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    run(
+        mk(
+            25,
+            [eff("scope.features", [{"name": "Weekly timetable and booking", "priority": "must"}])],
+        ),
+        s,
+    )
+    run(
+        mk(
+            26,
+            [
+                eff(
+                    "scope.features",
+                    [{"name": "Cancellations and waitlist", "priority": "must"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    run(
+        mk(
+            27,
+            [
+                eff(
+                    "scope.features",
+                    [{"name": "Class packs and credits", "priority": "must"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    run(mk(30, [eff("scope.features", [{"name": "Reminders", "priority": "later"}], "add")]), s)
+    rec = s.get("scope.features")
+    assert rec is not None and isinstance(rec.value, list)
+    by_name = {str(v["name"]): v.get("priority") for v in rec.value if isinstance(v, dict)}
+    assert (
+        by_name["Weekly class timetable"] == "must" and by_name["Class booking"] == "must"
+    )  # one label, two features
+    assert (
+        by_name["Class packs"] == "must"
+    )  # "Class packs and credits" is the feature the person already named
+    assert by_name["Reminders"] == "later"  # a later fact about a named feature updates it
+    assert by_name["Cancel a spot"] == "nice" and by_name["Class management"] is None
+    assert by_name["Cancellations and waitlist"] == "must"  # said something new: added
+    assert (
+        "Weekly timetable and booking" not in by_name and "Class packs and credits" not in by_name
+    )
+    # "Check class-pack credits" is read as part of "Class packs" (its name holds the other's); its words are in the facts
+    assert (
+        len(by_name) == 8
+    )  # 6 stated, "Cancel a spot", and "Cancellations and waitlist" from the closing step
+
+
+def test_a_label_that_also_says_something_new_is_added_rather_than_swallowed() -> None:
+    s = store()
+    run(mk(1, [eff("scope.features", [{"name": "Class booking"}, {"name": "Class packs"}])]), s)
+    run(
+        mk(
+            2,
+            [eff("scope.features", [{"name": "Booking and payments", "priority": "must"}], "add")],
+        ),
+        s,
+    )
+    assert _names(s, "scope.features") == ["Class booking", "Class packs", "Booking and payments"]

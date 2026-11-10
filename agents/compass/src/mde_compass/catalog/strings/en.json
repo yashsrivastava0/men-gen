@@ -235,7 +235,7 @@
   "ui.interview.form_blank_note": "{count} left blank will be skipped.",
   "ui.interview.form_required": "Please answer this one; it needs your confirmation.",
   "ui.interview.form_link_placeholder": "Paste a link or describe it in a few words",
-  "ui.interview.form_sent": "{count} answers sent",
+  "ui.interview.form_sent": "Answers sent: {count}",
   "ui.interview.priority_hint": "Tick them in order of importance.",
   "ui.interview.qa_title": "Questions and answers",
   "ui.interview.qa_empty": "No questions have been asked yet.",

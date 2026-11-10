@@ -302,8 +302,23 @@ def _resolve_refs(brief: Brief) -> None:
                 out.append(new)
         return out
 
+    from mde_compass.engine.fact_projector import _same_element
+
     for app in brief.apps:
         app.roles = resolve(app.roles, role_ids, role_by_name)
+        if (
+            not app.roles
+        ):  # an app named after its people ("Members") belongs to the role of that name
+            match = next(
+                (
+                    r
+                    for r in brief.roles
+                    if _same_element({"name": app.name}, {"name": r.name_in_user_words})
+                ),
+                None,
+            )
+            if match is not None:
+                app.roles = [match.id]
     for feature in brief.scope:
         feature.apps = resolve(feature.apps, app_ids, app_by_name)
 

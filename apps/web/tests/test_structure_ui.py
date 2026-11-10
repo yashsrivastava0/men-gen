@@ -230,3 +230,12 @@ async def test_the_structure_page_the_tab_reads_validates_against_the_view_model
     assert vm.drafted and vm.language == "hi" and vm.modules and vm.matrix.rows
     unknown: Any = await client.get(f"{P}/sessions/{sid}/structure?lang=zz")
     assert unknown.status_code == 422
+
+
+def test_the_session_label_follows_the_brief_status_not_the_raw_session_state() -> None:
+    label = function_body("renderSessionLabel")
+    assert "vm.header.status_label" in label and "vm.header.title" in label
+    assert "renderSessionLabel()" in function_body("loadView"), (
+        "the label is redrawn with every Brief view"
+    )
+    assert "renderSessionLabel()" in function_body("refreshSession")

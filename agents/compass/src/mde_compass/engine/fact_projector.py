@@ -168,6 +168,104 @@ def _merge(existing: JsonValue, new: JsonValue) -> JsonValue:
     return out
 
 
+def _stems(text: str) -> frozenset[str]:
+    """The words of a name that carry meaning (four letters or more), cut to four letters so "pack" and "packs", "book"
+    and "booking", "manage" and "management" meet."""
+    import re
+
+    return frozenset(w[:4] for w in re.findall(r"\w+", text.casefold()) if len(w) >= 4)
+
+
+def _same_element(a: JsonValue, b: JsonValue) -> bool:
+    """Two list elements are one when their names are equal, or when every meaningful word of the shorter name is in
+    the longer one ("Class packs" and "Class packs and credits", "Reminders" and "Class reminders")."""
+    na, nb = item_name(a), item_name(b)
+    if na == nb:
+        return True
+    wa, wb = _stems(na), _stems(nb)
+    return bool(wa) and bool(wb) and (wa <= wb or wb <= wa)
+
+
+def _covered(item: JsonValue, base: list[JsonValue]) -> list[int]:
+    """The elements an incoming one is made of, when it names several of them ("Weekly timetable and booking" is the
+    features "Weekly class timetable" and "Class booking"): each existing element whose own, distinctive words are all
+    in the incoming name, provided together they account for every distinctive word of it. Words most elements share
+    ("class") are not distinctive. Empty when the incoming element says something new."""
+    words = _stems(item_name(item))
+    names = [_stems(item_name(old)) for old in base]
+    common = {w for w in set().union(*names) if sum(w in n for n in names) >= 3} if names else set()
+    hits = [i for i, n in enumerate(names) if (n - common) and (n - common) <= words]
+    if len(hits) < 2:
+        return []
+    seen = set().union(*(names[i] for i in hits))
+    return hits if (words - common) <= seen else []
+
+
+OVERRIDE_KEYS = frozenset({"priority", "status", "scope_status"})
+
+
+def _update(old: JsonValue, item: JsonValue) -> JsonValue:
+    """An element that is already there keeps its own name and its own words (intent, goal, purpose); the newer fact
+    sets its priority and status and fills in what was missing."""
+    if not (isinstance(old, dict) and isinstance(item, dict)):
+        return old
+    out = dict(old)
+    for key, value in item.items():
+        if key == "name":
+            continue
+        if key in OVERRIDE_KEYS or is_blank(out.get(key)):
+            out[key] = value
+    return out
+
+
+def _merge_set(existing: JsonValue, new: JsonValue) -> JsonValue:
+    """Joining a list of records that a FACT gives (``set``, or ``add`` to a list the person built). A fact about one
+    or two elements ("reminders can wait for the second version") must never wipe a list the person built through other
+    facts, and a fact that names an element again ("Class packs and credits are must-haves") must not make a second one:
+    an element that is already there keeps its own name and takes the new properties, a name that is made of several
+    existing elements updates each of them, anything else is added. A real correction supersedes the older facts, and
+    ``reproject`` then rebuilds the slot from the facts that are still active, so it never reaches this function with
+    the old list still in place."""
+    base: list[JsonValue] = list(existing) if isinstance(existing, list) else []
+    incoming = new if isinstance(new, list) else [new]
+    for item in incoming:
+        at = next((i for i, old in enumerate(base) if _same_element(old, item)), None)
+        if at is not None:
+            base[at] = _update(base[at], item)
+            continue
+        parts = _covered(item, base)
+        if parts:
+            for i in parts:
+                base[i] = _update(base[i], item)
+        else:
+            base.append(item)
+    return base
+
+
+# Words that name a way of using the app, not a kind of person: an app called "Customer app" is for customers, so no role
+# is made from such a name (the interview's own roles and the compile step name them).
+SURFACE_WORDS = frozenset(
+    {"app", "apps", "panel", "portal", "website", "site", "dashboard", "console", "web", "mobile"}
+)
+
+
+def roles_of_apps(apps: JsonValue) -> list[JsonValue]:
+    """The kinds of person an app list implies: "Members use a mobile app" is an app called Members, and the people are
+    members. One role element per app whose name is a kind of person; the app's purpose is the role's goal."""
+    out: list[JsonValue] = []
+    for el in apps if isinstance(apps, list) else []:
+        if not isinstance(el, dict):
+            continue
+        name = str(el.get("name", "")).strip()
+        if not name or SURFACE_WORDS & set(name.casefold().split()):
+            continue
+        role: dict[str, JsonValue] = {"name": name}
+        if str(el.get("purpose", "")).strip():
+            role["goal"] = str(el["purpose"]).strip()
+        out.append(role)
+    return out
+
+
 def _store_write(
     slots: SlotStore,
     slot_id: str,
@@ -275,9 +373,36 @@ def _apply_effect(
             if record is not None and slots.filled(effect.slot_id) and record.status in USER_GIVEN
             else None
         )
-        value = _merge(user_list, value)
+        value = _merge_set(user_list, value) if kind == "object_list" else _merge(user_list, value)
+    elif (
+        kind == "object_list"
+    ):  # a "set" of a list of records by a fact never wipes the person's list
+        record = slots.get(effect.slot_id)
+        if (
+            record is not None
+            and slots.filled(effect.slot_id)
+            and record.status in USER_GIVEN
+            and isinstance(record.value, list)
+        ):
+            value = _merge_set(record.value, value)
     res = _store_write(slots, effect.slot_id, value, fact, provenance, turn_id, contributor_id=who)
     _outcome(result, effect, fact.id, res)
+    if effect.slot_id == "apps.list" and res.applied and "roles.list" in catalog.slots:
+        implied = roles_of_apps(value)
+        if implied:  # the people of an app the person named are roles of the Brief too
+            roles = slots.get("roles.list")
+            have = (
+                roles.value
+                if roles is not None and slots.filled("roles.list") and roles.status in USER_GIVEN
+                else None
+            )
+            joined = _merge_set(have, implied)
+            if joined != have:
+                role_res = _store_write(
+                    slots, "roles.list", joined, fact, provenance, turn_id, contributor_id=who
+                )
+                if role_res.applied and "roles.list" not in result.written:
+                    result.written.append("roles.list")
 
 
 # ------------------------------------------------------------------------------------------ projection

@@ -205,7 +205,7 @@ CONTRACT*/
     "ui.interview.form_blank_note": "{count} left blank will be skipped.",
     "ui.interview.form_required": "Please answer this one; it needs your confirmation.",
     "ui.interview.form_link_placeholder": "Paste a link or describe it in a few words",
-    "ui.interview.form_sent": "{count} answers sent",
+    "ui.interview.form_sent": "Answers sent: {count}",
     "ui.interview.priority_hint": "Tick them in order of importance.",
     "ui.interview.qa_title": "Questions and answers",
     "ui.interview.qa_empty": "No questions have been asked yet.",
@@ -1780,6 +1780,7 @@ CONTRACT*/
     return api("GET", "/sessions/" + state.sessionId + "/brief/view?lang=" + encodeURIComponent(state.lang)).then(function (vm) {
       var json = JSON.stringify(vm);
       state.view = vm;
+      renderSessionLabel();
       if (json !== state.viewJson) { state.viewJson = json; renderBrief(); renderSources(); renderDev(); }
       var hasTab = hasStructureSection();
       if (hasTab !== state.structTab) { state.structTab = hasTab; renderTabs(); }
@@ -3005,10 +3006,18 @@ CONTRACT*/
     }).catch(function (e) { homeError.textContent = friendly(e); });
   }
 
+  /** "Sunrise Yoga · In review": the project and the status of its Brief (the raw session state only until a Brief exists). */
+  function renderSessionLabel() {
+    var vm = state.view, s = state.session;
+    if (!s && !vm) { return; }
+    var name = (vm && vm.header && vm.header.title) || (s && (s.user_label || s.title || s.id)) || "";
+    var status = vm && vm.header && vm.header.status_label ? vm.header.status_label : (s ? s.state : "");
+    $("topbar-session").textContent = name + (status ? " · " + status : "");
+  }
   function refreshSession() {
     return api("GET", "/sessions/" + state.sessionId).then(function (s) {
       state.session = s;
-      $("topbar-session").textContent = (s.title || s.user_label || s.id) + " · " + s.state;
+      renderSessionLabel();
     }).catch(function () {});
   }
 
