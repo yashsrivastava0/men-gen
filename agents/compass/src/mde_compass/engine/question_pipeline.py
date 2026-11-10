@@ -316,11 +316,13 @@ async def _plan_fan_out(
         merged_hyp = hyps[0]
         if len(hyps) > 1:
             h2 = hyps[1]
+            seen_feat = {f.name.casefold() for f in merged_hyp.likely_features}
+            merged_features = list(merged_hyp.likely_features) + [
+                f for f in h2.likely_features if f.name.casefold() not in seen_feat
+            ]
             merged_hyp = merged_hyp.model_copy(
                 update={
-                    "likely_features": list(
-                        dict.fromkeys(merged_hyp.likely_features + h2.likely_features)
-                    ),
+                    "likely_features": merged_features,
                     "likely_roles": list(dict.fromkeys(merged_hyp.likely_roles + h2.likely_roles)),
                     "likely_families": list(
                         dict.fromkeys(merged_hyp.likely_families + h2.likely_families)
