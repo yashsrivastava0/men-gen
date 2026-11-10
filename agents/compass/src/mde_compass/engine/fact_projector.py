@@ -295,17 +295,30 @@ def _split_role_list(name: str) -> list[str]:
     return pieces
 
 
-def _clean_list(slot: SlotDef, value: JsonValue) -> JsonValue:
+def clean_list(slot: SlotDef, value: JsonValue) -> JsonValue:
     """What a list of records must not hold, whatever model wrote it: a role that is a whole list of roles becomes one
-    role each, and an app whose only name is a way of using it ("app", "portal") says nothing and is dropped."""
+    role each; a role or an app written as an answer-card label with its description ("Customers: book and track
+    loads") is the name before the colon, and the rest is its goal or purpose; an app whose only name is a way of
+    using it ("app", "portal", "app and portal") says nothing and is dropped."""
     if slot.value_schema.kind != "object_list" or not isinstance(value, list):
         return value
+    people = slot.id in PEOPLE_LISTS
+    describing = "goal" if slot.id == "roles.list" else "purpose"
     out: list[JsonValue] = []
     for el in value:
         if not isinstance(el, dict):
             out.append(el)
             continue
         name = str(el.get("name", "")).strip()
+        if people and ":" in name:
+            head, _, rest = name.partition(":")
+            if head.strip() and len(head.split()) <= 3 and rest.strip():
+                el = {
+                    **el,
+                    "name": head.strip(),
+                    **({} if el.get(describing) else {describing: rest.strip()}),
+                }
+                name = head.strip()
         if slot.id == "roles.list" and name:
             names = _split_role_list(name)
             if len(names) > 1:
@@ -314,7 +327,11 @@ def _clean_list(slot: SlotDef, value: JsonValue) -> JsonValue:
                     for n in names
                 ]
                 continue
-        if slot.id == "apps.list" and name and set(name.casefold().split()) <= SURFACE_WORDS:
+        if (
+            slot.id == "apps.list"
+            and name
+            and set(name.casefold().split()) <= SURFACE_WORDS | {"and"}
+        ):
             continue
         out.append(el)
     return out
@@ -382,7 +399,7 @@ def _apply_effect(
     if error:
         _reject(result, fact, effect, error)
         return
-    value = _clean_list(slot, value)
+    value = clean_list(slot, value)
     who = effect.contributor_id or contributor_id
     provenance = provenance_for(fact, now=now, input_mode=input_mode, contributor_id=who)
     kind = slot.value_schema.kind

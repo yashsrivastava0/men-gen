@@ -1044,6 +1044,7 @@ slots:
     - admin_approves
     - invite_only
   default: open_join
+  ask_policy: infer
   ask_if: filled('auth.account_model')
   brief_path: access.onboarding_approvals
   order: 5

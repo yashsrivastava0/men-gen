@@ -385,7 +385,7 @@ def _apply_list(
             else c.element
             for c in verified
         ]
-        value: JsonValue = [*base, *added]
+        value: JsonValue = fact_projector.clean_list(slot, [*base, *added])
         first = verified[0].facts[0]
         if _write(
             slots,
@@ -403,9 +403,9 @@ def _apply_list(
             for c in verified:
                 report.applied.update(f.id for f in c.facts)
     elif fresh and not filled:
-        value = [
-            c.element for c in fresh
-        ]  # nothing verified, nothing there yet: a guess, Default tier
+        value = fact_projector.clean_list(
+            slot, [c.element for c in fresh]
+        )  # nothing verified, nothing there yet: a guess, Default tier
         if _write(
             slots,
             slot.id,

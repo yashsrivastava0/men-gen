@@ -1047,9 +1047,30 @@ CONTRACT*/
     var numbers = sum.blank.map(function (c) { return String(f.cards.indexOf(c) + 1 + (f.nums ? f.nums.first - 1 : 0)); });
     return t("ui.v2.blank_list", { list: numbers.join(", ") });
   }
+  function saveFormDraft(f) {
+    if (!f || !f.sid || !f.batchId || !f.draft) { return; }
+    try {
+      if (window.localStorage) {
+        var key = "compass:draft:" + f.sid + ":" + f.batchId;
+        window.localStorage.setItem(key, JSON.stringify(f.draft));
+      }
+    } catch (_) {}
+  }
+
+  function clearFormDraft(f) {
+    if (!f || !f.sid || !f.batchId) { return; }
+    try {
+      if (window.localStorage) {
+        var key = "compass:draft:" + f.sid + ":" + f.batchId;
+        window.localStorage.removeItem(key);
+      }
+    } catch (_) {}
+  }
+
   function refreshForm(f) {
     f.ui.count.textContent = t("ui.interview.form_progress", { done: I.handledCount(f.cards, f.draft), total: f.cards.length });
     f.ui.summary.textContent = blankSummaryText(f);
+    saveFormDraft(f);
   }
 
   function triggerSuggestAnswers(f, btn) {
@@ -1236,6 +1257,7 @@ CONTRACT*/
     f.el.removeAttribute("aria-busy");
     f.el.appendChild(h("div", { class: "small muted",
       text: t(f.decideRest ? "ui.v2.form_done_rest" : "ui.interview.form_sent", { count: f.answers.length }) }));
+    clearFormDraft(f);
     releaseForm(f);
   }
   function releaseForm(f) {
@@ -1246,6 +1268,7 @@ CONTRACT*/
   function dropForm(f) {
     if (!f || f.confirmed) { return; }
     f.confirmed = true;
+    clearFormDraft(f);
     if (f.el.parentNode) { f.el.parentNode.removeChild(f.el); }
     releaseForm(f);
   }
@@ -1274,6 +1297,13 @@ CONTRACT*/
     if (old && !old.confirmed) {
       if (old.sending) { confirmForm(old); }       // the server answered with new questions: it has the answers
       else { carried = old.draft; hadFocus = hadFocus || old.el.contains(document.activeElement); }
+    }
+    if (!carried) {
+      try {
+        var savedKey = "compass:draft:" + state.sessionId + ":" + batch.batch_id;
+        var savedVal = window.localStorage && window.localStorage.getItem(savedKey);
+        if (savedVal) { carried = JSON.parse(savedVal); }
+      } catch (_) {}
     }
     if (state.activeCard && !state.activeCard.form) { collapseActive(); }   // a single card is replaced by the form
     var kept = I.carryDraft(carried, cards);

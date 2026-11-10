@@ -810,3 +810,57 @@ def test_an_app_named_only_for_how_it_is_used_is_dropped_and_real_names_stay() -
         s,
     )
     assert _names(s, "apps.list") == ["Driver app"]
+
+
+def test_a_card_label_with_its_description_is_a_name_and_a_goal_for_roles_and_apps() -> None:
+    """TruckSetu: the options of a card ("Customers: book and track loads") became roles and apps under that whole text."""
+    s = store()
+    run(
+        mk(
+            1,
+            [
+                eff(
+                    "roles.list",
+                    [
+                        {"name": "Customers: book and track loads"},
+                        {"name": "Drivers: manage trips"},
+                    ],
+                    "add",
+                ),
+                eff(
+                    "apps.list",
+                    [{"name": "Dispatchers: assign trips"}, {"name": "app and portal"}],
+                    "add",
+                ),
+            ],
+        ),
+        s,
+    )
+    assert _names(s, "roles.list")[:2] == ["Customers", "Drivers"]
+    roles = s.get("roles.list")
+    assert roles is not None and isinstance(roles.value, list)
+    assert roles.value[0]["goal"] == "book and track loads"
+    assert _names(s, "apps.list") == ["Dispatchers"]  # "app and portal" is no name
+
+
+def test_the_compile_step_cleans_lists_the_same_way() -> None:
+    from mde_compass.engine import fact_projector as fp
+
+    slot = CATALOG.slots["roles.list"]
+    cleaned = fp.clean_list(
+        slot,
+        [
+            {
+                "name": "The platform has customer (shipper) users, customer admins, dispatchers, branch managers"
+            },
+            {"name": "Finance"},
+        ],
+    )
+    names = [str(v["name"]) for v in cleaned if isinstance(v, dict)]  # type: ignore[union-attr]
+    assert names == [
+        "customer (shipper) users",
+        "customer admins",
+        "dispatchers",
+        "branch managers",
+        "Finance",
+    ]
