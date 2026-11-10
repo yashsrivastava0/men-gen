@@ -184,3 +184,62 @@ def test_drafted_details_and_corrections_reach_blueprint_and_verify() -> None:
     assert [r["id"] for r in verify["assumed_details"]] == ["ASM-100", "ASM-101"]  # type: ignore[union-attr, index]
     assert "assumed_details" not in research_view(brief)
     assert "assumed_details" not in design_view(brief)
+
+
+# ------------------------------------------------------------------------------------------------ repeats
+
+
+def test_the_same_statement_is_one_row_per_view_with_the_refs_of_every_copy() -> None:
+    brief = rich_brief()
+    brief.domain_facts = [
+        fact(
+            "FCT-001", "Patients get reminders by SMS.", "blueprint", kind="rule", refs=["FTR-001"]
+        ),
+        fact(
+            "FCT-002", "patients get reminders by sms", "blueprint", kind="rule", refs=["ROL-001"]
+        ),
+        fact(
+            "FCT-003", "Patients get reminders by SMS!", "blueprint", kind="rule", refs=["FTR-001"]
+        ),
+    ]
+    rows = view_of(brief, "blueprint")["domain_facts"]
+    assert [r["id"] for r in rows] == ["FCT-001"]  # type: ignore[index, union-attr]
+    assert rows[0]["refs"] == ["FTR-001", "ROL-001"]  # type: ignore[index]
+
+
+def test_a_repeat_of_another_kind_or_another_wording_is_kept() -> None:
+    brief = rich_brief()
+    brief.domain_facts = [
+        fact("FCT-001", "Delhi only at launch", "blueprint", kind="constraint"),
+        fact("FCT-002", "Delhi only at launch", "blueprint", kind="context"),
+        fact("FCT-003", "Delhi only at launch and Pune later", "blueprint", kind="constraint"),
+    ]
+    assert facts_in(brief, "blueprint") == ["FCT-001", "FCT-002", "FCT-003"]
+
+
+def test_repeats_are_dropped_after_the_view_filter_so_a_copy_for_another_view_still_counts() -> (
+    None
+):
+    brief = rich_brief()
+    brief.domain_facts = [
+        fact("FCT-001", "About 45 doctors", "design", kind="number"),
+        fact("FCT-002", "About 45 doctors", "blueprint", kind="number"),
+    ]
+    assert facts_in(brief, "design") == ["FCT-001"]
+    assert facts_in(brief, "blueprint") == ["FCT-002"]
+
+
+def test_linked_details_are_deduplicated_too_and_the_stored_brief_is_untouched() -> None:
+    brief = rich_brief()
+    feature = brief.scope[0].id
+    brief.domain_facts = [
+        fact("FCT-001", "Orders close at 9 pm", "blueprint", kind="rule", refs=[feature]),
+        fact("FCT-002", "Orders close at 9 pm.", "blueprint", kind="rule", refs=[feature]),
+    ]
+    before = brief.model_dump(mode="json")
+    view = view_of(brief, "blueprint")
+    details = next(f for f in view["features"] if f["id"] == feature)["details"]  # type: ignore[index, union-attr]
+    assert details == {"rule": [{"id": "FCT-001", "statement": "Orders close at 9 pm"}]}
+    assert (
+        brief.model_dump(mode="json") == before
+    )  # a view never edits the Brief (and so never moves its hash)

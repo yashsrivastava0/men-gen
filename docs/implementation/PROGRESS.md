@@ -164,3 +164,18 @@ Owner's list: a detailed, correct Brief; one batch at a time answered and submit
 - [~] P6. Changing a slot-less assumption keeps the words (ledger + recompile). Left: panel edits writing facts, recompile of only the affected sections for Q&A edits
 - [ ] P7. Live verification: NOT RUN (needs the owner's second key; USD 3.00 ceiling, about 2.4 left). Run `python -m mde_compass.live_batches --batch E|F|G` (the players answer card by card with `default_ui_mode: one_at_a_time`; a batch-form player is the first thing to add) and measure first-batch and later-turn latency, fallbacks, closing last, cap
 - Offline state at tag `compass/v2-p3`: 3031 passed, 3 skipped, 8 xfailed; integration 77; security 220; ruff, pyright, import-linter, docs-check clean
+
+## Compass size: structure draft, size bands, research guidance (owner messages 2026-11-10; branch `feat/compass-speed-v3`; ADR 0017; plan `COMPASS-SIZE-PLAN-2026-11-10.md`; decisions D-113 to D-120; safe point tag `pre/compass-size-20261110`; tags `compass/size-s<n>`; no push)
+
+Baseline before any change: offline Compass + web suite 3044 collected (3033 passed, 3 skipped, 8 xfailed), ruff clean, pyright 0 errors on own paths, lint-imports 7 kept, docs-check 0 problems; live spend USD 0.8541 (shared ledger).
+
+- [ ] S0. Docs and data, behaviour-neutral: plan, ADR 0017, D-113 to D-120, `size_bands.yaml` + loader, view-level dedupe of repeated facts
+- [ ] S1. Model: four optional sections, omit-when-empty dump, hash pins on both real exports, patch registries, ids
+- [ ] S2. Pure logic: derive, checks (structural, sufficiency, logical, realism), rule pack, slices, provenance guard
+- [ ] S3. Calls: `cmp.draft_outline`, `cmp.draft_module`, `cmp.review_structure`, `cmp.seed_research` v3, `cmp.plan_questions` v5
+- [ ] S4. Engine step and band logic (inside the seed and scan gather), switches, notices
+- [ ] S5. Gate and edits: `structure_action`, blocker `structure_unreviewed`, Approve All, undo
+- [ ] S6. Views, API, export (format 2), research guidance
+- [ ] S7. Web: tier cards with size, Structure tab, module rows, strings en and hi
+- [ ] S8. Optional prefetch (off by default)
+- [ ] S9. Scenarios, live program (plan section 8a), docs, full suite, hand-off

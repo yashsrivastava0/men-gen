@@ -1,0 +1,81 @@
+# Size bands (ADR 0017; data, not logic; hard rule 8: nothing here is specific to one company or app type).
+#
+# The interview tier (how many questions the person answers) sets the EFFORT and the target size band; it never sets
+# how detailed a record is: every band uses the same record schema. A band is GUIDANCE for the drafter and a source of
+# warnings, never a minimum: a small app in a large tier stays small and is never padded.
+#
+# bands.<id>:
+#   tier                 the interview tier that maps to it (``tier_to_band`` below is built from these)
+#   screens, modules,    [low, high] target ranges the drafter aims for; ``open_upper`` means "high or more"
+#   flows, entities
+#   group_size           modules drafted per ``cmp.draft_module`` call (0 = all of them in one call)
+#   review               how strictly the person must review the structure at Gate 1:
+#                        summary (shown, never blocks), soft (a notice), hard (every module accepted, or Approve All)
+#   critic               run the findings-only ``cmp.review_structure`` critic
+#   must_feature_screens_min   an in-scope ``must`` feature served by fewer screens than this is thin (expansion)
+#   module_screens_min         a module with fewer screens than this is thin (expansion)
+#   research             how deep the research stage goes for an app of this size (product spec 4.2 depth dial:
+#                        light up to 6 searches, standard up to 12, deep up to 20 plus one gap-fill round);
+#                        ``max_requests`` caps the research requests ``cmp.seed_research`` writes
+# over_band_factor       a draft above ``high`` x this factor recommends the next band up
+# thin_factor            a draft below ``low`` x this factor is a WARNING (never a reason to add screens)
+# documents              verified document claims that raise the band (starting values: calibrate on live batches)
+# suggest                signals that recommend a larger band than the tier gives (idea time; a notice, never a switch)
+version: 1
+
+bands:
+  small:
+    tier: quick
+    screens: [8, 15]
+    modules: [2, 4]
+    flows: [2, 6]
+    entities: [3, 8]
+    group_size: 0
+    review: summary
+    critic: false
+    must_feature_screens_min: 1
+    module_screens_min: 2
+    research: {depth: light, searches: 6, gap_fill: false, max_requests: 6}
+  medium:
+    tier: standard
+    screens: [20, 30]
+    modules: [4, 8]
+    flows: [5, 12]
+    entities: [6, 15]
+    group_size: 3
+    review: soft
+    critic: true
+    must_feature_screens_min: 2
+    module_screens_min: 2
+    research: {depth: standard, searches: 12, gap_fill: false, max_requests: 12}
+  large:
+    tier: thorough
+    screens: [40, 60]
+    open_upper: true
+    modules: [8, 14]
+    flows: [10, 25]
+    entities: [12, 30]
+    group_size: 2
+    review: hard
+    critic: true
+    must_feature_screens_min: 3
+    module_screens_min: 3
+    research: {depth: deep, searches: 20, gap_fill: true, max_requests: 20}
+
+over_band_factor: 1.25
+thin_factor: 0.8
+
+documents:
+  medium_min_claims: 25
+  large_min_claims: 60
+
+suggest:
+  - band: large
+    size_stakes: [enterprise]
+    plan_depth: [large]
+    roles_min: 6
+    apps_min: 3
+  - band: medium
+    roles_min: 3
+    apps_min: 2
+    features_min: 7

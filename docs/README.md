@@ -58,6 +58,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [0014 Call specs live in the agent package](adr/0014-call-spec-registration-from-agent-packages.md)
 - [0015 AI-planned interview, Interview Memory and the domain_facts section](adr/0015-ai-planned-interview-and-interview-memory.md)
 - [0016 Compass v2 interview mechanics: tiers with hard caps, closing question, submit-once](adr/0016-compass-v2-interview-mechanics.md)
+- [0017 The Brief carries a user-approved structure (modules, screens, flows, entities); tiers map to size bands](adr/0017-brief-structure-sections-and-size-bands.md)
 
 ## Evals
 
@@ -88,6 +89,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [implementation/HANDOFF.md](implementation/HANDOFF.md): **start here when resuming**: exact state, open decision, resume checklist, environment facts, lessons
 - [implementation/HANDOFF-compass-ai-interview.md](implementation/HANDOFF-compass-ai-interview.md): handoff for the Compass AI-planned interview task (state, live findings, open items, how to run)
 - [implementation/COMPASS-STATUS-2026-11-09.md](implementation/COMPASS-STATUS-2026-11-09.md): long record of the Compass AI-planned interview session (chronology, live results, open defects, config values)
+- [implementation/COMPASS-SIZE-PLAN-2026-11-10.md](implementation/COMPASS-SIZE-PLAN-2026-11-10.md): analysis and phased plan for the size-aware Brief (structure draft, size bands, checks, research guidance, live program)
 - [implementation/REPORT.md](implementation/REPORT.md): the final report (draft; live evidence and the last fix branch are pending)
 
 ## Where the agent tooling lives

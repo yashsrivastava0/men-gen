@@ -7,6 +7,7 @@ those fields, and a property test (``tests/views/test_consumers.py``) checks the
 
 from __future__ import annotations
 
+import re
 from collections.abc import Iterable, Mapping
 
 from pydantic import BaseModel, JsonValue
@@ -123,6 +124,39 @@ def _reaches(fact: DomainFact, view: str) -> bool:
     return view in views_of(tags)
 
 
+_NOT_WORD = re.compile(r"[^\w\s]", re.UNICODE)
+
+
+def _normalised(statement: str) -> str:
+    """A statement as words only, lower case, single spaces: "Delhi only at launch." equals "delhi only at launch"."""
+    return " ".join(_NOT_WORD.sub(" ", statement.casefold()).split())
+
+
+def _deduped(facts: Iterable[DomainFact]) -> list[DomainFact]:
+    """One fact per kind and statement. The ledger can hold the same statement several times (it is read again from
+    every batch of answers; the two live exports had up to five copies, so about half of the facts in a view were
+    repeats). The first copy stays, the refs of the others are merged into it, and nothing else changes: a view is
+    values only and is never hashed, so this changes no stored Brief."""
+    seen: dict[tuple[str, str], int] = {}
+    out: list[DomainFact] = []
+    for fact in facts:
+        statement = _normalised(fact.statement)
+        if not statement:
+            out.append(fact)
+            continue
+        key = (fact.kind or kind_for(fact.type, fact.topics), statement)
+        at = seen.get(key)
+        if at is None:
+            seen[key] = len(out)
+            out.append(fact)
+            continue
+        first = out[at]
+        refs = list(dict.fromkeys([*first.refs, *fact.refs]))
+        if refs != first.refs:
+            out[at] = first.model_copy(update={"refs": refs})
+    return out
+
+
 def _fact_row(fact: DomainFact) -> JsonDict:
     """A domain fact as values only: never the quote, the provenance or any chat text. ``kind`` and ``refs``
     appear only when the fact has them, so views of a Brief without them do not change."""
@@ -137,7 +171,8 @@ def _fact_row(fact: DomainFact) -> JsonDict:
 def _facts(brief: Brief, consumer: str) -> JsonDict:
     """The domain facts that reach the ``consumer`` view. Absent while there are none, so views of a Brief
     without facts do not change."""
-    rows: list[JsonValue] = [_fact_row(f) for f in brief.domain_facts if _reaches(f, consumer)]
+    reached = _deduped(f for f in brief.domain_facts if _reaches(f, consumer))
+    rows: list[JsonValue] = [_fact_row(f) for f in reached]
     return {"domain_facts": rows} if rows else {}
 
 
@@ -159,9 +194,7 @@ def _linked_details(brief: Brief, view: str) -> tuple[dict[str, JsonDict], JsonD
     live = {r.id for r in (*brief.apps, *brief.roles, *brief.scope)}
     linked: dict[str, list[DomainFact]] = {}
     loose: list[DomainFact] = []
-    for fact in brief.domain_facts:
-        if not _reaches(fact, view):
-            continue
+    for fact in _deduped(f for f in brief.domain_facts if _reaches(f, view)):
         hits = [r for r in dict.fromkeys(fact.refs) if r in live]
         for ref in hits:
             linked.setdefault(ref, []).append(fact)
