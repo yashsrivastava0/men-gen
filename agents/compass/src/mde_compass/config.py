@@ -127,6 +127,7 @@ class InterviewPolicy:
     questions_per_group: tuple[int, int] = (3, 4)
     fan_out: bool = True
     parallel_initial_plan: bool = False
+    deterministic_taps: bool = True
     # follow-ups
     followup_max_depth: int = (
         1  # per need: a follow-up is never followed up (a second thin answer is assumed)
@@ -279,6 +280,7 @@ PRODUCT_INTERVIEW_POLICY = InterviewPolicy(
     questions_per_group=(2, 4),
     fan_out=True,
     parallel_initial_plan=True,
+    deterministic_taps=True,
 )
 
 

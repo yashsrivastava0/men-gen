@@ -11,7 +11,7 @@ Control flow stays in code: the model never chooses what to do next, it fills sc
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Literal, Protocol
+from typing import Any, Literal, Protocol
 
 from pydantic import Field, JsonValue
 
@@ -732,6 +732,10 @@ class CompassService(Protocol):
     async def calls(
         self, caller: Caller, session_id: str, *, limit: int = 30
     ) -> list[dict[str, JsonValue]]: ...
+    async def decide_preview(self, caller: Caller, session_id: str) -> dict[str, Any]: ...
+    async def decide_preview(
+        self, caller: Caller, session_id: str
+    ) -> dict[str, Any]: ...
 
     async def reopen_slot(
         self, caller: Caller, session_id: str, slot_id: str, reason: str

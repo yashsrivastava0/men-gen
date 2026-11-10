@@ -398,3 +398,12 @@ table.calls th, table.calls td { text-align: left; padding: 4px 8px; border-bott
   .form-actions .row-actions { flex-wrap: nowrap; }
   .form-actions .btn { flex: 1 1 auto; min-width: 0; white-space: normal; padding: 8px; }
 }
+
+/* AI Auto-Answer and Approve All (Compass Speed v3) */
+.suggest-answers-btn { margin-left: auto; font-size: 12px; }
+.qitem.ai-suggested { border-left: 3px solid var(--accent); background: var(--accent-soft); }
+.assumed-ratio-badge { display: inline-block; padding: 2px 8px; border-radius: var(--radius-sm); background: var(--surface-2); margin-bottom: var(--s1); }
+.review-assumed-btn { padding: 0; font-size: 13px; text-decoration: underline; background: none; border: none; color: var(--accent); cursor: pointer; }
+.high-impact-confirm { margin-top: var(--s2); padding: var(--s2); border: 1px solid var(--warn); border-radius: var(--radius-sm); background: var(--warn-soft); display: grid; gap: var(--s1); font-size: 14px; }
+.high-impact-confirm ul { margin: 0; padding-left: 20px; }
+

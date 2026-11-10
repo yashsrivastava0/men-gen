@@ -183,7 +183,7 @@
   // ---- the answer-all form: what has been collected, and the BatchAnswer it becomes -------------------------
 
   function emptyEntry() {
-    return { action: "answer", choice: null, picks: [], fields: {}, touched: false, confirmed: false, other: "", text: "", none: false };
+    return { action: "answer", choice: null, picks: [], fields: {}, touched: false, confirmed: false, other: "", text: "", none: false, ai_suggested: false };
   }
 
   /** A form or confirm question with no fields to fill reads like an open question: the planner can produce a
@@ -269,14 +269,19 @@
 
   /** The item of a batch_answer for one question, or null while the question is blank. */
   function answerFor(card, e) {
+    var item = null;
     if (!card.must_confirm && (e.action === "skip" || e.action === "you_decide")) {
-      return { card_id: card.id, action: e.action, value: null, custom_text: null };
+      item = { card_id: card.id, action: e.action, value: null, custom_text: null };
+    } else if (isNone(card, e)) {   // none of the options; a typed text says what they want instead
+      item = { card_id: card.id, action: "none", value: null, custom_text: String(e.other || "").trim() || null };
+    } else {
+      var v = entryValue(card, e);
+      item = v ? { card_id: card.id, action: "answer", value: v.value, custom_text: v.custom } : null;
     }
-    if (isNone(card, e)) {   // none of the options; a typed text says what they want instead
-      return { card_id: card.id, action: "none", value: null, custom_text: String(e.other || "").trim() || null };
+    if (item && e.ai_suggested) {
+      item.ai_suggested = true;
     }
-    var v = entryValue(card, e);
-    return v ? { card_id: card.id, action: "answer", value: v.value, custom_text: v.custom } : null;
+    return item;
   }
 
   /** The `answers` of a batch_answer event. Blank questions are sent as skipped (never left dangling) except

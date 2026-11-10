@@ -54,6 +54,7 @@ from mde_compass.domain.changes import ChangeSource
 from mde_compass.domain.common import ProvenanceType
 from mde_compass.domain.events import (
     AnswerEdit,
+    ApproveAll,
     AssistantMessage,
     AssumptionDecision,
     BatchAnswer,
@@ -87,6 +88,7 @@ from mde_compass.domain.situation import SituationProfile
 from mde_compass.engine import assumptions as assumptions_mod
 from mde_compass.engine import cards as cards_mod
 from mde_compass.engine import document_flow as docflow
+from mde_compass.engine import facts as facts_mod
 from mde_compass.engine import gate as gate_mod
 from mde_compass.engine import patch as patch_mod
 from mde_compass.engine import probe_gaps as probe_gaps_mod
@@ -97,12 +99,20 @@ from mde_compass.engine.app_structure import expand_structure
 from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
 from mde_compass.engine.expr import holds
 from mde_compass.engine.flows.hooks import FlowHooks
-from mde_compass.engine.interview import FINISHED_BY_PERSON, AnswerItem, InterviewController
+from mde_compass.engine.interview import (
+    FINISHED_BY_PERSON,
+    AnswerItem,
+    InterviewController,
+    internal_event_id,
+)
 from mde_compass.engine.interview_state import InterviewMemory
 from mde_compass.engine.language import detect_language
 from mde_compass.engine.ports import (
     Caller,
     ChangeInput,
+    DecideItem,
+    DecideOption,
+    DecideRequest,
     HandoffPort,
     Ports,
     ProbeKind,
@@ -145,7 +155,9 @@ from mde_core.logging import get_logger
 log = get_logger(__name__)
 
 _TENANT: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_tenant", default=None)
-_TURN_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_turn_id", default=None)
+_TURN_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "compass_turn_id", default=None
+)
 
 
 @contextlib.contextmanager
@@ -535,6 +547,8 @@ class Service(FlowHooks):
             await self._on_switch(turn, event)
         elif isinstance(event, GateDecision):
             await self._on_gate(turn, event)
+        elif isinstance(event, ApproveAll):
+            await self._on_approve_all(turn, event)
         elif isinstance(event, UploadAdded):
             await self._on_upload_added(turn, event)
         elif isinstance(event, LinkAdded):
@@ -844,11 +858,7 @@ class Service(FlowHooks):
         if await self._flow_voice_remove(turn, text):
             return
         ctx = self._ctx(turn)
-        if (
-            self.interview.active
-            and not has_draft
-            and self.interview.policy.parallel_initial_plan
-        ):
+        if self.interview.active and not has_draft and self.interview.policy.parallel_initial_plan:
             # the idea turn: reading the message, reading the situation, AND initial planning
             # do not depend on each other (A1: speed)
             turn.transcript.append(TurnLine(role="user", text=text))
@@ -1738,7 +1748,14 @@ class Service(FlowHooks):
                 continue
             typed = bool(a.custom_text) and a.value in (None, "", [])
             items.append(
-                AnswerItem(card, a.action, a.value, a.custom_text, "text" if typed else "tap")
+                AnswerItem(
+                    card,
+                    a.action,
+                    a.value,
+                    a.custom_text,
+                    "text" if typed else "tap",
+                    ai_suggested=a.ai_suggested,
+                )
             )
         for qa in self.interview.pending(turn):
             if qa.batch_id == ev.batch_id and qa.card_id not in closed:
@@ -1975,6 +1992,26 @@ class Service(FlowHooks):
         if (
             self.interview.active
         ):  # the planner path: stop asking, what is open becomes visible assumptions
+            pending_qas = self.interview.pending(turn)
+            if pending_qas and self.ports is not None:
+                decide_cards = [qa.card for qa in pending_qas]
+                decisions = await self.interview.decide_for_cards(turn, decide_cards)
+                dec_by_id = {d.card_id: d for d in decisions}
+                for qa in pending_qas:
+                    card = qa.card
+                    d = dec_by_id.get(card.id)
+                    chosen = (
+                        [o for o in card.options if o.id in d.option_ids]
+                        if d and d.option_ids
+                        else None
+                    )
+                    self.interview._record_decision(
+                        turn,
+                        card,
+                        chosen=chosen,
+                        answer_text=d.answer_text if d else "",
+                        rationale=d.rationale if d else "",
+                    )
             self.interview.finish(turn, FINISHED_BY_PERSON, [])
             turn.slots_defaulted = True  # type: ignore[attr-defined]
             turn.notice("finish_defaults", self._t(turn, "notice.finish_defaults"))
@@ -2561,6 +2598,53 @@ class Service(FlowHooks):
         turn.out.append(BriefApproved(version=version, brief_hash=h, baseline=label))
         turn.say(self._t(turn, "notice.approved", version=version))
 
+    async def _on_approve_all(self, turn: _Turn, ev: ApproveAll) -> None:
+        """Approve all on the final Brief (Feature C / Section 10): bulk-accepts all proposed
+        assumptions in one change set and approves Gate 1 if no blockers remain."""
+        current_hash = brief_hash(turn.brief)
+        if (ev.version and ev.version != turn.rec.version) or (
+            ev.brief_hash and ev.brief_hash != current_hash
+        ):
+            raise Conflict(f"Brief changed (version {turn.rec.version}, hash {current_hash[:8]})")
+
+        pending_asms = [
+            a for a in turn.brief.assumptions if a.decision not in ("accepted", "rejected")
+        ]
+        if pending_asms:
+            ops = [
+                PatchOp(
+                    op="set",
+                    path=f"assumptions.{a.id}.decision",
+                    value="accepted",
+                    provenance=[self._prov(turn, "user_tap", a.claim)],
+                )
+                for a in pending_asms
+            ]
+            await self._apply_change(
+                turn,
+                ops,
+                source="approve_all",
+                what=f"Accepted {len(pending_asms)} assumptions",
+            )
+            turn.notice(
+                "assumptions_all_accepted",
+                self._t(turn, "notice.assumptions_all_accepted", count=len(pending_asms)),
+            )
+
+        blockers = self._blockers(
+            turn, supplied_version=turn.rec.version, supplied_hash=brief_hash(turn.brief)
+        )
+        if not blockers:
+            gate_ev = GateDecision(
+                event_id=internal_event_id(ev.event_id, "gate_approve"),
+                decision="approve",
+                version=turn.rec.version,
+                brief_hash=brief_hash(turn.brief),
+            )
+            await self._on_gate(turn, gate_ev)
+        else:
+            await self._open_review(turn)
+
     async def gate(
         self, caller: Caller, session_id: str, event: InboundEvent
     ) -> dict[str, JsonValue]:
@@ -2771,6 +2855,91 @@ class Service(FlowHooks):
             }
             for e in entries
         ]
+
+    async def decide_preview(self, caller: Caller, session_id: str) -> dict[str, Any]:
+        """Stateless decide preview (ADR 0016 / A5 / A9): returns AI-suggested answers
+        for the currently open batch cards without mutating the session or database."""
+        async with self.store.begin(caller.tenant_id) as uow:
+            rec = await uow.sessions.get(session_id)
+            if rec is None:
+                raise NotFound(f"session {session_id!r}")
+            qa_list = await uow.qa.list(session_id)
+            facts = await uow.facts.list(session_id)
+            brief_rec = await uow.briefs.get(session_id)
+            brief = brief_rec.brief if brief_rec else None
+
+        open_qa = [q for q in qa_list if q.status == "open"]
+        if not open_qa or self.ports is None:
+            return {"session_id": session_id, "answers": []}
+
+        cards = [q.card for q in open_qa]
+        decide_items: list[DecideItem] = []
+        for c in cards[:12]:
+            opt = c.recommended_option()
+            decide_items.append(
+                DecideItem(
+                    card_id=c.id,
+                    question=c.question,
+                    card_type=c.type,
+                    need_ids=list(c.need_ids),
+                    answer_spec=c.answer_spec,
+                    options=[
+                        DecideOption(id=o.id, label=o.label, basis=o.basis) for o in c.options
+                    ],
+                    recommended_id=opt.id if opt else "",
+                    must_confirm=c.must_confirm,
+                )
+            )
+
+        active_facts = [f for f in facts if f.status == "active"]
+        digest = facts_mod.digest(active_facts, budget_tokens=self.config.context.fact_digest // 3)
+        ctx = TurnContext(
+            tenant_id=caller.tenant_id,
+            session_id=session_id,
+            language=rec.locale or "en",
+        )
+        summary_item = brief.idea.get("summary") if brief else None
+        summary_val = (
+            summary_item.value if summary_item and isinstance(summary_item.value, str) else ""
+        )
+        req = DecideRequest(
+            language=rec.locale or "en",
+            project_card=f"App: {summary_val}" if summary_val else "",
+            fact_digest=digest,
+            hypothesis="",
+            items=decide_items,
+        )
+        try:
+            res = await self.ports.answer_decider.decide(ctx, req)
+            answers: list[dict[str, Any]] = []
+            for d in res.decisions:
+                answers.append(
+                    {
+                        "card_id": d.card_id,
+                        "option_ids": d.option_ids,
+                        "value": d.option_ids if d.option_ids else (d.answer_text or None),
+                        "custom_text": d.answer_text if not d.option_ids else None,
+                        "reasoning": d.rationale,
+                        "confidence": d.confidence,
+                    }
+                )
+            return {"session_id": session_id, "answers": answers}
+        except Exception:
+            fallback_answers: list[dict[str, Any]] = []
+            for c in cards:
+                opt = c.recommended_option() or (c.options[0] if c.options else None)
+                if opt:
+                    fallback_answers.append(
+                        {
+                            "card_id": c.id,
+                            "option_ids": [opt.id],
+                            "value": [opt.id] if c.type == "pick_many" else opt.id,
+                            "custom_text": None,
+                            "reasoning": opt.reason or "Recommended option",
+                            "confidence": 0.5,
+                        }
+                    )
+            return {"session_id": session_id, "answers": fallback_answers}
 
 
 __all__ = ["MdeError", "Service", "datetime"]

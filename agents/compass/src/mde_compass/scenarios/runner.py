@@ -129,6 +129,7 @@ def engine_config(engine: Engine, policy: dict[str, Any] | None = None) -> Any:
         "necessity_check": False,
         "fan_out": False,
         "parallel_initial_plan": False,
+        "deterministic_taps": False,
         "quick_first_batch": (3, 3),
         "standard_first_batch": (4, 4),
         "thorough_batch": (5, 5),

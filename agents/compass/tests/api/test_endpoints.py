@@ -5,6 +5,9 @@ from __future__ import annotations
 import httpx
 
 from mde_compass.api.schemas import ErrorBody, EventAck, SessionList, SessionSummary
+from mde_compass.api.settings import ApiSettings
+from mde_compass.app import create_app
+from mde_compass.compose import build_service
 from mde_compass.views.models import BriefViewModel
 
 P = "/v1/compass"
@@ -259,3 +262,105 @@ async def test_calls_budget_strings_uploads(client: httpx.AsyncClient, session_i
 async def test_unknown_route_is_error_body(client: httpx.AsyncClient) -> None:
     r = await client.get(f"{P}/nothing")
     assert r.status_code == 404 and ErrorBody.model_validate(r.json()).code == "not_found"
+
+
+async def test_decide_preview_returns_200_and_does_not_mutate(
+    client: httpx.AsyncClient, session_id: str
+) -> None:
+    sid = session_id
+    await client.post(f"{P}/sessions/{sid}/events", json=_msg("e1"))
+    view_before = (await client.get(f"{P}/sessions/{sid}/brief/view")).json()
+    history_before = (await client.get(f"{P}/sessions/{sid}/history")).json()
+
+    r = await client.post(f"{P}/sessions/{sid}/decide-preview")
+    assert r.status_code == 200
+    data = r.json()
+    assert data["session_id"] == sid
+    assert isinstance(data["answers"], list)
+    for ans in data["answers"]:
+        assert "card_id" in ans
+        assert "confidence" in ans
+
+    view_after = (await client.get(f"{P}/sessions/{sid}/brief/view")).json()
+    history_after = (await client.get(f"{P}/sessions/{sid}/history")).json()
+    assert view_after == view_before
+    assert history_after == history_before
+
+
+async def test_approve_all_bulk_accepts_and_approves_gate_1(
+    client: httpx.AsyncClient, session_id: str
+) -> None:
+    sid = session_id
+    await _walk_to_review(client, sid)
+    view = (await client.get(f"{P}/sessions/{sid}/brief/view")).json()
+    assert view["header"]["status"] != "approved"
+
+    # Stale version / brief_hash rejection with 409 Conflict
+    stale = {
+        "type": "approve_all",
+        "event_id": "aa_stale",
+        "version": 1,
+        "brief_hash": "deadbeef",
+    }
+    r = await client.post(f"{P}/sessions/{sid}/gate", json=stale)
+    assert r.status_code == 409
+
+    # Good approve_all request
+    good = {
+        "type": "approve_all",
+        "event_id": "aa_good",
+        "version": view["header"]["version"],
+        "brief_hash": view["brief_hash"],
+    }
+    r = await client.post(f"{P}/sessions/{sid}/gate", json=good)
+    assert r.status_code == 200
+    res = r.json()
+    assert res.get("baseline") == "B-G1" or res.get("decision") == "approve"
+
+    view_after = (await client.get(f"{P}/sessions/{sid}/brief/view")).json()
+    assert view_after["header"]["status"] == "approved"
+
+
+async def test_untouched_ai_suggestion_submission_records_as_default_assumption() -> None:
+    svc = build_service(memory=True)
+    app = create_app(svc, settings=ApiSettings(sse_poll_seconds=0.01))
+    transport = httpx.ASGITransport(app=app)
+    headers = {"Authorization": "Bearer dev-token", "X-Tenant-Id": "t1", "X-User-Id": "u1"}
+    async with httpx.AsyncClient(transport=transport, base_url="http://test", headers=headers) as c:
+        r = await c.post(f"{P}/sessions", json={"mode": "guided", "locale": "en"})
+        assert r.status_code == 201
+        sid = r.json()["id"]
+        r = await c.post(f"{P}/sessions/{sid}/events", json=_msg("e1"))
+        assert r.status_code == 200
+        batch_ev = next((e for e in r.json()["events"] if e["type"] == "question_batch"), None)
+        assert batch_ev is not None
+        batch_id = batch_ev["payload"]["batch_id"]
+        cards = [c for g in batch_ev["payload"]["groups"] for c in g["cards"]]
+        first_card = cards[0]
+        val = first_card["options"][0]["id"] if first_card["options"] else "testing value"
+
+        # Submit batch answer with ai_suggested = True
+        ans = {
+            "type": "batch_answer",
+            "event_id": "ba_sugg",
+            "batch_id": batch_id,
+            "answers": [
+                {
+                    "card_id": first_card["id"],
+                    "action": "answer",
+                    "value": val,
+                    "ai_suggested": True,
+                }
+            ],
+        }
+        r = await c.post(f"{P}/sessions/{sid}/events", json=ans)
+        assert r.status_code == 200
+
+        brief = (await c.get(f"{P}/sessions/{sid}/brief")).json()
+        assumptions = brief.get("assumptions", [])
+        matching = [
+            a
+            for a in assumptions
+            if a.get("card_id") == first_card["id"] or first_card["id"] in str(a)
+        ]
+        assert matching, "untouched AI suggestion should be recorded as assumption"

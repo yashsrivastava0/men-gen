@@ -237,9 +237,7 @@ async def _plan_fan_out(
     async def _sub_pipeline(
         sub_req: PlanRequest,
     ) -> tuple[PlannedBatch, list[Card], list[RejectedQuestion], bool]:
-        res = PipelineResult(
-            batch=PlannedBatch(batch_id="BAT-000", mode=stored_mode(sub_req.mode))
-        )
+        res = PipelineResult(batch=PlannedBatch(batch_id="BAT-000", mode=stored_mode(sub_req.mode)))
         plan_res = await planner.plan(ctx, sub_req)
         if plan_res.used_fallback:
             return plan_res.batch, plan_res.batch.cards(), [], True
@@ -331,9 +329,7 @@ async def _plan_fan_out(
             )
 
     groups = _regroup(
-        batches[0]
-        if batches
-        else PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode)),
+        batches[0] if batches else PlannedBatch(batch_id="BAT-000", mode=stored_mode(request.mode)),
         valid_cards,
     )
     assumed_instead: list[Any] = []

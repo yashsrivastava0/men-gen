@@ -48,7 +48,7 @@
   "inbound_events": [
     "user_message", "card_answer", "card_skip", "card_you_decide", "card_back", "upload_added", "link_added",
     "command", "brief_edit", "brief_feedback", "assumption_decision", "lookup_edit", "contributor_switch",
-    "gate_decision", "batch_answer", "answer_edit"
+    "gate_decision", "batch_answer", "answer_edit", "approve_all"
   ],
   "outbound_events": [
     "assistant_message", "assistant_delta", "card", "question_batch", "playback", "notice", "progress", "brief_patch",
@@ -225,6 +225,13 @@ CONTRACT*/
     "ui.v2.upload_failed": "That file could not be read. You can describe it in your own words or add a link.",
     "ui.v2.upload_reading": "Reading your document: {name}…",
     "ui.v2.upload_instead": "Upload a file instead",
+    "ui.v2.suggest_answers": "Suggest answers with AI",
+    "ui.v2.suggesting": "Suggesting answers…",
+    "ui.v2.approve_all": "Approve all and continue",
+    "ui.v2.review_assumed": "Review what we assumed ({count})",
+    "ui.v2.assumed_ratio": "{n} of {total} details assumed by AI",
+    "ui.v2.high_impact_confirm": "{count} high-impact assumption(s) need your confirmation before continuing:",
+    "ui.v2.high_impact_approve": "Confirm and approve all",
 
     // keys below are UI-only (not in the catalog); English only
     "x.tagline": "Tell me about your app idea. I will ask a few simple questions and write a plan.",
@@ -853,7 +860,7 @@ CONTRACT*/
   function formItem(card, entry, onChange, label, closing) {
     formSeq += 1;
     var qid = "fq-" + formSeq;
-    var item = h("div", { class: "qitem" + (closing ? " qitem-closing" : ""), role: "group", "aria-labelledby": qid, data: { card: card.id } });
+    var item = h("div", { class: "qitem" + (closing ? " qitem-closing" : "") + (entry && entry.ai_suggested ? " ai-suggested" : ""), role: "group", "aria-labelledby": qid, data: { card: card.id } });
     var head = h("div", { class: "qitem-head" });
     if (label) { head.appendChild(h("span", { class: "qnum", text: label })); }
     head.appendChild(h("span", { class: "q", id: qid, text: card.question }));
@@ -861,7 +868,12 @@ CONTRACT*/
     item.appendChild(head);
     var why = whyEl(card);
     if (why) { item.appendChild(why); }
-    var controls = formControls(card, entry, qid, onChange);
+    function handleChange() {
+      if (entry) { entry.ai_suggested = false; }
+      item.classList.remove("ai-suggested");
+      onChange();
+    }
+    var controls = formControls(card, entry, qid, handleChange);
     item.appendChild(controls);
     var err = h("div", { class: "approval-error", role: "alert" });
     var youBtn = null;
@@ -869,6 +881,8 @@ CONTRACT*/
     /** "You decide" is the one switch of a question: its inputs are disabled and it is sent as you_decide. */
     function setAction(action) {
       entry.action = action;
+      if (entry) { entry.ai_suggested = false; }
+      item.classList.remove("ai-suggested");
       item.classList.toggle("is-off", action !== "answer");
       Array.prototype.forEach.call(controls.querySelectorAll("input, textarea, button"), function (c) { c.disabled = action !== "answer"; });
       if (youBtn) { youBtn.setAttribute("aria-pressed", action === "you_decide" ? "true" : "false"); }
@@ -911,6 +925,57 @@ CONTRACT*/
     f.ui.summary.textContent = blankSummaryText(f);
   }
 
+  function triggerSuggestAnswers(f, btn) {
+    if (f.sending || !btn) { return; }
+    btn.disabled = true;
+    btn.textContent = t("ui.v2.suggesting");
+    api("POST", "/sessions/" + encodeURIComponent(f.sid) + "/decide-preview").then(function (res) {
+      btn.disabled = false;
+      btn.textContent = t("ui.v2.suggest_answers");
+      var answers = (res && res.answers) || [];
+      var byId = {};
+      answers.forEach(function (a) { byId[a.card_id] = a; });
+      f.cards.forEach(function (c) {
+        var ans = byId[c.id];
+        if (!ans) { return; }
+        var e = f.draft[c.id];
+        if (!e) { e = I.emptyEntry(); f.draft[c.id] = e; }
+        var type = I.effectiveType(c);
+        if (type === "choose_one" || type === "look_signals") {
+          if (ans.value) { e.choice = ans.value; e.other = ""; }
+          else if (ans.custom_text) { e.choice = "__other__"; e.other = ans.custom_text; }
+        } else if (type === "pick_many" || type === "priority") {
+          if (Array.isArray(ans.value)) { e.picks = ans.value.slice(); }
+          if (ans.custom_text) { e.other = ans.custom_text; }
+        } else if (type === "confirm" || type === "quick_form") {
+          if (ans.value && typeof ans.value === "object" && !Array.isArray(ans.value)) {
+            e.fields = Object.assign({}, ans.value);
+          }
+          if (type === "confirm") { e.confirmed = true; }
+        } else {
+          e.text = ans.custom_text || (typeof ans.value === "string" ? ans.value : "");
+        }
+        e.action = "answer";
+        e.ai_suggested = true;
+      });
+      var newEl = buildForm(f, "");
+      if (f.el && f.el.parentNode) {
+        f.el.parentNode.replaceChild(newEl, f.el);
+      }
+      f.el = newEl;
+      if (state.activeCard && state.activeCard.form === f) {
+        state.activeCard.el = newEl;
+      }
+    }).catch(function (err) {
+      btn.disabled = false;
+      btn.textContent = t("ui.v2.suggest_answers");
+      if (f.ui && f.ui.errText) {
+        f.ui.errText.textContent = sendFailureText(err);
+        f.ui.error.hidden = false;
+      }
+    });
+  }
+
   /** Build the form for the questions that still wait in a batch. `draft` already holds what was typed before (a form
       that is drawn again keeps it). */
   function buildForm(f, note) {
@@ -918,7 +983,9 @@ CONTRACT*/
       data: { batch: f.batchId } });
     var title = h("span", { class: "group-chip", tabindex: "-1", text: f.closing ? t("ui.v2.last_question") : t("ui.v2.form_title") });
     var count = h("span", { class: "hint form-count", role: "status", "aria-live": "polite" });
-    el.appendChild(h("div", { class: "qcard-head" }, title, count));
+    var suggestBtn = h("button", { class: "btn btn-outline btn-sm suggest-answers-btn", type: "button", text: t("ui.v2.suggest_answers"),
+      on: { click: function () { triggerSuggestAnswers(f, suggestBtn); } } });
+    el.appendChild(h("div", { class: "qcard-head" }, title, count, suggestBtn));
     if (f.closing) { el.appendChild(h("p", { class: "closing-note", text: t("ui.v2.last_question_note") })); }
     if (note) { el.appendChild(h("p", { class: "hint form-updated", role: "status", text: note })); }
     var index = 0;
@@ -1772,6 +1839,43 @@ CONTRACT*/
     var box = h("div", { class: "approval", role: "region", "aria-label": f.primary_label });
     var err = h("div", { class: "approval-error", role: "alert" });
     var ok = f.approvable && vm.header.status !== "approved";
+
+    var totalRows = 0;
+    var assumedRows = 0;
+    var highImpact = [];
+    (vm.sections || []).forEach(function (s) {
+      totalRows += (s.rows || []).length;
+      if (s.id === "assumed") {
+        assumedRows += (s.rows || []).length;
+        (s.rows || []).forEach(function (r) {
+          if (r.needs_review) { highImpact.push(r); }
+        });
+      } else {
+        (s.rows || []).forEach(function (r) {
+          if (r.tier === "Default" || (r.badges && r.badges.some(function (b) { return b.kind === "assumed"; }))) {
+            assumedRows += 1;
+            if (r.needs_review) { highImpact.push(r); }
+          }
+        });
+      }
+    });
+
+    function executeApproveAll() {
+      err.textContent = "";
+      api("POST", "/sessions/" + state.sessionId + "/gate", {
+        type: "approve_all", event_id: randomId(), version: vm.header.version,
+        brief_hash: vm.brief_hash
+      }).then(function () {
+        toast(t("x.approved_toast"));
+        return loadView();
+      }).then(function () {
+        return refreshSession();
+      }).catch(function (e) {
+        err.textContent = friendly(e);
+        loadView();
+      });
+    }
+
     var primary = h("button", { class: "btn btn-primary", type: "button", text: f.primary_label, "aria-disabled": ok ? "false" : "true", on: { click: function () {
       if (!ok) { return; }
       err.textContent = "";
@@ -1784,7 +1888,53 @@ CONTRACT*/
     var secondary = h("button", { class: "btn", type: "button", text: f.secondary_label, on: { click: function () {
       openPanel("brief", vm.header.title, null, null);
     } } });
-    box.appendChild(h("div", { class: "row-actions" }, primary, secondary));
+
+    var approveAllBtn = null;
+    var confirmSheet = null;
+    if (vm.header.status !== "approved" && assumedRows > 0) {
+      approveAllBtn = h("button", { class: "btn btn-primary approve-all-btn", type: "button", text: t("ui.v2.approve_all"), on: { click: function () {
+        if (highImpact.length > 0) {
+          if (confirmSheet && confirmSheet.parentNode) { return; }
+          confirmSheet = h("div", { class: "high-impact-confirm", role: "alertdialog" },
+            h("p", { class: "font-semibold", text: t("ui.v2.high_impact_confirm", { count: highImpact.length }) }),
+            h("ul", {}, highImpact.map(function (item) { return h("li", { text: item.label + (item.description ? ": " + item.description : "") }); })),
+            h("div", { class: "row-actions" },
+              h("button", { class: "btn btn-primary", type: "button", text: t("ui.v2.high_impact_approve"), on: { click: function () {
+                confirmSheet.remove();
+                executeApproveAll();
+              } } }),
+              h("button", { class: "btn", type: "button", text: t("ui.v2.cancel"), on: { click: function () {
+                confirmSheet.remove();
+              } } })
+            )
+          );
+          box.appendChild(confirmSheet);
+        } else {
+          executeApproveAll();
+        }
+      } } });
+    }
+
+    var reviewAssumedLink = null;
+    if (assumedRows > 0) {
+      reviewAssumedLink = h("button", { class: "btn btn-link review-assumed-btn", type: "button", text: t("ui.v2.review_assumed", { count: assumedRows }), on: { click: function () {
+        var secEl = document.querySelector('.bsec[data-section="assumed"]');
+        if (secEl) { secEl.scrollIntoView({ behavior: "smooth", block: "start" }); }
+        else { openPanel("brief", vm.header.title, null, null); }
+      } } });
+    }
+
+    var ratioBadge = null;
+    if (assumedRows > 0) {
+      ratioBadge = h("div", { class: "assumed-ratio-badge small muted", text: t("ui.v2.assumed_ratio", { n: assumedRows, total: totalRows || assumedRows }) });
+    }
+
+    if (ratioBadge) { box.appendChild(ratioBadge); }
+    var actionsRow = h("div", { class: "row-actions" }, approveAllBtn || primary, secondary);
+    if (approveAllBtn && ok) { actionsRow.appendChild(primary); }
+    if (reviewAssumedLink) { actionsRow.appendChild(reviewAssumedLink); }
+    box.appendChild(actionsRow);
+
     if (state.ui.panel && state.ui.panel.target === "brief") { box.appendChild(panelEl()); }
     if (f.blockers && f.blockers.length && !ok) {
       box.appendChild(h("ul", { class: "blockers" }, f.blockers.map(function (b) { return h("li", { text: b }); })));

@@ -113,3 +113,29 @@ async def test_deciding_everything_from_the_first_batch_still_gives_a_reviewable
     assert (
         ready and ready[-1].payload["version"] >= 1
     )  # the person reviews and approves each assumption
+
+
+async def test_untouched_ai_suggestion_submits_as_default_assumption() -> None:
+    svc, conv = await started()
+    batch_id, cards = form(conv)
+    first_card = cards[0]
+    opt_val = first_card.options[0].id if first_card.options else "tapped option"
+
+    # Submit with ai_suggested = True (untouched AI suggestion)
+    item = BatchAnswerItem(
+        card_id=first_card.id,
+        action="answer",
+        value=opt_val,
+        ai_suggested=True,
+    )
+    items = [item] + [answer(c) for c in cards[1:]]
+    await conv.send(BatchAnswer(event_id=conv._id(), batch_id=batch_id, answers=items))
+
+    brief, _qa, facts = await stored(svc, conv)
+    decided_facts = [f for f in facts if f.origin == "assumption" and f.qa_card_id == first_card.id]
+    assert decided_facts, "Untouched AI suggestion must be recorded with origin='assumption'"
+    assert not decided_facts[0].supports_locked(), "Assumption is Default tier, never Locked"
+    assert any(
+        first_card.id in str(a) or (first_card.options and first_card.options[0].label in a.claim)
+        for a in brief.assumptions
+    ), "Visible in brief.assumptions for user review"

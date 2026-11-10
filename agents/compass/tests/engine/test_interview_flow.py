@@ -647,4 +647,3 @@ async def test_option_tap_bypasses_understand_turn() -> None:
     tap_facts = [f for f in facts if f.origin == "tap"]
     assert len(tap_facts) >= 1
     assert any(f.qa_card_id == card.id for f in tap_facts)
-

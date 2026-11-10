@@ -27,7 +27,7 @@ from mde_compass.api.sse import (
 )
 from mde_compass.catalog.loader import SUPPORTED_LANGS, load_catalog
 from mde_compass.config import DEFAULT_CONFIG
-from mde_compass.domain.events import GateDecision, InboundEvent
+from mde_compass.domain.events import ApproveAll, GateDecision, InboundEvent
 from mde_compass.domain.session import SessionRecord
 from mde_compass.engine.ports import Caller, CompassService
 
@@ -280,7 +280,7 @@ async def provenance(
 
 @router.post("/sessions/{session_id}/gate")
 async def gate(
-    session_id: str, decision: GateDecision, caller: CallerDep, service: ServiceDep
+    session_id: str, decision: GateDecision | ApproveAll, caller: CallerDep, service: ServiceDep
 ) -> JSONResponse:
     return _json(await service.gate(caller, session_id, decision))
 
@@ -298,6 +298,12 @@ async def calls(
     limit: Annotated[int, Query(ge=1, le=200)] = 30,
 ) -> JSONResponse:
     return _json({"calls": await service.calls(caller, session_id, limit=limit)})
+
+
+@router.post("/sessions/{session_id}/decide-preview")
+async def decide_preview(session_id: str, caller: CallerDep, service: ServiceDep) -> JSONResponse:
+    """Stateless AI preview for the open batch form (ADR 0016 / A5 / A9)."""
+    return _json(await service.decide_preview(caller, session_id))
 
 
 # --- dev + chrome -------------------------------------------------------------------------------------

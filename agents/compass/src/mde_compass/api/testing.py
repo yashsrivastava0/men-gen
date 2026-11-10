@@ -25,6 +25,7 @@ from mde_compass.catalog.loader import load_catalog
 from mde_compass.domain.cards import Card, CardOption, CardProgress, CustomInput, YouDecide
 from mde_compass.domain.changes import PatchOp
 from mde_compass.domain.events import (
+    ApproveAll,
     AssistantMessage,
     AssumptionDecision,
     BriefApproved,
@@ -720,6 +721,8 @@ class ScriptedService:
         turn = event.event_id
         if isinstance(event, GateDecision):
             await self._gate(s, event, turn)
+        elif isinstance(event, ApproveAll):
+            await self._approve_all(s, event, turn)
         elif isinstance(event, UserMessage):
             if s.card_i == 0:
                 self._emit(
@@ -832,11 +835,53 @@ class ScriptedService:
             "blockers": [],
         }
 
+    async def _approve_all(
+        self, s: _Session, event: ApproveAll, turn: str | None
+    ) -> dict[str, JsonValue]:
+        cat = load_catalog()
+        lang = s.rec.locale
+        if (event.version and event.version != s.version) or (
+            event.brief_hash and event.brief_hash != self._hash(s)
+        ):
+            raise HashMismatch(cat.t("blocker.hash_mismatch", lang))
+        s.high_pending = False
+        for rows in s.rows.values():
+            for r in rows:
+                if str(r.get("id", "")).startswith("assumptions."):
+                    r["badge"] = "you_said"
+                    r.pop("review", None)
+                    s.changed.add(r["id"])
+        self._emit(
+            s,
+            Notice(
+                code="assumptions_all_accepted",
+                text=cat.t("notice.assumptions_all_accepted", lang, count=1),
+            ),
+            turn,
+        )
+        blockers = self._blockers(s)
+        if blockers:
+            raise Conflict(blockers[0])
+        s.approved_hash = self._hash(s)
+        s.rec.state = "APPROVED"
+        s.rec.approved_version = s.version
+        s.rec.approved_hash = s.approved_hash
+        s.changed.clear()
+        self._emit(s, BriefApproved(version=s.version, brief_hash=s.approved_hash), turn)
+        return {
+            "accepted": True,
+            "state": "APPROVED",
+            "version": s.version,
+            "brief_hash": s.approved_hash,
+            "baseline": "B-G1",
+            "blockers": [],
+        }
+
     async def gate(
         self, caller: Caller, session_id: str, event: InboundEvent
     ) -> dict[str, JsonValue]:
         s = self._get(caller, session_id)
-        if not isinstance(event, GateDecision):
+        if not isinstance(event, (GateDecision, ApproveAll)):
             raise Conflict("Not a gate decision.")
         if event.event_id in s.seen:
             return {
@@ -849,7 +894,29 @@ class ScriptedService:
             }
         s.seen.add(event.event_id)
         self._record_in(s, event)
+        if isinstance(event, ApproveAll):
+            return await self._approve_all(s, event, event.event_id)
         return await self._gate(s, event, event.event_id)
+
+    async def decide_preview(self, caller: Caller, session_id: str) -> dict[str, Any]:
+        self._get(caller, session_id)
+        return {
+            "session_id": session_id,
+            "answers": [
+                {
+                    "card_id": c.id,
+                    "option_ids": [c.options[0].id] if c.options else [],
+                    "value": [c.options[0].id]
+                    if c.type == "pick_many"
+                    else (c.options[0].id if c.options else "Preview answer"),
+                    "custom_text": None if c.options else "Preview answer",
+                    "reasoning": "AI suggested answer",
+                    "confidence": 0.9,
+                }
+                for c in self.cards
+                if getattr(c, "id", None)
+            ],
+        }
 
     async def list_outbound(
         self, caller: Caller, session_id: str, *, after_seq: int = 0, limit: int = 200

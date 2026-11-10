@@ -11,6 +11,7 @@ COMPASS_INTERVIEW_ENGINE=planner uv run python -m mde_compass --memory --port 81
 just compass-test                                       # offline unit tests, no database
 just compass-test-int                                   # store tests against the private PostgreSQL
 cd agents/compass && PYTHONPATH=src python -m evals.run_personas --no-write   # ten persona scripts, offline, prints the metrics
+uv run python agents/compass/scripts/compass_latency_report.py   # per-turn and per-call latency breakdown table
 ```
 
 Open <http://127.0.0.1:8110/ui/>. The page is the global test console in `apps/web/console/` ([apps/web README](../../apps/web/README.md)); the server serves it from `MDE_WEB_DIR` (default `apps/web/console`; a relative path is resolved against the repository root) and refuses to start if that directory or its `index.html` is missing. Dev auth defaults are in the Settings dialog of the Compass screen (`dev-token`, tenant `demo`, user `demo-user`). UI smoke tests: `uv run pytest apps/web/tests -q`. The screens for the AI-planned interview (groups, answer-all, "Ask me more", the Questions-and-answers list, a mock banner) are being built separately; until they are merged the console shows the planner's questions as plain cards, and the API ([api/compass.md](../api/compass.md)) is the reference.
@@ -90,7 +91,7 @@ Q-007  [mock] How it earns money, for your pune project?        (choose one: [mo
 
 Each mock question is the label of a need in the Needs Registry plus a `[mock]` tag and one word taken from your own message (here "daily", "lunch", "pune"): that proves the project terms reach the planner, nothing more. The choices come from the registry's canned cards where it has three, and the auditor's hints are labelled `[mock]` too. A re-worded question starts with `[mock] rephrased: ` or `[mock] simpler: `. Real question quality can only be judged in the live batches. The spend meter shows `mode: mock` and 0.0000.
 
-Things to try: answer a card with the recommended option; answer a free-text card with a short vague reply (a mock "vague" answer to a high-impact need earns one follow-up); type "I don't understand" on a pending question; send the command `ask_more` or `budget_thorough` (see [api/compass.md](../api/compass.md#planned-batches)); read `GET .../qa` and `GET .../brief` (`meta.interview`, `domain_facts`).
+Things to try: answer a card with the recommended option; answer a free-text card with a short vague reply (a mock "vague" answer to a high-impact need earns one follow-up); type "I don't understand" on a pending question; send the command `ask_more` or `budget_thorough` (see [api/compass.md](../api/compass.md#planned-batches)); preview AI suggestions with "Suggest answers with AI" (`/decide-preview`); approve all assumptions at Gate 1 via "Approve All"; read `GET .../qa` and `GET .../brief` (`meta.interview`, `domain_facts`). Option taps in product mode bypass the understander model for 0 ms deterministic slot updates.
 
 ## 4. Run the tests
 

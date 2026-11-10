@@ -70,6 +70,10 @@ from mde_compass.engine.interview_support import (
 from mde_compass.engine.ports import (
     AnswerFocus,
     ClosingContext,
+    DecideItem,
+    DecideOption,
+    DecideRequest,
+    Decision,
     ExtractedFact,
     PlanContext,
     PlanRequest,
@@ -99,6 +103,7 @@ class AnswerItem:
     value: JsonValue = None
     custom_text: str | None = None
     input_mode: Literal["tap", "text", "voice"] = "tap"
+    ai_suggested: bool = False
 
 
 def _untag(text: str) -> str:
@@ -530,9 +535,7 @@ class InterviewController:
             dropped_ids = {q.card_id for q in turn.memory.qa if q.status == "dropped"}
             if dropped_ids:
                 groups = [
-                    g.model_copy(
-                        update={"cards": [c for c in g.cards if c.id not in dropped_ids]}
-                    )
+                    g.model_copy(update={"cards": [c for c in g.cards if c.id not in dropped_ids]})
                     for g in batch.groups
                 ]
                 groups = [g for g in groups if g.cards]
@@ -739,7 +742,9 @@ class InterviewController:
                     updated_c = c.model_copy(update={"batch_id": target_batch_id})
                     qa = mem.qa_for(c.id)
                     if qa is not None:
-                        mem.put_qa(qa.model_copy(update={"batch_id": target_batch_id, "card": updated_c}))
+                        mem.put_qa(
+                            qa.model_copy(update={"batch_id": target_batch_id, "card": updated_c})
+                        )
                     g_cards.append(updated_c)
                 merged_groups.append(BatchGroup(id=g.id, title=g.title, cards=g_cards))
             merged_groups.extend(result.batch.groups)
@@ -925,13 +930,17 @@ class InterviewController:
             kind = slot.value_schema.kind
             val: JsonValue = None
             if kind in ("enum", "enum_list"):
-                registry = {_untag(o.label.get(lang)).casefold(): o for o in slot.fallback_card.options}
+                registry = {
+                    _untag(o.label.get(lang)).casefold(): o for o in slot.fallback_card.options
+                }
                 matched = [registry.get(_untag(label).casefold()) for label in labels]
                 vals = [m.value for m in matched if m is not None and m.value is not None]
                 if not vals:
                     allowed = set(slot.value_schema.options or [])
                     vals = [c.id for c in chosen if c.id in allowed] or [
-                        _untag(c.label).casefold() for c in chosen if _untag(c.label).casefold() in allowed
+                        _untag(c.label).casefold()
+                        for c in chosen
+                        if _untag(c.label).casefold() in allowed
                     ]
                 if vals:
                     val = cast(JsonValue, vals if kind == "enum_list" else vals[0])
@@ -947,7 +956,9 @@ class InterviewController:
             elif kind == "object_list":
                 val = cast(
                     JsonValue,
-                    [{"name": _untag(o.label)} for o in chosen] if chosen else [{"name": lbl} for lbl in labels],
+                    [{"name": _untag(o.label)} for o in chosen]
+                    if chosen
+                    else [{"name": lbl} for lbl in labels],
                 )
 
             if val is not None:
@@ -961,13 +972,10 @@ class InterviewController:
                     )
                 )
 
-        aspects: list[str] = []
-        for need in card.need_ids:
-            aspects.append(f"{need}:*")
-            aspects.append(f"need:{need}")
-        for s in card.slots:
-            if f"{s}:*" not in aspects:
-                aspects.append(f"{s}:*")
+        if card.slots and not slot_updates:
+            return None
+
+        aspects: list[str] = [f"{upd.slot_id}:*" for upd in slot_updates]
 
         effects = [
             FactEffect(
@@ -978,7 +986,9 @@ class InterviewController:
             for upd in slot_updates
         ]
 
-        topics = [self.catalog.slots[s].group for s in card.slots if s in self.catalog.slots] or ["domain"]
+        topics = [self.catalog.slots[s].group for s in card.slots if s in self.catalog.slots] or [
+            "domain"
+        ]
         statement = f"{card.question}: {quote}" if card.question else quote
 
         facts = [
@@ -1005,7 +1015,11 @@ class InterviewController:
         self, turn: _Turn, item: AnswerItem, statuses: dict[str, NeedStatus]
     ) -> TurnUnderstanding:
         assert self.svc.ports is not None
-        direct = self._writes_understanding(item) or self._registry_match(item) or self._tap_understanding(item)
+        direct = (
+            self._writes_understanding(item)
+            or self._registry_match(item)
+            or (self._tap_understanding(item) if self.policy.deterministic_taps else None)
+        )
         if direct is not None:
             return direct
         labels, text = self._labels_and_text(item)
@@ -1151,6 +1165,14 @@ class InterviewController:
         flags: dict[str, list[str]] = {}
         chips: list[str] = []
         now = self._now()
+        # Batch any you_decide items in ONE decide_answers call (Item A9)
+        you_decide_items = [it for it in items if it.action == "you_decide"]
+        decisions_by_card: dict[str, Decision] = {}
+        if you_decide_items and self.svc.ports is not None:
+            cards_to_decide = [it.card for it in you_decide_items]
+            decs = await self.decide_for_cards(turn, cards_to_decide)
+            decisions_by_card = {d.card_id: d for d in decs}
+
         for item, understood in zip(items, readings, strict=True):
             card = item.card
             qa = mem.qa_for(card.id) or QaRecord(card_id=card.id, card=card, status="open")
@@ -1179,7 +1201,22 @@ class InterviewController:
                 (card.id, outcome, {"value": item.value, "custom": item.custom_text})
             )  # type: ignore[arg-type]
             if item.action == "you_decide":
-                self._assume_for(turn, card)
+                await self._assume_for(turn, card, decisions_by_card.get(card.id))
+            elif item.ai_suggested:
+                # Untouched AI suggestion: record as Assumption (Default tier), NOT confirmed user fact (ADR 0005/0015/A5)
+                by_id = {o.id: o for o in card.options}
+                ids = item.value if isinstance(item.value, list) else [item.value]
+                chosen = [by_id[str(i)] for i in ids if str(i) in by_id]
+                self._record_decision(
+                    turn,
+                    card,
+                    chosen=chosen,
+                    answer_text=item.custom_text
+                    or (str(item.value) if not chosen and item.value else ""),
+                )
+                for need in card.need_ids:
+                    self.svc._assume_need(turn, need)
+                continue
             if card.origin == "closing":
                 self._apply_closing_answer(turn, item)
             elif item.action == "none":
@@ -1250,7 +1287,9 @@ class InterviewController:
                             decision.action == "follow_up"
                             and (asked_followup + len(followup_candidates)) >= room.followup_room
                         ):
-                            decision = interview_policy.FollowupDecision("assume", "no follow-up room left")
+                            decision = interview_policy.FollowupDecision(
+                                "assume", "no follow-up room left"
+                            )
                         if decision.action == "follow_up" and asked_followup < 2:
                             if need not in followup_candidates:
                                 followup_candidates.append(need)
@@ -1259,10 +1298,56 @@ class InterviewController:
                             self.svc._assume_need(turn, need)
                 turn.followup_candidates = followup_candidates
                 block = self.block(turn)
-                turn.brief.meta.interview = block.model_copy(update={"followup_candidates": followup_candidates})
+                turn.brief.meta.interview = block.model_copy(
+                    update={"followup_candidates": followup_candidates}
+                )
         self.touch(turn)
 
-    def _assume_for(self, turn: _Turn, card: Card) -> None:
+    async def decide_for_cards(self, turn: _Turn, cards: Sequence[Card]) -> list[Decision]:
+        """Call AnswerDecider to decide answers for one or more cards in a single model call."""
+        if not cards or self.svc.ports is None:
+            return []
+        decide_items: list[DecideItem] = []
+        for c in cards[:12]:
+            opt = c.recommended_option()
+            decide_items.append(
+                DecideItem(
+                    card_id=c.id,
+                    question=c.question,
+                    card_type=c.type,
+                    need_ids=list(c.need_ids),
+                    answer_spec=c.answer_spec,
+                    options=[
+                        DecideOption(id=o.id, label=o.label, basis=o.basis) for o in c.options
+                    ],
+                    recommended_id=opt.id if opt else "",
+                    must_confirm=c.must_confirm,
+                )
+            )
+        batches = turn.memory.batches
+        hypothesis = ""
+        for b in reversed(batches):
+            dh = b.output.get("domain_hypothesis")
+            if isinstance(dh, dict):
+                cat = dh.get("category")
+                if isinstance(cat, str):
+                    hypothesis = cat
+                    break
+        plan_ctx = self._context(turn, self.statuses(turn))
+        req = DecideRequest(
+            language=turn.lang,
+            project_card=plan_ctx.project_card,
+            fact_digest=plan_ctx.fact_digest,
+            hypothesis=hypothesis,
+            items=decide_items,
+        )
+        try:
+            res = await self.svc.ports.answer_decider.decide(self.svc._ctx(turn), req)
+            return res.decisions
+        except Exception:
+            return []
+
+    async def _assume_for(self, turn: _Turn, card: Card, decision: Decision | None = None) -> None:
         """ "You decide" for one question (ADR 0016). An option card takes the planner's recommended option (or the one
         ``assumes`` names): the slot gets that value as an ASSUMPTION when the label is the catalog's, the ledger gets
         an assumption fact and "We assumed" a row the person can change. Anything the options do not settle falls
@@ -1279,6 +1364,34 @@ class InterviewController:
             picked = ", ".join(text_of(w.value) for w in writes)
             turn.notice("assumed", self.svc._t(turn, "card.assumed_collapsed", value=picked))
             return
+
+        if decision is not None:
+            chosen = (
+                [o for o in card.options if o.id in decision.option_ids]
+                if decision.option_ids
+                else None
+            )
+            self._record_decision(
+                turn,
+                card,
+                chosen=chosen,
+                answer_text=decision.answer_text if not chosen else "",
+                rationale=decision.rationale,
+            )
+            for need in card.need_ids:
+                self.svc._assume_need(turn, need)
+            return
+
+        # If question has no options, try AnswerDecider before catalog default
+        if self.svc.ports is not None and not card.options:
+            decs = await self.decide_for_cards(turn, [card])
+            if decs:
+                d = decs[0]
+                self._record_decision(turn, card, answer_text=d.answer_text, rationale=d.rationale)
+                for need in card.need_ids:
+                    self.svc._assume_need(turn, need)
+                return
+
         chosen = self._decided_options(card)
         if chosen:
             self._record_decision(turn, card, chosen)
@@ -1302,24 +1415,53 @@ class InterviewController:
                 return pick
         return []
 
-    def _record_decision(self, turn: _Turn, card: Card, chosen: Sequence[Any]) -> None:
-        labels = [_untag(o.label) for o in chosen]
+    def _record_decision(
+        self,
+        turn: _Turn,
+        card: Card,
+        chosen: Sequence[Any] | None = None,
+        *,
+        answer_text: str = "",
+        rationale: str = "",
+    ) -> None:
+        labels = (
+            [_untag(o.label) for o in chosen]
+            if chosen
+            else ([answer_text.strip()] if answer_text.strip() else [])
+        )
         now = self._now()
         # the slot, when the chosen label is the catalog's own option (an enumerated need)
-        match = self._registry_match(AnswerItem(card, "answer", [o.id for o in chosen]))
-        for upd in match.slot_updates if match is not None else []:
-            if not turn.slots.filled(upd.slot_id):
-                turn.slots.write(
-                    upd.slot_id,
-                    upd.value,
-                    state="assumed",
-                    provenance=Provenance(
-                        type="model_knowledge", ref=f"you_decide:{card.id}", date=now
-                    ),
-                    confidence=0.5,
-                    turn_id=turn.turn_id,
-                )
-        statement = f"{(card.intent or card.question).strip().rstrip('?')}: {', '.join(labels)}"
+        if chosen:
+            match = self._registry_match(AnswerItem(card, "answer", [o.id for o in chosen]))
+            for upd in match.slot_updates if match is not None else []:
+                if not turn.slots.filled(upd.slot_id):
+                    turn.slots.write(
+                        upd.slot_id,
+                        upd.value,
+                        state="assumed",
+                        provenance=Provenance(
+                            type="model_knowledge", ref=f"you_decide:{card.id}", date=now
+                        ),
+                        confidence=0.5,
+                        turn_id=turn.turn_id,
+                    )
+        elif answer_text.strip():
+            for slot_id in card.slots:
+                slot = self.catalog.slots.get(slot_id)
+                if slot and not turn.slots.filled(slot_id):
+                    turn.slots.write(
+                        slot_id,
+                        answer_text.strip(),
+                        state="assumed",
+                        provenance=Provenance(
+                            type="model_knowledge", ref=f"you_decide:{card.id}", date=now
+                        ),
+                        confidence=0.5,
+                        turn_id=turn.turn_id,
+                    )
+
+        ans_str = ", ".join(labels) if labels else "(assumed)"
+        statement = f"{(card.intent or card.question).strip().rstrip('?')}: {ans_str}"
         turn.memory.add_fact(
             Fact(
                 id=turn.memory.next_fact_id(),
@@ -1343,9 +1485,9 @@ class InterviewController:
                     turn,
                     "decide.claim",
                     question=card.question.strip(),
-                    answer=", ".join(labels),
+                    answer=ans_str,
                 ),
-                reason=self.svc._t(turn, "decide.reason"),
+                reason=rationale or self.svc._t(turn, "decide.reason"),
                 basis="model_knowledge",
                 impact="high" if card.must_confirm else "low",
                 what_changes=self.svc._t(turn, "decide.changes"),
@@ -1355,7 +1497,7 @@ class InterviewController:
                 status="assumed",
             )
         )
-        turn.notice("assumed", self.svc._t(turn, "card.assumed_collapsed", value=", ".join(labels)))
+        turn.notice("assumed", self.svc._t(turn, "card.assumed_collapsed", value=ans_str))
 
     async def _follow_ups(
         self,

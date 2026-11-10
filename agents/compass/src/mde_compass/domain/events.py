@@ -61,6 +61,7 @@ class BatchAnswerItem(Strict):
     action: Literal["answer", "skip", "you_decide", "none"] = "answer"
     value: JsonValue = None
     custom_text: str | None = None
+    ai_suggested: bool = False
 
 
 class BatchAnswer(_InboundBase):
@@ -162,6 +163,15 @@ class GateDecision(_InboundBase):
     section_hashes: dict[str, str] = Field(default_factory=dict)
 
 
+class ApproveAll(_InboundBase):
+    """Approve all on the final Brief (Feature C / Section 10): bulk-accepts all proposed
+    assumptions in one change set and approves Gate 1 if no blockers remain."""
+
+    type: Literal["approve_all"] = "approve_all"
+    version: int
+    brief_hash: str = ""
+
+
 InboundEvent = Annotated[
     UserMessage
     | CardAnswer
@@ -178,7 +188,8 @@ InboundEvent = Annotated[
     | AssumptionDecision
     | LookupEdit
     | ContributorSwitch
-    | GateDecision,
+    | GateDecision
+    | ApproveAll,
     Field(discriminator="type"),
 ]
 INBOUND_ADAPTER: TypeAdapter[InboundEvent] = TypeAdapter(InboundEvent)
