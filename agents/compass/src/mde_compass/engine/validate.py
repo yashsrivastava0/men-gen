@@ -20,7 +20,15 @@ from mde_compass.engine.brief_builder import dict_targets
 from mde_compass.engine.expr import holds
 from mde_compass.engine.slots import SlotStore
 
-_PREFIX_BY_SECTION = {"apps": "APP", "roles": "ROL", "scope": "FTR"}
+_PREFIX_BY_SECTION = {
+    "apps": "APP",
+    "roles": "ROL",
+    "scope": "FTR",
+    "modules": "MOD",
+    "screens": "SCR",
+    "flows": "FLW",
+    "entities": "ENT",
+}
 
 
 def _tier_problems(brief: Brief) -> list[str]:
@@ -74,6 +82,50 @@ def _reference_problems(brief: Brief) -> list[str]:
                 errors.append(f"scope.{feature.id}: app {ref!r} does not exist")
         if feature.capability_tier == "C" and feature.scope_status == "in":
             errors.append(f"scope.{feature.id}: capability tier C cannot be in scope")
+    return errors + _structure_reference_problems(brief)
+
+
+def _structure_reference_problems(brief: Brief) -> list[str]:
+    """The structure points only at records that exist (the deeper logic, such as who may open a step, is
+    ``engine.structure_checks``)."""
+    errors: list[str] = []
+    ids = {
+        "app": {a.id for a in brief.apps},
+        "role": {r.id for r in brief.roles},
+        "feature": {f.id for f in brief.scope},
+        "module": {m.id for m in brief.modules},
+        "screen": {s.id for s in brief.screens},
+        "entity": {e.id for e in brief.entities},
+    }
+
+    def check(where: str, kind: str, refs: list[str]) -> None:
+        for ref in refs:
+            if ref and ref not in ids[kind]:
+                errors.append(f"{where}: {kind} {ref!r} does not exist")
+
+    for module in brief.modules:
+        where = f"modules.{module.id}"
+        check(where, "app", module.apps)
+        check(where, "feature", module.features)
+        check(where, "role", module.roles)
+        check(where, "screen", [module.entry])
+    for screen in brief.screens:
+        where = f"screens.{screen.id}"
+        check(where, "module", [screen.module])
+        check(where, "app", screen.apps)
+        check(where, "role", screen.roles)
+        check(where, "feature", screen.serves)
+        check(where, "entity", [use.entity for use in screen.entities])
+    for flow in brief.flows:
+        where = f"flows.{flow.id}"
+        check(where, "role", [flow.role])
+        check(where, "feature", flow.features)
+        check(where, "screen", [step.screen for step in flow.steps])
+    for entity in brief.entities:
+        where = f"entities.{entity.id}"
+        check(where, "module", [entity.module])
+        check(where, "role", list(entity.access))
+        check(where, "entity", [f.ref for f in entity.fields])
     return errors
 
 

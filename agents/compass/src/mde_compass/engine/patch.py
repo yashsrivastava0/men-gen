@@ -65,6 +65,13 @@ from mde_compass.domain.common import (
 from mde_compass.domain.hashing import changed_sections, section_hashes
 from mde_compass.domain.ids import ITEM_ID_RE, parse_id
 from mde_compass.domain.research import ResearchRequest
+from mde_compass.domain.structure import (
+    ID_PREFIX_BY_STRUCTURE_SECTION,
+    EntityRecord,
+    FlowRecord,
+    ModuleRecord,
+    ScreenRecord,
+)
 from mde_compass.engine.brief_builder import META_FIELDS, dict_targets, locales_of
 from mde_compass.engine.validate import validate_brief
 
@@ -81,6 +88,11 @@ RECORD_MODELS: dict[str, type[BaseModel]] = {
     "assets": AssetRecord,
     "sources": SourceRecord,
     "declined": DeclinedRecord,
+    # the structure of the app (ADR 0017): edited through the same ops, so undo and history come for free
+    "modules": ModuleRecord,
+    "screens": ScreenRecord,
+    "flows": FlowRecord,
+    "entities": EntityRecord,
 }
 NAME_FIELD: dict[str, str] = {
     "apps": "name",
@@ -90,6 +102,11 @@ NAME_FIELD: dict[str, str] = {
     "integrations": "name",
     "glossary": "term",
     "declined": "what",
+    # a name is unique within its section for these; NOT for screens ("Order details" legitimately exists in two
+    # modules): that rule is a structure check, per module
+    "modules": "name",
+    "flows": "name",
+    "entities": "name",
 }
 PREFIX_BY_SECTION: dict[str, str] = {
     "apps": "APP",
@@ -99,6 +116,7 @@ PREFIX_BY_SECTION: dict[str, str] = {
     "sources": "SRC",
     "research_requests": "RR",
     "open_questions": "Q",
+    **ID_PREFIX_BY_STRUCTURE_SECTION,
 }
 _USER_GIVEN = frozenset({"volunteered", "confirmed", "disputed"})
 _LIST_KINDS = frozenset({"text_list", "enum_list", "object_list"})

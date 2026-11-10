@@ -431,6 +431,18 @@ def _derived_mode(brief: Brief) -> str | None:
 
 def known_ids(brief: Brief) -> Iterable[str]:
     """Every live id in the Brief (used by validation and tests)."""
-    for section in ("apps", "roles", "scope", "assumptions", "open_questions", "assets", "sources"):
+    for section in (
+        "apps",
+        "roles",
+        "scope",
+        "modules",
+        "screens",
+        "flows",
+        "entities",
+        "assumptions",
+        "open_questions",
+        "assets",
+        "sources",
+    ):
         for r in getattr(brief, section):
             yield r.id

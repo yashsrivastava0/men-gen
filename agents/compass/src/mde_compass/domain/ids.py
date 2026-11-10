@@ -12,7 +12,20 @@ from pydantic import Field
 
 from mde_compass.domain.common import Strict
 
-ID_PREFIXES: tuple[str, ...] = ("APP", "ROL", "FTR", "ASM", "SRC", "RR", "Q", "CHG")
+ID_PREFIXES: tuple[str, ...] = (
+    "APP",
+    "ROL",
+    "FTR",
+    "ASM",
+    "SRC",
+    "RR",
+    "Q",
+    "CHG",
+    "MOD",
+    "SCR",
+    "FLW",
+    "ENT",
+)  # the last four are the structure of the app (ADR 0017; Spec Graph prefixes)
 ITEM_ID_RE = re.compile(r"^(?P<prefix>[A-Z]{1,3})-(?P<n>\d{3,})$")
 
 

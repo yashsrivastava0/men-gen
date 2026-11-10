@@ -59,6 +59,7 @@
   "section.unknown": "Still unknown",
   "section.lookup": "What we will look up",
   "section.sources": "Sources read",
+  "section.structure": "The structure of the app",
   "section.cannot_build": "What we cannot build",
   "badge.you_said": "You said",
   "badge.from_document": "From your document",

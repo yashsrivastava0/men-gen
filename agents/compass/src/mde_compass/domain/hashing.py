@@ -65,11 +65,11 @@ def brief_hash(brief: Brief) -> str:
 def section_hashes(brief: Brief) -> dict[str, str]:
     data = brief.model_dump(mode="json")
     return {
-        key: sha256_hex(canonical_json(data[key]))
+        key: sha256_hex(canonical_json(data.get(key, [])))
         for key in SECTION_KEYS
         if not (
-            key in OPTIONAL_SECTIONS and not data[key]
-        )  # absent while empty; absent == absent below
+            key in OPTIONAL_SECTIONS and not data.get(key)
+        )  # absent while empty (the dump may leave the key out); absent == absent below
     }
 
 

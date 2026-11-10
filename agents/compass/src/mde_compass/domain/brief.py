@@ -17,6 +17,13 @@ from mde_compass.domain.ids import IdLedger
 from mde_compass.domain.interview import InterviewBlock
 from mde_compass.domain.research import ResearchRequest, SearchHints
 from mde_compass.domain.situation import DiscoveryPlan, DomainHypothesis, SituationProfile
+from mde_compass.domain.structure import (
+    STRUCTURE_SECTIONS,
+    EntityRecord,
+    FlowRecord,
+    ModuleRecord,
+    ScreenRecord,
+)
 
 SCHEMA_VERSION = 1
 
@@ -28,6 +35,10 @@ SECTION_KEYS: tuple[str, ...] = (
     "apps",
     "roles",
     "scope",
+    "modules",
+    "screens",
+    "flows",
+    "entities",
     "references",
     "experience",
     "access",
@@ -44,8 +55,9 @@ SECTION_KEYS: tuple[str, ...] = (
     "declined",
 )
 # Sections that join the hashes only once they hold something, so a Brief written before they existed keeps its
-# hash and its approvals (ADR 0015).
-OPTIONAL_SECTIONS: tuple[str, ...] = ("domain_facts",)
+# hash and its approvals (ADR 0015, ADR 0017: the structure of the app, drafted by the engine and edited through the
+# ordinary patch path, so it is NOT read-only).
+OPTIONAL_SECTIONS: tuple[str, ...] = ("domain_facts", *STRUCTURE_SECTIONS)
 # Sections edited by their own engine, never by a patch: the facts are the user's answers, change the answer.
 READ_ONLY_SECTIONS: tuple[str, ...] = ("domain_facts",)
 DICT_SECTIONS: tuple[str, ...] = (
@@ -243,6 +255,11 @@ class Brief(Strict):
     apps: list[AppRecord] = Field(default_factory=list)
     roles: list[RoleRecord] = Field(default_factory=list)
     scope: list[FeatureRecord] = Field(default_factory=list)
+    # ADR 0017: the structure of the app (optional sections: omitted from the hash and from the dump while empty)
+    modules: list[ModuleRecord] = Field(default_factory=list)
+    screens: list[ScreenRecord] = Field(default_factory=list)
+    flows: list[FlowRecord] = Field(default_factory=list)
+    entities: list[EntityRecord] = Field(default_factory=list)
     references: list[ReferenceRecord] = Field(default_factory=list)
     experience: dict[str, BriefItem] = Field(default_factory=dict)
     access: dict[str, BriefItem] = Field(default_factory=dict)
@@ -262,3 +279,13 @@ class Brief(Strict):
     ids: IdLedger = Field(default_factory=IdLedger)
     summary: str = ""  # one line (cmp.compile_text)
     pitch: str = ""
+
+    @model_serializer(mode="wrap")
+    def _omit_empty_structure(self, handler: SerializerFunctionWrapHandler) -> dict[str, Any]:
+        """The four structure lists are left out of the dump while empty, so a Brief that never held a structure is
+        stored exactly as it was before they existed and code from before this change can still read it."""
+        data = handler(self)
+        for key in STRUCTURE_SECTIONS:
+            if not data.get(key):
+                data.pop(key, None)
+        return data

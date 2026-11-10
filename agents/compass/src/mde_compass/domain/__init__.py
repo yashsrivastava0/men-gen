@@ -100,6 +100,16 @@ from mde_compass.domain.situation import (
     SituationProfile,
 )
 from mde_compass.domain.slots import SlotRecord
+from mde_compass.domain.structure import (
+    STRUCTURE_SECTIONS,
+    EntityField,
+    EntityRecord,
+    FlowRecord,
+    FlowStep,
+    ModuleRecord,
+    ScreenEntityUse,
+    ScreenRecord,
+)
 
 __all__ = [
     "CARD_TYPES",
@@ -115,6 +125,7 @@ __all__ = [
     "SCHEMA_VERSION",
     "SECTION_KEYS",
     "SESSION_STATES",
+    "STRUCTURE_SECTIONS",
     "AnswerSpec",
     "AppRecord",
     "AssetRecord",
@@ -141,11 +152,15 @@ __all__ = [
     "DiscoveryPlan",
     "DomainFact",
     "DomainHypothesis",
+    "EntityField",
+    "EntityRecord",
     "Fact",
     "FactEffect",
     "FeatureRecord",
     "FeatureSize",
     "FeedbackReason",
+    "FlowRecord",
+    "FlowStep",
     "GlossaryRecord",
     "HistoryEntry",
     "IdLedger",
@@ -154,6 +169,7 @@ __all__ = [
     "InterviewBlock",
     "InterviewSummary",
     "ItemMeta",
+    "ModuleRecord",
     "NeedStatus",
     "OpenQuestion",
     "OutboundEvent",
@@ -169,6 +185,8 @@ __all__ = [
     "RejectedQuestion",
     "ResearchRequest",
     "RoleRecord",
+    "ScreenEntityUse",
+    "ScreenRecord",
     "SearchHints",
     "SessionRecord",
     "SessionState",
