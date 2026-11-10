@@ -520,23 +520,10 @@ def test_an_answer_card_that_lists_roles_does_not_erase_the_roles_the_person_nam
         ),
         s,
     )
-    labels = [
-        {"name": n}
-        for n in (
-            "Members book classes",
-            "Instructors manage classes",
-            "Manager handles the studio",
-        )
-    ]
+    labels = [{"name": n} for n in ("Members", "Instructors", "Studio manager")]
     run(mk(24, [eff("roles.list", labels)]), s)
     names = _names(s, "roles.list")
-    assert names[:2] == [
-        "Instructors",
-        "Studio manager",
-    ]  # still there, under the person's own words
-    assert (
-        "Members book classes" in names and len(names) == 3
-    )  # the two repeats were not added again
+    assert names == ["Instructors", "Studio manager", "Members"]  # the repeats were not added again
     rec = s.get("roles.list")
     assert rec is not None and isinstance(rec.value, list)
     assert rec.value[0]["goal"] == "check who has booked"  # and they kept what they said
@@ -743,3 +730,83 @@ def test_a_label_that_also_says_something_new_is_added_rather_than_swallowed() -
         s,
     )
     assert _names(s, "scope.features") == ["Class booking", "Class packs", "Booking and payments"]
+
+
+def test_an_answer_about_the_country_keeps_the_city_said_before() -> None:
+    """KisanLink: "Nashik and Pune" was the city; the next question asked for the country and its answer replaced the
+    whole place with {"country": "India"}."""
+    s = store()
+    run(mk(1, [eff("context.geo", {"city": "Nashik and Pune"})]), s)
+    run(mk(2, [eff("context.geo", {"country": "India"})]), s)
+    rec = s.get("context.geo")
+    assert rec is not None and rec.value == {"city": "Nashik and Pune", "country": "India"}
+    run(
+        mk(3, [eff("context.geo", {"city": "Mumbai"})]), s
+    )  # a correction of the same part still wins
+    rec = s.get("context.geo")
+    assert rec is not None and rec.value == {"city": "Mumbai", "country": "India"}
+
+
+def test_a_whole_list_of_roles_read_from_a_document_becomes_one_role_each() -> None:
+    """TruckSetu: the roles line of the document was stored as ONE role named by the whole sentence."""
+    s = store()
+    sentence = "The platform has customers, customer admins, dispatchers, branch managers"
+    run(mk(1, [eff("roles.list", [{"name": sentence, "goal": "use the platform"}], "add")]), s)
+    assert _names(s, "roles.list") == [
+        "customers",
+        "customer admins",
+        "dispatchers",
+        "branch managers",
+    ]
+    run(
+        mk(
+            2,
+            [
+                eff(
+                    "roles.list",
+                    [{"name": "Front-desk staff who check members in", "goal": "x"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    assert "Front-desk staff who check members in" in _names(
+        s, "roles.list"
+    )  # one long role is not a list
+
+
+def test_a_role_name_with_commas_that_is_not_a_list_of_short_names_is_kept() -> None:
+    s = store()
+    run(
+        mk(
+            1,
+            [
+                eff(
+                    "roles.list",
+                    [{"name": "Drivers, who work nights, and rest during the day"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    assert len(_names(s, "roles.list")) == 1
+
+
+def test_an_app_named_only_for_how_it_is_used_is_dropped_and_real_names_stay() -> None:
+    s = store()
+    run(
+        mk(
+            1,
+            [
+                eff(
+                    "apps.list",
+                    [{"name": "app"}, {"name": "portal"}, {"name": "Driver app"}],
+                    "add",
+                )
+            ],
+        ),
+        s,
+    )
+    assert _names(s, "apps.list") == ["Driver app"]

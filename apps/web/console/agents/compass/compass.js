@@ -3010,7 +3010,7 @@ CONTRACT*/
   function renderSessionLabel() {
     var vm = state.view, s = state.session;
     if (!s && !vm) { return; }
-    var name = (vm && vm.header && vm.header.title) || (s && (s.user_label || s.title || s.id)) || "";
+    var name = (s && s.user_label) || (vm && vm.header && vm.header.title) || (s && (s.title || s.id)) || "";
     var status = vm && vm.header && vm.header.status_label ? vm.header.status_label : (s ? s.state : "");
     $("topbar-session").textContent = name + (status ? " · " + status : "");
   }

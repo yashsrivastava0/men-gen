@@ -302,23 +302,30 @@ def _resolve_refs(brief: Brief) -> None:
                 out.append(new)
         return out
 
-    from mde_compass.engine.fact_projector import _same_element
+    from mde_compass.engine.fact_projector import _same_element, _stems
+
+    def closeness(app_name: str, role_name: str) -> float:
+        """1.0 for the same name; else how much of the words they share (an app named after a long phrase that
+        mentions "members" is not the Members role)."""
+        a, b = app_name.strip().casefold(), role_name.strip().casefold()
+        if a == b:
+            return 1.0
+        wa, wb = _stems(a), _stems(b)
+        union = wa | wb
+        return (
+            len(wa & wb) / len(union) if union and _same_element({"name": a}, {"name": b}) else 0.0
+        )
 
     for app in brief.apps:
         app.roles = resolve(app.roles, role_ids, role_by_name)
         if (
             not app.roles
         ):  # an app named after its people ("Members") belongs to the role of that name
-            match = next(
-                (
-                    r
-                    for r in brief.roles
-                    if _same_element({"name": app.name}, {"name": r.name_in_user_words})
-                ),
-                None,
+            best = max(
+                brief.roles, key=lambda r: closeness(app.name, r.name_in_user_words), default=None
             )
-            if match is not None:
-                app.roles = [match.id]
+            if best is not None and closeness(app.name, best.name_in_user_words) > 0:
+                app.roles = [best.id]
     for feature in brief.scope:
         feature.apps = resolve(feature.apps, app_ids, app_by_name)
 

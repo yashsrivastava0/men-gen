@@ -235,6 +235,7 @@ async def test_the_structure_page_the_tab_reads_validates_against_the_view_model
 def test_the_session_label_follows_the_brief_status_not_the_raw_session_state() -> None:
     label = function_body("renderSessionLabel")
     assert "vm.header.status_label" in label and "vm.header.title" in label
+    assert label.index("s.user_label") < label.index("vm.header.title"), "the project's own name comes first"
     assert "renderSessionLabel()" in function_body("loadView"), (
         "the label is redrawn with every Brief view"
     )

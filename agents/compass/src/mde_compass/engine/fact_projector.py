@@ -176,14 +176,18 @@ def _stems(text: str) -> frozenset[str]:
     return frozenset(w[:4] for w in re.findall(r"\w+", text.casefold()) if len(w) >= 4)
 
 
-def _same_element(a: JsonValue, b: JsonValue) -> bool:
-    """Two list elements are one when their names are equal, or when every meaningful word of the shorter name is in
-    the longer one ("Class packs" and "Class packs and credits", "Reminders" and "Class reminders")."""
+def _same_element(a: JsonValue, b: JsonValue, *, loose: bool = True) -> bool:
+    """Two list elements are one when their names are equal, or (``loose``) when every meaningful word of the shorter
+    name is in the longer one ("Class packs" and "Class packs and credits", "Reminders" and "Class reminders"). Kinds
+    of people are matched strictly (the same words, "customer" and "customers"): "customers" and "customer admins"
+    are two roles."""
     na, nb = item_name(a), item_name(b)
     if na == nb:
         return True
     wa, wb = _stems(na), _stems(nb)
-    return bool(wa) and bool(wb) and (wa <= wb or wb <= wa)
+    if not wa or not wb:
+        return False
+    return (wa <= wb or wb <= wa) if loose else wa == wb
 
 
 def _covered(item: JsonValue, base: list[JsonValue]) -> list[int]:
@@ -201,6 +205,9 @@ def _covered(item: JsonValue, base: list[JsonValue]) -> list[int]:
     return hits if (words - common) <= seen else []
 
 
+PEOPLE_LISTS = frozenset(
+    {"roles.list", "apps.list"}
+)  # lists whose elements are kinds of people or apps: matched strictly
 OVERRIDE_KEYS = frozenset({"priority", "status", "scope_status"})
 
 
@@ -218,7 +225,7 @@ def _update(old: JsonValue, item: JsonValue) -> JsonValue:
     return out
 
 
-def _merge_set(existing: JsonValue, new: JsonValue) -> JsonValue:
+def _merge_set(existing: JsonValue, new: JsonValue, *, loose: bool = True) -> JsonValue:
     """Joining a list of records that a FACT gives (``set``, or ``add`` to a list the person built). A fact about one
     or two elements ("reminders can wait for the second version") must never wipe a list the person built through other
     facts, and a fact that names an element again ("Class packs and credits are must-haves") must not make a second one:
@@ -229,11 +236,11 @@ def _merge_set(existing: JsonValue, new: JsonValue) -> JsonValue:
     base: list[JsonValue] = list(existing) if isinstance(existing, list) else []
     incoming = new if isinstance(new, list) else [new]
     for item in incoming:
-        at = next((i for i, old in enumerate(base) if _same_element(old, item)), None)
+        at = next((i for i, old in enumerate(base) if _same_element(old, item, loose=loose)), None)
         if at is not None:
             base[at] = _update(base[at], item)
             continue
-        parts = _covered(item, base)
+        parts = _covered(item, base) if loose else []
         if parts:
             for i in parts:
                 base[i] = _update(base[i], item)
@@ -263,6 +270,53 @@ def roles_of_apps(apps: JsonValue) -> list[JsonValue]:
         if str(el.get("purpose", "")).strip():
             role["goal"] = str(el["purpose"]).strip()
         out.append(role)
+    return out
+
+
+def _split_role_list(name: str) -> list[str]:
+    """A "role" that is really a list of them ("The platform has customers, customer admins, dispatchers, branch
+    managers", read from a document) becomes one name each; anything that does not split into short names is left."""
+    import re
+
+    if name.count(",") < 2:
+        return [name]
+    pieces = [p.strip(" .;:") for p in re.split(r",|\band\b", name) if p.strip(" .;:")]
+    pieces[0] = re.sub(
+        r"^.*?\b(?:has|have|are|include|includes|including|consists of|roles?)\b:?\s*",
+        "",
+        pieces[0],
+        flags=re.I,
+    ).strip()
+    clause = ("who", "that", "which", "when", "if", "while", "because")
+    if len(pieces) < 3 or any(
+        not p or len(p.split()) > 3 or p.split()[0].casefold() in clause for p in pieces
+    ):
+        return [name]
+    return pieces
+
+
+def _clean_list(slot: SlotDef, value: JsonValue) -> JsonValue:
+    """What a list of records must not hold, whatever model wrote it: a role that is a whole list of roles becomes one
+    role each, and an app whose only name is a way of using it ("app", "portal") says nothing and is dropped."""
+    if slot.value_schema.kind != "object_list" or not isinstance(value, list):
+        return value
+    out: list[JsonValue] = []
+    for el in value:
+        if not isinstance(el, dict):
+            out.append(el)
+            continue
+        name = str(el.get("name", "")).strip()
+        if slot.id == "roles.list" and name:
+            names = _split_role_list(name)
+            if len(names) > 1:
+                out += [
+                    {k: v for k, v in el.items() if k not in ("goal", "permissions")} | {"name": n}
+                    for n in names
+                ]
+                continue
+        if slot.id == "apps.list" and name and set(name.casefold().split()) <= SURFACE_WORDS:
+            continue
+        out.append(el)
     return out
 
 
@@ -328,6 +382,7 @@ def _apply_effect(
     if error:
         _reject(result, fact, effect, error)
         return
+    value = _clean_list(slot, value)
     who = effect.contributor_id or contributor_id
     provenance = provenance_for(fact, now=now, input_mode=input_mode, contributor_id=who)
     kind = slot.value_schema.kind
@@ -373,7 +428,11 @@ def _apply_effect(
             if record is not None and slots.filled(effect.slot_id) and record.status in USER_GIVEN
             else None
         )
-        value = _merge_set(user_list, value) if kind == "object_list" else _merge(user_list, value)
+        value = (
+            _merge_set(user_list, value, loose=effect.slot_id not in PEOPLE_LISTS)
+            if kind == "object_list"
+            else _merge(user_list, value)
+        )
     elif (
         kind == "object_list"
     ):  # a "set" of a list of records by a fact never wipes the person's list
@@ -384,7 +443,18 @@ def _apply_effect(
             and record.status in USER_GIVEN
             and isinstance(record.value, list)
         ):
-            value = _merge_set(record.value, value)
+            value = _merge_set(record.value, value, loose=effect.slot_id not in PEOPLE_LISTS)
+    elif kind == "geo" and isinstance(
+        value, dict
+    ):  # an answer about the country must not erase the city said before
+        record = slots.get(effect.slot_id)
+        if (
+            record is not None
+            and slots.filled(effect.slot_id)
+            and record.status in USER_GIVEN
+            and isinstance(record.value, dict)
+        ):
+            value = {**record.value, **{k: v for k, v in value.items() if not is_blank(v)}}
     res = _store_write(slots, effect.slot_id, value, fact, provenance, turn_id, contributor_id=who)
     _outcome(result, effect, fact.id, res)
     if effect.slot_id == "apps.list" and res.applied and "roles.list" in catalog.slots:
@@ -396,7 +466,7 @@ def _apply_effect(
                 if roles is not None and slots.filled("roles.list") and roles.status in USER_GIVEN
                 else None
             )
-            joined = _merge_set(have, implied)
+            joined = _merge_set(have, implied, loose=False)
             if joined != have:
                 role_res = _store_write(
                     slots, "roles.list", joined, fact, provenance, turn_id, contributor_id=who

@@ -98,14 +98,45 @@ def placement(card: Card, answer: JsonValue, *, cap: int = MAX_MUST) -> prioriti
     return priorities.Placement({name: placed[name] for name in label_of.values()})
 
 
+def _bucket_for(name: str, placed: priorities.Placement, common: frozenset[str]) -> str | None:
+    """The bucket of the card option that names a feature: the same name; or a name that holds the other's words
+    ("Produce listings and prices" for the feature "produce listings"); or one label that names several features
+    ("Weekly timetable and booking" for "Weekly class timetable" and "Class booking"), judged by the words that tell
+    features apart. ``must`` wins when several options reach the same feature."""
+    from mde_compass.engine.fact_projector import _same_element, _stems
+
+    exact = {label.casefold(): bucket for label, bucket in placed.priorities.items()}
+    if name.casefold() in exact:
+        return exact[name.casefold()]
+    mine = _stems(name)
+    distinct = mine - common
+    found: list[str] = []
+    for label, bucket in placed.priorities.items():
+        words = _stems(label)
+        if _same_element({"name": label}, {"name": name}) or (distinct and distinct <= words):
+            found.append(bucket)
+    if not found:
+        return None
+    return priorities.MUST if priorities.MUST in found else found[0]
+
+
 def apply_to_features(features: JsonValue, placed: priorities.Placement) -> list[JsonValue]:
-    """The features list with ``priority`` set for the features the card named (matched by name, ignoring case);
-    suggestions that are not features of the Brief are ignored, everything else is kept as it is."""
-    by_fold = {name.casefold(): bucket for name, bucket in placed.priorities.items()}
+    """The features list with ``priority`` set for the features the card named (matched by name, by the words the
+    option and the feature share, or because one option names several features); suggestions that are not features of
+    the Brief are ignored, everything else is kept as it is."""
+    from mde_compass.engine.fact_projector import _stems
+
+    items = features if isinstance(features, list) else []
+    names = [priorities._name(i) or "" for i in items]
+    stems = [_stems(n) for n in names]
+    common = (
+        frozenset(w for w in set().union(*stems) if sum(w in x for x in stems) >= 3)
+        if stems
+        else frozenset()
+    )
     out: list[JsonValue] = []
-    for item in features if isinstance(features, list) else []:
-        name = priorities._name(item)
-        bucket = by_fold.get(name.casefold()) if name else None
+    for item, name in zip(items, names, strict=True):
+        bucket = _bucket_for(name, placed, common) if name else None
         if bucket is None or not isinstance(item, dict):
             out.append(item)
             continue
