@@ -2631,15 +2631,15 @@ class Service(FlowHooks):
                 self._t(turn, "notice.assumptions_all_accepted", count=len(pending_asms)),
             )
 
-        blockers = self._blockers(
-            turn, supplied_version=turn.rec.version, supplied_hash=brief_hash(turn.brief)
-        )
+        cur_hash = brief_hash(turn.brief)
+        cur_version = turn.rec.version + (1 if cur_hash != turn.rec.hash else 0)
+        blockers = self._blockers(turn, supplied_version=cur_version, supplied_hash=cur_hash)
         if not blockers:
             gate_ev = GateDecision(
                 event_id=internal_event_id(ev.event_id, "gate_approve"),
                 decision="approve",
-                version=turn.rec.version,
-                brief_hash=brief_hash(turn.brief),
+                version=cur_version,
+                brief_hash=cur_hash,
             )
             await self._on_gate(turn, gate_ev)
         else:

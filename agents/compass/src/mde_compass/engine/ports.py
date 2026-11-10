@@ -733,9 +733,6 @@ class CompassService(Protocol):
         self, caller: Caller, session_id: str, *, limit: int = 30
     ) -> list[dict[str, JsonValue]]: ...
     async def decide_preview(self, caller: Caller, session_id: str) -> dict[str, Any]: ...
-    async def decide_preview(
-        self, caller: Caller, session_id: str
-    ) -> dict[str, Any]: ...
 
     async def reopen_slot(
         self, caller: Caller, session_id: str, slot_id: str, reason: str

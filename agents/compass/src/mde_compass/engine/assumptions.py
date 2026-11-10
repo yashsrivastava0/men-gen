@@ -54,11 +54,25 @@ def _lang(language: str) -> str:
 
 
 def _value_text(value: JsonValue) -> str:
+    if value is None:
+        return ""
     if isinstance(value, list):
-        return ", ".join(_value_text(v) for v in value)
+        return ", ".join(t for v in value if (t := _value_text(v)))
     if isinstance(value, dict):
-        return ", ".join(f"{_value_text(v)}" for v in value.values() if v not in (None, "", [], {}))
-    return "" if value is None else str(value)
+        if value.get("name_in_user_words"):
+            return str(value["name_in_user_words"])
+        if value.get("name"):
+            name = str(value["name"])
+            intent = str(value.get("intent") or "")
+            return f"{name}, {intent}" if intent else name
+        filtered = {
+            k: v
+            for k, v in value.items()
+            if k not in ("_meta", "id", "tier", "provenance", "status", "confidence", "history")
+            and v not in (None, "", [], {})
+        }
+        return ", ".join(f"{_value_text(v)}" for v in filtered.values())
+    return str(value)
 
 
 def _basis_of(record: SlotRecord) -> Literal["pattern", "model_knowledge", "assumed"]:

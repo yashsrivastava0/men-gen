@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from mde_compass.compose import build_service
 from mde_compass.domain import Card
-from mde_compass.domain.events import BatchAnswer, BatchAnswerItem
+from mde_compass.domain.events import ApproveAll, BatchAnswer, BatchAnswerItem
 from mde_compass.engine.service import Service
 from mde_compass.testing import Conversation
 from mde_core.clock import FakeClock
@@ -139,3 +139,38 @@ async def test_untouched_ai_suggestion_submits_as_default_assumption() -> None:
         first_card.id in str(a) or (first_card.options and first_card.options[0].label in a.claim)
         for a in brief.assumptions
     ), "Visible in brief.assumptions for user review"
+
+
+async def test_approve_all_bulk_accepts_and_opens_gate() -> None:
+    svc, conv = await started()
+    batch_id, _ = form(conv)
+    await conv.send(
+        BatchAnswer(event_id=conv._id(), batch_id=batch_id, answers=[], decide_rest=True)
+    )
+    session = await svc.get_session(conv.caller, conv.session_id)
+    assert session.state == "BRIEF_REVIEW"
+
+    brief_dict = await svc.get_brief(conv.caller, conv.session_id)
+    assert brief_dict["assumptions"]
+    assert any(a["decision"] == "proposed" for a in brief_dict["assumptions"])
+
+    gate_res = await svc.gate(
+        conv.caller,
+        conv.session_id,
+        ApproveAll(
+            event_id=conv._id(),
+            version=brief_dict["version"],
+            brief_hash=brief_dict["_hash"],
+        ),
+    )
+    assert gate_res.get("accepted") is True
+    assert gate_res.get("state") == "APPROVED"
+    assert not gate_res.get("blockers")
+
+    brief_after = await svc.get_brief(conv.caller, conv.session_id)
+    assert all(a["decision"] in ("accepted", "rejected") for a in brief_after["assumptions"])
+    assert not [
+        a
+        for a in brief_after["assumptions"]
+        if a["impact"] == "high" and a["decision"] == "proposed"
+    ]
