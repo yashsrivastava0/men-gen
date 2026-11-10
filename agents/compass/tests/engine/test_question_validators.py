@@ -1169,6 +1169,7 @@ def test_the_catalog_marks_only_safe_defaults_as_infer() -> None:
         "constraints.offline",
         "constraints.performance",
         "constraints.accessibility",
+        "onboarding.approvals",
     }
     for sid in infer:
         slot = REAL.slots[sid]

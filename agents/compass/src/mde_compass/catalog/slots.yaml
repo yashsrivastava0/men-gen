@@ -1035,7 +1035,7 @@ slots:
   - U
   - P
   impact: 3
-  risk: medium
+  risk: low
   effort: tap
   value_schema:
     kind: enum
