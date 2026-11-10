@@ -47,7 +47,7 @@ HARD_EFFECTIVE_CAP_USD = Decimal("5.70")  # never plan to reach the cap: 95% of 
 HARD_CAP_MICROS = usd_to_micros(HARD_CAP_USD)
 HARD_EFFECTIVE_CAP_MICROS = usd_to_micros(HARD_EFFECTIVE_CAP_USD)
 
-_DEFAULT_SCOPE_CAPS_USD = {"session": "0.50", "research": "0.30", "eval": "1.50", "test": "0.30"}
+_DEFAULT_SCOPE_CAPS_USD = {"session": "1.00", "research": "0.30", "eval": "1.50", "test": "0.30"}
 DEFAULT_SCOPE_KINDS: frozenset[str] = frozenset(_DEFAULT_SCOPE_CAPS_USD)
 
 log = get_logger("mde.llm_gateway.budget")

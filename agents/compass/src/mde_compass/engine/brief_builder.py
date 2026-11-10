@@ -40,7 +40,7 @@ from mde_compass.domain.brief import (
 from mde_compass.domain.common import BriefItem, ItemMeta, Provenance, max_tier
 from mde_compass.domain.ids import IdLedger
 from mde_compass.domain.slots import SlotRecord
-from mde_compass.engine.slots import SlotStore
+from mde_compass.engine.slots import SlotStore, plain
 from mde_core.clock import Clock
 
 META_FIELDS: frozenset[str] = frozenset(ItemMeta.model_fields)
@@ -423,7 +423,11 @@ def slots_from_brief(brief: Brief, catalog: Catalog, clock: Clock) -> list[SlotR
                     d.pop("preference", None)
                     if d.get("notes") == _REAL_NOTE:
                         d.pop("notes", None)
-                d["_meta"] = r.model_dump(mode="json", include=META_FIELDS)
+                meta_dump = r.model_dump(mode="json", include=META_FIELDS)
+                meta_dump["history"] = [
+                    {**h, "value": plain(h.get("value"))} for h in meta_dump.get("history", [])
+                ]  # no nested evidence: see ``plain``
+                d["_meta"] = meta_dump
                 values.append(d)
             meta = _aggregate(list(records))
             meta["provenance"] = _stamp(meta["provenance"], now)

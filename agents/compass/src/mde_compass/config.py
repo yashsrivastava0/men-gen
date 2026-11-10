@@ -248,7 +248,9 @@ class BudgetPolicy:
     cap_usd: Decimal = Decimal("3.00")  # ``COMPASS_LIVE_BUDGET_USD`` clamped to <= hard_cap_usd
     target_usd: Decimal = Decimal("2.00")  # plan and report against this; not enforced by the guard
     stop_fraction: Decimal = Decimal("0.95")  # effective stop at 95% of the cap (2.85)
-    per_session_cap_usd: Decimal = Decimal("0.50")
+    per_session_cap_usd: Decimal = Decimal(
+        "1.00"
+    )  # a Thorough interview with a document needs more than 0.50 (D-124)
     reserve_usd: Decimal = Decimal(
         "0.30"
     )  # kept unspent across the live batches (owner manual sessions)

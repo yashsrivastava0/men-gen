@@ -128,7 +128,7 @@ from mde_compass.engine.ports import (
 )
 from mde_compass.engine.router import route as route_text
 from mde_compass.engine.router import route_help
-from mde_compass.engine.slots import SlotStore
+from mde_compass.engine.slots import SlotStore, plain
 from mde_compass.engine.structure_controller import StructureController
 from mde_compass.engine.validate import must_slots_missing
 from mde_compass.intake import (
@@ -698,7 +698,9 @@ class Service(FlowHooks):
 
     def _ctx(self, turn: _Turn) -> TurnContext:
         views = [
-            SlotView(slot_id=sid, value=rec.value, state=rec.status, confidence=rec.confidence)
+            SlotView(
+                slot_id=sid, value=plain(rec.value), state=rec.status, confidence=rec.confidence
+            )
             for sid, rec in turn.slots.all().items()
         ]
         return TurnContext(

@@ -6,7 +6,7 @@ effective_cap_fraction: "0.95"
 
 # Scoped caps inside the global one, keyed by the scope kind (the part before ":").
 scope_caps_usd:
-  session: "0.50"
+  session: "1.00"   # a Thorough Compass interview with a document costs about USD 0.5 before the Brief and its structure (D-124)
   research: "0.30"
   eval: "1.50"
   test: "0.30"

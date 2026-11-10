@@ -33,14 +33,14 @@ def test_live_cap_is_clamped(raw: str | None, expected: str) -> None:
 
 def test_effective_stop_and_per_session_cap_fail_closed() -> None:
     policy = BudgetPolicy()
-    assert policy.effective_stop_micros == 2_850_000 and policy.per_session_micros == 500_000
+    assert policy.effective_stop_micros == 2_850_000 and policy.per_session_micros == 1_000_000
     budget = CompassBudget(policy, mode="live")
     budget.check("ses_1", estimate_micros=100_000)
-    budget.record("ses_1", 490_000)
+    budget.record("ses_1", 990_000)
     with pytest.raises(BudgetExceeded):
-        budget.check("ses_1", estimate_micros=20_000)  # per-session 0.50 would be crossed
+        budget.check("ses_1", estimate_micros=20_000)  # per-session 1.00 would be crossed
     budget.check("ses_2", estimate_micros=100_000)  # another session is fine
-    budget.record("ses_2", 2_300_000)
+    budget.record("ses_2", 1_800_000)
     with pytest.raises(BudgetExceeded):
         budget.check("ses_3", estimate_micros=300_000)  # total would pass 2.85
     with pytest.raises(BudgetExceeded):

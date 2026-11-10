@@ -73,6 +73,17 @@ def _clean(value: JsonValue) -> JsonValue:
     return value
 
 
+def plain(value: Any) -> Any:
+    """A slot value without the per-record evidence (``_meta``) the Brief round trip carries inside list items. A history
+    snapshot or a model call needs the words, not the evidence of every earlier snapshot: carrying it made each rewrite
+    of a list nest the history of the one before (a 30-feature list reached 500 KB and every model call sent it)."""
+    if isinstance(value, list):
+        return [plain(v) for v in value]
+    if isinstance(value, dict):
+        return {k: plain(v) for k, v in value.items() if k != "_meta"}
+    return value
+
+
 def item_name(item: Any) -> str:
     if isinstance(item, dict):
         for k in ("name", "term", "label", "name_in_user_words", "id"):
@@ -137,7 +148,7 @@ class SlotStore:
 
     def _history(self, prev: SlotRecord, reason: str, turn_id: str | None) -> HistoryEntry:
         return HistoryEntry(
-            value=prev.value,
+            value=plain(prev.value),
             status=prev.status,
             turn_id=turn_id or prev.turn_id,
             at=self._clock.now(),

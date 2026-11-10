@@ -76,7 +76,7 @@ The report shows spent USD and micros, percent of the cap and of the effective c
 | must-run only | 80% (USD 4.80) | only calls with `ctx.purpose` starting `must-run` are accepted; the rest raise `BudgetExceeded` |
 | refuse | 95% (USD 5.70) | everything raises `BudgetExceeded` |
 
-Scoped caps (`packages/llm-gateway/src/mde_llm_gateway/budget.yaml`): session USD 0.50, research run 0.30, eval run 1.50, test 0.30; add an exact-scope entry under `scope_overrides_usd` for an eval run with its own allowance. Only these scope kinds (and kinds added in `budget.yaml`) are accepted: a scope such as `x:1` is refused (`details.reason = unknown_scope_kind`) instead of running uncapped. The `must-run` purpose works for in-process callers only; the HTTP API rewrites it to `api:must-run...`. Engines treat `BudgetExceeded` as "use the deterministic fallback", never as a reason to retry.
+Scoped caps (`packages/llm-gateway/src/mde_llm_gateway/budget.yaml`): session USD 1.00 (0.50 before D-124), research run 0.30, eval run 1.50, test 0.30; add an exact-scope entry under `scope_overrides_usd` for an eval run with its own allowance. Only these scope kinds (and kinds added in `budget.yaml`) are accepted: a scope such as `x:1` is refused (`details.reason = unknown_scope_kind`) instead of running uncapped. The `must-run` purpose works for in-process callers only; the HTTP API rewrites it to `api:must-run...`. Engines treat `BudgetExceeded` as "use the deterministic fallback", never as a reason to retry.
 
 ## Recovering from a stuck reservation
 
