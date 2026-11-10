@@ -25,9 +25,11 @@ from mde_compass.calls.seed_research.schema import (
 from mde_compass.calls.seed_research.spec import SPEC
 from mde_compass.catalog.fact_kinds import kind_for
 from mde_compass.catalog.loader import Catalog
+from mde_compass.catalog.size_bands import get_band
 from mde_compass.domain.brief import Brief
 from mde_compass.domain.research import ResearchRequest, SearchHints
 from mde_compass.engine.ports import SeedResult, TurnContext
+from mde_compass.engine.structure_derive import band_of_brief
 
 _SPLIT = re.compile(r"[,;\n]")
 _LOCALE_COUNTRY = re.compile(r"^[A-Za-z]{2,3}[-_]([A-Za-z]{2})$")
@@ -108,6 +110,7 @@ def build_input(ctx: TurnContext, brief: Brief, catalog: Catalog) -> SeedResearc
     ]
     live = [f for f in brief.scope if f.scope_status == "in"][:MAX_FEATURES]
     hypothesis = brief.meta.hypothesis
+    band = get_band(band_of_brief(brief)[0])
     return SeedResearchInput(
         language=ctx.language,
         category=text("idea.category"),
@@ -124,6 +127,9 @@ def build_input(ctx: TurnContext, brief: Brief, catalog: Catalog) -> SeedResearc
         families=list(hypothesis.likely_families) if hypothesis else [],
         languages=languages,
         details=research_details(brief),
+        size_band=band.id,
+        research_depth=band.research.depth,
+        max_requests=band.research.max_requests,
     )
 
 

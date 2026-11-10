@@ -1,0 +1,38 @@
+Language: {{ language }}
+
+Size band: {{ band.id }}. Screens {{ band.screens_low }} to {{ band.screens_high }}{% if band.open_upper %} or more{% endif %}; modules {{ band.modules_low }} to {{ band.modules_high }}; journeys {{ band.flows_low }} to {{ band.flows_high }}; entities {{ band.entities_low }} to {{ band.entities_high }}. Guidance only: fewer is right for a simple app. A must-have feature needs at least {{ band.must_feature_screens_min }} screens and a module at least {{ band.module_screens_min }}.
+
+Project card:
+{{ project_card }}
+
+Sign-in methods: {{ auth_methods | join(", ") or "(not said)" }}
+
+Features (id, name, intent, priority, scope_status, family, apps):
+{% for f in features %}{{ f }}
+{% endfor %}
+Roles (id, name, goal):
+{% for r in roles %}{{ r }}
+{% endfor %}
+Apps (id, name, surface):
+{% for a in apps %}{{ a }}
+{% endfor %}
+Integrations:
+{% for i in integrations %}{{ i }}
+{% endfor %}{% if not integrations %}(none){% endif %}
+
+The company's own answers:
+{{ org or "(none)" }}
+
+Facts so far:
+{{ fact_digest or "(none yet)" }}
+
+Seeds (said by the person or their document; honour them):
+{% for s in seeds %}{{ s }}
+{% endfor %}{% if not seeds %}(none){% endif %}
+
+Pinned (accepted or written by the person; keep exactly):
+{% for p in pinned %}{{ p }}
+{% endfor %}{% if not pinned %}(none){% endif %}
+
+The person's request for this outline:
+{{ instruction or "(none)" }}

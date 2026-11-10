@@ -59,6 +59,10 @@ class SeedResearchInput(Wire):
     details: list[DetailIn] = Field(
         default_factory=list
     )  # v2: rules, numbers, compliance, integrations (<= 30)
+    # v3 (ADR 0017): how big the app is decides how deep research goes: a small app a short list, a large one a deep list
+    size_band: str = "medium"  # small | medium | large
+    research_depth: str = "standard"  # light | standard | deep
+    max_requests: int = MAX_REQUESTS
 
 
 class WireRequest(Wire):

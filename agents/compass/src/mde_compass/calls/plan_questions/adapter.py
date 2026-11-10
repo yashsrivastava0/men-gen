@@ -154,6 +154,7 @@ def build_input(catalog: Catalog, request: PlanRequest) -> PlanInput:
         style_notes=list(request.style_notes),
         next_card_n=request.next_card_n,
         followup_candidates=list(request.followup_candidates),
+        structure_focus=request.structure_focus,
         closing=ClosingWire(
             features=_clean_list(closing.features if closing else []),
             suggested_features=_clean_list(closing.suggested_features if closing else []),

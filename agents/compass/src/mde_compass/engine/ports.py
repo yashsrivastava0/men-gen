@@ -39,6 +39,14 @@ from mde_compass.domain.situation import (
     GlossaryCandidate,
     SituationProfile,
 )
+from mde_compass.engine.structure_wire import (
+    ModuleInput,
+    ModuleOutput,
+    OutlineInput,
+    OutlineOutput,
+    ReviewInput,
+    ReviewOutput,
+)
 
 # --- the compact context every call receives (never the whole chat) -------------------------------
 
@@ -448,6 +456,9 @@ class PlanRequest(Strict):
     next_card_n: int = Field(default=1, ge=1)  # the planner numbers its questions from here (Q-###)
     # ADR 0016: needs whose last answer was thin; the next batch's single call may fold a follow-up for them in
     followup_candidates: list[str] = Field(default_factory=list)
+    structure_focus: bool = (
+        False  # ADR 0017: medium and large bands ask for what decides the app's structure
+    )
     closing: ClosingContext | None = None  # mode "closing" only
 
 
@@ -533,6 +544,39 @@ class DecideResult(Strict):
 
 class AnswerDecider(Protocol):
     async def decide(self, ctx: TurnContext, request: DecideRequest) -> DecideResult: ...
+
+
+# --- the structure of the app (ADR 0017) ---------------------------------------------------------------
+
+
+class OutlineResult(Strict):
+    output: OutlineOutput
+    used_fallback: bool = False  # the deterministic floor answered: a failure, counted
+    reason: str = ""
+
+
+class ModuleResult(Strict):
+    output: ModuleOutput
+    used_fallback: bool = False
+    reason: str = ""
+
+
+class ReviewResult(Strict):
+    output: ReviewOutput
+    used_fallback: bool = False
+    reason: str = ""
+
+
+class StructureOutliner(Protocol):
+    async def outline(self, ctx: TurnContext, request: OutlineInput) -> OutlineResult: ...
+
+
+class StructureModuleDrafter(Protocol):
+    async def draft(self, ctx: TurnContext, request: ModuleInput) -> ModuleResult: ...
+
+
+class StructureReviewer(Protocol):
+    async def review(self, ctx: TurnContext, request: ReviewInput) -> ReviewResult: ...
 
 
 class SummaryRequest(Strict):
@@ -643,6 +687,10 @@ class Ports:
     answer_decider: (
         AnswerDecider  # "you decide" for questions without a usable recommendation (ADR 0016)
     )
+    # the structure of the app (ADR 0017)
+    structure_outliner: StructureOutliner
+    structure_drafter: StructureModuleDrafter
+    structure_reviewer: StructureReviewer
 
 
 # --- hand-off ---------------------------------------------------------------------------------------

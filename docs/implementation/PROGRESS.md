@@ -172,7 +172,7 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] S0. Docs and data, behaviour-neutral: plan, ADR 0017, D-113 to D-120, `size_bands.yaml` + loader, view-level dedupe of repeated facts (4caeab7)
 - [x] S1. Model: four optional sections, omit-when-empty dump, hash pins on both real exports, patch registries, ids (df43169)
 - [x] S2. Pure logic: derive, checks (structural, sufficiency, logical, realism), rule pack, slices, provenance guard
-- [ ] S3. Calls: `cmp.draft_outline`, `cmp.draft_module`, `cmp.review_structure`, `cmp.seed_research` v3, `cmp.plan_questions` v5
+- [x] S3. Calls: `cmp.draft_outline`, `cmp.draft_module`, `cmp.review_structure`, `cmp.seed_research` v3, `cmp.plan_questions` v5
 - [ ] S4. Engine step and band logic (inside the seed and scan gather), switches, notices
 - [ ] S5. Gate and edits: `structure_action`, blocker `structure_unreviewed`, Approve All, undo
 - [ ] S6. Views, API, export (format 2), research guidance

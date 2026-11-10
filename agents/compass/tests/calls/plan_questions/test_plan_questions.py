@@ -62,7 +62,7 @@ def _request(inp: PlanInput, **changes: object) -> PlanRequest:
 
 def test_spec_matches_profile() -> None:
     s = SPEC.spec
-    assert s.id == "cmp.plan_questions" and s.version == 4
+    assert s.id == "cmp.plan_questions" and s.version == 5
     assert s.reasoning_effort == "low" and s.max_output_tokens == 3500 and s.route == "standard"
     assert s.untrusted_inputs and not s.tools and SPEC.lane == "writer"
     assert "focus_answer" in s.untrusted_inputs and "fact_digest" in s.untrusted_inputs
@@ -557,3 +557,45 @@ def test_the_mock_assumes_a_need_marked_assume_instead_of_asking_it() -> None:
         "integrations.mode"
     ]  # a follow-up still asks
     assert handle(follow).assumed_instead == []
+
+
+# ------------------------------------------------------------- v5: the answers decide the structure (ADR 0017)
+
+
+def test_the_structure_focus_is_off_by_default_and_renders_nothing() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = _input(next(e for e in EXAMPLES if e["input"]["mode"] != "closing"))
+    assert inp.structure_focus is False
+    assert "screen-by-screen" not in PromptRenderer().render(SPEC.spec, inp).user
+
+
+def test_the_structure_focus_adds_one_short_block_to_a_batch_prompt_and_not_to_the_closing_one() -> (
+    None
+):
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = _input(next(e for e in EXAMPLES if e["input"]["mode"] != "closing"))
+    plain = PromptRenderer().render(SPEC.spec, inp).user
+    focused = (
+        PromptRenderer().render(SPEC.spec, inp.model_copy(update={"structure_focus": True})).user
+    )
+    assert "screen-by-screen" in focused and "One decision per question." in focused
+    assert (
+        focused.replace(
+            focused[
+                focused.index("The answers will be") : focused.index("One decision per question.")
+                + len("One decision per question.\n")
+            ],
+            "",
+        )
+        == plain
+    )
+    assert len(focused) - len(plain) < 800  # a short block, not a rewrite of the prompt
+
+
+def test_the_request_flag_reaches_the_wire_input() -> None:
+    inp = _input(next(e for e in EXAMPLES if e["input"]["mode"] != "closing"))
+    request = _request(inp, structure_focus=True)
+    assert build_input(CATALOG, request).structure_focus is True
+    assert build_input(CATALOG, _request(inp)).structure_focus is False

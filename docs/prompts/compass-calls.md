@@ -1,6 +1,6 @@
 # Compass call catalog (`cmp.*`)
 
-Hand-written catalog of the eighteen LLM calls of [Compass](../packages/compass.md); all eighteen have a folder: twelve from the first build, five added by the AI-planned interview (`cmp.plan_questions`, `cmp.audit_questions`, `cmp.update_summary`, `cmp.compile_brief`, `cmp.rephrase_question`; [ADR 0015](../adr/0015-ai-planned-interview-and-interview-memory.md)) and `cmp.decide_answers` ("you decide" in one batch, [ADR 0016](../adr/0016-compass-v2-interview-mechanics.md)); `cmp.understand_turn` is version 2, `cmp.plan_questions` version 4, `cmp.audit_questions` version 3. It is **not** generated and is separate from the generated [prompt-catalog.md](prompt-catalog.md): Compass specs live in `agents/compass/src/mde_compass/calls/<name>/` and are not registered in `mde_prompts` or `CALL_IO` ([ADR 0014](../adr/0014-call-spec-registration-from-agent-packages.md)). Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md), section 12 (prompting approach) and section 17 (the AI-planned interview). Update this page in the same change as any call.
+Hand-written catalog of the twenty-one LLM calls of [Compass](../packages/compass.md); all twenty-one have a folder (the last three, `cmp.draft_outline`, `cmp.draft_module` and `cmp.review_structure`, draft and review the structure of the app, ADR 0017): twelve from the first build, five added by the AI-planned interview (`cmp.plan_questions`, `cmp.audit_questions`, `cmp.update_summary`, `cmp.compile_brief`, `cmp.rephrase_question`; [ADR 0015](../adr/0015-ai-planned-interview-and-interview-memory.md)) and `cmp.decide_answers` ("you decide" in one batch, [ADR 0016](../adr/0016-compass-v2-interview-mechanics.md)); `cmp.understand_turn` is version 2, `cmp.plan_questions` version 4, `cmp.audit_questions` version 3. It is **not** generated and is separate from the generated [prompt-catalog.md](prompt-catalog.md): Compass specs live in `agents/compass/src/mde_compass/calls/<name>/` and are not registered in `mde_prompts` or `CALL_IO` ([ADR 0014](../adr/0014-call-spec-registration-from-agent-packages.md)). Behaviour source: [doc 11](../architecture-v3/11-discovery-agent-design.md), section 12 (prompting approach) and section 17 (the AI-planned interview). Update this page in the same change as any call.
 
 Two question engines exist while the work is in progress (`InterviewPolicy.engine`, see [the package page](../packages/compass.md#the-ai-planned-interview)). `planner` is the default; `legacy` is a rollback (`COMPASS_INTERVIEW_ENGINE=legacy`). The table below says which engine uses which call.
 
@@ -23,7 +23,7 @@ Two question engines exist while the work is in progress (`InterviewPolicy.engin
 | `cmp.write_card` | high | 2500 | writer | deep | 60 s | `CardWriter` | `WriteCardAdapter` | legacy |
 | `cmp.situate` | high | 6000 | writer | deep | 90 s | `Situator` | `SituateAdapter` | both |
 | `cmp.compile_text` | high | 3500 | writer | deep | 90 s | `Compiler` | `CompileTextAdapter` | both |
-| `cmp.seed_research` | medium | 4000 | writer | deep | 90 s | `ResearchSeeder` | `SeedResearchAdapter` | both |
+| `cmp.seed_research` | low | 4500 | writer | standard | 60 s | `ResearchSeeder` | `SeedResearchAdapter` | both |
 | `cmp.probe_handoff` | low | 2500 | canary | fast | 30 s | `Prober` | `ProbeHandoffAdapter` | both |
 | `cmp.answer` | medium | 1500 | writer | standard | 45 s | `Answerer` | `AnswerAdapter` | both |
 | `cmp.interpret_change` | high | 3500 | writer | deep | 90 s | `ChangeInterpreter` | `InterpretChangeAdapter` | both |
@@ -37,6 +37,9 @@ Two question engines exist while the work is in progress (`InterviewPolicy.engin
 | `cmp.compile_brief` | low | 8000 | writer | deep | 150 s | `BriefCompiler` | `CompileAdapter` | planner |
 | `cmp.rephrase_question` | medium | 1500 | writer | standard | 45 s | `QuestionRephraser` | `RephraseAdapter` | planner |
 | `cmp.decide_answers` | low | 2000 | writer | standard | 30 s | `AnswerDecider` | `DecideAdapter` | planner |
+| `cmp.draft_outline` | low | 4000 | writer | standard | 55 s | `StructureOutliner` | `OutlineAdapter` | planner |
+| `cmp.draft_module` | low | 5000 | writer | standard | 55 s | `StructureModuleDrafter` | `ModuleAdapter` | planner |
+| `cmp.review_structure` | low | 2500 | critic | standard | 45 s | `StructureReviewer` | `ReviewAdapter` | planner |
 
 The ports are Protocols in `engine/ports.py`; `calls/registry.py` (`PORT_BY_CALL`) maps each folder to its `Ports` attribute. Tests named below are in `agents/compass/tests/calls/<name>/test_<name>.py` unless a file is named. Run one call with `uv run pytest agents/compass/tests/calls/<name>`.
 
@@ -220,3 +223,33 @@ The ports are Protocols in `engine/ports.py`; `calls/registry.py` (`PORT_BY_CALL
 * **Fallback:** vague-word and phrase tables (a vague word is not a finding when its line carries a number), undefined short capitalised terms that are not in the glossary or the common-terms list, and contradictions between lines reusing the merger's rules. Pure and linear.
 * **Status:** built, tested and called when Brief review opens (`engine/review.flag_review`; the body of `Service._flag_ambiguity` is to be replaced by it, see the Brief engineer's report). What does not add up (conflicting, unrealistic, dependency, plausibility) becomes an assumption without a slot (basis `review`, `impact` high only when the touched slot has impact 4 or more or must be confirmed, so it blocks Gate 1 until decided); what is merely unclear (vague, undefined) stays a non-blocking open question (at most three). Neither changes a value. The floor also compares the details with the Brief values and with each other and flags a share above 100 percent as unrealistic. The adapter returns domain `AmbiguityFinding`s (`slot_id`, `text`, `kind`). It is also used by the live smoke driver.
 * **Must-not tests** (`tests/calls/scan_ambiguity/test_scan_ambiguity.py`): `test_output_has_no_value_field`, `test_scan_never_changes_values`, `test_findings_carry_no_replacement_values`, `test_adapter_drops_findings_that_point_nowhere`, `test_adapter_falls_back_when_no_finding_points_at_the_digest`, `test_conflicting_finding_must_be_grounded`, `test_injected_instruction_in_the_digest_is_data`, `test_hostile_input_is_linear`. The service wiring is tested by `test_ambiguity_findings_become_non_blocking_questions_and_change_no_value` in `tests/scenarios/test_service_flow.py`.
+
+## The structure of the app (ADR 0017)
+
+Three calls draft and review the structure of the app (modules, screens, flows, entities) that the person approves at Gate 1. They run on the standard route (up to 8 at once), have no tools, take the person's words, documents and earlier drafts as untrusted data, and every one has a mock handler (the deterministic floor with a `[mock]` tag) and a floor in `calls/structure_floor.py` built only from the Brief's own features, roles and apps and `catalog/structure_patterns.yaml`. A floor is a failure to be fixed and counted (`meta.interview.fallback_count`), never a feature. The wire models live in `engine/structure_wire.py`; the outputs are FLAT lists that point at each other by ref because a strict output schema nests at most five levels.
+
+### cmp.draft_outline
+
+* **Version / spec:** v1; effort low, 4000 tokens, 55 s; untrusted inputs `project_card`, `features`, `roles`, `apps`, `integrations`, `org`, `fact_digest`, `seeds`, `pinned`, `instruction`; validator `structural` (no modules for in-scope features, duplicate or empty refs, a nameless module); fallback `compass.draft_outline`.
+* **Purpose:** the short, serial step: the modules (areas), the entity NAMES and the journeys (with legs, a module may repeat) of the app. The shared vocabulary is frozen here so the module calls can run in parallel. Field detail is deliberately not here (it would make this call about 3.5K tokens at large size).
+* **Input (`OutlineInput`):** `language`, `band` (the size band as numbers: guidance, not a quota), `project_card`, `features[]` (id, name, intent, priority, scope_status, family, apps), `roles[]`, `apps[]`, `integrations`, `auth_methods`, `org`, `fact_digest`, `seeds[]` (things the person or a document said about screens, flows, entities), `pinned[]` (accepted or written by the person: kept exactly), `instruction`.
+* **Output (`OutlineOutput`):** `modules[]` (ref, kind, name, purpose, apps, features, roles, screen_target), `entities[]` (ref, name, purpose, owner_module), `journeys[]` (ref, name, role, goal, legs, owner_module).
+* **Floor / mock:** one module per in-scope feature (or per family with two or more features, named after the family), an account module when the Brief says how people sign in, the standard modules the band allows (notifications; help and administration for large), one entity per feature and one journey per must-have feature.
+
+### cmp.draft_module
+
+* **Version / spec:** v1; effort low, 5000 tokens, 55 s; untrusted inputs the group, the vocabulary, roles, apps, features, journeys, existing screens, facts, instruction and issues; validator `structural` (a requested module with no screens, two screens with one ref, a nameless screen).
+* **Purpose:** one call per module GROUP (all modules for small, 3 for medium, 2 for large), in parallel: the screens, the journey segments over them, and the fields, states and access of the entities the group owns. Also the repair-and-expansion call: `issues` lists machine-written problems (a role that cannot open a step of its own journey, a thin feature, a detail no module received) and `instruction` carries the person's own words for a regeneration.
+* **Output (`ModuleOutput`, flat):** `screens[]`, `uses[]` (screen, entity, view|create|edit), `entries[]`, `segments[]` (journey, leg, module, steps), `entities[]` (ref, key, states), `fields[]`, `access[]` (entity, role, level), `journeys[]` (acceptance, alternates).
+* **Floor / mock:** the patterns of `structure_patterns.yaml` for each feature of each module (2, 3 or 4 per feature by band) named with the feature's own words, segments over them, minimal fields, and access that is consistent by construction.
+
+### cmp.review_structure
+
+* **Version / spec:** v1; lane critic, effort low, 2500 tokens, 45 s; untrusted inputs `outline`, `facts`, `permissions`; medium and large bands only.
+* **Purpose:** a findings-only critic: contradictions with stated facts, things that cannot work as drawn, something clearly missing, a permission that differs from the role's own words. It can only REPORT; the engine keeps a finding only when it cites a real id and a real fact.
+* **Output (`ReviewOutput`):** `findings[]` (code, ids, fact_id, note). Floor and mock: no findings.
+
+### Changes to existing calls (ADR 0017)
+
+* `cmp.seed_research` v3: the input gains `size_band`, `research_depth` and `max_requests` (from `catalog/size_bands.yaml`: small light up to 6 requests, medium standard up to 12, large deep up to 20); the cap is enforced in code (`normalize` and the floor), the prompt names the depth. The profile is low effort, 4500 tokens, standard route, 60 s (the older table row above said deep, 4000, 90 s).
+* `cmp.plan_questions` v5: `PlanInput.structure_focus` (false renders exactly as before); the engine sets it for the medium and large bands: one short block asking for answers that decide the structure (who can do what, journeys, approvals, data kept, numbers, named systems) and not for what the breakdown can propose and the person approve.

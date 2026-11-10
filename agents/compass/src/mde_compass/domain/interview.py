@@ -306,6 +306,18 @@ class InterviewBlock(Strict):
     # "Ask me more" after the closing question: how many closing questions were already asked when it was reopened
     # (they count as base questions; a new closing question ends the longer interview)
     reopened: int = Field(default=0, ge=0)
+    # ADR 0017: the size band the app is planned for ("small", "medium", "large"; "" = not decided yet), what set it
+    # (tier, document or user) and the counts of the drafted structure. Bookkeeping, outside the hash like the rest.
+    size_band: str = ""
+    size_source: str = ""
+    size_suggested: str = ""  # a larger band the idea asked for at idea time, once ("" = none)
+    structure_modules: int = Field(default=0, ge=0)
+    structure_screens: int = Field(default=0, ge=0)
+    structure_flows: int = Field(default=0, ge=0)
+    structure_entities: int = Field(default=0, ge=0)
+    structure_issues: int = Field(
+        default=0, ge=0
+    )  # error-severity findings left after the repair pass
 
 
 class BatchRecord(Strict):

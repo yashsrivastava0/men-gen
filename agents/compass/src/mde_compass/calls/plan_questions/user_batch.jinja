@@ -1,6 +1,8 @@
 Mode: {{ mode }}
 Language: {{ language }}
 Questions wanted: {{ want_min }} to {{ want_max }} in {{ group_min }} to {{ group_max }} groups (never more than {{ remaining_budget }} in total). Number them from Q-{{ '%03d' % next_card_n }}.
+{% if structure_focus %}The answers will be turned into a screen-by-screen breakdown of the app: its areas, screens, journeys, the data it keeps and who may do what. Prefer questions whose answers decide those things: who can do what, the journeys and their approvals or escalations, the data the app keeps, numbers and limits, outside systems by name, reports. Do not ask what that breakdown can propose and the person can approve later (lists of areas, screens or data). One decision per question.
+{% endif %}
 {% if pivot_from %}Pivot: the person changed direction away from "{{ pivot_from }}".
 {% endif %}
 Project card:

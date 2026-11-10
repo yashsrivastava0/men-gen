@@ -42,6 +42,10 @@ PORT_BY_CALL: dict[str, str] = {
     "compile_brief": "brief_compiler",
     "rephrase_question": "question_rephraser",
     "decide_answers": "answer_decider",
+    # the structure of the app (ADR 0017)
+    "draft_outline": "structure_outliner",
+    "draft_module": "structure_drafter",
+    "review_structure": "structure_reviewer",
 }
 PLACEHOLDERS: dict[str, Any] = {
     "chunk_reader": NoChunkReader,

@@ -133,7 +133,7 @@ def fallback(inp: SeedResearchInput) -> SeedResearchOutput:
         refs = named if spec.get("with_references") else []
         requests.append(_request(spec, values, inp, table, references=refs))
     for ref in named:
-        if len(requests) >= FALLBACK_MAX_REQUESTS:
+        if len(requests) >= min(FALLBACK_MAX_REQUESTS, inp.max_requests):
             break
         rvalues = {**values, "reference": _short(ref)}
         requests.append(_request(table["reference_request"], rvalues, inp, table, references=[ref]))
@@ -146,4 +146,6 @@ def fallback(inp: SeedResearchInput) -> SeedResearchOutput:
         local_competitors=named,
         languages=_clean(inp.languages) or [inp.language],
     )
-    return SeedResearchOutput(requests=requests[:FALLBACK_MAX_REQUESTS], hints=hints)
+    return SeedResearchOutput(
+        requests=requests[: min(FALLBACK_MAX_REQUESTS, inp.max_requests)], hints=hints
+    )

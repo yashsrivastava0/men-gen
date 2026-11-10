@@ -1,0 +1,218 @@
+{
+  "name": "en_clinic_chain",
+  "input": {
+    "language": "en",
+    "band": {
+      "id": "medium",
+      "screens_low": 20,
+      "screens_high": 30,
+      "open_upper": false,
+      "modules_low": 4,
+      "modules_high": 8,
+      "flows_low": 5,
+      "flows_high": 12,
+      "entities_low": 6,
+      "entities_high": 15,
+      "must_feature_screens_min": 2,
+      "module_screens_min": 2
+    },
+    "project_card": "Idea (user's words): An app for my chain of six clinics in Pune: patients book appointments and see a doctor by video, doctors run their day and write notes, the receptionist manages the schedule.\nCategory: clinic chain. Geography: Pune, India. Language: en.",
+    "features": [
+      {
+        "id": "FTR-001",
+        "name": "Book appointments",
+        "intent": "Patients book a slot",
+        "priority": "must",
+        "scope_status": "in",
+        "family": "",
+        "apps": []
+      },
+      {
+        "id": "FTR-002",
+        "name": "Video consultation",
+        "intent": "Patients and doctors meet online",
+        "priority": "must",
+        "scope_status": "in",
+        "family": "",
+        "apps": []
+      },
+      {
+        "id": "FTR-003",
+        "name": "Schedule view",
+        "intent": "Staff see the day",
+        "priority": "nice",
+        "scope_status": "in",
+        "family": "",
+        "apps": []
+      },
+      {
+        "id": "FTR-004",
+        "name": "Loyalty points",
+        "intent": "Reward repeat visits",
+        "priority": "later",
+        "scope_status": "later",
+        "family": "",
+        "apps": []
+      }
+    ],
+    "roles": [
+      {
+        "id": "ROL-001",
+        "name": "Patient",
+        "goal": "book and attend appointments"
+      },
+      {
+        "id": "ROL-002",
+        "name": "Doctor",
+        "goal": "see patients and write notes"
+      },
+      {
+        "id": "ROL-003",
+        "name": "Receptionist",
+        "goal": "manage the daily schedule"
+      }
+    ],
+    "apps": [
+      {
+        "id": "APP-001",
+        "name": "Patient app",
+        "surface": "mobile"
+      },
+      {
+        "id": "APP-002",
+        "name": "Staff app",
+        "surface": "mobile"
+      }
+    ],
+    "integrations": [
+      "SMS reminders"
+    ],
+    "auth_methods": [
+      "phone_otp"
+    ],
+    "org": "",
+    "fact_digest": "FCT-001 [rule|notes] Patients can only see their own visit notes\nFCT-002 [number|doctors] About 45 doctors across six clinics\nFCT-003 [flow|reception] Receptionists manage the daily appointment schedule",
+    "seeds": [],
+    "pinned": [],
+    "instruction": ""
+  },
+  "output": {
+    "modules": [
+      {
+        "ref": "m1",
+        "kind": "account",
+        "name": "Account and privacy",
+        "purpose": "Sign in with a phone code, manage your details, language and consent.",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "features": [],
+        "roles": [
+          "ROL-001",
+          "ROL-002",
+          "ROL-003"
+        ],
+        "screen_target": 5
+      },
+      {
+        "ref": "m2",
+        "kind": "",
+        "name": "Appointments",
+        "purpose": "Find a doctor, book a slot and keep track of visits.",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "features": [
+          "FTR-001",
+          "FTR-003"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-002",
+          "ROL-003"
+        ],
+        "screen_target": 6
+      },
+      {
+        "ref": "m3",
+        "kind": "",
+        "name": "Consultations",
+        "purpose": "Meet the doctor by video and keep the visit notes.",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "features": [
+          "FTR-002"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-002"
+        ],
+        "screen_target": 4
+      },
+      {
+        "ref": "m4",
+        "kind": "support:notifications",
+        "name": "Notifications",
+        "purpose": "Reminders and alerts, and how to receive them.",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "features": [],
+        "roles": [
+          "ROL-001",
+          "ROL-002",
+          "ROL-003"
+        ],
+        "screen_target": 2
+      }
+    ],
+    "entities": [
+      {
+        "ref": "e1",
+        "name": "Appointment",
+        "purpose": "A booked visit with a doctor.",
+        "owner_module": "m2"
+      },
+      {
+        "ref": "e2",
+        "name": "Doctor",
+        "purpose": "A doctor patients can book.",
+        "owner_module": "m2"
+      },
+      {
+        "ref": "e3",
+        "name": "Visit note",
+        "purpose": "What the doctor wrote about a visit.",
+        "owner_module": "m3"
+      }
+    ],
+    "journeys": [
+      {
+        "ref": "j1",
+        "name": "Book an appointment",
+        "role": "ROL-001",
+        "goal": "A patient gets a slot with a doctor.",
+        "legs": [
+          "m2"
+        ],
+        "owner_module": "m2"
+      },
+      {
+        "ref": "j2",
+        "name": "Run a consultation",
+        "role": "ROL-002",
+        "goal": "A doctor sees a patient and writes the notes.",
+        "legs": [
+          "m2",
+          "m3"
+        ],
+        "owner_module": "m3"
+      }
+    ]
+  }
+}

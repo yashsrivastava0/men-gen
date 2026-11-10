@@ -166,5 +166,6 @@ checks:
   over_band: {severity: warn, fix: none}
   fact_orphan: {severity: warn, fix: expand}
   rule_unmet: {severity: warn, fix: repair}
+  critic_finding: {severity: warn, fix: repair}
   unknown_pattern: {severity: warn, fix: code}
   unknown_field_type: {severity: warn, fix: code}

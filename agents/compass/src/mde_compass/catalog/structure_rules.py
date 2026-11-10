@@ -59,6 +59,7 @@ CHECK_CODES: tuple[str, ...] = (
     "over_band",
     "fact_orphan",
     "rule_unmet",
+    "critic_finding",
     "unknown_pattern",
     "unknown_field_type",
 )

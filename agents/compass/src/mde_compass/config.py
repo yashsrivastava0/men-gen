@@ -52,7 +52,7 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.answer", "medium", 1500, "writer", "standard", 45),
         _p("cmp.write_card", "high", 2500, "writer", "deep", 60),
         _p("cmp.scan_ambiguity", "medium", 2500, "critic", "standard", 60),
-        _p("cmp.seed_research", "low", 3000, "writer", "standard", 60),
+        _p("cmp.seed_research", "low", 4500, "writer", "standard", 60),
         _p("cmp.probe_handoff", "low", 2500, "canary", "fast", 30),
         _p("cmp.compile_text", "high", 3500, "writer", "deep", 90),
         _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
@@ -64,6 +64,11 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.decide_answers", "low", 2000, "writer", "standard", 30),
         _p("cmp.compile_brief", "low", 12000, "writer", "standard", 120),
         _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
+        # the structure of the app (ADR 0017): starting caps, calibrated in the live program (plan 8a). The cap
+        # includes reasoning, so it is generous; the timeout stays under the gateway's 60 s per attempt.
+        _p("cmp.draft_outline", "low", 4000, "writer", "standard", 55),
+        _p("cmp.draft_module", "low", 5000, "writer", "standard", 55),
+        _p("cmp.review_structure", "low", 2500, "critic", "standard", 45),
     )
 }
 

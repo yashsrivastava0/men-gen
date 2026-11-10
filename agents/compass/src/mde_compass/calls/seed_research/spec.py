@@ -16,7 +16,7 @@ _P = CALL_PROFILES[CALL_ID]
 
 _CORE: CallSpec[SeedResearchInput, SeedResearchOutput] = CallSpec(
     id=CALL_ID,
-    version=2,
+    version=3,
     input_model=SeedResearchInput,
     output_model=SeedResearchOutput,
     system_template="system.jinja",

@@ -9,7 +9,6 @@ from __future__ import annotations
 
 from mde_compass.calls.compile_text.text_utils import Vocabulary
 from mde_compass.calls.seed_research.schema import (
-    MAX_REQUESTS,
     MIN_REQUESTS,
     SeedResearchInput,
     SeedResearchOutput,
@@ -160,7 +159,7 @@ def normalize(inp: SeedResearchInput, out: SeedResearchOutput) -> SeedResearchOu
             continue
         seen.update(keys)
         requests.append(req)
-        if len(requests) >= MAX_REQUESTS:
+        if len(requests) >= inp.max_requests:
             break
     return SeedResearchOutput(requests=requests, hints=repair_hints(inp, out.hints))
 

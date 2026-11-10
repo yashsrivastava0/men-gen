@@ -90,6 +90,9 @@ class PlanInput(Wire):
     closing: ClosingWire = Field(
         default_factory=ClosingWire
     )  # mode "closing" only; empty otherwise
+    # ADR 0017 (v5): the answers become a screen-by-screen breakdown, so prefer questions that decide it. Set only for
+    # the medium and large size bands; false renders exactly as before.
+    structure_focus: bool = False
 
 
 # ----------------------------------------------------------------------------------------------- output

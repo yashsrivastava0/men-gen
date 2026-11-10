@@ -487,3 +487,58 @@ def test_the_seed_prompt_shows_the_details_as_data() -> None:
     prompt = PromptRenderer().render(SPEC.spec, inp)
     assert "Orders close at 9 pm" in prompt.user and "named system" in prompt.system
     assert "details" in SPEC.spec.untrusted_inputs
+
+
+# ------------------------------------------------------------------------- v3: how deep research goes (ADR 0017)
+
+
+def test_the_size_band_decides_how_many_requests_may_be_asked_for() -> None:
+    from mde_compass.catalog.size_bands import get_band
+
+    base = _inp()
+    assert (base.size_band, base.research_depth, base.max_requests) == (
+        "medium",
+        "standard",
+        12,
+    )  # as before
+    many = _out(
+        *[
+            _req(topic=f"Topic {n}", question=f"Question {n}?", terms=[f"term{n}"])
+            for n in range(25)
+        ]
+    )
+    for band in ("small", "medium", "large"):
+        cap = get_band(band).research.max_requests
+        inp = _inp(size_band=band, research_depth=get_band(band).research.depth, max_requests=cap)
+        assert len(normalize(inp, many).requests) <= cap
+    small = _inp(size_band="small", research_depth="light", max_requests=6)
+    large = _inp(size_band="large", research_depth="deep", max_requests=20)
+    assert len(normalize(small, many).requests) == 6 and len(normalize(large, many).requests) == 20
+
+
+def test_the_floor_never_asks_for_more_than_the_band_allows() -> None:
+    small = _inp(size_band="small", research_depth="light", max_requests=4)
+    assert len(fallback(small).requests) <= 4
+
+
+def test_the_prompt_names_the_depth_and_the_cap_and_the_input_comes_from_the_brief_band() -> None:
+    from mde_llm_gateway.render import PromptRenderer
+
+    inp = _inp(size_band="large", research_depth="deep", max_requests=20)
+    rendered = PromptRenderer().render(SPEC.spec, inp)
+    assert "Research depth for this app is deep (large app)" in rendered.system
+    assert "At most 20 requests" in rendered.system
+    assert SPEC.spec.version == 3
+
+    brief = _brief()
+    assert (
+        build_input(_ctx(), brief, load_catalog()).size_band
+    ) == "medium"  # no tier chosen: Standard
+    from mde_compass.domain.situation import DiscoveryPlan
+
+    brief.meta.plan = DiscoveryPlan(interview_budget="quick")
+    got = build_input(_ctx(), brief, load_catalog())
+    assert (got.size_band, got.research_depth, got.max_requests) == ("small", "light", 6)
+    brief.meta.plan = DiscoveryPlan(interview_budget="thorough")
+    got = build_input(_ctx(), brief, load_catalog())
+    assert (got.size_band, got.research_depth, got.max_requests) == ("large", "deep", 20)

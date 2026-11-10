@@ -30,3 +30,7 @@ calls:
   cmp.interpret_change: { input_tokens: 3000, output_tokens: 1200 }
   cmp.make_variants: { input_tokens: 2500, output_tokens: 1200 }
   cmp.write_card: { input_tokens: 2500, output_tokens: 1500 }
+  # the structure of the app (ADR 0017): estimates to replace with the measured table of the first live structure batch
+  cmp.draft_outline: { input_tokens: 6000, output_tokens: 2000 }
+  cmp.draft_module: { input_tokens: 4000, output_tokens: 1700 }
+  cmp.review_structure: { input_tokens: 5000, output_tokens: 800 }

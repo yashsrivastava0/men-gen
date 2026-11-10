@@ -142,6 +142,20 @@ def effective_band(
     return base, "tier"
 
 
+def band_of_brief(brief: Brief) -> tuple[BandId, BandSource]:
+    """The band a Brief is planned for: the one the engine recorded (``meta.interview.size_band``, hash-free), else the
+    tier's (the Standard tier when none was chosen). Old Briefs, which never recorded one, read as their tier says."""
+    block = brief.meta.interview
+    if block is not None and block.size_band in load_size_bands().bands:
+        source: BandSource = (
+            block.size_source if block.size_source in ("tier", "document", "user") else "tier"
+        )  # type: ignore[assignment]
+        return get_band(block.size_band).id, source
+    plan = brief.meta.plan
+    tier = plan.interview_budget if plan is not None and plan.interview_budget else "standard"
+    return effective_band(tier)
+
+
 def _distinct_roles(brief: Brief) -> int:
     if brief.roles:
         return len(brief.roles)
