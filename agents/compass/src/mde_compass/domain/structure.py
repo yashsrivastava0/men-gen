@@ -115,7 +115,9 @@ class EntityRecord(ItemMeta):
     key: str = ""  # ascii snake_case identifier
     name: str
     purpose: str = ""
-    module: str = ""  # MOD-### whose call writes its fields: the owner, so a slice by module can carry it
+    module: str = (
+        ""  # MOD-### whose call writes its fields: the owner, so a slice by module can carry it
+    )
     fields: list[EntityField] = Field(default_factory=list)
     states: list[str] = Field(default_factory=list)  # a short list when the thing has a status
     access: dict[str, AccessLevel] = Field(default_factory=dict)  # ROL-### -> what that role may do

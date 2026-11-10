@@ -1,0 +1,170 @@
+# Realism rules for the structure of the app (ADR 0017, plan 5d.2; data, not logic; hard rule 8).
+#
+# A rule says: WHEN the Brief says something (a slot value, an integration, a role), the structure must have a
+# capability: a screen, module or flow whose name or purpose contains one of the words. A rule that is not met is a
+# FINDING for the repair-and-expansion pass (severity warn); the checker never invents a fact and never edits a number.
+# The pack is a starting set, reviewed in the live runs.
+#
+# when (every condition listed must hold; an empty ``when`` is not allowed):
+#   sensitive_any   ``data.sensitive`` holds any of these values
+#   auth_any        ``access.auth_methods`` holds any of these values
+#   locales_min     ``experience.locales`` has at least this many languages
+#   integration_words   an integration's name contains any of these words
+#   roles_min       the Brief has at least this many roles
+#   role_words      a role's name or goal contains any of these words
+# requires: each item is a capability with the words that show it (per language) and a plain-words reason.
+version: 1
+
+rules:
+  - id: health_data
+    when: {sensitive_any: [health]}
+    requires:
+      - id: consent_privacy
+        words:
+          en: [consent, privacy, permission]
+          hi: [सहमति, गोपनीयता, अनुमति]
+          hinglish: [sahmati, gopniyata]
+        why:
+          en: "Health information needs a consent and privacy screen."
+          hi: "स्वास्थ्य जानकारी के लिए सहमति और गोपनीयता की स्क्रीन चाहिए।"
+      - id: access_log
+        words:
+          en: [audit, access log, activity log, history of access]
+          hi: [ऑडिट, एक्सेस लॉग]
+          hinglish: [audit]
+        why:
+          en: "Health records need a trail of who opened them."
+          hi: "स्वास्थ्य रिकॉर्ड किसने खोले, इसका रिकॉर्ड चाहिए।"
+  - id: financial_data
+    when: {sensitive_any: [financial]}
+    requires:
+      - id: consent_privacy
+        words:
+          en: [consent, privacy, terms]
+          hi: [सहमति, गोपनीयता]
+          hinglish: [sahmati, gopniyata]
+        why:
+          en: "Financial information needs a consent and privacy screen."
+          hi: "वित्तीय जानकारी के लिए सहमति और गोपनीयता की स्क्रीन चाहिए।"
+      - id: statements
+        words:
+          en: [statement, transactions, history, receipt]
+          hi: [विवरण, लेनदेन, रसीद]
+          hinglish: [lenden, rasid]
+        why:
+          en: "Money movements need a history or receipt screen."
+          hi: "पैसे के लेनदेन के लिए इतिहास या रसीद की स्क्रीन चाहिए।"
+  - id: personal_ids
+    when: {sensitive_any: [personal_ids]}
+    requires:
+      - id: consent_privacy
+        words:
+          en: [consent, privacy, verification, kyc]
+          hi: [सहमति, गोपनीयता, सत्यापन]
+          hinglish: [sahmati, gopniyata, kyc]
+        why:
+          en: "Identity documents need a consent and privacy screen."
+          hi: "पहचान दस्तावेज़ों के लिए सहमति और गोपनीयता की स्क्रीन चाहिए।"
+  - id: payments
+    when: {integration_words: [payment, payments, pay, checkout, upi, card, wallet]}
+    requires:
+      - id: payment_flow
+        words:
+          en: [checkout, payment, pay]
+          hi: [भुगतान, चेकआउट]
+          hinglish: [bhugtan, payment]
+        why:
+          en: "A payment integration needs a checkout or payment screen."
+          hi: "भुगतान के लिए चेकआउट या भुगतान की स्क्रीन चाहिए।"
+      - id: receipts
+        words:
+          en: [receipt, invoice, order history, payment history, refund]
+          hi: [रसीद, बिल, रिफंड]
+          hinglish: [rasid, bill, refund]
+        why:
+          en: "Payments need a receipt, invoice or refund path."
+          hi: "भुगतान के लिए रसीद, बिल या रिफंड का रास्ता चाहिए।"
+  - id: code_sign_in
+    when: {auth_any: [phone_otp]}
+    requires:
+      - id: verify_code
+        words:
+          en: [verify, otp, code, confirm]
+          hi: [पुष्टि, कोड, ओटीपी]
+          hinglish: [otp, code, verify]
+        why:
+          en: "Signing in with a code needs a screen to enter it."
+          hi: "कोड से साइन इन के लिए उसे डालने की स्क्रीन चाहिए।"
+  - id: sign_in
+    when: {auth_any: [phone_otp, email_password]}
+    requires:
+      - id: sign_in_screen
+        words:
+          en: [sign in, login, log in, sign up, register]
+          hi: [साइन इन, लॉगिन, साइन अप]
+          hinglish: [login, sign in, sign up]
+        why:
+          en: "People who sign in need a sign-in screen."
+          hi: "साइन इन करने वालों के लिए साइन इन की स्क्रीन चाहिए।"
+  - id: several_languages
+    when: {locales_min: 2}
+    requires:
+      - id: language_setting
+        words:
+          en: [language, locale, settings, preferences]
+          hi: [भाषा, सेटिंग]
+          hinglish: [bhasha, settings]
+        why:
+          en: "An app in several languages needs a way to choose one."
+          hi: "कई भाषाओं वाले ऐप में भाषा चुनने का तरीका चाहिए।"
+  - id: admin_role
+    when: {role_words: [admin, administrator, owner, manager]}
+    requires:
+      - id: manage_people
+        words:
+          en: [users, people, staff, team, roles, permissions, members, accounts]
+          hi: [उपयोगकर्ता, स्टाफ, भूमिका, सदस्य]
+          hinglish: [staff, users, team]
+        why:
+          en: "An administrator needs a way to manage the people and roles."
+          hi: "एडमिन को लोगों और भूमिकाओं को सँभालने का तरीका चाहिए।"
+
+# checks: what each structure check means (ADR 0017). severity: error (must be fixed or shown to the person) or warn
+# (shown, never blocks). fix: who handles it. ``code`` = deterministic fix in code (prune a dangling pointer, rename a
+# duplicate, retype a money field, drop an empty flow, attach an unused entity), ``repair`` = the model pass fixes what
+# the drafter got wrong, ``expand`` = the model pass adds what is thin or missing (the only trigger of expansion), none =
+# only reported. The total size (``thin_draft``, ``over_band``) is only ever reported: a band is guidance, not a quota.
+checks:
+  dangling_ref: {severity: error, fix: code}
+  screen_without_module: {severity: error, fix: code}
+  module_without_screens: {severity: error, fix: expand}
+  module_entry_missing: {severity: warn, fix: code}
+  screen_duplicate_name: {severity: error, fix: code}
+  screen_near_duplicate: {severity: warn, fix: none}
+  flow_too_short: {severity: warn, fix: code}
+  flow_role_cannot_access_step: {severity: error, fix: repair}
+  entity_without_fields: {severity: error, fix: expand}
+  entity_unused: {severity: warn, fix: code}
+  entity_access_missing: {severity: warn, fix: none}
+  screen_entity_access_conflict: {severity: error, fix: repair}
+  entity_key_invalid: {severity: error, fix: code}
+  field_key_invalid: {severity: error, fix: code}
+  field_type_money: {severity: warn, fix: code}
+  field_type_hint: {severity: warn, fix: none}
+  role_without_access: {severity: error, fix: expand}
+  role_without_home: {severity: warn, fix: none}
+  app_without_screens: {severity: error, fix: expand}
+  feature_without_screen: {severity: error, fix: expand}
+  must_feature_without_flow: {severity: error, fix: expand}
+  feature_thin: {severity: warn, fix: expand}
+  module_thin: {severity: warn, fix: expand}
+  screen_for_excluded_feature: {severity: error, fix: code}
+  screen_unreachable: {severity: warn, fix: none}
+  screen_without_roles: {severity: warn, fix: none}
+  module_too_big: {severity: warn, fix: none}
+  thin_draft: {severity: warn, fix: none}
+  over_band: {severity: warn, fix: none}
+  fact_orphan: {severity: warn, fix: expand}
+  rule_unmet: {severity: warn, fix: repair}
+  unknown_pattern: {severity: warn, fix: code}
+  unknown_field_type: {severity: warn, fix: code}

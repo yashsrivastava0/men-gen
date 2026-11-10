@@ -1,0 +1,137 @@
+# Vocabularies and templates for the structure of the app (ADR 0017; data, not logic; hard rule 8: nothing here is
+# specific to one company or app type).
+#
+# patterns        the closed list a screen's ``pattern`` comes from. ``home`` marks a pattern a role can start from
+#                 (a role needs one screen of such a pattern, or a module entry, to count as having a home).
+#                 ``chrome`` marks a pattern reached from the app's own frame (menu, header, first run), not from a
+#                 journey, so a screen of that pattern is never reported as unreachable.
+# field_types     the closed list an entity field's ``type`` comes from.
+# field_hints     words in a field's key or name that call for a type; a field typed ``text`` or ``number`` whose name says
+#                 money is retyped ``money`` by code (``auto``), anything else is only reported.
+# floor           what the deterministic floor and the mock handler build from the Brief's own features when no model
+#                 answered (a floor is a failure to be fixed in a live run, never a feature): the patterns drafted per
+#                 in-scope feature by band, how names are formed, and the standard account module.
+#                 ``{feature}`` is the feature's own name, so names follow the person's words and language.
+version: 1
+
+patterns:
+  list: {home: true, description: "a list of things to browse or work through"}
+  detail: {home: false, description: "one thing in full"}
+  form: {home: false, description: "create or edit something"}
+  dashboard: {home: true, description: "a summary of what matters now, with ways in"}
+  search: {home: true, description: "find something"}
+  auth: {home: false, chrome: true, description: "sign in, sign up, verify, reset"}
+  profile: {home: false, chrome: true, description: "the person's own details"}
+  settings: {home: false, chrome: true, description: "preferences and app settings"}
+  onboarding: {home: false, chrome: true, description: "first-run introduction or setup"}
+  checkout: {home: false, description: "pay for or confirm something"}
+  confirmation: {home: false, description: "the result of an action, with next steps"}
+  status: {home: false, description: "where something stands, such as tracking"}
+  calendar: {home: true, description: "a schedule or time slots"}
+  map: {home: false, description: "places on a map"}
+  chat: {home: true, description: "a conversation"}
+  report: {home: false, description: "numbers over time, for review"}
+  notifications: {home: true, chrome: true, description: "messages and alerts"}
+
+field_types: [text, number, money, date, datetime, bool, enum, ref, image, file, location, list]
+
+field_hints:
+  - type: money
+    auto: true
+    words:
+      en: [price, fee, fees, amount, total, cost, balance, charge, salary, fare, payment, refund, discount]
+      hi: [कीमत, शुल्क, राशि, दाम, किराया]
+      hinglish: [kimat, daam, shulk, rashi]
+  - type: date
+    auto: false
+    words:
+      en: [date, birthday, dob, deadline, due]
+      hi: [तारीख, तिथि]
+      hinglish: [tareekh, tithi]
+  - type: location
+    auto: false
+    words:
+      en: [address, location, latitude, longitude, pincode, zipcode]
+      hi: [पता, स्थान]
+      hinglish: [pata, jagah]
+
+floor:
+  # patterns drafted for every in-scope feature, by band (the first N of the list; small apps stay small)
+  feature_patterns: [list, detail, form, status]
+  screens_per_feature: {small: 2, medium: 3, large: 4}
+  labels:
+    list:
+      en: "{feature}"
+      hi: "{feature}"
+    detail:
+      en: "{feature}: details"
+      hi: "{feature}: ब्योरा"
+    form:
+      en: "{feature}: new or edit"
+      hi: "{feature}: नया या बदलें"
+    status:
+      en: "{feature}: status"
+      hi: "{feature}: स्थिति"
+  purposes:
+    list:
+      en: "Browse and pick from {feature}."
+      hi: "{feature} देखें और चुनें।"
+    detail:
+      en: "See one item of {feature} in full."
+      hi: "{feature} की एक चीज़ पूरी देखें।"
+    form:
+      en: "Create or change an item of {feature}."
+      hi: "{feature} की चीज़ बनाएँ या बदलें।"
+    status:
+      en: "See where {feature} stands."
+      hi: "देखें कि {feature} की स्थिति क्या है।"
+  # one module per family when two or more features share it, otherwise one per feature; the family label names it
+  group_features_by_family: true
+  account_module:
+    # added when the Brief says how people sign in (``access.auth_methods`` is filled)
+    name: {en: Account, hi: खाता}
+    purpose: {en: "Sign in, verify and manage your own details.", hi: "साइन इन करें, पुष्टि करें और अपनी जानकारी सँभालें।"}
+    screens:
+      - {pattern: auth, name: {en: Sign in, hi: साइन इन}, purpose: {en: "Sign in or create an account.", hi: "साइन इन करें या खाता बनाएँ।"}}
+      - {pattern: auth, name: {en: Verify, hi: पुष्टि}, purpose: {en: "Confirm who you are.", hi: "अपनी पहचान की पुष्टि करें।"}, when_auth: [phone_otp, email_otp]}
+      - {pattern: profile, name: {en: Profile, hi: प्रोफ़ाइल}, purpose: {en: "See and change your own details.", hi: "अपनी जानकारी देखें और बदलें।"}}
+  # modules every app of a size tends to need, used by the floor and the mock; ``bands`` says in which bands, and
+  # ``roles_min`` how many roles must exist. They carry no feature: nothing here is specific to one app type.
+  support_modules:
+    - id: notifications
+      bands: [medium, large]
+      roles_min: 0
+      name: {en: Notifications, hi: सूचनाएँ}
+      purpose: {en: "Messages and alerts, and how to receive them.", hi: "संदेश और अलर्ट, और उन्हें पाने का तरीका।"}
+      screens:
+        - {pattern: notifications, name: {en: Notifications, hi: सूचनाएँ}, purpose: {en: "See your messages and alerts.", hi: "अपने संदेश और अलर्ट देखें।"}}
+        - {pattern: settings, name: {en: Notification settings, hi: सूचना सेटिंग}, purpose: {en: "Choose what you are told about.", hi: "चुनें कि आपको किस बारे में बताया जाए।"}}
+    - id: help
+      bands: [large]
+      roles_min: 0
+      name: {en: Help and support, hi: मदद और सहायता}
+      purpose: {en: "Answers and a way to reach the team.", hi: "जवाब और टीम तक पहुँचने का तरीका।"}
+      screens:
+        - {pattern: list, name: {en: Help topics, hi: मदद के विषय}, purpose: {en: "Find an answer.", hi: "जवाब खोजें।"}}
+        - {pattern: form, name: {en: Contact support, hi: सहायता से संपर्क}, purpose: {en: "Ask for help.", hi: "मदद माँगें।"}}
+    - id: administration
+      bands: [large]
+      roles_min: 3
+      name: {en: Administration, hi: प्रबंधन}
+      purpose: {en: "Manage the people who use the app and what they can do.", hi: "ऐप इस्तेमाल करने वालों और उनकी अनुमतियों को सँभालें।"}
+      screens:
+        - {pattern: list, name: {en: People, hi: लोग}, purpose: {en: "See everyone who uses the app.", hi: "ऐप इस्तेमाल करने वाले सभी को देखें।"}}
+        - {pattern: detail, name: {en: Person details, hi: व्यक्ति का ब्योरा}, purpose: {en: "See one person and what they can do.", hi: "एक व्यक्ति और उसकी अनुमतियाँ देखें।"}}
+        - {pattern: form, name: {en: Invite or edit a person, hi: व्यक्ति को जोड़ें या बदलें}, purpose: {en: "Add a person or change their access.", hi: "किसी को जोड़ें या उसकी पहुँच बदलें।"}}
+  # what a person does on a screen of each pattern, in a few words, for the steps of a flow
+  actions:
+    list: {en: browse, hi: देखें}
+    detail: {en: open one, hi: एक खोलें}
+    form: {en: fill in and save, hi: भरें और सहेजें}
+    status: {en: check progress, hi: प्रगति देखें}
+    search: {en: search, hi: खोजें}
+    dashboard: {en: look at the summary, hi: सारांश देखें}
+    other: {en: continue, hi: आगे बढ़ें}
+  acceptance:
+    en: "{goal} works from the first step to the last."
+    hi: "{goal} पहले कदम से आख़िरी तक सही चलता है।"

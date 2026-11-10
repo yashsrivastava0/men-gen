@@ -170,8 +170,8 @@ Owner's list: a detailed, correct Brief; one batch at a time answered and submit
 Baseline before any change: offline Compass + web suite 3044 collected (3033 passed, 3 skipped, 8 xfailed), ruff clean, pyright 0 errors on own paths, lint-imports 7 kept, docs-check 0 problems; live spend USD 0.8541 (shared ledger).
 
 - [x] S0. Docs and data, behaviour-neutral: plan, ADR 0017, D-113 to D-120, `size_bands.yaml` + loader, view-level dedupe of repeated facts (4caeab7)
-- [ ] S1. Model: four optional sections, omit-when-empty dump, hash pins on both real exports, patch registries, ids
-- [ ] S2. Pure logic: derive, checks (structural, sufficiency, logical, realism), rule pack, slices, provenance guard
+- [x] S1. Model: four optional sections, omit-when-empty dump, hash pins on both real exports, patch registries, ids (df43169)
+- [x] S2. Pure logic: derive, checks (structural, sufficiency, logical, realism), rule pack, slices, provenance guard
 - [ ] S3. Calls: `cmp.draft_outline`, `cmp.draft_module`, `cmp.review_structure`, `cmp.seed_research` v3, `cmp.plan_questions` v5
 - [ ] S4. Engine step and band logic (inside the seed and scan gather), switches, notices
 - [ ] S5. Gate and edits: `structure_action`, blocker `structure_unreviewed`, Approve All, undo
