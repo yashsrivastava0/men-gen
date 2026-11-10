@@ -19,6 +19,7 @@ The model proposes; code decides. In order:
 from __future__ import annotations
 
 import asyncio
+import dataclasses
 from collections.abc import Mapping
 from dataclasses import dataclass, field, replace
 from typing import Any
@@ -309,6 +310,35 @@ async def _plan_fan_out(
                 )
             )
         valid_cards = kept
+
+    missing = request.want_min - len(valid_cards)
+    if missing > 0 and request.mode in ASKING_MODES:
+        # the validators and the auditor cut the form below its size: one top-up call fills it (live: 3, 3 and 2
+        # questions in a row meant extra rounds); its cards are checked together with the ones already accepted
+        topup = await plan_validated(
+            planner=planner,
+            auditor=auditor,
+            ctx=ctx,
+            request=request.model_copy(
+                update={
+                    "want_min": missing,
+                    "want_max": missing,
+                    "next_card_n": base_n + len(all_cards) + 20,
+                }
+            ),
+            vctx=vctx,
+            policy=dataclasses.replace(policy, fan_out=False),
+            catalog=catalog,
+            statuses=statuses,
+            obligations=obligations,
+            needs_table=needs_table,
+            asked_list=asked_list,
+        )
+        if not topup.used_fallback and topup.batch.cards():
+            pool = [*valid_cards, *topup.batch.cards()]
+            again = validate_batch(rank_by_priority(pool), vctx)
+            valid_cards = in_original_order(again.accepted, pool)[: request.want_max]
+            all_rejected.extend(again.rejected)
 
     merged_hyp = None
     hyps = [b.domain_hypothesis for b in batches if b.domain_hypothesis is not None]

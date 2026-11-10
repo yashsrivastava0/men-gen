@@ -1891,7 +1891,7 @@ CONTRACT*/
 
     var approveAllBtn = null;
     var confirmSheet = null;
-    if (vm.header.status !== "approved" && assumedRows > 0) {
+    if (vm.header.status === "in_review" && assumedRows > 0) { // only once the Brief is in review (during the interview it would be refused)
       approveAllBtn = h("button", { class: "btn btn-primary approve-all-btn", type: "button", text: t("ui.v2.approve_all"), on: { click: function () {
         if (highImpact.length > 0) {
           if (confirmSheet && confirmSheet.parentNode) { return; }

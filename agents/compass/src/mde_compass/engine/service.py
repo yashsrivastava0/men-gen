@@ -293,6 +293,7 @@ class _Turn:
         False  # a typed message (not an answer) arrived: the open question comes back
     )
     situation: Any = None  # the idea turn reads the situation in parallel with the understanding (ADR 0016: speed)
+    scan_findings: Any = None  # the ambiguity scan, read in parallel with research seeding
     followup_candidates: list[str] = field(default_factory=list)
 
     @property
@@ -1070,7 +1071,12 @@ class Service(FlowHooks):
                 await self._compile_brief(
                     turn
                 )  # research seeding and the probes read the full Brief
-            await self._seed(turn)
+                # the ambiguity scan only needs the compiled Brief: it runs while research is seeded
+                _, turn.scan_findings = await asyncio.gather(
+                    self._seed(turn), review_mod.scan_findings(self, turn)
+                )
+            else:
+                await self._seed(turn)
             self._go(turn, "research_seeded", "PROBING")
         if turn.state == "PROBING":
             if not await self._probe(turn):
@@ -1540,7 +1546,8 @@ class Service(FlowHooks):
         """cmp.scan_ambiguity: vague, conflicting, undefined or implausible statements become NON-BLOCKING open
         questions, and findings about a value the person gave become assumptions to review (the scan returns
         findings only, so it can never change the Brief)."""
-        await review_mod.flag_review(self, turn)
+        await review_mod.flag_review(self, turn, turn.scan_findings)
+        turn.scan_findings = None  # a later review (after an edit) scans the Brief as it is then
 
     async def _compile_brief(self, turn: _Turn) -> None:
         """The Brief from the whole fact ledger and its summary. It runs before research is seeded and the probes run

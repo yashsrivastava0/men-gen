@@ -40,9 +40,13 @@ async def scan_findings(svc: Service, turn: _Turn) -> list[ReviewFinding]:
     ]
 
 
-async def flag_review(svc: Service, turn: _Turn) -> list[ReviewFinding]:
-    """Scan the Brief and record the findings (assumptions and open questions); returns what the scanner found."""
-    findings = await scan_findings(svc, turn)
+async def flag_review(
+    svc: Service, turn: _Turn, findings: list[ReviewFinding] | None = None
+) -> list[ReviewFinding]:
+    """Record the scanner's findings (assumptions and open questions); returns them. ``findings`` may have been
+    read earlier, in parallel with research seeding (the scan only needs the compiled Brief)."""
+    if findings is None:
+        findings = await scan_findings(svc, turn)
     fresh = review_from_findings(findings, svc.catalog, turn.lang)
     turn.brief = merge_derived(turn.brief, fresh, ("review",))
     known = {q.text.strip().lower() for q in turn.brief.open_questions}

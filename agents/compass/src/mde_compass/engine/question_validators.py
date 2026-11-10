@@ -962,6 +962,11 @@ def validate_batch(cards: Sequence[Card], ctx: ValidationContext) -> BatchValida
     for card in cards:
         local = replace(ctx, planned=(*ctx.planned, *planned))
         issues = validate_question(card, local)
+        if any(i.code == "option_basis" for i in issues):
+            # an option labelled "typical" / "your words" with nothing behind it is not a reason to lose the whole
+            # question: it is relabelled as a suggestion (honest), then checked again
+            card = _demote_unbacked_options(card)
+            issues = validate_question(card, local)
         group = card.group_id or ""
         if card.origin == "closing" and closing_taken:
             issues.append(Issue("closing_shape", "an interview has exactly one closing question"))
@@ -1000,6 +1005,17 @@ def validate_batch(cards: Sequence[Card], ctx: ValidationContext) -> BatchValida
                 )
         accepted = [c for c in accepted if c.id not in excess]
     return BatchValidation(accepted=accepted, rejected=rejected, issues=by_card)
+
+
+def _demote_unbacked_options(card: Card) -> Card:
+    """The options that claim evidence (typical, the person's words, a document) become plain suggestions."""
+    options = [
+        o.model_copy(update={"basis": "suggestion", "ticked": False})
+        if o.basis in ("typical", "your_words", "your_document")
+        else o
+        for o in card.options
+    ]
+    return card.model_copy(update={"options": options})
 
 
 def _open_excess(accepted: Sequence[Card], size: int, share: float, catalog: Catalog) -> set[str]:

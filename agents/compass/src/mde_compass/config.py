@@ -51,8 +51,8 @@ CALL_PROFILES: dict[str, CallProfile] = {
         _p("cmp.understand_turn", "low", 3500, "writer", "standard", 60),
         _p("cmp.answer", "medium", 1500, "writer", "standard", 45),
         _p("cmp.write_card", "high", 2500, "writer", "deep", 60),
-        _p("cmp.scan_ambiguity", "high", 3000, "critic", "deep", 60),
-        _p("cmp.seed_research", "medium", 4000, "writer", "deep", 90),
+        _p("cmp.scan_ambiguity", "medium", 2500, "critic", "standard", 60),
+        _p("cmp.seed_research", "low", 3000, "writer", "standard", 60),
         _p("cmp.probe_handoff", "low", 2500, "canary", "fast", 30),
         _p("cmp.compile_text", "high", 3500, "writer", "deep", 90),
         _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
@@ -84,7 +84,7 @@ class QuestionPolicy:
     high_impact_at: int = 4  # catalog impact 1..5
     high_inferability_at: float = 0.75
     max_followups_per_answer: int = 1
-    max_question_words: int = 20
+    max_question_words: int = 26  # live batches lost good questions at 20 (rejected as too long)
     max_option_words: int = 8
     option_count: int = 3
     card_validation_retries: int = 2  # two validation failures in a row -> fallback card

@@ -237,10 +237,12 @@ def test_empty_question_and_missing_intent() -> None:
 
 # ------------------------------------------------------------------------------------------------ length
 def test_question_and_option_word_limits() -> None:
-    twenty = "Should customers pick a tiffin " + " ".join(["really"] * 13) + " or subscribe?"
-    assert len(twenty.split()) == 20 and "question_too_long" not in codes(card(question=twenty))
-    twenty_one = twenty.replace("Should", "Should now")
-    assert "question_too_long" in codes(card(question=twenty_one))
+    limit = "Should customers pick a tiffin " + " ".join(["really"] * 19) + " or subscribe?"
+    assert len(limit.split()) == 26 and "question_too_long" not in codes(card(question=limit))
+    over = limit.replace(
+        "Should", "Should now"
+    )  # 27 words: one over the limit (raised from 20 after live batches)
+    assert "question_too_long" in codes(card(question=over))
     eight = " ".join(["word"] * 8)
     assert "option_too_long" not in codes(card(options=opts(eight, "Weekly plan", "Both ways")))
     nine = " ".join(["word"] * 9)
@@ -248,7 +250,7 @@ def test_question_and_option_word_limits() -> None:
 
 
 def test_hindi_gets_extra_words_like_card_validation() -> None:
-    q = "पुणे में टिफिन " + " ".join(["शब्द"] * 19) + " क्या?"  # 23 words
+    q = "पुणे में टिफिन " + " ".join(["शब्द"] * 25) + " क्या?"  # 29 words
     hindi = ctx(language="hi", user_text="पुणे में टिफिन सर्विस")
     c = card(
         question=q,
