@@ -300,6 +300,19 @@ async def calls(
     return _json({"calls": await service.calls(caller, session_id, limit=limit)})
 
 
+@router.get("/sessions/{session_id}/export")
+async def export_full(session_id: str, caller: CallerDep, service: ServiceDep) -> JSONResponse:
+    """The complete output of the session for the next engine (the research agent): one JSON file, read-only."""
+    data = await service.export_full(caller, session_id)
+    return JSONResponse(
+        data,
+        headers={
+            "Cache-Control": "no-store",
+            "Content-Disposition": f'attachment; filename="compass-{session_id}.json"',
+        },
+    )
+
+
 @router.post("/sessions/{session_id}/decide-preview")
 async def decide_preview(session_id: str, caller: CallerDep, service: ServiceDep) -> JSONResponse:
     """Stateless AI preview for the open batch form (ADR 0016 / A5 / A9)."""

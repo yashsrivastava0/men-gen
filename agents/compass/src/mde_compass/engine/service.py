@@ -2748,6 +2748,85 @@ class Service(FlowHooks):
             a.brief, b.brief, from_version=from_version, to_version=to_version
         ).model_dump(mode="json")
 
+    async def export_full(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        """The complete output of a Compass session for the next engine (the research agent): the Brief with its hash
+        and versions, the four consumer views, the whole interview (every question with its answer, every fact with
+        its verbatim quote and status, the summary), the documents read, the change history and what it cost.
+        Read-only; nothing is left out on purpose."""
+        from datetime import UTC, datetime
+
+        async with self.store.begin(caller.tenant_id) as uow:
+            session = await uow.sessions.get(session_id)
+            rec = await uow.briefs.get(session_id)
+            versions = await uow.briefs.list_versions(session_id)
+            baseline = await uow.briefs.get_baseline(session_id)
+            facts = await uow.facts.list(session_id)
+            qa = await uow.qa.list(session_id, latest_only=False)
+            batches = await uow.batches.list(session_id)
+            sources = await uow.sources.list_sources(session_id)
+            claims = await uow.sources.list_claims(session_id)
+            contributors = await uow.contributors.list(session_id)
+            change_sets = await uow.change_sets.list(session_id)
+            calls = await uow.call_log.list(session_id, limit=5000)
+            try:
+                got = await uow.summaries.get(session_id)
+                summary: JsonValue = got.model_dump(mode="json") if got is not None else None
+            except Exception:  # no rolling summary was ever written
+                summary = None
+        brief = rec.brief.model_dump(mode="json")
+        by_spec: dict[str, dict[str, int]] = {}
+        for c in calls:
+            row = by_spec.setdefault(
+                c.spec_id,
+                {"calls": 0, "latency_ms": 0, "tokens_in": 0, "tokens_out": 0, "cost_micros": 0},
+            )
+            row["calls"] += 1
+            row["latency_ms"] += c.latency_ms
+            row["tokens_in"] += c.tokens_in
+            row["tokens_out"] += c.tokens_out
+            row["cost_micros"] += c.cost_micros
+        out: dict[str, Any] = {
+            "export": {
+                "format": "compass-full-output",
+                "format_version": 1,
+                "exported_at": datetime.now(UTC).isoformat(),
+                "session_id": session_id,
+                "brief_version": rec.version,
+                "brief_hash": rec.hash,
+                "approved_baseline": baseline.model_dump(mode="json", exclude={"brief"})
+                if baseline
+                else None,
+                "reading_guide": {
+                    "brief": "the source of truth: slots as sections, records (features, roles, apps, integrations), domain_facts (typed details with kind and refs), assumptions (what was assumed and its decision), open_questions, research_requests and search_hints",
+                    "consumer_views": "what each downstream engine reads: research, blueprint, design, verify (values only, no quotes)",
+                    "interview": "every question and answer (qa), every fact with verbatim quote, origin and status (facts), the rolling summary",
+                    "sources": "documents the person gave and the claims read from them",
+                },
+            },
+            "session": session.model_dump(mode="json"),
+            "brief": {**brief, "_hash": rec.hash, "_section_hashes": rec.section_hashes},
+            "consumer_views": cast(JsonValue, build_handoff(rec.brief)),
+            "brief_versions": [v.model_dump(mode="json") for v in versions],
+            "interview": {
+                "qa": [q.model_dump(mode="json") for q in qa],
+                "facts": [f.model_dump(mode="json") for f in facts],
+                "summary": summary,
+                "batches": [b.model_dump(mode="json") for b in batches],
+            },
+            "sources": {
+                "documents": [s.model_dump(mode="json") for s in sources],
+                "claims": [c.model_dump(mode="json") for c in claims],
+            },
+            "contributors": [c.model_dump(mode="json") for c in contributors],
+            "change_sets": [c.model_dump(mode="json") for c in change_sets],
+            "spend": {
+                "calls": len(calls),
+                "cost_micros": sum(c.cost_micros for c in calls),
+                "by_call": cast(JsonValue, by_spec),
+            },
+        }
+        return cast(dict[str, JsonValue], out)
+
     async def qa_list(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
         """The Questions-and-answers list (History tab): every question put to the person, the answer in plain
         words, its status and the facts it produced, so an answer can be edited from there."""

@@ -228,6 +228,13 @@ CONTRACT*/
     "ui.v2.suggest_answers": "Suggest answers with AI",
     "ui.v2.suggesting": "Suggesting answers…",
     "ui.v2.approve_all": "Approve all and continue",
+    "ui.v2.export_download": "Download full output",
+    "ui.v2.export_copy": "Copy full output",
+    "ui.v2.export_busy": "Preparing the full output…",
+    "ui.v2.export_copied": "Copied. Paste it where you need it.",
+    "ui.v2.export_downloaded": "Downloaded.",
+    "ui.v2.export_failed": "Could not prepare the full output. Please try again.",
+    "ui.v2.export_hint": "One JSON file with the whole Brief, the four views, every question, answer and fact, for the next engine.",
     "ui.v2.review_assumed": "Review what we assumed ({count})",
     "ui.v2.assumed_ratio": "{n} of {total} details assumed by AI",
     "ui.v2.high_impact_confirm": "{count} high-impact assumption(s) need your confirmation before continuing:",
@@ -1834,6 +1841,45 @@ CONTRACT*/
     return el;
   }
 
+  // ---- full output for the next engine (research): one JSON with everything the session produced --------------------
+  function fetchFullOutput() {
+    return api("GET", "/sessions/" + encodeURIComponent(state.sessionId) + "/export").then(function (data) {
+      return JSON.stringify(data, null, 2);
+    });
+  }
+  function exportButtons(statusEl) {
+    var dl = h("button", { class: "btn btn-sm export-download-btn", type: "button", text: t("ui.v2.export_download") });
+    var cp = h("button", { class: "btn btn-sm export-copy-btn", type: "button", text: t("ui.v2.export_copy") });
+    function run(btn, label, work) {
+      btn.disabled = true; btn.textContent = t("ui.v2.export_busy"); statusEl.textContent = "";
+      fetchFullOutput().then(work).then(function (msg) { statusEl.textContent = msg; })
+        .catch(function () { statusEl.textContent = t("ui.v2.export_failed"); })
+        .then(function () { btn.disabled = false; btn.textContent = label; });
+    }
+    dl.addEventListener("click", function () {
+      run(dl, t("ui.v2.export_download"), function (text) {
+        var blob = new Blob([text], { type: "application/json" });
+        var a = document.createElement("a");
+        a.href = URL.createObjectURL(blob); a.download = "compass-" + state.sessionId + ".json";
+        document.body.appendChild(a); a.click(); document.body.removeChild(a);
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
+        return t("ui.v2.export_downloaded");
+      });
+    });
+    cp.addEventListener("click", function () {
+      run(cp, t("ui.v2.export_copy"), function (text) {
+        function legacy() {
+          var ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0";
+          document.body.appendChild(ta); ta.select(); var ok = document.execCommand("copy"); document.body.removeChild(ta);
+          if (!ok) { throw new Error("copy"); }
+        }
+        var p = (navigator.clipboard && navigator.clipboard.writeText) ? navigator.clipboard.writeText(text).catch(legacy) : Promise.resolve().then(legacy);
+        return p.then(function () { return t("ui.v2.export_copied"); });
+      });
+    });
+    return [dl, cp];
+  }
+
   function approvalEl(vm) {
     var f = vm.footer;
     var box = h("div", { class: "approval", role: "region", "aria-label": f.primary_label });
@@ -1934,6 +1980,13 @@ CONTRACT*/
     if (approveAllBtn && ok) { actionsRow.appendChild(primary); }
     if (reviewAssumedLink) { actionsRow.appendChild(reviewAssumedLink); }
     box.appendChild(actionsRow);
+    if (vm.header.status === "in_review" || vm.header.status === "approved") {
+      var exportStatus = h("span", { class: "small muted export-status", role: "status", "aria-live": "polite" });
+      var exportRow = h("div", { class: "row-actions export-row", title: t("ui.v2.export_hint") });
+      exportButtons(exportStatus).forEach(function (b) { exportRow.appendChild(b); });
+      exportRow.appendChild(exportStatus);
+      box.appendChild(exportRow);
+    }
 
     if (state.ui.panel && state.ui.panel.target === "brief") { box.appendChild(panelEl()); }
     if (f.blockers && f.blockers.length && !ok) {
