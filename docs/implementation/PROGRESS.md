@@ -179,3 +179,5 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] S7. Web: tier cards with size, Structure tab, module rows, strings en and hi (full offline suite 3344 passed, 3 skipped, 8 xfailed; real-browser walk-through in headless Chrome)
 - [ ] S8. Optional prefetch (off by default): NOT built on purpose (D-123): the structure runs inside the seed and scan wave and measured 45 to 75 s live
 - [x] S9. Scenarios SB-ST-01 to 04 (+ `structure` expectation and policy forwarding), batch H (`live_structure`, three replays), live program (D-123: ~USD 0.21), docs; final suite below
+- [x] Browser test of the three tiers and the three research inputs in `docs/compass/research-inputs/` (D-124): found and fixed the list-overwrite, role and app, closing-priority, geo and history-nesting defects; Thorough input to be re-recorded with the fixed code (needs the owner's live server)
+
