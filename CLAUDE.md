@@ -56,16 +56,28 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 9. No `eval`/`exec` on user or model text.
 10. Offline tests only, except tests marked `live`.
 11. Update `docs/` with every behavior change; keep markdown inside `docs/`.
-12. Log every non-trivial decision in `docs/implementation/DECISIONS.md`; never ask the user questions.
+12. Log every non-trivial decision in `docs/implementation/DECISIONS.md`; never ask the user questions (one exception: the owner's approval of a complete overhaul, see "Commit checkpoints" below).
 13. **Live mode is one switch: `LLM_MODE=live` (strict owner policy, D-140).** Never add a second live-call key, an extra permission or approval variable, an extra readiness check for live mode, or a hook or check that blocks `LLM_MODE=live`: not in code, tests, docs, `.claude/`, prompts or messages to the owner. When the owner asks to run something live, run it with `LLM_MODE=live` within the budget caps. `tests/security/test_single_live_switch.py` fails if such a gate reappears.
 
 Related hard limits: no SQLite anywhere (not even tests); no `.md` outside `README.md`, `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md`, `.claude/**`, `docs/**` (prompt templates are `.jinja`); money is `Decimal` or integer micro-dollars, never float; timestamps are timezone-aware UTC; IDs are prefixed ULIDs (`ses_`, `evt_`, `call_`).
 
 Commit policy, tags, branch and merge rules, and the `agents/` and `apps/web/` repository layout: `docs/implementation/GLOBAL_RULES.md` (applies first; the owner's recorded overrides are at its end).
 
+## Commit checkpoints (every AI that works here: Claude, Codex, any other)
+
+A git safety net for traceability and an easy revert, nothing more. It says nothing about how you plan, reason, use tools or subagents; work the way you work.
+
+| Task size | Before you start | While you work and when done |
+| --- | --- | --- |
+| **Small**: a typo, a one-file fix, a doc edit, a config tweak | nothing extra | commit when done, with a proper message |
+| **Medium or major**: several files or more than one package, a behavior change, a call spec, schema, data files, migration or dependency, or more than one sitting | **commit first.** `git status`; commit anything already uncommitted as `chore(wip): checkpoint existing changes before <task>` (never mixed with the new work); tag that commit `pre/<task>-<yyyymmdd-hhmm>` | commit in logical steps, each `type(scope): summary` with a body (what, why, tests run); tick `docs/implementation/PROGRESS.md`; push the branch and tags with plain `git push` |
+| **Complete overhaul**: replacing or rewriting a subsystem, a large move or rename, a change that makes current work obsolete | everything in the row above, **then stop**: write the plan (what is replaced, why, how to go back) and get the owner's yes. Only then create a new branch `feat/<area>-<overhaul>` from the checkpoint tag | never on `main` or on another agent's branch; merge to `main` only with the owner's yes |
+
+When unsure between two sizes, take the larger: a checkpoint costs seconds. A subagent that finds its task is an overhaul stops and reports; the lead asks the owner. Undo with `git revert <hash>` (one commit), `git revert -m 1 <merge-hash>` (a merged task) or `git switch -c recover/<name> <tag>` (back to a checkpoint, history kept). Never force-push, `reset --hard`, or delete or move tags and branches without the owner's yes. Full wording: `docs/implementation/GLOBAL_RULES.md` section A.
+
 ## Resume protocol (context gets compacted; the job is long)
 
-At the start of every session or after compaction: read `docs/implementation/BRIEF.md`, `docs/product/context-engine-spec.md`, `docs/implementation/PROGRESS.md` and `DECISIONS.md`; run `git log --oneline -20` and `git status`; continue from the first unchecked item. After every finished task tick it in `PROGRESS.md` (one line, with commit hash) and commit. Never rely on memory of earlier turns.
+At the start of every session or after compaction, read in this order: `docs/implementation/CURRENT_STATE.md` (where the project is right now: branch, what we are working on, what is done and not, how to run it), then `docs/implementation/BRIEF.md`, `docs/product/context-engine-spec.md`, `docs/implementation/PROGRESS.md` and `DECISIONS.md`; run `git log --oneline -20` and `git status`; continue from the first unchecked item **of the section for the active work** (the Phase 0 to 5 and Definition of Done boxes at the top of `PROGRESS.md` are historical and stale; `CURRENT_STATE.md` section 4 explains). After every finished task tick it in `PROGRESS.md` (one line, with commit hash) and commit; when the state of the work changes (branch, focus, what is open), update `CURRENT_STATE.md` in the same commit. Never rely on memory of earlier turns, and never rely on a private per-user memory: everything a fresh session needs is in this repository.
 
 ## Contract-change rule
 
@@ -79,9 +91,10 @@ At the start of every session or after compaction: read `docs/implementation/BRI
 - Report format: what changed / tests run + results / open issues / decisions made.
 - Roster and standing missions: `.claude/agents/*.md`. Procedures: `.claude/skills/*/SKILL.md` (`add-llm-call`, `add-question-card`, `add-domain-pack`, `run-live-eval`, `write-adr`). Path rules: `.claude/rules/*.md`.
 
-## Windows notes
+## Windows notes (and the Mac)
 
-- Primary shell is PowerShell; the Bash tool is Git Bash (use it for POSIX scripts). Plain `bash` inside PowerShell is the WSL launcher, avoid it. `just` runs recipes with PowerShell, so recipes are plain `uv run ...` commands. Heredocs through the Bash tool eat backslashes: write files that contain Windows paths with the Write tool.
+- The project was built on Windows; the current machine is a Mac (zsh, no system PostgreSQL: `MDE_PG_BIN` points `scripts/dev_db.py` at the bundled binaries, `docs/runbooks/compass.md` section 1; the facts that differ are in `docs/implementation/CURRENT_STATE.md`). Everything below that is Windows-specific can be ignored on a Mac.
+- Primary shell on Windows is PowerShell; the Bash tool is Git Bash (use it for POSIX scripts). Plain `bash` inside PowerShell is the WSL launcher, avoid it. `just` runs recipes with PowerShell, so recipes are plain `uv run ...` commands. Heredocs through the Bash tool eat backslashes: write files that contain Windows paths with the Write tool.
 - Postgres runs as a **private cluster** started by `just db-up` (`scripts/dev_db.py`) on **port 54329**, data in `data/pg` of the main checkout. **Never use port 5432**: it belongs to the user's other projects. Default URL: `postgresql+psycopg://mde:mde@127.0.0.1:54329/mde`. Tests create an ephemeral database per session. psycopg async needs a selector event loop: start the API with `just dev` (`python -m mde_context_api`), never bare `uvicorn`.
 - **Never touch Docker Desktop state** (it is paused on purpose; other projects' containers live there). Never run `wsl --shutdown`.
 - The machine has little free RAM (about 3.7 GB): no background processes, run pyright only on your own package paths, at most 4 to 5 agents at once.
