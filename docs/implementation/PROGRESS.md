@@ -219,3 +219,11 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] Relaxed retry and provider label (11bf084); figure drop (66da463); nullable fields (b4fb0df, 7040314)
 - [x] RV-21, checker paths, provider setting text; live runs A..F and the provider decision (D-152)
 - [ ] Medium and Big live runs with the new code (owner; see the report)
+
+## AI commit-checkpoint policy, current-state page and first push (owner order 2026-11-11; branch `feat/research-yield`; safe-point tag `pre/ai-commit-policy-and-push-20261111-2142`; decisions D-154, D-155)
+
+- [x] Policy: CLAUDE.md "Commit checkpoints", GLOBAL_RULES A.1, A.11, A.12 and the push override
+- [x] `docs/implementation/CURRENT_STATE.md` (start-here page), index, HANDOFF marked historical, resume protocol fixed
+- [x] History scanned for secrets, then pushed (branches and tags, no force)
+- [ ] Typecheck is red (486 pyright errors, mostly `agents/compass` tests): separate task, owner decides
+- [ ] `main` on `origin` is still the older tip; advancing it is the owner's call
