@@ -1,0 +1,3757 @@
+{
+ "_fixture": {
+  "note": "Slim fixture extracted by agents/research/scripts/extract_fixtures.py. Same key layout as a Compass format-2 export; histories, provenance quotes and the structure bulk are dropped.",
+  "source": "standard-produce-marketplace-nashik.json"
+ },
+ "brief": {
+  "_hash": "aaf318ac34c2e25f026d53ce1a8c344d1f2dda3769f0d68c8a562d967fcb6c7b",
+  "_section_hashes": {
+   "access": "cef2871d4ff0d3d177b04bb00c4efc07b8101b278b7a63ff7df142a81655a79b",
+   "apps": "07d7fed0adbca8c51108b3fbb640cb88a52f7ea9602e3bcc21913f1b7c91bc05",
+   "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "assumptions": "4b3a9609bd112289a4d47dcd623c9c44feaec5f5a98db46fbc2bafa58e5ea2cb",
+   "audience": "ffe658de117ecf5d428696028a7e17d7f8254a5ca828ab933df3115928b52009",
+   "constraints": "93c91ab7f450051d7ce9f91b56197ffd77c3c4b93f8d930fc4dd0bc6c9984d38",
+   "context": "6f88c323cf15ac1ad433ef1e220fdaf50d925035c1384c2408bf8a4dcded2fa7",
+   "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "domain_facts": "37a616e08c65ff1ee5503a09dc02b6148ba3a8a7204a513d8944c80822fc439f",
+   "entities": "5caa40f2acf0b99d7c5706e40fc227e27b1c9dca3a03fb03594242cceb2052f4",
+   "experience": "d882d84d19962a73e83584b999b843df8a69e107c57d4da1d480037a954eb0e0",
+   "flows": "9c6e111b743ca157bc12b8efd44be79109c6d14a8229648d440b3447026f0089",
+   "glossary": "5af49e16b45dccdff19edbc094be319f507cc64dc1e7851deb2f5b3cd665ffdc",
+   "idea": "83994c7f86883771e5348681a3ab7c75b2d901c9bbc03e3724a514963a586b65",
+   "integrations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "modules": "0f6858337bb91191a1e1967936e60f9e4d069d4417fed3b555c2d044ff5a499d",
+   "open_questions": "68aec6cf68fe8038bafa7bea99bf66478a63678a40aeeb6a25890f9ec6760d4b",
+   "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "research_requests": "996e7c28fc8665c8faedccb559a82bfe5c1681dfd0243cc7b61777b002479c83",
+   "roles": "ada6b8b8097f56652c40b5cbf81d0b414c6f8334e2c787b09531b14b2d46af85",
+   "scope": "6c8b4ab1da8dda95c0e890bc2d25e79a687737e697e5aaeac9ae2177e203ac71",
+   "screens": "db42a83a33f5585c89f198a85dea3d8bc4fdd3d52c559b97d1e3e543b3beceb6",
+   "sources": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "apps": [
+   {
+    "audience": "",
+    "confidence": 0.95,
+    "id": "APP-001",
+    "name": "Farmer or FPO app",
+    "provenance": [
+     {
+      "ref": "FCT-022",
+      "type": "user_tap"
+     }
+    ],
+    "purpose": "",
+    "roles": [
+     "ROL-002"
+    ],
+    "status": "confirmed",
+    "surface": "mobile",
+    "tier": "Locked"
+   },
+   {
+    "audience": "",
+    "confidence": 0.95,
+    "id": "APP-002",
+    "name": "Buyer app",
+    "provenance": [
+     {
+      "ref": "FCT-022",
+      "type": "user_tap"
+     }
+    ],
+    "purpose": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "status": "confirmed",
+    "surface": "mobile",
+    "tier": "Locked"
+   },
+   {
+    "audience": "",
+    "confidence": 0.95,
+    "id": "APP-003",
+    "name": "Transport partner app",
+    "provenance": [
+     {
+      "ref": "FCT-022",
+      "type": "user_tap"
+     }
+    ],
+    "purpose": "",
+    "roles": [
+     "ROL-003"
+    ],
+    "status": "confirmed",
+    "surface": "mobile",
+    "tier": "Locked"
+   },
+   {
+    "audience": "",
+    "confidence": 0.95,
+    "id": "APP-004",
+    "name": "Manager side",
+    "provenance": [
+     {
+      "ref": "FCT-022",
+      "type": "user_tap"
+     }
+    ],
+    "purpose": "",
+    "roles": [
+     "ROL-005"
+    ],
+    "status": "confirmed",
+    "surface": "mobile",
+    "tier": "Locked"
+   }
+  ],
+  "audience": {
+   "segments": {
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-041",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "farmer groups (FPOs)",
+     "transport partners",
+     "purchase manager",
+     "owner",
+     "farmer",
+     "FPO coordinator"
+    ]
+   },
+   "traits": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-020",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "multilingual"
+    ]
+   }
+  },
+  "context": {
+   "geo": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-017",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": {
+     "city": "Nashik",
+     "country": "India",
+     "region": "Nashik district"
+    }
+   },
+   "scale_launch": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:context.scale_launch",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": "pilot_small"
+   }
+  },
+  "data": {},
+  "declined": [],
+  "domain_facts": [
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "frontend"
+    ],
+    "entities": [
+     "Nashik"
+    ],
+    "id": "FCT-001",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "an app for farmers around Nashik to sell vegetables and grapes directly to restaurants and small grocery shops",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "Farmers around Nashik sell vegetables and grapes directly to restaurants and small grocery shops through an app.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "marketplace"
+    ],
+    "type": "goal"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "verify"
+    ],
+    "entities": [
+     "Nashik"
+    ],
+    "id": "FCT-002",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "farmers around Nashik",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "The app is for farmers around Nashik.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-003",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Buyers browse what is available this week",
+    "refs": [
+     "FTR-001"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "Buyers browse what is available this week.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "catalog"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-004",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "place bulk orders for a delivery day",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "Buyers place bulk orders for a delivery day.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "orders"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa",
+     "frontend"
+    ],
+    "entities": [],
+    "id": "FCT-005",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "pay online",
+    "refs": [
+     "FTR-003",
+     "FTR-006"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "Buyers pay online.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "payments"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-006",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Farmers list their produce with quantity and price and see their orders",
+    "refs": [
+     "FTR-004",
+     "FTR-005"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "Farmers list their produce with quantity and price and see their orders.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "farmers"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend"
+    ],
+    "entities": [],
+    "id": "FCT-007",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "A local transport partner delivers the orders",
+    "refs": [
+     "FTR-007"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "A local transport partner delivers the orders.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "delivery"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.92,
+    "consumers": [
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-008",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-b27ea5844bb3aef1",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Buyers browse what is available this week, place bulk orders for a delivery day and pay online. Farmers list their produce with quantity and price and see their",
+    "refs": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-003"
+    ],
+    "source": "ui-b27ea5844bb3aef1",
+    "statement": "Roles: Buyer, Farmer, Local transport partner",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "roles"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens"
+    ],
+    "entities": [
+     "Farmer groups (FPOs)"
+    ],
+    "id": "FCT-009",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-97fda0b60fd0e0da",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Farmer groups (FPOs) who list produce on behalf of many small farmers",
+    "refs": [
+     "ROL-004"
+    ],
+    "source": "Q-003",
+    "statement": "Farmer groups (FPOs) list produce on behalf of many small farmers.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "farmers"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "verify"
+    ],
+    "entities": [
+     "Nashik district",
+     "Nashik city"
+    ],
+    "id": "FCT-010",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-97fda0b60fd0e0da",
+      "type": "user_text"
+     }
+    ],
+    "quote": "used in Nashik district and in Nashik city",
+    "source": "Q-003",
+    "statement": "The app is used in Nashik district and Nashik city.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "verify"
+    ],
+    "entities": [
+     "Pune"
+    ],
+    "id": "FCT-011",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-97fda0b60fd0e0da",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Pune for buyers",
+    "refs": [
+     "ROL-001"
+    ],
+    "source": "Q-003",
+    "statement": "Buyers use the app in Pune.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [
+     "Manager"
+    ],
+    "id": "FCT-013",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-97fda0b60fd0e0da",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Manager oversees orders",
+    "refs": [
+     "ROL-005"
+    ],
+    "source": "Q-006",
+    "statement": "Manager oversees orders",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "roles"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [
+     "Farmer groups",
+     "FPOs"
+    ],
+    "id": "FCT-014",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-97fda0b60fd0e0da",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Farmer groups (FPOs) who list produce on behalf of small farmers",
+    "refs": [
+     "ROL-004"
+    ],
+    "source": "Q-006",
+    "statement": "Farmer groups (FPOs) list produce on behalf of small farmers",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "roles"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "backend"
+    ],
+    "entities": [],
+    "id": "FCT-015",
+    "kind": "number",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "About 4% commission paid by the farmer on each sale",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "Q-028",
+    "statement": "About 4% commission is paid by the farmer on each sale.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "backend"
+    ],
+    "entities": [],
+    "id": "FCT-016",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "a delivery fee paid by the buyer",
+    "refs": [
+     "ROL-001"
+    ],
+    "source": "Q-028",
+    "statement": "The buyer pays a delivery fee.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify"
+    ],
+    "entities": [
+     "Nashik district",
+     "Sinnar",
+     "Dindori",
+     "Niphad"
+    ],
+    "id": "FCT-017",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "farmers in Nashik district (Sinnar, Dindori, Niphad)",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "Q-030",
+    "statement": "Farmers in Nashik district (Sinnar, Dindori, Niphad) are part of the launch.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify"
+    ],
+    "entities": [
+     "Nashik city",
+     "Pune"
+    ],
+    "id": "FCT-018",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "buyers in Nashik city and Pune",
+    "refs": [
+     "ROL-001"
+    ],
+    "source": "Q-030",
+    "statement": "Buyers are in Nashik city and Pune.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify"
+    ],
+    "entities": [
+     "India"
+    ],
+    "id": "FCT-019",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "in India",
+    "source": "Q-030",
+    "statement": "The launch is in India.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify"
+    ],
+    "entities": [
+     "Marathi",
+     "Hindi",
+     "English"
+    ],
+    "id": "FCT-020",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Farmers and buyers speak Marathi, Hindi and English",
+    "refs": [
+     "ROL-001",
+     "ROL-002"
+    ],
+    "source": "Q-030",
+    "statement": "Farmers and buyers speak Marathi, Hindi and English.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "qa"
+    ],
+    "entities": [
+     "Marathi",
+     "Hindi",
+     "English"
+    ],
+    "id": "FCT-021",
+    "kind": "constraint",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "the app should support all three",
+    "source": "Q-030",
+    "statement": "The app should support Marathi, Hindi and English.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.95,
+    "consumers": [
+     "blueprint",
+     "screens"
+    ],
+    "entities": [],
+    "id": "FCT-022",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_tap"
+     }
+    ],
+    "quote": "Farmer or FPO app / Buyer app / Transport partner app / Manager side",
+    "refs": [
+     "APP-001",
+     "APP-002",
+     "APP-003",
+     "APP-004"
+    ],
+    "source": "Q-031",
+    "statement": "Which screens do farmers or FPOs, buyers, the manager, and transport partners need?: Farmer or FPO app / Buyer app / Transport partner app / Manager side",
+    "status": "confirmed",
+    "tier": "Locked",
+    "topics": [
+     "apps"
+    ],
+    "type": "preference"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "entities": [
+     "FPO"
+    ],
+    "id": "FCT-023",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Our marketplace manager checks every FPO and farmer before they can list",
+    "refs": [
+     "ROL-005"
+    ],
+    "source": "Q-032",
+    "statement": "Our marketplace manager checks every FPO and farmer before they can list.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "onboarding"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-024",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "spot-checks listings",
+    "refs": [
+     "FTR-004"
+    ],
+    "source": "Q-032",
+    "statement": "Our marketplace manager spot-checks listings.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "produce"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-025",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "List produce and set quantity and price",
+    "refs": [
+     "FTR-004"
+    ],
+    "source": "Q-029",
+    "statement": "List produce and set quantity and price",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "produce"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-026",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Browse weekly availability",
+    "refs": [
+     "FTR-001"
+    ],
+    "source": "Q-029",
+    "statement": "Browse weekly availability",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "produce"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-027",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Place bulk orders for a delivery day",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "Q-029",
+    "statement": "Place bulk orders for a delivery day",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "orders"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa",
+     "frontend"
+    ],
+    "entities": [],
+    "id": "FCT-028",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Pay for orders online",
+    "refs": [
+     "FTR-006",
+     "FTR-003"
+    ],
+    "source": "Q-029",
+    "statement": "Pay for orders online",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "payments"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-029",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Arrange local delivery",
+    "refs": [
+     "FTR-007"
+    ],
+    "source": "Q-029",
+    "statement": "Arrange local delivery",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "delivery"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-030",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Live delivery tracking for buyers can wait for a later version",
+    "refs": [
+     "FTR-008"
+    ],
+    "source": "Q-029",
+    "statement": "Live delivery tracking for buyers can wait for a later version",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "tracking"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-031",
+    "kind": "acceptance",
+    "provenance": [
+     {
+      "ref": "ui-008f363406909311",
+      "type": "user_text"
+     }
+    ],
+    "quote": "a simple delivery status is enough on day one",
+    "refs": [
+     "FTR-009"
+    ],
+    "source": "Q-029",
+    "statement": "A simple delivery status is enough on day one",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "status"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-032",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "The app is free for farmers and buyers to join and to browse.",
+    "refs": [
+     "ROL-002",
+     "ROL-001"
+    ],
+    "source": "Q-034",
+    "statement": "The app is free for farmers and buyers to join and to browse.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-033",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Listing produce is free.",
+    "refs": [
+     "FTR-004"
+    ],
+    "source": "Q-034",
+    "statement": "Listing produce is free.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "backend"
+    ],
+    "entities": [],
+    "id": "FCT-034",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "The only charges are the 4% commission on a sale and the delivery fee on an order.",
+    "source": "Q-034",
+    "statement": "The only charges are the 4% commission on a sale and the delivery fee on an order.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-035",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_tap"
+     }
+    ],
+    "quote": "Yes, bulk produce orders",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "Q-037",
+    "statement": "The app is for bulk produce orders.",
+    "status": "confirmed",
+    "tier": "Locked",
+    "topics": [
+     "marketplace"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [
+     "farmers",
+     "drivers"
+    ],
+    "id": "FCT-036",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Phone code for farmers and drivers",
+    "refs": [
+     "ROL-002",
+     "ROL-003"
+    ],
+    "source": "Q-039",
+    "statement": "Farmers and drivers use phone code to sign in.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "authentication"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [
+     "manager"
+    ],
+    "id": "FCT-037",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "email and password for the manager",
+    "refs": [
+     "ROL-005"
+    ],
+    "source": "Q-039",
+    "statement": "The manager uses email and password to sign in.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "authentication"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [
+     "restaurant",
+     "shop"
+    ],
+    "id": "FCT-038",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "a restaurant or shop can add its own staff under one business account",
+    "refs": [
+     "ROL-001"
+    ],
+    "source": "Q-039",
+    "statement": "A restaurant or shop can add its own staff under one business account.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "accounts"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-039",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-88b0be0da10cec81",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Individual accounts | Shared business accounts",
+    "source": "Q-039",
+    "statement": "Individual accounts and shared business accounts are selected.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "accounts"
+    ],
+    "type": "preference"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "frontend"
+    ],
+    "entities": [],
+    "id": "FCT-040",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-9131b522dafed013",
+      "type": "user_text"
+     }
+    ],
+    "quote": "the purchase manager or owner places orders and pays",
+    "refs": [
+     "ROL-001"
+    ],
+    "source": "Q-041",
+    "statement": "At a restaurant or shop, the purchase manager or owner places orders and pays.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "users"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend"
+    ],
+    "entities": [],
+    "id": "FCT-041",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-9131b522dafed013",
+      "type": "user_text"
+     }
+    ],
+    "quote": "either the farmer or the FPO coordinator manages the produce listings and sees the orders",
+    "refs": [
+     "ROL-002",
+     "ROL-004"
+    ],
+    "source": "Q-041",
+    "statement": "Either the farmer or the FPO coordinator manages the produce listings and sees the orders.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "farmers"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-042",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-9131b522dafed013",
+      "type": "user_tap"
+     }
+    ],
+    "quote": "Yes, bulk produce orders",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "Q-042",
+    "statement": "Bulk produce orders",
+    "status": "confirmed",
+    "tier": "Locked",
+    "topics": [
+     "marketplace"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 1,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens"
+    ],
+    "entities": [],
+    "id": "FCT-043",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-972184ed436b2301",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Plan in English.",
+    "source": "Q-043",
+    "statement": "Planning in English.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "preference"
+   },
+   {
+    "confidence": 1,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-044",
+    "kind": "constraint",
+    "provenance": [
+     {
+      "ref": "ui-972184ed436b2301",
+      "type": "user_text"
+     }
+    ],
+    "quote": "The app needs Marathi, Hindi and English",
+    "source": "Q-043",
+    "statement": "The app needs Marathi, Hindi and English.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 1,
+    "consumers": [
+     "design",
+     "screens",
+     "frontend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-045",
+    "kind": "constraint",
+    "provenance": [
+     {
+      "ref": "ui-972184ed436b2301",
+      "type": "user_text"
+     }
+    ],
+    "quote": "no right-to-left language is needed.",
+    "source": "Q-043",
+    "statement": "No right-to-left language is needed.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "exclusion"
+   }
+  ],
+  "entities": [
+   {
+    "id": "ENT-001",
+    "key": "user",
+    "module": "MOD-001",
+    "name": "User",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-002",
+    "key": "business_account",
+    "module": "MOD-001",
+    "name": "Business account",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-003",
+    "key": "produce_listing",
+    "module": "MOD-002",
+    "name": "Produce listing",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-004",
+    "key": "farmer",
+    "module": "MOD-002",
+    "name": "Farmer",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-005",
+    "key": "fpo",
+    "module": "MOD-002",
+    "name": "FPO",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-006",
+    "key": "order",
+    "module": "MOD-003",
+    "name": "Order",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-007",
+    "key": "payment",
+    "module": "MOD-003",
+    "name": "Payment",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-008",
+    "key": "delivery",
+    "module": "MOD-004",
+    "name": "Delivery",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-009",
+    "key": "transport_partner",
+    "module": "MOD-004",
+    "name": "Transport partner",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-010",
+    "key": "seller_review",
+    "module": "MOD-005",
+    "name": "Seller review",
+    "status": "confirmed",
+    "tier": "Default"
+   }
+  ],
+  "experience": {
+   "density_mode": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:look.density_mode",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": "balanced"
+   },
+   "devices": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:devices.profile",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": "phones"
+   },
+   "locales": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-021",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "mr",
+     "hi",
+     "en"
+    ]
+   },
+   "tone_words": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:look.tone_words",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": [
+     "calm_simple"
+    ]
+   }
+  },
+  "flows": [
+   {
+    "features": [
+     "FTR-001"
+    ],
+    "id": "FLW-001",
+    "name": "Browse weekly produce",
+    "role": "ROL-001",
+    "status": "confirmed",
+    "tier": "Locked"
+   },
+   {
+    "features": [
+     "FTR-001",
+     "FTR-002",
+     "FTR-003",
+     "FTR-006"
+    ],
+    "id": "FLW-002",
+    "name": "Order and pay",
+    "role": "ROL-006",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "features": [
+     "FTR-001",
+     "FTR-002",
+     "FTR-003",
+     "FTR-006"
+    ],
+    "id": "FLW-003",
+    "name": "Manage business purchase",
+    "role": "ROL-007",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "features": [
+     "FTR-004",
+     "FTR-005"
+    ],
+    "id": "FLW-004",
+    "name": "List produce",
+    "role": "ROL-002",
+    "status": "confirmed",
+    "tier": "Locked"
+   },
+   {
+    "features": [
+     "FTR-004",
+     "FTR-005"
+    ],
+    "id": "FLW-005",
+    "name": "Manage FPO produce",
+    "role": "ROL-008",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "features": [
+     "FTR-007",
+     "FTR-009"
+    ],
+    "id": "FLW-006",
+    "name": "Deliver an order",
+    "role": "ROL-003",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "features": [
+     "FTR-007",
+     "FTR-009"
+    ],
+    "id": "FLW-007",
+    "name": "Oversee marketplace",
+    "role": "ROL-005",
+    "status": "confirmed",
+    "tier": "Default"
+   }
+  ],
+  "glossary": [
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-012",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "Farmer groups (FPOs)",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-012",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "Transport partners",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-040",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "Purchase manager",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-040",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "Owner",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-035",
+      "type": "user_tap"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "Bulk produce orders",
+    "tier": "Locked"
+   }
+  ],
+  "idea": {
+   "business_model": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-034",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "The app is free for farmers and buyers to join and browse, and listing produce is free. The only charges are the 4% commission on a sale and the delivery fee on an order."
+   },
+   "category": {
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-035",
+      "type": "user_tap"
+     }
+    ],
+    "status": "confirmed",
+    "tier": "Locked",
+    "value": "bulk produce orders marketplace"
+   },
+   "subcategory": {
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "Farmers sell vegetables and grapes directly to restaurants and small grocery shops; a local transport partner delivers orders."
+   },
+   "summary": {
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "An app for farmers around Nashik to sell vegetables and grapes directly to restaurants and small grocery shops, with bulk orders and local delivery."
+   }
+  },
+  "ids": {
+   "aliases": {},
+   "counters": {
+    "APP": 4,
+    "ASM": 18,
+    "ENT": 10,
+    "FLW": 7,
+    "FTR": 9,
+    "MOD": 5,
+    "Q": 4,
+    "ROL": 9,
+    "RR": 7,
+    "SCR": 28
+   },
+   "tombstones": [
+    "ASM-001",
+    "ASM-006"
+   ]
+  },
+  "integrations": [],
+  "meta": {
+   "approvals": {},
+   "degraded": true,
+   "depth_profile": "standard",
+   "hypothesis": {
+    "business_model_candidates": [
+     "Commission on each sale",
+     "Transaction or delivery fee",
+     "Subscription plan for farmers or buyers",
+     "Buyers pay farmers directly",
+     "The app earns a fee on orders",
+     "A transport partner charges for delivery"
+    ],
+    "category": "A possible marketplace for local produce",
+    "confidence": 0.84,
+    "glossary_candidates": [
+     {
+      "synonyms": [
+       "growers",
+       "producers"
+      ],
+      "term": "farmers"
+     },
+     {
+      "synonyms": [
+       "fresh produce",
+       "vegetable produce"
+      ],
+      "term": "vegetables"
+     },
+     {
+      "synonyms": [
+       "table grapes",
+       "grape produce"
+      ],
+      "term": "grapes"
+     },
+     {
+      "synonyms": [
+       "large orders",
+       "wholesale orders"
+      ],
+      "term": "bulk orders"
+     },
+     {
+      "synonyms": [
+       "delivery date",
+       "scheduled delivery"
+      ],
+      "term": "delivery day"
+     }
+    ],
+    "hard_parts": [
+     "Coordinating bulk orders, delivery days, and handoffs with the transport partner",
+     "Processing online payments and handling settlement to farmers",
+     "Keeping produce availability and prices current",
+     "Agreeing who handles delivery and transport",
+     "Clarifying who pays whom and when"
+    ],
+    "label": "hypothesis",
+    "likely_families": [
+     "marketplaces",
+     "catalog_commerce",
+     "delivery_logistics",
+     "payments_wallet",
+     "identity_access"
+    ],
+    "likely_features": [
+     {
+      "custom": false,
+      "family": "marketplaces",
+      "intent": "Let farmers create seller accounts",
+      "name": "Seller sign-up"
+     },
+     {
+      "custom": false,
+      "family": "marketplaces",
+      "intent": "Let farmers list available produce with quantity and price",
+      "name": "Create a listing"
+     },
+     {
+      "custom": false,
+      "family": "catalog_commerce",
+      "intent": "Let buyers browse produce available this week",
+      "name": "Browse the catalog"
+     },
+     {
+      "custom": false,
+      "family": "catalog_commerce",
+      "intent": "Show produce details, quantity, and price",
+      "name": "Item details"
+     },
+     {
+      "custom": false,
+      "family": "catalog_commerce",
+      "intent": "Gather produce into a bulk order",
+      "name": "Cart"
+     },
+     {
+      "custom": false,
+      "family": "catalog_commerce",
+      "intent": "Place an order for a selected delivery day",
+      "name": "Checkout"
+     },
+     {
+      "custom": false,
+      "family": "marketplaces",
+      "intent": "Let farmers see and manage their orders",
+      "name": "Order management"
+     },
+     {
+      "custom": false,
+      "family": "delivery_logistics",
+      "intent": "Coordinate orders with the local transport partner",
+      "name": "Assign a rider"
+     },
+     {
+      "custom": false,
+      "family": "delivery_logistics",
+      "intent": "Show progress on order delivery",
+      "name": "Delivery status updates"
+     },
+     {
+      "custom": false,
+      "family": "payments_wallet",
+      "intent": "Let buyers pay for orders online",
+      "name": "Pay online"
+     },
+     {
+      "custom": false,
+      "family": "identity_access",
+      "intent": "Support different access for farmers, buyers, transport partners, and admins",
+      "name": "Roles and permissions"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let buyers see what farmers have available and at what price.",
+      "name": "Browse produce"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let buyers request produce in a chosen quantity.",
+      "name": "Place orders"
+     },
+     {
+      "custom": true,
+      "family": "",
+      "intent": "Coordinate how ordered produce gets to buyers.",
+      "name": "Arrange delivery"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let shops and restaurants see what farmers have available and at what price.",
+      "name": "Browse available produce"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let buyers choose produce and quantities and place orders.",
+      "name": "Place produce orders"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Help arrange delivery of orders to buyers.",
+      "name": "Coordinate delivery"
+     }
+    ],
+    "likely_roles": [
+     "Farmer or seller",
+     "Restaurant or grocery-shop buyer",
+     "Transport partner",
+     "Admin",
+     "Farmers",
+     "Restaurant buyers",
+     "Shop buyers",
+     "Transport partners",
+     "Grocery shops",
+     "Restaurants",
+     "Marketplace manager"
+    ],
+    "subcategory": "Possibly connecting farmers who sell grapes and vegetables with restaurants, shops, or other buyers in Nashik; delivery and payment arrangements are unclear."
+   },
+   "interview": {
+    "answered": 13,
+    "assumed": 0,
+    "batches": 7,
+    "budget": "standard",
+    "closing": "auto",
+    "coverage": 1,
+    "facts_active": 45,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "fallback_count": 0,
+    "followup_candidates": [],
+    "followups": 2,
+    "hard_cap": 15,
+    "question_ids": [
+     "Q-003",
+     "Q-006",
+     "Q-028",
+     "Q-030",
+     "Q-031",
+     "Q-032",
+     "Q-029",
+     "Q-034",
+     "Q-037",
+     "Q-039",
+     "Q-041",
+     "Q-042",
+     "Q-043"
+    ],
+    "questions_asked": 13,
+    "reopened": 0,
+    "size_band": "medium",
+    "size_source": "tier",
+    "size_suggested": "",
+    "skipped": 0,
+    "stop_reason": "budget_reached",
+    "structure_entities": 10,
+    "structure_flows": 7,
+    "structure_issues": 3,
+    "structure_modules": 5,
+    "structure_screens": 28,
+    "target": 12,
+    "tier_set": true,
+    "ui_mode": "answer_all",
+    "ui_mode_set": false
+   },
+   "locales": [
+    "mr",
+    "hi",
+    "en"
+   ],
+   "mode": "guided",
+   "plan": {
+    "depth": "standard",
+    "interview_budget": "standard",
+    "minimum_viable": false,
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 7
+   },
+   "probe_rounds": 2,
+   "probes": {
+    "blueprint": true,
+    "design": false,
+    "research": true
+   },
+   "program_id": "",
+   "schema_version": 1,
+   "session_id": "ses_01M72RE53CJJKA5HB19FR788ZJ",
+   "situation_profile": {
+    "clarity": "knows_features",
+    "collaboration": "several",
+    "expertise": "non_technical",
+    "formality": "casual",
+    "input_mode": "text",
+    "input_richness": "rich",
+    "language": "en",
+    "reference_driven": false,
+    "size_stakes": "startup",
+    "urgency": "thorough"
+   }
+  },
+  "modules": [
+   {
+    "apps": [
+     "APP-001",
+     "APP-002",
+     "APP-003",
+     "APP-004"
+    ],
+    "id": "MOD-001",
+    "kind": "account",
+    "name": "Account and sign-in",
+    "roles": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-003",
+     "ROL-004",
+     "ROL-005",
+     "ROL-006",
+     "ROL-007",
+     "ROL-008",
+     "ROL-009"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-001",
+     "APP-002"
+    ],
+    "id": "MOD-002",
+    "kind": "",
+    "name": "Produce listings",
+    "roles": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-004",
+     "ROL-006",
+     "ROL-007",
+     "ROL-008",
+     "ROL-009"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-001",
+     "APP-002",
+     "APP-004"
+    ],
+    "id": "MOD-003",
+    "kind": "",
+    "name": "Orders and payments",
+    "roles": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-004",
+     "ROL-005",
+     "ROL-006",
+     "ROL-007",
+     "ROL-008",
+     "ROL-009"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-002",
+     "APP-003",
+     "APP-004"
+    ],
+    "id": "MOD-004",
+    "kind": "",
+    "name": "Delivery",
+    "roles": [
+     "ROL-001",
+     "ROL-003",
+     "ROL-005",
+     "ROL-006",
+     "ROL-007",
+     "ROL-009"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-004"
+    ],
+    "id": "MOD-005",
+    "kind": "",
+    "name": "Marketplace oversight",
+    "roles": [
+     "ROL-005"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   }
+  ],
+  "references": [],
+  "research_requests": [
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which buyer and seller needs the marketplace should prioritize and how it should be positioned",
+    "depth": "deep",
+    "entity": "bulk produce order marketplaces connecting farmers and FPOs with restaurants and small grocery shops",
+    "geography": "Nashik district, Maharashtra, India",
+    "id": "RR-001",
+    "prefer_sources": [
+     "official marketplace websites",
+     "industry and agriculture market reports",
+     "app store listings"
+    ],
+    "priority": "high",
+    "question": "What problem do bulk produce order marketplaces solve for farmers and FPOs selling vegetables and grapes directly to restaurants and small grocery shops in Nashik district, and what differentiates the available services?",
+    "references": [],
+    "shown_to_user_as": "How bulk produce marketplaces serve Nashik",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "bulk produce orders",
+     "farmers and FPOs",
+     "vegetables and grapes",
+     "restaurants",
+     "small grocery shops",
+     "थोक उपज ऑर्डर",
+     "शेतकरी उत्पादक कंपनी",
+     "थोक सब्ज़ी और अंगूर"
+    ],
+    "topic": "Bulk produce marketplace demand and differentiation",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which comparable-marketplace features belong in the first release",
+    "depth": "standard",
+    "entity": "bulk produce ordering marketplaces for farmers, FPOs, transport partners, purchase managers and business owners",
+    "geography": "Nashik, Maharashtra, India",
+    "id": "RR-002",
+    "prefer_sources": [
+     "official marketplace websites",
+     "app store listings",
+     "official help pages"
+    ],
+    "priority": "high",
+    "question": "Which features do bulk produce marketplaces in Nashik commonly offer for weekly availability, produce listings with quantity and price, bulk orders for a delivery day, order management, local delivery and simple delivery status?",
+    "references": [],
+    "shown_to_user_as": "What similar marketplaces offer in Nashik",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "bulk produce orders",
+     "weekly availability",
+     "list produce",
+     "quantity and price",
+     "delivery day",
+     "view orders",
+     "local delivery",
+     "delivery status",
+     "थोक उपज ऑर्डर",
+     "साप्ताहिक उपलब्धता",
+     "उपज की सूची",
+     "घाऊक शेतीमाल ऑर्डर"
+    ],
+    "topic": "Features of bulk produce ordering marketplaces",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which local service patterns and participant roles to account for",
+    "depth": "standard",
+    "entity": "local bulk produce marketplaces and produce-ordering services",
+    "geography": "Nashik, Maharashtra, India",
+    "id": "RR-003",
+    "prefer_sources": [
+     "official service websites",
+     "app store listings",
+     "local business directories"
+    ],
+    "priority": "medium",
+    "question": "Which local services in Nashik connect farmers or FPOs selling produce with restaurants and small grocery shops, and what seller, buyer and transport roles do they support?",
+    "references": [],
+    "shown_to_user_as": "Local produce marketplaces in Nashik",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "bulk produce orders",
+     "farmers",
+     "FPOs",
+     "restaurants",
+     "small grocery shops",
+     "transport partners",
+     "थोक उपज ऑर्डर",
+     "शेतकरी उत्पादक कंपनी",
+     "मंडी से सीधे खरीद"
+    ],
+    "topic": "Local bulk produce marketplace providers",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "How to structure payment collection, fee display and settlement",
+    "depth": "standard",
+    "entity": "payments and fee models in bulk produce order marketplaces",
+    "geography": "Nashik, Maharashtra, India",
+    "id": "RR-004",
+    "prefer_sources": [
+     "official marketplace payment and fee pages",
+     "official payment provider documentation",
+     "official help pages"
+    ],
+    "priority": "high",
+    "question": "How do bulk produce marketplaces serving Nashik handle online buyer payments, farmer commissions, delivery fees and settlement, including models where the farmer pays about 4% commission and the buyer pays the delivery fee?",
+    "references": [],
+    "shown_to_user_as": "Payments and fees for produce orders",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "online payment",
+     "4% commission",
+     "commission paid by the farmer",
+     "delivery fee paid by the buyer",
+     "payment settlement",
+     "bulk produce orders",
+     "ऑनलाइन भुगतान",
+     "डिलीवरी शुल्क",
+     "ऑनलाइन पेमेंट",
+     "वितरण शुल्क"
+    ],
+    "topic": "Payments, commissions and delivery fees",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which account and access patterns to use for the first release",
+    "depth": "standard",
+    "entity": "sign-in and account management for bulk produce marketplaces",
+    "geography": "Nashik, Maharashtra, India",
+    "id": "RR-005",
+    "prefer_sources": [
+     "official marketplace help pages",
+     "official app listings",
+     "official account setup guides"
+    ],
+    "priority": "medium",
+    "question": "How do marketplaces in India serving Nashik handle sign-in and account types for farmers, FPO coordinators, purchase managers and owners, including individual accounts, shared business accounts and staff under one restaurant or shop account?",
+    "references": [],
+    "shown_to_user_as": "Accounts and sign-in for Nashik businesses",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "individual accounts",
+     "shared business accounts",
+     "staff under one business account",
+     "farmer",
+     "FPO coordinator",
+     "purchase manager",
+     "owner",
+     "sign-in",
+     "व्यक्तिगत खाता",
+     "व्यवसाय खाता",
+     "लॉगिन",
+     "वैयक्तिक खाते",
+     "व्यवसाय खाते"
+    ],
+    "topic": "Accounts, sign-in and business staff access",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Whether and how to support messaging or other order coordination in the first release",
+    "depth": "standard",
+    "entity": "messaging and order coordination in bulk produce marketplaces",
+    "geography": "Nashik, Maharashtra, India",
+    "id": "RR-006",
+    "prefer_sources": [
+     "official marketplace help pages",
+     "official service websites",
+     "app store listings"
+    ],
+    "priority": "medium",
+    "question": "How do bulk produce marketplaces serving Nashik let farmers, FPO coordinators, buyers and transport partners communicate about produce availability, orders and delivery arrangements?",
+    "references": [],
+    "shown_to_user_as": "How buyers and sellers coordinate orders",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "messaging",
+     "order coordination",
+     "produce availability",
+     "delivery arrangements",
+     "farmers",
+     "FPO coordinators",
+     "buyers",
+     "transport partners",
+     "संदेश",
+     "ऑर्डर समन्वय",
+     "संदेश सेवा"
+    ],
+    "topic": "Messaging and order coordination",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which legal and operational requirements the marketplace must reflect in its design",
+    "depth": "standard",
+    "entity": "bulk produce marketplace operations, online payments and produce listings",
+    "geography": "Maharashtra and India",
+    "id": "RR-007",
+    "prefer_sources": [
+     "official government sources",
+     "official regulator guidance",
+     "official agriculture and commerce department guidance"
+    ],
+    "priority": "high",
+    "question": "Which rules and compliance duties apply in Maharashtra and India to a marketplace that lets farmers and FPOs list vegetables and grapes for sale, accepts online buyer payments, charges a sale commission and delivery fee, and verifies sellers and spot-checks listings?",
+    "references": [],
+    "shown_to_user_as": "Rules for a produce marketplace in Maharashtra",
+    "source_languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "terms": [
+     "bulk produce marketplace",
+     "vegetables and grapes",
+     "online buyer payments",
+     "sale commission",
+     "delivery fee",
+     "seller verification",
+     "listing spot-checks",
+     "थोक उपज बाज़ार",
+     "ऑनलाइन भुगतान",
+     "विक्रेता सत्यापन",
+     "घाऊक शेतीमाल बाजार"
+    ],
+    "topic": "Rules for produce marketplaces and online transactions",
+    "user_added": false
+   }
+  ],
+  "roles": [
+   {
+    "confidence": 0.92,
+    "goal": "Browse available produce, place bulk orders for a delivery day, and pay online",
+    "id": "ROL-001",
+    "name_in_user_words": "Buyer",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.92,
+    "goal": "List produce with quantity and price and see orders",
+    "id": "ROL-002",
+    "name_in_user_words": "Farmer",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.92,
+    "goal": "Deliver the orders",
+    "id": "ROL-003",
+    "name_in_user_words": "Local transport partner",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.99,
+    "goal": "List produce on behalf of small farmers",
+    "id": "ROL-004",
+    "name_in_user_words": "Farmer groups (FPOs)",
+    "provenance": [
+     {
+      "ref": "FCT-014",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.95,
+    "goal": "",
+    "id": "ROL-005",
+    "name_in_user_words": "Manager side",
+    "provenance": [
+     {
+      "ref": "FCT-022",
+      "type": "user_tap"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "confirmed",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "Place orders and pay for a restaurant or shop",
+    "id": "ROL-006",
+    "name_in_user_words": "Purchase manager",
+    "provenance": [
+     {
+      "ref": "FCT-040",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "Place orders and pay for a restaurant or shop",
+    "id": "ROL-007",
+    "name_in_user_words": "Owner",
+    "provenance": [
+     {
+      "ref": "FCT-040",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "Manage produce listings and see orders",
+    "id": "ROL-008",
+    "name_in_user_words": "FPO coordinator",
+    "provenance": [
+     {
+      "ref": "FCT-041",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "Use the restaurant or shop business account",
+    "id": "ROL-009",
+    "name_in_user_words": "Staff",
+    "provenance": [
+     {
+      "ref": "FCT-038",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "scope": [
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-001",
+    "intent": "Buyers browse what produce is available this week",
+    "name": "Browse weekly availability",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-006",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-002",
+    "intent": "Buyers place bulk orders for a delivery day",
+    "name": "Place bulk orders",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-006",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-003",
+    "intent": "Buyers pay online",
+    "name": "Online payment",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-006",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-004",
+    "intent": "Farmers list produce with quantity and price",
+    "name": "List produce",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-006",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-005",
+    "intent": "Farmers see their orders",
+    "name": "View orders",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-006",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-006",
+    "intent": "Buyers pay for orders online",
+    "name": "Pay for orders online",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-031",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-007",
+    "intent": "Arrange local delivery",
+    "name": "Arrange local delivery",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-031",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-008",
+    "intent": "Buyers track deliveries live",
+    "name": "Live delivery tracking for buyers",
+    "priority": "later",
+    "provenance": [
+     {
+      "ref": "FCT-031",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "later",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-009",
+    "intent": "Show a simple delivery status on day one",
+    "name": "Simple delivery status",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-031",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "languages": [
+    "en",
+    "mr",
+    "hi"
+   ],
+   "local_competitors": [],
+   "synonyms": [
+    "bulk produce ordering",
+    "wholesale produce marketplace",
+    "farm-to-business produce orders",
+    "थोक उपज ऑर्डर",
+    "घाऊक शेतीमाल ऑर्डर"
+   ]
+  },
+  "version": 10
+ },
+ "consumer_views": {
+  "research": {
+   "audience": {
+    "segments": [
+     "farmer groups (FPOs)",
+     "transport partners",
+     "purchase manager",
+     "owner",
+     "farmer",
+     "FPO coordinator"
+    ],
+    "traits": [
+     "multilingual"
+    ]
+   },
+   "declined": [],
+   "domain_facts": [
+    {
+     "entities": [
+      "Nashik"
+     ],
+     "id": "FCT-001",
+     "kind": "context",
+     "refs": [
+      "ROL-002"
+     ],
+     "statement": "Farmers around Nashik sell vegetables and grapes directly to restaurants and small grocery shops through an app.",
+     "topics": [
+      "marketplace"
+     ],
+     "type": "goal"
+    },
+    {
+     "entities": [
+      "Nashik"
+     ],
+     "id": "FCT-002",
+     "kind": "context",
+     "refs": [
+      "ROL-002"
+     ],
+     "statement": "The app is for farmers around Nashik.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "Nashik district",
+      "Nashik city"
+     ],
+     "id": "FCT-010",
+     "kind": "context",
+     "statement": "The app is used in Nashik district and Nashik city.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "Pune"
+     ],
+     "id": "FCT-011",
+     "kind": "context",
+     "refs": [
+      "ROL-001"
+     ],
+     "statement": "Buyers use the app in Pune.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-015",
+     "kind": "number",
+     "refs": [
+      "ROL-002"
+     ],
+     "statement": "About 4% commission is paid by the farmer on each sale.",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [],
+     "id": "FCT-016",
+     "kind": "rule",
+     "refs": [
+      "ROL-001"
+     ],
+     "statement": "The buyer pays a delivery fee.",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [
+      "Nashik district",
+      "Sinnar",
+      "Dindori",
+      "Niphad"
+     ],
+     "id": "FCT-017",
+     "kind": "context",
+     "refs": [
+      "ROL-002"
+     ],
+     "statement": "Farmers in Nashik district (Sinnar, Dindori, Niphad) are part of the launch.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "Nashik city",
+      "Pune"
+     ],
+     "id": "FCT-018",
+     "kind": "context",
+     "refs": [
+      "ROL-001"
+     ],
+     "statement": "Buyers are in Nashik city and Pune.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "India"
+     ],
+     "id": "FCT-019",
+     "kind": "context",
+     "statement": "The launch is in India.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "Marathi",
+      "Hindi",
+      "English"
+     ],
+     "id": "FCT-020",
+     "kind": "context",
+     "refs": [
+      "ROL-001",
+      "ROL-002"
+     ],
+     "statement": "Farmers and buyers speak Marathi, Hindi and English.",
+     "topics": [
+      "languages"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-032",
+     "kind": "rule",
+     "refs": [
+      "ROL-002",
+      "ROL-001"
+     ],
+     "statement": "The app is free for farmers and buyers to join and to browse.",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [],
+     "id": "FCT-033",
+     "kind": "rule",
+     "refs": [
+      "FTR-004"
+     ],
+     "statement": "Listing produce is free.",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [],
+     "id": "FCT-034",
+     "kind": "rule",
+     "statement": "The only charges are the 4% commission on a sale and the delivery fee on an order.",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [],
+     "id": "FCT-035",
+     "kind": "context",
+     "refs": [
+      "FTR-002"
+     ],
+     "statement": "The app is for bulk produce orders.",
+     "topics": [
+      "marketplace"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-040",
+     "kind": "flow",
+     "refs": [
+      "ROL-001"
+     ],
+     "statement": "At a restaurant or shop, the purchase manager or owner places orders and pays.",
+     "topics": [
+      "users"
+     ],
+     "type": "role"
+    },
+    {
+     "entities": [],
+     "id": "FCT-042",
+     "kind": "context",
+     "refs": [
+      "FTR-002"
+     ],
+     "statement": "Bulk produce orders",
+     "topics": [
+      "marketplace"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-043",
+     "kind": "context",
+     "statement": "Planning in English.",
+     "topics": [
+      "languages"
+     ],
+     "type": "preference"
+    }
+   ],
+   "entities": [
+    "User",
+    "Business account",
+    "Produce listing",
+    "Farmer",
+    "FPO",
+    "Order",
+    "Payment",
+    "Delivery",
+    "Transport partner",
+    "Seller review"
+   ],
+   "feature_intents": [
+    {
+     "family": null,
+     "intent": "Buyers browse what produce is available this week",
+     "name": "Browse weekly availability"
+    },
+    {
+     "family": null,
+     "intent": "Buyers place bulk orders for a delivery day",
+     "name": "Place bulk orders"
+    },
+    {
+     "family": null,
+     "intent": "Buyers pay online",
+     "name": "Online payment"
+    },
+    {
+     "family": null,
+     "intent": "Farmers list produce with quantity and price",
+     "name": "List produce"
+    },
+    {
+     "family": null,
+     "intent": "Farmers see their orders",
+     "name": "View orders"
+    },
+    {
+     "family": null,
+     "intent": "Buyers pay for orders online",
+     "name": "Pay for orders online"
+    },
+    {
+     "family": null,
+     "intent": "Arrange local delivery",
+     "name": "Arrange local delivery"
+    },
+    {
+     "family": null,
+     "intent": "Show a simple delivery status on day one",
+     "name": "Simple delivery status"
+    }
+   ],
+   "geography": {
+    "city": "Nashik",
+    "country": "India",
+    "region": "Nashik district"
+   },
+   "glossary": [
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "Farmer groups (FPOs)"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "Transport partners"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "Purchase manager"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "Owner"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "Bulk produce orders"
+    }
+   ],
+   "guidance": {
+    "business_model": "The app is free for farmers and buyers to join and browse, and listing produce is free. The only charges are the 4% commission on a sale and the delivery fee on an order.",
+    "category": "bulk produce orders marketplace",
+    "depth": "standard",
+    "families": [
+     "marketplaces",
+     "catalog_commerce",
+     "delivery_logistics",
+     "payments_wallet",
+     "identity_access"
+    ],
+    "focus": [
+     {
+      "about": [
+       "Account and sign-in",
+       "Produce listings",
+       "Orders and payments",
+       "Delivery",
+       "Marketplace oversight"
+      ],
+      "topic": "landscape"
+     },
+     {
+      "about": [
+       "User",
+       "Business account",
+       "Produce listing",
+       "Farmer",
+       "FPO",
+       "Order",
+       "Payment",
+       "Delivery",
+       "Transport partner",
+       "Seller review"
+      ],
+      "topic": "domain"
+     },
+     {
+      "about": [
+       "mr",
+       "hi",
+       "en"
+      ],
+      "topic": "locales"
+     }
+    ],
+    "gap_fill": false,
+    "max_requests": 12,
+    "search_budget": 12,
+    "size_band": "medium",
+    "subcategory": "Farmers sell vegetables and grapes directly to restaurants and small grocery shops; a local transport partner delivers orders."
+   },
+   "idea": {
+    "business_model": "The app is free for farmers and buyers to join and browse, and listing produce is free. The only charges are the 4% commission on a sale and the delivery fee on an order.",
+    "category": "bulk produce orders marketplace",
+    "pitch": "Farmers around Nashik can list vegetables and grapes for restaurants and small grocery shops to browse and order in bulk. Buyers can pay online, and local transport partners deliver orders with a simple delivery status. Joining, browsing and listing produce are free; farmers pay about 4% commission per sale, and buyers pay the delivery fee.",
+    "subcategory": "Farmers sell vegetables and grapes directly to restaurants and small grocery shops; a local transport partner delivers orders.",
+    "summary": "A bulk produce marketplace for farmers around Nashik to sell vegetables and grapes to restaurants and small grocery shops."
+   },
+   "languages": {
+    "locales": [
+     "mr",
+     "hi",
+     "en"
+    ],
+    "meta_locales": [
+     "mr",
+     "hi",
+     "en"
+    ],
+    "search_languages": [
+     "en",
+     "mr",
+     "hi"
+    ]
+   },
+   "modules": [
+    "Account and sign-in",
+    "Produce listings",
+    "Orders and payments",
+    "Delivery",
+    "Marketplace oversight"
+   ],
+   "references": [],
+   "research_requests": [
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which buyer and seller needs the marketplace should prioritize and how it should be positioned",
+     "depth": "deep",
+     "entity": "bulk produce order marketplaces connecting farmers and FPOs with restaurants and small grocery shops",
+     "geography": "Nashik district, Maharashtra, India",
+     "id": "RR-001",
+     "prefer_sources": [
+      "official marketplace websites",
+      "industry and agriculture market reports",
+      "app store listings"
+     ],
+     "priority": "high",
+     "question": "What problem do bulk produce order marketplaces solve for farmers and FPOs selling vegetables and grapes directly to restaurants and small grocery shops in Nashik district, and what differentiates the available services?",
+     "references": [],
+     "shown_to_user_as": "How bulk produce marketplaces serve Nashik",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "bulk produce orders",
+      "farmers and FPOs",
+      "vegetables and grapes",
+      "restaurants",
+      "small grocery shops",
+      "थोक उपज ऑर्डर",
+      "शेतकरी उत्पादक कंपनी",
+      "थोक सब्ज़ी और अंगूर"
+     ],
+     "topic": "Bulk produce marketplace demand and differentiation",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which comparable-marketplace features belong in the first release",
+     "depth": "standard",
+     "entity": "bulk produce ordering marketplaces for farmers, FPOs, transport partners, purchase managers and business owners",
+     "geography": "Nashik, Maharashtra, India",
+     "id": "RR-002",
+     "prefer_sources": [
+      "official marketplace websites",
+      "app store listings",
+      "official help pages"
+     ],
+     "priority": "high",
+     "question": "Which features do bulk produce marketplaces in Nashik commonly offer for weekly availability, produce listings with quantity and price, bulk orders for a delivery day, order management, local delivery and simple delivery status?",
+     "references": [],
+     "shown_to_user_as": "What similar marketplaces offer in Nashik",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "bulk produce orders",
+      "weekly availability",
+      "list produce",
+      "quantity and price",
+      "delivery day",
+      "view orders",
+      "local delivery",
+      "delivery status",
+      "थोक उपज ऑर्डर",
+      "साप्ताहिक उपलब्धता",
+      "उपज की सूची",
+      "घाऊक शेतीमाल ऑर्डर"
+     ],
+     "topic": "Features of bulk produce ordering marketplaces",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which local service patterns and participant roles to account for",
+     "depth": "standard",
+     "entity": "local bulk produce marketplaces and produce-ordering services",
+     "geography": "Nashik, Maharashtra, India",
+     "id": "RR-003",
+     "prefer_sources": [
+      "official service websites",
+      "app store listings",
+      "local business directories"
+     ],
+     "priority": "medium",
+     "question": "Which local services in Nashik connect farmers or FPOs selling produce with restaurants and small grocery shops, and what seller, buyer and transport roles do they support?",
+     "references": [],
+     "shown_to_user_as": "Local produce marketplaces in Nashik",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "bulk produce orders",
+      "farmers",
+      "FPOs",
+      "restaurants",
+      "small grocery shops",
+      "transport partners",
+      "थोक उपज ऑर्डर",
+      "शेतकरी उत्पादक कंपनी",
+      "मंडी से सीधे खरीद"
+     ],
+     "topic": "Local bulk produce marketplace providers",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "How to structure payment collection, fee display and settlement",
+     "depth": "standard",
+     "entity": "payments and fee models in bulk produce order marketplaces",
+     "geography": "Nashik, Maharashtra, India",
+     "id": "RR-004",
+     "prefer_sources": [
+      "official marketplace payment and fee pages",
+      "official payment provider documentation",
+      "official help pages"
+     ],
+     "priority": "high",
+     "question": "How do bulk produce marketplaces serving Nashik handle online buyer payments, farmer commissions, delivery fees and settlement, including models where the farmer pays about 4% commission and the buyer pays the delivery fee?",
+     "references": [],
+     "shown_to_user_as": "Payments and fees for produce orders",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "online payment",
+      "4% commission",
+      "commission paid by the farmer",
+      "delivery fee paid by the buyer",
+      "payment settlement",
+      "bulk produce orders",
+      "ऑनलाइन भुगतान",
+      "डिलीवरी शुल्क",
+      "ऑनलाइन पेमेंट",
+      "वितरण शुल्क"
+     ],
+     "topic": "Payments, commissions and delivery fees",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which account and access patterns to use for the first release",
+     "depth": "standard",
+     "entity": "sign-in and account management for bulk produce marketplaces",
+     "geography": "Nashik, Maharashtra, India",
+     "id": "RR-005",
+     "prefer_sources": [
+      "official marketplace help pages",
+      "official app listings",
+      "official account setup guides"
+     ],
+     "priority": "medium",
+     "question": "How do marketplaces in India serving Nashik handle sign-in and account types for farmers, FPO coordinators, purchase managers and owners, including individual accounts, shared business accounts and staff under one restaurant or shop account?",
+     "references": [],
+     "shown_to_user_as": "Accounts and sign-in for Nashik businesses",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "individual accounts",
+      "shared business accounts",
+      "staff under one business account",
+      "farmer",
+      "FPO coordinator",
+      "purchase manager",
+      "owner",
+      "sign-in",
+      "व्यक्तिगत खाता",
+      "व्यवसाय खाता",
+      "लॉगिन",
+      "वैयक्तिक खाते",
+      "व्यवसाय खाते"
+     ],
+     "topic": "Accounts, sign-in and business staff access",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Whether and how to support messaging or other order coordination in the first release",
+     "depth": "standard",
+     "entity": "messaging and order coordination in bulk produce marketplaces",
+     "geography": "Nashik, Maharashtra, India",
+     "id": "RR-006",
+     "prefer_sources": [
+      "official marketplace help pages",
+      "official service websites",
+      "app store listings"
+     ],
+     "priority": "medium",
+     "question": "How do bulk produce marketplaces serving Nashik let farmers, FPO coordinators, buyers and transport partners communicate about produce availability, orders and delivery arrangements?",
+     "references": [],
+     "shown_to_user_as": "How buyers and sellers coordinate orders",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "messaging",
+      "order coordination",
+      "produce availability",
+      "delivery arrangements",
+      "farmers",
+      "FPO coordinators",
+      "buyers",
+      "transport partners",
+      "संदेश",
+      "ऑर्डर समन्वय",
+      "संदेश सेवा"
+     ],
+     "topic": "Messaging and order coordination",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which legal and operational requirements the marketplace must reflect in its design",
+     "depth": "standard",
+     "entity": "bulk produce marketplace operations, online payments and produce listings",
+     "geography": "Maharashtra and India",
+     "id": "RR-007",
+     "prefer_sources": [
+      "official government sources",
+      "official regulator guidance",
+      "official agriculture and commerce department guidance"
+     ],
+     "priority": "high",
+     "question": "Which rules and compliance duties apply in Maharashtra and India to a marketplace that lets farmers and FPOs list vegetables and grapes for sale, accepts online buyer payments, charges a sale commission and delivery fee, and verifies sellers and spot-checks listings?",
+     "references": [],
+     "shown_to_user_as": "Rules for a produce marketplace in Maharashtra",
+     "source_languages": [
+      "en",
+      "mr",
+      "hi"
+     ],
+     "terms": [
+      "bulk produce marketplace",
+      "vegetables and grapes",
+      "online buyer payments",
+      "sale commission",
+      "delivery fee",
+      "seller verification",
+      "listing spot-checks",
+      "थोक उपज बाज़ार",
+      "ऑनलाइन भुगतान",
+      "विक्रेता सत्यापन",
+      "घाऊक शेतीमाल बाजार"
+     ],
+     "topic": "Rules for produce marketplaces and online transactions",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [],
+    "languages": [
+     "en",
+     "mr",
+     "hi"
+    ],
+    "local_competitors": [],
+    "synonyms": [
+     "bulk produce ordering",
+     "wholesale produce marketplace",
+     "farm-to-business produce orders",
+     "थोक उपज ऑर्डर",
+     "घाऊक शेतीमाल ऑर्डर"
+    ]
+   }
+  }
+ },
+ "export": {
+  "approved_baseline": {
+   "hash": "aaf318ac34c2e25f026d53ce1a8c344d1f2dda3769f0d68c8a562d967fcb6c7b",
+   "section_hashes": {
+    "access": "cef2871d4ff0d3d177b04bb00c4efc07b8101b278b7a63ff7df142a81655a79b",
+    "apps": "07d7fed0adbca8c51108b3fbb640cb88a52f7ea9602e3bcc21913f1b7c91bc05",
+    "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "assumptions": "4b3a9609bd112289a4d47dcd623c9c44feaec5f5a98db46fbc2bafa58e5ea2cb",
+    "audience": "ffe658de117ecf5d428696028a7e17d7f8254a5ca828ab933df3115928b52009",
+    "constraints": "93c91ab7f450051d7ce9f91b56197ffd77c3c4b93f8d930fc4dd0bc6c9984d38",
+    "context": "6f88c323cf15ac1ad433ef1e220fdaf50d925035c1384c2408bf8a4dcded2fa7",
+    "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "domain_facts": "37a616e08c65ff1ee5503a09dc02b6148ba3a8a7204a513d8944c80822fc439f",
+    "entities": "5caa40f2acf0b99d7c5706e40fc227e27b1c9dca3a03fb03594242cceb2052f4",
+    "experience": "d882d84d19962a73e83584b999b843df8a69e107c57d4da1d480037a954eb0e0",
+    "flows": "9c6e111b743ca157bc12b8efd44be79109c6d14a8229648d440b3447026f0089",
+    "glossary": "5af49e16b45dccdff19edbc094be319f507cc64dc1e7851deb2f5b3cd665ffdc",
+    "idea": "83994c7f86883771e5348681a3ab7c75b2d901c9bbc03e3724a514963a586b65",
+    "integrations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "modules": "0f6858337bb91191a1e1967936e60f9e4d069d4417fed3b555c2d044ff5a499d",
+    "open_questions": "68aec6cf68fe8038bafa7bea99bf66478a63678a40aeeb6a25890f9ec6760d4b",
+    "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "research_requests": "996e7c28fc8665c8faedccb559a82bfe5c1681dfd0243cc7b61777b002479c83",
+    "roles": "ada6b8b8097f56652c40b5cbf81d0b414c6f8334e2c787b09531b14b2d46af85",
+    "scope": "6c8b4ab1da8dda95c0e890bc2d25e79a687737e697e5aaeac9ae2177e203ac71",
+    "screens": "db42a83a33f5585c89f198a85dea3d8bc4fdd3d52c559b97d1e3e543b3beceb6",
+    "sources": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+   },
+   "version": 10
+  },
+  "brief_hash": "aaf318ac34c2e25f026d53ce1a8c344d1f2dda3769f0d68c8a562d967fcb6c7b",
+  "brief_version": 10,
+  "format": "compass-full-output",
+  "format_version": 2
+ },
+ "spend": {
+  "by_call": {
+   "cmp.audit_questions": {
+    "calls": 13,
+    "cost_micros": 3218,
+    "latency_ms": 49962,
+    "tokens_in": 34377,
+    "tokens_out": 3079
+   },
+   "cmp.compile_brief": {
+    "calls": 4,
+    "cost_micros": 4000,
+    "latency_ms": 52056,
+    "tokens_in": 22593,
+    "tokens_out": 4517
+   },
+   "cmp.compile_text": {
+    "calls": 1,
+    "cost_micros": 1475,
+    "latency_ms": 20544,
+    "tokens_in": 5550,
+    "tokens_out": 1839
+   },
+   "cmp.draft_module": {
+    "calls": 6,
+    "cost_micros": 10827,
+    "latency_ms": 111489,
+    "tokens_in": 37620,
+    "tokens_out": 15739
+   },
+   "cmp.draft_outline": {
+    "calls": 1,
+    "cost_micros": 1205,
+    "latency_ms": 10047,
+    "tokens_in": 7789,
+    "tokens_out": 1063
+   },
+   "cmp.plan_questions": {
+    "calls": 14,
+    "cost_micros": 14252,
+    "latency_ms": 165067,
+    "tokens_in": 80684,
+    "tokens_out": 18350
+   },
+   "cmp.probe_handoff": {
+    "calls": 9,
+    "cost_micros": 3056,
+    "latency_ms": 59364,
+    "tokens_in": 25431,
+    "tokens_out": 4047
+   },
+   "cmp.review_structure": {
+    "calls": 1,
+    "cost_micros": 732,
+    "latency_ms": 11744,
+    "tokens_in": 2865,
+    "tokens_out": 889
+   },
+   "cmp.scan_ambiguity": {
+    "calls": 1,
+    "cost_micros": 1429,
+    "latency_ms": 14172,
+    "tokens_in": 9562,
+    "tokens_out": 943
+   },
+   "cmp.seed_research": {
+    "calls": 1,
+    "cost_micros": 1310,
+    "latency_ms": 16500,
+    "tokens_in": 4758,
+    "tokens_out": 1668
+   },
+   "cmp.situate": {
+    "calls": 1,
+    "cost_micros": 842,
+    "latency_ms": 13119,
+    "tokens_in": 2340,
+    "tokens_out": 1413
+   },
+   "cmp.understand_turn": {
+    "calls": 13,
+    "cost_micros": 61455,
+    "latency_ms": 102410,
+    "tokens_in": 600223,
+    "tokens_out": 9292
+   },
+   "cmp.update_summary": {
+    "calls": 3,
+    "cost_micros": 2988,
+    "latency_ms": 29863,
+    "tokens_in": 10116,
+    "tokens_out": 3951
+   }
+  },
+  "calls": 68,
+  "cost_micros": 106789
+ }
+}
