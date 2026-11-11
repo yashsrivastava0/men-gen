@@ -1,0 +1,23 @@
+Language of the Brief: {{ language }}
+Idea: {{ summary }}
+Category: {{ category }} / {{ subcategory }}; business model: {{ business_model }}
+Geography stated: country "{{ country }}" ({{ country_code }}), region "{{ region }}", cities: {{ cities | join(", ") }}; weak geography: {{ geo_uncertain }}
+App languages: {{ locales | join(", ") }}
+Features (data):
+{% for f in features %}- {{ f.id }} {{ f.name }}: {{ f.intent }} [{{ f.priority }}]
+{% endfor %}
+Roles (data): {{ roles | join("; ") }}
+Entities (data): {{ entities | join("; ") }}
+Modules (data): {{ modules | join("; ") }}
+Facts with rules, numbers, compliance or integration details (data):
+{% for f in facts %}- {{ f }}
+{% endfor %}
+Trusted research requests (data):
+{% for r in requests %}- {{ r.id }}: {{ r.topic }} | {{ r.question }}
+{% endfor %}
+Topics already planned (do not repeat):
+{% for e in existing %}- {{ e.job }}: {{ e.anchor }}
+{% endfor %}
+Declined by the person, never research (data): {{ declined | join("; ") }}
+
+Return the place, the category phrase, the extra topics and the discovery names.

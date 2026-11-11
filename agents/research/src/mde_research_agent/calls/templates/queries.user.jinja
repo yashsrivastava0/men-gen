@@ -1,0 +1,19 @@
+Job: {{ job }}
+Question: {{ question }}
+Anchors (data):
+{% for a in anchors %}- {{ a }}
+{% endfor %}
+Kind of app (data): {{ context }}
+Place: {{ place }}
+Languages to also search in: {{ languages | join(", ") }}
+Words the Brief used in that language (data): {{ local_terms | join(", ") }}
+Intent words in that language: {{ local_intent | join(", ") }}
+Intent words (English): {{ intent | join(", ") }}
+Named entity: {{ entity or "none" }}
+Round: {{ round }}
+Focus terms, what is still missing (data): {{ focus_terms | join(", ") }}
+Seed names from memory (data): {{ seed_names | join(", ") }}
+Earlier queries, do not repeat:
+{% for q in earlier %}- {{ q }}
+{% endfor %}
+Write up to {{ want }} variants.

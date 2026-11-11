@@ -1,0 +1,7 @@
+Language: {{ language }}
+{% for lane in lanes %}
+Lane {{ lane.lane }} (limit {{ lane.limit }} findings):
+{% for i in lane.items %}- [{{ i.id }}] {{ i.kind }} | {{ i.label }} | {{ i.claim }} | seen: {{ i.level }}; impact: {{ i.impact }}; flags: {{ i.flags | join(",") }}
+{% endfor %}
+{% endfor %}
+Select, order and annotate.

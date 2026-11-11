@@ -1,0 +1,13 @@
+Topics that still miss required details:
+{% for t in topics %}
+Topic {{ t.target_id }} (job: {{ t.job }})
+- anchors: {{ t.anchors | join("; ") }}
+- kind of app: {{ t.context }}; place: {{ t.place }}
+- intent words: {{ t.intent | join(", ") }}
+- missing: {{ t.missing | join(" | ") }}
+- search words for the missing details: {{ t.missing_terms | join(", ") }}
+- earlier queries: {{ t.earlier | join(" | ") }}
+- entities found in round 1: {% for e in t.entities %}[{{ e.index }}] {{ e.name }}{% if not loop.last %}; {% endif %}{% endfor %}
+
+{% endfor %}
+Propose the follow-ups.

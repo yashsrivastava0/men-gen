@@ -17,7 +17,27 @@ from mde_research_agent.domain.plan import Links
 
 PRIORITY_RANK = {"must": 0, "nice": 1, "later": 2}
 MAX_PHRASE_WORDS = 4
-_EDGE_STOP = frozenset(["a", "an", "and", "the", "of", "for", "to", "in", "on", "by", "with", "or", "at", "as", "is", "are", "be"])
+_EDGE_STOP = frozenset(
+    [
+        "a",
+        "an",
+        "and",
+        "the",
+        "of",
+        "for",
+        "to",
+        "in",
+        "on",
+        "by",
+        "with",
+        "or",
+        "at",
+        "as",
+        "is",
+        "are",
+        "be",
+    ]
+)
 
 
 @dataclass
