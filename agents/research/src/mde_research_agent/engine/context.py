@@ -56,11 +56,14 @@ class RunContext:
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep
     targets: dict[str, TargetState] = field(default_factory=dict)
     pages: dict[str, PageRecord] = field(default_factory=dict)
+    pages_by_id: dict[str, PageRecord] = field(default_factory=dict)
+    page_locks: dict[str, asyncio.Lock] = field(default_factory=dict)
     queries: list[QueryRecord] = field(default_factory=list)
     entities: dict[str, EntityRecord] = field(default_factory=dict)
     drops: DropCounts = field(default_factory=DropCounts)
     provider_down: bool = False
     budget_stopped: bool = False
+    no_results: bool = False  # round 1 found nothing for any topic
     drain: bool = False  # no new searches or fetches: finish what is read, then assemble
     round: int = 0
     warned: set[str] = field(default_factory=set)

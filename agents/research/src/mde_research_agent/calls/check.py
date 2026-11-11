@@ -17,6 +17,7 @@ from pydantic import BaseModel, ConfigDict, model_validator
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
+from mde_research_agent.core.language import dominant_script
 from mde_research_agent.core.text import stem_set
 
 CALL_ID = "rsch.check"
@@ -53,7 +54,12 @@ class CheckOut(W):
 
 
 def overlap_verdict(item: CheckItem) -> Verdict:
-    """Word-overlap heuristic: share of the claim's content stems that the quote also contains."""
+    """Word-overlap heuristic: share of the claim's content stems that the quote also contains.
+
+    A claim paraphrased in English from a quote in another script cannot be judged by word overlap: ``partial``.
+    """
+    if dominant_script(item.claim) != dominant_script(item.quote):
+        return "partial"
     claim, quote = stem_set(item.claim), stem_set(item.quote)
     if not claim:
         return "not_supported"

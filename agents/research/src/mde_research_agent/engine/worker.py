@@ -241,6 +241,7 @@ async def search_one(
         if ctx.budget.exhausted():
             ctx.budget_stopped = True
             ts.reason = ts.reason or "budget_stop"
+            await ctx.warn("budget_stop")
         return None
     place = t.place
     req = SearchRequest(
@@ -386,11 +387,20 @@ def triage(
 async def read_page(
     ctx: RunContext, ts: TargetState, hit: FusedHit, cls: str, round_no: int
 ) -> PageRecord | None:
+    """Read a page once per run, however many topics ask for it at the same moment (one lock per URL)."""
+    lock = ctx.page_locks.setdefault(hit.url, asyncio.Lock())
+    async with lock:
+        cached = ctx.pages.get(hit.url)
+        if cached is not None:
+            return cached
+        return await _read_page(ctx, ts, hit, cls, round_no)
+
+
+async def _read_page(
+    ctx: RunContext, ts: TargetState, hit: FusedHit, cls: str, round_no: int
+) -> PageRecord | None:
     t = ts.target
     url = hit.url
-    cached = ctx.pages.get(url)
-    if cached is not None:
-        return cached
     dom = registrable_domain(url)
     title = hit.hit.title
     if hit.hit.content and len(hit.hit.content) >= MIN_PROVIDER_TEXT:
@@ -477,6 +487,7 @@ async def read_page(
         language=lang,
     )
     ctx.pages[url] = rec
+    ctx.pages_by_id[rec.id] = rec
     return rec
 
 

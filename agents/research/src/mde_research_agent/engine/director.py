@@ -340,6 +340,11 @@ class Director:
                 ]
             )
             open_ = await self._audit(1)
+            if ctx.verified_count() == 0 and budget.searches_used >= 4 and not ctx.provider_down:
+                # nothing came back for ANY topic: a broken provider or locale, not a niche idea. Stop and say so.
+                await ctx.warn("no_results")
+                ctx.no_results = True
+                open_ = []
             await ctx.events.emit(
                 "round.completed",
                 round_=1,
@@ -535,7 +540,9 @@ class Director:
         ctx = self.ctx
         if self.skipped or ctx.run_cancel.cancelled:
             return "skipped", "skipped"
-        if ctx.verified_count() == 0 and (ctx.provider_down or ctx.budget.searches_used == 0):
+        if ctx.verified_count() == 0 and (
+            ctx.provider_down or ctx.no_results or ctx.budget.searches_used == 0
+        ):
             return "failed", "provider_down" if ctx.provider_down else "no_results"
         unfinished = [
             ts for ts in ctx.targets.values() if ts.status in ("partial", "queued", "running")

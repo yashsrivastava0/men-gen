@@ -92,6 +92,9 @@ class FakeWorld:
     provider_content_every: int = 0  # every Nth generated hit carries page text (0 = none)
     search_cost_micros: int = 0
     fail_search: Callable[[SearchRequest], SearchError | None] | None = None
+    jitter: Callable[[], float] | None = (
+        None  # seconds to wait before each search or fetch (chaos tests)
+    )
     clock: object | None = (
         None  # a FakeClock: every search advances it by search_seconds (time-box tests)
     )
@@ -243,6 +246,8 @@ class FakeSearch:
 
     async def search(self, request: SearchRequest) -> SearchResult:
         self.requests.append(request)
+        if self.world.jitter is not None:
+            await asyncio.sleep(self.world.jitter())
         if self.world.gate is not None:
             await self.world.gate.wait()
         if self.world.clock is not None and self.world.search_seconds:
@@ -281,4 +286,6 @@ class FakeFetch:
 
     async def fetch(self, url: str) -> FetchedPage:
         self.fetched.append(url)
+        if self.world.jitter is not None:
+            await asyncio.sleep(self.world.jitter())
         return self.world.page_for(url)

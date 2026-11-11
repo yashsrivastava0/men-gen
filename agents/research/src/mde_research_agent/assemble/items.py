@@ -195,7 +195,7 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
     lanes = cat.lanes
     atoms = [a for ts in ctx.targets.values() for a in ts.atoms if a.status == "verified"]
     targets: dict[str, Target] = {tid: ts.target for tid, ts in ctx.targets.items()}
-    pages_by_id = {p.id: p for p in ctx.pages.values()}
+    pages_by_id = ctx.pages_by_id
     page_urls = sorted({pages_by_id[a.page_id].url for a in atoms})
     src_ids = {u: f"S-{i:03d}" for i, u in enumerate(page_urls, start=1)}
     keys = [(lanes.kinds[a.kind].area, a.norm_key) for a in atoms]

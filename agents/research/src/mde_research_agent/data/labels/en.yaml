@@ -35,6 +35,7 @@ warnings:
   taking_longer: "Taking a bit longer than planned because new details are still turning up."
   budget_stop: "Stopped at the research budget. Finishing with what we have."
   no_keys: "Search is not set up, so research was skipped."
+  no_results: "The web search returned nothing useful for any topic, so research stopped early."
 reasons:
   no_content: "no readable text"
   paywall: "behind a login or paywall"

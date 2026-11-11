@@ -134,7 +134,7 @@ def _gaps(ctx: RunContext, built: list[BuiltItem], reason: str | None) -> list[G
             gr = "provider_down"
         elif ts.reason in ("budget_stop",) or ctx.budget_stopped:
             gr = "budget_stop"
-        elif ts.status in ("queued", "running"):
+        elif ts.status in ("queued", "running") or (ts.reason == "skipped" and not ts.queries):
             gr = "not_run"
         else:
             gr = "not_found" if t.id not in produced else "budget_stop"
