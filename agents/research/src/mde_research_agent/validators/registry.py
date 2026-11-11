@@ -161,7 +161,7 @@ def rv05_no_new_facts(v: ValidationContext) -> list[Violation]:
             ]
         for tok in novel_tokens(
             sl.get("digest", ""),
-            corpus + [json.dumps(v.output.get("norms", []), ensure_ascii=False)],
+            [*corpus, json.dumps(v.output.get("norms", []), ensure_ascii=False)],
         ):
             if any(ch.isdigit() for ch in tok) or tok.startswith(("http", "www")):
                 out.append(Violation("RV-05", f"{lane} digest adds {tok!r}", None, "warn"))

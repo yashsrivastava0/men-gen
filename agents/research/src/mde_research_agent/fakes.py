@@ -12,6 +12,7 @@ Used by tests, the mock dev server and ``run --mock``. Two modes work together:
 
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import re
 from collections.abc import Callable
@@ -91,6 +92,9 @@ class FakeWorld:
     provider_content_every: int = 0  # every Nth generated hit carries page text (0 = none)
     search_cost_micros: int = 0
     fail_search: Callable[[SearchRequest], SearchError | None] | None = None
+    gate: asyncio.Event | None = (
+        None  # when set and not open, every search waits (tests hold a run mid-flight)
+    )
 
     def add_page(
         self, url: str, text: str, *, title: str = "", published: date | None = None, **kw: object
@@ -235,6 +239,8 @@ class FakeSearch:
 
     async def search(self, request: SearchRequest) -> SearchResult:
         self.requests.append(request)
+        if self.world.gate is not None:
+            await self.world.gate.wait()
         if self.world.fail_search is not None:
             err = self.world.fail_search(request)
             if err is not None:
