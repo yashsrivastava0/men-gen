@@ -86,15 +86,16 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 
 ## Implementation (lead-owned)
 
+- [implementation/CURRENT_STATE.md](implementation/CURRENT_STATE.md): **start here when resuming**: where the project is right now (active branch, what we are working on: the Research agent, branch map, what is done and not, things in older docs that are no longer true, how to run and verify it, reading order)
 - [implementation/BRIEF.md](implementation/BRIEF.md): normative for *how* to implement
 - [implementation/AGENT_PROTOCOL.md](implementation/AGENT_PROTOCOL.md): the rules every subagent follows
 - [../apps/web/README.md](../apps/web/README.md): the global front end (console shell, registry, tokens, UI smoke tests, `MDE_WEB_DIR`)
-- [implementation/GLOBAL_RULES.md](implementation/GLOBAL_RULES.md): commit policy, tags, merges, repository layout (`agents/`, `apps/web/`) and the owner's recorded overrides
+- [implementation/GLOBAL_RULES.md](implementation/GLOBAL_RULES.md): commit policy (checkpoint before medium or major work, new branch only after the owner's yes for a complete overhaul), tags, merges, repository layout (`agents/`, `apps/web/`) and the owner's recorded overrides
 - [compass/research-inputs/README.md](compass/research-inputs/README.md): three approved Compass runs (Quick, Standard, Thorough; three unrelated ideas) recorded in a real browser with the live model, the input for building the research agent; checked by `agents/compass/tests/test_research_inputs.py`
 - [compass/build-prompts/02-compass-ai-interview-prompt.md](compass/build-prompts/02-compass-ai-interview-prompt.md): the owner's build prompt for the AI-planned interview (verbatim copy); evidence: [compass/evidence/before-first-questions.json](compass/evidence/before-first-questions.json)
 - [implementation/PROGRESS.md](implementation/PROGRESS.md): checklist, ticked with commit hashes
 - [implementation/DECISIONS.md](implementation/DECISIONS.md): decision log (D-001 onward)
-- [implementation/HANDOFF.md](implementation/HANDOFF.md): **start here when resuming**: exact state, open decision, resume checklist, environment facts, lessons
+- [implementation/HANDOFF.md](implementation/HANDOFF.md): history of the Context Engine as of 2026-11-08 (its hashes and the `contracts-v1` tag are not in this repository); still useful for environment facts and lessons, **not** for the current state, see CURRENT_STATE
 - [implementation/HANDOFF-compass-ai-interview.md](implementation/HANDOFF-compass-ai-interview.md): handoff for the Compass AI-planned interview task (state, live findings, open items, how to run)
 - [implementation/COMPASS-STATUS-2026-11-09.md](implementation/COMPASS-STATUS-2026-11-09.md): long record of the Compass AI-planned interview session (chronology, live results, open defects, config values)
 - [implementation/COMPASS-SIZE-PLAN-2026-11-10.md](implementation/COMPASS-SIZE-PLAN-2026-11-10.md): analysis and phased plan for the size-aware Brief (structure draft, size bands, checks, research guidance, live program)

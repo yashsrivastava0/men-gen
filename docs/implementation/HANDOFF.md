@@ -1,5 +1,7 @@
 # Handoff: Context Engine build
 
+> **Historical (2026-11-08).** For where the project is now, read [CURRENT_STATE.md](CURRENT_STATE.md) first. The commit hashes below (for example `6c23e1b`) and the tag `contracts-v1` are from a history that was squashed into the single `init` commit; they do not exist in this repository. Sections 5 to 9 (map, environment facts, process lessons) describe the Context Engine as built on 2026-11-08 and were not re-checked since; the environment facts are for Windows.
+
 Written 2026-11-08 by the lead, at `main` = `6c23e1b` (170 commits, tag `contracts-v1`). Read this first, then `PROGRESS.md`, `DECISIONS.md` (D-001 to D-073), `BRIEF.md` and `docs/product/context-engine-spec.md`. `REPORT.md` is the draft final report. Everything below was checked against the repository when this was written.
 
 ## 1. Where things stand (one paragraph)
