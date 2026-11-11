@@ -152,7 +152,8 @@ class Director:
         ctx = self.ctx
         proposal: PlanProposal | None = None
         try:
-            res = await ctx.runner.run(plan_call.SPEC, plan_input(ctx))
+            with ctx.stage("plan"):
+                res = await ctx.runner.run(plan_call.SPEC, plan_input(ctx))
             ctx.budget.add_llm_cost(res.cost_micros, "plan")
             if res.failed:
                 ctx.failures.record("llm", res.reason or "failed")
@@ -187,9 +188,11 @@ class Director:
                         "lane": t.lane,
                         "priority": t.priority,
                         "status": "queued",
+                        "slots_required": sum(1 for s in t.slots if s.required),
                     }
                     for t in plan.targets
                 ],
+                "slots_required": sum(1 for t in plan.targets for s in t.slots if s.required),
                 "declined": declined,
                 "planned_searches": min(
                     ctx.budget.soft.searches,
@@ -287,7 +290,8 @@ class Director:
             )
         if not topics:
             return {}
-        res = await ctx.runner.run(gap_call.SPEC, gap_call.GapIn(topics=topics))
+        with ctx.stage("queries"):
+            res = await ctx.runner.run(gap_call.SPEC, gap_call.GapIn(topics=topics))
         ctx.budget.add_llm_cost(res.cost_micros, "queries")
         if res.failed:
             ctx.failures.record("llm", res.reason or "failed")

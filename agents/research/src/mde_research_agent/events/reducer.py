@@ -8,9 +8,10 @@ from __future__ import annotations
 
 from typing import Any
 
-from mde_research_agent.domain.events import TERMINAL_EVENTS, Counters, Event, TargetView
+from mde_research_agent.domain.events import TERMINAL_EVENTS, Counters, Event, FactView, TargetView
 
 FEED_SIZE = 60
+MAX_FACTS = 600
 TARGET_EVENT_STATUS = {
     "target.started": "running",
     "target.covered": "covered",
@@ -24,6 +25,8 @@ def fold(events: list[Event]) -> dict[str, Any]:
     order: list[str] = []
     declined: list[str] = []
     entities: list[str] = []
+    facts: dict[str, FactView] = {}
+    slots_required = 0
     started: dict[str, Any] = {}
     counters = Counters()
     phase: str | None = None
@@ -46,10 +49,12 @@ def fold(events: list[Event]) -> dict[str, Any]:
                     job=t["job"],
                     lane=t["lane"],
                     priority=int(t.get("priority", 0)),
+                    slots_required=int(t.get("slots_required", 0)),
                 )
                 targets[tv.id] = tv
                 order.append(tv.id)
             declined = list(d.get("declined", []))
+            slots_required = int(d.get("slots_required", 0))
         elif e.type in TARGET_EVENT_STATUS and e.target_id in targets:
             tv = targets[e.target_id]
             targets[e.target_id] = tv.model_copy(
@@ -59,6 +64,19 @@ def fold(events: list[Event]) -> dict[str, Any]:
                     "slots_required": int(d.get("slots_required", tv.slots_required)),
                 }
             )
+        elif e.type in ("fact.found", "fact.verified", "fact.rejected") and d.get("fact_id"):
+            fid = str(d["fact_id"])
+            fv = facts.get(fid) or FactView(fact_id=fid)
+            upd: dict[str, Any] = {
+                "label": d.get("label", fv.label),
+                "kind": d.get("kind", fv.kind),
+                "topic": d.get("topic", fv.topic),
+            }
+            if e.type == "fact.verified":
+                upd.update(state="checked", level=d.get("level"), domain=d.get("domain"))
+            elif e.type == "fact.rejected":
+                upd.update(state="rejected", reason=d.get("reason"))
+            facts[fid] = fv.model_copy(update=upd)
         elif e.type == "entity.discovered" and d.get("name") and d["name"] not in entities:
             entities.append(str(d["name"]))
         if e.type in TERMINAL_EVENTS:
@@ -72,6 +90,8 @@ def fold(events: list[Event]) -> dict[str, Any]:
         "phase": phase,
         "round": round_no,
         "feed": events[-FEED_SIZE:],
+        "facts": list(facts.values())[-MAX_FACTS:],
+        "slots_required": slots_required,
         "terminal": terminal,
         "last_seq": events[-1].seq if events else 0,
     }

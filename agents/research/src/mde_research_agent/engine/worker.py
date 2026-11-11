@@ -201,7 +201,8 @@ async def write_variants(
     inp = build_query_in(ctx, ts, round_no, cov, want)
     valid: list[FollowupQuery] = []
     async with ctx.llm_sem:
-        res = await ctx.runner.run(q_calls.SPEC, inp)
+        with ctx.stage("queries"):
+            res = await ctx.runner.run(q_calls.SPEC, inp)
     ctx.budget.add_llm_cost(res.cost_micros, "queries")
     if res.failed:
         ctx.failures.record("llm", res.reason or "failed", t.id)
@@ -229,7 +230,8 @@ async def write_variants(
 
 async def _search_call(ctx: RunContext, req: SearchRequest) -> SearchResult:
     try:
-        return await asyncio.wait_for(ctx.search.search(req), timeout=SEARCH_TIMEOUT_S)
+        with ctx.stage("search"):
+            return await asyncio.wait_for(ctx.search.search(req), timeout=SEARCH_TIMEOUT_S)
     except TimeoutError as exc:
         raise SearchError("timeout", "search timed out") from exc
 
@@ -431,7 +433,10 @@ async def _read_page(
         )
         async with ctx.fetch_sem:
             try:
-                page = await asyncio.wait_for(ctx.fetch.fetch(hit.hit.url), timeout=FETCH_TIMEOUT_S)
+                with ctx.stage("read"):
+                    page = await asyncio.wait_for(
+                        ctx.fetch.fetch(hit.hit.url), timeout=FETCH_TIMEOUT_S
+                    )
             except TimeoutError:
                 ctx.failures.record("fetch", "timeout", t.id)
                 await ctx.events.emit(
@@ -543,6 +548,7 @@ async def extract_page(
     )
     verified = 0
     pending: list[Candidate | Rejected] = []
+    fids: dict[tuple[str, str, str], str] = {}  # one stable id per finding, from "checking" to "checked"
     for attempt in range(2):
         inp = (
             base
@@ -556,7 +562,8 @@ async def extract_page(
             )
         )
         async with ctx.llm_sem:
-            res = await ctx.runner.run(EXTRACT_SPECS[t.job], inp)
+            with ctx.stage("extract"):
+                res = await ctx.runner.run(EXTRACT_SPECS[t.job], inp)
         ctx.budget.add_llm_cost(res.cost_micros, "extract")
         if res.failed:
             ctx.failures.record("llm", res.reason or "failed", t.id)
@@ -564,6 +571,8 @@ async def extract_page(
         retry: list[Candidate | Rejected] = []
         existing = {(a.kind, a.norm_key, a.page_id) for a in ts.atoms}
         for cand in candidates_from_output(res.output, page):
+            if attempt == 0:
+                ctx.count("extracted")  # EVERY item the model returned, including malformed and empty ones
             if isinstance(cand, Rejected):
                 ctx.count_drop(cand.reason)
                 await ctx.events.emit(
@@ -571,7 +580,12 @@ async def extract_page(
                     target_id=t.id,
                     round_=round_no,
                     phase="verify",
-                    detail={"reason": cand.reason, "topic": t.label},
+                    detail={
+                        "reason": cand.reason,
+                        "topic": t.label,
+                        "label": cand.label,
+                        "fact_id": ctx.ids.new("atm"),
+                    },
                 )
                 continue
             if attempt == 1 and cand.norm_key not in {p.norm_key for p in pending}:
@@ -579,17 +593,20 @@ async def extract_page(
             key = (cand.kind, cand.norm_key, page.id)
             if key in existing:
                 continue
+            fid = fids.setdefault(key, ctx.ids.new("atm"))
             await ctx.events.emit(
                 "fact.found",
                 target_id=t.id,
                 round_=round_no,
                 phase="verify",
                 params={"topic": t.label},
-                detail={"kind": cand.kind, "label": cand.label, "topic": t.label},
+                detail={"kind": cand.kind, "label": cand.label, "topic": t.label, "fact_id": fid},
             )
             checked = check_candidate(cand, page)
             if isinstance(checked, Rejected):
                 if checked.reason == "quote_not_found":
+                    if attempt == 0:
+                        ctx.count("quote_failed_first")
                     retry.append(cand)  # one retry ("quote exactly"); still failing after it is counted below
                     continue
                 ctx.count_drop(checked.reason)
@@ -598,13 +615,19 @@ async def extract_page(
                     target_id=t.id,
                     round_=round_no,
                     phase="verify",
-                    detail={"reason": checked.reason, "topic": t.label, "label": cand.label},
+                    detail={
+                        "reason": checked.reason,
+                        "topic": t.label,
+                        "label": cand.label,
+                        "fact_id": fid,
+                    },
                 )
                 continue
             cand = checked
+            ctx.count("first_try_ok" if attempt == 0 else "recovered_by_retry")
             existing.add(key)
             atom = AtomRecord(
-                id=ctx.ids.new("atm"),
+                id=fid,
                 kind=cand.kind,
                 job=t.job,
                 target_id=t.id,
@@ -641,6 +664,7 @@ async def extract_page(
             break
     for p in pending:
         ctx.drops.quote_not_found += 1
+        pkey = (getattr(p, "kind", ""), getattr(p, "norm_key", ""), page.id)
         await ctx.events.emit(
             "fact.rejected",
             target_id=t.id,
@@ -651,6 +675,7 @@ async def extract_page(
                 "reason": "quote_not_found",
                 "topic": t.label,
                 "label": getattr(p, "label", "") or "",
+                "fact_id": fids.get(pkey, ""),
             },
         )
     return verified

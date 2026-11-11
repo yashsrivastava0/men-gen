@@ -129,6 +129,7 @@ async def _announce(ctx: RunContext, ts: TargetState, a: AtomRecord, level: str)
             "domain": page.domain,
             "level": level,
             "topic": ts.target.label,
+            "fact_id": a.id,
         },
     )
 
@@ -155,7 +156,12 @@ async def _apply(
             "fact.rejected",
             target_id=a.target_id,
             phase="verify",
-            detail={"reason": "not_supported", "topic": ts.target.label, "label": a.label},
+            detail={
+                "reason": "not_supported",
+                "topic": ts.target.label,
+                "label": a.label,
+                "fact_id": a.id,
+            },
         )
         return
     if v.unsupported_fields:
@@ -209,7 +215,8 @@ async def _run_batch(
         )
     try:
         async with ctx.llm_sem:
-            res = await ctx.runner.run(check_call.SPEC, check_call.CheckIn(items=wire))
+            with ctx.stage("check"):
+                res = await ctx.runner.run(check_call.SPEC, check_call.CheckIn(items=wire))
     except _STOP as exc:
         ctx.budget_stopped = ctx.budget_stopped or isinstance(exc, BudgetExceeded)
         return out

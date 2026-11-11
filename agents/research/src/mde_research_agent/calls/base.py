@@ -82,6 +82,7 @@ class RunResult(Generic[O]):
     cost_micros: int = 0
     latency_ms: int = 0
     live: bool = False
+    model: str = ""
     errors: list[str] = field(default_factory=list)
 
 
@@ -154,6 +155,7 @@ class CallRunner:
             cost_micros=int(getattr(usage, "cost_micros", 0) or 0),
             latency_ms=int((time.monotonic() - started) * 1000),
             live=live,
+            model=str(getattr(result, "model", "") or ""),
         )
         self.calls.append((cs.id, res))
         return res

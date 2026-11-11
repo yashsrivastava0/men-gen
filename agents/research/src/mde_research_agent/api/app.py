@@ -27,6 +27,7 @@ from mde_core.logging import get_logger
 from mde_core.settings import Settings, load_settings
 from mde_research_agent import API_PREFIX
 from mde_research_agent.api.app_routes import make_api_router
+from mde_research_agent.api.results_routes import make_results_router
 from mde_research_agent.api.deps import Auth, Svc
 from mde_research_agent.api.errors import install_error_handlers
 from mde_research_agent.api.security import SameOrigin
@@ -174,9 +175,25 @@ def _make_router() -> APIRouter:
         )
 
     @router.get("/programs/{program_id}/latest")
-    async def latest(program_id: str, who: Auth, service: Svc) -> Any:
+    async def latest(
+        program_id: str,
+        who: Auth,
+        service: Svc,
+        view: Annotated[str, Query(pattern="^(full|compact)$")] = "full",
+        apply_decisions: Annotated[int, Query(ge=0, le=1)] = 0,
+    ) -> Any:
+        """The newest committed ``research.json`` (immutable, hashed). ``view=compact`` is the deterministic compact
+        projection Spec reads; ``apply_decisions=1`` shows the owner's rejections as ``withdrawn`` (the file stays as
+        committed: it is an overlay)."""
+        body = (
+            await service.compact(who.tenant_id, program_id)
+            if view == "compact"
+            else await service.latest_with_decisions(who.tenant_id, program_id)
+            if apply_decisions
+            else await service.latest(who.tenant_id, program_id)
+        )
         return JSONResponse(
-            await service.latest(who.tenant_id, program_id),
+            body,
             headers={
                 "Cache-Control": "no-store",
                 "Content-Disposition": f'attachment; filename="research-{program_id}.json"',
@@ -244,6 +261,7 @@ def create_app(
     install_error_handlers(app)
     app.include_router(router)
     app.include_router(make_api_router())
+    app.include_router(make_results_router())
 
     @app.get("/healthz")
     async def healthz() -> dict[str, bool]:

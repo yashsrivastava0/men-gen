@@ -252,6 +252,9 @@ class RunInfo(Model):
     search_provider: str = ""
     plan_source: str = ""
     notes: list[str] = Field(default_factory=list)
+    stages: dict[str, float] = Field(default_factory=dict)  # work seconds by stage (parallel work adds up)
+    cost_by_step: dict[str, int] = Field(default_factory=dict)  # micro-USD by step (search, plan, queries, extract, check, assemble)
+    fallbacks: dict[str, int] = Field(default_factory=dict)  # degraded paths used, by call id
 
 
 class ResearchOutput(Model):

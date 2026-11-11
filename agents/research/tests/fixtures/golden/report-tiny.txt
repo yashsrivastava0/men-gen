@@ -1,0 +1,1451 @@
+# Research report (research.v5)
+
+- Status: **complete**
+- Size: focused (load 1)
+- Signals: none
+- Work: 30 searches, 40 pages, 0 s, USD 0.00
+- Topics: 7 covered, 3 not found, of 10; required slots 7 of 10
+- Items: 69 (main store about 19153 tokens, appendix 0)
+- Provider: fake; models: gpt-6-luna / checker gpt-6-luna (same)
+
+## Lane quality
+
+| Lane | Quality | Required slots filled | Items | Strong share |
+| --- | --- | --- | --- | --- |
+| blueprint | strong | 6 of 7 | 53 | 100% |
+| design | partial | 1 of 2 | 33 | 97% |
+| integrations | none | 0 of 0 | 0 | 0% |
+| mock | none | 0 of 0 | 0 | 0% |
+| screens | thin | 0 of 1 | 18 | 100% |
+| verify | none | 0 of 0 | 0 | 0% |
+
+## Builder-need coverage
+
+| Need | Coverage |
+| --- | --- |
+| BN-02 | researched |
+| BN-03 | researched |
+| BN-04 | defaulted_only |
+| BN-05 | defaulted_only |
+| BN-07 | defaulted_only |
+| BN-08 | researched |
+| BN-09 | researched |
+| BN-10 | defaulted_only |
+
+## To confirm
+
+- Nothing needs confirming.
+
+## Conflicts
+
+- No conflicts.
+
+## Gaps
+
+- Comparable unit converter apps: not_found (searched: unit converter features pricing; unit converter comparison; customers rate comparison converter features pricing plans features)
+- Look and feel of unit converter apps: not_found (searched: unit converter design ux; unit converter layout accessibility; unit converter design layout navigation)
+- Key screens of unit converter apps: not_found (searched: unit converter screen sections; unit converter components states; unit converter screen sections components)
+- Platform guidelines: Material Design: not_run
+- Empty, error and offline states: not_run
+- Recent design trends in unit converter apps: not_run
+
+## Features and comparable apps
+
+#### Each unit converter comparison record has `RI-003`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each unit converter comparison record has a status, a created date, an owner and a reference number used in comparison. Updated August 2024 for unit converter comparison teams.
+
+> Each unit converter comparison record has a status, a created date, an owner and a reference number used in comparison.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: each unit converter comparison
+- kind: app
+- region: each unit converter comparison
+- platforms: each; unit; converter; comparison; record; has
+- pricing_model: each unit converter comparison
+- features: {"feature_key": "each", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "each"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Each unit converter features record has `RI-004`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each unit converter features record has a status, a created date, an owner and a reference number used in features.
+
+> Each unit converter features record has a status, a created date, an owner and a reference number used in features.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: each unit converter features
+- kind: app
+- region: each unit converter features
+- platforms: each; unit; converter; features; record; has
+- pricing_model: each unit converter features
+- features: {"feature_key": "each", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "each"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Most unit converter comparison providers list `RI-005`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most unit converter comparison providers list converter and comparison as core features on their pricing page.
+
+> Most unit converter comparison providers list converter and comparison as core features on their pricing page.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: most unit converter comparison
+- kind: app
+- region: most unit converter comparison
+- platforms: most; unit; converter; comparison; providers; list
+- pricing_model: most unit converter comparison
+- features: {"feature_key": "most", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "most"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Most unit converter features providers list `RI-006`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most unit converter features providers list converter and features as core features on their pricing page.
+
+> Most unit converter features providers list converter and features as core features on their pricing page.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: most unit converter features
+- kind: app
+- region: most unit converter features
+- platforms: most; unit; converter; features; providers; list
+- pricing_model: most unit converter features
+- features: {"feature_key": "most", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "most"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### A typical unit converter comparison screen `RI-008`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+A typical unit converter comparison screen shows converter first, then comparison, with an empty state when nothing is available.
+
+> A typical unit converter comparison screen shows converter first, then comparison, with an empty state when nothing is available.
+> help.unit89.example, 2025-11-01
+
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: typical unit converter comparison
+- kind: app
+- region: typical unit converter comparison
+- platforms: typical; unit; converter; comparison; screen; shows
+- pricing_model: typical unit converter comparison
+- features: {"feature_key": "typical", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "typical"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### A typical unit converter features screen `RI-009`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+A typical unit converter features screen shows converter first, then features, with an empty state when nothing is available.
+
+> A typical unit converter features screen shows converter first, then features, with an empty state when nothing is available.
+> help.unit89.example, 2025-11-01
+
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: typical unit converter features
+- kind: app
+- region: typical unit converter features
+- platforms: typical; unit; converter; features; screen; shows
+- pricing_model: typical unit converter features
+- features: {"feature_key": "typical", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "typical"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Unit converter comparison apps let members `RI-010`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Unit converter comparison apps let members converter and manage comparison directly from the mobile app.
+
+> Unit converter comparison apps let members converter and manage comparison directly from the mobile app.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- name: unit converter comparison let
+- kind: app
+- region: unit converter comparison let
+- platforms: unit; converter; comparison; let; members; manage
+- pricing_model: unit converter comparison let
+- features: {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}; {"feature_key": "comparison", "level": "core"}
+- screens: {"screen_key": "unit"}; {"screen_key": "converter"}; {"screen_key": "comparison"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Unit converter features apps let members `RI-011`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+Unit converter features apps let members converter and manage features directly from the mobile app.
+
+> Unit converter features apps let members converter and manage features directly from the mobile app.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- name: unit converter features let
+- kind: app
+- region: unit converter features let
+- platforms: unit; converter; features; let; members; manage
+- pricing_model: unit converter features let
+- features: {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}; {"feature_key": "features", "level": "core"}
+- screens: {"screen_key": "unit"}; {"screen_key": "converter"}; {"screen_key": "features"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Customers rate comparison and converter as `RI-001`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Customers rate comparison and converter as the most used parts of unit converter comparison products in the region.
+
+> Customers rate comparison and converter as the most used parts of unit converter comparison products in the region.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: customers rate comparison converter
+- kind: app
+- region: customers rate comparison converter
+- platforms: customers; rate; comparison; converter; most; used
+- pricing_model: customers rate comparison converter
+- features: {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}; {"feature_key": "comparison", "level": "core"}
+- screens: {"screen_key": "customers"}; {"screen_key": "rate"}; {"screen_key": "comparison"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Customers rate features and converter as `RI-002`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Customers rate features and converter as the most used parts of unit converter features products in the region.
+
+> Customers rate features and converter as the most used parts of unit converter features products in the region.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: customers rate features converter
+- kind: app
+- region: customers rate features converter
+- platforms: customers; rate; features; converter; most; used
+- pricing_model: customers rate features converter
+- features: {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}; {"feature_key": "features", "level": "core"}
+- screens: {"screen_key": "customers"}; {"screen_key": "rate"}; {"screen_key": "features"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Recent updates added converter and improved `RI-007`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+Recent updates added converter and improved comparison for unit converter comparison users on Android and iOS.
+
+> Recent updates added converter and improved comparison for unit converter comparison users on Android and iOS.
+> developer.unit19.example, 2024-08-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- name: recent updates added converter
+- kind: app
+- region: recent updates added converter
+- platforms: recent; updates; added; converter; improved; comparison
+- pricing_model: recent updates added converter
+- features: {"feature_key": "recent", "level": "core"}; {"feature_key": "updates", "level": "core"}; {"feature_key": "added", "level": "core"}
+- screens: {"screen_key": "recent"}; {"screen_key": "updates"}; {"screen_key": "added"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Fees for unit converter comparison start `RI-012`
+**OFFICIAL** · trend · impact normal · confidence high · flags: geo_uncertain
+
+Fees for unit converter comparison start at 4 percent and funds settle in 4 business days after capture.
+
+> Fees for unit converter comparison start at 4 percent and funds settle in 4 business days after capture.
+> help.unit89.example, 2025-11-01
+
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- topic: fees unit converter comparison
+- what_changed: fees unit converter comparison
+- since: fees unit converter comparison
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### Fees for unit converter features start `RI-013`
+**OFFICIAL** · trend · impact normal · confidence high · flags: geo_uncertain
+
+Fees for unit converter features start at 4 percent and funds settle in 4 business days after capture.
+
+> Fees for unit converter features start at 4 percent and funds settle in 4 business days after capture.
+> help.unit89.example, 2025-11-01
+
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- topic: fees unit converter features
+- what_changed: fees unit converter features
+- since: fees unit converter features
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### Most unit converter comparison providers list `RI-014`
+**OFFICIAL** · trend · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most unit converter comparison providers list converter and comparison as core features on their pricing page.
+
+> Most unit converter comparison providers list converter and comparison as core features on their pricing page.
+> developer.unit19.example, 2024-08-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- topic: most unit converter comparison
+- what_changed: most unit converter comparison
+- since: most unit converter comparison
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### Most unit converter features providers list `RI-015`
+**OFFICIAL** · trend · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most unit converter features providers list converter and features as core features on their pricing page.
+
+> Most unit converter features providers list converter and features as core features on their pricing page.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- topic: most unit converter features
+- what_changed: most unit converter features
+- since: most unit converter features
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### Recent updates added converter and improved `RI-016`
+**OFFICIAL** · trend · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Recent updates added converter and improved features for unit converter features users on Android and iOS.
+
+> Recent updates added converter and improved comparison for unit converter comparison users on Android and iOS.
+> developer.unit19.example, 2024-08-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- topic: recent updates added converter
+- what_changed: recent updates added converter
+- since: recent updates added converter
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### A typical unit converter comparison screen `RI-017`
+**OFFICIAL** · trend · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+A typical unit converter comparison screen shows converter first, then comparison, with an empty state when nothing is available.
+
+> A typical unit converter comparison screen shows converter first, then comparison, with an empty state when nothing is available.
+> developer.unit19.example, 2024-08-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-035`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- topic: typical unit converter comparison
+- what_changed: typical unit converter comparison
+- since: typical unit converter comparison
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### A typical unit converter features screen `RI-018`
+**OFFICIAL** · trend · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+A typical unit converter features screen shows converter first, then features, with an empty state when nothing is available.
+
+> A typical unit converter features screen shows converter first, then features, with an empty state when nothing is available.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-036`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- topic: typical unit converter features
+- what_changed: typical unit converter features
+- since: typical unit converter features
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### Unit converter comparison apps let members `RI-019`
+**OFFICIAL** · trend · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Unit converter comparison apps let members converter and manage comparison directly from the mobile app.
+
+> Unit converter comparison apps let members converter and manage comparison directly from the mobile app.
+> developer.unit19.example, 2024-08-01
+
+- Source `S-006`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-020`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- topic: unit converter comparison let
+- what_changed: unit converter comparison let
+- since: unit converter comparison let
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+#### Unit converter features apps let members `RI-020`
+**OFFICIAL** · trend · impact normal · confidence high · flags: geo_uncertain, stale
+
+Unit converter features apps let members converter and manage features directly from the mobile app.
+
+> Unit converter features apps let members converter and manage features directly from the mobile app.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-007`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- topic: unit converter features let
+- what_changed: unit converter features let
+- since: unit converter features let
+- direction: rising
+- Applies to: NEW (suggests)
+- Use: Recent change: consider it before locking the design.
+
+
+## Structure: screens, navigation and roles
+
+#### Each user roles layout record has `RI-029`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each user roles layout record has a status, a created date, an owner and a reference number used in layout.
+
+> Each user roles layout record has a status, a created date, an owner and a reference number used in layout.
+> user96-app.example, 2025-01-01
+
+- Source `S-015`: developer.user72.example (official, 2024-08-01) https://developer.user72.example/user-roles-layout/5
+- Source `S-028`: docs.user46.example (official, 2026-09-01) https://docs.user46.example/user-roles-layout/0
+- Source `S-038`: newsuser87.example (official, 2025-06-01) https://newsuser87.example/user-roles-layout/3
+- Source `S-039`: user84.example (official, 2026-04-01) https://user84.example/user-roles-layout/1
+- Source `S-040`: user96-app.example (official, 2025-01-01) https://user96-app.example/user-roles-layout/4
+- role: each user roles layout
+- typical_tasks: each; user; roles; layout; record; has
+- typical_permissions: each; user; roles; layout; record; has
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### Fees for user roles layout start `RI-030`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: geo_uncertain
+
+Fees for user roles layout start at 5 percent and funds settle in 3 business days after capture.
+
+> Fees for user roles layout start at 4 percent and funds settle in 2 business days after capture.
+> user96-app.example, 2025-01-01
+
+- Source `S-015`: developer.user72.example (official, 2024-08-01) https://developer.user72.example/user-roles-layout/5
+- Source `S-040`: user96-app.example (official, 2025-01-01) https://user96-app.example/user-roles-layout/4
+- role: fees user roles layout
+- typical_tasks: fees; user; roles; layout; start; percent
+- typical_permissions: fees; user; roles; layout; start; percent
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### Recent updates added roles and improved `RI-031`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Recent updates added roles and improved layout for user roles layout users on Android and iOS.
+
+> Recent updates added roles and improved layout for user roles layout users on Android and iOS.
+> user96-app.example, 2025-01-01
+
+- Source `S-015`: developer.user72.example (official, 2024-08-01) https://developer.user72.example/user-roles-layout/5
+- Source `S-028`: docs.user46.example (official, 2026-09-01) https://docs.user46.example/user-roles-layout/0
+- Source `S-038`: newsuser87.example (official, 2025-06-01) https://newsuser87.example/user-roles-layout/3
+- Source `S-039`: user84.example (official, 2026-04-01) https://user84.example/user-roles-layout/1
+- Source `S-040`: user96-app.example (official, 2025-01-01) https://user96-app.example/user-roles-layout/4
+- role: recent updates added roles
+- typical_tasks: recent; updates; added; roles; improved; layout
+- typical_permissions: recent; updates; added; roles; improved; layout
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### The sandbox for user roles layout `RI-032`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: geo_uncertain
+
+The sandbox for user roles layout supports test keys, webhook events for roles and rate limits of 2 requests per second.
+
+> The sandbox for user roles layout supports test keys, webhook events for roles and rate limits of 2 requests per second.
+> docs.user46.example, 2026-09-01
+
+- Source `S-028`: docs.user46.example (official, 2026-09-01) https://docs.user46.example/user-roles-layout/0
+- role: sandbox user roles layout
+- typical_tasks: sandbox; user; roles; layout; supports; test
+- typical_permissions: sandbox; user; roles; layout; supports; test
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### Teams can export roles reports and `RI-033`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: geo_uncertain
+
+Teams can export roles reports and filter layout by date, status and owner.
+
+> Teams can export roles reports and filter layout by date, status and owner.
+> newsuser87.example, 2025-06-01
+
+- Source `S-038`: newsuser87.example (official, 2025-06-01) https://newsuser87.example/user-roles-layout/3
+- role: teams can export roles
+- typical_tasks: teams; can; export; roles; reports; filter
+- typical_permissions: teams; can; export; roles; reports; filter
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### A typical user roles layout screen `RI-034`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+A typical user roles layout screen shows roles first, then layout, with an empty state when nothing is available.
+
+> A typical user roles layout screen shows roles first, then layout, with an empty state when nothing is available.
+> user96-app.example, 2025-01-01
+
+- Source `S-015`: developer.user72.example (official, 2024-08-01) https://developer.user72.example/user-roles-layout/5
+- Source `S-028`: docs.user46.example (official, 2026-09-01) https://docs.user46.example/user-roles-layout/0
+- Source `S-038`: newsuser87.example (official, 2025-06-01) https://newsuser87.example/user-roles-layout/3
+- Source `S-039`: user84.example (official, 2026-04-01) https://user84.example/user-roles-layout/1
+- Source `S-040`: user96-app.example (official, 2025-01-01) https://user96-app.example/user-roles-layout/4
+- role: typical user roles layout
+- typical_tasks: typical; user; roles; layout; screen; shows
+- typical_permissions: typical; user; roles; layout; screen; shows
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### User roles layout apps let members `RI-035`
+**OFFICIAL** · role_pattern · impact normal · confidence high · flags: geo_uncertain
+
+User roles layout apps let members roles and manage layout directly from the mobile app.
+
+> User roles layout apps let members roles and manage layout directly from the mobile app.
+> user84.example, 2026-04-01
+
+- Source `S-039`: user84.example (official, 2026-04-01) https://user84.example/user-roles-layout/1
+- role: user roles layout let
+- typical_tasks: user; roles; layout; let; members; manage
+- typical_permissions: user; roles; layout; let; members; manage
+- Applies to: ROL:ROL-001 (refines)
+- Use: Typical role tasks: use them to check who can do what.
+
+#### Customers rate roles and converter as `RI-021`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Customers rate roles and converter as the most used parts of unit converter roles products in the region.
+
+> Customers rate roles and converter as the most used parts of unit converter roles products in the region.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Source `S-031`: help.unit18.example (help, 2025-11-01) https://help.unit18.example/unit-converter-roles/2
+- pattern: customers rate roles converter
+- when_used: customers rate roles converter
+- typical_items: customers; rate; roles; converter; most; used
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### Customers rate screens and converter as `RI-022`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: geo_uncertain
+
+Customers rate screens and converter as the most used parts of unit converter screens products in the region.
+
+> Customers rate screens and converter as the most used parts of unit converter screens products in the region.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- pattern: customers rate screens converter
+- when_used: customers rate screens converter
+- typical_items: customers; rate; screens; converter; most; used
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### Each unit converter screens record has `RI-023`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each unit converter screens record has a status, a created date, an owner and a reference number used in screens.
+
+> Each unit converter roles record has a status, a created date, an owner and a reference number used in roles.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- Source `S-031`: help.unit18.example (help, 2025-11-01) https://help.unit18.example/unit-converter-roles/2
+- pattern: each unit converter screens
+- when_used: each unit converter screens
+- typical_items: each; unit; converter; screens; record; has; roles
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### Fees for unit converter roles start `RI-024`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: geo_uncertain
+
+Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
+
+> Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
+> help.unit18.example, 2025-11-01
+
+- Source `S-031`: help.unit18.example (help, 2025-11-01) https://help.unit18.example/unit-converter-roles/2
+- pattern: fees unit converter roles
+- when_used: fees unit converter roles
+- typical_items: fees; unit; converter; roles; start; percent
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### Most unit converter roles providers list `RI-025`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: geo_uncertain, stale
+
+Most unit converter roles providers list converter and roles as core features on their pricing page.
+
+> Most unit converter roles providers list converter and roles as core features on their pricing page.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- pattern: most unit converter roles
+- when_used: most unit converter roles
+- typical_items: most; unit; converter; roles; providers; list
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### The sandbox for unit converter roles `RI-026`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: geo_uncertain
+
+The sandbox for unit converter roles supports test keys, webhook events for converter and rate limits of 2 requests per second.
+
+> The sandbox for unit converter roles supports test keys, webhook events for converter and rate limits of 2 requests per second.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- pattern: sandbox unit converter roles
+- when_used: sandbox unit converter roles
+- typical_items: sandbox; unit; converter; roles; supports; test
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### A typical unit converter roles screen `RI-027`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+A typical unit converter roles screen shows converter first, then roles, with an empty state when nothing is available.
+
+> A typical unit converter roles screen shows converter first, then roles, with an empty state when nothing is available.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- Source `S-031`: help.unit18.example (help, 2025-11-01) https://help.unit18.example/unit-converter-roles/2
+- pattern: typical unit converter roles
+- when_used: typical unit converter roles
+- typical_items: typical; unit; converter; roles; screen; shows; screens
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### Unit converter screens apps let members `RI-028`
+**OFFICIAL** · navigation_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Unit converter screens apps let members converter and manage screens directly from the mobile app.
+
+> Unit converter screens apps let members converter and manage screens directly from the mobile app.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- pattern: unit converter screens let
+- when_used: unit converter screens let
+- typical_items: unit; converter; screens; let; members; manage
+- Applies to: NEW (suggests)
+- Use: Navigation convention: use it to choose the app structure.
+
+#### Each unit converter screens record has `RI-036`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Each unit converter screens record has a status, a created date, an owner and a reference number used in screens.
+
+> Each unit converter roles record has a status, a created date, an owner and a reference number used in roles.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- (+1 more sources)
+- Seen in 1 of 1 (limited evidence)
+- screen_key: each unit converter screens
+- purpose: each unit converter screens
+- role: each unit converter screens
+- sections: each; unit; converter; screens; record; has
+- key_components: each; unit; converter; screens; record; has; screen; roles
+- actions: each; unit; converter; screens; record; has; screen; roles
+- states: {"state": "loading", "content": "each"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: each; unit; converter; screens; record; has; screen; roles
+- microcopy_notes: each; unit; converter; screens; record; has; screen; roles
+- section_variants: ['each', 'unit', 'converter', 'screen', 'record', 'has']; ['each', 'unit', 'converter', 'roles', 'record', 'has']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Fees for unit converter roles start `RI-037`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
+
+> Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
+> help.unit18.example, 2025-11-01
+
+- Source `S-031`: help.unit18.example (help, 2025-11-01) https://help.unit18.example/unit-converter-roles/2
+- Seen in 1 of 1 (limited evidence)
+- screen_key: fees unit converter roles
+- purpose: fees unit converter roles
+- role: fees unit converter roles
+- sections: fees; unit; converter; roles; start; percent
+- key_components: fees; unit; converter; roles; start; percent
+- actions: fees; unit; converter; roles; start; percent
+- states: {"state": "loading", "content": "fees"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: fees; unit; converter; roles; start; percent
+- microcopy_notes: fees; unit; converter; roles; start; percent
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Most unit converter roles providers list `RI-038`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence, stale
+
+Most unit converter roles providers list converter and roles as core features on their pricing page.
+
+> Most unit converter roles providers list converter and roles as core features on their pricing page.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Seen in 1 of 1 (limited evidence)
+- screen_key: most unit converter roles
+- purpose: most unit converter roles
+- role: most unit converter roles
+- sections: most; unit; converter; roles; providers; list
+- key_components: most; unit; converter; roles; providers; list
+- actions: most; unit; converter; roles; providers; list
+- states: {"state": "loading", "content": "most"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: most; unit; converter; roles; providers; list
+- microcopy_notes: most; unit; converter; roles; providers; list
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Recent updates added converter and improved `RI-039`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Recent updates added converter and improved screen for unit converter screen users on Android and iOS.
+
+> Recent updates added converter and improved roles for unit converter roles users on Android and iOS.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- (+1 more sources)
+- Seen in 1 of 1 (limited evidence)
+- screen_key: recent updates added converter
+- purpose: recent updates added converter
+- role: recent updates added converter
+- sections: recent; updates; added; converter; improved; screen
+- key_components: recent; updates; added; converter; improved; screen; screens; roles
+- actions: recent; updates; added; converter; improved; screen; screens; roles
+- states: {"state": "loading", "content": "recent"}; {"state": "loading", "content": "updates"}; {"state": "loading", "content": "added"}
+- validations: recent; updates; added; converter; improved; screen; screens; roles
+- microcopy_notes: recent; updates; added; converter; improved; screen; screens; roles
+- section_variants: ['recent', 'updates', 'added', 'converter', 'improved', 'screens']; ['recent', 'updates', 'added', 'converter', 'improved', 'roles']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### The sandbox for unit converter roles `RI-040`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+The sandbox for unit converter roles supports test keys, webhook events for converter and rate limits of 2 requests per second.
+
+> The sandbox for unit converter roles supports test keys, webhook events for converter and rate limits of 2 requests per second.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Seen in 1 of 1 (limited evidence)
+- screen_key: sandbox unit converter roles
+- purpose: sandbox unit converter roles
+- role: sandbox unit converter roles
+- sections: sandbox; unit; converter; roles; supports; test
+- key_components: sandbox; unit; converter; roles; supports; test
+- actions: sandbox; unit; converter; roles; supports; test
+- states: {"state": "loading", "content": "sandbox"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: sandbox; unit; converter; roles; supports; test
+- microcopy_notes: sandbox; unit; converter; roles; supports; test
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### A typical unit converter roles screen `RI-041`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+A typical unit converter roles screen shows converter first, then roles, with an empty state when nothing is available.
+
+> A typical unit converter roles screen shows converter first, then roles, with an empty state when nothing is available.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-005`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-024`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- (+1 more sources)
+- Seen in 1 of 1 (limited evidence)
+- screen_key: typical unit converter roles
+- purpose: typical unit converter roles
+- role: typical unit converter roles
+- sections: typical; unit; converter; roles; screen; shows
+- key_components: typical; unit; converter; roles; screen; shows; screens; first
+- actions: typical; unit; converter; roles; screen; shows; screens; first
+- states: {"state": "loading", "content": "typical"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: typical; unit; converter; roles; screen; shows; screens; first
+- microcopy_notes: typical; unit; converter; roles; screen; shows; screens; first
+- section_variants: ['typical', 'unit', 'converter', 'screens', 'screen', 'shows']; ['typical', 'unit', 'converter', 'screen', 'shows', 'first']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Unit converter screen apps let members `RI-042`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Unit converter screen apps let members converter and manage screen directly from the mobile app.
+
+> Unit converter screens apps let members converter and manage screens directly from the mobile app.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-009`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-025`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- Seen in 1 of 1 (limited evidence)
+- screen_key: unit converter screen let
+- purpose: unit converter screen let
+- role: unit converter screen let
+- sections: unit; converter; screen; let; members; manage
+- key_components: unit; converter; screen; let; members; manage; screens
+- actions: unit; converter; screen; let; members; manage; screens
+- states: {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}; {"state": "loading", "content": "screen"}; {"state": "loading", "content": "screens"}
+- validations: unit; converter; screen; let; members; manage; screens
+- microcopy_notes: unit; converter; screen; let; members; manage; screens
+- section_variants: ['unit', 'converter', 'screens', 'let', 'members', 'manage']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+
+## Journeys
+
+#### Most convert units unit providers list `RI-044`
+**OFFICIAL** · workflow · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Most convert units unit providers list units and unit as core features on their pricing page.
+
+> A typical convert units process screen shows units first, then process, with an empty state when nothing is available.
+> docs.convert71.example, 2026-09-01
+
+- Source `S-003`: developer.convert72.example (official, 2024-08-01) https://developer.convert72.example/convert-units-process/5
+- Source `S-004`: developer.convert88.example (official, 2024-08-01) https://developer.convert88.example/convert-units-unit/5
+- Source `S-010`: developer.unit54.example (official, 2024-08-01) https://developer.unit54.example/unit-converter-process/5
+- Source `S-013`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-flow/5
+- Source `S-017`: docs.convert61.example (official, 2026-09-01) https://docs.convert61.example/convert-units-unit/0
+- Source `S-018`: docs.convert71.example (official, 2026-09-01) https://docs.convert71.example/convert-units-process/0
+- (+4 more sources)
+- Seen in 1 of 1 (limited evidence)
+- name: most convert units unit
+- role: most convert units unit
+- steps: most; convert; units; unit; providers; list
+- alternates: most; convert; units; unit; providers; list; fees; start; percent; typical; process; screen (+12 more)
+- exceptions: most; convert; units; unit; providers; list; fees; start; percent; typical; process; screen (+12 more)
+- empty_error_offline_cases: most; convert; units; unit; providers; list; fees; start; percent; typical; process; screen (+12 more)
+- step_variants: ['fees', 'convert', 'units', 'unit', 'start', 'percent']; ['typical', 'convert', 'units', 'process', 'screen', 'shows']; ['unit', 'converter', 'process', 'let', 'members', 'manage']
+- Applies to: FTR:FTR-001 (refines)
+- Use: Usual journey: use it for steps, alternatives and exceptions.
+
+#### Setting up units takes 2 steps: `RI-046`
+**OFFICIAL** · workflow · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Setting up units takes 2 steps: choose the option, confirm the details and review unit. Teams can export units reports and filter unit by date, status and owner.
+
+> Setting up units takes 2 steps: choose the option, confirm the details and review unit. Teams can export units reports and filter unit by date,
+> docs.convert61.example, 2026-09-01
+
+- Source `S-003`: developer.convert72.example (official, 2024-08-01) https://developer.convert72.example/convert-units-process/5
+- Source `S-017`: docs.convert61.example (official, 2026-09-01) https://docs.convert61.example/convert-units-unit/0
+- Seen in 1 of 1 (limited evidence)
+- name: setting units takes steps
+- role: setting units takes steps
+- steps: setting; units; takes; steps; choose; option
+- alternates: setting; units; takes; steps; choose; option
+- exceptions: setting; units; takes; steps; choose; option
+- empty_error_offline_cases: setting; units; takes; steps; choose; option
+- Applies to: FTR:FTR-001 (refines)
+- Use: Usual journey: use it for steps, alternatives and exceptions.
+
+#### Customers rate flow and converter as `RI-043`
+**OFFICIAL** · workflow · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Customers rate flow and converter as the most used parts of unit converter flow products in the region.
+
+> Customers rate flow and converter as the most used parts of unit converter flow products in the region.
+> docs.unit76.example, 2026-09-01
+
+- Source `S-026`: docs.unit76.example (official, 2026-09-01) https://docs.unit76.example/unit-converter-flow/0
+- Seen in 1 of 1 (limited evidence)
+- name: customers rate flow converter
+- role: customers rate flow converter
+- steps: customers; rate; flow; converter; most; used
+- alternates: customers; rate; flow; converter; most; used
+- exceptions: customers; rate; flow; converter; most; used
+- empty_error_offline_cases: customers; rate; flow; converter; most; used
+- Applies to: NEW (suggests)
+- Use: Usual journey: use it for steps, alternatives and exceptions.
+
+#### Setting up converter takes 3 steps: `RI-045`
+**OFFICIAL** · workflow · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Setting up converter takes 3 steps: choose the option, confirm the details and review flow. Teams can export converter reports and filter flow by date, status and owner.
+
+> Setting up converter takes 3 steps: choose the option, confirm the details and review flow. Teams can export converter reports and filter flow by date,
+> developer.unit80.example, 2024-08-01
+
+- Source `S-010`: developer.unit54.example (official, 2024-08-01) https://developer.unit54.example/unit-converter-process/5
+- Source `S-013`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-flow/5
+- Source `S-034`: help.unit75.example (help, 2025-11-01) https://help.unit75.example/unit-converter-flow/2
+- Seen in 1 of 1 (limited evidence)
+- name: setting converter takes steps
+- role: setting converter takes steps
+- steps: setting; converter; takes; steps; choose; option
+- alternates: setting; converter; takes; steps; choose; option
+- exceptions: setting; converter; takes; steps; choose; option
+- empty_error_offline_cases: setting; converter; takes; steps; choose; option
+- Applies to: NEW (suggests)
+- Use: Usual journey: use it for steps, alternatives and exceptions.
+
+
+## Design conventions
+
+#### Apple human interface apps let members `RI-047`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Apple human interface apps let members human and manage interface directly from the mobile app.
+
+> Apple human interface apps let members human and manage interface directly from the mobile app.
+> docs.apple95.example, 2026-09-01
+
+- Source `S-002`: developer.apple72.example (official, 2024-08-01) https://developer.apple72.example/apple-human-interface/5
+- Source `S-016`: docs.apple95.example (official, 2026-09-01) https://docs.apple95.example/apple-human-interface/0
+- Source `S-001`: apple35.example (blog, 2026-04-01) https://apple35.example/apple-human-interface/1
+- Source `S-037`: newsapple38.example (blog, 2025-06-01) https://newsapple38.example/apple-human-interface/3
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: apple human interface let
+- examples: apple; human; interface; let; members; manage
+- applies_to_category: apple human interface let
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Customers rate design and converter as `RI-048`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Customers rate design and converter as the most used parts of unit converter design products in the region.
+
+> Customers rate design and converter as the most used parts of unit converter design products in the region.
+> docs.unit14.example, 2026-09-01
+
+- Source `S-008`: developer.unit44.example (official, 2024-08-01) https://developer.unit44.example/unit-converter-design/5
+- Source `S-019`: docs.unit14.example (official, 2026-09-01) https://docs.unit14.example/unit-converter-design/0
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: customers rate design converter
+- examples: customers; rate; design; converter; most; used
+- applies_to_category: customers rate design converter
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Customers rate interface and human as `RI-049`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Customers rate interface and human as the most used parts of apple human interface products in the region.
+
+> Customers rate interface and human as the most used parts of apple human interface products in the region.
+> docs.apple95.example, 2026-09-01
+
+- Source `S-016`: docs.apple95.example (official, 2026-09-01) https://docs.apple95.example/apple-human-interface/0
+- Source `S-029`: help.apple61.example (help, 2025-11-01) https://help.apple61.example/apple-human-interface/2
+- Source `S-001`: apple35.example (blog, 2026-04-01) https://apple35.example/apple-human-interface/1
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: customers rate interface human
+- examples: customers; rate; interface; human; most; used
+- applies_to_category: customers rate interface human
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Customers rate layout and converter as `RI-050`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Customers rate layout and converter as the most used parts of unit converter layout products in the region.
+
+> Customers rate layout and converter as the most used parts of unit converter layout products in the region.
+> docs.unit49.example, 2026-09-01
+
+- Source `S-022`: docs.unit49.example (official, 2026-09-01) https://docs.unit49.example/unit-converter-layout/0
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: customers rate layout converter
+- examples: customers; rate; layout; converter; most; used
+- applies_to_category: customers rate layout converter
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Each apple human interface record has `RI-051`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Each apple human interface record has a status, a created date, an owner and a reference number used in interface.
+
+> Each apple human interface record has a status, a created date, an owner and a reference number used in interface.
+> docs.apple95.example, 2026-09-01
+
+- Source `S-002`: developer.apple72.example (official, 2024-08-01) https://developer.apple72.example/apple-human-interface/5
+- Source `S-016`: docs.apple95.example (official, 2026-09-01) https://docs.apple95.example/apple-human-interface/0
+- Source `S-029`: help.apple61.example (help, 2025-11-01) https://help.apple61.example/apple-human-interface/2
+- Source `S-001`: apple35.example (blog, 2026-04-01) https://apple35.example/apple-human-interface/1
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: each apple human interface
+- examples: each; apple; human; interface; record; has
+- applies_to_category: each apple human interface
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Each unit converter design record has `RI-052`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Each unit converter design record has a status, a created date, an owner and a reference number used in design.
+
+> Each unit converter design record has a status, a created date, an owner and a reference number used in design.
+> docs.unit14.example, 2026-09-01
+
+- Source `S-008`: developer.unit44.example (official, 2024-08-01) https://developer.unit44.example/unit-converter-design/5
+- Source `S-019`: docs.unit14.example (official, 2026-09-01) https://docs.unit14.example/unit-converter-design/0
+- Source `S-022`: docs.unit49.example (official, 2026-09-01) https://docs.unit49.example/unit-converter-layout/0
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: each unit converter design
+- examples: each; unit; converter; design; record; has; layout
+- applies_to_category: each unit converter design
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Fees for apple human interface start `RI-053`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: limited_evidence
+
+Fees for apple human interface start at 4 percent and funds settle in 4 business days after capture.
+
+> Fees for apple human interface start at 4 percent and funds settle in 4 business days after capture.
+> help.apple61.example, 2025-11-01
+
+- Source `S-029`: help.apple61.example (help, 2025-11-01) https://help.apple61.example/apple-human-interface/2
+- Source `S-037`: newsapple38.example (blog, 2025-06-01) https://newsapple38.example/apple-human-interface/3
+- Seen in 2 of 2 (limited evidence)
+- aspect: layout
+- convention: fees apple human interface
+- examples: fees; apple; human; interface; start; percent
+- applies_to_category: fees apple human interface
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Fees for unit converter layout start `RI-054`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Fees for unit converter layout start at 5 percent and funds settle in 3 business days after capture.
+
+> Fees for unit converter layout start at 5 percent and funds settle in 3 business days after capture.
+> developer.unit62.example, 2024-08-01
+
+- Source `S-011`: developer.unit62.example (official, 2024-08-01) https://developer.unit62.example/unit-converter-layout/5
+- Source `S-022`: docs.unit49.example (official, 2026-09-01) https://docs.unit49.example/unit-converter-layout/0
+- Source `S-032`: help.unit47.example (help, 2025-11-01) https://help.unit47.example/unit-converter-design/2
+- Seen in 2 of 2 (limited evidence)
+- aspect: layout
+- convention: fees unit converter layout
+- examples: fees; unit; converter; layout; start; percent; design
+- applies_to_category: fees unit converter layout
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Most apple human interface providers list `RI-055`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Most apple human interface providers list human and interface as core features on their pricing page.
+
+> Most apple human interface providers list human and interface as core features on their pricing page.
+> developer.apple72.example, 2024-08-01
+
+- Source `S-002`: developer.apple72.example (official, 2024-08-01) https://developer.apple72.example/apple-human-interface/5
+- Source `S-037`: newsapple38.example (blog, 2025-06-01) https://newsapple38.example/apple-human-interface/3
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: most apple human interface
+- examples: most; apple; human; interface; providers; list
+- applies_to_category: most apple human interface
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Most unit converter layout providers list `RI-056`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Most unit converter layout providers list converter and layout as core features on their pricing page.
+
+> Most unit converter layout providers list converter and layout as core features on their pricing page.
+> developer.unit62.example, 2024-08-01
+
+- Source `S-011`: developer.unit62.example (official, 2024-08-01) https://developer.unit62.example/unit-converter-layout/5
+- Source `S-032`: help.unit47.example (help, 2025-11-01) https://help.unit47.example/unit-converter-design/2
+- Seen in 2 of 2 (limited evidence)
+- aspect: layout
+- convention: most unit converter layout
+- examples: most; unit; converter; layout; providers; list; design
+- applies_to_category: most unit converter layout
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Recent updates added converter and improved `RI-057`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Recent updates added converter and improved design for unit converter design users on Android and iOS.
+
+> Recent updates added converter and improved design for unit converter design users on Android and iOS.
+> docs.unit14.example, 2026-09-01
+
+- Source `S-002`: developer.apple72.example (official, 2024-08-01) https://developer.apple72.example/apple-human-interface/5
+- Source `S-008`: developer.unit44.example (official, 2024-08-01) https://developer.unit44.example/unit-converter-design/5
+- Source `S-016`: docs.apple95.example (official, 2026-09-01) https://docs.apple95.example/apple-human-interface/0
+- Source `S-019`: docs.unit14.example (official, 2026-09-01) https://docs.unit14.example/unit-converter-design/0
+- Source `S-001`: apple35.example (blog, 2026-04-01) https://apple35.example/apple-human-interface/1
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: recent updates added converter
+- examples: recent; updates; added; converter; improved; design; human; interface
+- applies_to_category: recent updates added converter
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### The sandbox for apple human interface `RI-058`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: limited_evidence
+
+The sandbox for apple human interface supports test keys, webhook events for human and rate limits of 5 requests per second.
+
+> The sandbox for apple human interface supports test keys, webhook events for human and rate limits of 5 requests per second.
+> help.apple61.example, 2025-11-01
+
+- Source `S-029`: help.apple61.example (help, 2025-11-01) https://help.apple61.example/apple-human-interface/2
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: sandbox apple human interface
+- examples: sandbox; apple; human; interface; supports; test
+- applies_to_category: sandbox apple human interface
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### The sandbox for unit converter design `RI-059`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+The sandbox for unit converter design supports test keys, webhook events for converter and rate limits of 2 requests per second.
+
+> The sandbox for unit converter design supports test keys, webhook events for converter and rate limits of 2 requests per second.
+> docs.unit14.example, 2026-09-01
+
+- Source `S-008`: developer.unit44.example (official, 2024-08-01) https://developer.unit44.example/unit-converter-design/5
+- Source `S-019`: docs.unit14.example (official, 2026-09-01) https://docs.unit14.example/unit-converter-design/0
+- Source `S-022`: docs.unit49.example (official, 2026-09-01) https://docs.unit49.example/unit-converter-layout/0
+- Source `S-032`: help.unit47.example (help, 2025-11-01) https://help.unit47.example/unit-converter-design/2
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: sandbox unit converter design
+- examples: sandbox; unit; converter; design; supports; test; layout
+- applies_to_category: sandbox unit converter design
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### A typical unit converter layout screen `RI-061`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+A typical unit converter layout screen shows converter first, then layout, with an empty state when nothing is available.
+
+> A typical unit converter layout screen shows converter first, then layout, with an empty state when nothing is available.
+> developer.unit62.example, 2024-08-01
+
+- Source `S-011`: developer.unit62.example (official, 2024-08-01) https://developer.unit62.example/unit-converter-layout/5
+- Source `S-032`: help.unit47.example (help, 2025-11-01) https://help.unit47.example/unit-converter-design/2
+- Seen in 2 of 2 (limited evidence)
+- aspect: layout
+- convention: typical unit converter layout
+- examples: typical; unit; converter; layout; screen; shows; design
+- applies_to_category: typical unit converter layout
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### Unit converter layout apps let members `RI-062`
+**OFFICIAL** · design_convention · impact normal · confidence high · flags: geo_uncertain, limited_evidence, stale
+
+Unit converter layout apps let members converter and manage layout directly from the mobile app.
+
+> Unit converter layout apps let members converter and manage layout directly from the mobile app.
+> developer.unit62.example, 2024-08-01
+
+- Source `S-011`: developer.unit62.example (official, 2024-08-01) https://developer.unit62.example/unit-converter-layout/5
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: unit converter layout let
+- examples: unit; converter; layout; let; members; manage
+- applies_to_category: unit converter layout let
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+#### A typical apple human interface screen `RI-060`
+**SINGLE SOURCE** · design_convention · impact normal · confidence medium · flags: limited_evidence
+
+A typical apple human interface screen shows human first, then interface, with an empty state when nothing is available.
+
+> A typical apple human interface screen shows human first, then interface, with an empty state when nothing is available.
+> newsapple38.example, 2025-06-01
+
+- Source `S-037`: newsapple38.example (blog, 2025-06-01) https://newsapple38.example/apple-human-interface/3
+- Seen in 1 of 2 (limited evidence)
+- aspect: layout
+- convention: typical apple human interface
+- examples: typical; apple; human; interface; screen; shows
+- applies_to_category: typical apple human interface
+- Applies to: NEW (suggests)
+- Use: Category convention: use it as a default, not a rule.
+
+
+## Screen detail
+
+#### Customers rate components and converter as `RI-063`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Customers rate components and converter as the most used parts of unit converter components products in the region.
+
+> Customers rate components and converter as the most used parts of unit converter components products in the region.
+> docs.unit48.example, 2026-09-01
+
+- Source `S-012`: developer.unit68.example (official, 2024-08-01) https://developer.unit68.example/unit-converter-components/5
+- Source `S-021`: docs.unit48.example (official, 2026-09-01) https://docs.unit48.example/unit-converter-components/0
+- Source `S-033`: help.unit48.example (help, 2025-11-01) https://help.unit48.example/unit-converter-components/2
+- Seen in 1 of 1 (limited evidence)
+- screen_key: customers rate components converter
+- purpose: customers rate components converter
+- role: customers rate components converter
+- sections: customers; rate; components; converter; most; used
+- key_components: customers; rate; components; converter; most; used
+- actions: customers; rate; components; converter; most; used
+- states: {"state": "loading", "content": "customers"}; {"state": "loading", "content": "rate"}; {"state": "loading", "content": "components"}
+- validations: customers; rate; components; converter; most; used
+- microcopy_notes: customers; rate; components; converter; most; used
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Customers rate screen and converter as `RI-064`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Customers rate screen and converter as the most used parts of unit converter screen products in the region. Updated September 2026 for unit converter screen teams.
+
+> Customers rate screen and converter as the most used parts of unit converter screen products in the region. Updated September 2026 for unit converter screen
+> docs.unit54.example, 2026-09-01
+
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Seen in 1 of 1 (limited evidence)
+- screen_key: customers rate screen converter
+- purpose: customers rate screen converter
+- role: customers rate screen converter
+- sections: customers; rate; screen; converter; most; used
+- key_components: customers; rate; screen; converter; most; used
+- actions: customers; rate; screen; converter; most; used
+- states: {"state": "loading", "content": "customers"}; {"state": "loading", "content": "rate"}; {"state": "loading", "content": "screen"}
+- validations: customers; rate; screen; converter; most; used
+- microcopy_notes: customers; rate; screen; converter; most; used
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Each unit converter components record has `RI-065`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Each unit converter components record has a status, a created date, an owner and a reference number used in components.
+
+> Each unit converter components record has a status, a created date, an owner and a reference number used in components.
+> docs.unit48.example, 2026-09-01
+
+- Source `S-012`: developer.unit68.example (official, 2024-08-01) https://developer.unit68.example/unit-converter-components/5
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-021`: docs.unit48.example (official, 2026-09-01) https://docs.unit48.example/unit-converter-components/0
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-033`: help.unit48.example (help, 2025-11-01) https://help.unit48.example/unit-converter-components/2
+- Seen in 1 of 1 (limited evidence)
+- screen_key: each unit converter components
+- purpose: each unit converter components
+- role: each unit converter components
+- sections: each; unit; converter; components; record; has
+- key_components: each; unit; converter; components; record; has; screen
+- actions: each; unit; converter; components; record; has; screen
+- states: {"state": "loading", "content": "each"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: each; unit; converter; components; record; has; screen
+- microcopy_notes: each; unit; converter; components; record; has; screen
+- section_variants: ['each', 'unit', 'converter', 'screen', 'record', 'has']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Most unit converter components providers list `RI-066`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+Most unit converter components providers list converter and components as core features on their pricing page. Updated September 2026 for unit converter components teams.
+
+> Most unit converter components providers list converter and components as core features on their pricing page. Updated September 2026 for unit converter components teams.
+> docs.unit48.example, 2026-09-01
+
+- Source `S-012`: developer.unit68.example (official, 2024-08-01) https://developer.unit68.example/unit-converter-components/5
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-021`: docs.unit48.example (official, 2026-09-01) https://docs.unit48.example/unit-converter-components/0
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-033`: help.unit48.example (help, 2025-11-01) https://help.unit48.example/unit-converter-components/2
+- Seen in 1 of 1 (limited evidence)
+- screen_key: most unit converter components
+- purpose: most unit converter components
+- role: most unit converter components
+- sections: most; unit; converter; components; providers; list
+- key_components: most; unit; converter; components; providers; list; screen
+- actions: most; unit; converter; components; providers; list; screen
+- states: {"state": "loading", "content": "most"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: most; unit; converter; components; providers; list; screen
+- microcopy_notes: most; unit; converter; components; providers; list; screen
+- section_variants: ['most', 'unit', 'converter', 'screen', 'providers', 'list']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Recent updates added converter and improved `RI-067`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Recent updates added converter and improved screen for unit converter screen users on Android and iOS.
+
+> Recent updates added converter and improved screen for unit converter screen users on Android and iOS.
+> docs.unit54.example, 2026-09-01
+
+- Source `S-023`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Seen in 1 of 1 (limited evidence)
+- screen_key: recent updates added converter
+- purpose: recent updates added converter
+- role: recent updates added converter
+- sections: recent; updates; added; converter; improved; screen
+- key_components: recent; updates; added; converter; improved; screen
+- actions: recent; updates; added; converter; improved; screen
+- states: {"state": "loading", "content": "recent"}; {"state": "loading", "content": "updates"}; {"state": "loading", "content": "added"}
+- validations: recent; updates; added; converter; improved; screen
+- microcopy_notes: recent; updates; added; converter; improved; screen
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### A typical unit converter components screen `RI-068`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+
+A typical unit converter components screen shows converter first, then components, with an empty state when nothing is available.
+
+> A typical unit converter components screen shows converter first, then components, with an empty state when nothing is available.
+> docs.unit48.example, 2026-09-01
+
+- Source `S-012`: developer.unit68.example (official, 2024-08-01) https://developer.unit68.example/unit-converter-components/5
+- Source `S-021`: docs.unit48.example (official, 2026-09-01) https://docs.unit48.example/unit-converter-components/0
+- Source `S-033`: help.unit48.example (help, 2025-11-01) https://help.unit48.example/unit-converter-components/2
+- Seen in 1 of 1 (limited evidence)
+- screen_key: typical unit converter components
+- purpose: typical unit converter components
+- role: typical unit converter components
+- sections: typical; unit; converter; components; screen; shows
+- key_components: typical; unit; converter; components; screen; shows
+- actions: typical; unit; converter; components; screen; shows
+- states: {"state": "loading", "content": "typical"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- validations: typical; unit; converter; components; screen; shows
+- microcopy_notes: typical; unit; converter; components; screen; shows
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Unit converter screen apps let members `RI-069`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+
+Unit converter screen apps let members converter and manage screen directly from the mobile app.
+
+> Unit converter screen apps let members converter and manage screen directly from the mobile app.
+> developer.unit80.example, 2024-08-01
+
+- Source `S-014`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Seen in 1 of 1 (limited evidence)
+- screen_key: unit converter screen let
+- purpose: unit converter screen let
+- role: unit converter screen let
+- sections: unit; converter; screen; let; members; manage
+- key_components: unit; converter; screen; let; members; manage
+- actions: unit; converter; screen; let; members; manage
+- states: {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}; {"state": "loading", "content": "screen"}
+- validations: unit; converter; screen; let; members; manage
+- microcopy_notes: unit; converter; screen; let; members; manage
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+
+## Validation
+
+- Errors: 0; warnings: 0
+
+## Dropped and flagged
+
+- dropped claim_too_long: 0
+- dropped forbidden_pattern: 0
+- dropped invalid: 0
+- dropped not_supported: 0
+- dropped number_not_in_quote: 0
+- dropped quote_not_found: 0
+- dropped unsupported_field: 0
+- flagged duplicate_source: 36
+- flagged stale: 6
+
+## Queries
+
+- Comparable unit converter apps: 6 queries, e.g. unit converter features pricing
+- Journey: Convert units: 2 queries, e.g. Convert units unit converter flow steps
+- Usual screens in unit converter apps: 4 queries, e.g. unit converter screens navigation
+- Look and feel of unit converter apps: 4 queries, e.g. unit converter design ux
+- How unit converter apps are navigated: 2 queries, e.g. unit converter screens navigation
+- What User users do: 2 queries, e.g. User unit converter screens navigation
+- Key screens of unit converter apps: 4 queries, e.g. unit converter screen sections
+- Sign-up and first use: 2 queries, e.g. unit converter flow steps
+- What changed recently in unit converter apps: 2 queries, e.g. unit converter features pricing
+- Platform guidelines: Apple Human Interface Guidelines: 2 queries, e.g. Apple Human Interface Guidelines unit converter design ux
+
+## Fallbacks used
+
+- None.

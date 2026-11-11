@@ -195,6 +195,20 @@ def _drop_reason(d: Dropped) -> GapReason:
     }.get(d.reason, "not_worthwhile")  # type: ignore[return-value]
 
 
+def _model_of(ctx: RunContext, prefix: str) -> str:
+    """The model that answered the calls whose spec id starts with ``prefix`` (the first non-empty one)."""
+    return next((r.model for cid, r in ctx.runner.calls if cid.startswith(prefix) and r.model), "")
+
+
+def _fallbacks(ctx: RunContext) -> dict[str, int]:
+    """How often each call fell back to its deterministic path (never invented content; shown in the report)."""
+    out: dict[str, int] = defaultdict(int)
+    for cid, r in ctx.runner.calls:
+        if r.used_fallback:
+            out[cid] += 1
+    return dict(sorted(out.items()))
+
+
 def _target_infos(ctx: RunContext) -> list[TargetInfo]:
     return [
         TargetInfo(ts.target.job, ts.target.lane, ts.status, ts.slots_required, ts.slots_filled)
@@ -229,7 +243,8 @@ async def _model_order(
         ],
     )
     if use_model and inp.lanes:
-        res = await ctx.runner.run(asm_call.SPEC, inp)
+        with ctx.stage("assemble"):
+            res = await ctx.runner.run(asm_call.SPEC, inp)
         ctx.budget.add_llm_cost(res.cost_micros, "assemble")
         if res.failed:
             ctx.failures.record("llm", res.reason or "failed")
@@ -454,6 +469,11 @@ async def assemble_output(
             search_provider=ctx.search.name,
             plan_source=ctx.plan.plan_source,
             notes=list(result.notes),
+            writer_model=_model_of(ctx, "rsch.extract"),
+            checker_model=_model_of(ctx, "rsch.check"),
+            stages={k: round(v, 1) for k, v in sorted(ctx.timings.items())},
+            cost_by_step=dict(sorted(ctx.budget.by_step.items())),
+            fallbacks=_fallbacks(ctx),
         ),
     )
     out_dict = output.to_json_dict()
@@ -559,4 +579,5 @@ def build_evidence(
             for e in sorted(ctx.entities.values(), key=lambda e: e.name)
         ],
         "failures": ctx.failures.as_list(),
+        "extraction": dict(sorted(ctx.extraction.items())),
     }

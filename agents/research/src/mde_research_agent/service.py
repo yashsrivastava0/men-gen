@@ -14,8 +14,10 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import gzip
+import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from decimal import Decimal
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import Any, cast
@@ -29,6 +31,7 @@ from mde_core.errors import (
     NotFound,
 )
 from mde_core.hashing import hash_json
+from mde_core.money import micros_to_usd
 from mde_core.logging import get_logger
 from mde_research_agent.assemble.output import assemble_output
 from mde_research_agent.catalog.models import Catalog
@@ -47,6 +50,12 @@ from mde_research_agent.intake import read_export
 from mde_research_agent.ports.fetch import FetchPort
 from mde_research_agent.ports.search import SearchPort
 from mde_research_agent.spend import BudgetControl, SpendRecord, ledger_run_spend
+from mde_research_agent.assemble.store import compact_view
+from mde_research_agent.calls import assemble as asm_call
+from mde_research_agent.metrics import run_metrics
+from mde_research_agent.report import render_report
+from mde_research_agent.review import ReviewIndex, build_index, overview, review_page, sources_page
+from mde_research_agent.spotcheck import VERDICTS, SpotCheckStore, draw, summarize
 from mde_research_agent.store.ports import ACTIVE_STATUSES, Decision, RunRow, Store
 from mde_research_agent.validators import ValidationContext, run_all
 from mde_research_agent.validators.registry import ENFORCED, must_refuse
@@ -154,6 +163,7 @@ class ResearchService:
         self.own_store = (
             own_store  # a single-process store (file): every active run at startup is an orphan
         )
+        self._review_cache: dict[str, ReviewIndex] = {}
         self.queue: list[str] = []
         self._running: set[str] = set()
         self._pump_lock = asyncio.Lock()
@@ -500,6 +510,12 @@ class ResearchService:
             "searches": ctx.budget.searches_used,
             "usd": output.budget.usd,
             "elapsed_s": int(ctx.budget.elapsed()),
+            "stages": {k: round(v) for k, v in sorted(ctx.timings.items())},
+            "cost_by_step": {
+                k: format(Decimal(micros_to_usd(v)).quantize(Decimal("0.0001")), "f")
+                for k, v in sorted(ctx.budget.by_step.items())
+            },
+            "fallbacks": output.run.fallbacks,
         }
         terminal = {
             "complete": "run.finished",
@@ -621,6 +637,8 @@ class ResearchService:
             declined=view["declined"],
             entities=view["entities"],
             feed=view["feed"],
+            facts=view["facts"],
+            slots_required=view["slots_required"],
             last_seq=view["last_seq"],
             result_status=row.result_status,
             content_hash=row.content_hash,
@@ -633,6 +651,127 @@ class ResearchService:
         if res is None:
             raise NotFound("result not committed yet")
         return res
+
+    # --- reading a committed run (results, review, sources, report, metrics, spot-check) ----------------------------
+    async def _committed(self, tenant_id: str, run_id: str) -> tuple[RunRow, dict[str, Any]]:
+        row = await self.get_row(tenant_id, run_id)
+        res = await self.store.get_result(run_id)
+        if res is None:
+            raise NotFound("result not committed yet")
+        return row, res
+
+    async def _rejected(self, run_id: str) -> set[str]:
+        return {d.item_id for d in await self.store.list_decisions(run_id) if d.kind == "reject"}
+
+    async def _index(self, tenant_id: str, run_id: str) -> tuple[ReviewIndex, dict[str, Any], dict[str, Any]]:
+        """The review index of a committed run (built once: a committed run never changes)."""
+        _row, res = await self._committed(tenant_id, run_id)
+        cached = self._review_cache.get(run_id)
+        evidence = await self.store.get_evidence(run_id) or {}
+        if cached is None:
+            cached = build_index(res, evidence, self.catalog.lanes.kinds)
+            self._review_cache[run_id] = cached
+            while len(self._review_cache) > 6:
+                self._review_cache.pop(next(iter(self._review_cache)))
+        return cached, res, evidence
+
+    async def overview(self, tenant_id: str, run_id: str) -> dict[str, Any]:
+        row, res = await self._committed(tenant_id, run_id)
+        out = overview(res, await self.store.get_evidence(run_id), await self._rejected(run_id))
+        out.update(
+            input_name=(row.meta or {}).get("input_name"),
+            size_class=(row.meta or {}).get("size_class"),
+            created_at=row.created_at.isoformat(),
+            finished_at=row.finished_at.isoformat() if row.finished_at else None,
+            content_hash=row.content_hash,
+            spend_micros=self._spend_by_run().get(run_id, 0),
+            metrics=run_metrics(res, await self.store.get_evidence(run_id) or {}),
+        )
+        return out
+
+    async def review_items(self, tenant_id: str, run_id: str, **params: Any) -> dict[str, Any]:
+        index, _res, _ev = await self._index(tenant_id, run_id)
+        return review_page(index, await self._rejected(run_id), **params)
+
+    async def sources(self, tenant_id: str, run_id: str, **params: Any) -> dict[str, Any]:
+        index, _res, _ev = await self._index(tenant_id, run_id)
+        return sources_page(index, **params)
+
+    async def report(self, tenant_id: str, run_id: str) -> str:
+        _row, res = await self._committed(tenant_id, run_id)
+        evidence = await self.store.get_evidence(run_id) or {}
+        return render_report(res, evidence, await self._rejected(run_id), self.catalog.lanes.kinds)
+
+    async def metrics(self, tenant_id: str, run_id: str) -> dict[str, Any]:
+        _row, res = await self._committed(tenant_id, run_id)
+        return run_metrics(res, await self.store.get_evidence(run_id) or {})
+
+    async def compact(self, tenant_id: str, program_id: str) -> dict[str, Any]:
+        res = await self.latest(tenant_id, program_id)
+        return compact_view(res, asm_call.default_notes())
+
+    async def decisions(self, tenant_id: str, program_id: str) -> list[dict[str, Any]]:
+        row = await self.store.latest_committed(tenant_id, program_id)
+        if row is None:
+            raise NotFound(f"research for program {program_id}")
+        return [
+            {"run_id": d.run_id, "item_id": d.item_id, "kind": d.kind, "reason": d.reason, "at": d.at.isoformat()}
+            for d in await self.store.list_decisions(row.run_id)
+        ]
+
+    async def latest_with_decisions(self, tenant_id: str, program_id: str) -> dict[str, Any]:
+        """The newest committed result with the owner's rejections applied: rejected items are flagged ``withdrawn``
+        and listed in ``rejected_ids``. The committed (hashed) file itself is never changed."""
+        row = await self.store.latest_committed(tenant_id, program_id)
+        res = await self.latest(tenant_id, program_id)
+        rejected = await self._rejected(row.run_id) if row else set()
+        for it in res.get("items", []):
+            if it["id"] in rejected and "withdrawn" not in it.get("flags", []):
+                it["flags"] = sorted([*it.get("flags", []), "withdrawn"])
+        res["rejected_ids"] = sorted(rejected)
+        return res
+
+    # --- spot-check -----------------------------------------------------------------------------------------------
+    @property
+    def spot_checks(self) -> SpotCheckStore:
+        root = (self.data_dir or Path(".runtime")) / "spot-checks"
+        return SpotCheckStore(root)
+
+    async def new_spot_check(
+        self, tenant_id: str, run_ids: list[str], seed: int | None = None, per_run: int = 20
+    ) -> dict[str, Any]:
+        if not run_ids:
+            raise Conflict("Pick at least one run.")
+        chosen = seed if seed is not None else int(hashlib.sha256("|".join(sorted(run_ids)).encode()).hexdigest()[:8], 16)
+        cards: list[dict[str, Any]] = []
+        for rid in run_ids:
+            index, _res, _ev = await self._index(tenant_id, rid)
+            rejected = await self._rejected(rid)
+            items = [{**i, "rejected": i["id"] in rejected} for i in index.items]
+            cards += draw(items, rid, chosen, per_run)
+        check = {
+            "id": self.ids.new("chk"),
+            "seed": chosen,
+            "run_ids": list(run_ids),
+            "per_run": per_run,
+            "created_at": self.clock.now().isoformat(),
+            "cards": cards,
+            "verdicts": {},
+        }
+        self.spot_checks.save(check)
+        return check
+
+    async def set_verdict(self, check_id: str, card_key: str, verdict: str) -> dict[str, Any]:
+        if verdict not in VERDICTS:
+            raise Conflict("Unknown verdict.")
+        check = self.spot_checks.get(check_id)
+        if check is None:
+            raise NotFound(f"spot-check {check_id}")
+        if not any(c["key"] == card_key for c in check["cards"]):
+            raise NotFound(f"card {card_key}")
+        check["verdicts"][card_key] = verdict
+        self.spot_checks.save(check)
+        return summarize(check)
 
     async def latest(self, tenant_id: str, program_id: str) -> dict[str, Any]:
         row = await self.store.latest_committed(tenant_id, program_id)

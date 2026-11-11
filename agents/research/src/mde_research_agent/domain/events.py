@@ -58,7 +58,9 @@ DETAIL_ALLOWLIST: dict[str, frozenset[str]] = {
     "run.started": frozenset(
         {"load_class", "load_score", "minutes", "plan_source", "degraded", "depth_word"}
     ),
-    "plan.ready": frozenset({"targets", "declined", "planned_searches", "plan_source", "country"}),
+    "plan.ready": frozenset(
+        {"targets", "declined", "planned_searches", "plan_source", "country", "slots_required"}
+    ),
     "target.started": frozenset({"job", "lane", "round", "topic"}),
     "target.covered": frozenset({"job", "slots_filled", "slots_required", "topic"}),
     "target.not_found": frozenset({"job", "slots_filled", "slots_required", "queries", "topic"}),
@@ -68,15 +70,19 @@ DETAIL_ALLOWLIST: dict[str, frozenset[str]] = {
     "page.reading": frozenset({"domain", "title"}),
     "page.read": frozenset({"domain", "title", "chars"}),
     "page.skipped": frozenset({"domain", "title", "reason"}),
-    "fact.found": frozenset({"kind", "label", "topic"}),
-    "fact.verified": frozenset({"kind", "label", "domain", "level", "topic"}),
-    "fact.rejected": frozenset({"reason", "topic", "label"}),
+    "fact.found": frozenset({"kind", "label", "topic", "fact_id"}),
+    "fact.verified": frozenset({"kind", "label", "domain", "level", "topic", "fact_id"}),
+    "fact.rejected": frozenset({"reason", "topic", "label", "fact_id"}),
     "entity.discovered": frozenset({"name", "kind"}),
     "round.completed": frozenset({"round", "slots_filled", "slots_required", "new_slots"}),
     "gap.detected": frozenset({"targets", "count"}),
     "warning": frozenset({"code", "message"}),
-    "run.finished": frozenset({"status", "facts", "pages", "searches", "usd", "elapsed_s"}),
-    "run.skipped": frozenset({"status", "facts", "pages", "searches", "usd", "elapsed_s"}),
+    "run.finished": frozenset(
+        {"status", "facts", "pages", "searches", "usd", "elapsed_s", "stages", "cost_by_step", "fallbacks"}
+    ),
+    "run.skipped": frozenset(
+        {"status", "facts", "pages", "searches", "usd", "elapsed_s", "stages", "cost_by_step", "fallbacks"}
+    ),
     "run.failed": frozenset({"status", "reason", "code"}),
 }
 MAX_DETAIL_STRING = 200
@@ -115,6 +121,22 @@ class Event(BaseModel):
     model_config = ConfigDict(extra="forbid", populate_by_name=True)
 
 
+class FactView(BaseModel):
+    """One finding as the page shows it: checking, then checked or rejected. Kept in the snapshot so a reload
+    draws the whole list, not only the last events."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    fact_id: str
+    label: str = ""
+    kind: str = ""
+    topic: str = ""
+    state: Literal["checking", "checked", "rejected"] = "checking"
+    level: str | None = None  # supported | partial | unchecked
+    reason: str | None = None  # why it was rejected
+    domain: str | None = None
+
+
 class TargetView(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -150,6 +172,8 @@ class RunSnapshot(BaseModel):
     declined: list[str] = Field(default_factory=list)
     entities: list[str] = Field(default_factory=list)
     feed: list[Event] = Field(default_factory=list)
+    facts: list[FactView] = Field(default_factory=list)
+    slots_required: int = 0
     last_seq: int = 0
     result_status: str | None = None
     content_hash: str | None = None

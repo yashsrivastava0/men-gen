@@ -1096,6 +1096,20 @@
           "title": "Checker Vendor",
           "type": "string"
         },
+        "cost_by_step": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Cost By Step",
+          "type": "object"
+        },
+        "fallbacks": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "Fallbacks",
+          "type": "object"
+        },
         "finished_at": {
           "anyOf": [
             {
@@ -1129,6 +1143,13 @@
           "default": "",
           "title": "Search Provider",
           "type": "string"
+        },
+        "stages": {
+          "additionalProperties": {
+            "type": "number"
+          },
+          "title": "Stages",
+          "type": "object"
         },
         "started_at": {
           "anyOf": [
