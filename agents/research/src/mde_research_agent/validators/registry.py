@@ -351,6 +351,7 @@ def rv14_anatomy(v: ValidationContext) -> list[Violation]:
             generic_words=v.catalog.intent_words.generic_words,
             own_brand=v.inp.own_brand_terms,
             require_place=bool(t.place and not t.place.unknown) and not q.get("domain"),
+            named=[*names, *seeds, *([t.entity] if t.entity else [])],
         )
         if not res.ok:
             out.append(

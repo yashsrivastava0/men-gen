@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 JobName = Literal[
     "features", "structure", "flows", "data", "services", "design", "screens", "local", "trust"
@@ -212,7 +212,20 @@ class TargetTemplate(Frozen):
     priority: Annotated[int, Field(ge=0, le=100)] = 50
     anchor: Anchor = "category"
     place: Literal["brief", "global"] = "brief"
+    # How much of the Brief's place the topic's queries carry: the city and country (``city``, the default), the country
+    # only, or none (a technical doc, a flow, a screen pattern or a global vendor is not found by a city name).
+    scope: Literal["city", "country", "none"] | None = None
     slots: tuple[SlotSpec, ...]
+
+    @property
+    def place_scope(self) -> Literal["city", "country", "none"]:
+        return self.scope or ("none" if self.place == "global" else "city")
+
+    @model_validator(mode="after")
+    def _scope_agrees_with_place(self) -> TargetTemplate:
+        if self.place == "global" and self.scope not in (None, "none"):
+            raise ValueError(f"template {self.id}: place: global cannot have scope {self.scope}")
+        return self
 
 
 class JobSpec(Frozen):

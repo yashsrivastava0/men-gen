@@ -20,6 +20,7 @@ targets:
     needs: [norm, entity]
     priority: 90
     anchor: category
+    scope: none
     slots:
       - {key: typical_screens, type: count, kind: screen_pattern, distinct_by: norm_key, min: 8, required: true}
   - id: navigation
@@ -30,6 +31,7 @@ targets:
     needs: [norm]
     priority: 70
     anchor: category
+    scope: none
     slots:
       - {key: navigation, type: count, kind: navigation_pattern, distinct_by: norm_key, min: 1, required: true}
   - id: roles
@@ -41,5 +43,6 @@ targets:
     needs: [norm, entity]
     priority: 65
     anchor: role
+    scope: none
     slots:
       - {key: role_tasks, type: count, kind: role_pattern, distinct_by: norm_key, min: 1, attr: typical_tasks, attr_min: 3, required: true}

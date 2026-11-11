@@ -23,5 +23,6 @@ targets:
     needs: [current, entity, number]
     priority: 88
     anchor: need
+    scope: country
     slots:
       - {key: providers, type: count, kind: service_option, distinct_by: provider, min: 2, attr: endpoints_or_events, attr_min: 1, required: true}

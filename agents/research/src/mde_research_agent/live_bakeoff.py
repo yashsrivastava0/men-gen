@@ -94,7 +94,8 @@ def preflight_live(environ: dict[str, str] | None = None) -> list[str]:
 
 
 def build_probes(exports_dir: Path, n: int, proposals: dict[str, Any] | None = None) -> list[Probe]:
-    """About ``n`` queries, generically derived: first descriptive variant (and a local one) of place-bound topics."""
+    """About ``n`` queries, generically derived: first descriptive variant (and a local one) of the plan's topics, place-free
+    ones included (most flow, screen and structure topics carry no place, exactly as in a run)."""
     cat = load_catalog()
     files = sorted(exports_dir.glob("*.json"))
     per = max(1, -(-n // max(1, len(files))))
@@ -105,21 +106,20 @@ def build_probes(exports_dir: Path, n: int, proposals: dict[str, Any] | None = N
         picked: list[Any] = []
         seen_jobs: dict[str, int] = {}
         for t in plan.targets + plan.unrun:  # spread over jobs: at most two per job first
-            if t.place is None:
-                continue
             if seen_jobs.get(t.job, 0) < 2:
                 picked.append(t)
                 seen_jobs[t.job] = seen_jobs.get(t.job, 0) + 1
         for t in picked:
             if len([p for p in probes if p.export == f.stem]) >= per:
                 break
-            langs = list(t.place.languages[:1])
+            place = t.place
+            langs = list(place.languages[:1]) if place else []
             qi = QueryIn(
                 job=t.job,
                 question=t.question,
                 anchors=list(t.anchors),
                 context=plan.category_phrase,
-                place=t.place.text,
+                place=place.text if place else "",
                 languages=langs,
                 local_terms=[s for s in inp.hints.synonyms if not s.isascii()][:3],
                 local_intent=list(
@@ -144,10 +144,10 @@ def build_probes(exports_dir: Path, n: int, proposals: dict[str, Any] | None = N
                         export=f.stem,
                         target=t.label,
                         job=t.job,
-                        country=t.place.country_code,
+                        country=place.country_code if place else None,
                         request=SearchRequest(
                             query=v.text,
-                            country=t.place.country_code,
+                            country=place.country_code if place else None,
                             language=v.language,
                             exact=v.exact,
                             recency_months=t.recency_months,

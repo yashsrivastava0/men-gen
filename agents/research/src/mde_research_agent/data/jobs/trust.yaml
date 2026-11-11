@@ -23,6 +23,7 @@ targets:
     needs: [current, number]
     priority: 45
     anchor: category
+    scope: country
     slots:
       - {key: law, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
   - id: store_disclosure
@@ -47,6 +48,7 @@ targets:
     needs: [norm, current]
     priority: 45
     anchor: category
+    scope: none
     slots:
       - {key: signin, type: count, kind: rule, distinct_by: norm_key, min: 1, required: false}
   - id: payment_security
@@ -58,6 +60,7 @@ targets:
     needs: [current, number]
     priority: 45
     anchor: category
+    scope: country
     slots:
       - {key: payment_security, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
       - {key: payment_providers, type: count, kind: service_option, distinct_by: norm_key, min: 1, required: false}
@@ -70,5 +73,6 @@ targets:
     needs: [norm, current]
     priority: 40
     anchor: category
+    scope: none
     slots:
       - {key: audit, type: count, kind: rule, distinct_by: norm_key, min: 1, required: false}

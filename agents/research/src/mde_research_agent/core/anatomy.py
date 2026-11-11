@@ -52,9 +52,14 @@ def check_query(
     generic_words: Iterable[str] = (),
     own_brand: Iterable[str] = (),
     require_place: bool = True,
+    named: Iterable[str] = (),
     max_words: int = MAX_WORDS,
 ) -> QueryCheck:
-    """Why ``query`` may not be sent (empty ``problems`` means it may)."""
+    """Why ``query`` may not be sent (empty ``problems`` means it may).
+
+    ``named`` are entities the query may be about (a discovered provider, a competitor, a seed name): a query that
+    names one is already specific, so it needs no place ("Exotel API webhook documentation" is the right query, with
+    or without a city). The Small run of 2026-11-11 lost both of messaging's best follow-ups to the place rule."""
     problems: list[str] = []
     text = query.strip()
     if not text:
@@ -79,7 +84,11 @@ def check_query(
     rest = [s for s in q if s not in generic and not any(s in b for b in brand_stems)]
     if brand_in and not rest:
         problems.append("own_brand_alone")
-    if require_place and not any(_phrase_in(q, p, generic) for p in places):
+    if (
+        require_place
+        and not any(_phrase_in(q, p, generic) for p in places)
+        and not any(_phrase_in(q, n, generic) for n in named)
+    ):
         problems.append("no_place")
     intent = {stem(w) for w in intent_words}
     if not any(s in intent for s in q):

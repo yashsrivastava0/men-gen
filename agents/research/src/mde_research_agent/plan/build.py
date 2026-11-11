@@ -24,7 +24,7 @@ from mde_research_agent.plan.candidates import (
     short_phrase,
     trusted_requests,
 )
-from mde_research_agent.plan.place import build_place
+from mde_research_agent.plan.place import build_place, scoped_place
 from mde_research_agent.plan.proposal import PlanProposal, ProposedTarget
 from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
 
@@ -114,11 +114,12 @@ def _make_target(
 ) -> Target:
     name = cand.name
     noun = category_noun(category)
+    target_place = scoped_place(place, tpl.place_scope)
     values = {
         "category": category,
         "category_noun": noun,
         "category_apps": f"{noun} apps",
-        "place": place.text if tpl.place == "brief" else "",
+        "place": target_place.text if target_place else "",
         "entity": name,
         "need": name,
         "module": name,
@@ -146,7 +147,7 @@ def _make_target(
     )[: cat.plan.base_terms_max]
     bonus = cand.bonus
     flags = list(cand.flags)
-    if place.uncertain and tpl.place == "brief":
+    if place.uncertain and tpl.place_scope != "none":
         flags.append("geo_uncertain")
     domain = cand.extra.get("domain")
     is_entity = tpl.foreach == "reference"
@@ -162,7 +163,7 @@ def _make_target(
         decision_unlocked=tpl.decision_unlocked,
         anchors=anchors,
         entity=name if is_entity else None,
-        place=place if tpl.place == "brief" and not place.unknown else None,
+        place=target_place,
         intent=job.intent,
         needs=tpl.needs,
         priority=max(0, min(100, tpl.priority + bonus)),
@@ -283,7 +284,7 @@ def _from_proposals(
                 question=p.question.strip(),
                 decision_unlocked=p.decision_unlocked.strip() or spec.spec_need,
                 anchors=(short_phrase(p.anchor, 4) or p.anchor,),
-                place=None if place.unknown else place,
+                place=scoped_place(place, tpl.place_scope),
                 intent=spec.intent,
                 needs=tuple(n for n in p.needs if n in ("current", "norm", "entity", "number")),
                 priority=max(0, min(90, p.priority)),

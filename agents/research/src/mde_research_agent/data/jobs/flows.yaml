@@ -21,16 +21,18 @@ targets:
     needs: [norm, entity]
     priority: 80
     anchor: flow
+    scope: none
     slots:
       - {key: journey, type: count, kind: workflow, distinct_by: norm_key, min: 1, attr: steps, attr_min: 4, extra_attrs: [{attr: alternates, min: 1}, {attr: exceptions, min: 1}], required: true}
   - id: onboarding
     label: "Sign-up and first use"
     foreach: none
-    question: "How do {category_apps} handle sign-up, sign-in and first-time onboarding in {place}?"
+    question: "How do {category_apps} handle sign-up, sign-in and first-time onboarding?"
     decision_unlocked: "The onboarding and sign-in flow"
     needs: [norm, current]
     priority: 60
     anchor: category
+    scope: none
     slots:
       - {key: onboarding, type: count, kind: workflow, distinct_by: norm_key, min: 1, attr: steps, attr_min: 3, required: true}
   - id: empty_error_offline
@@ -41,5 +43,6 @@ targets:
     needs: [norm]
     priority: 45
     anchor: category
+    scope: none
     slots:
       - {key: states, type: count, kind: workflow, distinct_by: norm_key, min: 1, attr: empty_error_offline_cases, attr_min: 3, required: false}

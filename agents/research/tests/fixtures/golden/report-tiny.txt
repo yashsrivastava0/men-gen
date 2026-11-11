@@ -5,7 +5,7 @@
 - Signals: none
 - Work: 10 searches, 19 pages, 0 s, USD 0.00
 - Topics: 1 covered, 1 not found, of 2; required slots 2 of 3
-- Items: 32 (main store about 10725 tokens, appendix 0)
+- Items: 32 (main store about 10697 tokens, appendix 0)
 - Provider: fake; models: gpt-6-luna / checker gpt-6-luna (same)
 
 ## Lane quality
@@ -556,7 +556,7 @@ A typical customers rate features screen shows rate first, then features, with a
 ## Structure: screens, navigation and roles
 
 #### Each unit converter screens record has `RI-026`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
 
 Each unit converter screens record has a status, a created date, an owner and a reference number used in screens.
 
@@ -585,7 +585,7 @@ Each unit converter screens record has a status, a created date, an owner and a 
 - Use: Typical screen: use it for sections, states and actions.
 
 #### Fees for unit converter roles start `RI-027`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: limited_evidence
 
 Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
 
@@ -607,7 +607,7 @@ Fees for unit converter roles start at 5 percent and funds settle in 4 business 
 - Use: Typical screen: use it for sections, states and actions.
 
 #### Most unit converter roles providers list `RI-028`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: geo_uncertain, limited_evidence, stale
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: limited_evidence, stale
 
 Most unit converter roles providers list converter and roles as core features on their pricing page.
 
@@ -629,7 +629,7 @@ Most unit converter roles providers list converter and roles as core features on
 - Use: Typical screen: use it for sections, states and actions.
 
 #### Recent updates added converter and improved `RI-029`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
 
 Recent updates added converter and improved screen for unit converter screen users on Android and iOS.
 
@@ -658,7 +658,7 @@ Recent updates added converter and improved screen for unit converter screen use
 - Use: Typical screen: use it for sections, states and actions.
 
 #### The sandbox for unit converter navigation `RI-030`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
 
 The sandbox for unit converter navigation supports test keys, webhook events for converter and rate limits of 3 requests per second.
 
@@ -682,7 +682,7 @@ The sandbox for unit converter navigation supports test keys, webhook events for
 - Use: Typical screen: use it for sections, states and actions.
 
 #### A typical unit converter navigation screen `RI-031`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
 
 A typical unit converter navigation screen shows converter first, then navigation, with an empty state when nothing is available.
 
@@ -711,7 +711,7 @@ A typical unit converter navigation screen shows converter first, then navigatio
 - Use: Typical screen: use it for sections, states and actions.
 
 #### Unit converter screen apps let members `RI-032`
-**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, geo_uncertain, limited_evidence
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
 
 Unit converter screen apps let members converter and manage screen directly from the mobile app.
 

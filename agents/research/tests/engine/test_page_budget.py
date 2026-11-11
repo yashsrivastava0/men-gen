@@ -130,3 +130,19 @@ async def test_a_run_that_runs_out_of_pages_is_partial_says_so_and_pays_for_no_b
     assert not any(e.type == "gap.detected" for e in run.events), (
         "no round two without pages to read"
     )
+
+
+async def test_follow_up_entities_are_the_topics_own_and_a_features_topics_competitors() -> None:
+    from mde_research_agent.engine.director import followup_entities
+    from mde_research_agent.engine.state import EntityRecord
+
+    run = await run_engine(load_fixture(QUICK), use_model=False)
+    ctx = run.ctx
+    by_job = {ts.target.job: ts.target for ts in ctx.targets.values()}
+    services, features = by_job["services"], by_job["features"]
+    ctx.entities.clear()
+    ctx.entities["a"] = EntityRecord("Alpha", "provider", target_ids={services.id})
+    ctx.entities["b"] = EntityRecord("Beta", "provider", target_ids={"T-99"})
+    ctx.entities["c"] = EntityRecord("Gamma", "competitor", target_ids={"T-98"})
+    assert [e.name for e in followup_entities(ctx, services)] == ["Alpha"]
+    assert [e.name for e in followup_entities(ctx, features)] == ["Gamma"]

@@ -206,6 +206,17 @@ ARGS = {
 }
 
 
+def test_a_query_that_names_an_entity_needs_no_place() -> None:
+    """The gap analyst's best follow-ups ("<provider> API webhook documentation") were dropped for lacking the city."""
+    q = "Exotel SMS WhatsApp API webhook documentation"
+    assert "no_place" in check_query(q, **{**ARGS, "anchors": ["Exotel"]}).problems
+    assert check_query(q, **{**ARGS, "anchors": ["Exotel"]}, named=["Exotel"]).ok
+    # naming something else does not excuse the place
+    assert (
+        "no_place" in check_query(q, **{**ARGS, "anchors": ["Exotel"]}, named=["Razorpay"]).problems
+    )
+
+
 @pytest.mark.parametrize(
     "query",
     [

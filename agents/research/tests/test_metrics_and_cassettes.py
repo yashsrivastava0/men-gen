@@ -18,7 +18,8 @@ from mde_research_agent.ports.search import SearchError, SearchRequest
 async def test_metrics_report_the_design_targets_on_a_clean_run() -> None:
     run = await run_engine(load_fixture("standard-produce-marketplace-nashik"))
     m = run_metrics(run.research, run.evidence)
-    assert m["quote_check_pass"] == 1.0, "every committed quote is on its stored page"
+    # no quote failed; the rate sits a hair under 1.0 when the model repeats an item inside one answer (counted, not kept)
+    assert run.research["dropped"]["quote_not_found"] == 0 and m["quote_check_pass"] >= 0.99
     assert m["high_impact_corroborated_or_flagged"] in (None, 1.0)
     assert 0 < m["slots_filled_ratio"] <= 1 and m["items"] == len(run.research["items"])
     assert m["searches_contributing_ratio"] is not None and m["by_job"] and m["source_classes"]

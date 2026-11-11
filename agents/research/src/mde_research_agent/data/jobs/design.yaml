@@ -22,6 +22,7 @@ targets:
     needs: [norm, current]
     priority: 60
     anchor: category
+    scope: none
     slots:
       - {key: conventions, type: count, kind: design_convention, distinct_by: norm_key, min: 3, required: false}
       - {key: aspects, type: distinct_values, kind: design_convention, attr: aspect, min: 2, required: false}
@@ -58,6 +59,7 @@ targets:
     needs: [norm, current]
     priority: 60
     anchor: language
+    scope: country
     slots:
       - {key: script, type: count, kind: script_need, distinct_by: norm_key, min: 1, required: true}
   - id: trends
@@ -68,5 +70,6 @@ targets:
     needs: [current, norm]
     priority: 40
     anchor: category
+    scope: none
     slots:
       - {key: design_trends, type: count, kind: trend, distinct_by: topic, min: 1, required: false}

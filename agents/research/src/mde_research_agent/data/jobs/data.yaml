@@ -23,6 +23,7 @@ targets:
     needs: [norm, entity]
     priority: 75
     anchor: entity
+    scope: none
     slots:
       - {key: entity_fields, type: count, kind: entity_pattern, distinct_by: norm_key, min: 1, attr: fields, attr_min: 6, required: true}
       - {key: lifecycle, type: count, kind: lifecycle, distinct_by: norm_key, min: 1, attr: states, attr_min: 3, required: false}

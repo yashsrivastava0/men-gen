@@ -23,6 +23,7 @@ targets:
     needs: [current, number, entity]
     priority: 58
     anchor: topic
+    scope: country
     slots:
       - {key: formats, type: count, kind: local_format, distinct_by: norm_key, min: 1, required: true}
   - id: samples

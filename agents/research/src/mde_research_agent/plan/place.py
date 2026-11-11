@@ -54,3 +54,16 @@ def build_place(inp: ResearchInput, cat: Catalog, proposal: PlanProposal | None 
         uncertain=geo.uncertain,
         inferred=inferred,
     )
+
+
+def scoped_place(place: Place, scope: str) -> Place | None:
+    """The part of the Brief's place a topic's queries carry: all of it (``city``), the country only, or none.
+
+    A city name finds local shops, not API documentation: "payments webhook authentication documentation <city>
+    <country>" is a worse query than the same words without the city. Country scope falls back to the whole place when no
+    country is known, and a place nothing was stated for is never added."""
+    if place.unknown or scope == "none":
+        return None
+    if scope == "country" and place.country_name:
+        return place.model_copy(update={"phrases": (place.country_name,)})
+    return place

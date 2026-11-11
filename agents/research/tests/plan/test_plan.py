@@ -186,3 +186,51 @@ def test_garbage_or_missing_requests_still_give_a_plan() -> None:
     data["brief"]["research_requests"] = []
     data["consumer_views"]["research"]["research_requests"] = []
     assert build_plan(read_export(data, CAT), CAT).targets
+
+
+def test_place_scope_follows_the_template_not_one_rule_for_all() -> None:
+    """Small run 2026-11-11: the city rode on every query, so a screens topic returned job ads and a flows topic train guides."""
+    # the country comes from the planner's proposal (the Brief names only the city)
+    _, plan = plan_for(
+        "quick-yoga-studio-bengaluru",
+        proposal=PlanProposal(country_code="in", country_name="India"),
+    )
+    full = plan.place
+    assert full.phrases and full.country_name
+    by_job: dict[str, set[str]] = {}
+    for t in plan.targets:
+        scope = (
+            CAT.jobs[t.job].targets[0].place_scope
+            if t.template_id.startswith("model:")
+            else next(
+                (x.place_scope for x in CAT.jobs[t.job].targets if x.id == t.template_id), "city"
+            )
+        )
+        by_job.setdefault(t.job, set()).add(scope)
+        if scope == "none":
+            assert t.place is None, (t.job, t.template_id)
+        elif scope == "country":
+            assert t.place is not None and t.place.phrases == (full.country_name,), t.template_id
+        else:
+            assert t.place == full, t.template_id
+    # technical and pattern jobs carry no place, providers carry the country only
+    assert by_job.get("flows") <= {"none"} and by_job.get("structure", {"none"}) <= {"none"}
+    assert by_job.get("services", {"country"}) <= {"country"}
+    assert any(t.place is None for t in plan.targets), "at least one topic is place-free"
+
+
+def test_a_global_template_cannot_carry_a_scope() -> None:
+    from mde_research_agent.catalog.models import TargetTemplate
+
+    base = {
+        "id": "x",
+        "label": "x",
+        "question": "q",
+        "decision_unlocked": "d",
+        "needs": ["norm"],
+        "slots": [],
+    }
+    with pytest.raises(ValueError, match="global"):
+        TargetTemplate.model_validate({**base, "place": "global", "scope": "city"})
+    assert TargetTemplate.model_validate({**base, "place": "global"}).place_scope == "none"
+    assert TargetTemplate.model_validate(base).place_scope == "city"

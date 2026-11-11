@@ -90,7 +90,8 @@ async def test_the_planted_test_reports_code_and_checker_separately_and_is_repea
 
 async def test_the_probe_scores_both_arms_for_every_task_and_prefers_the_research() -> None:
     run = await run_engine(load_fixture("standard-produce-marketplace-nashik"))
-    assert "RI-001" in findings_text(run.research)
+    first_main = next(i["id"] for i in run.research["items"] if i["store"] == "main")
+    assert first_main in findings_text(run.research), "the research arm sees the main store"
     runner = CallRunner(run.gateway, run_id="eval", ids=CounterIds())  # type: ignore[arg-type]
     rep = await run_probe(runner, run.research)
     assert [t["task"] for t in rep["tasks"]] == [t["id"] for t in tasks()] and len(tasks()) == 5

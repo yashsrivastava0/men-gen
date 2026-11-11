@@ -28,7 +28,7 @@ from mde_research_agent.core.text import tokens
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan, Target
 from mde_research_agent.engine.context import RunContext
-from mde_research_agent.engine.state import TargetState
+from mde_research_agent.engine.state import EntityRecord, TargetState
 from mde_research_agent.engine.worker import (
     FollowupQuery,
     focus_terms,
@@ -115,6 +115,19 @@ def build_plan_in(inp: ResearchInput, catalog: Catalog) -> plan_call.PlanIn:
         existing=[plan_call.ExistingIn(job=t.job, anchor=t.anchors[0]) for t in base.targets],
         declined=list(inp.declined),
     )
+
+
+def followup_entities(ctx: RunContext, t: Target) -> list[EntityRecord]:
+    """The entities a follow-up for ``t`` may be about: those its own topic found, and for a features topic any competitor
+    or reference (a provider of messages is no competitor, and a competitor is no payments provider: in the Small run
+    the payments topic was offered CoachFitOS and Exotel)."""
+    out = []
+    for e in ctx.entities.values():
+        if (t.id in e.target_ids and e.kind in ("competitor", "provider", "reference")) or (
+            t.job == "features" and e.kind in ("competitor", "reference")
+        ):
+            out.append(e)
+    return out
 
 
 class Director:
@@ -271,12 +284,7 @@ class Director:
                 continue
             t = ts.target
             cov: Coverage = update_coverage(ts)
-            ents = [
-                e
-                for e in ctx.entities.values()
-                if (t.job in ("features", "services") or t.id in e.target_ids)
-                and e.kind in ("competitor", "provider", "reference")
-            ]
+            ents = followup_entities(ctx, t)
             ents = sorted(ents, key=lambda e: (e.domain is None, e.name))[:4]
             entity_domains[t.id] = {i: e.domain for i, e in enumerate(ents)}
             topics.append(

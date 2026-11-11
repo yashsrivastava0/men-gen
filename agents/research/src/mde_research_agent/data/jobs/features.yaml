@@ -20,6 +20,7 @@ targets:
     needs: [norm, entity, current]
     priority: 100
     anchor: category
+    scope: country
     slots:
       - {key: competitors, type: count, kind: competitor, distinct_by: name, min: 3, attr: features, attr_min: 5, required: true}
       - {key: feature_norms, type: distinct_values, kind: competitor, distinct_by: name, attr: features, min: 8, min_support: 2, required: true}
@@ -32,6 +33,7 @@ targets:
     needs: [entity, current]
     priority: 85
     anchor: entity
+    scope: none
     slots:
       - {key: reference_check, type: count, kind: reference_check, distinct_by: name, min: 1, required: true}
   - id: recent
@@ -42,5 +44,6 @@ targets:
     needs: [current, norm]
     priority: 55
     anchor: category
+    scope: country
     slots:
       - {key: recent_additions, type: count, kind: trend, distinct_by: topic, min: 2, required: false}

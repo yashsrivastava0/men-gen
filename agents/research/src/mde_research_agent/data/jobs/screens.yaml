@@ -20,6 +20,7 @@ targets:
     needs: [norm, entity]
     priority: 62
     anchor: module
+    scope: none
     slots:
       - {key: patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, attr: states, attr_min: 3, extra_attrs: [{attr: sections, min: 3}], required: true}
   - id: key_screens
@@ -30,5 +31,6 @@ targets:
     needs: [norm]
     priority: 66
     anchor: category
+    scope: none
     slots:
       - {key: key_patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, deep_min: 5, attr: states, attr_min: 3, required: true}

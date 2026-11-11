@@ -147,11 +147,13 @@ def _check(
     *,
     extra_anchors: Sequence[str] = (),
     require_place: bool | None = None,
+    named: Sequence[str] = (),
 ) -> bool:
     intent = [*_intent_words(ctx), *t.intent]
     res = check_query(
         text,
         anchors=[*t.anchors, *extra_anchors],
+        named=named,
         places=list(t.place.phrases) if t.place else [],
         intent_words=intent,
         generic_words=ctx.catalog.intent_words.generic_words,
@@ -212,7 +214,7 @@ async def write_variants(
     for v in res.output.variants:
         extra = [*inp.local_terms] if v.style == "local" else [*inp.seed_names] if v.seed else []
         if not is_repeat(v.text, [*ts.queries, *(x.text for x in valid)]) and _check(
-            ctx, t, v.text, extra_anchors=extra
+            ctx, t, v.text, extra_anchors=extra, named=inp.seed_names if v.seed else ()
         ):
             valid.append(FollowupQuery(v.text, v.language, v.exact, None, v.seed, v.style))
     if not valid:
@@ -221,7 +223,7 @@ async def write_variants(
                 [*inp.local_terms] if v.style == "local" else [*inp.seed_names] if v.seed else []
             )
             if not is_repeat(v.text, [*ts.queries, *(x.text for x in valid)]) and _check(
-                ctx, t, v.text, extra_anchors=extra
+                ctx, t, v.text, extra_anchors=extra, named=inp.seed_names if v.seed else ()
             ):
                 valid.append(FollowupQuery(v.text, v.language, v.exact, None, v.seed, v.style))
     return valid[: want + 1]
@@ -763,7 +765,12 @@ async def run_topic(
                 for f in followups
                 if not is_repeat(f.text, ts.queries)
                 and _check(
-                    ctx, t, f.text, extra_anchors=names, require_place=False if f.domain else None
+                    ctx,
+                    t,
+                    f.text,
+                    extra_anchors=names,
+                    named=names,
+                    require_place=False if f.domain else None,
                 )
             ]
         else:
