@@ -14,6 +14,7 @@ Spec and Verify read these instead of re-deriving trust:
 from __future__ import annotations
 
 from collections import Counter
+from dataclasses import dataclass
 from functools import lru_cache
 from typing import Any
 
@@ -23,7 +24,18 @@ from mde_research_agent.calls.extract import JOB_KINDS
 from mde_research_agent.catalog.loader import DATA_DIR
 from mde_research_agent.catalog.models import LanesConfig
 from mde_research_agent.domain.research import BnValue, Item, LaneQuality, LaneQualityValue
-from mde_research_agent.engine.state import TargetState
+from dataclasses import dataclass
+
+@dataclass(frozen=True)
+class TargetInfo:
+    """What lane quality and builder-need coverage need to know about a topic (also read back from the evidence file)."""
+
+    job: str
+    lane: str
+    status: str
+    slots_required: int
+    slots_filled: int
+
 
 COUNTED_FLAGS = (
     "partial_support",
@@ -58,13 +70,13 @@ def _quality(required: int, filled: int, items: int, strong: int) -> LaneQuality
 
 
 def lane_quality(
-    items_by_lane: dict[str, list[Item]], targets: list[TargetState], lanes: list[str]
+    items_by_lane: dict[str, list[Item]], targets: list[TargetInfo], lanes: list[str]
 ) -> dict[str, LaneQuality]:
     req: Counter[str] = Counter()
     fil: Counter[str] = Counter()
     for ts in targets:
-        req[ts.target.lane] += ts.slots_required
-        fil[ts.target.lane] += ts.slots_filled
+        req[ts.lane] += ts.slots_required
+        fil[ts.lane] += ts.slots_filled
     out: dict[str, LaneQuality] = {}
     for lane in lanes:
         items = items_by_lane.get(lane, [])
@@ -79,7 +91,7 @@ def lane_quality(
     return out
 
 
-def bn_coverage(items: list[Item], targets: list[TargetState], cfg: LanesConfig) -> dict[str, BnValue]:
+def bn_coverage(items: list[Item], targets: list[TargetInfo], cfg: LanesConfig) -> dict[str, BnValue]:
     needs = sorted({k.need for k in cfg.kinds.values()})
     by_need: dict[str, list[Item]] = {n: [] for n in needs}
     for i in items:
@@ -95,7 +107,7 @@ def bn_coverage(items: list[Item], targets: list[TargetState], cfg: LanesConfig)
         elif found:
             out[n] = "single_source_only"  # only unverified or single-source evidence: Spec must not default from it
         else:
-            tried = [ts for ts in targets if n in job_needs.get(ts.target.job, set())]
+            tried = [ts for ts in targets if n in job_needs.get(ts.job, set())]
             out[n] = "gap" if tried and all(ts.status in ("not_found", "queued", "cancelled", "skipped") for ts in tried) else "defaulted_only"
     return out
 

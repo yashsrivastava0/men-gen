@@ -1,4 +1,4 @@
-"""Every validator RV-01..RV-17 has a passing and a failing test (RV-11 is reserved and does nothing)."""
+"""Every validator RV-01..RV-23 has a passing and a failing test (RV-11 is reserved and does nothing)."""
 
 import asyncio
 import copy
@@ -57,7 +57,7 @@ def rules_of(violations) -> set[str]:
 
 def test_a_good_run_passes_every_validator(good) -> None:
     assert run_all(vctx(good)) == []
-    assert set(REGISTRY) == {f"RV-{i:02d}" for i in range(1, 18)}
+    assert set(REGISTRY) == {f"RV-{i:02d}" for i in range(1, 24)}
 
 
 def high_item(out: dict[str, Any]) -> dict[str, Any]:
@@ -152,6 +152,39 @@ def high_item(out: dict[str, Any]) -> dict[str, Any]:
                 {"kind": "FTR", "id": "FTR-999", "relation": "expects"}
             ),
         ),
+        (
+            "RV-18",
+            lambda o, e, ev: next(a for a in e["atoms"] if a.get("item_id")).update(
+                claim="Costs 987654 dollars every month", quote="a sentence with no figure in it at all"
+            ),
+        ),
+        (
+            "RV-19",
+            lambda o, e, ev: next(i for i in o["items"] if i["independent_domains"] >= 1).update(
+                independent_domains=77
+            ),
+        ),
+        (
+            "RV-20",
+            lambda o, e, ev: [
+                a.update(about_region="zz")
+                for a in e["atoms"]
+                if a.get("item_id")
+                and e["targets"]
+            ]
+            and [t.update(place="in") for t in e["targets"]],
+        ),
+        (
+            "RV-21",
+            lambda o, e, ev: [
+                next(a for a in e["atoms"] if a.get("item_id")).update(checked=False),
+                [i.update(flags=[f for f in i["flags"] if f != "unchecked"]) for i in o["items"]],
+            ],
+        ),
+        ("RV-22", lambda o, e, ev: o["profile"].update(store_tokens=10_000_000)),
+        ("RV-22", lambda o, e, ev: o["items"].append(o["items"][0] | {"id": "RI-9999", "store": "appendix", "appendix_reason": None})),
+        ("RV-23", lambda o, e, ev: o["items"][0].update(evidence="official" if o["items"][0]["evidence"] != "official" else "unverified")),
+        ("RV-23", lambda o, e, ev: o["lane_quality"]["blueprint"].update(quality="strong" if o["lane_quality"]["blueprint"]["quality"] != "strong" else "none")),
         ("RV-17", lambda o, e, ev: ev[0].detail.update(secret_field="x")),
         ("RV-17", lambda o, e, ev: ev[3].__setattr__("label", " ")),
     ],

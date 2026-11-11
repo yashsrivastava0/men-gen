@@ -1006,6 +1006,11 @@
           "title": "Signals",
           "type": "array"
         },
+        "store_over_limit": {
+          "default": false,
+          "title": "Store Over Limit",
+          "type": "boolean"
+        },
         "store_tokens": {
           "default": 0,
           "title": "Store Tokens",

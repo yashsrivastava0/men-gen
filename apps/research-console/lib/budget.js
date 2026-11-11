@@ -24,10 +24,6 @@ export function budgetPercents(b) {
 }
 /** Whether a new run may start now: {ok, reason}. */
 export function startBlock(budget, preflight) {
-  if (preflight && preflight.ready === false) {
-    const bad = (preflight.checks || []).filter((c) => !c.ok && !/^key:/.test(c.id)).map((c) => c.label);
-    return { ok: false, reason: "Not ready: " + (bad.length ? bad.join(", ") : "see the Preflight check at the top") + "." };
-  }
   if (budget && budget.enabled && (budget.state === "tripwire" || budget.state === "exhausted")) {
     return {
       ok: false,
@@ -36,6 +32,10 @@ export function startBlock(budget, preflight) {
           ? "The budget is used up. Restart it on the Budget page to continue."
           : "The budget tripwire (" + usd(budget.tripwire_micros) + ") was reached, so no new run starts. Restart the budget on the Budget page to continue.",
     };
+  }
+  if (preflight && preflight.ready === false) {
+    const bad = (preflight.checks || []).filter((c) => !c.ok && !/^key:/.test(c.id)).map((c) => c.label);
+    return { ok: false, reason: "Not ready: " + (bad.length ? bad.join(", ") : "see the Preflight check at the top") + "." };
   }
   return { ok: true, reason: "" };
 }

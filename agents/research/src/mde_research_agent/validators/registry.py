@@ -1,4 +1,4 @@
-"""Validators RV-01..RV-17 over a finished run. Each returns violations; none raises.
+"""Validators RV-01..RV-23 over a finished run. Each returns violations; none raises.
 
 What each does when it fails is decided by the caller (``commit_gate``): item-level problems are repaired or the
 item dropped BEFORE commit (the assembler already enforces most of them, so a violation here is a bug signal);
@@ -10,6 +10,7 @@ from __future__ import annotations
 import json
 from collections.abc import Callable
 from dataclasses import dataclass, field
+from datetime import date
 from typing import Any
 
 import jsonschema
@@ -21,14 +22,20 @@ from mde_research_agent.core.applies import problem as applies_problem
 from mde_research_agent.core.novelty import novel_tokens
 from mde_research_agent.assemble.notes import openers
 from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
+from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
 from mde_research_agent.core.slots import evaluate_target
-from mde_research_agent.core.sources import can_support_high_impact
-from mde_research_agent.core.text import tokens
+from mde_research_agent.core.sources import can_support_high_impact, independent_count
+from mde_research_agent.core.text import stem_set, tokens
 from mde_research_agent.domain.atoms import validate_payload
 from mde_research_agent.domain.events import DETAIL_ALLOWLIST, Event
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan
-from mde_research_agent.domain.research import AppliesTo
+from mde_research_agent.assemble.items import LOW_CLASSES, evidence_of
+from mde_research_agent.assemble.quality import TargetInfo, bn_coverage, lane_quality
+from mde_research_agent.assemble.quality import lane_items as lane_items_of
+from mde_research_agent.domain.research import AppliesTo, Item
+from mde_research_agent.engine.checking import null_paths, passage_window
+from mde_research_agent.engine.state import PageRecord
 from mde_research_agent.schemas import research_v5_schema
 
 MAX_NOTE_WORDS = 15
@@ -416,14 +423,218 @@ def rv17_events(v: ValidationContext) -> list[Violation]:
     return out
 
 
+# --- v5: grounding, independence, region and entity fit, checks, the store, recomputed trust --------------------------
+
+
+def _items_by_id(v: ValidationContext) -> dict[str, dict[str, Any]]:
+    return {i["id"]: i for i in v.output.get("items", [])}
+
+
+def _verified_atoms(v: ValidationContext) -> list[dict[str, Any]]:
+    return [
+        a for a in v.evidence.get("atoms", []) if a.get("status") == "verified" and a.get("item_id")
+    ]
+
+
+def _target_of(v: ValidationContext) -> dict[str, dict[str, Any]]:
+    return {t["id"]: t for t in v.evidence.get("targets", [])}
+
+
+def rv18_numbers(v: ValidationContext) -> list[Violation]:
+    """Every number, amount, percentage and date in an item's claim, label and numeric data is in its quote."""
+    out = []
+    for a in _verified_atoms(v):
+        needed = claim_figures(a.get("claim", ""), a.get("label", ""), a.get("data") or {})
+        missing = missing_figures(needed, figures(a.get("quote", "")))
+        if missing:
+            out.append(
+                Violation("RV-18", f"{missing[0].raw!r} is not in the quote", a.get("item_id"))
+            )
+    return out
+
+
+def _fit(a: dict[str, Any], t: dict[str, Any] | None) -> set[str]:
+    flags: set[str] = set()
+    if t is None:
+        return flags
+    place = (t.get("place") or "").lower()
+    region = a.get("about_region") or "unknown"
+    if place and region not in ("global", "unknown", place):
+        flags.add("other_region")
+    if t.get("entity") and a.get("about_entity") and not (
+        stem_set(t["entity"]) & stem_set(a["about_entity"])
+    ):
+        flags.add("other_entity")
+    return flags
+
+
+def _windows(v: ValidationContext, atoms: list[dict[str, Any]]) -> list[tuple[str, str, str]]:
+    """``(url, source class, passage window)`` per distinct page of ``atoms``, from the stored pages."""
+    seen: set[str] = set()
+    out: list[tuple[str, str, str]] = []
+    for a in atoms:
+        p = v.pages.get(a.get("page_id", ""))
+        if p is None or p["url"] in seen:
+            continue
+        seen.add(p["url"])
+        rec = PageRecord(
+            id=p["id"],
+            url=p["url"],
+            final_url=p["final_url"],
+            domain=p["domain"],
+            source_class=p["source_class"],
+            title=p.get("title", ""),
+            text=p["text"],
+            content_hash=p.get("content_hash", ""),
+            text_source=p.get("text_source", ""),
+            published=None,
+            retrieved_on=date.today(),
+        )
+        out.append((p["url"], p["source_class"], passage_window(rec, a["quote"])))
+    return out
+
+
+def _item_atoms(v: ValidationContext) -> dict[str, list[dict[str, Any]]]:
+    by_item: dict[str, list[dict[str, Any]]] = {}
+    for a in _verified_atoms(v):
+        by_item.setdefault(a["item_id"], []).append(a)
+    return by_item
+
+
+def _sources_of(v: ValidationContext, atoms: list[dict[str, Any]], tmap: dict[str, dict[str, Any]]):
+    clean = [a for a in atoms if not _fit(a, tmap.get(a.get("target_id", "")))]
+    return clean or atoms, not clean
+
+
+def rv19_independence(v: ValidationContext) -> list[Violation]:
+    """Independence by content: two domains giving the same paragraph are one source."""
+    out = []
+    tmap = _target_of(v)
+    by_item = _item_atoms(v)
+    for i in v.output.get("items", []):
+        atoms = by_item.get(i["id"], [])
+        if not atoms:
+            continue
+        src, _ = _sources_of(v, atoms, tmap)
+        w = _windows(v, src)
+        got = independent_count([u for u, _, _ in w], texts=[x for _, _, x in w]) if w else 0
+        if got != i.get("independent_domains"):
+            out.append(
+                Violation(
+                    "RV-19",
+                    f"independent_domains is {i.get('independent_domains')}, recomputed {got}",
+                    i["id"],
+                )
+            )
+    return out
+
+
+def rv20_region_entity(v: ValidationContext) -> list[Violation]:
+    """An item whose every source is about another country or company is flagged, unverified and not in a norm."""
+    out = []
+    tmap = _target_of(v)
+    in_norm = {iid for n in v.output.get("norms", []) for iid in n.get("item_ids", [])}
+    for iid, atoms in _item_atoms(v).items():
+        item = _items_by_id(v).get(iid)
+        if item is None:
+            continue
+        flags = [_fit(a, tmap.get(a.get("target_id", ""))) for a in atoms]
+        if all(flags):
+            need = set().union(*flags)
+            if not need <= set(item.get("flags", [])):
+                out.append(Violation("RV-20", f"missing flag {sorted(need)}", iid))
+            if item.get("evidence") != "unverified":
+                out.append(Violation("RV-20", "a flagged item must be unverified", iid))
+            if iid in in_norm:
+                out.append(Violation("RV-20", "a flagged item must not count in a norm", iid))
+    return out
+
+
+def rv21_checked(v: ValidationContext) -> list[Violation]:
+    """Every verified item has a verdict or the unchecked flag; no unsupported field remains in its data."""
+    out = []
+    items = _items_by_id(v)
+    for a in _verified_atoms(v):
+        item = items.get(a["item_id"])
+        if item is None:
+            continue
+        if not a.get("checked") and "unchecked" not in item.get("flags", []):
+            out.append(Violation("RV-21", "an item has neither a verdict nor the unchecked flag", item["id"]))
+        paths = a.get("unsupported_fields") or []
+        if paths:
+            rest, applied = null_paths(a.get("data") or {}, paths)
+            if rest != (a.get("data") or {}):
+                out.append(Violation("RV-21", f"unsupported field {paths[0]!r} is still in the data", item["id"]))
+    return out
+
+
+def rv22_store(v: ValidationContext) -> list[Violation]:
+    """Main-store tokens fit ``store_tokens`` (unless the protected set alone is over it), every appendix item has a
+    reason, and the counts are conserved: verified atoms = items + merged."""
+    out = []
+    items = v.output.get("items", [])
+    main = [i for i in items if i.get("store", "main") == "main"]
+    for i in items:
+        if i.get("store") == "appendix" and not i.get("appendix_reason"):
+            out.append(Violation("RV-22", "an appendix item has no reason", i["id"]))
+    profile = v.output.get("profile", {})
+    store_tokens = profile.get("store_tokens", 0)
+    if v.store_tokens and store_tokens > v.store_tokens + 1 and not profile.get("store_over_limit"):
+        out.append(Violation("RV-22", f"main store is about {store_tokens} tokens, over {v.store_tokens}"))
+    atoms = _verified_atoms(v)
+    if len(atoms) < len(items):
+        out.append(Violation("RV-22", f"{len(items)} items from {len(atoms)} verified atoms"))
+    return out
+
+
+def rv23_recomputed(v: ValidationContext) -> list[Violation]:
+    """``evidence``, ``lane_quality`` and ``bn_coverage`` recomputed from the items equal the stored values."""
+    out = []
+    tmap = _target_of(v)
+    by_item = _item_atoms(v)
+    items = v.output.get("items", [])
+    for i in items:
+        atoms = by_item.get(i["id"], [])
+        if not atoms:
+            continue
+        src, _ = _sources_of(v, atoms, tmap)
+        w = _windows(v, src)
+        non_low = [(u, x) for u, c, x in w if c not in LOW_CLASSES]
+        got = evidence_of(
+            verdicts=[a["verdict"] for a in src if a.get("verdict")],
+            flags=set(i.get("flags", [])),
+            classes=[c for _, c, _ in w],
+            independent=i.get("independent_domains", 0),
+            independent_non_low=independent_count([u for u, _ in non_low], texts=[x for _, x in non_low]) if non_low else 0,
+        )
+        if got != i.get("evidence"):
+            out.append(Violation("RV-23", f"evidence is {i.get('evidence')!r}, recomputed {got!r}", i["id"]))
+    infos = [
+        TargetInfo(t["job"], t.get("lane", ""), t["status"], t.get("slots_required", 0), t.get("slots_filled", 0))
+        for t in v.evidence.get("targets", [])
+    ]
+    models = [Item.model_validate(i) for i in items]
+    lane_of = {t["id"]: [t.get("lane", ""), *t.get("also_lanes", [])] for t in v.evidence.get("targets", [])}
+    per_lane = lane_items_of(models, v.catalog.lanes, lane_of)
+    expect_lq = {k: q.model_dump() for k, q in lane_quality(per_lane, infos, list(v.catalog.lanes.lanes)).items()}
+    if expect_lq != v.output.get("lane_quality"):
+        out.append(Violation("RV-23", "lane_quality differs from the recomputed value"))
+    if bn_coverage(models, infos, v.catalog.lanes) != v.output.get("bn_coverage"):
+        out.append(Violation("RV-23", "bn_coverage differs from the recomputed value"))
+    return out
+
+
 REGISTRY: dict[str, Validator] = {
     "RV-01": rv01_schema, "RV-02": rv02_quotes, "RV-03": rv03_sources, "RV-04": rv04_tier, "RV-05": rv05_no_new_facts,
     "RV-06": rv06_query_hygiene, "RV-07": rv07_corroboration, "RV-08": rv08_support, "RV-09": rv09_caps, "RV-10": rv10_coverage,
     "RV-11": rv11_reserved, "RV-12": rv12_budget, "RV-13": rv13_binding, "RV-14": rv14_anatomy, "RV-15": rv15_slots,
-    "RV-16": rv16_applies, "RV-17": rv17_events,
+    "RV-16": rv16_applies, "RV-17": rv17_events, "RV-18": rv18_numbers, "RV-19": rv19_independence,
+    "RV-20": rv20_region_entity, "RV-21": rv21_checked, "RV-22": rv22_store, "RV-23": rv23_recomputed,
 }  # fmt: skip
 
 REFUSE_COMMIT = frozenset({"RV-04", "RV-13"})
+# A violation of one of these is a bug in the assembler: the commit goes ahead but the run is marked ``partial``.
+ENFORCED = frozenset({"RV-05", "RV-09", "RV-18", "RV-19", "RV-20", "RV-21", "RV-22", "RV-23"})
 
 
 def run_all(v: ValidationContext, only: list[str] | None = None) -> list[Violation]:

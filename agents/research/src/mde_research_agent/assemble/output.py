@@ -24,6 +24,7 @@ from mde_research_agent.assemble.items import BuiltItem, build_items
 from mde_research_agent.assemble.notes import openers
 from mde_research_agent.assemble.quality import (
     bn_coverage,
+    TargetInfo,
     flagged_counts,
     lane_quality,
 )
@@ -194,8 +195,11 @@ def _drop_reason(d: Dropped) -> GapReason:
     }.get(d.reason, "not_worthwhile")  # type: ignore[return-value]
 
 
-def _est_tokens(obj: Any) -> int:
-    return len(json.dumps(obj, ensure_ascii=False, default=str)) // 4
+def _target_infos(ctx: RunContext) -> list[TargetInfo]:
+    return [
+        TargetInfo(ts.target.job, ts.target.lane, ts.status, ts.slots_required, ts.slots_filled)
+        for ts in sorted(ctx.targets.values(), key=lambda s: s.target.id)
+    ]
 
 
 async def _model_order(
@@ -397,6 +401,7 @@ async def assemble_output(
             store_tokens=overhead
             + sum(b.item.tokens_est for b in built if b.item.store == "main"),
             appendix_items=sum(1 for b in built if b.item.store == "appendix"),
+            store_over_limit=splan.protected_over_limit,
             digest_tokens=sum(tokens_of(s.digest) for s in slices.values()),
         ),
         input_quality=iq,
@@ -433,10 +438,10 @@ async def assemble_output(
         flagged=flagged_counts([b.item for b in built]),
         lane_quality=lane_quality(
             lane_items_of([b.item for b in built], cat.lanes, {tid: [t.lane, *t.also_lanes] for tid, t in targets.items()}),
-            list(ctx.targets.values()),
+            _target_infos(ctx),
             list(cat.lanes.lanes),
         ),
-        bn_coverage=bn_coverage([b.item for b in built], list(ctx.targets.values()), cat.lanes),
+        bn_coverage=bn_coverage([b.item for b in built], _target_infos(ctx), cat.lanes),
         run=RunInfo(
             run_id=ctx.run_id,
             started_at=started_at,
@@ -524,6 +529,9 @@ def build_evidence(
                 "verdict": a.verdict,
                 "checked": a.checked,
                 "flags": sorted(a.flags),
+                "about_region": a.about_region,
+                "about_entity": a.about_entity,
+                "unsupported_fields": a.unsupported_fields,
             }
             for ts in sorted(ctx.targets.values(), key=lambda s: s.target.id)
             for a in ts.atoms
@@ -533,6 +541,10 @@ def build_evidence(
                 "id": ts.target.id,
                 "label": ts.target.label,
                 "job": ts.target.job,
+                "lane": ts.target.lane,
+                "also_lanes": list(ts.target.also_lanes),
+                "place": ts.target.place.country_code if ts.target.place else None,
+                "entity": ts.target.entity,
                 "status": ts.status,
                 "reason": ts.reason,
                 "slots_required": ts.slots_required,

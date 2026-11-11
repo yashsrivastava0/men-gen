@@ -49,7 +49,7 @@ from mde_research_agent.ports.search import SearchPort
 from mde_research_agent.spend import BudgetControl, SpendRecord, ledger_run_spend
 from mde_research_agent.store.ports import ACTIVE_STATUSES, Decision, RunRow, Store
 from mde_research_agent.validators import ValidationContext, run_all
-from mde_research_agent.validators.registry import must_refuse
+from mde_research_agent.validators.registry import ENFORCED, must_refuse
 
 log = get_logger(__name__)
 
@@ -463,6 +463,19 @@ class ResearchService:
             raise RuntimeError(
                 "commit refused: " + "; ".join(f"{v.rule} {v.message}" for v in refused)
             )
+        enforced = [v for v in violations if v.rule in ENFORCED and v.severity == "error"]
+        if enforced and dumped.get("status") == "complete":
+            dumped["status"] = "partial"  # a bug in the assembler: still committed, never claimed as complete
+            dumped["run"]["notes"] = [*dumped["run"].get("notes", []), f"validation: {enforced[0].rule} {enforced[0].message}"[:200]]
+            await ctx.warn("validation_failed")
+        by_rule: dict[str, int] = {}
+        for v_ in violations:
+            by_rule[v_.rule] = by_rule.get(v_.rule, 0) + 1
+        dumped["validation"] = {
+            "errors": sum(1 for v_ in violations if v_.severity == "error"),
+            "warnings": sum(1 for v_ in violations if v_.severity != "error"),
+            "by_rule": dict(sorted(by_rule.items())),
+        }
         evidence["validation"] = [
             {"rule": v.rule, "message": v.message, "item_id": v.item_id, "severity": v.severity}
             for v in violations
@@ -470,7 +483,7 @@ class ResearchService:
         evidence["events"] = [e.model_dump(mode="json") for e in events]
         digest = content_hash(dumped)
         await self.store.save_result(rid, dumped, evidence, digest)
-        status = output.status
+        status = str(dumped["status"])
         await self.store.update_run(
             live.tenant_id,
             rid,

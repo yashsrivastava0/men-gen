@@ -188,6 +188,7 @@ class Profile(Model):
     store_tokens: int = 0  # main store, measured on the compact view
     appendix_items: int = 0
     digest_tokens: int = 0
+    store_over_limit: bool = False  # the protected items alone were over store_tokens: nothing was moved
 
 
 LaneQualityValue = Literal["strong", "partial", "thin", "none"]

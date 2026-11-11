@@ -68,7 +68,7 @@ function drawBudget() {
 function drawPreflight() {
   const pre = ctx.state.preflight;
   const pill = $("preflight-pill");
-  if (!ctx.state.online && !pre) {
+  if (!ctx.state.online) {
     pill.className = "pill pill-bad";
     pill.textContent = "No connection";
   } else if (!pre) {

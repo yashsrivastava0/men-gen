@@ -25,6 +25,7 @@ export function mount(root, ctx) {
   let blockSig = "";
 
   const noticeBox = h("div", { class: "notice-slot" });
+  const failBox = h("div", { class: "notice-slot" });
   const filterBox = h("div", { class: "filters", role: "group", "aria-label": "Show inputs of size" });
   const listBox = h("div", { class: "cards" });
   const skippedBox = h("div", null);
@@ -36,6 +37,7 @@ export function mount(root, ctx) {
     h("div", { class: "page-head" }, h("h2", null, "Inputs"), h("div", { class: "row" }, updated, refreshBtn)),
     h("p", { class: "lead" }, "Pick an approved Compass export and run research on it. Each card shows, before you spend anything, what would be researched and what it would probably cost."),
     noticeBox,
+    failBox,
     filterBox,
     listBox,
     skippedBox,
@@ -78,9 +80,9 @@ export function mount(root, ctx) {
     blockSig = JSON.stringify(startBlock(ctx.state.budget, ctx.state.preflight));
     keepFocus(root, () => {
       drawUpdated();
-      clear(noticeBox);
+      clear(failBox);
       if (failure) {
-        noticeBox.appendChild(
+        failBox.appendChild(
           h("div", { class: "banner banner-bad", role: "alert" }, h("p", null, failure.text), h("button", { type: "button", class: "btn", onclick: () => load(true) }, "Try again"))
         );
       }

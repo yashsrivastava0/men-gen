@@ -306,7 +306,7 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
         # RV-19: independence by CONTENT. Two domains giving the same paragraph are one source; so are two pages of
         # one organisation. The passage window around the quote is what is compared.
         independent = independent_count([u for u, _ in windows], texts=[w for _, w in windows])
-        orgs = len({org_key(p.url) or p.url for p in pages})
+        orgs = len({p.domain for p in pages})
         non_low = [(u, w) for (u, w), p in zip(windows, pages, strict=True) if p.source_class not in LOW_CLASSES]
         independent_non_low = independent_count([u for u, _ in non_low], texts=[w for _, w in non_low])
         impact = "high" if any(a.impact == "high" for a in members) else "normal"
