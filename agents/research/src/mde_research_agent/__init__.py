@@ -3,7 +3,7 @@
 After the user approves the Brief (Gate 1) it searches the web for what a model cannot know
 (comparable products, regional providers and APIs, fees and rules as information, data shapes,
 local formats), reads the pages, extracts typed facts that CODE verifies against the page text,
-and hands Spec one structured playbook, ``research.json`` (schema ``research.v4``), indexed by the
+and hands Spec one structured playbook, ``research.json`` (schema ``research.v5``), indexed by the
 Brief's own ids. It enriches and never decides: its items are Default or Open, never Locked.
 
 Layering: may import mde_core, mde_contracts, mde_llm_gateway (and third-party libraries such as
@@ -22,5 +22,5 @@ CALL_PREFIX = "rsch."
 API_PREFIX = "/v1/research"
 DEFAULT_PORT = 8120
 
-SCHEMA_VERSION = "research.v4"
+SCHEMA_VERSION = "research.v5"
 EVENT_SCHEMA_VERSION = "research.event.v1"

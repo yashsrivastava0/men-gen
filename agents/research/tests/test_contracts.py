@@ -13,13 +13,13 @@ from mde_research_agent.schemas import (
     RESEARCH_FILE,
     dumps,
     event_schema,
-    research_v4_schema,
+    research_v5_schema,
 )
 
 
 def test_committed_schemas_have_not_drifted() -> None:
     assert (CONTRACTS_DIR / RESEARCH_FILE).read_text(encoding="utf-8") == dumps(
-        research_v4_schema()
+        research_v5_schema()
     )
     assert (CONTRACTS_DIR / EVENT_FILE).read_text(encoding="utf-8") == dumps(event_schema())
 

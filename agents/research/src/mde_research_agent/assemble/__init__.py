@@ -1,1 +1,1 @@
-"""Assembly: verified atoms -> the ``research.v4`` playbook (items, norms, indexes, digests)."""
+"""Assembly: verified atoms -> the ``research.v5`` playbook (items, norms, indexes, digests)."""

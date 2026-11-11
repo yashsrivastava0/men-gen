@@ -6,6 +6,7 @@ import asyncio
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 from datetime import date
+from typing import Any
 
 from mde_core.cancel import CancellationToken
 from mde_core.clock import Clock
@@ -61,6 +62,7 @@ class RunContext:
     queries: list[QueryRecord] = field(default_factory=list)
     entities: dict[str, EntityRecord] = field(default_factory=dict)
     drops: DropCounts = field(default_factory=DropCounts)
+    check_inflight: dict[str, Any] = field(default_factory=dict)  # pair key -> future of the checker's verdict
     provider_down: bool = False
     budget_stopped: bool = False
     no_results: bool = False  # round 1 found nothing for any topic
@@ -78,6 +80,11 @@ class RunContext:
         self.llm_sem = asyncio.Semaphore(max(1, self.lanes_extract))
 
     # --- counters -----------------------------------------------------------------------------------
+    def count_drop(self, reason: str) -> None:
+        """Count one dropped item under its reason (an unknown reason is counted as ``invalid``)."""
+        name = reason if hasattr(self.drops, reason) and reason != "unchecked_high_impact" else "invalid"
+        setattr(self.drops, name, getattr(self.drops, name) + 1)
+
     def all_atoms(self) -> list[AtomRecord]:
         return [a for ts in self.targets.values() for a in ts.atoms]
 

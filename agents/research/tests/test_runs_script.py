@@ -62,7 +62,7 @@ def test_a_mock_run_writes_only_under_the_given_folder(tmp_path: Path) -> None:
     assert runs.main(["--run", "quick", "--mock", "--out", str(tmp_path)]) == 0
     out = tmp_path / "examples" / "quick"
     research = json.loads((out / "research.json").read_text(encoding="utf-8"))
-    assert research["schema"] == "research.v4" and research["items"]
+    assert research["schema"] == "research.v5" and research["items"]
     assert (out / "events.jsonl").read_text(encoding="utf-8").strip()
     assert json.loads((out / "evidence.json").read_text(encoding="utf-8"))["events"].endswith(
         "(see events.jsonl)"

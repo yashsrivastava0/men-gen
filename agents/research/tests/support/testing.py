@@ -257,8 +257,9 @@ async def run_engine(
                     and {**cs.hard.model_dump(), **(ceilings or {}).get("hard", {})}
                 )
                 or cs.hard.model_dump(),
-                slice_cap_tokens=cs.soft.slice_tokens,
-                research_cap_tokens=cs.hard.research_tokens,
+                store_tokens=cs.store_tokens,
+        chunk_items=cs.chunk_items,
+        digest_tokens=cs.digest_tokens,
             )
         )
     return run
@@ -275,7 +276,8 @@ def atom(
     label: str | None = None,
     claim: str | None = None,
     impact: str = "normal",
-    published_on: str | None = None,
+    about_region: str = "unknown",
+    about_entity: str | None = None,
     **payload: object,
 ) -> tuple[str, dict]:
     """One extracted item as a model would return it: common fields plus the kind's own fields (defaults filled)."""
@@ -290,7 +292,8 @@ def atom(
         "claim": claim or quote,
         "quote": quote,
         "impact": impact,
-        "published_on": published_on,
+        "about_region": about_region,
+        "about_entity": about_entity,
     }
     return kind, {**common, **base}
 

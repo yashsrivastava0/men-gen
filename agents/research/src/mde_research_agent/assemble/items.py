@@ -1,4 +1,4 @@
-"""Build ``research.v4`` items from verified atoms: group, merge, source, flag, score confidence.
+"""Build ``research.v5`` items from verified atoms: group, merge, source, flag, score confidence.
 
 Atoms about the same thing (a competitor named the same on several pages, the same rule value on two official
 pages) become ONE item with several sources, so ``independent_domains`` and corroboration mean something. Different
@@ -18,9 +18,11 @@ from typing import Any
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.applies import BriefIndex, retag
+from mde_research_agent.domain.atoms import ORDERED_FIELDS
 from mde_research_agent.core.norm_keys import clean_key, match_brief, reconcile
 from mde_research_agent.core.prevalence import is_fee_text, is_stale, recency_of
-from mde_research_agent.core.sources import can_support_high_impact, independent_count
+from mde_research_agent.core.sources import can_support_high_impact, independent_count, org_key
+from mde_research_agent.engine.checking import passage_window
 from mde_research_agent.core.text import stem_set
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Target
@@ -45,6 +47,8 @@ class BuiltItem:
     )
     pages: list[PageRecord] = field(default_factory=list)
     target_ids: set[str] = field(default_factory=set)
+    windows: list[tuple[str, str]] = field(default_factory=list)  # (page url, passage window): content-independence
+    excluded: bool = False  # every source is about another region or entity: out of corroboration, norms, prevalence
 
 
 def _sha(text: str) -> str:
@@ -99,15 +103,43 @@ def _merge_lists(a: list[Any], b: list[Any]) -> list[Any]:
     return out
 
 
-def merge_payloads(primary: dict[str, Any], others: list[dict[str, Any]]) -> dict[str, Any]:
-    """The primary payload enriched by the others: lists are unioned, empty scalars filled."""
+def _variant_of(value: Any) -> list[str]:
+    """An ordered list as comparable strings (a transition becomes ``from>to: trigger``)."""
+    out: list[str] = []
+    for x in value or []:
+        if isinstance(x, dict):
+            out.append(f"{x.get('from_state', '')}>{x.get('to_state', '')}: {x.get('trigger', '')}".strip())
+        else:
+            out.append(str(x))
+    return out
+
+
+def merge_payloads(
+    primary: dict[str, Any], others: list[dict[str, Any]], kind: str = ""
+) -> dict[str, Any]:
+    """The primary payload enriched by the others: lists are unioned, empty scalars filled.
+
+    ORDERED lists (steps, sections, transitions) are never joined: two sources order a journey differently and the
+    union would be a third, invented, order. The primary (richest) list is kept; a different list from another source
+    goes to the payload's ``*_variants`` field (at most three).
+    """
+    ordered = dict([ORDERED_FIELDS[kind]]) if kind in ORDERED_FIELDS else {}
     out = {k: (list(v) if isinstance(v, list) else v) for k, v in primary.items()}
+    variants: list[list[str]] = []
     for o in others:
         for k, v in o.items():
-            if isinstance(v, list) and isinstance(out.get(k), list):
+            if k in ordered:
+                alt = _variant_of(v)
+                if alt and alt != _variant_of(out.get(k)) and alt not in variants:
+                    variants.append(alt)
+            elif k in {vf for vf in ordered.values()}:
+                continue
+            elif isinstance(v, list) and isinstance(out.get(k), list):
                 out[k] = _merge_lists(out[k], v)
             elif out.get(k) in (None, "", []) and v not in (None, "", []):
                 out[k] = v
+    if variants:
+        out[ordered[next(iter(ordered))]] = variants[:3]
     return out
 
 
@@ -169,6 +201,41 @@ def _applies(
     return fixed
 
 
+LOW_CLASSES = frozenset({"forum", "blog", "seo"})
+
+
+def atom_fit_flags(a: AtomRecord, t: Target) -> set[str]:
+    """RV-20: ``other_region`` when the item is about another specific country than the topic's place;
+    ``other_entity`` when the topic is anchored on a named entity and the item names one that shares no word with it."""
+    flags: set[str] = set()
+    place = t.place.country_code if t.place else None
+    if place and a.about_region not in ("global", "unknown", place.lower()):
+        flags.add("other_region")
+    if t.entity and a.about_entity and not (stem_set(t.entity) & stem_set(a.about_entity)):
+        flags.add("other_entity")
+    return flags
+
+
+def evidence_of(
+    *,
+    verdicts: list[str],
+    flags: set[str],
+    classes: list[str],
+    independent: int,
+    independent_non_low: int,
+) -> str:
+    """The evidence ladder (doc 13 9.4): ``official`` > ``corroborated`` > ``single_source`` > ``unverified``."""
+    if "supported" not in verdicts or flags & {"other_region", "other_entity", "unchecked"}:
+        return "unverified"
+    if "number_widened" in flags and independent < 2:
+        return "unverified"
+    if any(c in ("official", "help") for c in classes):
+        return "official"
+    if independent_non_low >= 2:
+        return "corroborated"
+    return "single_source"
+
+
 def confidence_of(
     item_flags: set[str],
     independent: int,
@@ -215,26 +282,45 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
                 a.page_id,
             ),
         )
-        primary = members[0]
+        t = targets[members[0].target_id]
+        fit = {m.id: atom_fit_flags(m, t) for m in members}
+        clean = [m for m in members if not fit[m.id]]
+        excluded = not clean  # every source is about another region or entity
+        src_members = clean or members  # flagged sources never corroborate; when ALL are flagged the item stays, unverified
+        primary = src_members[0]
         kind = primary.kind
         area = lanes.kinds[kind].area
         pages = []
+        windows: list[tuple[str, str]] = []
         seen_pages: set[str] = set()
-        for a in members:
+        for a in src_members:
             p = pages_by_id[a.page_id]
             if p.url not in seen_pages:
                 seen_pages.add(p.url)
                 pages.append(p)
-        pages.sort(key=lambda p: (CLASS_RANK.get(p.source_class, 9), p.url))
-        data = merge_payloads(primary.data, [m.data for m in members[1:]])
-        independent = independent_count([p.url for p in pages], texts=[p.text for p in pages])
+                windows.append((p.url, passage_window(p, a.quote)))
+        order = {p.url: i for i, p in enumerate(sorted(pages, key=lambda p: (CLASS_RANK.get(p.source_class, 9), p.url)))}
+        pages.sort(key=lambda p: order[p.url])
+        windows.sort(key=lambda w: order[w[0]])
+        data = merge_payloads(primary.data, [m.data for m in src_members[1:]], kind)
+        # RV-19: independence by CONTENT. Two domains giving the same paragraph are one source; so are two pages of
+        # one organisation. The passage window around the quote is what is compared.
+        independent = independent_count([u for u, _ in windows], texts=[w for _, w in windows])
+        orgs = len({org_key(p.url) or p.url for p in pages})
+        non_low = [(u, w) for (u, w), p in zip(windows, pages, strict=True) if p.source_class not in LOW_CLASSES]
+        independent_non_low = independent_count([u for u, _ in non_low], texts=[w for _, w in non_low])
         impact = "high" if any(a.impact == "high" for a in members) else "normal"
-        dates = [p.published for p in pages] + [a.published_on for a in members]
+        dates = [p.published for p in pages] + [a.published_on for a in src_members]
         newest = max((d for d in dates if d), default=None)
         age = recency_of(dates, ctx.as_of).age_months
         flags: set[str] = set()
-        t = targets[primary.target_id]
         flags |= {f for f in t.flags if f in ("assumption_derived", "geo_uncertain")}
+        if excluded:
+            flags |= set().union(*fit.values())
+        if independent < orgs:
+            flags.add("duplicate_source")
+        if all("number_widened" in m.flags for m in src_members):
+            flags.add("number_widened")
         if any(a.seed for a in members):
             flags.add("entity_from_model")
         if kind in lanes.legal_adjacent_kinds:
@@ -246,22 +332,42 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
         fee = is_fee_text(f"{primary.claim} {data.get('fees') or ''}", cat.prevalence)
         if is_stale(age, job=primary.job, is_fee=fee, cfg=cat.prevalence):
             flags.add("stale")
-        verdicts = [a.verdict for a in members if a.verdict]
-        if impact == "high" and not any(a.checked for a in members):
+        verdicts = [a.verdict for a in src_members if a.verdict]
+        if not any(a.checked for a in src_members):
             flags.add("unchecked")
         elif impact == "high" and ctx.checker_vendor == "same":
             flags.add("checker_same_vendor")
+        if verdicts and "supported" not in verdicts:
+            flags.add("partial_support")
+        classes = [p.source_class for p in pages]
+        evidence = evidence_of(
+            verdicts=verdicts,
+            flags=flags,
+            classes=classes,
+            independent=independent,
+            independent_non_low=independent_non_low,
+        )
         conf = confidence_of(
             flags,
             independent,
-            [p.source_class for p in pages],
+            classes,
             impact,
             [v for v in verdicts if v],
             cat,
         )
         tier = (
             "open"
-            if flags & {"single-source", "entity_from_model", "conflict", "unchecked"}
+            if flags
+            & {
+                "single-source",
+                "entity_from_model",
+                "conflict",
+                "unchecked",
+                "other_region",
+                "other_entity",
+                "partial_support",
+            }
+            or evidence == "unverified"
             else "default"
         )
         item = Item(
@@ -287,6 +393,9 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
             ),
             sources=[_source_ref(p, src_ids) for p in pages],
             independent_domains=independent,
+            evidence=evidence,  # type: ignore[arg-type]
+            source_language=primary_page_language(pages, primary, pages_by_id),
+            about_region=primary.about_region,
             recency=Recency(
                 newest_source=newest,
                 age_months=age,
@@ -311,11 +420,21 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
                 areas_key=ba,
                 pages=pages,
                 target_ids={m.target_id for m in members},
+                windows=windows,
+                excluded=excluded,
             )
         )
     for i, b in enumerate(built, start=1):
         b.item = b.item.model_copy(update={"id": f"RI-{i:03d}"})
     return built
+
+
+def primary_page_language(
+    pages: list[PageRecord], primary: AtomRecord, pages_by_id: dict[str, PageRecord]
+) -> str | None:
+    """The language of the page the item's main facts came from (a hint for Spec; quotes stay in this language)."""
+    p = pages_by_id.get(primary.page_id)
+    return (p.language if p is not None else None) or next((q.language for q in pages if q.language), None)
 
 
 def _slot_of(t: Target, kind: str) -> str | None:

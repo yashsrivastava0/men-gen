@@ -36,6 +36,8 @@ warnings:
   budget_stop: "Stopped at the research budget. Finishing with what we have."
   no_keys: "Search is not set up, so research was skipped."
   no_results: "The web search returned nothing useful for any topic, so research stopped early."
+  store_over_limit: "The required findings alone are longer than the usual limit, so the file is larger than usual."
+  validation_failed: "A final self-check found a problem, so the result is marked partial."
 reasons:
   no_content: "no readable text"
   paywall: "behind a login or paywall"

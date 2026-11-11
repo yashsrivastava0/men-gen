@@ -87,6 +87,9 @@ class AtomRecord:
     seed: bool = False
     query_ids: list[str] = field(default_factory=list)
     checked: bool = False
+    about_region: str = "unknown"
+    about_entity: str | None = None
+    unsupported_fields: list[str] = field(default_factory=list)  # paths in ``data`` the checker could not back
 
 
 @dataclass
@@ -119,8 +122,12 @@ class TargetState:
 
 @dataclass
 class DropCounts:
+    """Why items did not reach the output. Every drop has a counted reason (R26): nothing is lost silently."""
+
     quote_not_found: int = 0
+    number_not_in_quote: int = 0
     not_supported: int = 0
-    size_cap: int = 0
+    unsupported_field: int = 0
     forbidden_pattern: int = 0
-    unchecked_high_impact: int = 0
+    claim_too_long: int = 0
+    invalid: int = 0

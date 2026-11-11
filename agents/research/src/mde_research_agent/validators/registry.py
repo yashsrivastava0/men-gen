@@ -19,6 +19,7 @@ from mde_research_agent.core.anatomy import check_query, hygiene_problems
 from mde_research_agent.core.applies import BriefIndex
 from mde_research_agent.core.applies import problem as applies_problem
 from mde_research_agent.core.novelty import novel_tokens
+from mde_research_agent.assemble.notes import openers
 from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
 from mde_research_agent.core.slots import evaluate_target
 from mde_research_agent.core.sources import can_support_high_impact
@@ -28,7 +29,7 @@ from mde_research_agent.domain.events import DETAIL_ALLOWLIST, Event
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan
 from mde_research_agent.domain.research import AppliesTo
-from mde_research_agent.schemas import research_v4_schema
+from mde_research_agent.schemas import research_v5_schema
 
 MAX_NOTE_WORDS = 15
 Severity = str  # "error" | "warn"
@@ -51,8 +52,9 @@ class ValidationContext:
     plan: Plan | None = None
     events: list[Event] = field(default_factory=list)
     ceilings_hard: dict[str, int] = field(default_factory=dict)
-    slice_cap_tokens: int = 0
-    research_cap_tokens: int = 0
+    store_tokens: int = 0
+    chunk_items: int = 0
+    digest_tokens: int = 0
     _pages: dict[str, dict[str, Any]] | None = None
 
     @property
@@ -67,7 +69,7 @@ Validator = Callable[[ValidationContext], list[Violation]]
 
 def rv01_schema(v: ValidationContext) -> list[Violation]:
     out: list[Violation] = []
-    errors = list(jsonschema.Draft202012Validator(research_v4_schema()).iter_errors(v.output))
+    errors = list(jsonschema.Draft202012Validator(research_v5_schema()).iter_errors(v.output))
     out += [
         Violation("RV-01", f"schema: {e.message[:160]} at {'/'.join(map(str, e.absolute_path))}")
         for e in errors[:5]
@@ -131,6 +133,13 @@ def rv04_tier(v: ValidationContext) -> list[Violation]:
     ]
 
 
+def _substantive(tok: str) -> bool:
+    """A figure that could be a fact (an amount, a percentage, a decimal, a long number or a date), not a small count
+    the digest's own code computed ("+4 more")."""
+    digits = sum(ch.isdigit() for ch in tok)
+    return digits >= 3 or (digits >= 1 and any(c in tok for c in "%.$₹€£"))
+
+
 def rv05_no_new_facts(v: ValidationContext) -> list[Violation]:
     out = []
     items = {i["id"]: i for i in v.output.get("items", [])}
@@ -147,6 +156,7 @@ def rv05_no_new_facts(v: ValidationContext) -> list[Violation]:
                 i.get("claim", ""),
                 json.dumps(i.get("data", {}), ensure_ascii=False),
             ],
+            openers(),
         )
         if new:
             out.append(Violation("RV-05", f"use_note adds {new[:3]}", i["id"]))
@@ -163,7 +173,7 @@ def rv05_no_new_facts(v: ValidationContext) -> list[Violation]:
             sl.get("digest", ""),
             [*corpus, json.dumps(v.output.get("norms", []), ensure_ascii=False)],
         ):
-            if any(ch.isdigit() for ch in tok) or tok.startswith(("http", "www")):
+            if _substantive(tok) or tok.startswith(("http", "www")):
                 out.append(Violation("RV-05", f"{lane} digest adds {tok!r}", None, "warn"))
                 break
     return out
@@ -226,24 +236,19 @@ def rv08_support(v: ValidationContext) -> list[Violation]:
 
 
 def rv09_caps(v: ValidationContext) -> list[Violation]:
+    """The three caps (AD-55). Enforced: the digests stay inside ``digest_tokens`` and no lane chunk is longer than
+    ``chunk_items``. (The store limit itself is RV-22.)"""
     out = []
-    if v.research_cap_tokens:
-        body = {
-            k: v.output.get(k)
-            for k in ("items", "norms", "suggestions", "confirm", "gaps", "conflicts")
-        }
-        est = len(json.dumps(body, ensure_ascii=False, default=str)) // 4
-        if est > v.research_cap_tokens * 1.15:
-            out.append(
-                Violation(
-                    "RV-09",
-                    f"research.json body is about {est} tokens, over the cap {v.research_cap_tokens}",
-                )
-            )
-    if v.slice_cap_tokens:
-        for lane, sl in v.output.get("slices", {}).items():
-            if len(sl.get("digest", "")) > v.slice_cap_tokens * 4 * 1.2:
-                out.append(Violation("RV-09", f"{lane} digest is over its cap"))
+    for lane, sl in v.output.get("slices", {}).items():
+        if v.digest_tokens and len(sl.get("digest", "")) > v.digest_tokens * 4 * 1.2:
+            out.append(Violation("RV-09", f"{lane} digest is over its cap"))
+        if v.chunk_items:
+            for n, chunk in enumerate(sl.get("chunks", [])):
+                if len(chunk) > v.chunk_items:
+                    out.append(Violation("RV-09", f"{lane} chunk {n} has {len(chunk)} items, over {v.chunk_items}"))
+        ids = sl.get("item_ids", [])
+        if ids != [i for chunk in sl.get("chunks", []) for i in chunk]:
+            out.append(Violation("RV-09", f"{lane} chunks do not add up to its item list"))
     return out
 
 

@@ -64,21 +64,35 @@ class LoadConfig(Frozen):
 
 
 class Ceiling(Frozen):
+    """What a run aims at (soft) for one size class."""
+
     searches: int
     pages: int
     seconds: int
     rounds: int
     lanes_search: int
     lanes_extract: int
-    research_tokens: int
-    slice_tokens: int
     targets: int
+    followups_per_topic: int
+
+
+class HardLimits(Frozen):
+    """What a run never exceeds (RV-12)."""
+
+    searches: int
+    pages: int
+    seconds: int
+    rounds: int
     followups_per_topic: int
 
 
 class CeilingSet(Frozen):
     soft: Ceiling
-    hard: Ceiling
+    hard: HardLimits
+    # The three caps (AD-55): nothing is deleted to fit; items above the store limit move to the appendix.
+    store_tokens: int  # the main store, measured on the compact view
+    chunk_items: int  # a lane slice is split into chunks of at most this many items
+    digest_tokens: int  # each lane digest (an index, outside store_tokens)
 
 
 class PagesPerTopic(Frozen):
@@ -93,7 +107,6 @@ class CeilingsConfig(Frozen):
     min_round_gain: float
     pages_per_topic: PagesPerTopic
     max_per_domain: int
-    triage_model_above: int
     variants_per_topic: int
 
     def for_class(self, name: LoadClass) -> CeilingSet:
@@ -228,6 +241,8 @@ class KindLane(Frozen):
     need: str
     area: str
     terms: tuple[str, ...] = ()
+    min_all: tuple[str, ...] = ()
+    min_any: tuple[str, ...] = ()
 
 
 class LanesConfig(Frozen):

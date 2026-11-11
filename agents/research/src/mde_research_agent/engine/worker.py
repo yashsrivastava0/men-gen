@@ -56,6 +56,7 @@ from mde_research_agent.engine.state import (
     QueryRecord,
     TargetState,
 )
+from mde_research_agent.engine.checking import check_topic
 from mde_research_agent.engine.verify import (
     Candidate,
     Rejected,
@@ -564,8 +565,7 @@ async def extract_page(
         existing = {(a.kind, a.norm_key, a.page_id) for a in ts.atoms}
         for cand in candidates_from_output(res.output, page):
             if isinstance(cand, Rejected):
-                if cand.reason == "forbidden_pattern":
-                    ctx.drops.forbidden_pattern += 1
+                ctx.count_drop(cand.reason)
                 await ctx.events.emit(
                     "fact.rejected",
                     target_id=t.id,
@@ -587,10 +587,21 @@ async def extract_page(
                 params={"topic": t.label},
                 detail={"kind": cand.kind, "label": cand.label, "topic": t.label},
             )
-            bad = check_candidate(cand, page)
-            if bad is not None:
-                retry.append(cand)
+            checked = check_candidate(cand, page)
+            if isinstance(checked, Rejected):
+                if checked.reason == "quote_not_found":
+                    retry.append(cand)  # one retry ("quote exactly"); still failing after it is counted below
+                    continue
+                ctx.count_drop(checked.reason)
+                await ctx.events.emit(
+                    "fact.rejected",
+                    target_id=t.id,
+                    round_=round_no,
+                    phase="verify",
+                    detail={"reason": checked.reason, "topic": t.label, "label": cand.label},
+                )
                 continue
+            cand = checked
             existing.add(key)
             atom = AtomRecord(
                 id=ctx.ids.new("atm"),
@@ -606,6 +617,9 @@ async def extract_page(
                 else "normal",
                 published_on=cand.published_on,
                 data=cand.data,
+                about_region=cand.about_region,
+                about_entity=cand.about_entity,
+                flags=set(cand.flags),
                 page_id=page.id,
                 round=round_no,
                 seed=via_seed,
@@ -622,19 +636,6 @@ async def extract_page(
                         params={"name": ent_name},
                         detail={"name": ent_name, "kind": ent_kind},
                     )
-            await ctx.events.emit(
-                "fact.verified",
-                target_id=t.id,
-                round_=round_no,
-                phase="verify",
-                params={"domain": page.domain},
-                detail={
-                    "kind": cand.kind,
-                    "label": cand.label,
-                    "domain": page.domain,
-                    "topic": t.label,
-                },
-            )
         pending = retry
         if not pending or not ctx.active():
             break
@@ -732,6 +733,7 @@ async def run_topic(
             return await extract_page(ctx, ts, page, round_no, cov, via_seed)
 
         counts = await asyncio.gather(*[process(h, c) for h, c in picks])
+        await check_topic(ctx, ts)  # every verified item is checked BEFORE the coverage audit (a rejection reopens its slot)
         update_coverage(ts)
         return sum(counts)
     except CallCancelled:

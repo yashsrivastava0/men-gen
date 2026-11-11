@@ -48,6 +48,7 @@ def test_payload_round_trip_for_an_entity_pattern() -> None:
         claim="A booking links a member to a class",
         quote="A booking links a member to a class session",
         impact="normal",
+        about_region="global",
         entity="booking",  # pyright: ignore[reportCallIssue]
         fields=[  # pyright: ignore[reportCallIssue]
             {

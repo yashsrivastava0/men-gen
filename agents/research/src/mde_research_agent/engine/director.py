@@ -19,7 +19,6 @@ from typing import Any
 
 from mde_core.cancel import CancellationToken
 from mde_core.errors import BudgetExceeded, CallCancelled, CassetteMissing, LiveCallForbidden
-from mde_research_agent.calls import check as check_call
 from mde_research_agent.calls import gaps as gap_call
 from mde_research_agent.calls import plan as plan_call
 from mde_research_agent.catalog.models import Catalog
@@ -40,7 +39,6 @@ from mde_research_agent.engine.worker import (
 from mde_research_agent.plan.build import build_plan
 from mde_research_agent.plan.proposal import PlanProposal, ProposedTarget
 
-CHECK_BATCH = 15
 REPEATED_FAILURES = 5  # this many failed calls end a run at best partial (RS-34)
 TIME_WATCH_S = 0.5
 
@@ -478,57 +476,12 @@ class Director:
                 },
             )
 
-    # --- the checker ---------------------------------------------------------------------------------------
-    async def run_checker(self) -> None:
-        """A second model reads claim + quote of every high-impact item; code checks stay primary."""
-        ctx = self.ctx
-        atoms = [a for ts in ctx.targets.values() for a in ts.verified if a.impact == "high"]
-        if not atoms or ctx.run_cancel.cancelled:
-            return
-        atoms.sort(key=lambda a: (a.job, a.kind, a.norm_key, a.page_id))
-        for i in range(0, len(atoms), CHECK_BATCH):
-            batch = atoms[i : i + CHECK_BATCH]
-            items = [check_call.CheckItem(id=a.id, claim=a.claim, quote=a.quote) for a in batch]
-            try:
-                res = await ctx.runner.run(check_call.SPEC, check_call.CheckIn(items=items))
-            except (BudgetExceeded, CassetteMissing, LiveCallForbidden, CallCancelled):
-                for a in batch:
-                    a.flags.add("unchecked")
-                    ctx.drops.unchecked_high_impact += 1
-                continue
-            ctx.budget.add_llm_cost(res.cost_micros, "check")
-            if res.failed:
-                ctx.failures.record("llm", res.reason or "failed")
-                await ctx.warn("model_failed")
-            verdicts = {v.id: v.verdict for v in res.output.verdicts}
-            for a in batch:
-                v = verdicts.get(a.id)
-                if v is None:
-                    a.flags.add("unchecked")
-                    ctx.drops.unchecked_high_impact += 1
-                    continue
-                a.checked = True
-                a.verdict = v
-                if v == "not_supported":
-                    a.status = "rejected"
-                    a.reject_reason = "not_supported"
-                    ctx.drops.not_supported += 1
-                    await ctx.events.emit(
-                        "fact.rejected",
-                        target_id=a.target_id,
-                        phase="verify",
-                        detail={"reason": "not_supported"},
-                    )
-        for ts in ctx.targets.values():
-            update_coverage(ts)
-
     # --- the whole thing ------------------------------------------------------------------------------------
     async def execute(self) -> DirectorResult:
         ctx = self.ctx
         try:
             await self.make_plan()
             await self.run_rounds()
-            await self.run_checker()
         except (BudgetExceeded, CassetteMissing, LiveCallForbidden) as exc:
             ctx.budget_stopped = ctx.budget_stopped or isinstance(exc, BudgetExceeded)
             self.result.notes.append(f"stopped: {type(exc).__name__}")

@@ -34,7 +34,7 @@ async def test_mock_run_writes_the_three_files(tmp_path: Path) -> None:
         load_fixture("quick-yoga-studio-bengaluru"), mock=True, program_id="prog_cli", as_of=AS_OF
     )
     write_outputs(tmp_path / "out", res, evidence, events)
-    assert json.loads((tmp_path / "out" / "research.json").read_text())["schema"] == "research.v4"
+    assert json.loads((tmp_path / "out" / "research.json").read_text())["schema"] == "research.v5"
     assert json.loads((tmp_path / "out" / "research_evidence.json").read_text())["pages"]
     assert len((tmp_path / "out" / "events.jsonl").read_text().splitlines()) == len(events) > 20
 

@@ -276,7 +276,7 @@ async def test_rs03_a_reference_with_a_huge_feature_set_is_ranked_by_prevalence_
     )
     assert (
         len(run.research["slices"]["blueprint"]["digest"])
-        <= run.ctx.catalog.ceilings.for_class("focused").soft.slice_tokens * 4 * 1.2
+        <= run.ctx.catalog.ceilings.for_class("focused").digest_tokens * 4 * 1.2
     )
     assert run.research["norms"]
 

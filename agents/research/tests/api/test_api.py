@@ -59,7 +59,7 @@ async def test_run_lifecycle_snapshot_result_latest_review_reject() -> None:
             and snap["counters"]["targets_done"] == snap["counters"]["targets_total"]
         )
         res = (await c.get(f"/v1/research/runs/{run['run_id']}/result")).json()
-        assert res["schema"] == "research.v4" and res["items"] and res["brief_hash"]
+        assert res["schema"] == "research.v5" and res["items"] and res["brief_hash"]
         latest = await c.get(f"/v1/research/programs/{run['program_id']}/latest")
         assert (
             latest.status_code == 200

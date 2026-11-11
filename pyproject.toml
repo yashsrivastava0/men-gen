@@ -28,7 +28,7 @@ package = false
 
 [tool.uv.workspace]
 members = ["packages/*", "apps/*", "agents/*"]
-exclude = ["apps/web"]  # the global front end is static files / later React, not a Python member
+exclude = ["apps/web", "apps/research-console"]  # front ends are static files, not Python members
 
 [tool.uv.sources]
 mde-core = { workspace = true }

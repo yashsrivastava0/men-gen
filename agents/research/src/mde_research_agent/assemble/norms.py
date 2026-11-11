@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import re
 from collections import defaultdict
+from collections.abc import Callable
 from datetime import date
 
 from mde_research_agent.assemble.items import BuiltItem
@@ -18,8 +19,9 @@ from mde_research_agent.catalog.models import PrevalenceConfig
 from mde_research_agent.core.applies import problem as applies_problem  # noqa: F401  (re-exported for callers)
 from mde_research_agent.core.norm_keys import clean_key, match_brief, reconcile
 from mde_research_agent.core.prevalence import age_months, make_prevalence
-from mde_research_agent.core.sources import org_key
+from mde_research_agent.core.sources import independent_count, org_key, own_site
 from mde_research_agent.core.text import stem_set
+from mde_research_agent.core.urls import host_of
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.research import (
     Conflict,
@@ -33,8 +35,34 @@ from mde_research_agent.domain.research import (
 GENERIC = frozenset({"app", "user", "list", "screen", "page", "manage", "view"})
 
 
-def _orgs(b: BuiltItem) -> set[str]:
-    return {org_key(p.url) or p.url for p in b.pages}
+def _sources_of(members: list[BuiltItem], *, skip: Callable[[str], bool] | None = None) -> list[tuple[str, str]]:
+    """``(url, passage window)`` of every source of the items, one per page, optionally without some domains."""
+    seen: set[str] = set()
+    out: list[tuple[str, str]] = []
+    for b in members:
+        for url, window in b.windows:
+            if url in seen or (skip is not None and skip(url)):
+                continue
+            seen.add(url)
+            out.append((url, window))
+    return out
+
+
+def _independent(members: list[BuiltItem], *, skip: Callable[[str], bool] | None = None) -> int:
+    """RV-19: how many INDEPENDENT sources the items have. One organisation is one source, and two organisations
+    giving the same paragraph are one source (the passage window around the quote is compared)."""
+    src = _sources_of(members, skip=skip)
+    return independent_count([u for u, _ in src], texts=[w for _, w in src]) if src else 0
+
+
+def _is_own(url: str, pool: list[BuiltItem]) -> bool:
+    """Is ``url`` the home of any provider in ``pool``?"""
+    host = host_of(url)
+    return any(own_site(str(b.item.data.get("provider", "")), host) for b in pool)
+
+
+def _count_windows(pairs: list[tuple[str, str]]) -> int:
+    return independent_count([u for u, _ in pairs], texts=[w for _, w in pairs]) if pairs else 0
 
 
 def _newest(items: list[BuiltItem]) -> date | None:
@@ -60,6 +88,7 @@ def compute_norms(
     built: list[BuiltItem], inp: ResearchInput, cfg: PrevalenceConfig, as_of: date
 ) -> list[Norm]:
     norms: list[Norm] = []
+    built = [b for b in built if not b.excluded]
 
     def add(
         area: str,
@@ -139,10 +168,10 @@ def compute_norms(
         pool, groups = by_areas(kind, area)
         if not pool:
             continue
-        total = len(set().union(*[_orgs(b) for b in pool]))
+        total = _independent(pool)
         for key in sorted(groups):
             members = groups[key]
-            seen = len(set().union(*[_orgs(b) for b in members]))
+            seen = _independent(members)
             add(
                 area,
                 key,
@@ -152,26 +181,24 @@ def compute_norms(
                 members,
                 match_brief(key, brief_names, generic=GENERIC) if brief_names else None,
             )
-    # --- integrations: providers per need ---------------------------------------------------------------------------
+    # --- integrations: ONE norm per (need, provider), merged across items. ``seen_in`` counts only INDEPENDENT
+    # third-party mentions: a provider's own documentation is evidence of what it offers (``official``), not a
+    # vote that others use it. ``of`` is the third-party sources for the need.
     svc = [b for b in built if b.item.kind == "service_option"]
     if svc:
-        by_need: dict[str, list[BuiltItem]] = defaultdict(list)
+        by_need: dict[str, dict[str, list[BuiltItem]]] = defaultdict(lambda: defaultdict(list))
         for b in svc:
-            by_need[clean_key(str(b.item.data.get("need", "")))].append(b)
+            need = clean_key(str(b.item.data.get("need", "")))
+            prov = clean_key(str(b.item.data.get("provider", "")))
+            by_need[need][prov].append(b)
         for need in sorted(by_need):
-            pool = by_need[need]
-            total = len(set().union(*[_orgs(b) for b in pool]))
-            for b in sorted(pool, key=lambda x: x.item.id):
-                prov = clean_key(str(b.item.data.get("provider", "")))
-                add(
-                    "integration",
-                    f"{need}: {prov}",
-                    str(b.item.data.get("provider", prov)),
-                    len(_orgs(b)),
-                    total,
-                    [b],
-                    need if need else None,
-                )
+            pool = [m for ms in by_need[need].values() for m in ms]
+            for prov in sorted(by_need[need]):
+                members = sorted(by_need[need][prov], key=lambda x: x.item.id)
+                name = str(members[0].item.data.get("provider", prov))
+                total = _independent(pool, skip=lambda u, pool=pool: _is_own(u, pool))
+                seen = _independent(members, skip=lambda u, n=name: own_site(n, host_of(u)))
+                add("integration", f"{need}: {prov}", name, seen, max(total, seen), members, need if need else None)
     return sorted(norms, key=lambda n: (n.area, n.key))
 
 
@@ -184,7 +211,8 @@ def apply_norms(built: list[BuiltItem], norms: list[Norm]) -> list[BuiltItem]:
     by_item: dict[str, Prevalence] = {}
     for n in norms:
         if n.area == "integration":
-            by_item[n.item_ids[0]] = n.prevalence
+            for iid in n.item_ids:
+                by_item[iid] = n.prevalence
     for b in built:
         prev: Prevalence | None = by_item.get(b.item.id)
         if prev is None and b.areas_key and b.areas_key in lookup:
@@ -284,32 +312,34 @@ def build_suggestions(built: list[BuiltItem], norms: list[Norm]) -> Suggestions:
             sug.features.append(s)
         elif n.area == "screen":
             sug.screens.append(s)
-    fields: dict[str, set[str]] = defaultdict(set)
+    fields: dict[str, list[tuple[str, str]]] = defaultdict(list)
     field_items: dict[str, set[str]] = defaultdict(set)
-    states: dict[str, set[str]] = defaultdict(set)
+    states: dict[str, list[tuple[str, str]]] = defaultdict(list)
     state_items: dict[str, set[str]] = defaultdict(set)
-    valids: dict[str, set[str]] = defaultdict(set)
+    valids: dict[str, list[tuple[str, str]]] = defaultdict(list)
     valid_items: dict[str, set[str]] = defaultdict(set)
     for b in built:
-        orgs = _orgs(b)
+        if b.excluded:
+            continue
+        orgs = _sources_of([b])
         d = b.item.data
         if b.item.kind == "entity_pattern":
             for f in d.get("fields", []):
                 label = f"{clean_key(str(d.get('entity', '')))}: {clean_key(str(f.get('name', '')))} ({f.get('type', '')})"
-                fields[label] |= orgs
+                fields[label] += orgs
                 field_items[label].add(b.item.id)
         if b.item.kind == "lifecycle":
             for st in d.get("states", []):
                 label = f"{clean_key(str(d.get('entity', '')))}: {clean_key(str(st))}"
-                states[label] |= orgs
+                states[label] += orgs
                 state_items[label].add(b.item.id)
         if b.item.kind == "screen_pattern":
             for v in d.get("validations", []):
-                valids[clean_key(str(v))] |= orgs
+                valids[clean_key(str(v))] += orgs
                 valid_items[clean_key(str(v))].add(b.item.id)
             for stt in d.get("states", []):
                 label = f"{clean_key(str(d.get('screen_key', '')))}: {stt.get('state', '')}"
-                states[label] |= orgs
+                states[label] += orgs
                 state_items[label].add(b.item.id)
     del by_id
     for store, items_map, out in (
@@ -318,6 +348,6 @@ def build_suggestions(built: list[BuiltItem], norms: list[Norm]) -> Suggestions:
         (valids, valid_items, sug.validations),
     ):
         for label in sorted(store):
-            if len(store[label]) >= 2 and label.strip(": "):
+            if _count_windows(list(dict.fromkeys(store[label]))) >= 2 and label.strip(": "):
                 out.append(Suggestion(label=label, item_ids=sorted(items_map[label])[:6]))
     return sug

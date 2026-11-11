@@ -1,4 +1,4 @@
-"""Assemble the committed ``research.json`` (``research.v4``) and the internal ``research_evidence`` from a finished run.
+"""Assemble the committed ``research.json`` (``research.v5``) and the internal ``research_evidence`` from a finished run.
 
 Code builds everything factual: items (grouped, sourced, flagged), norms (prevalence, recency), conflicts, the confirm
 list, suggestions, defaults for builder needs, indexes by the Brief's ids, gaps, coverage, budget and the lane digests.
@@ -21,6 +21,14 @@ from mde_core.money import micros_to_usd
 from mde_research_agent import SCHEMA_VERSION
 from mde_research_agent.assemble import digest as dg
 from mde_research_agent.assemble.items import BuiltItem, build_items
+from mde_research_agent.assemble.notes import openers
+from mde_research_agent.assemble.quality import (
+    bn_coverage,
+    flagged_counts,
+    lane_quality,
+)
+from mde_research_agent.assemble.quality import lane_items as lane_items_of
+from mde_research_agent.assemble.store import assign_store, compact_item, tokens_of
 from mde_research_agent.assemble.norms import (
     apply_norms,
     build_suggestions,
@@ -53,6 +61,7 @@ from mde_research_agent.engine.context import RunContext
 from mde_research_agent.engine.director import DirectorResult
 
 MAX_NOTE_WORDS = 15
+NOTE_TOKEN_ALLOWANCE = 24  # room per item for a use note the model writes (at most 15 words)
 LEVEL_RANK = {"core": 0, "common": 1, "emerging": 2, "advanced": 3, "limited_evidence": 4}
 
 
@@ -237,7 +246,7 @@ async def _model_order(
                 continue
             words = n.use_note.split()
             source_text = [b.item.label, b.item.claim, json.dumps(b.item.data, ensure_ascii=False)]
-            if len(words) > MAX_NOTE_WORDS or novel_tokens(n.use_note, source_text):
+            if len(words) > MAX_NOTE_WORDS or novel_tokens(n.use_note, source_text, openers()):
                 notes[n.id] = default.get(b.item.kind, "")
             else:
                 notes[n.id] = n.use_note.strip()
@@ -263,73 +272,73 @@ async def assemble_output(
             k: getattr(ctx.drops, k)
             for k in (
                 "quote_not_found",
+                "number_not_in_quote",
                 "not_supported",
-                "size_cap",
+                "unsupported_field",
                 "forbidden_pattern",
-                "unchecked_high_impact",
+                "claim_too_long",
+                "invalid",
             )
         }
     )
 
-    cap_tokens = cat.ceilings.for_class(
-        ctx.input.load.load_class if ctx.input.load else "standard"
-    ).hard.research_tokens
-    while True:
-        norms = compute_norms(built, ctx.input, cat.prevalence, ctx.as_of)
-        built = apply_norms(built, norms)
-        conflicts = detect_conflicts(built, ctx.input)
-        confirm = _confirm(built, defaults["confirm_reasons"])
-        suggestions = build_suggestions(built, norms)
-        probe = [b.item.model_dump(mode="json") for b in built]
-        if (
-            _est_tokens(probe) + _est_tokens([n.model_dump(mode="json") for n in norms])
-            <= cap_tokens
-            or len(built) <= 5
-        ):
-            break
+    klass = ctx.input.load.load_class if ctx.input.load else "standard"
+    cs = cat.ceilings.for_class(klass)
+    norms = compute_norms(built, ctx.input, cat.prevalence, ctx.as_of)
+    built = apply_norms(built, norms)
+    conflicts = detect_conflicts(built, ctx.input)
+    confirm = _confirm(built, defaults["confirm_reasons"])
+    suggestions = build_suggestions(built, norms)
+    default_notes = asm_call.default_notes()
 
-        # RV-09: drop the lowest-ranked items first, a share of every kind so no kind disappears, and count them
-        def quality(b: BuiltItem) -> tuple[int, int, int, str]:
-            level = b.item.prevalence.level if b.item.prevalence else "limited_evidence"
-            return (
-                LEVEL_RANK.get(level, 5),
-                0 if b.item.impact == "high" else 1,
-                1 if "single-source" in b.item.flags else 0,
-                b.item.id,
-            )
-
-        by_kind: dict[str, list[BuiltItem]] = defaultdict(list)
-        for b in built:
-            by_kind[b.item.kind].append(b)
-        tails: list[tuple[float, str, BuiltItem]] = []
-        for members in by_kind.values():
-            ranked = sorted(members, key=quality)
-            for pos, b in enumerate(ranked):
-                if pos >= 2:  # always keep the best two of every kind
-                    tails.append((pos / len(ranked), b.item.id, b))
-        tails.sort(key=lambda t: (-t[0], t[1]))
-        cut = max(1, len(built) // 10)
-        remove = {b.item.id for _, _, b in tails[:cut]}
-        if not remove:
-            break
-        drops.size_cap += len(remove)
-        built = [b for b in built if b.item.id not in remove]
-    # lane membership and selection
-    lane_items: dict[str, list[BuiltItem]] = {lane: [] for lane in cat.lanes.lanes}
+    # --- the main store and the appendix (AD-55): nothing is deleted to fit a size -------------------------------
+    sources_table = {s.id: s.model_dump(mode="json") for b in built for s in b.item.sources}
+    overhead = tokens_of(
+        [
+            [n.model_dump(mode="json") for n in norms],
+            suggestions.model_dump(mode="json"),
+            [c.model_dump(mode="json") for c in confirm],
+            [c.model_dump(mode="json") for c in conflicts],
+            sources_table,
+        ]
+    )
+    splan = assign_store(
+        [b.item.model_dump(mode="json") for b in built],
+        overhead_tokens=overhead,
+        store_tokens=cs.store_tokens,
+        default_notes=default_notes,
+        note_allowance=NOTE_TOKEN_ALLOWANCE,
+    )
+    if splan.protected_over_limit:
+        await ctx.warn("store_over_limit")
     for b in built:
+        d = splan.decisions[b.item.id]
+        b.item = b.item.model_copy(
+            update={
+                "rank": d.rank,
+                "tokens_est": d.tokens_est,
+                "store": d.store,
+                "appendix_reason": d.appendix_reason,
+            }
+        )
+
+    # --- lane membership (main store only) and the model's ordering ----------------------------------------------
+    main = [b for b in built if b.item.store == "main"]
+    lane_items: dict[str, list[BuiltItem]] = {lane: [] for lane in cat.lanes.lanes}
+    for b in main:
         for lane in _lanes_of(b, ctx, targets):
             if lane in lane_items:
                 lane_items[lane].append(b)
-    for b in built:
+    for b in main:
         if (
             any(f in b.item.flags for f in ("needs-confirm", "legal-adjacent"))
             and b not in lane_items["verify"]
         ):
             lane_items["verify"].append(b)
-    slice_cap = cat.ceilings.for_class(
-        ctx.input.load.load_class if ctx.input.load else "standard"
-    ).soft.slice_tokens
-    limits = {lane: max(10, slice_cap // 60) for lane in lane_items}
+    for lane in lane_items:
+        lane_items[lane].sort(key=lambda b: b.item.rank)
+    digest_cap_chars = cs.digest_tokens * dg.CHARS_PER_TOKEN
+    limits = {lane: max(10, cs.digest_tokens // 60) for lane in lane_items}
     selection = await _model_order(
         ctx, lane_items, limits, use_model and not ctx.run_cancel.cancelled
     )
@@ -340,31 +349,32 @@ async def assemble_output(
                 by_id[iid].item = by_id[iid].item.model_copy(update={"use_note": note})
     for b in built:  # every item gets its kind's default note when the model wrote none
         if not b.item.use_note:
-            b.item = b.item.model_copy(
-                update={"use_note": asm_call.default_notes().get(b.item.kind, "")}
-            )
+            b.item = b.item.model_copy(update={"use_note": default_notes.get(b.item.kind, "")})
+    for b in built:  # the notes are in: the final size of every item's compact view
+        d = b.item.model_dump(mode="json")
+        b.item = b.item.model_copy(update={"tokens_est": tokens_of(compact_item(d, default_notes))})
     gaps = _gaps(ctx, built, result.reason)
     defaults_proposed = _defaults(built, ctx, defaults["defaults"])
-    cap_chars = slice_cap * dg.CHARS_PER_TOKEN
     ordered: dict[str, list[BuiltItem]] = {}
     for lane in lane_items:
-        order_ids = (
-            selection.get(lane, ([], {}))[0]
-            or [b.item.id for b in lane_items[lane]][: limits[lane]]
-        )
-        ordered[lane] = [by_id[i] for i in order_ids if i in by_id]
+        first = [i for i in selection.get(lane, ([], {}))[0] if i in by_id]
+        rest = [b.item.id for b in lane_items[lane] if b.item.id not in set(first)]
+        ordered[lane] = [by_id[i] for i in [*first, *rest]]
     slices: dict[str, Slice] = {}
     digests = {
-        "blueprint": dg.blueprint_digest(ordered["blueprint"], norms, cap_chars),
-        "integrations": dg.integrations_digest(ordered["integrations"], norms, cap_chars),
-        "design": dg.design_digest(ordered["design"], norms, cap_chars),
-        "screens": dg.screens_digest(ordered["screens"], norms, cap_chars),
-        "mock": dg.mock_digest(ordered["mock"], norms, cap_chars),
-        "verify": dg.verify_digest(built, confirm, defaults_proposed, gaps, cap_chars),
+        "blueprint": dg.blueprint_digest(ordered["blueprint"], norms, digest_cap_chars),
+        "integrations": dg.integrations_digest(ordered["integrations"], norms, digest_cap_chars),
+        "design": dg.design_digest(ordered["design"], norms, digest_cap_chars),
+        "screens": dg.screens_digest(ordered["screens"], norms, digest_cap_chars),
+        "mock": dg.mock_digest(ordered["mock"], norms, digest_cap_chars),
+        "verify": dg.verify_digest(main, confirm, defaults_proposed, gaps, digest_cap_chars),
     }
     for lane in cat.lanes.lanes:
+        ids = [b.item.id for b in ordered.get(lane, [])]
         slices[lane] = Slice(
-            item_ids=[b.item.id for b in ordered.get(lane, [])], digest=digests.get(lane, "")
+            item_ids=ids,
+            chunks=[ids[i : i + cs.chunk_items] for i in range(0, len(ids), cs.chunk_items)],
+            digest=digests.get(lane, ""),
         )
     idx = _indexes(built)
     states = [ts.status for ts in ctx.targets.values()]
@@ -382,6 +392,12 @@ async def assemble_output(
             load_score=load.score if load else 0,
             load_class=load.load_class if load else "standard",
             rounds=result.rounds,
+            light=ctx.plan.light,
+            signals=list(ctx.plan.signals),
+            store_tokens=overhead
+            + sum(b.item.tokens_est for b in built if b.item.store == "main"),
+            appendix_items=sum(1 for b in built if b.item.store == "appendix"),
+            digest_tokens=sum(tokens_of(s.digest) for s in slices.values()),
         ),
         input_quality=iq,
         budget=Budget(
@@ -414,6 +430,13 @@ async def assemble_output(
         slices=slices,
         claims_used=[],
         dropped=drops,
+        flagged=flagged_counts([b.item for b in built]),
+        lane_quality=lane_quality(
+            lane_items_of([b.item for b in built], cat.lanes, {tid: [t.lane, *t.also_lanes] for tid, t in targets.items()}),
+            list(ctx.targets.values()),
+            list(cat.lanes.lanes),
+        ),
+        bn_coverage=bn_coverage([b.item for b in built], list(ctx.targets.values()), cat.lanes),
         run=RunInfo(
             run_id=ctx.run_id,
             started_at=started_at,

@@ -25,3 +25,20 @@ def parse_loose_date(text: str | None) -> date | None:
     except ValueError:
         return None
     return None
+
+
+def date_in_text(text: str | None) -> date | None:
+    """The first date a text states (``2026-03-12``, ``12 March 2026``, ``March 2026``), else None. Code reads dates;
+    a model's idea of "when this was published" is never used."""
+    if not text:
+        return None
+    from mde_research_agent.core.numbers import figures
+
+    for f in figures(text):
+        if f.key.startswith("d:"):
+            parts = f.key[2:].split("-")
+            try:
+                return date(int(parts[0]), int(parts[1]), int(parts[2]) if len(parts) > 2 else 1)
+            except ValueError:
+                continue
+    return None

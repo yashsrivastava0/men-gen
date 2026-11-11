@@ -132,11 +132,11 @@ async def check_results_are_immutable_and_latest_wins(store: Store) -> None:
     )
     assert await store.latest_committed("t1", "prog_1") is None
     await store.save_result(
-        "rrn_1", {"items": [{"id": "RI-001"}], "schema": "research.v4"}, {"pages": []}, "hash1"
+        "rrn_1", {"items": [{"id": "RI-001"}], "schema": "research.v5"}, {"pages": []}, "hash1"
     )
     assert (await store.get_result("rrn_1")) == {
         "items": [{"id": "RI-001"}],
-        "schema": "research.v4",
+        "schema": "research.v5",
     }
     assert await store.get_evidence("rrn_1") == {"pages": []}
     with pytest.raises(Exception):  # noqa: B017

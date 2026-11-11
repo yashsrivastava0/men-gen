@@ -1,4 +1,4 @@
-"""``research.v4``: the playbook Spec reads (doc 13 section 9).
+"""``research.v5``: the playbook Spec reads (doc 13 section 9).
 
 Short strings, enums and no markdown inside fields: easy for a model to read and for a front end to
 render. Every item carries its sources, prevalence and recency; ``tier`` is ``default`` or ``open`` and
@@ -15,7 +15,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-SCHEMA = "research.v4"
+SCHEMA = "research.v5"
 Status = Literal["complete", "partial", "failed", "skipped"]
 Level = Literal["core", "common", "advanced", "emerging", "limited_evidence"]
 SourceClass = Literal["official", "store", "help", "press", "blog", "forum", "seo"]
@@ -35,7 +35,13 @@ Flag = Literal[
     "withdrawn",
     "unchecked",
     "checker_same_vendor",
+    "partial_support",
+    "other_region",
+    "other_entity",
+    "duplicate_source",
+    "number_widened",
 ]
+Evidence = Literal["official", "corroborated", "single_source", "unverified"]
 AppliesKind = Literal["FTR", "ROL", "APP", "MOD", "ENT", "FLW", "INT", "NEW"]
 Relation = Literal["expects", "constrains", "refines", "alternative", "suggests"]
 GapReason = Literal[
@@ -99,11 +105,19 @@ class Item(Model):
     applies_to: list[AppliesTo] = Field(default_factory=list)
     sources: list[SourceRef] = Field(default_factory=list)
     independent_domains: int = 0
+    evidence: Evidence = "unverified"
+    source_language: str | None = None
+    about_region: str = "unknown"
     prevalence: Prevalence | None = None
     recency: Recency | None = None
     request_ids: list[str] = Field(default_factory=list)
     target_id: str = ""
     data: dict[str, Any] = Field(default_factory=dict)
+    # The main store keeps what Spec reads; everything else is the appendix: nothing is deleted to fit (AD-55).
+    store: Literal["main", "appendix"] = "main"
+    appendix_reason: str | None = None
+    tokens_est: int = 0  # characters over 4 of the item's COMPACT view
+    rank: int = 0  # 1 is best (doc 13 7.2); the same rule decides what is protected
 
 
 class Norm(Model):
@@ -157,7 +171,11 @@ class Conflict(Model):
 
 
 class Slice(Model):
+    """Every main-store item of the lane (ordered by code, the model's order first), split into chunks of at most
+    ``chunk_items``; the digest is an index and sits outside ``store_tokens``."""
+
     item_ids: list[str] = Field(default_factory=list)
+    chunks: list[list[str]] = Field(default_factory=list)
     digest: str = ""
 
 
@@ -165,6 +183,29 @@ class Profile(Model):
     load_score: int
     load_class: Literal["focused", "standard", "deep"]
     rounds: int = 0
+    light: bool = False
+    signals: list[str] = Field(default_factory=list)
+    store_tokens: int = 0  # main store, measured on the compact view
+    appendix_items: int = 0
+    digest_tokens: int = 0
+
+
+LaneQualityValue = Literal["strong", "partial", "thin", "none"]
+BnValue = Literal["researched", "single_source_only", "defaulted_only", "gap"]
+
+
+class LaneQuality(Model):
+    quality: LaneQualityValue
+    slots_required: int = 0
+    slots_filled: int = 0
+    items: int = 0
+    strong_share: float = 0.0  # official or corroborated items over the lane's items
+
+
+class Validation(Model):
+    errors: int = 0
+    warnings: int = 0
+    by_rule: dict[str, int] = Field(default_factory=dict)
 
 
 class Budget(Model):
@@ -185,11 +226,15 @@ class Coverage(Model):
 
 
 class Dropped(Model):
+    """Why extracted items did not become items. Every drop has a counted reason; nothing is lost silently (R26)."""
+
     quote_not_found: int = 0
+    number_not_in_quote: int = 0
     not_supported: int = 0
-    size_cap: int = 0
+    unsupported_field: int = 0
     forbidden_pattern: int = 0
-    unchecked_high_impact: int = 0
+    claim_too_long: int = 0
+    invalid: int = 0
 
 
 class RunInfo(Model):
@@ -232,6 +277,10 @@ class ResearchOutput(Model):
     slices: dict[str, Slice] = Field(default_factory=dict)
     claims_used: list[str] = Field(default_factory=list)
     dropped: Dropped = Field(default_factory=Dropped)
+    flagged: dict[str, int] = Field(default_factory=dict)
+    lane_quality: dict[str, LaneQuality] = Field(default_factory=dict)
+    bn_coverage: dict[str, BnValue] = Field(default_factory=dict)
+    validation: Validation = Field(default_factory=Validation)
     run: RunInfo
 
     model_config = ConfigDict(extra="forbid", populate_by_name=True)

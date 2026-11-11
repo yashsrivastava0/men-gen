@@ -1,0 +1,7 @@
+# Lane quality thresholds (doc 13 section 9.4). A lane is "strong" when at least `strong_slots` of its required slots are
+# filled AND at least `strong_items` of its items are official or corroborated; "partial" when at least `partial_slots`
+# of the required slots are filled; "thin" when it has items but fewer; "none" without items. Retune on measured runs.
+lane_quality:
+  strong_slots: 0.8
+  strong_items: 0.6
+  partial_slots: 0.5

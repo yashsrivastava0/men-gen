@@ -453,8 +453,9 @@ class ResearchService:
             plan=ctx.plan,
             events=events,
             ceilings_hard=cs.hard.model_dump(),
-            slice_cap_tokens=cs.soft.slice_tokens,
-            research_cap_tokens=cs.hard.research_tokens,
+            store_tokens=cs.store_tokens,
+            chunk_items=cs.chunk_items,
+            digest_tokens=cs.digest_tokens,
         )
         violations = run_all(vctx)
         refused = must_refuse(violations)

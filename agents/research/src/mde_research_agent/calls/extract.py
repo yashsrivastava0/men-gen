@@ -38,19 +38,19 @@ JOB_KINDS: dict[str, tuple[str, ...]] = {
 KIND_GUIDE: dict[str, str] = {
     "competitor": "competitor: one comparable app or product: its name, kind, region, platforms, pricing model, and every feature it lists (feature_key short lowercase, level core/standard/premium) and screens it shows.",
     "reference_check": "reference_check: what the page says about a named app the person mentioned: status found, not_found or ambiguous, candidates, its features and flows.",
-    "screen_pattern": "screen_pattern: one screen: screen_key, purpose, role, sections in order, key components, user actions, states (loading, empty, error, success, offline with what each shows), validations, microcopy notes.",
+    "screen_pattern": "screen_pattern: one screen: screen_key, purpose, role, sections in the order the passages give them, key components, user actions, states the passages describe (loading, empty, error, success, offline with what each shows), validations, microcopy notes.",
     "navigation_pattern": "navigation_pattern: a navigation pattern (bottom_tabs, drawer, stack, dashboard_hub, wizard ...), when it is used, typical items.",
     "role_pattern": "role_pattern: a user role, its typical tasks and permissions.",
-    "workflow": "workflow: one journey: name, role, ordered steps (one short action each), alternates, exceptions, empty/error/offline cases.",
-    "entity_pattern": "entity_pattern: one data entity: its fields (name, type, required, allowed values joined with |, validation), relations to other entities, KPIs.",
-    "lifecycle": "lifecycle: an entity's states and the transitions between them with the trigger of each.",
-    "rule": "rule: one business or regulatory rule: statement, subject, value, unit, formula, authority. Copy numbers exactly.",
-    "service_option": "service_option: one provider or portal for a need: provider, region fit, auth method, endpoints or webhook events, sandbox, constraints, fees, limits, integration notes, current status.",
+    "workflow": "workflow: one journey: name, role, the steps in the order the passages give them (one short action each), alternates, exceptions, empty/error/offline cases the passages mention.",
+    "entity_pattern": "entity_pattern: one data entity: its fields (the name; the type, whether it is required, the allowed values joined with | and the validation ONLY when the passages state them, else null), relations to other entities, KPIs.",
+    "lifecycle": "lifecycle: an entity's states and the transitions between them with the trigger of each, only as the passages give them.",
+    "rule": "rule: one business or regulatory rule: statement, subject, value, unit, formula, authority. Copy numbers exactly; the value must be in the quote.",
+    "service_option": "service_option: one provider or portal for a need: provider, region fit, auth method, endpoints or webhook events, sandbox, constraints, fees, limits, integration notes, current status: each only when the passages state it, else null.",
     "compliance_note": "compliance_note: a regulatory or compliance requirement as information: topic, authority, summary, effective date.",
     "design_convention": "design_convention: one UI/UX convention with its aspect (layout, navigation, onboarding, components, color_mood, typography, density, iconography, motion, accessibility), the convention and examples.",
     "script_need": "script_need: font, direction and text-expansion needs of a script: script, languages, direction, font notes, text expansion.",
     "local_format": "local_format: an unusual format or ID: kind (currency, phone, address, date, number, id_format), pattern, example, validation.",
-    "data_hint": "data_hint: realistic sample data: kind (name_style, price_range, unit, edge_case, sample_record), value range, several examples.",
+    "data_hint": "data_hint: sample data the passages show: kind (name_style, price_range, unit, edge_case, sample_record), value range, examples.",
     "trend": "trend: something that changed recently: topic, what changed, since when, direction (rising, declining, stable, unknown).",
 }
 
@@ -196,7 +196,8 @@ def mock_extract(inp: ExtractIn) -> BaseModel:
             if any(c.isdigit() for c in sentence)
             and kind in {"rule", "compliance_note", "service_option", "local_format"}
             else "normal",
-            "published_on": inp.page_published,
+            "about_region": "unknown",
+            "about_entity": None,
         }
         data[kind].append({**common, **synthesize_payload(kind, sentence)})
     return model.model_validate(data)

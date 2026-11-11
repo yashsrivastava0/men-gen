@@ -1,23 +1,25 @@
 # Which Spec lane reads which kind of item, which builder need (BN-xx of doc 12) a kind of item informs, and
-# the order lanes are rendered in. A kind can feed several lanes.
+# the order lanes are rendered in. A kind can feed several lanes. ``min_all`` / ``min_any``: the fields an item of the
+# kind must still have after the checker nulled the fields the page does not state (all of ``min_all``, and at least one
+# of ``min_any`` when it is not empty); an item below its minimum is dropped as ``unsupported_field``.
 lanes: [blueprint, integrations, design, screens, mock, verify]
 kinds:
-  competitor:        {lanes: [blueprint], need: BN-02, area: feature, terms: [features, pricing, plans, platforms, alternatives]}
-  reference_check:   {lanes: [blueprint], need: BN-02, area: feature, terms: [features, flows, pricing, alternatives]}
-  screen_pattern:    {lanes: [blueprint, screens], need: BN-09, area: screen, terms: [screen, sections, components, actions, states, empty, error, loading, validation]}
-  navigation_pattern: {lanes: [blueprint, design], need: BN-03, area: navigation, terms: [navigation, tabs, menu, drawer, structure]}
-  role_pattern:      {lanes: [blueprint], need: BN-03, area: role, terms: [role, tasks, permissions, access, admin]}
-  workflow:          {lanes: [blueprint, screens], need: BN-03, area: flow, terms: [steps, flow, process, alternative, exception, error]}
-  entity_pattern:    {lanes: [blueprint, mock], need: BN-04, area: entity, terms: [fields, status, type, required, validation, relations]}
-  lifecycle:         {lanes: [blueprint], need: BN-04, area: entity, terms: [status, states, transitions, lifecycle]}
-  rule:              {lanes: [blueprint, screens, verify], need: BN-05, area: rule, terms: [rule, limit, fee, rate, percent, days, threshold, formula]}
-  service_option:    {lanes: [integrations, verify], need: BN-10, area: integration, terms: [api, authentication, webhook, events, sandbox, limits, fees]}
-  compliance_note:   {lanes: [blueprint, verify], need: BN-05, area: rule, terms: [regulation, rule, requirement, authority, effective]}
-  design_convention: {lanes: [design], need: BN-08, area: design, terms: [design, layout, navigation, typography, color, density, accessibility]}
-  script_need:       {lanes: [design], need: BN-08, area: design, terms: [font, script, direction, text, expansion]}
-  local_format:      {lanes: [design, mock, screens], need: BN-07, area: format, terms: [format, pattern, validation, example, number, id]}
-  data_hint:         {lanes: [mock], need: BN-07, area: sample, terms: [examples, names, prices, units, range]}
-  trend:             {lanes: [blueprint, design], need: BN-02, area: trend, terms: [new, recent, trend, added, launched]}
+  competitor:        {lanes: [blueprint], need: BN-02, area: feature, terms: [features, pricing, plans, platforms, alternatives], min_all: [name], min_any: []}
+  reference_check:   {lanes: [blueprint], need: BN-02, area: feature, terms: [features, flows, pricing, alternatives], min_all: [name, status], min_any: []}
+  screen_pattern:    {lanes: [blueprint, screens], need: BN-09, area: screen, terms: [screen, sections, components, actions, states, empty, error, loading, validation], min_all: [screen_key], min_any: [sections, key_components, actions, states]}
+  navigation_pattern: {lanes: [blueprint, design], need: BN-03, area: navigation, terms: [navigation, tabs, menu, drawer, structure], min_all: [pattern], min_any: [typical_items, when_used]}
+  role_pattern:      {lanes: [blueprint], need: BN-03, area: role, terms: [role, tasks, permissions, access, admin], min_all: [role], min_any: [typical_tasks, typical_permissions]}
+  workflow:          {lanes: [blueprint, screens], need: BN-03, area: flow, terms: [steps, flow, process, alternative, exception, error], min_all: [name], min_any: [steps]}
+  entity_pattern:    {lanes: [blueprint, mock], need: BN-04, area: entity, terms: [fields, status, type, required, validation, relations], min_all: [entity], min_any: [fields]}
+  lifecycle:         {lanes: [blueprint], need: BN-04, area: entity, terms: [status, states, transitions, lifecycle], min_all: [entity], min_any: [states, transitions]}
+  rule:              {lanes: [blueprint, screens, verify], need: BN-05, area: rule, terms: [rule, limit, fee, rate, percent, days, threshold, formula], min_all: [statement, subject], min_any: []}
+  service_option:    {lanes: [integrations, verify], need: BN-10, area: integration, terms: [api, authentication, webhook, events, sandbox, limits, fees], min_all: [need, provider], min_any: []}
+  compliance_note:   {lanes: [blueprint, verify], need: BN-05, area: rule, terms: [regulation, rule, requirement, authority, effective], min_all: [topic, summary], min_any: []}
+  design_convention: {lanes: [design], need: BN-08, area: design, terms: [design, layout, navigation, typography, color, density, accessibility], min_all: [aspect, convention], min_any: []}
+  script_need:       {lanes: [design], need: BN-08, area: design, terms: [font, script, direction, text, expansion], min_all: [script], min_any: [languages]}
+  local_format:      {lanes: [design, mock, screens], need: BN-07, area: format, terms: [format, pattern, validation, example, number, id], min_all: [kind, pattern], min_any: []}
+  data_hint:         {lanes: [mock], need: BN-07, area: sample, terms: [examples, names, prices, units, range], min_all: [kind], min_any: [examples, value_range]}
+  trend:             {lanes: [blueprint, design], need: BN-02, area: trend, terms: [new, recent, trend, added, launched], min_all: [topic, what_changed], min_any: []}
 # Kinds whose claims are high impact by default (prices, fees, rules, legal and payment facts, formats that
 # change validation). The extraction model may raise impact; code never lowers these.
 high_impact_kinds: [rule, compliance_note, service_option, local_format]

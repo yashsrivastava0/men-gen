@@ -33,7 +33,7 @@ async def test_every_fixture_runs_end_to_end_with_clean_validators(name: str) ->
 )
 async def test_synthetic_briefs_in_other_domains_and_languages_give_valid_output(name: str) -> None:
     run = await run_engine(load_fixture(name))
-    assert run.research["schema"] == "research.v4" and run.research["brief_hash"]
+    assert run.research["schema"] == "research.v5" and run.research["brief_hash"]
     countries_seen = {r.country for r in run.search.requests}
     if name.startswith("dental"):
         assert countries_seen <= {"ae", None}

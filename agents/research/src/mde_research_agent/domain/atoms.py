@@ -16,7 +16,7 @@ from __future__ import annotations
 
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, create_model
+from pydantic import BaseModel, ConfigDict, Field, create_model
 
 KINDS: tuple[str, ...] = (
     "competitor",
@@ -59,9 +59,9 @@ class ScreenState(W):
 
 class FieldSpec(W):
     name: str
-    type: str
-    required: bool
-    values: str | None = None  # allowed values joined with |
+    type: str | None = None  # null unless the passage states the type
+    required: bool | None = None  # null unless the passage states it
+    values: str | None = None  # allowed values joined with |; null unless the passage lists them
     validation: str | None = None
 
 
@@ -94,12 +94,13 @@ class ScreenPatternData(W):
     screen_key: str
     purpose: str
     role: str | None = None
-    sections: list[str]
+    sections: list[str]  # ordered: never joined across sources
     key_components: list[str]
     actions: list[str]
     states: list[ScreenState]
     validations: list[str]
     microcopy_notes: list[str]
+    section_variants: list[list[str]] = Field(default_factory=list)  # set by code when sources order differently
 
 
 class NavigationPatternData(W):
@@ -117,10 +118,11 @@ class RolePatternData(W):
 class WorkflowData(W):
     name: str
     role: str | None = None
-    steps: list[str]
+    steps: list[str]  # ordered: never joined across sources
     alternates: list[str]
     exceptions: list[str]
     empty_error_offline_cases: list[str]
+    step_variants: list[list[str]] = Field(default_factory=list)  # set by code when sources order differently
 
 
 class EntityPatternData(W):
@@ -133,7 +135,8 @@ class EntityPatternData(W):
 class LifecycleData(W):
     entity: str
     states: list[str]
-    transitions: list[Transition]
+    transitions: list[Transition]  # ordered: never joined across sources
+    transition_variants: list[list[str]] = Field(default_factory=list)  # "from>to: trigger" lines, set by code
 
 
 class RuleData(W):
@@ -235,8 +238,18 @@ PAYLOADS: dict[str, type[W]] = {
 NON_WIRE: dict[str, frozenset[str]] = {
     "competitor": frozenset({"url"}),
     "compliance_note": frozenset({"legal_adjacent"}),
+    "workflow": frozenset({"step_variants"}),
+    "lifecycle": frozenset({"transition_variants"}),
+    "screen_pattern": frozenset({"section_variants"}),
 }
-COMMON_FIELDS = ("norm_key", "label", "claim", "quote", "impact", "published_on")
+# Ordered lists: sources are never concatenated (two step lists joined are a third, invented, list). The richest list
+# is kept and the others go to the ``*_variants`` field of the same payload (doc 13, RC-3).
+ORDERED_FIELDS: dict[str, tuple[str, str]] = {
+    "workflow": ("steps", "step_variants"),
+    "screen_pattern": ("sections", "section_variants"),
+    "lifecycle": ("transitions", "transition_variants"),
+}
+COMMON_FIELDS = ("norm_key", "label", "claim", "quote", "impact", "about_region", "about_entity")
 
 
 class AtomCommon(W):
@@ -249,9 +262,8 @@ class AtomCommon(W):
     impact: (
         Impact  # high: prices, fees, rules, legal or payment facts, formats that change validation
     )
-    published_on: str | None = (
-        None  # date the page or the claim states (YYYY-MM-DD, YYYY-MM or YYYY)
-    )
+    about_region: str  # ISO 3166-1 alpha-2 (lowercase) of the country the item is about, "global" or "unknown"
+    about_entity: str | None = None  # the company, product or authority the item is about, else null
 
 
 _WIRE_CACHE: dict[str, type[AtomCommon]] = {}

@@ -198,10 +198,21 @@
     },
     "Dropped": {
       "additionalProperties": false,
+      "description": "Why extracted items did not become items. Every drop has a counted reason; nothing is lost silently (R26).",
       "properties": {
+        "claim_too_long": {
+          "default": 0,
+          "title": "Claim Too Long",
+          "type": "integer"
+        },
         "forbidden_pattern": {
           "default": 0,
           "title": "Forbidden Pattern",
+          "type": "integer"
+        },
+        "invalid": {
+          "default": 0,
+          "title": "Invalid",
           "type": "integer"
         },
         "not_supported": {
@@ -209,19 +220,19 @@
           "title": "Not Supported",
           "type": "integer"
         },
+        "number_not_in_quote": {
+          "default": 0,
+          "title": "Number Not In Quote",
+          "type": "integer"
+        },
         "quote_not_found": {
           "default": 0,
           "title": "Quote Not Found",
           "type": "integer"
         },
-        "size_cap": {
+        "unsupported_field": {
           "default": 0,
-          "title": "Size Cap",
-          "type": "integer"
-        },
-        "unchecked_high_impact": {
-          "default": 0,
-          "title": "Unchecked High Impact",
+          "title": "Unsupported Field",
           "type": "integer"
         }
       },
@@ -579,6 +590,23 @@
         }
       ],
       "properties": {
+        "about_region": {
+          "default": "unknown",
+          "title": "About Region",
+          "type": "string"
+        },
+        "appendix_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Appendix Reason"
+        },
         "applies_to": {
           "items": {
             "$ref": "#/$defs/AppliesTo"
@@ -605,6 +633,17 @@
           "title": "Data",
           "type": "object"
         },
+        "evidence": {
+          "default": "unverified",
+          "enum": [
+            "official",
+            "corroborated",
+            "single_source",
+            "unverified"
+          ],
+          "title": "Evidence",
+          "type": "string"
+        },
         "flags": {
           "items": {
             "enum": [
@@ -619,7 +658,12 @@
               "limited_evidence",
               "withdrawn",
               "unchecked",
-              "checker_same_vendor"
+              "checker_same_vendor",
+              "partial_support",
+              "other_region",
+              "other_entity",
+              "duplicate_source",
+              "number_widened"
             ],
             "type": "string"
           },
@@ -685,6 +729,11 @@
           ],
           "default": null
         },
+        "rank": {
+          "default": 0,
+          "title": "Rank",
+          "type": "integer"
+        },
         "recency": {
           "anyOf": [
             {
@@ -715,6 +764,18 @@
           "default": null,
           "title": "Slot"
         },
+        "source_language": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Language"
+        },
         "sources": {
           "items": {
             "$ref": "#/$defs/SourceRef"
@@ -724,6 +785,15 @@
         },
         "spec_need": {
           "title": "Spec Need",
+          "type": "string"
+        },
+        "store": {
+          "default": "main",
+          "enum": [
+            "main",
+            "appendix"
+          ],
+          "title": "Store",
           "type": "string"
         },
         "target_id": {
@@ -740,6 +810,11 @@
           "title": "Tier",
           "type": "string"
         },
+        "tokens_est": {
+          "default": 0,
+          "title": "Tokens Est",
+          "type": "integer"
+        },
         "use_note": {
           "default": "",
           "title": "Use Note",
@@ -755,6 +830,46 @@
         "claim"
       ],
       "title": "Item",
+      "type": "object"
+    },
+    "LaneQuality": {
+      "additionalProperties": false,
+      "properties": {
+        "items": {
+          "default": 0,
+          "title": "Items",
+          "type": "integer"
+        },
+        "quality": {
+          "enum": [
+            "strong",
+            "partial",
+            "thin",
+            "none"
+          ],
+          "title": "Quality",
+          "type": "string"
+        },
+        "slots_filled": {
+          "default": 0,
+          "title": "Slots Filled",
+          "type": "integer"
+        },
+        "slots_required": {
+          "default": 0,
+          "title": "Slots Required",
+          "type": "integer"
+        },
+        "strong_share": {
+          "default": 0.0,
+          "title": "Strong Share",
+          "type": "number"
+        }
+      },
+      "required": [
+        "quality"
+      ],
+      "title": "LaneQuality",
       "type": "object"
     },
     "Norm": {
@@ -851,6 +966,21 @@
     "Profile": {
       "additionalProperties": false,
       "properties": {
+        "appendix_items": {
+          "default": 0,
+          "title": "Appendix Items",
+          "type": "integer"
+        },
+        "digest_tokens": {
+          "default": 0,
+          "title": "Digest Tokens",
+          "type": "integer"
+        },
+        "light": {
+          "default": false,
+          "title": "Light",
+          "type": "boolean"
+        },
         "load_class": {
           "enum": [
             "focused",
@@ -867,6 +997,18 @@
         "rounds": {
           "default": 0,
           "title": "Rounds",
+          "type": "integer"
+        },
+        "signals": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Signals",
+          "type": "array"
+        },
+        "store_tokens": {
+          "default": 0,
+          "title": "Store Tokens",
           "type": "integer"
         }
       },
@@ -1011,7 +1153,18 @@
     },
     "Slice": {
       "additionalProperties": false,
+      "description": "Every main-store item of the lane (ordered by code, the model's order first), split into chunks of at most\n``chunk_items``; the digest is an index and sits outside ``store_tokens``.",
       "properties": {
+        "chunks": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Chunks",
+          "type": "array"
+        },
         "digest": {
           "default": "",
           "title": "Digest",
@@ -1164,6 +1317,30 @@
         }
       },
       "title": "Suggestions",
+      "type": "object"
+    },
+    "Validation": {
+      "additionalProperties": false,
+      "properties": {
+        "by_rule": {
+          "additionalProperties": {
+            "type": "integer"
+          },
+          "title": "By Rule",
+          "type": "object"
+        },
+        "errors": {
+          "default": 0,
+          "title": "Errors",
+          "type": "integer"
+        },
+        "warnings": {
+          "default": 0,
+          "title": "Warnings",
+          "type": "integer"
+        }
+      },
+      "title": "Validation",
       "type": "object"
     },
     "competitor__FeatureLevel": {
@@ -1482,6 +1659,16 @@
           "title": "States",
           "type": "array"
         },
+        "transition_variants": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Transition Variants",
+          "type": "array"
+        },
         "transitions": {
           "items": {
             "$ref": "#/$defs/lifecycle__Transition"
@@ -1764,6 +1951,16 @@
         "screen_key": {
           "title": "Screen Key",
           "type": "string"
+        },
+        "section_variants": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Section Variants",
+          "type": "array"
         },
         "sections": {
           "items": {
@@ -2056,6 +2253,16 @@
           "default": null,
           "title": "Role"
         },
+        "step_variants": {
+          "items": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Step Variants",
+          "type": "array"
+        },
         "steps": {
           "items": {
             "type": "string"
@@ -2082,12 +2289,28 @@
           "type": "string"
         },
         "required": {
-          "title": "Required",
-          "type": "boolean"
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Required"
         },
         "type": {
-          "title": "Type",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Type"
         },
         "validation": {
           "anyOf": [
@@ -2115,9 +2338,7 @@
         }
       },
       "required": [
-        "name",
-        "type",
-        "required"
+        "name"
       ],
       "title": "FieldSpec",
       "type": "object"
@@ -2198,10 +2419,23 @@
       "type": "object"
     }
   },
-  "$id": "research.v4",
+  "$id": "research.v5",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "additionalProperties": false,
   "properties": {
+    "bn_coverage": {
+      "additionalProperties": {
+        "enum": [
+          "researched",
+          "single_source_only",
+          "defaulted_only",
+          "gap"
+        ],
+        "type": "string"
+      },
+      "title": "Bn Coverage",
+      "type": "object"
+    },
     "brief_hash": {
       "title": "Brief Hash",
       "type": "string"
@@ -2293,6 +2527,13 @@
     "dropped": {
       "$ref": "#/$defs/Dropped"
     },
+    "flagged": {
+      "additionalProperties": {
+        "type": "integer"
+      },
+      "title": "Flagged",
+      "type": "object"
+    },
     "gaps": {
       "items": {
         "$ref": "#/$defs/Gap"
@@ -2312,6 +2553,13 @@
       "title": "Items",
       "type": "array"
     },
+    "lane_quality": {
+      "additionalProperties": {
+        "$ref": "#/$defs/LaneQuality"
+      },
+      "title": "Lane Quality",
+      "type": "object"
+    },
     "norms": {
       "items": {
         "$ref": "#/$defs/Norm"
@@ -2330,7 +2578,7 @@
       "$ref": "#/$defs/RunInfo"
     },
     "schema": {
-      "default": "research.v4",
+      "default": "research.v5",
       "title": "Schema",
       "type": "string"
     },
@@ -2353,6 +2601,9 @@
     },
     "suggestions": {
       "$ref": "#/$defs/Suggestions"
+    },
+    "validation": {
+      "$ref": "#/$defs/Validation"
     }
   },
   "required": [

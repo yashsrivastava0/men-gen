@@ -1,6 +1,6 @@
 """JSON Schemas of the two public contracts, generated from the package models.
 
-``research.v4``: the item's ``data`` is validated PER KIND (an ``if kind == X then data matches X's payload`` block per
+``research.v5``: the item's ``data`` is validated PER KIND (an ``if kind == X then data matches X's payload`` block per
 kind, draft 2020-12), so a consumer (or RV-01) can check ``data`` against the kind it claims. ``research.event.v1``:
 the event with its closed list of types. The committed files in ``agents/research/contracts/`` must equal what this
 module generates (a test keeps them in sync): regenerate with ``uv run python -m mde_research_agent.schemas --write``.
@@ -18,11 +18,11 @@ from mde_research_agent.domain.events import Event
 from mde_research_agent.domain.research import ResearchOutput
 
 CONTRACTS_DIR = Path(__file__).resolve().parents[2] / "contracts"
-RESEARCH_FILE = "research.v4.schema.json"
+RESEARCH_FILE = "research.v5.schema.json"
 EVENT_FILE = "research.event.v1.schema.json"
 
 
-def research_v4_schema() -> dict[str, Any]:
+def research_v5_schema() -> dict[str, Any]:
     schema = ResearchOutput.model_json_schema(by_alias=True, mode="serialization")
     defs = schema.setdefault("$defs", {})
     clauses: list[dict[str, Any]] = []
@@ -41,7 +41,7 @@ def research_v4_schema() -> dict[str, Any]:
     item["allOf"] = clauses
     item["properties"]["kind"] = {"type": "string", "enum": sorted(PAYLOADS), "title": "Kind"}
     schema["$schema"] = "https://json-schema.org/draft/2020-12/schema"
-    schema["$id"] = "research.v4"
+    schema["$id"] = "research.v5"
     return schema
 
 
@@ -74,7 +74,7 @@ def dumps(schema: dict[str, Any]) -> str:
 def write_all(directory: Path = CONTRACTS_DIR) -> list[Path]:
     directory.mkdir(parents=True, exist_ok=True)
     out = []
-    for name, schema in ((RESEARCH_FILE, research_v4_schema()), (EVENT_FILE, event_schema())):
+    for name, schema in ((RESEARCH_FILE, research_v5_schema()), (EVENT_FILE, event_schema())):
         path = directory / name
         path.write_text(dumps(schema), encoding="utf-8")
         out.append(path)
@@ -89,7 +89,7 @@ def main(argv: list[str] | None = None) -> int:
         return 0
     drift = [
         name
-        for name, schema in ((RESEARCH_FILE, research_v4_schema()), (EVENT_FILE, event_schema()))
+        for name, schema in ((RESEARCH_FILE, research_v5_schema()), (EVENT_FILE, event_schema()))
         if not (CONTRACTS_DIR / name).exists()
         or (CONTRACTS_DIR / name).read_text(encoding="utf-8") != dumps(schema)
     ]
