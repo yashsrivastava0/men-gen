@@ -116,3 +116,9 @@ def test_an_integer_matches_itself_in_every_grouping(n: int) -> None:
 def test_figures_never_raise_and_are_deterministic(text: str) -> None:
     assert figures(text) == figures(text)
     assert figures(text, claim_side=True) == figures(text, claim_side=True)
+
+
+def test_a_number_longer_than_the_decimal_precision_does_not_raise() -> None:
+    """Found by the property test above on 2026-11-11: quantize() raised for 29 digits, which would have crashed a topic."""
+    for digits in (28, 29, 40, 400):
+        assert figures("1" + "0" * digits)

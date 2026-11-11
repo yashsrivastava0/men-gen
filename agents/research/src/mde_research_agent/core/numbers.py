@@ -98,7 +98,8 @@ def _canon(num: str) -> str | None:
     except InvalidOperation:
         return None
     if d == d.to_integral():
-        return format(d.quantize(Decimal(1)), "f")
+        # not quantize(): it raises InvalidOperation for a number longer than the context precision (29 digits)
+        return format(d.to_integral_value(), "f")
     return format(d.normalize(), "f")
 
 
