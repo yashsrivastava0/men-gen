@@ -13,12 +13,16 @@ apps/web/
       shell.css                 the shell's own rules (switcher, mount points, load error)
       components.js             window.MobigenUI: store, $, h, appendChild, clear, randomId, toast
       registry.js               window.MobigenRegistry: one entry per agent
-      shell.js                  fills the switcher, mounts the chosen agent
+      shell.js                  fills the switcher, mounts the chosen agent, loads the entry's extras
     agents/compass/
       compass.html             the Compass screens as an HTML fragment
       interview.js             window.compassInterview: the pure, DOM-free helpers of the interview screens
       compass.js               the Compass behaviour (starts with the /*CONTRACT {...} CONTRACT*/ block)
       compass.css              the Compass styles
+    agents/research/
+      research_view.js         window.researchView: the pure, DOM-free helpers (SSE parser, event and snapshot folding, plain-words labels, URL safety)
+      research.js              window.MobigenResearch: the Research screens (progress, findings, saved-export picker) and their network code
+      research.css             the Research styles (tokens only)
   app/                          reserved for the later React app (.gitkeep)
   tests/                        UI smoke tests (pytest, offline)
 ```
@@ -36,6 +40,7 @@ A registry entry:
 | `base` | the agent's API prefix (`/v1/compass`); the screens reach the agent only through it |
 | `markup`, `script`, `style` | the three files of the screen set, relative to `console/` |
 | `helper` | optional: a DOM-free helper script the shell loads just before `script` (Compass: `agents/compass/interview.js`) |
+| `extras` | optional: more scripts and stylesheets the shell loads, in the order listed, before `script` (Compass lists the Research files, so its screen finds `window.MobigenResearch` at boot; D-131) |
 
 Adding an agent is a new `agents/<id>/` folder with those three files plus one registry entry. A second agent is not built yet.
 
@@ -66,6 +71,18 @@ The AI-planned interview (build prompt 02, section 2.7) is all front end: the ag
 | Structure actions | `structAct()`, `sendStructureAction()`, `removeControl()`, `renameItem()`, `.sform`, `.sconfirm` | per area: Accept, Rename (a plain `brief_edit` of `<section>.<id>.name`), Redraft with the person's own words, Remove; per screen, journey and data kind: Rename or Remove; "Plan as Small / Medium / Enterprise" redrafts from the same answers. Remove and Plan as ask first (a live alert); one `structure_action` event is one change, so Undo restores it whole. Module rows of the Brief panel have Accept and "See the screens" |
 | One-tap notices | `.notice-action` | a `notice` with `command` and `command_label` (the size suggestion) shows a button that sends that command once; the tier is never switched by itself |
 | Developer & Diagnostics Drawer | `#dev-drawer`, `#btn-dev`, `#btn-copy-claude` | Developer tools with real-time HTTP network flight recorder (`state.networkTrace`), SSE event timeline (`state.devEvents`), raw state inspector, and LLM calls log. Includes a 1-click "Copy for Claude Code" action that exports a prompt-ready markdown report with environment state, last error details, recent API calls, and recent SSE events for instant debugging by Claude Code or Codex. |
+
+## The Research screens
+
+The Research agent (port 8120) has no entry of its own: its screens live in the Compass tab set, because Research starts the moment Gate 1 passes. `compass.js` hands `window.MobigenResearch` the sign-in headers, a way to read the approved export and the tab to draw in; the run, its progress and its findings are `research.js`'s business.
+
+| Screen | When | What |
+| --- | --- | --- |
+| Researching your idea | after Gate 1, or a saved export is loaded | the plan (including what we already know), a live feed, coverage, counters, elapsed and time left, Skip research, Stop this topic; reconnects with `Last-Event-ID` and repairs a gap from the snapshot |
+| What we found | when the run ends (done, partial or skipped) | by lane, by topic, what is usual, ideas (off by default), please confirm, gaps, conflicts; reject an item; download `research.json`; raw JSON |
+| Load a saved Compass export | start screen | pick an approved export file; it runs on a page of its own with a Back button |
+
+Settings has a "Research service address" (default `http://127.0.0.1:8120`). Another address also needs `MDE_RESEARCH_ORIGIN` on the Compass server, because the Compass CSP `connect-src` names the allowed Research origins (D-129; space or comma separated; only plain `http(s)://host[:port]`). Runs are remembered per browser (newest 12) so a reload re-attaches without a second POST. Text is set with `textContent` only and only http(s) links are made clickable. For UI work without the real server, `apps/web/tests/fake_research_server.py` plays the documented contract (`--scenario complete|partial|fail|interrupted`, `--speed 0` for instant, `--drop-stream-after N`, `--gap-at N`).
 
 ## Guide for Adding Future Agent Static Frontends
 

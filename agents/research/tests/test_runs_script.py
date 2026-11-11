@@ -24,6 +24,16 @@ def test_preflight_still_refuses_with_only_the_mode_set() -> None:
     assert not any("model mode" in p for p in problems)
 
 
+def test_the_bakeoff_refuses_before_any_model_call_without_the_switches(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    from mde_research_agent import live_bakeoff as bakeoff
+
+    assert bakeoff.main(["--queries", "4"]) == 2
+    err = capsys.readouterr().err
+    assert "cannot run the bake-off" in err and "ALLOW_LIVE_LLM" in err
+
+
 def test_the_forbid_switch_is_honoured() -> None:
     problems = runs.preflight_live(
         {"LLM_MODE": "live", "ALLOW_LIVE_LLM": "1", "MDE_FORBID_LIVE": "1"}

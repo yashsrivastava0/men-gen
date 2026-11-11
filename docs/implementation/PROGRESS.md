@@ -181,3 +181,19 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] S9. Scenarios SB-ST-01 to 04 (+ `structure` expectation and policy forwarding), batch H (`live_structure`, three replays), live program (D-123: ~USD 0.21), docs; final suite below
 - [x] Browser test of the three tiers and the three research inputs in `docs/compass/research-inputs/` (D-124): found and fixed the list-overwrite, role and app, closing-priority, geo and history-nesting defects; Thorough input to be re-recorded with the fixed code (needs the owner's live server)
 
+
+## Research agent (build prompt 05; started 2026-11-11; branch `feat/research-agent`; safe-point tag `pre/research-20261111-1206`; ADR 0018; decisions D-125 to D-131; no push, no merge into `main`)
+
+- [x] Baseline, design docs copied, guard hook uses `python3` and recognises the Research live scripts (f50249c, 1573ae9, 958e346)
+- [x] Package `agents/research` registered (root pyproject, import-linter contract `research-agent-isolated`, justfile) and fixtures extracted from the three exports (3178c31, 39c4db9)
+- [x] Pure cores, quotes, catalog and data files, intake, ports and adapters, provider facts (bf031b7 to 340d11e)
+- [x] Planner, six model calls with runner and test gateway, engine, validators RV-01..17, schemas (3cdc44e to 586e6c3)
+- [x] Run service, HTTP and SSE API, stores (memory, PostgreSQL), CLI, synthetic Briefs, search cache (f9afc10, 9c129b0)
+- [x] Scenario RS-01..34, validator, determinism, generality, contract and CLI suites (aebe744)
+- [x] Metrics, cassette recording and replay, bake-off judge, bake-off and batch-run scripts (5bc837f); quote fold fix and distinct platform labels (a075b49)
+- [x] Test console: Research screens, picker, CSP origin (7d209c6, 14d2340); checked in real Chrome against the fake and the real Research dev server
+- [x] Live-spend ceiling raised to 8.00 (a9ed1e9, D-125); event and API refinements (8e65604)
+- [x] Docs: README, package page, API page, runbook, ADR 0018, web README, provider facts
+- [ ] B1 live bake-off (owner starts it, `docs/runbooks/research-agent.md`)
+- [ ] B2 live runs on the three examples and a synthetic Brief, then read the outputs as the Spec lanes would and iterate (prompts, slot schemas, query strategy, assembly)
+- [ ] Final report (prompt section 12)

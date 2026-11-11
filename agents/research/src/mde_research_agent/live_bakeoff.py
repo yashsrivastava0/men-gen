@@ -412,6 +412,11 @@ def estimate(probes: list[Probe], providers: list[str]) -> dict[str, Any]:
 
 async def run(args: argparse.Namespace) -> int:
     cat = load_catalog()
+    if not (args.dry_run or args.mock):  # refuse before any model call is made
+        early = preflight_live()
+        if early:
+            sys.stderr.write("cannot run the bake-off: " + "; ".join(early) + "\n")
+            return 2
     proposals = None if args.dry_run else await infer_countries(args.exports, args.mock)
     probes = build_probes(args.exports, args.queries, proposals)
     providers = [p.strip() for p in args.providers.split(",") if p.strip()]

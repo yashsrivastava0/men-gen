@@ -24,6 +24,7 @@ Start with [../CLAUDE.md](../CLAUDE.md) (commands, hard rules) and [../README.md
 - [specs/frontend-consumption.md](specs/frontend-consumption.md): how the frontend engine reads it (build sequence, slices, `raise_decision`)
 - [specs/events-and-api.md](specs/events-and-api.md): the Context API: auth, routes, SSE, errors, event catalog
 - [api/compass.md](api/compass.md): the Compass HTTP API (`/v1/compass`): auth, events, Brief, Gate 1, SSE replay, errors, curl walk-through
+- [api/research-agent.md](api/research-agent.md): the Research agent HTTP API (`/v1/research`): runs, snapshot, resumable SSE events, skip, per-topic cancel, review, reject, errors
 - [specs/question-cards.md](specs/question-cards.md): cards, the `ask_if` language, the slot vocabulary
 - [specs/policy-format.md](specs/policy-format.md): policies (Guided, Enterprise, regulated)
 - [specs/domain-pack-format.md](specs/domain-pack-format.md): Domain Packs, recipes, themes, the Stack Profile
@@ -37,7 +38,7 @@ Start with [../CLAUDE.md](../CLAUDE.md) (commands, hard rules) and [../README.md
 
 Libraries: [core](packages/core.md), [contracts](packages/contracts.md), [llm-gateway](packages/llm-gateway.md), [prompts](packages/prompts.md), [content](packages/content.md), [persistence](packages/persistence.md), [spec-loader](packages/spec-loader.md), [discovery](packages/discovery.md), [research](packages/research.md), [spec-builder](packages/spec-builder.md), [flow](packages/flow.md).
 
-Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gateway-api.md), [cli](packages/cli.md), [compass](packages/compass.md) (the Compass agent: Brief, calls, catalog, API, test UI; also [agents/compass/README.md](../agents/compass/README.md)).
+Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gateway-api.md), [cli](packages/cli.md), [compass](packages/compass.md) (the Compass agent: Brief, calls, catalog, API, test UI; also [agents/compass/README.md](../agents/compass/README.md)), [research-agent](packages/research-agent.md) (the Research agent `mde_research_agent`: plan, search, verified quotes, `research.json`; also [agents/research/README.md](../agents/research/README.md)). The older [research](packages/research.md) package is untouched.
 
 ## ADRs
 
@@ -59,6 +60,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [0015 AI-planned interview, Interview Memory and the domain_facts section](adr/0015-ai-planned-interview-and-interview-memory.md)
 - [0016 Compass v2 interview mechanics: tiers with hard caps, closing question, submit-once](adr/0016-compass-v2-interview-mechanics.md)
 - [0017 The Brief carries a user-approved structure (modules, screens, flows, entities); tiers map to size bands](adr/0017-brief-structure-sections-and-size-bands.md)
+- [0018 The Research agent: orchestrator-worker, code-verified quotes, data-defined ceilings](adr/0018-research-agent-architecture.md)
 
 ## Evals
 
@@ -70,6 +72,8 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [runbooks/local-dev.md](runbooks/local-dev.md): run it on Windows (private Postgres on 54329, `just` targets)
 - [runbooks/live-llm-budget.md](runbooks/live-llm-budget.md): USD 6.00 cap, tripwires, the second key, the ledger, the lead-only batch procedure
 - [runbooks/troubleshooting.md](runbooks/troubleshooting.md): real failure modes: database, tests, event loop, ledger, the live-call hook, worktrees
+- [runbooks/research-agent.md](runbooks/research-agent.md): run, test and (owner only) run live the Research agent: offline commands, live prerequisites, the bake-off and batch runs, reading a run, troubleshooting
+- [research-agent/provider-facts.md](research-agent/provider-facts.md): Tavily and Serper parameters, checked against the official documentation, with URLs and dates
 - [runbooks/compass.md](runbooks/compass.md): run, migrate and test Compass (port 8110, private Postgres, `MDE_PG_BIN` on the Mac), live prerequisites, troubleshooting
 
 ## API (generated)
