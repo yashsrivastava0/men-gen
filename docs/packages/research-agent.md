@@ -49,3 +49,7 @@ RV-01..RV-17 (RV-11 reserved) in `validators/registry.py`, one pass test and one
 - **Reading a result:** `review.py`, `report.py`, `metrics.py`, `spotcheck.py`, endpoints in `api/results_routes.py`.
 - **Operations:** `adapters/search/failover.py`, `tools.py` (bake-off), `eval/` (planted errors, consumer probe).
 - Configuration, data files and the runbook: `agents/research/README.md`, `docs/runbooks/research-agent.md`.
+
+## Page budget, region scope and number repair (2026-11-11)
+
+A page is one the run READ: an unreadable page is refunded, a spare replaces it, and a run that runs out of pages is `partial` with a `pages_exhausted` warning (D-144). Each topic template has a region scope (`city`, `country`, `none`) in `data/jobs/*.yaml` (D-146). Double-encoded page text is repaired exactly (D-145). An unverified figure is dropped, not the item, for the kinds in `data/figure_drop.yaml` only (D-149). `python -m mde_research_agent.compare OLD NEW` is the quality gate for any discovery change (D-143).

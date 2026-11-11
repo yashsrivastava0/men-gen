@@ -185,7 +185,7 @@ Findings that changed the design: the load must come from content, not from the 
 | Research load (with the 3-point margin) | below 25 (with the margin: below 22) | 25 to 60 (22 to 56) | above 60 (57 and up) |
 | Real inputs | Quick yoga 17 | Standard produce 27 | Thorough freight 83 |
 | Searches, soft / hard | 20 / 32 | 40 / 64 | 80 / 120 |
-| Pages read, soft / hard | 24 / 40 | 60 / 96 | 140 / 210 |
+| Pages read, soft / hard (a refused page is refunded; D-144) | 32 / 64 | 60 / 96 | 140 / 210 |
 | Time, soft / hard | 180 s / 330 s | 360 s / 600 s | 600 s / 960 s |
 | Topics, soft (hard is not used) | 10 (14) | 16 (22) | 26 (34) |
 | Rounds, soft / hard | 2 / 3 | 3 / 3 | 3 / 4 |

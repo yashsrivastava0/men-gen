@@ -208,3 +208,14 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [ ] Front end stage 2 (results, spot-check, tools) and its browser verification
 - [ ] Live: the owner runs the checklist in `docs/runbooks/research-agent.md` (nothing has run live; the live smoke needs `LLM_MODE=live`)
 - [x] Live mode is one switch: the extra live permission variable and its shell hook are removed everywhere (D-140) (9d91e6a)
+
+## Research yield and cost (second opinion; branch `feat/research-yield`, tag `pre/research-yield-*`; decisions D-142..D-153; no push)
+
+- [x] Second opinion document and order of work (d3002f7)
+- [x] Quality gate tool `mde_research_agent.compare` (fe6bbd5)
+- [x] Page budget: refunds, spares, walled hosts, no blind rounds, ceilings from data (426beb4)
+- [x] Mojibake repair and Latin-1 mislabels (f0e538c); 29-digit number crash
+- [x] Region scope per template, entity queries, seeds, follow-up entities (9378e53); exact-match quoting (cad1a50)
+- [x] Relaxed retry and provider label (11bf084); figure drop (66da463); nullable fields (b4fb0df, 7040314)
+- [x] RV-21, checker paths, provider setting text; live runs A..F and the provider decision (D-152)
+- [ ] Medium and Big live runs with the new code (owner; see the report)

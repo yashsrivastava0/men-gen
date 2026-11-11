@@ -76,6 +76,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [research-agent/reports/research-agent-build-report-2026-11-11.md](research-agent/reports/research-agent-build-report-2026-11-11.md): the Research agent build report: what it is, how it works, what was built against the plan, tests, limits, decisions, next steps (written before the live runs)
 - [research-agent/provider-facts.md](research-agent/provider-facts.md): Tavily and Serper parameters, checked against the official documentation, with URLs and dates
 - [research-agent/second-opinion-cost-and-yield.md](research-agent/second-opinion-cost-and-yield.md): the second opinion on the Small run's cost and yield: which findings hold, what was missed (page ceiling, page mojibake), the order of work
+- [research-agent/yield-and-cost-report-2026-11-11.md](research-agent/yield-and-cost-report-2026-11-11.md): the owner's note: what changed in yield and cost, live results before and after, the gate, the provider decision, what still needs Medium or Big
 - [runbooks/compass.md](runbooks/compass.md): run, migrate and test Compass (port 8110, private Postgres, `MDE_PG_BIN` on the Mac), live prerequisites, troubleshooting
 
 ## API (generated)
