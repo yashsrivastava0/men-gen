@@ -499,7 +499,7 @@ export function mount(root, ctx, params) {
   let showAllFacts = false;
   function renderFacts() {
     const all = state.facts.slice().reverse();
-    const sig = all.map((f) => f.key + f.status).join("|") + showAllFacts;
+    const sig = all.map((f) => f.key + f.status + (f.domain || "")).join("|") + showAllFacts;
     if (sig === factSig) return;
     factSig = sig;
     if (!all.length) {

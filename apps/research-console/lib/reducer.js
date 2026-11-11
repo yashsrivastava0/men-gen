@@ -203,6 +203,11 @@ export function snapshotFacts(list) {
     reloaded page shows what the server knows now and continues from `last_seq`. */
 export function applySnapshot(snap, nowMs) {
   const state = emptyState();
+  if (Array.isArray(snap.facts)) {
+    // the snapshot's list is the whole list: a reloaded page shows every finding, not just the last events
+    state.facts = snapshotFacts(snap.facts);
+    state.factsRejected = Math.max(state.factsRejected, state.facts.filter((f) => f.status === "rejected").length);
+  }
   for (const ev of snap.feed || []) applyEvent(state, ev, nowMs);
   state.received = 0;
   state.runId = snap.run_id || state.runId;
@@ -229,11 +234,6 @@ export function applySnapshot(snap, nowMs) {
     state.entities = names;
   }
   if (num(snap.slots_required) !== null) state.slotsRequired = snap.slots_required;
-  if (Array.isArray(snap.facts)) {
-    // the snapshot's list is the whole list: a reloaded page shows every finding, not just the last events
-    state.facts = snapshotFacts(snap.facts);
-    state.factsRejected = Math.max(state.factsRejected, state.facts.filter((f) => f.status === "rejected").length);
-  }
   state.lastSeq = num(snap.last_seq) !== null ? snap.last_seq : state.lastSeq;
   if (isTerminalStatus(snap.status) && snap.status !== "complete" && !state.failure && (snap.status === "failed" || snap.status === "interrupted" || snap.status === "cancelled")) {
     state.failure = { reason: snap.reason || "", code: snap.status };

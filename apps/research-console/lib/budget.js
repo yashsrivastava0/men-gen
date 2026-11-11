@@ -35,6 +35,12 @@ export function startBlock(budget, preflight) {
   }
   if (preflight && preflight.ready === false) {
     const bad = (preflight.checks || []).filter((c) => !c.ok && !/^key:/.test(c.id)).map((c) => c.label);
+    if (!bad.length) {
+      const keys = (preflight.checks || []).filter((c) => /^key:/.test(c.id));
+      if (keys.length && keys.every((c) => !c.ok)) {
+        return { ok: false, reason: "Not ready: TAVILY_API_KEY or SERPER_API_KEY." };
+      }
+    }
     return { ok: false, reason: "Not ready: " + (bad.length ? bad.join(", ") : "see the Preflight check at the top") + "." };
   }
   return { ok: true, reason: "" };
