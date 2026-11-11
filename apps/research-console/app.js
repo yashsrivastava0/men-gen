@@ -159,7 +159,7 @@ const VIEWS = {
   budget: { title: "Budget", nav: "budget", load: () => import("./views/budget.js") },
   guide: { title: "Guide", nav: "guide", load: () => import("./views/guide.js") },
   spotcheck: { title: "Spot-check", nav: "spotcheck", load: () => import("./views/spotcheck.js") },
-  tools: { title: "Tools", nav: "", load: () => import("./views/soon.js") },
+  tools: { title: "Tools", nav: "tools", load: () => import("./views/tools.js") },
 };
 function parseRoute(hash) {
   const m = /^#\/([a-z]+)(?:\/([A-Za-z0-9_-]{1,80}))?\/?$/.exec(hash || "");

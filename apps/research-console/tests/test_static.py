@@ -49,6 +49,7 @@ REQUIRED = [
     "views/results_report.js",
     "views/results_sources.js",
     "views/spotcheck.js",
+    "views/tools.js",
 ]
 
 
