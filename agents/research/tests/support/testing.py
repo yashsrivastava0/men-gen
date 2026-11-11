@@ -183,6 +183,7 @@ async def run_engine(
     world: FakeWorld | None = None,
     overrides: dict[str, Handler] | None = None,
     ceilings: dict[str, dict[str, int]] | None = None,
+    store_tokens: int | None = None,
     clock: FakeClock | None = None,
     skip_after_searches: int | None = None,
     use_model: bool = True,
@@ -197,6 +198,10 @@ async def run_engine(
     """Plan, run, assemble and validate one run in process (no HTTP, no store) over fakes."""
     cat = load_catalog()
     inp = read_export(export, cat)
+    if store_tokens is not None:  # a tiny store limit makes the appendix appear on small runs
+        klass = inp.load.load_class if inp.load else "standard"
+        patched = getattr(cat.ceilings, klass).model_copy(update={"store_tokens": store_tokens})
+        cat = cat.model_copy(update={"ceilings": cat.ceilings.model_copy(update={klass: patched})})
     the_clock = clock or FakeClock()
     the_world = world or FakeWorld(provider_content_every=3, clock=the_clock)
     if the_world.clock is None:

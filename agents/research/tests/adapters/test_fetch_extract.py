@@ -471,3 +471,39 @@ def test_extract_html_never_raises_on_nasty_markup(html: str) -> None:
     got = extract_html(html)
     got.text.encode("utf-8")
     assert len(got.text) <= extract.DEFAULT_MAX_CHARS
+
+
+# --- RC-3: pages whose text sits in tables and lists; soft 404 and walls that come back as content ----------------------
+
+PRICING = """<html><head><title>Pricing</title></head><body><main>
+<h1>Pricing</h1><p>Our plans are simple and transparent for every kind of merchant using the platform today.</p>
+<table><tr><th>Plan</th><th>Fee</th><th>Payout</th></tr>
+<tr><td>Standard</td><td>2.5% per transaction</td><td>Rs. 3 per transfer</td></tr>
+<tr><td>Premium</td><td>1.9% per transaction</td><td>Free</td></tr></table>
+<ul><li>Settlement in 2 business days</li><li>No setup fee for new merchants</li></ul>
+</main></body></html>"""
+
+
+def test_table_cells_and_list_items_are_in_the_text() -> None:
+    text = extract_html(PRICING).text
+    for needle in ("2.5% per transaction", "Rs. 3 per transfer", "1.9% per transaction", "Settlement in 2 business days", "No setup fee"):
+        assert needle in text, needle
+
+
+@pytest.mark.parametrize(
+    ("title", "body", "label"),
+    [
+        ("Page not found", "x " * 400, "not_found"),
+        ("Acme", "404 Not Found\n" + "Sorry. " * 200, "not_found"),
+        ("Acme help", "The page you are looking for could not be located. " + "More text. " * 120, "not_found"),
+        ("Just a moment...", "Checking your browser before accessing the site. " + "x " * 400, "blocked"),
+        ("Article", "Subscribe to continue reading this article. " + "Lorem ipsum. " * 150, "paywall"),
+        ("Sign in", "Welcome back. " * 100, "paywall"),
+        ("Payments guide", "A long real article about payments. " * 300 + " it also mentions a captcha once.", None),
+        ("Fees", "The fee is 2.5% per transaction and settlement takes 2 days. " * 40, None),
+    ],
+)
+def test_soft_404_and_walls_that_came_back_as_content_are_labelled(title: str, body: str, label: str | None) -> None:
+    from mde_research_agent.adapters.fetch.extract import detect_soft_wall
+
+    assert detect_soft_wall(title, body) == label

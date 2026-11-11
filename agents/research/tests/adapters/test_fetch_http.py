@@ -709,7 +709,7 @@ async def test_a_bot_wall_or_login_wall_is_labelled_not_bypassed(
 async def test_a_long_article_that_mentions_captchas_is_still_read(
     build: Callable[..., HttpFetcher],
 ) -> None:
-    paragraph = "Websites use a captcha or a security check to tell people from scripts. " * 6
+    paragraph = "Websites use a captcha or a security check to tell people from scripts. " * 120
     html = f"<html><head><title>Access denied to bots</title></head><body><article><p>{paragraph}</p></article></body></html>"
     page = await build(Web({URL: reply(html)})).fetch(URL)
     assert page.ok and "captcha" in page.text

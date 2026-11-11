@@ -315,7 +315,7 @@ export function feedRow(ev) {
   } else if (ev.type === "fact.rejected") {
     quiet = true;
   } else if (ev.type === "entity.discovered") {
-    extra = [d.name, d.kind ? "(" + humanize(d.kind) + ")" : ""].filter(Boolean).join(" ");
+    extra = d.kind ? "(" + humanize(d.kind) + ")" : "";
   } else if (ev.type === "round.completed") {
     extra = num(d.slots_required) ? d.slots_filled + " of " + d.slots_required + " details found" : "";
   } else if (ev.type === "warning") {

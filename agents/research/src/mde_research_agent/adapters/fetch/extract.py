@@ -37,7 +37,7 @@ PDF_TYPES: Final = frozenset({"application/pdf", "application/x-pdf"})
 SUPPORTED_TYPES: Final = HTML_TYPES | TEXT_TYPES | PDF_TYPES
 
 Kind = Literal["html", "text", "pdf"]
-WallKind = Literal["blocked", "paywall"]
+WallKind = Literal["blocked", "paywall", "not_found"]
 
 
 @dataclass(frozen=True)
@@ -422,5 +422,49 @@ def detect_wall(title: str, text: str, final_url: str = "") -> WallKind | None:
     if any(phrase in head for phrase in _PAYWALL_PHRASES):
         return "paywall"
     if title.strip().lower().startswith(_LOGIN_TITLES) or _LOGIN_PATHS.search(final_url):
+        return "paywall"
+    return None
+
+
+_NOT_FOUND_PHRASES: Final = (
+    "page not found", "404 not found", "error 404", "404 error", "404 - ", "not found (404)",
+    "this page doesn't exist", "this page does not exist", "this page isn't available",
+    "this page is no longer available", "no longer available", "we couldn't find that page",
+    "we could not find that page", "the page you requested", "the page you are looking for",
+    "the requested url was not found", "nothing was found",
+)  # fmt: skip
+_SOFT_HEAD_CHARS: Final = 2048
+_SHORT_PAGE_CHARS: Final = 6000
+_FIRST_LINE_CHARS: Final = 160
+
+
+def _first_line(text: str) -> str:
+    for line in text.splitlines():
+        if line.strip():
+            return line.strip().lower()[:_FIRST_LINE_CHARS]
+    return ""
+
+
+def detect_soft_wall(title: str, text: str, final_url: str = "") -> WallKind | None:
+    """A page that CAME BACK as content but is really an error or a wall: a soft 404, a bot check, a login or
+    subscription wall. Looked for in the title, the first heading line and the first 2 KB (the last only on a short
+    page, so a long article that merely mentions a captcha is kept). It names the reason for a page that is dropped;
+    it never helps to get past a wall."""
+    t = title.strip().lower()
+    first = _first_line(text)
+    head = text[:_SOFT_HEAD_CHARS].lower()
+    short = len(text) < _SHORT_PAGE_CHARS
+    for kind, phrases in (
+        ("not_found", _NOT_FOUND_PHRASES),
+        ("blocked", _BLOCK_PHRASES),
+        ("paywall", _PAYWALL_PHRASES),
+    ):
+        for phrase in phrases:
+            # an error title or heading names a missing page even when the page is long; a bot check or a login
+            # wall is only believed on a SHORT page (a long article titled "Access denied to bots" is an article)
+            by_name = t.startswith(phrase) or phrase in t or first.startswith(phrase)
+            if (kind == "not_found" and by_name) or (short and (by_name or phrase in head)):
+                return kind  # type: ignore[return-value]
+    if t.startswith(_LOGIN_TITLES) and short or (_LOGIN_PATHS.search(final_url) and short):
         return "paywall"
     return None
