@@ -4,10 +4,15 @@
   request goes to the secondary at once; the engine learns of it through ``drain_notes`` and shows a ``warning`` event.
   When BOTH fail, the secondary's error is raised and the run's own handling applies (``provider_down``, a ``partial``).
   A request the provider rejected as malformed (``bad_request``) is not retried elsewhere: it would fail the same way.
-* **Second opinion:** when the primary returns fewer than ``thin_below`` results the secondary is asked too and the hits are
-  merged (primary first, no duplicate URL), but only for at most ``opinion_share`` of all searches (15%), so the cost stays
-  bounded and the choice of primary (the bake-off) still decides the run.
-The merged result carries the cost of both calls. This adapter holds no secret: both providers are built elsewhere.
+* **Thin results, in this order:** when the primary returns fewer than ``thin_below`` results (1) the same query is retried
+  ONCE on the primary with every narrowing removed (no exact match, no recency window, no domain restriction, quotes
+  dropped), because an over-constrained request is the usual reason for an empty answer; (2) only if it is still thin is
+  the secondary asked (a second opinion). Hits are merged (primary first, no duplicate URL). Both steps share one budget of
+  at most ``opinion_share`` of all searches (15%), so the cost stays bounded and the choice of primary (the bake-off) still
+  decides the run. A request with nothing to relax goes straight to the second opinion.
+The merged result carries the cost of every call it made and names every provider that was paid (``tavily+serper``), even
+when the second one added no new URL: the money was spent there. This adapter holds no secret: both providers are built
+elsewhere.
 """
 
 from __future__ import annotations
@@ -47,7 +52,10 @@ class FailoverSearch:
         self._share = opinion_share
         self._thin = thin_below
         self.calls = 0
-        self.opinions = 0
+        self.opinions = (
+            0  # thin results that got more help (a relaxed retry and/or a second opinion)
+        )
+        self.relaxed_retries = 0
         self.failovers = 0
         self._notes: list[str] = []
 
@@ -68,17 +76,52 @@ class FailoverSearch:
             return await self.secondary.search(request)  # both failing raises the secondary's error
         if len(first.hits) >= self._thin or self.opinions >= max(1, int(self._share * self.calls)):
             return first
-        try:
-            other = await self.secondary.search(request)
-        except SearchError:
-            return first  # a second opinion is a bonus: its failure changes nothing
         self.opinions += 1
-        seen = {canonical_url(h.url) for h in first.hits}
-        extra = tuple(h for h in other.hits if canonical_url(h.url) not in seen)
-        merged = replace(
-            first,
-            hits=(*first.hits, *extra),
-            cost_micros=first.cost_micros + other.cost_micros,
-            provider=f"{first.provider}+{other.provider}" if extra else first.provider,
-        )
-        return merged
+        merged = first
+        relaxed = relax(request)
+        if relaxed is not None:
+            try:
+                again = await self.primary.search(relaxed)
+            except SearchError:
+                again = None
+            if again is not None:
+                merged = _merge(merged, again, paid=self.primary.name)
+                self.relaxed_retries += 1
+                if len(merged.hits) >= self._thin:
+                    return merged
+        try:
+            other = await self.secondary.search(relaxed or request)
+        except SearchError:
+            return merged  # a second opinion is a bonus: its failure changes nothing
+        return _merge(merged, other, paid=self.secondary.name)
+
+
+def relax(request: SearchRequest) -> SearchRequest | None:
+    """The same search without its narrowing (exact match, recency window, domain restriction, quotes); None when
+    nothing would change."""
+    plain = " ".join(request.query.replace('"', " ").split())
+    loose = replace(
+        request,
+        query=plain,
+        exact=False,
+        recency_months=None,
+        domain_mode="none",
+        domains=(),
+    )
+    return None if loose == request else loose
+
+
+def _merge(first: SearchResult, other: SearchResult, *, paid: str) -> SearchResult:
+    seen = {canonical_url(h.url) for h in first.hits}
+    extra = tuple(h for h in other.hits if canonical_url(h.url) not in seen)
+    providers = (
+        list(dict.fromkeys([*first.provider.split("+"), paid]))
+        if other.cost_micros
+        else [first.provider]
+    )
+    return replace(
+        first,
+        hits=(*first.hits, *extra),
+        cost_micros=first.cost_micros + other.cost_micros,
+        provider="+".join(providers),
+    )

@@ -79,3 +79,78 @@ async def test_a_failing_second_opinion_changes_nothing() -> None:
     f = FailoverSearch(Stub("a", hits=1), Stub("b", error=SearchError("network")))
     res = await f.search(REQ)
     assert res.provider == "a" and len(res.hits) == 1 and f.drain_notes() == []
+
+
+class Picky(Stub):
+    """Returns nothing for a narrowed request (exact match, recency window, domain restriction), ``hits`` otherwise."""
+
+    async def search(self, request: SearchRequest) -> SearchResult:
+        narrowed = request.exact or request.recency_months or request.domain_mode != "none"
+        self.calls += 1
+        n = 0 if narrowed else self.hits
+        return SearchResult(
+            hits=tuple(
+                SearchHit(url=f"https://{self.name}.example/{i}-{request.query}", rank=i)
+                for i in range(n)
+            ),
+            provider=self.name,
+            cost_micros=self.price,
+        )
+
+    price = 8000
+
+
+NARROW = SearchRequest(query='"Acme" features pricing', exact=True, recency_months=24)
+
+
+async def test_a_narrowed_request_is_retried_relaxed_on_the_primary_before_any_second_opinion() -> (
+    None
+):
+    a, b = Picky("a", hits=5), Stub("b")
+    f = FailoverSearch(a, b)
+    res = await f.search(NARROW)
+    assert a.calls == 2 and b.calls == 0, "the retry rescued it, so the secondary is not paid"
+    assert len(res.hits) == 5 and res.provider == "a" and res.cost_micros == 16000
+    assert f.relaxed_retries == 1 and f.opinions == 1
+
+
+async def test_still_thin_after_the_retry_asks_the_second_opinion_with_the_relaxed_request() -> (
+    None
+):
+    seen: list[SearchRequest] = []
+
+    class Spy(Stub):
+        async def search(self, request: SearchRequest) -> SearchResult:
+            seen.append(request)
+            return await super().search(request)
+
+    a, b = Picky("a", hits=1), Spy("b", hits=4)
+    f = FailoverSearch(a, b)
+    res = await f.search(NARROW)
+    assert a.calls == 2 and b.calls == 1
+    assert seen[0].exact is False and seen[0].recency_months is None and '"' not in seen[0].query
+    assert res.provider == "a+b" and res.cost_micros == 8000 + 8000 + 1000
+
+
+async def test_a_paid_second_opinion_is_named_even_when_it_adds_no_new_url() -> None:
+    """failover.py labelled such a call 'tavily': the Small run booked 3,000 micro-USD of Serper spend under Tavily."""
+
+    class Same(Stub):
+        async def search(self, request: SearchRequest) -> SearchResult:
+            self.calls += 1
+            return SearchResult(
+                hits=(SearchHit(url="https://a.example/0-q", rank=0),),
+                provider=self.name,
+                cost_micros=1000,
+            )
+
+    f = FailoverSearch(Stub("a", hits=1), Same("b"))
+    res = await f.search(REQ)
+    assert len(res.hits) == 1 and res.provider == "a+b" and res.cost_micros == 2000
+
+
+async def test_relaxing_has_nothing_to_do_for_a_plain_request() -> None:
+    from mde_research_agent.adapters.search.failover import relax
+
+    assert relax(SearchRequest(query="plain words")) is None
+    assert relax(NARROW).query == "Acme features pricing"  # type: ignore[union-attr]
