@@ -1,34 +1,44 @@
-"""The Research HTTP API: ``create_app()`` and the router (prefix ``/v1/research``).
+"""The Research app: ``create_app()`` serves the API (``/v1/research`` and ``/api``) and the static front end on ONE origin.
 
-Dev auth mirrors Compass (``Authorization: Bearer <token>``, ``X-Tenant-Id``, ``X-User-Id``). The service is built on
-first use inside the app lifespan (so importing stays cheap), runs orphaned from a previous process are marked
-interrupted at startup, and shutdown cancels live runs. Cross-origin calls from the test console are allowed for the
-configured origins only. ``POST /runs`` may carry a whole Compass export (up to 8 MB); every other body is capped at
-256 KB.
+Dev auth: ``Authorization: Bearer <token>`` (the page gets it from ``/api/session``), ``X-Tenant-Id``, ``X-User-Id``.
+The service is composed in the app lifespan by ``compose_app`` (live only: there is no way to select a test double
+here), runs orphaned by a previous process become ``interrupted`` with a terminal event, a sweeper frees runs that
+stopped reporting, and shutdown cancels live runs. There is no CORS: a same-origin check refuses state changes from
+other origins. ``POST /runs`` may carry a whole Compass export (up to 8 MB), an upload up to 25 MB; every other body
+is capped at 256 KB.
 """
 
 from __future__ import annotations
 
-import hmac
+import asyncio
+import contextlib
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
+from pathlib import Path
 from typing import Annotated, Any
 
-from fastapi import APIRouter, Depends, FastAPI, Header, Query, Request
-from fastapi.middleware.cors import CORSMiddleware
+from fastapi import APIRouter, FastAPI, Header, Query, Request
 from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, ConfigDict
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
+from mde_core.logging import get_logger
+from mde_core.settings import Settings, load_settings
 from mde_research_agent import API_PREFIX
-from mde_research_agent.api.errors import Unauthorized, install_error_handlers
+from mde_research_agent.api.app_routes import make_api_router
+from mde_research_agent.api.deps import Auth, Svc
+from mde_research_agent.api.errors import install_error_handlers
+from mde_research_agent.api.security import SameOrigin
 from mde_research_agent.api.sse import event_stream
-from mde_research_agent.config import ResearchSettings, keys_present, load_research_settings
+from mde_research_agent.config import ResearchSettings, keys_present, load_research_settings, ui_dir
 from mde_research_agent.service import ResearchService
 from mde_research_agent.store.ports import ACTIVE_STATUSES
 
 MAX_RUN_BODY = 8 * 1024 * 1024
 MAX_BODY = 256 * 1024
+MAX_UPLOAD_BODY = 25 * 1024 * 1024 + 1024
+log = get_logger(__name__)
 
 
 class StartBody(BaseModel):
@@ -54,9 +64,12 @@ class BodyLimit:
         if scope["type"] != "http":
             await self.app(scope, receive, send)
             return
+        path = scope["path"].rstrip("/")
         limit = (
-            MAX_RUN_BODY
-            if scope["path"].rstrip("/").endswith("/runs") and scope["method"] == "POST"
+            MAX_UPLOAD_BODY
+            if path == "/api/inputs/upload"
+            else MAX_RUN_BODY
+            if path.endswith("/runs") and scope["method"] == "POST"
             else MAX_BODY
         )
         declared = dict(scope["headers"]).get(b"content-length")
@@ -84,44 +97,16 @@ class BodyLimit:
             )(scope, receive, send)
 
 
-class Caller(BaseModel):
-    tenant_id: str
-    user_id: str
-
-
-def get_service(request: Request) -> ResearchService:
-    return request.app.state.service  # type: ignore[no-any-return]
-
-
-async def get_caller(
-    request: Request,
-    authorization: Annotated[str | None, Header()] = None,
-    x_tenant_id: Annotated[str | None, Header()] = None,
-    x_user_id: Annotated[str | None, Header()] = None,
-) -> Caller:
-    settings: ResearchSettings = request.app.state.settings
-    token = (authorization or "").removeprefix("Bearer ").strip()
-    if not token or not hmac.compare_digest(
-        token.encode(), settings.research_dev_token.get_secret_value().encode()
-    ):
-        raise Unauthorized
-    return Caller(tenant_id=x_tenant_id or "demo", user_id=x_user_id or "demo-user")
-
-
-Auth = Annotated[Caller, Depends(get_caller)]
-Svc = Annotated[ResearchService, Depends(get_service)]
-
-
 def _make_router() -> APIRouter:
     router = APIRouter(prefix=API_PREFIX)
 
     @router.get("/config")
-    async def config(_: Auth, service: Svc) -> dict[str, Any]:
+    async def config(request: Request, _: Auth, service: Svc) -> dict[str, Any]:
         return {
             "mode": service.mode,
             "search_provider": service.search.name if service.search else "none",
             "keys": keys_present(service.settings),
-            "model": service.settings.research_user_agent and "gpt-6-luna",
+            "model": request.app.state.core.model_for_route("fast"),
             "checker_vendor": service.checker_vendor,
         }
 
@@ -221,20 +206,28 @@ def create_app(
     service: ResearchService | None = None,
     *,
     settings: ResearchSettings | None = None,
-    memory: bool = True,
+    core: Settings | None = None,
+    ui_path: Path | None = None,
+    sweep_seconds: float = 60.0,
 ) -> FastAPI:
+    """The standalone app: API and static front end on one origin. ``service`` is injected only by tests."""
     cfg = settings or load_research_settings()
+    the_core = core or load_settings()
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         if service is None:
-            from mde_research_agent.compose import build_service
+            from mde_research_agent.compose import compose_app
 
-            app.state.service = build_service(memory=memory, settings=cfg)
+            app.state.service = compose_app(cfg, the_core)
         await app.state.service.recover()
+        sweeper = asyncio.create_task(_sweep_loop(app, sweep_seconds))
         try:
             yield
         finally:
+            sweeper.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await sweeper
             await app.state.service.aclose()
 
     app = FastAPI(
@@ -245,27 +238,32 @@ def create_app(
         lifespan=lifespan,
     )
     app.state.settings = cfg
+    app.state.core = the_core
     if service is not None:
         app.state.service = service
     install_error_handlers(app)
     app.include_router(router)
+    app.include_router(make_api_router())
 
     @app.get("/healthz")
     async def healthz() -> dict[str, bool]:
         return {"ok": True}
 
+    folder = ui_path or ui_dir(cfg)
+    if (folder / "index.html").is_file():
+        app.mount("/", StaticFiles(directory=folder, html=True), name="ui")
     app.add_middleware(BodyLimit)
     app.add_middleware(
-        CORSMiddleware,
-        allow_origins=cfg.cors_origins,
-        allow_methods=["GET", "POST", "OPTIONS"],
-        allow_headers=[
-            "Authorization",
-            "Content-Type",
-            "X-Tenant-Id",
-            "X-User-Id",
-            "Last-Event-ID",
-        ],
-        max_age=600,
-    )
+        SameOrigin
+    )  # outermost: headers on everything, the Origin check before any body is read
     return app
+
+
+async def _sweep_loop(app: FastAPI, every: float) -> None:
+    """Free the inputs of runs that stopped reporting (``failed: stalled`` with a terminal event)."""
+    while True:
+        await asyncio.sleep(every)
+        try:
+            await app.state.service.sweep_stale()
+        except Exception:  # the loop must outlive a bad sweep
+            log.exception("research_sweep_failed")

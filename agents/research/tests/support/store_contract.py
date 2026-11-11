@@ -84,7 +84,7 @@ async def check_update_and_active(store: Store) -> None:
     assert act.run_id == "rrn_1"
     await store.update_run("t1", "rrn_1", status="partial")
     assert await store.active_run("t1", "prog_1") is None
-    with pytest.raises(Exception):  # noqa: B017,PT011  (NotFound for a foreign tenant)
+    with pytest.raises(Exception):  # noqa: B017  (NotFound for a foreign tenant)
         await store.update_run("t2", "rrn_1", status="complete")
 
 
@@ -98,7 +98,7 @@ async def check_events_are_contiguous_and_replayable(store: Store) -> None:
     assert [e.seq for e in await store.events_after("rrn_1", 0, limit=2)] == [1, 2]
     assert await store.events_after("rrn_1", 5) == []
     assert (await store.events_after("rrn_1", 4))[0].counters.searches_used == 5
-    with pytest.raises(Exception):  # noqa: B017,PT011  (a gap in seq is a bug)
+    with pytest.raises(Exception):  # noqa: B017  (a gap in seq is a bug)
         await store.append_event(event("rrn_1", 9))
 
 
@@ -139,7 +139,7 @@ async def check_results_are_immutable_and_latest_wins(store: Store) -> None:
         "schema": "research.v4",
     }
     assert await store.get_evidence("rrn_1") == {"pages": []}
-    with pytest.raises(Exception):  # noqa: B017,PT011
+    with pytest.raises(Exception):  # noqa: B017
         await store.save_result("rrn_1", {"items": []}, {}, "hash2")
     latest = await store.latest_committed("t1", "prog_1")
     assert latest is not None

@@ -32,7 +32,9 @@ class Estimates:
     def label(self, size_class: str) -> str:
         return str(self.data["labels"].get(size_class, size_class.title()))
 
-    def for_class(self, size_class: str, spend_entries: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    def for_class(
+        self, size_class: str, spend_entries: list[dict[str, Any]] | None = None
+    ) -> dict[str, Any]:
         base = self.data["classes"][size_class]
         usd = dict(base["usd_micros"])
         measured: list[int] = []

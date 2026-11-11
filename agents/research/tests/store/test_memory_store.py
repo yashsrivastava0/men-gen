@@ -1,5 +1,4 @@
 import pytest
-
 from support.memory_store import InMemoryStore
 from support.store_contract import CHECKS
 

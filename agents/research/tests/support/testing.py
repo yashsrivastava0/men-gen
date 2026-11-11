@@ -122,10 +122,10 @@ from mde_research_agent.domain.research import ResearchOutput  # noqa: E402
 from mde_research_agent.engine.context import RunContext  # noqa: E402
 from mde_research_agent.engine.director import Director, DirectorResult  # noqa: E402
 from mde_research_agent.engine.factory import new_context  # noqa: E402
-from support.fakes import FakeFetch, FakeSearch, FakeWorld  # noqa: E402
 from mde_research_agent.ids import CounterIds  # noqa: E402
 from mde_research_agent.intake import read_export  # noqa: E402
 from mde_research_agent.validators import ValidationContext, Violation, run_all  # noqa: E402
+from support.fakes import FakeFetch, FakeSearch, FakeWorld  # noqa: E402
 
 FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 AS_OF = date(2026, 11, 11)

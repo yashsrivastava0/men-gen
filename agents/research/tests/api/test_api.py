@@ -6,12 +6,12 @@ from typing import Any
 
 import httpx
 import pytest
+from support.compose import build_service
+from support.fakes import FakeWorld
 
 from mde_research_agent.api import create_app
 from mde_research_agent.api.sse import event_stream
-from support.compose import build_service
 from mde_research_agent.config import ResearchSettings
-from support.fakes import FakeWorld
 
 FIX = Path(__file__).resolve().parent.parent / "fixtures" / "exports"
 H = {"Authorization": "Bearer dev-token", "X-Tenant-Id": "t1", "X-User-Id": "u1"}
@@ -265,7 +265,7 @@ async def test_events_never_carry_page_text_or_quotes() -> None:
     assert not any(len(a["quote"]) > 30 and a["quote"] in blob for a in evidence["atoms"])
 
 
-async def test_bodies_are_limited_and_cors_is_explicit() -> None:
+async def test_bodies_are_limited_and_there_is_no_cors() -> None:
     _, _, app = make()
     async with client(app) as c:
         big = await c.post(
@@ -279,18 +279,35 @@ async def test_bodies_are_limited_and_cors_is_explicit() -> None:
             headers={
                 "Origin": "http://127.0.0.1:8110",
                 "Access-Control-Request-Method": "POST",
-                "Access-Control-Request-Headers": "authorization,content-type",
             },
         )
         assert (
-            pre.status_code == 200
-            and pre.headers["access-control-allow-origin"] == "http://127.0.0.1:8110"
+            "access-control-allow-origin" not in pre.headers
+        )  # the app answers no cross-origin preflight
+
+
+async def test_a_state_change_from_another_origin_is_refused() -> None:
+    _, _, app = make()
+    async with client(app) as c:
+        evil = await c.post(
+            "/v1/research/runs/rrn_x/skip", headers={"Origin": "http://evil.example"}
         )
-        evil = await c.options(
-            "/v1/research/runs",
-            headers={"Origin": "http://evil.example", "Access-Control-Request-Method": "POST"},
+        assert evil.status_code == 403 and evil.json()["code"] == "bad_origin"
+        cross = await c.post(
+            "/v1/research/runs/rrn_x/skip", headers={"Sec-Fetch-Site": "cross-site"}
         )
-        assert "access-control-allow-origin" not in evil.headers
+        assert cross.status_code == 403
+        own = await c.post("/v1/research/runs/rrn_x/skip", headers={"Origin": "http://test"})
+        assert own.status_code == 404  # same origin passes the check (and the run does not exist)
+
+
+async def test_every_response_carries_the_security_headers() -> None:
+    _, _, app = make()
+    async with client(app) as c:
+        r = await c.get("/healthz")
+    assert "script-src 'self'" in r.headers["content-security-policy"]
+    assert "'unsafe-inline'" not in r.headers["content-security-policy"]
+    assert r.headers["x-content-type-options"] == "nosniff"
 
 
 async def test_config_reports_booleans_and_never_a_key() -> None:

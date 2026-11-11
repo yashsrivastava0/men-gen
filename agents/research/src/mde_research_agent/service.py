@@ -26,7 +26,6 @@ from mde_core.errors import (
     CassetteMissing,
     Conflict,
     LiveCallForbidden,
-    MdeError,
     NotFound,
 )
 from mde_core.hashing import hash_json
@@ -36,13 +35,13 @@ from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.config import ResearchSettings
 from mde_research_agent.core.hashing import content_hash
 from mde_research_agent.domain.events import Counters, RunSnapshot
-from mde_research_agent.events.writer import EventWriter
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.engine.context import RunContext
 from mde_research_agent.engine.director import Director, DirectorResult
 from mde_research_agent.engine.factory import new_context
 from mde_research_agent.engine.spend import GuardSpendBook
 from mde_research_agent.events.reducer import fold
+from mde_research_agent.events.writer import EventWriter
 from mde_research_agent.ids import Ids, UlidIds
 from mde_research_agent.intake import read_export
 from mde_research_agent.ports.fetch import FetchPort
@@ -122,7 +121,7 @@ class ResearchService:
         inputs: Any = None,
         estimates: Any = None,
         max_concurrent: int = 4,
-        gateway_factory: Callable[[BudgetControl], Any] | None = None,
+        gateway_factory: Callable[..., Any] | None = None,
         stale_after_s: int = 600,
         own_store: bool = False,
     ) -> None:
@@ -169,6 +168,9 @@ class ResearchService:
             raise NotReady(self.missing or ["the live switches"])
         if self.search is None:
             raise NotReady(["TAVILY_API_KEY or SERPER_API_KEY"])
+        self._require_budget()
+
+    def _require_budget(self) -> None:
         if self.control is not None:
             ok, reason = self.control.can_start()
             if not ok:
@@ -187,6 +189,8 @@ class ResearchService:
     ) -> RunRow:
         if self.mode == "live" or self.gateway is None:
             self._require_ready()
+        else:
+            self._require_budget()
         inp = read_export(
             export, self.catalog, program_id=program_id
         )  # raises ExportRefused (RV-13 and friends)
@@ -320,12 +324,22 @@ class ResearchService:
                 cassettes = self.data_dir / "runs" / rid / "cassettes"
                 search = RecordingSearch(search, cassettes)
                 fetch = RecordingFetch(fetch, cassettes)
+            run_gateway = self.gateway
+            if (
+                self.gateway_factory is not None
+                and self.control is not None
+                and self.data_dir is not None
+                and self.mode == "live"
+            ):
+                run_gateway = self.gateway_factory(
+                    self.control, cassette_dir=self.data_dir / "runs" / rid / "cassettes" / "llm"
+                )
             ctx = new_context(
                 inp=live.inp,
                 catalog=self.catalog,
                 search=search,
                 fetch=fetch,
-                gateway=self.gateway,
+                gateway=run_gateway,
                 events=self.store,
                 clock=self.clock,
                 ids=self.ids,
@@ -354,7 +368,7 @@ class ResearchService:
                 eid = entry_id
                 rec = self.record
                 ctx.budget.on_cost = lambda step, micros: rec.add_cost(eid, step, micros)
-            guard = getattr(getattr(self.gateway, "gateway", None), "guard", None)
+            guard = getattr(getattr(run_gateway, "gateway", None), "guard", None)
             if self.mode == "live" and guard is not None:
                 ctx.budget.on_search_cost = GuardSpendBook(guard, rid, self.ids, period_scope)
             director = Director(ctx)
@@ -406,7 +420,12 @@ class ResearchService:
         if entry_id is None or self.record is None:
             return
         try:
-            ledger = ledger_run_spend(self.control.ledger_path, run_id) if self.control else None
+            has_ledger = self.control is not None and self.control.ledger_path.is_file()
+            ledger = (
+                ledger_run_spend(self.control.ledger_path, run_id)
+                if has_ledger and self.control
+                else None
+            )
             self.record.finish_entry(entry_id, status, ledger_micros=ledger)
         except Exception:  # the record must never break a run
             log.exception("research_spend_finish_failed", run_id=run_id)
@@ -774,6 +793,54 @@ class ResearchService:
         for e in self.record.data["entries"]:
             if e.get("run_id"):
                 out[e["run_id"]] = out.get(e["run_id"], 0) + int(e["total_micros"])
+        return out
+
+    async def ping(self) -> dict[str, Any]:
+        """Preflight ping (about USD 0.01): one search and one tiny model call, booked in the spend record."""
+        from mde_research_agent.calls import check as check_call
+        from mde_research_agent.calls.base import CallRunner
+        from mde_research_agent.ports.search import SearchRequest
+
+        self._require_ready()
+        assert self.search is not None
+        entry = self.record.start_entry("ping", label="preflight ping") if self.record else None
+        period = self.control.period_scope if self.control else None
+        out: dict[str, Any] = {"search": {"ok": False}, "model": {"ok": False}}
+        try:
+            try:
+                res = await self.search.search(
+                    SearchRequest(query="mobile app onboarding", max_results=3)
+                )
+                out["search"] = {"ok": True, "provider": res.provider, "results": len(res.hits)}
+                if entry and self.record:
+                    self.record.add_cost(entry, f"search.{res.provider}", res.cost_micros)
+                if res.cost_micros and self.mode == "live":
+                    guard = getattr(getattr(self.gateway, "gateway", None), "guard", None)
+                    if guard is not None:
+                        GuardSpendBook(guard, "ping", self.ids, period)(
+                            res.cost_micros, res.provider
+                        )
+            except Exception as exc:
+                out["search"] = {"ok": False, "error": type(exc).__name__}
+            try:
+                runner = CallRunner(
+                    self.gateway,
+                    run_id="ping",
+                    ids=self.ids,
+                    extra_scopes=(period,) if period else (),
+                )
+                item = check_call.CheckItem(
+                    id="P1", claim="Water boils at 100 C.", quote="Water boils at 100 C."
+                )
+                r = await runner.run(check_call.SPEC, check_call.CheckIn(items=[item]))
+                out["model"] = {"ok": not r.failed, "cost_micros": r.cost_micros}
+                if entry and self.record:
+                    self.record.add_cost(entry, "probe", r.cost_micros)
+            except Exception as exc:
+                out["model"] = {"ok": False, "error": type(exc).__name__}
+        finally:
+            if entry and self.record:
+                self.record.finish_entry(entry, "done")
         return out
 
     def budget_status(self) -> dict[str, Any]:

@@ -84,9 +84,7 @@ class BudgetControl:
             label = "exhausted"
         elif spent >= self.tripwire_micros:
             label = "tripwire"
-        return BudgetState(
-            self.period_id, self.total_micros, self.tripwire_micros, spent, label
-        )
+        return BudgetState(self.period_id, self.total_micros, self.tripwire_micros, spent, label)
 
     def can_start(self) -> tuple[bool, str]:
         s = self.state()

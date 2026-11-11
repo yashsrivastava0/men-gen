@@ -3,10 +3,10 @@
 import random
 
 import pytest
-
-from mde_research_agent.core.hashing import content_hash
 from support.fakes import FakeWorld
 from support.testing import load_fixture, run_engine
+
+from mde_research_agent.core.hashing import content_hash
 
 
 @pytest.mark.parametrize(

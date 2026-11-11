@@ -10,9 +10,6 @@ import pytest
 import pytest_asyncio
 from sqlalchemy.engine import URL
 from sqlalchemy.ext.asyncio import AsyncEngine
-
-from mde_core.clock import FakeClock
-from mde_research_agent.store.postgres import PostgresStore, create_store_engine
 from support.pg_testing import (
     PostgresUnavailable,
     admin_dsn,
@@ -21,6 +18,9 @@ from support.pg_testing import (
     ephemeral_database,
     truncate_all,
 )
+
+from mde_core.clock import FakeClock
+from mde_research_agent.store.postgres import PostgresStore, create_store_engine
 
 
 @pytest.fixture

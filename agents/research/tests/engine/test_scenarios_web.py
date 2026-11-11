@@ -2,10 +2,7 @@
 
 from datetime import date
 
-from mde_research_agent.calls.extract import ExtractIn
-from mde_research_agent.core.quotes import verify_quote
 from support.fakes import FakeWorld
-from mde_research_agent.ports.search import SearchError
 from support.testing import (
     atom,
     extractor,
@@ -13,6 +10,10 @@ from support.testing import (
     rule_extractor,
     run_engine,
 )
+
+from mde_research_agent.calls.extract import ExtractIn
+from mde_research_agent.core.quotes import verify_quote
+from mde_research_agent.ports.search import SearchError
 
 STANDARD = "standard-produce-marketplace-nashik"
 QUICK = "quick-yoga-studio-bengaluru"

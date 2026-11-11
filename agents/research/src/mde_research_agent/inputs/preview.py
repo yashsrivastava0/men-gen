@@ -30,7 +30,9 @@ def compass_info(data: dict[str, Any]) -> dict[str, Any]:
 def light_mode(inp: ResearchInput, signals: list[str]) -> bool:
     """Doc 13 section 4.2: a tiny app with nothing that needs outside facts."""
     load = inp.load.score if inp.load else 0
-    rule_facts = [f for f in inp.facts if (f.kind or "") in ("rule", "compliance", "integration_detail")]
+    rule_facts = [
+        f for f in inp.facts if (f.kind or "") in ("rule", "compliance", "integration_detail")
+    ]
     has_place = bool(inp.geography.country or inp.geography.cities)
     return (
         load < LIGHT_BELOW
@@ -46,9 +48,15 @@ def trust_decision(inp: ResearchInput, signals: list[str]) -> dict[str, Any]:
     """Whether the extra trust topics (privacy, security, store rules) run, and a plain reason why or why not."""
     klass = inp.load.load_class if inp.load else "standard"
     if klass == "deep":
-        return {"on": True, "why": "This is a big app: privacy, security and store rules are always checked."}
+        return {
+            "on": True,
+            "why": "This is a big app: privacy, security and store rules are always checked.",
+        }
     if inp.sensitive_flags:
-        return {"on": True, "why": "The Brief marks sensitive data, so privacy and security rules are checked."}
+        return {
+            "on": True,
+            "why": "The Brief marks sensitive data, so privacy and security rules are checked.",
+        }
     return {"on": False, "why": "Nothing in the Brief needs the extra privacy and security checks."}
 
 
@@ -82,7 +90,12 @@ def build_preview(
             }
         )
     if q.degraded:
-        warnings.append({"code": "degraded", "text": "Compass finished this Brief with some model steps degraded."})
+        warnings.append(
+            {
+                "code": "degraded",
+                "text": "Compass finished this Brief with some model steps degraded.",
+            }
+        )
     cats = Counter((f.kind or "other") for f in inp.facts)
     live_features = [f for f in inp.features if not f.duplicate_of and f.scope_status != "out"]
     info = compass_info(data)
@@ -119,7 +132,9 @@ def build_preview(
         "trust": trust_decision(inp, signals),
         "topics": {
             "total": len(plan.targets),
-            "by_job": {job: {"count": len(labels), "labels": labels} for job, labels in by_job.items()},
+            "by_job": {
+                job: {"count": len(labels), "labels": labels} for job, labels in by_job.items()
+            },
             "not_run": [t.label for t in plan.unrun],
         },
         "declined": list(inp.declined),

@@ -50,7 +50,9 @@ class RunRow(BaseModel):
     content_hash: str | None = None
     reason: str | None = None
     skip_requested: bool = False
-    meta: dict[str, Any] = Field(default_factory=dict)  # what the app records: input, size class, spend
+    meta: dict[str, Any] = Field(
+        default_factory=dict
+    )  # what the app records: input, size class, spend
     created_at: datetime
     started_at: datetime | None = None
     finished_at: datetime | None = None

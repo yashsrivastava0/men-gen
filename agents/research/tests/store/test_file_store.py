@@ -5,11 +5,11 @@ from __future__ import annotations
 from pathlib import Path
 
 import pytest
+from support.store_contract import CHECKS, T0, event, row
 
 from mde_core.errors import NotFound
 from mde_research_agent.store.files import FileStore, StoreLocked
 from mde_research_agent.store.ports import Decision
-from support.store_contract import CHECKS, T0, event, row
 
 
 @pytest.mark.parametrize("check", CHECKS, ids=lambda c: c.__name__)
@@ -50,7 +50,8 @@ async def test_a_second_process_cannot_open_the_same_folder(tmp_path: Path) -> N
             FileStore(tmp_path)
     finally:
         await a.aclose()
-    FileStore(tmp_path).__class__  # released after close: opening again works
+    again = FileStore(tmp_path)  # released after close: opening again works
+    await again.aclose()
 
 
 async def test_a_half_written_last_event_line_is_ignored(tmp_path: Path) -> None:

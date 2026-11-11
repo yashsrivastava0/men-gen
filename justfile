@@ -50,12 +50,24 @@ compass-test:
 compass-test-int: db-up
     uv run pytest agents/compass -m integration -q
 
-# Research (the second agent): dev server with CORS for the test UI on port 8120
+# Research (the second agent): the standalone app (API and front end on 127.0.0.1:8120, live only)
 research-dev:
     uv run python -m mde_research_agent --port 8120
 
-research-dev-memory:
-    uv run python -m mde_research_agent --memory --port 8120
+research-app-start:
+    uv run python scripts/research_app.py start
+
+research-app-stop:
+    uv run python scripts/research_app.py stop
+
+research-app-restart:
+    uv run python scripts/research_app.py restart
+
+research-app-status:
+    uv run python scripts/research_app.py status
+
+research-app-logs:
+    uv run python scripts/research_app.py logs
 
 research-migrate:
     uv run python -m mde_research_agent.store.migrate

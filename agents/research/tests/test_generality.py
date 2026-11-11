@@ -4,9 +4,9 @@ import re
 from pathlib import Path
 
 import pytest
+from support.testing import load_fixture, run_engine
 
 from mde_research_agent.core.countries import countries
-from support.testing import load_fixture, run_engine
 
 ROOT = Path(__file__).resolve().parents[1]
 FIX = ROOT / "tests" / "fixtures"

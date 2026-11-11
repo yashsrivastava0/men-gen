@@ -4,9 +4,6 @@ import json
 from datetime import date
 
 import pytest
-
-from mde_core.clock import FakeClock
-from mde_research_agent.calls.queries import QueryOut, Variant
 from support.compose import build_service
 from support.fakes import FakeWorld
 from support.testing import (
@@ -17,6 +14,9 @@ from support.testing import (
     rule_extractor,
     run_engine,
 )
+
+from mde_core.clock import FakeClock
+from mde_research_agent.calls.queries import QueryOut, Variant
 
 QUICK = "quick-yoga-studio-bengaluru"
 STANDARD = "standard-produce-marketplace-nashik"

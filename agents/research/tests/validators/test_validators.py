@@ -6,10 +6,10 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
+from support.testing import load_fixture, rule_extractor, run_engine
 
 from mde_research_agent.catalog import load_catalog
 from mde_research_agent.domain.events import Event
-from support.testing import load_fixture, rule_extractor, run_engine
 from mde_research_agent.validators import REGISTRY, ValidationContext, run_all
 from mde_research_agent.validators.registry import must_refuse
 

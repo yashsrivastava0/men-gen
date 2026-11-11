@@ -86,7 +86,9 @@ _SIZE_ORDER = {"tiny": 0, "small": 1, "medium": 2, "big": 3}
 
 
 class InputsStore:
-    def __init__(self, folder: Path | str, catalog: Catalog, estimates: Any, *, uploads: Path | None = None) -> None:
+    def __init__(
+        self, folder: Path | str, catalog: Catalog, estimates: Any, *, uploads: Path | None = None
+    ) -> None:
         self.folder = Path(folder)
         self.uploads = Path(uploads) if uploads else None
         self.catalog = catalog
@@ -123,11 +125,15 @@ class InputsStore:
                 try:
                     real = path.resolve()
                     if not real.is_relative_to(real_root):
-                        result.skipped.append(SkippedFile(name, "unsafe_path", REASON_TEXT["unsafe_path"]))
+                        result.skipped.append(
+                            SkippedFile(name, "unsafe_path", REASON_TEXT["unsafe_path"])
+                        )
                         continue
                     st = real.stat()
                 except OSError:
-                    result.skipped.append(SkippedFile(name, "unreadable", REASON_TEXT["unreadable"]))
+                    result.skipped.append(
+                        SkippedFile(name, "unreadable", REASON_TEXT["unreadable"])
+                    )
                     continue
                 key = (str(real), st.st_size, st.st_mtime_ns)
                 live_keys.add(key)
@@ -135,12 +141,16 @@ class InputsStore:
                     self._cache[key] = self._classify(real, name, st.st_size, st.st_mtime_ns)
                 entry, skipped = self._cache[key]
                 if skipped is not None:
-                    result.skipped.append(SkippedFile(name, skipped.reason, skipped.text, skipped.size))
+                    result.skipped.append(
+                        SkippedFile(name, skipped.reason, skipped.text, skipped.size)
+                    )
                     continue
                 assert entry is not None
                 if entry.id in seen:
                     first = seen[entry.id]
-                    seen[entry.id] = InputEntry(**{**first.__dict__, "also_named": (*first.also_named, name)})
+                    seen[entry.id] = InputEntry(
+                        **{**first.__dict__, "also_named": (*first.also_named, name)}
+                    )
                     by_id[entry.id] = seen[entry.id]
                     continue
                 shown = InputEntry(**{**entry.__dict__, "name": name})

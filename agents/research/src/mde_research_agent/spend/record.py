@@ -106,7 +106,9 @@ class SpendRecord:
                     self.data.setdefault("periods", [])
                     self.data.setdefault("entries", [])
             except (OSError, ValueError):
-                self.write_failed = True  # unreadable: start again from memory; the ledger stays the truth
+                self.write_failed = (
+                    True  # unreadable: start again from memory; the ledger stays the truth
+                )
 
     def _save(self) -> None:
         with self._lock:
@@ -204,9 +206,7 @@ class SpendRecord:
             e["running_total_micros"] = self.period_total_micros(e["period"])
             self._save()
 
-    def finish_entry(
-        self, entry_id: str, status: str, *, ledger_micros: int | None = None
-    ) -> None:
+    def finish_entry(self, entry_id: str, status: str, *, ledger_micros: int | None = None) -> None:
         """Close an entry. With ``ledger_micros`` (what the gateway ledger holds for it) the record is reconciled:
         a difference is corrected towards the ledger (it is what the guard enforces) and flagged."""
         with self._lock:

@@ -127,20 +127,26 @@ def repo_root() -> Path:
 
 def data_dir(settings: ResearchSettings) -> Path:
     """``RESEARCH_DATA_DIR`` (default ``agents/research/.runtime``, git-ignored)."""
-    return Path(settings.research_data_dir) if settings.research_data_dir else (
-        repo_root() / "agents" / "research" / ".runtime"
+    return (
+        Path(settings.research_data_dir)
+        if settings.research_data_dir
+        else (repo_root() / "agents" / "research" / ".runtime")
     )
 
 
 def inputs_dir(settings: ResearchSettings) -> Path:
     """``RESEARCH_INPUTS_DIR`` (default ``docs/compass/research-inputs``; read-only for the app)."""
-    return Path(settings.research_inputs_dir) if settings.research_inputs_dir else (
-        repo_root() / "docs" / "compass" / "research-inputs"
+    return (
+        Path(settings.research_inputs_dir)
+        if settings.research_inputs_dir
+        else (repo_root() / "docs" / "compass" / "research-inputs")
     )
 
 
 def ui_dir(settings: ResearchSettings) -> Path:
     """The static front end (``apps/research-console`` unless ``RESEARCH_UI_DIR`` says otherwise)."""
-    return Path(settings.research_ui_dir) if settings.research_ui_dir else (
-        repo_root() / "apps" / "research-console"
+    return (
+        Path(settings.research_ui_dir)
+        if settings.research_ui_dir
+        else (repo_root() / "apps" / "research-console")
     )

@@ -4,6 +4,7 @@ gateway). The app's composition root (``mde_research_agent.compose``) cannot rea
 from __future__ import annotations
 
 from datetime import date
+from pathlib import Path
 from typing import Any
 
 import httpx
@@ -75,4 +76,83 @@ def build_service(
         wrap_fetch=wrap_fetch,
         live_budget_micros=live_budget_micros,
         cache_search=chosen != "fake",
+    )
+
+
+def build_app_test_service(
+    tmp_path: Path,
+    *,
+    inputs_dir: Path | None = None,
+    world: FakeWorld | None = None,
+    max_concurrent: int = 1,
+    missing: list[str] | None = None,
+    no_gateway: bool = False,
+    total_usd: str = "5.00",
+    tripwire_usd: str = "4.50",
+    as_of: date | None = None,
+    cost_micros: int = 8000,
+) -> ResearchService:
+    """The app's service shape (file store, period spend record, inputs folder, queue) over fake search and fetch.
+
+    ``mode`` is ``live`` so the spend record, the period scope and the per-run cassettes are exercised; the gateway is
+    the mock one (no network, no key). Never importable from the app.
+    """
+    from mde_core.money import usd_to_micros
+    from mde_research_agent.catalog import load_catalog
+    from mde_research_agent.inputs import InputsStore
+    from mde_research_agent.inputs.estimates import Estimates
+    from mde_research_agent.spend import BudgetControl, SpendRecord
+    from mde_research_agent.store.files import FileStore
+
+    core = load_settings(llm_mode="mock")
+    cfg = ResearchSettings()
+    clock = SystemClock()
+    data = tmp_path / "data"
+    data.mkdir(parents=True, exist_ok=True)
+    root = tmp_path / "repo"
+    root.mkdir(exist_ok=True)
+    w = world or FakeWorld(provider_content_every=3)
+    w.search_cost_micros = cost_micros
+    record = SpendRecord(
+        data / "spend-record.json",
+        ledger_for=lambda pid: BudgetControl.ledger_rel(root, pid),
+        clock=clock,
+    )
+    control = BudgetControl(
+        record,
+        total_micros=usd_to_micros(total_usd),
+        tripwire_micros=usd_to_micros(tripwire_usd),
+        repo_root=root,
+    )
+
+    def make_gateway(_ctl: BudgetControl, cassette_dir: Path | None = None) -> Any:
+        return build_gateway(core, cfg, clock, offline=True)
+
+    estimates = Estimates()
+    catalog = load_catalog()
+    inputs = InputsStore(
+        inputs_dir or tmp_path / "inputs", catalog, estimates, uploads=data / "uploads"
+    )
+    return assemble_service(
+        store=FileStore(data),
+        search=FakeSearch(w),
+        fetch=FakeFetch(w),
+        gateway=None if no_gateway else make_gateway(control),
+        core=core,
+        cfg=cfg,
+        mode="live",
+        clock=clock,
+        as_of=as_of or date(2026, 11, 11),
+        cache_search=False,
+        missing=missing,
+        control=control,
+        record=record,
+        data_dir=data,
+        inputs=inputs,
+        estimates=estimates,
+        max_concurrent=max_concurrent,
+        gateway_factory=make_gateway,
+        own_store=True,
+        ledger_path=control.ledger_path,
+        live_budget_micros=usd_to_micros(total_usd),
     )

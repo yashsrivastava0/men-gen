@@ -65,7 +65,7 @@ _HARMLESS_DYNAMIC = ("$null", "$false")
 # ``.live_smoke``) and their file paths. They carry their own preflight (as ``mde_compass.live_batches``
 # does), but they are named here so the hook knows them: their live forms need the second key in the
 # environment, while the offline forms (``--dry-run``, ``--mock``, ``--replay``) stay allowed.
-_RESEARCH_LIVE = re.compile(r"mde_research_agent[./\\]+live_[a-z]")
+_RESEARCH_LIVE = re.compile(r"mde_research_agent[./\\]+(?:live_[a-z]|eval(?![a-z_]))")
 _OFFLINE_FLAG = re.compile(r"(?:^|\s)--(?:dry-run|mock|replay)(?=\s|$|=|;)")
 
 # Kept for callers that import the old name; matching now goes through ``is_live_command``.
@@ -115,7 +115,7 @@ def _assigns_live(text: str) -> bool:
 
 
 def _runs_research_live(command: str, text: str) -> bool:
-    """A ``mde_research_agent.live_*`` script without an offline flag (``--dry-run``/``--mock``/``--replay``)."""
+    """A ``mde_research_agent.live_*`` or ``.eval`` script without an offline flag (``--dry-run``/``--mock``/``--replay``)."""
     # Per command segment (split on ``;`` ``&`` ``|``): an offline flag only counts in the SAME command
     # as the script, so ``...live_runs; echo --mock`` is still live.
     for reading in (

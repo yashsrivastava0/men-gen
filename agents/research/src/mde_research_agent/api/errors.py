@@ -10,6 +10,7 @@ from starlette.exceptions import HTTPException as StarletteHTTPException
 from mde_core.errors import Conflict, NotFound
 from mde_core.logging import get_logger
 from mde_research_agent.intake import ExportRefused
+from mde_research_agent.service import BudgetBlocked, NotReady
 from mde_research_agent.store.ports import RunActive
 
 log = get_logger(__name__)
@@ -38,9 +39,19 @@ def install_error_handlers(app: FastAPI) -> None:
             {**_body("run_active", str(exc)), "run_id": exc.run_id}, status_code=409
         )
 
+    @app.exception_handler(NotReady)
+    async def _not_ready(_: Request, exc: NotReady) -> JSONResponse:
+        return JSONResponse(
+            {**_body("not_ready", exc.message), "missing": exc.missing}, status_code=409
+        )
+
+    @app.exception_handler(BudgetBlocked)
+    async def _blocked(_: Request, exc: BudgetBlocked) -> JSONResponse:
+        return JSONResponse(_body(exc.reason, exc.message), status_code=409)
+
     @app.exception_handler(Conflict)
     async def _conflict(_: Request, exc: Conflict) -> JSONResponse:
-        return JSONResponse(_body("conflict", str(exc)), status_code=409)
+        return JSONResponse(_body("conflict", exc.message), status_code=409)
 
     @app.exception_handler(NotFound)
     async def _not_found(_: Request, exc: NotFound) -> JSONResponse:

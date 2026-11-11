@@ -2,7 +2,7 @@
 
 The Research agent (agent 2 of the Context Engine) runs in the foreground after Gate 1. This page is the contract the test front end (and later the full front end) codes against. Design: `docs/architecture-v3/13-research-agent-design.md`. Package page: `agents/research/README.md`.
 
-Base URL (dev): `http://127.0.0.1:8120`. Prefix: `/v1/research`. All bodies are JSON, UTF-8. The server allows cross-origin calls from the test console (explicit origins, `Authorization`, `Content-Type`, `X-Tenant-Id`, `X-User-Id`, `Last-Event-ID`).
+Base URL: `http://127.0.0.1:8120` (the standalone app: the API and the front end are served from this one origin). Prefixes: `/v1/research` (runs, events, results) and `/api` (the app: inputs, budget, preflight; see "The standalone app" below). All bodies are JSON, UTF-8. There is **no CORS**: a state-changing request whose `Origin` is not the app's own is refused with `403 bad_origin`, and every response carries a strict content-security policy.
 
 ## Auth (dev)
 
@@ -10,13 +10,13 @@ Same dev headers as Compass: `Authorization: Bearer dev-token` (or `RESEARCH_DEV
 
 ## Errors
 
-Always `{"code": "<machine_code>", "message": "<plain words>"}`. Codes used by the UI: `unauthorized` (401), `not_found` (404), `run_active` (409, one run per program at a time; `message` names the run), `bad_request` (422), and the export refusals (422): `not_an_export`, `not_format_2`, `not_approved`, `hash_mismatch`, `missing_research_view`. Show `message` to the user; never a stack trace.
+Always `{"code": "<machine_code>", "message": "<plain words>"}`. Codes used by the UI: `unauthorized` (401), `not_found` (404), `run_active` (409, one run per program at a time; `message` names the run), `not_ready` (409, with `missing: [names]`: the variables to set, never values), `budget_tripwire` and `budget_exhausted` (409, no new run starts), `bad_origin` (403), `too_large` (413), `bad_request` (422), and the export refusals (422): `not_an_export`, `not_format_2`, `not_approved`, `hash_mismatch`, `missing_research_view`. Show `message` to the user; never a stack trace.
 
 ## Endpoints
 
 | Method and path | Purpose |
 | --- | --- |
-| `GET /v1/research/config` | `{mode: "mock" \| "live", search_provider: "tavily" \| "serper" \| "fake", keys: {tavily: bool, serper: bool}, model: string, checker_vendor: "same" \| "different" \| "none"}`. Booleans only, never a key. The UI shows a banner when `mode` is `mock`. |
+| `GET /v1/research/config` | `{mode: "live", search_provider: "tavily" \| "serper" \| "none", keys: {tavily: bool, serper: bool}, model: string, checker_vendor: "same" \| "different" \| "none"}`. Booleans only, never a key. The model name comes from the settings. |
 | `POST /v1/research/runs` | Start a run. Body `{program_id?: string, brief_export: <the Compass format-2 export object>}`. `201 {run_id, program_id, status, events_url}`. 409 `run_active` if the program already has a run in progress. 422 with a refusal code if the export is not an approved format-2 export (the three hashes must agree). The export can be up to 8 MB. |
 | `GET /v1/research/runs/{run_id}` | The run **snapshot** (below). A reloaded page draws from it, then tails events from `last_seq`. |
 | `GET /v1/research/runs/{run_id}/events` | Server-sent events, resumable: send `Last-Event-ID: <seq>` or `?after=<seq>`. Replays stored events, then tails until a terminal event (`run.finished`, `run.skipped`, `run.failed`), then the stream ends. Use `fetch` and a stream reader, not `EventSource` (it cannot send auth headers). |
@@ -121,3 +121,33 @@ The committed file is described by `agents/research/contracts/research.v4.schema
 * **Skip and per-topic cancel on a run that is not active**: `POST .../skip` on a finished run returns the run unchanged (no error); `POST .../targets/{id}/cancel` answers `{cancelled: false}`. The console just re-reads the snapshot.
 * **Preflight.** `Last-Event-ID` makes the event stream a non-simple request, so `OPTIONS` on `/events` is answered (the server allows the headers listed at the top).
 * **`fact.rejected.label`** is present when the rejected item had been announced by `fact.found`, so a client can close its "checking" row.
+
+
+## The standalone app (`/api/*`)
+
+One process serves the API and the static front end (`apps/research-console/`). The page gets its dev token from `GET /api/session` (same origin only). Live models and the live web only: there is no mock mode, no replay mode and no in-memory store in the app. If the live switches (the model mode and the second key) or a search key are missing the app still starts; every start-run action returns `409 {code: "not_ready", missing: [<variable names>]}` and `GET /api/preflight` explains. Nothing falls back to canned content.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /api/health` | No auth. `{ok, ready, app, time}`. |
+| `GET /api/session` | No auth, same origin. `{token, tenant_id, app, live}`. |
+| `GET /api/inputs` | The approved Compass exports found in the inputs folder (`RESEARCH_INPUTS_DIR`, default `docs/compass/research-inputs`, read-only), `{folder, folder_exists, inputs: [...], skipped: [{name, reason, text, size}]}`. Rescanned on every call (cached by path, size and modified time), so a dropped-in file appears without a restart. Cards are sorted Tiny, Small, Medium, Big by the **computed** load. Each card: `id` (first 12 hex of the file's SHA-256), `name`, `size`, `modified`, `short_hash`, `also_named` (same content under other names), `changed_since_last_run`, `runs` (the last five), `active_run`, and `preview`. `skipped` reasons: `not_json`, `not_a_compass_export`, `format_not_supported`, `hash_mismatch`, `not_approved`, `too_large`, `unreadable`, `unsafe_path`. |
+| `GET /api/inputs/{id}` | One card with all its runs. The id is mapped to a file by the server; a path is never accepted. |
+| `POST /api/inputs/upload` | The body is the export JSON (up to 25 MB). Checked like a listed file and stored under the app's data folder (never in the inputs folder). `201 {accepted: true, input}` or `201 {accepted: false, reason, text}`. |
+| `POST /api/runs` | Body `{input_id}`. `201 {run_id, program_id, status, created, queue_position, events_url}`; `200` with `created: false` when that input already has an active run (the second start returns the active run). One run at a time by default (`RESEARCH_MAX_CONCURRENT_RUNS`): further starts get `status: "queued"` and a `queue_position`, and start by themselves. |
+| `GET /api/runs` | `{runs: [{run_id, status, input_id, input_name, size_class, load_class, created_at, started_at, finished_at, reason, content_hash, queue_position, spend_micros}]}`, newest first. |
+| `POST /api/runs/{id}/cancel-queued` | Cancel a run that has not started; it gets a terminal `run.failed` event (`code: "cancelled"`) and status `cancelled`. |
+| `GET /api/budget` | `{enabled, period_id, total_micros, tripwire_micros, spent_micros, remaining_micros, state: "ok" \| "tripwire" \| "exhausted", write_failed, active_runs}`. |
+| `GET /api/spend` | The whole spend record (`research.spend.v1`): periods (with the history of restarts) and one entry per live action (`kind` run, bakeoff, probe, ping or smoke; `by_step` in micro-USD; `running_total_micros`; `reconciled`). |
+| `POST /api/budget/restart` | Body `{"confirm": "RESTART"}`. Closes the period (history kept), opens the next at 0.00 with its own gateway ledger file. `409` while a run is active or queued, or without the confirm word. |
+| `GET /api/preflight` | `{ready, checks: [{id, label, ok, detail, fix}], model, checker_vendor, time}`. Switches, provider keys (booleans), search provider, inputs folder, data folder writable, store, budget, front-end files, model routes. |
+| `POST /api/preflight/ping` | About USD 0.01: one search and one tiny model call, booked in the spend record. `{search: {ok, ...}, model: {ok, ...}}`. |
+| `GET /api/settings`, `POST /api/settings` | `{primary_provider: "auto" \| "tavily" \| "serper"}`, saved in the data folder; takes effect on the next run. |
+
+### Money
+
+USD 5.00 in total (`RESEARCH_LIVE_BUDGET_USD`), a tripwire at 4.50 (`RESEARCH_TRIPWIRE_USD`): at or above it the run in progress finishes and no new run starts. Hard stop at 5.00: every model and search reservation carries the period scope `research_period:<id>` capped at the total, so the gateway guard refuses a call that would pass it and the run commits `partial` with a `budget_stop` warning. There is no per-run cap and no call-count cap. Every period has its own ledger file (`data/.budget/research/ledger-<period>.jsonl`), so a restart never touches the shared ledger. The guard's cap must leave its 80% must-run tripwire above 5.00: the app raises its own cap to at least `total / 0.8 x 1.04` (USD 6.50), or uses `LLM_BUDGET_USD` if that is higher.
+
+### Preview (on every input card; no model call, no web call, no cost)
+
+`{idea, place, languages, counts: {features, roles, apps, integrations, references, facts: {kind: n}}, compass: {tier, degraded} (information only), load: {score, class, components}, size_class: "tiny" | "small" | "medium" | "big", size_label, light, signals, trust: {on, why}, topics: {total, by_job: {job: {count, labels}}, not_run}, declined, dropped, warnings: [{code, text}], requests, estimate: {size_class, searches, pages, minutes, usd_micros: {low, mid, high}, basis: "estimate" | "measured", note}}`. The estimate says "estimate, not measured" until the spend record holds a finished run of that size class; then `mid` is the median of the measured runs.
