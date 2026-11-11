@@ -44,7 +44,7 @@ def test_ledger_anchored_and_cap_clamped(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, clock: FakeClock
 ) -> None:
     """The default ledger is the same file from every working directory, and ``LLM_BUDGET_USD``
-    cannot lift the USD 6.00 cap."""
+    cannot lift the USD 8.00 ceiling."""
     elsewhere = tmp_path / "somewhere" / "else"
     elsewhere.mkdir(parents=True)
     other = tmp_path / "another"
@@ -64,26 +64,27 @@ def test_ledger_anchored_and_cap_clamped(
     absolute = tmp_path / "mine.jsonl"
     assert Settings(_env_file=None, llm_budget_ledger=absolute).llm_budget_ledger == absolute  # type: ignore[call-arg]
 
-    # the cap: 60 is clamped to the hard 6.00 with a warning; the effective cap stays at 5.70
-    assert Decimal("6.00") == HARD_CAP_USD and HARD_EFFECTIVE_CAP_MICROS == 5_700_000
+    # the cap: 60 is clamped to the hard 8.00 with a warning; the effective cap stays at 7.60 (D-125)
+    assert Decimal("8.00") == HARD_CAP_USD and HARD_EFFECTIVE_CAP_MICROS == 7_600_000
     with capture_logs() as logs:
         config = BudgetConfig.load(cap_usd=Decimal("60"))
-    assert config.cap_micros == HARD_CAP_MICROS == 6_000_000
-    assert config.effective_cap_micros == 5_700_000
+    assert config.cap_micros == HARD_CAP_MICROS == 8_000_000
+    assert config.effective_cap_micros == 7_600_000
     warned = [e for e in logs if e["event"] == "budget_cap_clamped"]
     assert len(warned) == 1 and warned[0]["requested_micros"] == 60_000_000
     # a budget file that sets the effective fraction to 100% does not lift the effective cap either
-    full = BudgetConfig.from_dict({"effective_cap_fraction": "1.0"}, cap_usd=Decimal("6.00"))
-    assert full.effective_cap_micros == 5_700_000
-    # and the guard really refuses past 5.70 whatever was asked for
+    full = BudgetConfig.from_dict({"effective_cap_fraction": "1.0"}, cap_usd=Decimal("8.00"))
+    assert full.effective_cap_micros == 7_600_000
+    # and the guard really refuses past 7.60 whatever was asked for
     guard = BudgetGuard(
         budget_config_for_tests("60"), Pricing.load(), MemoryLedger(clock=clock), bills=True
     )
-    guard.reserve(["adhoc:a"], 5_700_000, purpose=MUST, model=MODEL)
+    guard.reserve(["adhoc:a"], 7_600_000, purpose=MUST, model=MODEL)
     with pytest.raises(BudgetExceeded):
         guard.reserve(["adhoc:a"], 1, purpose=MUST, model=MODEL)
-    # smaller caps still work (the clamp only lowers)
+    # smaller caps still work (the clamp only lowers); 95% of 6.00 (the default cap in force) stays 5.70
     assert BudgetConfig.load(cap_usd=Decimal("2.00")).cap_micros == 2_000_000
+    assert BudgetConfig.load(cap_usd=Decimal("6.00")).effective_cap_micros == 5_700_000
 
 
 def test_unknown_scope_kinds_are_refused_before_anything_is_written(

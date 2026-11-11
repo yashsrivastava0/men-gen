@@ -46,7 +46,7 @@ MESSAGE = (
     "(LLM_MODE=live, a dynamic LLM_MODE value, `just live-*` or a `mde_research_agent.live_*` script "
     "without --dry-run/--mock/--replay) but ALLOW_LIVE_LLM=1 is not set "
     "in the environment. Rule 3: only the lead or `live-runner` runs live batches, within the "
-    "USD 6.00 cap (run `just budget` first). Subagents must use mock or replay mode."
+    "live cap, CLAUDE.md rule 3 (run `just budget` first). Subagents must use mock or replay mode."
 )
 
 # --- patterns over the NORMALISED command (see ``normalise``) ---------------------------------

@@ -9,7 +9,7 @@ Related: [overview](overview.md), [flow and gates](flow-and-gates.md), [LLM gate
 | Asset | Why it matters |
 | --- | --- |
 | The approval chain (Brief and Plan, bound to a hash) | `spec_ready` is the signal that a frontend engine may start building an app on someone's authority |
-| Live LLM spend | a hard limit of USD 6.00 for the whole job; a bug here is real money |
+| Live LLM spend | a hard ceiling of USD 8.00 for the whole job (the cap in force is `LLM_BUDGET_USD`, default 6.00); a bug here is real money |
 | Secrets: the OpenAI key, the database password, keys a user pastes into the chat | leaking any of them is the worst outcome of a log line or a stored event |
 | Tenant data: ideas, uploads, specs, approvals | one tenant must never see or change another's |
 | The host: files, git, the shell | the hand-off writes a git repo; engineers' agents run shell commands |
@@ -50,10 +50,10 @@ Web results, search text, uploads and any user text that a *different* call re-r
 
 ### 3. The budget guard and the ledger
 
-Total live spend never exceeds USD 6.00. Details: [llm-gateway](llm-gateway.md), [runbook](../runbooks/live-llm-budget.md), [ADR 0005](../adr/0005-budget-guard-fails-closed.md).
+Total live spend never exceeds USD 8.00 (ceiling; default cap in force 6.00). Details: [llm-gateway](llm-gateway.md), [runbook](../runbooks/live-llm-budget.md), [ADR 0005](../adr/0005-budget-guard-fails-closed.md).
 
 * **Three keys for live:** `LLM_MODE=live`, `ALLOW_LIVE_LLM=1`, and `MDE_FORBID_LIVE` unset (the pytest autouse fixture sets it, so a test cannot go live even if the other two are in the outer environment). `mde_llm_gateway.gating.require_live` checks all three. A fourth layer, the hook `.claude/hooks/guard_live.py`, stops an agent's shell command that would switch on live mode.
-* **Reserve, then call.** Every provider attempt reserves its worst case in the ledger inside one critical section (file lock) with the cap check, so parallel processes cannot overshoot. `HARD_CAP_USD = 6.00` clamps `LLM_BUDGET_USD`; the effective cap is at most USD 5.70; unknown models, tools and scope kinds are refused; scoped caps apply; tripwires at 50%, 80% (only `must-run` purposes) and 95% (everything refused).
+* **Reserve, then call.** Every provider attempt reserves its worst case in the ledger inside one critical section (file lock) with the cap check, so parallel processes cannot overshoot. `HARD_CAP_USD = 8.00` clamps `LLM_BUDGET_USD`; the effective cap is at most USD 7.60; unknown models, tools and scope kinds are refused; scoped caps apply; tripwires at 50%, 80% (only `must-run` purposes) and 95% (everything refused).
 * **Fail closed.** A commit that fails, a negative or unpriceable usage, a timeout, a cancellation or a bug after the request left books the **worst case**; a reservation never closed counts as **spent** after ten minutes, never as released. `must-run` is a privilege of in-process code: the HTTP API rewrites it to `api:must-run...`.
 * **Ledger integrity.** The ledger path is anchored to the main repository root (another working directory cannot see a fresh USD 6) and guarded by `<ledger>.guard` (size, lines, spend, first-line hash). A deleted, truncated or replaced ledger makes live calls refuse with `LedgerIntegrityError` (HTTP 503) until an operator resets deliberately.
 * **External backstop.** The in-repo guard cannot see spend by other tools. Set a USD 6 limit on the OpenAI project in the dashboard before the first live batch.

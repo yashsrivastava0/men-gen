@@ -46,7 +46,7 @@ git status --short                               # what is changed here
 | --- | --- | --- | --- |
 | `mock` (default) | nothing | none | all offline work; every call spec ships a deterministic handler |
 | `replay` | a cassette per rendered request | none | free reruns of calls recorded live |
-| `live` | `ALLOW_LIVE_LLM=1`, a key, no `MDE_FORBID_LIVE` | metered against USD 6.00 | only the lead's or operator's batches |
+| `live` | `ALLOW_LIVE_LLM=1`, a key, no `MDE_FORBID_LIVE` | metered against the cap in force (default USD 6.00, ceiling 8.00) | only the lead's or operator's batches |
 
 * **`CassetteMissing: no cassette for <spec> v<n> (key ...)`**: replay never goes live. A cassette goes stale whenever the rendered prompt, model, tools, effort or schema changes, so a prompt edit makes every older cassette a miss. Switch to mock for development; re-record only in a live batch. `CASSETTE_DIR` (default `tests/cassettes`) is anchored to the **main checkout**, so a worktree replays only cassettes already in main. Never edit a cassette by hand.
 * **`LiveCallForbidden`**: one of the three switches is wrong (`LLM_MODE`, `ALLOW_LIVE_LLM`, `MDE_FORBID_LIVE`). In tests this is by design.

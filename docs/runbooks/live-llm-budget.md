@@ -1,4 +1,4 @@
-# Runbook: live LLM budget (USD 6.00 total)
+# Runbook: live LLM budget (USD 8.00 ceiling, USD 6.00 default)
 
 Audience: the lead (or the one designated `live-runner`) and the user who owns the budget. Subagents never run live batches. Background: [architecture/llm-gateway.md](../architecture/llm-gateway.md), [ADR 0005](../adr/0005-budget-guard-fails-closed.md), [security](../architecture/security.md).
 
@@ -10,13 +10,13 @@ Where things stand (2026-11-08): L0 ran (7 of 7, USD 0.0222 spent). L1 to L4 are
 
 ## The rules in one paragraph
 
-Total live spend for the whole job never exceeds USD 6.00; the guard plans against 95% of that (USD 5.70). `LLM_BUDGET_USD` can only lower the cap: a larger value is clamped to 6.00 with a `budget_cap_clamped` warning. Live calls need `LLM_MODE=live` AND `ALLOW_LIVE_LLM=1` and are impossible while `MDE_FORBID_LIVE=1` (the pytest fixture sets it). Every call reserves its worst case first and commits the real cost afterwards, in one append-only ledger shared by all processes. Anything uncertain is booked as spent (worst case), and a deleted or truncated ledger stops live calls until it is reset on purpose (see "Recovering"). Only code that runs inside the process can use the `must-run` purpose; the HTTP API strips it.
+Total live spend for the whole job never exceeds USD 8.00 (the ceiling, raised from 6.00 by the owner on the Research agent's build, D-125); the guard plans against 95% of the cap in force. The cap in force is `LLM_BUDGET_USD`, default 6.00 (95%: USD 5.70); the owner sets it to 8.00 to use the new ceiling (95%: USD 7.60, must-run-only from USD 6.40). A larger value than 8.00 is clamped to 8.00 with a `budget_cap_clamped` warning. Nothing changes until the owner sets the variable. Live calls need `LLM_MODE=live` AND `ALLOW_LIVE_LLM=1` and are impossible while `MDE_FORBID_LIVE=1` (the pytest fixture sets it). Every call reserves its worst case first and commits the real cost afterwards, in one append-only ledger shared by all processes. Anything uncertain is booked as spent (worst case), and a deleted or truncated ledger stops live calls until it is reset on purpose (see "Recovering"). Only code that runs inside the process can use the `must-run` purpose; the HTTP API strips it.
 
 ## Before the first live batch
 
 1. **Set an external backstop**: in the OpenAI dashboard set a USD 6 monthly spend limit on the project that owns the key (and an email alert at USD 3). The in-repo guard cannot see spend by other tools or retries it did not make; the dashboard limit can.
 2. `uv run python scripts/doctor.py` reports key presence only. Make sure the main checkout's `data/.budget/` is writable and `just budget` prints USD 0.0000 (or the total so far). The ledger always lives in the **main repository** (`<main checkout>/data/.budget/ledger.jsonl`), whichever worktree or directory you run from; `uv run python -m mde_llm_gateway.budget_cli init` creates it with its guard file (a first live call does the same).
-3. Confirm `LLM_BUDGET_USD` is 6.00 (default) and that `pricing.yaml` still matches the model page (gpt-6-luna 0.10 / 0.01 / 0.50 per 1M tokens, web search 0.01 per call).
+3. Confirm `LLM_BUDGET_USD` is what you intend (6.00 default; at most 8.00) and that `pricing.yaml` still matches the model page (gpt-6-luna 0.10 / 0.01 / 0.50 per 1M tokens, web search 0.01 per call).
 
 ## Running a batch (lead, or the user in their own terminal)
 
@@ -72,9 +72,9 @@ The report shows spent USD and micros, percent of the cap and of the effective c
 
 | Level | Share of the cap (spent + reserved) | Effect |
 | --- | --- | --- |
-| warn | 50% (USD 3.00) | one warning in the logs (`budget_tripwire_50`); everything still runs |
-| must-run only | 80% (USD 4.80) | only calls with `ctx.purpose` starting `must-run` are accepted; the rest raise `BudgetExceeded` |
-| refuse | 95% (USD 5.70) | everything raises `BudgetExceeded` |
+| warn | 50% (USD 3.00 of 6.00; 4.00 of 8.00) | one warning in the logs (`budget_tripwire_50`); everything still runs |
+| must-run only | 80% (USD 4.80 of 6.00; 6.40 of 8.00) | only calls with `ctx.purpose` starting `must-run` are accepted; the rest raise `BudgetExceeded` |
+| refuse | 95% (USD 5.70 of 6.00; 7.60 of 8.00) | everything raises `BudgetExceeded` |
 
 Scoped caps (`packages/llm-gateway/src/mde_llm_gateway/budget.yaml`): session USD 1.00 (0.50 before D-124), research run 0.30, eval run 1.50, test 0.30; add an exact-scope entry under `scope_overrides_usd` for an eval run with its own allowance. Only these scope kinds (and kinds added in `budget.yaml`) are accepted: a scope such as `x:1` is refused (`details.reason = unknown_scope_kind`) instead of running uncapped. The `must-run` purpose works for in-process callers only; the HTTP API rewrites it to `api:must-run...`. Engines treat `BudgetExceeded` as "use the deterministic fallback", never as a reason to retry.
 

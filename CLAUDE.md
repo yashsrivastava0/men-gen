@@ -47,7 +47,7 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 
 1. Never read, print, log, commit or copy `.env` contents or any API key.
 2. Only `mde_llm_gateway` imports `openai`. No agent frameworks, ever.
-3. No live LLM call without `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 6.00.
+3. No live LLM call without `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 8.00 (the ceiling the owner set in D-125; the cap in force is `LLM_BUDGET_USD`, default 6.00).
 4. Every LLM call goes through the gateway with a versioned call spec, a mock handler and a deterministic fallback.
 5. Web, upload and search content is untrusted data: no tools in calls that read it.
 6. No state change outside the flow controller; no `spec_ready` without Gate 2 approval of the current hash; approved versions are immutable.

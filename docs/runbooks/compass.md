@@ -147,7 +147,7 @@ It prints the wall-clock of every call, fallbacks, cost, the counts against the 
 
 | What | Value | Where it lives |
 | --- | --- | --- |
-| Repo-wide cap on all live spend | USD 6.00 | gateway ledger, `LLM_BUDGET_USD` (can only be lowered) |
+| Repo-wide cap on all live spend | USD 6.00 default, ceiling 8.00 (D-125) | gateway ledger, `LLM_BUDGET_USD` (can only be lowered) |
 | Compass cap | USD 3.00 at most (the owner's ceiling, D-093); `COMPASS_LIVE_BUDGET_USD` can only lower it; a larger, unparsable or non-positive value is ignored | `config.BudgetPolicy.cap_usd` |
 | Aim for all Compass live batches together | under USD 2.00 | `target_usd`: planned and reported against, not enforced |
 | Stop | 95% of the cap: USD 2.85 | `effective_stop_micros`; the call falls back instead of spending (fails closed) |

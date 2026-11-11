@@ -31,3 +31,5 @@ Log decisions and ADRs; update `PROGRESS.md`; respect the repository's rules on 
 ## Local overrides recorded by the owner
 
 - **2026-11-09, Compass AI-planned interview (prompt 02): no push.** Rule A.8 would push the task branch and tags after every phase; the owner chose "local only" because the same prompt says "do not push". Branches, commits and annotated tags stay on this machine; the report lists the exact `git push` commands for the owner. Rule A.8 applies unchanged to any later task that does not override it.
+
+- **2026-11-11, Research agent (prompt 05): no push, no merge into `main`; live-spend ceiling 8.00.** Rule A.8 would push the task branch and tags; the prompt says local only, so the branch `feat/research-agent` and its tags stay on this machine and nothing is merged into `main`. The live-spend ceiling rises from 6.00 to 8.00 (D-125); the cap in force stays 6.00 until the owner sets `LLM_BUDGET_USD`.
