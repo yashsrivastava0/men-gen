@@ -173,10 +173,10 @@ def build_query_in(
     langs = list(t.place.languages[:1]) if t.place and t.job == "local" else []
     local_terms = [s for s in ctx.input.hints.synonyms if not s.isascii()][:3] if langs else []
     info = ctx.catalog.intent_words.languages.get(langs[0]) if langs else None
+    # Names from model memory are untyped (competitors or providers of the category): only the competitor landscape can use
+    # them. A messaging-providers topic searched '"Mindbody" messaging API' in the first live run after this rule changed.
     seeds = (
-        list(ctx.plan.discovery_names[:2])
-        if round_no == 1 and t.template_id in {"landscape", "providers"}
-        else []
+        list(ctx.plan.discovery_names[:2]) if round_no == 1 and t.template_id == "landscape" else []
     )
     return q_calls.QueryIn(
         job=t.job,
