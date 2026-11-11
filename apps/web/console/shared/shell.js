@@ -1,6 +1,6 @@
 /* Mobigen console shell. Fills the agent switcher from the registry (registry.js), then mounts the chosen
-   agent: its stylesheet and HTML fragment first, its optional helper script and its script last (so the
-   script finds its elements).
+   agent: its stylesheet and HTML fragment first, its optional helper script, its optional extras (more scripts and
+   stylesheets of the screen set) and its script last (so the script finds its elements and everything it uses).
    Agent scripts keep global listeners and cannot be unloaded, so switching agents reloads the page with
    ?agent=<id>. The fragment is the agent's own static file from this origin (code, never user content);
    it is parsed with DOMParser into an inert document, and script/style/link/frame nodes are dropped.
@@ -64,6 +64,15 @@
       return res.text();
     });
   }
+  /** The optional extras of a registry entry: stylesheets load beside, scripts load one after the other in order. */
+  function loadExtras(list) {
+    var scripts = [];
+    var styles = [];
+    (list || []).forEach(function (path) { (/\.css$/i.test(path) ? styles : scripts).push(path); });
+    return Promise.all(styles.map(loadStyle)).then(function () {
+      return scripts.reduce(function (chain, src) { return chain.then(function () { return loadScript(src); }); }, Promise.resolve());
+    });
+  }
   function mountMarkup(text) {
     var doc = new root.DOMParser().parseFromString(text, "text/html");
     var bar = UI.$("agent-topbar");
@@ -85,6 +94,8 @@
     Promise.all([loadStyle(active.style), loadMarkup(active.markup)]).then(function (done) {
       mountMarkup(done[1]);
       return active.helper ? loadScript(active.helper) : null;   // pure helpers first, then the screen
+    }).then(function () {
+      return loadExtras(active.extras);      // extra scripts and styles, still before the screen's own script
     }).then(function () {
       return loadScript(active.script);
     }).catch(function (err) {

@@ -7,6 +7,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
@@ -30,12 +31,15 @@ def text(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
-def registry_entries() -> list[dict[str, str]]:
-    """The registry.js entries, read as plain text (its object literals are simple string maps)."""
-    return [
-        dict(re.findall(r'(\w+):\s*"([^"]*)"', body))
-        for body in re.findall(r"\{([^{}]*)\}", REGISTRY_JS)
-    ]
+def registry_entries() -> list[dict[str, Any]]:
+    """The registry.js entries, read as plain text (string values, and the optional ``extras`` list of strings)."""
+    entries: list[dict[str, Any]] = []
+    for body in re.findall(r"\{([^{}]*)\}", REGISTRY_JS):
+        entry: dict[str, Any] = dict(re.findall(r'(\w+):\s*"([^"]*)"', body))
+        for key, items in re.findall(r"(\w+):\s*\[([^\]]*)\]", body):
+            entry[key] = re.findall(r'"([^"]*)"', items)
+        entries.append(entry)
+    return entries
 
 
 def test_the_console_has_the_documented_layout() -> None:
@@ -50,6 +54,9 @@ def test_the_console_has_the_documented_layout() -> None:
         "agents/compass/interview.js",
         "agents/compass/compass.js",
         "agents/compass/compass.css",
+        "agents/research/research_view.js",
+        "agents/research/research.js",
+        "agents/research/research.css",
     }
     assert {rel(p) for p in FILES} == expected
     assert (CONSOLE.parent / "app" / ".gitkeep").is_file(), "apps/web/app is reserved for React"
@@ -83,11 +90,17 @@ async def test_every_asset_referenced_by_the_shell_and_registry_exists_and_is_se
     for entry in entries:
         assets += [entry["markup"], entry["script"], entry["style"]]
         assets += [entry["helper"]] if "helper" in entry else []
+        assets += entry.get("extras", [])
     assert {"shared/tokens.css", "shared/shell.css"} <= set(assets)
     assert {"shared/registry.js", "shared/components.js", "shared/shell.js"} <= set(assets)
     assert {"agents/compass/compass.html", "agents/compass/compass.js"} <= set(assets)
     assert "agents/compass/interview.js" in assets, "the interview helpers are loaded by the shell"
     assert "agents/compass/compass.css" in assets
+    assert {
+        "agents/research/research_view.js",
+        "agents/research/research.js",
+        "agents/research/research.css",
+    } <= set(assets), "the Research screens are loaded by the shell as extras"
     for ref in assets:
         assert not re.match(r"^(https?:)?//", ref), f"external asset {ref}"
         assert (CONSOLE / ref).is_file(), ref

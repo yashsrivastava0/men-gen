@@ -367,7 +367,7 @@ CONTRACT*/
     "x.stream_off": "Stream reconnecting", "x.provenance_none": "No details recorded for this item.",
     "x.value_history": "Earlier values", "x.dev_none": "Nothing yet.", "x.brief_empty": "Your Brief will appear here as we talk.",
     "x.step_check": "Check", "x.back_to_chat": "Back to chat", "x.tier": "Tier",
-    "x.diagnostics": "Diagnostics", "x.copy_claude": "Copy for Claude"
+    "x.diagnostics": "Diagnostics", "x.copy_claude": "Copy for Claude", "x.research_tab": "Research"
   };
 
   /** The page-only state of the Brief panel: which row is being edited, which structure card is open, which inline
@@ -384,7 +384,7 @@ CONTRACT*/
     qa: [], qaEdit: null, qaTimer: null, qaAnswered: 0, pulsed: {},
     awaitingTier: false, tierEditing: false, welcomeEl: null, form: null, submitted: {}, layoutAsked: false,
     networkTrace: [], lastError: null,
-    bands: null, structure: null, structureJson: "", structTimer: null, structTab: false
+    bands: null, structure: null, structureJson: "", structTimer: null, structTab: false, researchTab: false
   };
   var WELCOME_FRAME = "welcome";   // the server's canned first card: the welcome block below replaces it
 
@@ -1813,7 +1813,8 @@ CONTRACT*/
       renderSessionLabel();
       if (json !== state.viewJson) { state.viewJson = json; renderBrief(); renderSources(); renderDev(); }
       var hasTab = hasStructureSection();
-      if (hasTab !== state.structTab) { state.structTab = hasTab; renderTabs(); }
+      var hasResearch = researchTabVisible();
+      if (hasTab !== state.structTab || hasResearch !== state.researchTab) { state.structTab = hasTab; state.researchTab = hasResearch; renderTabs(); }
       scheduleStructure();
     }).catch(function () {
       if (!state.view) { renderBrief(); }
@@ -2060,6 +2061,56 @@ CONTRACT*/
     return [dl, cp];
   }
 
+  // ---- research: the next engine (research.js, loaded before this file as an "extras" file of the registry entry) -----------
+  // After Gate 1 the Research agent runs on the approved export. This file only hands research.js the sign-in headers, a way
+  // to read the export and the tab to draw in; the run, its progress and its findings are research.js's business.
+  /** The approved export for a Research run. A plain fetch (it can be megabytes; the network trace would keep a copy). */
+  function exportForResearch(sid) {
+    return fetch(BASE + "/sessions/" + encodeURIComponent(sid) + "/export", { headers: authHeaders() }).then(function (res) {
+      return res.text().then(function (txt) {
+        var data = null;
+        try { data = txt ? JSON.parse(txt) : null; } catch (e) { data = null; }
+        if (!res.ok) { throw ApiProblem(res.status, data && data.code ? data.code : "http_" + res.status, data && data.message ? data.message : ""); }
+        return data;
+      });
+    });
+  }
+  function researchOpts() {
+    var sid = state.sessionId;
+    var hd = state.view && state.view.header;
+    return {
+      sessionId: sid, host: $("tab-research"),
+      title: (state.session && state.session.user_label) || (hd && hd.title) || sid,
+      briefHash: state.view ? state.view.brief_hash : "",
+      loadExport: function () { return exportForResearch(sid); },
+      onShown: function () { renderTabs(); setPane("brief"); setTab("research"); }
+    };
+  }
+  /** The Research tab exists for an approved Brief, or once a run for this project is remembered. */
+  function researchTabVisible() {
+    var R = window.MobigenResearch;
+    return !!R && !!state.sessionId && (isApproved() || !!R.knownRun(state.sessionId));
+  }
+  /** Gate 1 passed: start (or re-attach to) the Research run and show it. A no-op when research.js is not loaded. */
+  function startResearchAfterApproval() {
+    var R = window.MobigenResearch;
+    if (!R || !state.sessionId) { return; }
+    R.start(researchOpts());
+  }
+  function showResearchTab() {
+    var R = window.MobigenResearch;
+    if (R && state.sessionId) { R.show(researchOpts()); }
+  }
+  /** A saved export opened from the start screen gets a page of its own (no interview, no session). */
+  function openResearchPage() {
+    $("home").hidden = true; $("workspace").hidden = true; $("research-page").hidden = false;
+    return { host: $("research-page"), onBack: showHome };
+  }
+  function leaveResearch() {
+    if (window.MobigenResearch) { window.MobigenResearch.detach(); }
+    $("research-page").hidden = true;
+  }
+
   function approvalEl(vm) {
     var f = vm.footer;
     var box = h("div", { class: "approval", role: "region", "aria-label": f.primary_label });
@@ -2096,6 +2147,8 @@ CONTRACT*/
         return loadView();
       }).then(function () {
         return refreshSession();
+      }).then(function () {
+        if (isApproved()) { startResearchAfterApproval(); }
       }).catch(function (e) {
         err.textContent = friendly(e);
         loadView();
@@ -2109,6 +2162,7 @@ CONTRACT*/
         type: "gate_decision", event_id: randomId(), decision: "approve", version: vm.header.version,
         brief_hash: vm.brief_hash, section_hashes: vm.section_hashes
       }).then(function () { toast(t("x.approved_toast")); return loadView(); }).then(function () { return refreshSession(); })
+        .then(function () { if (isApproved()) { startResearchAfterApproval(); } })
         .catch(function (e) { err.textContent = friendly(e); loadView(); });
     } } });
     var secondary = h("button", { class: "btn", type: "button", text: f.secondary_label, on: { click: function () {
@@ -2750,9 +2804,12 @@ CONTRACT*/
   }
 
   // ---- tabs and panes -----------------------------------------------------------------------------------------
-  var TABS = [["brief", "x.brief"], ["structure", "ui.v2.structure_tab"], ["lookup", "x.lookup_tab"], ["sources", "x.sources_tab"], ["history", "x.history_tab"]];
+  var TABS = [["brief", "x.brief"], ["structure", "ui.v2.structure_tab"], ["research", "x.research_tab"], ["lookup", "x.lookup_tab"], ["sources", "x.sources_tab"], ["history", "x.history_tab"]];
   /** The Structure tab exists once the Brief records a size band (the page then has a structure section). */
-  function tabVisible(id) { return id !== "structure" || hasStructureSection(); }
+  function tabVisible(id) {
+    if (id === "research") { return researchTabVisible(); }
+    return id !== "structure" || hasStructureSection();
+  }
   function renderTabs() {
     var bar = $("tabs");
     clear(bar);
@@ -2771,6 +2828,7 @@ CONTRACT*/
     if (name === "lookup") { renderLookup(); }
     if (name === "sources") { renderSources(); }
     if (name === "structure") { renderStructure(); loadStructure(); }
+    if (name === "research") { showResearchTab(); }
   }
   function setPane(name) {
     $("workspace").dataset.pane = name;
@@ -2997,6 +3055,7 @@ CONTRACT*/
   // ---- home ----------------------------------------------------------------------------------------------------
   function showHome() {
     stopStream();
+    leaveResearch();
     state.sessionId = null; state.session = null;
     $("workspace").hidden = true;
     $("home").hidden = false;
@@ -3023,6 +3082,7 @@ CONTRACT*/
         h("label", { class: "field" }, h("span", { text: t("x.name") }), name),
         h("label", { class: "field" }, h("span", { text: t("ui.mode") }), mode),
         h("label", { class: "field" }, h("span", { text: t("ui.language") }), lang), start), homeError));
+    if (window.MobigenResearch) { home.appendChild(window.MobigenResearch.homePanel({ openPage: openResearchPage })); }
     var list = h("div", { class: "projects" });
     home.appendChild(h("div", null, h("h2", { text: t("ui.your_projects") }), list));
     api("GET", "/sessions").then(function (d) {
@@ -3053,6 +3113,8 @@ CONTRACT*/
 
   function openSession(id) {
     stopStream();
+    leaveResearch();
+    state.researchTab = false;
     state.sessionId = id; state.lastSeq = 0; state.seen = {}; state.devEvents = []; state.view = null; state.viewJson = "";
     state.lookups = []; state.activeCard = null; state.ui = freshUi(); state.calls = [];
     state.structure = null; state.structureJson = ""; state.structTab = false;
@@ -3077,6 +3139,7 @@ CONTRACT*/
       if (!state.lastSeq) { state.awaitingTier = !state.depth; }
       applyComposerGate();
       if (state.awaitingTier || !state.lastSeq) { showWelcome(); }
+      if (window.MobigenResearch && window.MobigenResearch.isActive(id) && state.sessionId === id) { setPane("brief"); setTab("research"); }   // a run is still going: show it
     });
   }
 
@@ -3184,6 +3247,7 @@ CONTRACT*/
   function openSettings() {
     $("set-token").value = state.cfg.token; $("set-tenant").value = state.cfg.tenant;
     $("set-user").value = state.cfg.user; $("set-roles").value = state.cfg.roles;
+    $("set-research-url").value = window.MobigenResearch ? window.MobigenResearch.getBaseUrl() : "";
     $("settings-dialog").hidden = false;
     $("set-token").focus();
   }
@@ -3191,6 +3255,7 @@ CONTRACT*/
     e.preventDefault();
     state.cfg = { token: $("set-token").value.trim(), tenant: $("set-tenant").value.trim(), user: $("set-user").value.trim(), roles: $("set-roles").value.trim() };
     store.set("compass.cfg", JSON.stringify(state.cfg));
+    if (window.MobigenResearch) { window.MobigenResearch.setBaseUrl($("set-research-url").value.trim()); }
     $("settings-dialog").hidden = true;
     if (state.sessionId) { openSession(state.sessionId); } else { showHome(); }
     loadBudget();
@@ -3202,6 +3267,7 @@ CONTRACT*/
       var raw = store.get("compass.cfg");
       if (raw) { var c = JSON.parse(raw); if (c && c.token) { state.cfg = { token: c.token, tenant: c.tenant, user: c.user, roles: c.roles || "" }; } }
     } catch (e) { /* defaults */ }
+    if (window.MobigenResearch) { window.MobigenResearch.configure({ headers: authHeaders }); }
     state.lang = store.get("compass.lang") || "en";
     state.mode = store.get("compass.mode") || "guided";
     var th = store.get("compass.theme");
@@ -3250,7 +3316,10 @@ CONTRACT*/
     setInterval(function () { if (state.devOpen) { loadBudget(); loadCalls(); } }, 10000);
     applyChromeStrings();
     renderMeter();
-    loadStrings(state.lang).then(function () { showHome(); loadBudget(); loadBands(); });
+    loadStrings(state.lang).then(function () {
+      showHome(); loadBudget(); loadBands();
+      if (window.MobigenResearch) { window.MobigenResearch.resumePage({ openPage: openResearchPage }); }   // a reload reopens the saved-export research that was open
+    });
     if (store.get("compass.dev") === "1") { setDev(true); }
   }
 

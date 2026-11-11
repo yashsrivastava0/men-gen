@@ -8,6 +8,7 @@ import re
 import shutil
 import subprocess
 from pathlib import Path
+from typing import Any
 
 import httpx
 import pytest
@@ -27,14 +28,17 @@ COMPASS_JS = text("agents/compass/compass.js")
 COMPASS_HTML = text("agents/compass/compass.html")
 TOKENS = text("shared/tokens.css")
 
-ENTRY_KEYS = {"id", "title", "base", "markup", "helper", "script", "style"}
+ENTRY_KEYS = {"id", "title", "base", "markup", "helper", "extras", "script", "style"}
 
 
-def registry_entries() -> list[dict[str, str]]:
-    return [
-        dict(re.findall(r'(\w+):\s*"([^"]*)"', body))
-        for body in re.findall(r"\{([^{}]*)\}", REGISTRY_JS)
-    ]
+def registry_entries() -> list[dict[str, Any]]:
+    entries: list[dict[str, Any]] = []
+    for body in re.findall(r"\{([^{}]*)\}", REGISTRY_JS):
+        entry: dict[str, Any] = dict(re.findall(r'(\w+):\s*"([^"]*)"', body))
+        for key, items in re.findall(r"(\w+):\s*\[([^\]]*)\]", body):
+            entry[key] = re.findall(r'"([^"]*)"', items)
+        entries.append(entry)
+    return entries
 
 
 # ---- the agent switcher and the registry -----------------------------------------------------------
@@ -62,11 +66,18 @@ def test_the_registry_lists_compass_and_only_compass_today() -> None:
     assert entry["style"] == "agents/compass/compass.css"
     assert entry["markup"] == "agents/compass/compass.html"
     assert entry["helper"] == "agents/compass/interview.js"
+    assert entry["extras"] == [
+        "agents/research/research_view.js",
+        "agents/research/research.js",
+        "agents/research/research.css",
+    ], "the Research screens ride along as extras (loaded before the screen script)"
     for e in entries:
         assert re.fullmatch(r"[a-z][a-z0-9_-]*", e["id"]), e["id"]
         for key in ("markup", "helper", "script", "style"):
             assert (CONSOLE / e[key]).is_file(), e[key]
             assert e[key].startswith(f"agents/{e['id']}/"), "an agent's files live in its folder"
+        for extra in e.get("extras", []):
+            assert (CONSOLE / extra).is_file(), extra
 
 
 @pytest.mark.skipif(shutil.which("node") is None, reason="node is not installed")
@@ -172,7 +183,7 @@ def test_tokens_define_the_theme_variables_for_light_and_dark() -> None:
 def test_tokens_are_only_defined_in_tokens_css_and_every_use_resolves() -> None:
     light, _, _ = token_blocks()
     defined = set(light)
-    for rel in ("shared/shell.css", "agents/compass/compass.css"):
+    for rel in ("shared/shell.css", "agents/compass/compass.css", "agents/research/research.css"):
         css = text(rel)
         assert not re.search(r"(?<![\w-])--[\w-]+\s*:", css), f"{rel} defines a custom property"
         used = set(re.findall(r"var\(--([\w-]+)", css))

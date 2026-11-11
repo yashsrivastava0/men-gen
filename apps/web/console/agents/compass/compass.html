@@ -48,6 +48,7 @@
       <div id="tabs" class="tabs" role="tablist" aria-label="Brief tabs"></div>
       <div id="tab-brief" class="tabpanel" role="tabpanel"></div>
       <div id="tab-structure" class="tabpanel" role="tabpanel" hidden></div>
+      <div id="tab-research" class="tabpanel" role="tabpanel" aria-label="Research" hidden></div>
       <div id="tab-lookup" class="tabpanel" role="tabpanel" hidden></div>
       <div id="tab-sources" class="tabpanel" role="tabpanel" hidden></div>
       <div id="tab-history" class="tabpanel" role="tabpanel" hidden>
@@ -59,6 +60,7 @@
       </div>
     </div>
   </section>
+  <section id="research-page" class="research-page" aria-label="Research" hidden></section>
 </main>
 
 <aside id="history-drawer" class="drawer drawer-right" role="dialog" aria-modal="false" aria-labelledby="history-drawer-title" hidden>
@@ -80,6 +82,7 @@
     <label class="field"><span>Tenant</span><input id="set-tenant" type="text" autocomplete="off" spellcheck="false"></label>
     <label class="field"><span>User</span><input id="set-user" type="text" autocomplete="off" spellcheck="false"></label>
     <label class="field"><span>Roles (comma separated, optional)</span><input id="set-roles" type="text" autocomplete="off" spellcheck="false"></label>
+    <label class="field"><span>Research service address (same sign-in)</span><input id="set-research-url" type="text" autocomplete="off" spellcheck="false" placeholder="http://127.0.0.1:8120"></label>
     <div class="row-actions"><button class="btn btn-primary" type="submit">Save</button><button id="settings-cancel" class="btn" type="button">Cancel</button></div>
   </form>
 </div>
