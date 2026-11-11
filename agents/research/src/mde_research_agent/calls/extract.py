@@ -15,7 +15,7 @@ import typing
 from pathlib import Path
 from typing import Any, Literal, get_args, get_origin
 
-from pydantic import BaseModel, ConfigDict, create_model
+from pydantic import BaseModel, ConfigDict, create_model, model_validator
 from pydantic.fields import FieldInfo
 
 from mde_contracts.gateway import CallSpec
@@ -75,6 +75,19 @@ class ExtractIn(W):
     page_published: str | None = None
     passages: str
     retry_keys: list[str]  # a second try: copy these items' quotes EXACTLY from the passages
+    topic_text: str = ""  # the topic as ONE untrusted block (built from the fields above)
+
+    @model_validator(mode="after")
+    def _build_topic(self) -> ExtractIn:
+        self.topic_text = "\n".join(
+            [
+                f"Topic: {self.question}",
+                f"Anchor: {self.anchor}; place: {self.place}",
+                f"Still needed for this topic: {' | '.join(self.slots)}",
+                f"Retry keys: {'; '.join(self.retry_keys)}",
+            ]
+        )
+        return self
 
 
 _MODELS: dict[str, type[BaseModel]] = {}
@@ -211,7 +224,7 @@ def _spec_for(job: str) -> ResearchCallSpec[ExtractIn, Any]:
             reasoning_effort="low",
             max_output_tokens=9000,
             mock_handler="mde_research_agent.calls.extract:handle",
-            untrusted_inputs=("page_title", "passages"),
+            untrusted_inputs=("page_title", "passages", "topic_text"),
             cacheable=True,
             repair=True,
             fallback="research.extract",

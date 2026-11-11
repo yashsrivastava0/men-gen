@@ -14,7 +14,7 @@ from functools import lru_cache
 from pathlib import Path
 
 import yaml
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
@@ -48,6 +48,20 @@ class LaneIn(W):
 class AssembleIn(W):
     language: str
     lanes: list[LaneIn]
+    text: str = ""  # the findings of every lane as ONE untrusted block
+
+    @model_validator(mode="after")
+    def _build_text(self) -> AssembleIn:
+        lines: list[str] = []
+        for lane in self.lanes:
+            lines.append(f"Lane {lane.lane} (limit {lane.limit} findings):")
+            lines += [
+                f"- [{i.id}] {i.kind} | {i.label} | {i.claim} | seen: {i.level}; impact: {i.impact}; flags: {','.join(i.flags)}"
+                for i in lane.items
+            ]
+            lines.append("")
+        self.text = "\n".join(lines)
+        return self
 
 
 class NoteOut(W):
@@ -125,7 +139,7 @@ SPEC: ResearchCallSpec[AssembleIn, AssembleOut] = ResearchCallSpec(
         reasoning_effort="medium",
         max_output_tokens=12000,
         mock_handler="mde_research_agent.calls.assemble:handle",
-        untrusted_inputs=("lanes",),
+        untrusted_inputs=("text",),
         cacheable=False,
         repair=True,
         fallback="research.assemble",

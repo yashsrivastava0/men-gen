@@ -11,7 +11,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
@@ -41,6 +41,25 @@ class QueryIn(W):
     round: int
     focus_terms: list[str]  # what is still missing (follow-up rounds)
     seed_names: list[str]  # names from model memory: discovery queries only
+    text: str = ""  # the topic as ONE untrusted block for the prompt (built from the fields above)
+
+    @model_validator(mode="after")
+    def _build_text(self) -> QueryIn:
+        self.text = "\n".join(
+            [
+                f"Question: {self.question}",
+                f"Anchors: {'; '.join(self.anchors)}",
+                f"Kind of app: {self.context}",
+                f"Place: {self.place}",
+                f"Words the Brief used in the other language: {', '.join(self.local_terms)}",
+                f"Named entity: {self.entity or 'none'}",
+                f"Focus terms (still missing): {', '.join(self.focus_terms)}",
+                f"Seed names from memory: {', '.join(self.seed_names)}",
+                "Earlier queries, do not repeat:",
+                *[f"- {q}" for q in self.earlier],
+            ]
+        )
+        return self
 
 
 class Variant(W):
@@ -139,14 +158,7 @@ SPEC: ResearchCallSpec[QueryIn, QueryOut] = ResearchCallSpec(
         reasoning_effort="low",
         max_output_tokens=1500,
         mock_handler="mde_research_agent.calls.queries:handle",
-        untrusted_inputs=(
-            "question",
-            "anchors",
-            "context",
-            "local_terms",
-            "seed_names",
-            "focus_terms",
-        ),
+        untrusted_inputs=("text",),
         cacheable=True,
         repair=True,
         fallback="research.write_queries",

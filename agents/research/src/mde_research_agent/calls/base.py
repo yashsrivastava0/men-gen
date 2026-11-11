@@ -17,7 +17,6 @@ import asyncio
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from datetime import timedelta
 from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
@@ -114,7 +113,6 @@ class CallRunner:
             purpose=f"research.{cs.id}",
             session_id=self._run_id,
             tenant_id=self._tenant,
-            deadline=self._clock.now() + timedelta(seconds=cs.timeout_s),
             cancel=self._cancel,
         )
 
@@ -123,7 +121,9 @@ class CallRunner:
         self._cancel.check()
         ctx = self.context(cs)
         try:
-            result = await self._gateway.run(cs.spec, inp, ctx)
+            result = await asyncio.wait_for(
+                self._gateway.run(cs.spec, inp, ctx), timeout=cs.timeout_s + 5.0
+            )
         except PROPAGATE:
             raise
         except FALLBACK_ON as exc:

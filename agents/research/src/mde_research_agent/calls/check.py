@@ -13,7 +13,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
@@ -35,6 +35,12 @@ class CheckItem(W):
 
 class CheckIn(W):
     items: list[CheckItem]
+    text: str = ""  # claims and quotes as ONE untrusted block
+
+    @model_validator(mode="after")
+    def _build_text(self) -> CheckIn:
+        self.text = "\n".join(f"[{i.id}]\nCLAIM: {i.claim}\nQUOTE: {i.quote}\n" for i in self.items)
+        return self
 
 
 class CheckVerdict(W):
@@ -87,7 +93,7 @@ SPEC: ResearchCallSpec[CheckIn, CheckOut] = ResearchCallSpec(
         reasoning_effort="low",
         max_output_tokens=3000,
         mock_handler="mde_research_agent.calls.check:handle",
-        untrusted_inputs=("items",),
+        untrusted_inputs=("text",),
         cacheable=True,
         repair=True,
         fallback="research.check",

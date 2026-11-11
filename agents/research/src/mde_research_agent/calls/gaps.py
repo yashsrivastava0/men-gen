@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
@@ -45,6 +45,26 @@ class GapTopic(W):
 
 class GapIn(W):
     topics: list[GapTopic]
+    text: str = ""  # all topics as ONE untrusted block for the prompt
+
+    @model_validator(mode="after")
+    def _build_text(self) -> GapIn:
+        lines: list[str] = []
+        for t in self.topics:
+            lines += [
+                f"Topic {t.target_id} (job: {t.job})",
+                f"- anchors: {'; '.join(t.anchors)}",
+                f"- kind of app: {t.context}; place: {t.place}",
+                f"- intent words: {', '.join(t.intent)}",
+                f"- missing: {' | '.join(t.missing)}",
+                f"- search words for the missing details: {', '.join(t.missing_terms)}",
+                f"- earlier queries: {' | '.join(t.earlier)}",
+                "- entities found in round 1: "
+                + "; ".join(f"[{e.index}] {e.name}" for e in t.entities),
+                "",
+            ]
+        self.text = "\n".join(lines)
+        return self
 
 
 class Followup(W):
@@ -126,7 +146,7 @@ SPEC: ResearchCallSpec[GapIn, GapOut] = ResearchCallSpec(
         reasoning_effort="low",
         max_output_tokens=4000,
         mock_handler="mde_research_agent.calls.gaps:handle",
-        untrusted_inputs=("topics",),
+        untrusted_inputs=("text",),
         cacheable=False,
         repair=True,
         fallback="research.gap_analyst",

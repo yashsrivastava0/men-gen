@@ -1,0 +1,16 @@
+# Builder needs (doc 12, BN-xx) that research can propose defaults for, with the sentence that says what is proposed,
+# and the reasons a finding goes on the confirm list. Text only; ids and counts are added by code.
+defaults:
+  BN-02: "Start the first release from the features that comparable apps treat as core, then common ones."
+  BN-03: "Use the usual roles, journeys and navigation of this kind of app as the starting structure."
+  BN-04: "Use the researched entity fields, statuses and lifecycles as the starting data model."
+  BN-05: "Use the researched rules as starting business rules; every number needs confirmation first."
+  BN-07: "Use the researched formats and sample-data hints for realistic mock content."
+  BN-08: "Use the researched category conventions as the starting design language."
+  BN-09: "Use the researched screen patterns (sections, components, states) as the starting screen content."
+  BN-10: "Compare the researched provider options before choosing one; confirm fees and limits."
+confirm_reasons:
+  number: "A number, fee or limit that must be confirmed before it is used."
+  legal: "Regulatory information, not advice: confirm with a professional."
+  conflict: "Sources disagree: confirm which value applies."
+  single_source: "Only one source supports this high-impact claim."

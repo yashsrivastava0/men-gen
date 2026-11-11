@@ -14,7 +14,7 @@ from __future__ import annotations
 from pathlib import Path
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, model_validator
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
@@ -66,6 +66,31 @@ class PlanIn(W):
     requests: list[RequestIn]
     existing: list[ExistingIn]
     declined: list[str]
+    text: str = ""  # the whole Brief view as ONE untrusted block
+
+    @model_validator(mode="after")
+    def _build_text(self) -> PlanIn:
+        lines = [
+            f"Idea: {self.summary}",
+            f"Category: {self.category} / {self.subcategory}; business model: {self.business_model}",
+            f'Geography stated: country "{self.country}" ({self.country_code}), region "{self.region}", '
+            f"cities: {', '.join(self.cities)}; weak geography: {self.geo_uncertain}",
+            f"App languages: {', '.join(self.locales)}",
+            "Features:",
+            *[f"- {f.id} {f.name}: {f.intent} [{f.priority}]" for f in self.features],
+            f"Roles: {'; '.join(self.roles)}",
+            f"Entities: {'; '.join(self.entities)}",
+            f"Modules: {'; '.join(self.modules)}",
+            "Facts with rules, numbers, compliance or integration details:",
+            *[f"- {f}" for f in self.facts],
+            "Trusted research requests:",
+            *[f"- {r.id}: {r.topic} | {r.question}" for r in self.requests],
+            "Topics already planned (do not repeat):",
+            *[f"- {e.job}: {e.anchor}" for e in self.existing],
+            f"Declined by the person, never research: {'; '.join(self.declined)}",
+        ]
+        self.text = "\n".join(lines)
+        return self
 
 
 class PlaceOut(W):
@@ -130,23 +155,7 @@ SPEC: ResearchCallSpec[PlanIn, PlanOut] = ResearchCallSpec(
         reasoning_effort="medium",
         max_output_tokens=8000,
         mock_handler="mde_research_agent.calls.plan:handle",
-        untrusted_inputs=(
-            "summary",
-            "category",
-            "subcategory",
-            "business_model",
-            "country",
-            "region",
-            "cities",
-            "features",
-            "roles",
-            "entities",
-            "modules",
-            "facts",
-            "requests",
-            "existing",
-            "declined",
-        ),
+        untrusted_inputs=("text",),
         cacheable=True,
         repair=True,
         fallback="research.plan",
