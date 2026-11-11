@@ -207,3 +207,4 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] Phase D: RC-8 signals, trust job and light mode, RC-9 evaluation harness, RC-10 failover, stale-run expiry, bake-off tool
 - [ ] Front end stage 2 (results, spot-check, tools) and its browser verification
 - [ ] Live: the owner runs the checklist in `docs/runbooks/research-agent.md` (nothing has run live; the live smoke needs `LLM_MODE=live`)
+- [x] Live mode is one switch: the extra live permission variable and its shell hook are removed everywhere (D-140) (9d91e6a)
