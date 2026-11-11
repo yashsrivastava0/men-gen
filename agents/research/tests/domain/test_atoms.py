@@ -48,8 +48,8 @@ def test_payload_round_trip_for_an_entity_pattern() -> None:
         claim="A booking links a member to a class",
         quote="A booking links a member to a class session",
         impact="normal",
-        entity="booking",
-        fields=[
+        entity="booking",  # pyright: ignore[reportCallIssue]
+        fields=[  # pyright: ignore[reportCallIssue]
             {
                 "name": "status",
                 "type": "enum",
@@ -58,8 +58,8 @@ def test_payload_round_trip_for_an_entity_pattern() -> None:
                 "validation": None,
             }
         ],
-        relations=["member", "class"],
-        kpis=[],
+        relations=["member", "class"],  # pyright: ignore[reportCallIssue]
+        kpis=[],  # pyright: ignore[reportCallIssue]
     )
     data = payload_from_wire("entity_pattern", wire)
     assert data["fields"][0]["values"] == "booked|cancelled"

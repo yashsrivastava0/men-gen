@@ -132,7 +132,7 @@ def slim_export(export: dict[str, Any], source_name: str) -> dict[str, Any]:
 
 
 def main(argv: list[str] | None = None) -> int:
-    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])
+    parser = argparse.ArgumentParser(description=__doc__.split("\n")[0])  # pyright: ignore[reportOptionalMemberAccess]
     parser.add_argument("--src", type=Path, default=DEFAULT_SRC)
     parser.add_argument("--out", type=Path, default=DEFAULT_OUT)
     args = parser.parse_args(argv)

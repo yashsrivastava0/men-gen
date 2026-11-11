@@ -32,7 +32,7 @@ def test_every_spec_is_registered_versioned_and_strict_schema_safe() -> None:
     ids = [s.id for s in SPECS]
     assert len(ids) == len(set(ids)) == 14 and all(i.startswith("rsch.") for i in ids)
     for s in SPECS:
-        to_strict_schema(s.spec.output_model)
+        to_strict_schema(s.spec.output_model)  # pyright: ignore[reportArgumentType]
         assert s.spec.version >= 1 and s.spec.mock_handler and s.fallback
         assert not s.spec.tools, "calls that read web or Brief text have no tools"
         assert s.spec.untrusted_inputs, s.id
@@ -51,7 +51,7 @@ def _extract_in(job: str = "features") -> ExtractIn:
         place="Bengaluru",
         language="en",
         focus="f",
-        kinds=list(EXTRACT[job].spec.output_model.model_fields),
+        kinds=list(EXTRACT[job].spec.output_model.model_fields),  # pyright: ignore[reportOptionalMemberAccess]
         want_kinds=[],
         kind_guides=["competitor: x"],
         slots=["competitors"],
@@ -69,7 +69,7 @@ async def test_every_extract_spec_renders_and_mock_runs_through_the_real_gateway
     res = await runner(client).run(EXTRACT[job], _extract_in(job))
     assert not res.used_fallback, res.reason
     dumped = res.output.model_dump()
-    assert set(dumped) == set(EXTRACT[job].spec.output_model.model_fields)
+    assert set(dumped) == set(EXTRACT[job].spec.output_model.model_fields)  # pyright: ignore[reportOptionalMemberAccess]
 
 
 def test_mock_extraction_quotes_are_verbatim_substrings_of_the_passages() -> None:

@@ -229,14 +229,14 @@ def test_publication_date_is_none_when_absent_or_unparseable(
         extract_html("<html><body><p>No date anywhere in here.</p></body></html>").published is None
     )
     monkeypatch.setattr(
-        extract.trafilatura,
+        extract.trafilatura,  # pyright: ignore[reportPrivateImportUsage]
         "extract_metadata",
         lambda _html: SimpleNamespace(title="T", date="not-a-date"),
     )
     got = extract_html("<html><body><p>text</p></body></html>")
     assert got.published is None and got.title == "T"
     monkeypatch.setattr(
-        extract.trafilatura,
+        extract.trafilatura,  # pyright: ignore[reportPrivateImportUsage]
         "extract_metadata",
         lambda _html: SimpleNamespace(title="T", date="2023-12-31"),
     )
@@ -249,8 +249,8 @@ def test_extractor_crash_is_an_empty_result_not_an_exception(
     def boom(_html: str) -> None:
         raise RuntimeError("extractor bug")
 
-    monkeypatch.setattr(extract.trafilatura, "extract", boom)
-    monkeypatch.setattr(extract.trafilatura, "extract_metadata", boom)
+    monkeypatch.setattr(extract.trafilatura, "extract", boom)  # pyright: ignore[reportPrivateImportUsage]
+    monkeypatch.setattr(extract.trafilatura, "extract_metadata", boom)  # pyright: ignore[reportPrivateImportUsage]
     assert extract_html("<p>hello world</p>").text == "hello world"  # visible-text fallback
     monkeypatch.setattr(extract, "_visible_text", boom)
     assert extract_html("<p>hello world</p>").text == ""

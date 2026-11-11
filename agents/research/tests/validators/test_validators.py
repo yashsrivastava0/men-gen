@@ -177,7 +177,7 @@ def test_only_binding_and_tier_failures_refuse_the_commit(good) -> None:
         run_all(
             vctx(
                 good,
-                lambda o, e, ev: (
+                lambda o, e, ev: (  # pyright: ignore[reportArgumentType]
                     o.update(brief_hash="0" * 64),
                     o["items"][0].update(tier="locked"),
                 ),

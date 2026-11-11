@@ -118,7 +118,7 @@ def test_thorough_traps_weak_geography_own_brand_duplicate_roles() -> None:
     assert inp.quality.structure_source in {"mixed", "fallback"}
     assert inp.sensitive_flags == ("personal_ids", "financial")
     assert any(f.is_template for f in inp.facts)
-    assert inp.load.components.references == 0  # the own brand is not a named reference
+    assert inp.load.components.references == 0  # the own brand is not a named reference  # pyright: ignore[reportOptionalMemberAccess]
 
 
 def test_junk_open_questions_never_reach_the_input() -> None:

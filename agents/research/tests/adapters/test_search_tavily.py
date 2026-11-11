@@ -756,7 +756,7 @@ async def test_an_unexpected_internal_failure_still_surfaces_as_search_error() -
 
 
 async def test_cancellation_is_not_swallowed() -> None:
-    adapter, _recorder, client = build(raising(asyncio.CancelledError()))
+    adapter, _recorder, client = build(raising(asyncio.CancelledError()))  # pyright: ignore[reportArgumentType]
     async with client:
         with pytest.raises(asyncio.CancelledError):
             await adapter.search(SearchRequest("q"))
@@ -858,7 +858,7 @@ async def test_the_client_the_adapter_created_is_closed_by_aclose(
         created.append(client)
         return client
 
-    monkeypatch.setattr(common.httpx, "AsyncClient", factory)
+    monkeypatch.setattr(common.httpx, "AsyncClient", factory)  # pyright: ignore[reportPrivateImportUsage]
     adapter = TavilyAdapter(KEY, timeout_s=4.0, today=lambda: TODAY)
     assert created == []  # nothing is opened until the first search
     await adapter.search(SearchRequest("q"))
