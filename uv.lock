@@ -1152,6 +1152,7 @@ dependencies = [
     { name = "pyyaml" },
     { name = "regex" },
     { name = "sqlalchemy", extra = ["asyncio"] },
+    { name = "tld" },
     { name = "trafilatura" },
     { name = "uvicorn" },
 ]
@@ -1172,6 +1173,7 @@ requires-dist = [
     { name = "pyyaml", specifier = ">=6.0" },
     { name = "regex", specifier = ">=2024.9" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.35" },
+    { name = "tld", specifier = ">=0.13" },
     { name = "trafilatura", specifier = ">=2.0" },
     { name = "uvicorn", specifier = ">=0.30" },
 ]

@@ -1,0 +1,12 @@
+# Signs that a Compass research request is template text and not model-written (trust rule 2).
+# repeated_word_regex: a word repeated next to itself ("app apps", "apps apps"), after folding case.
+# plural_after_singular: the pair "<x> app apps" style produced when a category already ends in "app".
+repeated_word_regex: "\\b(\\w{2,})\\s+\\1s?\\b"
+category_suffix_words: [app, apps]
+# A request is "thin" when it has none of these: a named entity of its own, regional terms, or a reference.
+# Same audience list repeated in at least this share of the requests = template.
+repeated_audience_share: 0.6
+# Statement prefixes Compass writes for template facts ("Kind of app: ...", "Services to connect: ...").
+template_fact_prefixes: ["Kind of app", "Services to connect", "Kind of app, in detail"]
+# Slot-value junk that leaks into open questions (never searched).
+junk_tokens: [pilot_small, pilot_medium, pilot_large, scale_small, scale_large]

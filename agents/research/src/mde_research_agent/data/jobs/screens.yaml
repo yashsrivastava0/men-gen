@@ -1,0 +1,34 @@
+# Job: screens. Spec decision: per-screen content (SCRN). For each usual screen pattern: sections, key
+# components, actions, states (loading, empty, error, success), validations and microcopy conventions.
+job: screens
+spec_need: "Per-screen content"
+lane: screens
+recency: false
+intent: [screen, sections, components, states, validation]
+kinds: [screen_pattern]
+extract_focus: >
+  For each screen pattern give its key, purpose, the role, its sections in order, key components, user actions,
+  its states (loading, empty, error, success) with what each shows, validations on its inputs and microcopy
+  notes (tone and wording conventions). Use only what the page shows or describes.
+targets:
+  - id: module_screens
+    label: "Screens in {module}"
+    foreach: module
+    max: 8
+    question: "What sections, components, actions and states do {module} screens usually have in {category} apps?"
+    decision_unlocked: "The content of the key screens of this module"
+    needs: [norm, entity]
+    priority: 62
+    anchor: module
+    slots:
+      - {key: patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, attr: states, attr_min: 3, extra_attrs: [{attr: sections, min: 3}], required: true}
+  - id: key_screens
+    label: "Key screens of {category} apps"
+    foreach: none
+    question: "What sections, components, actions and states do the most important screens of {category} apps contain?"
+    decision_unlocked: "The content of the most important screens"
+    needs: [norm]
+    priority: 66
+    anchor: category
+    slots:
+      - {key: key_patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 5, attr: states, attr_min: 3, required: true}

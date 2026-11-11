@@ -1,0 +1,18 @@
+# Source classes: official | store | help | press | blog | forum | seo.
+# Order of rules: authority registry, TLD patterns, documentation subdomains, store domains, then heuristics.
+official_tld_suffixes: [gov, gov.in, nic.in, edu, ac.in, gov.uk, gov.ae, go.ke, gov.sg, gov.au, gouv.fr, europa.eu, int]
+doc_subdomain_prefixes: [docs, developer, developers, api, dev, reference, support-docs]
+help_subdomain_prefixes: [help, support, helpcenter, faq, learn, kb]
+store_domains: [apps.apple.com, play.google.com, appgallery.huawei.com, microsoft.com/store]
+forum_domains: [reddit.com, quora.com, stackexchange.com, stackoverflow.com, news.ycombinator.com, community.cloudflare.com, discuss.python.org, answers.microsoft.com]
+forum_subdomain_prefixes: [community, forum, forums, discuss, answers]
+blog_domains: [medium.com, substack.com, wordpress.com, blogspot.com, hashnode.com, dev.to, ghost.io, tumblr.com, linkedin.com]
+blog_path_markers: ["/blog/", "/blogs/", "/post/", "/posts/", "/article/", "/articles/"]
+# Review aggregators and affiliate listicles count as seo: they cannot support high-impact claims.
+seo_domains: [g2.com, capterra.com, softwareadvice.com, getapp.com, trustradius.com, sourceforge.net, alternativeto.net, appsruntheworld.com]
+seo_title_patterns: ["top \\d+", "best \\d+", "\\d+ best", "best .* (apps|software|tools) (in|for|of) 20\\d\\d", "ultimate guide", "\\bvs\\.? ", "alternatives to", "review(s)? (and|&) pricing"]
+press_domains: [reuters.com, bloomberg.com, techcrunch.com, economictimes.indiatimes.com, livemint.com, thehindu.com, business-standard.com, moneycontrol.com, yourstory.com, inc42.com, entrackr.com, bbc.com, theguardian.com, ft.com, wsj.com, nytimes.com, forbes.com, thenationalnews.com, businessdailyafrica.com, techcabal.com]
+# Classes that cannot support a high-impact claim on their own (R8, R9).
+cannot_support_high_impact: [forum, blog, seo]
+# Classes that count as an authoritative origin for rules and provider facts.
+authoritative: [official, help]

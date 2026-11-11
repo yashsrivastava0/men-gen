@@ -1,0 +1,45 @@
+# Job: structure. Spec decision: screens, navigation, roles (BLUE-2). Finds the usual screen inventory per
+# app and role, navigation patterns and when each is used, the usual roles and what each does.
+job: structure
+spec_need: "Screens, navigation and roles"
+lane: blueprint
+recency: false
+intent: [screens, navigation, roles, layout]
+kinds: [screen_pattern, navigation_pattern, role_pattern]
+extract_focus: >
+  List every distinct screen the page shows or describes (normalized screen key such as "class schedule",
+  "booking confirmation"), its purpose in one sentence and the role that uses it. Record navigation patterns
+  (bottom tabs, drawer, stack, dashboard hub, wizard) with when each is used. Record roles with their typical
+  tasks and permissions. Never invent screens that the page does not show or describe.
+targets:
+  - id: screen_inventory
+    label: "Usual screens in {category} apps"
+    foreach: none
+    question: "What screens do {category} mobile apps usually have for their users, and what is each screen for?"
+    decision_unlocked: "Which screens the first release needs, per role"
+    needs: [norm, entity]
+    priority: 90
+    anchor: category
+    slots:
+      - {key: typical_screens, type: count, kind: screen_pattern, distinct_by: norm_key, min: 8, required: true}
+  - id: navigation
+    label: "How {category} apps are navigated"
+    foreach: none
+    question: "Which navigation patterns do {category} mobile apps use, and when is each pattern used?"
+    decision_unlocked: "The navigation structure of each app"
+    needs: [norm]
+    priority: 70
+    anchor: category
+    slots:
+      - {key: navigation, type: count, kind: navigation_pattern, distinct_by: norm_key, min: 1, required: true}
+  - id: roles
+    label: "What {role} users do"
+    foreach: role
+    max: 4
+    question: "What do {role} users typically do in {category} apps, and what can they see or change?"
+    decision_unlocked: "The tasks and access of each role"
+    needs: [norm, entity]
+    priority: 65
+    anchor: role
+    slots:
+      - {key: role_tasks, type: count, kind: role_pattern, distinct_by: norm_key, min: 1, attr: typical_tasks, attr_min: 3, required: true}

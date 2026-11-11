@@ -1,0 +1,11 @@
+# United Arab Emirates. Seed; confirm before relying on it.
+country: ae
+entries:
+  - {domain: u.ae, topics: [government services, regulations], class: official}
+  - {domain: centralbank.ae, topics: [payments, banking, regulation, wallet], class: official}
+  - {domain: tdra.gov.ae, topics: [telecom, sms, regulation], class: official}
+  - {domain: mohap.gov.ae, topics: [health, clinic, licence], class: official}
+  - {domain: dha.gov.ae, topics: [health, clinic, licence, dubai], class: official}
+  - {domain: dubaihealthcare.ae, topics: [health, clinic], class: official}
+  - {domain: mof.gov.ae, topics: [tax, vat], class: official}
+  - {domain: tax.gov.ae, topics: [tax, vat], class: official}

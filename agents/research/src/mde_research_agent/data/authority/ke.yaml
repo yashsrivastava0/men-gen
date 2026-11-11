@@ -1,0 +1,9 @@
+# Kenya. Seed; confirm before relying on it.
+country: ke
+entries:
+  - {domain: kra.go.ke, topics: [tax, vat, etims, invoice], class: official}
+  - {domain: centralbank.go.ke, topics: [payments, mobile money, regulation], class: official}
+  - {domain: odpc.go.ke, topics: [data protection, privacy], class: official}
+  - {domain: ca.go.ke, topics: [telecom, sms, regulation], class: official}
+  - {domain: developer.safaricom.co.ke, topics: [mpesa, daraja, mobile money, payments api], class: official}
+  - {domain: safaricom.co.ke, topics: [mpesa, mobile money], class: official}

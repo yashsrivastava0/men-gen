@@ -1,0 +1,45 @@
+# Job: flows. Spec decision: journeys (BLUE-2, BLUE-3). Usual journeys per role with steps, alternates and
+# exceptions; onboarding; empty, failed and offline cases.
+job: flows
+spec_need: Journeys
+lane: blueprint
+also_lanes: [screens]
+recency: false
+intent: [flow, steps, process, onboarding]
+kinds: [workflow]
+extract_focus: >
+  For each journey give its name, the role, the ordered steps (one short action per step), alternates
+  (other ways to do it) and exceptions (what goes wrong and how the product reacts). Record onboarding and
+  the empty, error and offline cases as their own workflows when the page describes them.
+targets:
+  - id: journeys
+    label: "How {flow} usually works"
+    foreach: flow
+    max: 6
+    question: "How does a typical {flow} journey work in {category} apps, step by step, including alternatives and what goes wrong?"
+    decision_unlocked: "The steps, alternates and exceptions of each main journey"
+    needs: [norm, entity]
+    priority: 80
+    anchor: flow
+    slots:
+      - {key: journey, type: count, kind: workflow, distinct_by: norm_key, min: 1, attr: steps, attr_min: 4, extra_attrs: [{attr: alternates, min: 1}, {attr: exceptions, min: 1}], required: true}
+  - id: onboarding
+    label: "Sign-up and first use"
+    foreach: none
+    question: "How do {category} apps handle sign-up, sign-in and first-time onboarding in {place}?"
+    decision_unlocked: "The onboarding and sign-in flow"
+    needs: [norm, current]
+    priority: 60
+    anchor: category
+    slots:
+      - {key: onboarding, type: count, kind: workflow, distinct_by: norm_key, min: 1, attr: steps, attr_min: 3, required: true}
+  - id: empty_error_offline
+    label: "Empty, error and offline states"
+    foreach: none
+    question: "What do {category} mobile apps show when there is no data yet, when something fails or when the connection drops?"
+    decision_unlocked: "The empty, error and offline states of every screen"
+    needs: [norm]
+    priority: 45
+    anchor: category
+    slots:
+      - {key: states, type: count, kind: workflow, distinct_by: norm_key, min: 1, attr: empty_error_offline_cases, attr_min: 3, required: false}

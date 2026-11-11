@@ -1,0 +1,26 @@
+# Which Spec lane reads which kind of item, which builder need (BN-xx of doc 12) a kind of item informs, and
+# the order lanes are rendered in. A kind can feed several lanes.
+lanes: [blueprint, integrations, design, screens, mock, verify]
+kinds:
+  competitor:        {lanes: [blueprint], need: BN-02, area: feature}
+  reference_check:   {lanes: [blueprint], need: BN-02, area: feature}
+  screen_pattern:    {lanes: [blueprint, screens], need: BN-09, area: screen}
+  navigation_pattern: {lanes: [blueprint, design], need: BN-03, area: navigation}
+  role_pattern:      {lanes: [blueprint], need: BN-03, area: role}
+  workflow:          {lanes: [blueprint, screens], need: BN-03, area: flow}
+  entity_pattern:    {lanes: [blueprint, mock], need: BN-04, area: entity}
+  lifecycle:         {lanes: [blueprint], need: BN-04, area: entity}
+  rule:              {lanes: [blueprint, screens, verify], need: BN-05, area: rule}
+  service_option:    {lanes: [integrations, verify], need: BN-10, area: integration}
+  compliance_note:   {lanes: [blueprint, verify], need: BN-05, area: rule}
+  design_convention: {lanes: [design], need: BN-08, area: design}
+  script_need:       {lanes: [design], need: BN-08, area: design}
+  local_format:      {lanes: [design, mock, screens], need: BN-07, area: format}
+  data_hint:         {lanes: [mock], need: BN-07, area: sample}
+  trend:             {lanes: [blueprint, design], need: BN-02, area: trend}
+# Kinds whose claims are high impact by default (prices, fees, rules, legal and payment facts, formats that
+# change validation). The extraction model may raise impact; code never lowers these.
+high_impact_kinds: [rule, compliance_note, service_option, local_format]
+legal_adjacent_kinds: [rule, compliance_note]
+# Kinds counted into norms (prevalence): the area of a norm and the key the code reads.
+norm_areas: [feature, screen, flow, entity, integration, design]

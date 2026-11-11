@@ -1,0 +1,16 @@
+# Official sources that apply in every country, by topic. Add a country file next to this one to extend
+# (file name = lowercase ISO 3166-1 alpha-2 code). `class` is official for regulators, standards bodies and
+# platform owners speaking about their own platform.
+country: global
+entries:
+  - {domain: developer.apple.com, topics: [ios, apple, human interface guidelines, app store, design], class: official}
+  - {domain: developer.android.com, topics: [android, play store, design, accessibility], class: official}
+  - {domain: m3.material.io, topics: [material design, components, design], class: official}
+  - {domain: material.io, topics: [material design, design], class: official}
+  - {domain: support.google.com, topics: [google play, android, store listing], class: help}
+  - {domain: w3.org, topics: [accessibility, wcag, web standards], class: official}
+  - {domain: unicode.org, topics: [unicode, scripts, text], class: official}
+  - {domain: iso.org, topics: [standards, iso], class: official}
+  - {domain: reactnative.dev, topics: [react native], class: official}
+  - {domain: docs.expo.dev, topics: [expo], class: official}
+  - {domain: pcisecuritystandards.org, topics: [pci, card payments], class: official}

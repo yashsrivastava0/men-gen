@@ -1,0 +1,25 @@
+# Intent words: every search query needs one (anatomy: anchor + place + intent). Per language so queries in
+# Hindi, Kannada, Marathi, Arabic or Swahili can pass the gate. English is the base; other languages
+# are a starting set and must be reviewed by a native speaker (open item OI-15), flagged below.
+languages:
+  en:
+    reviewed: true
+    words: [features, feature, screens, screen, flow, journey, steps, onboarding, fees, fee, pricing, price, commission, charges, rules, regulation, rule, api, sandbox, limits, webhook, documentation, integration, ux, design, layout, navigation, accessibility, comparison, alternatives, formats, format, validation, requirements, how, process, workflow, fields, statuses, roles, permissions, guidelines, trends, examples, apps, providers, compliance, penalty, deadline]
+  hi:
+    reviewed: false
+    words: [सुविधाएं, फीचर, स्क्रीन, प्रक्रिया, चरण, शुल्क, कीमत, कमीशन, नियम, एपीआई, सीमा, डिज़ाइन, तुलना, प्रारूप, आवश्यकताएं, कैसे, भुगतान, अनुपालन, दस्तावेज़]
+  mr:
+    reviewed: false
+    words: [वैशिष्ट्ये, स्क्रीन, प्रक्रिया, शुल्क, किंमत, कमिशन, नियम, एपीआय, मर्यादा, डिझाइन, तुलना, स्वरूप, आवश्यकता, कसे, पेमेंट, कागदपत्रे]
+  kn:
+    reviewed: false
+    words: [ವೈಶಿಷ್ಟ್ಯಗಳು, ಪರದೆ, ಪ್ರಕ್ರಿಯೆ, ಶುಲ್ಕ, ಬೆಲೆ, ಕಮಿಷನ್, ನಿಯಮ, ಮಿತಿ, ವಿನ್ಯಾಸ, ಹೋಲಿಕೆ, ಅಗತ್ಯತೆಗಳು, ಹೇಗೆ, ಪಾವತಿ, ದಾಖಲೆಗಳು]
+  ar:
+    reviewed: false
+    words: [ميزات, شاشات, خطوات, رسوم, سعر, عمولة, لوائح, قواعد, واجهة, حدود, تصميم, مقارنة, متطلبات, كيف, دفع, امتثال, وثائق]
+  sw:
+    reviewed: false
+    words: [vipengele, skrini, hatua, ada, bei, kamisheni, sheria, kanuni, mipaka, muundo, ulinganisho, mahitaji, jinsi, malipo, nyaraka, huduma]
+# Words that make a query useless on their own (category-only words, filler). A query whose only
+# distinctive terms come from this list has no anchor.
+generic_words: [app, apps, application, applications, software, mobile, android, ios, platform, system, solution, solutions, best, top, good, new, the, a, an, for, of, in, and, or, to, with, using, how, what, which, is, are]

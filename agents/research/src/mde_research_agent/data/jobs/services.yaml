@@ -1,0 +1,27 @@
+# Job: services. Spec decision: contract and integrations (BLUE-4, BN-10). Providers by need (payments, OTP and
+# messaging, maps, telematics, identity, government portals): auth, endpoints or events, sandbox, limits, fees,
+# regional fit and current status.
+job: services
+spec_need: "Contract and integrations"
+lane: integrations
+also_lanes: [verify]
+recency: true
+intent: [api, sandbox, fees, limits, webhook, documentation]
+kinds: [service_option, compliance_note]
+extract_focus: >
+  For each provider or portal give the need it serves, how it authenticates, its endpoints or webhook events,
+  whether a sandbox exists, limits and constraints, fees (copy numbers exactly), regional fit and its current
+  status (active, deprecated, closed to new customers). Official documentation beats articles; say so in the
+  integration notes when only a secondary source is available.
+targets:
+  - id: providers
+    label: "Providers for {need}"
+    foreach: need
+    max: 8
+    question: "Which providers offer {need} in {place}, and what are their authentication, events, sandbox, limits and fees?"
+    decision_unlocked: "Which provider and contract to use for this integration"
+    needs: [current, entity, number]
+    priority: 88
+    anchor: need
+    slots:
+      - {key: providers, type: count, kind: service_option, distinct_by: provider, min: 2, attr: endpoints_or_events, attr_min: 1, required: true}

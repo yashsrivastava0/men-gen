@@ -1,0 +1,60 @@
+# Job: design. Spec decision: look and feel (DSGN). Category UI and UX conventions: layout and navigation
+# patterns, onboarding, component patterns, colour and tone mood, typography and density, iconography, motion,
+# accessibility; platform guidelines as official sources; script and font needs; recent design trends.
+job: design
+spec_need: "Look and feel"
+lane: design
+recency: true
+intent: [design, ux, layout, accessibility]
+kinds: [design_convention, script_need, trend]
+extract_focus: >
+  Record each convention as one item with its aspect (layout, navigation, onboarding, components, color_mood,
+  typography, density, iconography, motion, accessibility), the convention in one sentence and concrete
+  examples of apps or guidelines that follow it. Platform guidelines are official sources. Conventions are
+  conventions, not facts: state them as how apps of this kind usually look.
+targets:
+  - id: conventions
+    label: "Look and feel of {category} apps"
+    foreach: none
+    question: "What UI and UX conventions do {category} mobile apps follow for layout, navigation, onboarding, components, colour and tone, typography, density, iconography, motion and accessibility?"
+    decision_unlocked: "The design language, density and component patterns"
+    needs: [norm, current]
+    priority: 70
+    anchor: category
+    slots:
+      - {key: conventions, type: count, kind: design_convention, distinct_by: norm_key, min: 6, required: true}
+      - {key: aspects, type: distinct_values, kind: design_convention, attr: aspect, min: 4, required: true}
+  - id: platform_guidelines
+    label: "Platform design guidelines"
+    foreach: platform
+    max: 2
+    question: "What do the {platform} design guidelines say about navigation, components, typography, touch targets and accessibility for mobile apps?"
+    decision_unlocked: "Which platform conventions the app must follow"
+    needs: [norm, current]
+    priority: 50
+    anchor: platform
+    place: global
+    slots:
+      - {key: guidelines, type: count, kind: design_convention, distinct_by: norm_key, min: 3, required: false}
+  - id: script_needs
+    label: "Fonts and text for {language}"
+    foreach: script_locale
+    max: 3
+    when: [non_latin_locale]
+    question: "What fonts, text direction, line height and text expansion do mobile apps need for {language}?"
+    decision_unlocked: "The typography and layout rules for this language"
+    needs: [norm, current]
+    priority: 60
+    anchor: language
+    slots:
+      - {key: script, type: count, kind: script_need, distinct_by: norm_key, min: 1, required: true}
+  - id: trends
+    label: "Recent design trends in {category} apps"
+    foreach: none
+    question: "What recent design trends are visible in {category} mobile apps?"
+    decision_unlocked: "Which recent patterns to consider for the look"
+    needs: [current, norm]
+    priority: 40
+    anchor: category
+    slots:
+      - {key: design_trends, type: count, kind: trend, distinct_by: topic, min: 1, required: false}

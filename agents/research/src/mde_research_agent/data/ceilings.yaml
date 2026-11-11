@@ -1,0 +1,22 @@
+# Ceilings per research-load class. SOFT numbers are targets the run aims at (a covered topic simply stops
+# early); HARD numbers are never exceeded (RV-12). Result quality first: raise these when runs end with
+# coverage still improving. Seconds are wall-clock. Tokens are soft caps for the output file and its
+# per-lane slices.
+focused:
+  soft: {searches: 20, pages: 24, seconds: 180, rounds: 2, lanes_search: 6, lanes_extract: 8, research_tokens: 12000, slice_tokens: 4000, targets: 10, followups_per_topic: 2}
+  hard: {searches: 32, pages: 40, seconds: 330, rounds: 3, lanes_search: 6, lanes_extract: 8, research_tokens: 16000, slice_tokens: 6000, targets: 14, followups_per_topic: 3}
+standard:
+  soft: {searches: 40, pages: 60, seconds: 360, rounds: 3, lanes_search: 8, lanes_extract: 12, research_tokens: 20000, slice_tokens: 7000, targets: 16, followups_per_topic: 2}
+  hard: {searches: 64, pages: 96, seconds: 600, rounds: 3, lanes_search: 8, lanes_extract: 12, research_tokens: 28000, slice_tokens: 10000, targets: 22, followups_per_topic: 3}
+deep:
+  soft: {searches: 80, pages: 140, seconds: 600, rounds: 3, lanes_search: 10, lanes_extract: 16, research_tokens: 32000, slice_tokens: 11000, targets: 26, followups_per_topic: 2}
+  hard: {searches: 120, pages: 210, seconds: 960, rounds: 4, lanes_search: 10, lanes_extract: 16, research_tokens: 44000, slice_tokens: 15000, targets: 34, followups_per_topic: 3}
+# A round that fills fewer than this share of the remaining required slots ends the run (R19).
+min_round_gain: 0.10
+# Pages kept per topic after triage; at most this many per registrable domain.
+pages_per_topic: {min: 3, max: 5}
+max_per_domain: 2
+# Triage by a model call only above this many candidates.
+triage_model_above: 12
+# Parallel query variants per topic in a round.
+variants_per_topic: 3

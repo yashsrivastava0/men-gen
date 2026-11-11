@@ -14,7 +14,10 @@ from mde_research_agent.core.urls import (
 @pytest.mark.parametrize(
     ("a", "b"),
     [
-        ("HTTPS://Example.COM:443/a/b/?utm_source=x&b=2&a=1#frag", "https://example.com/a/b?a=1&b=2"),
+        (
+            "HTTPS://Example.COM:443/a/b/?utm_source=x&b=2&a=1#frag",
+            "https://example.com/a/b?a=1&b=2",
+        ),
         ("http://www.example.com", "http://example.com/"),
         ("https://example.com/a/?gclid=abc", "https://example.com/a"),
         ("https://example.com/p?fbclid=1&id=7", "https://example.com/p?id=7"),
@@ -59,7 +62,9 @@ def test_registrable_domain(url: str, domain: str) -> None:
 
 
 def test_two_subdomains_are_one_domain_and_two_co_in_sites_are_two() -> None:
-    assert registrable_domain("https://docs.stripe.com") == registrable_domain("https://stripe.com/a")
+    assert registrable_domain("https://docs.stripe.com") == registrable_domain(
+        "https://stripe.com/a"
+    )
     assert registrable_domain("https://a.co.in") != registrable_domain("https://b.co.in")
 
 
