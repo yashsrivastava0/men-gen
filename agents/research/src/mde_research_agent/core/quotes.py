@@ -79,7 +79,10 @@ def _map_char(ch: str) -> str:
         return " "
     if cat == "Cc":
         return " "
-    return ch.casefold()
+    # Case folding can leave a letter composed on one side and decomposed on the other (the Greek iota with
+    # dialytika and tonos folds to three characters, its upper-case form to two), so the folded form is put in
+    # one canonical shape: fully decomposed. Both the page and the quote go through here.
+    return unicodedata.normalize("NFD", ch.casefold())
 
 
 def _clusters(text: str) -> list[tuple[int, int]]:

@@ -138,6 +138,14 @@ _WORDS = st.lists(
 )
 
 
+def test_a_letter_whose_case_fold_decomposes_matches_its_upper_case_form() -> None:
+    # Greek iota with dialytika and tonos: folds to three characters, while the upper-case form folds to two
+    page = "00 00000ΐ 00 00 00 00"
+    quote = "00000­Ϊ́\n00\n00\n00"
+    assert verify_quote(page, quote).ok
+    assert normalize_text("ΐ") == normalize_text("Ϊ́")
+
+
 @settings(max_examples=60, deadline=None)
 @given(_WORDS, st.integers(0, 10_000))
 def test_perturbing_a_real_substring_keeps_it_verified(words: list[str], seed: int) -> None:

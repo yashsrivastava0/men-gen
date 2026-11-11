@@ -25,7 +25,7 @@ targets:
       - {key: conventions, type: count, kind: design_convention, distinct_by: norm_key, min: 6, required: true}
       - {key: aspects, type: distinct_values, kind: design_convention, attr: aspect, min: 4, required: true}
   - id: platform_guidelines
-    label: "Platform design guidelines"
+    label: "Platform guidelines: {platform}"
     foreach: platform
     max: 2
     question: "What do the {platform} design guidelines say about navigation, components, typography, touch targets and accessibility for mobile apps?"
