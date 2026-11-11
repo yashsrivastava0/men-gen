@@ -81,7 +81,7 @@ just ci-fast                                                           # lint, t
 
 - `ruff check` passes, `ruff format --check` passes (1,223 files), `lint-imports` passes (8 contracts kept, 0 broken), `docs_check` 0 problems.
 - **`just typecheck` (bare `pyright`) FAILS: 486 errors, so `just ci-fast` is red** (CLAUDE.md says to keep it green; it is not). 473 are in `agents/compass` (almost all in its tests), 5 in `agents/research`, 4 in `packages/core` (the Windows-only `msvcrt` in a file-lock test), 2 in `scripts/compass_latency_report.py`, 2 in `apps/research-console` (`playwright` is not installed). Not checked: whether `main` is red too. Nobody has fixed these yet; it is its own task (a large one, mostly test typing).
-- The full unit suite (`just test`) had been started and was about 40% through, with no failure, when this page was committed. **No final unit result is recorded here.** Integration, end-to-end and the secret-scan suite were not run.
+- **The full unit suite (`just test`, offline, excludes integration, e2e and live) passes: 9,694 passed, 6 skipped, 8 xfailed, 0 failed, in 418 s.** The 8 xfails are documented Compass bugs and gaps (BUG-21, BUG-23, GAP-2, GAP-3, GAP-7 and others, named in the test reasons). Integration, end-to-end and the secret-scan suite were not run.
 - No live call was made and no key was read while writing this page.
 
 ## 6. Rules that bite (the short list; `CLAUDE.md` has all of them)
