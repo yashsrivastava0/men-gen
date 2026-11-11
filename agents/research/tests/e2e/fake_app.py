@@ -203,8 +203,9 @@ def make_big_result(
                     "url": HOSTILE["url"],
                     "retrieved_on": "2026-11-11",
                     "published_on": "2026-01-01",
-                }
-            ] + it["sources"][:1]
+                },
+                *it["sources"][:1],
+            ]
             it["data"] = {
                 "name": HOSTILE["label"],
                 "notes": [HOSTILE["claim"]],
@@ -296,7 +297,8 @@ async def seed_runs(svc: Any, n_items: int) -> dict[str, str]:
             "label": "Rules and limits: pricing",
             "queries": [],
         },
-    ] + part["gaps"][:2]
+        *part["gaps"][:2],
+    ]
     await commit(
         "partial",
         part,

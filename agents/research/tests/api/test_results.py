@@ -238,3 +238,12 @@ async def test_the_report_is_deterministic_and_matches_the_golden_file() -> None
     assert a == GOLDEN.read_text(encoding="utf-8"), (
         "report changed: review it, then run with UPDATE_GOLDEN=1"
     )
+
+
+async def test_review_can_fetch_items_by_id(tmp_path: Path) -> None:
+    svc, c, rid = await finished_app(tmp_path)
+    page = (await c.get(f"/v1/research/runs/{rid}/review?limit=5")).json()
+    want = [i["id"] for i in page["items"][:2]]
+    got = (await c.get(f"/v1/research/runs/{rid}/review?ids={','.join(want)}")).json()
+    assert got["total"] == 2 and {i["id"] for i in got["items"]} == set(want)
+    await svc.aclose()

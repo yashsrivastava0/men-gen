@@ -677,14 +677,14 @@ out({
         "code:RI-001",
         "text: <img src=x onerror=alert(2)>",
     ]
-    links = dict((str(u), t) for t, u in r["links"])
+    links = {str(u): t for t, u in r["links"]}
     assert ("link", "https://docs.example.com/a?b=1") in [tuple(x) for x in r["links"]]
     assert (
         sum(1 for t, _ in r["links"] if t == "link") == 1
     )  # javascript: and data: are plain text, not links
     assert r["ol"] == 2 and r["quote"] == 2 and r["table"] == [2, 2, "bold"]
     assert r["para"] == "plain paragraph continues here"
-    assert set(x.split(":")[0] for x in r["raw"]) == {
+    assert {x.split(":")[0] for x in r["raw"]} == {
         "text"
     }  # a bare <script> line and an unsafe link are only characters
     assert r["inline"] == ["text", "bold", "text", "code", "text", "link", "text"]

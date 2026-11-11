@@ -104,6 +104,8 @@ def _matches(it: dict[str, Any], f: dict[str, str]) -> bool:
         return False
     if f.get("impact") and it.get("impact") != f["impact"]:
         return False
+    if f.get("ids") and it["id"] not in set(f["ids"].split(",")):
+        return False
     if f.get("kind") and it["kind"] != f["kind"]:
         return False
     if f.get("store") and it.get("store", "main") != f["store"]:

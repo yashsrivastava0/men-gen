@@ -27,7 +27,9 @@ def _providers(client: httpx.AsyncClient) -> list[FakeSearch]:
     return out
 
 
-async def test_the_bakeoff_needs_its_word_runs_books_every_cent_and_keeps_the_result(tmp_path: Path) -> None:
+async def test_the_bakeoff_needs_its_word_runs_books_every_cent_and_keeps_the_result(
+    tmp_path: Path,
+) -> None:
     inputs = tmp_path / "inputs"
     inputs.mkdir()
     shutil.copy(FIX / "quick-yoga-studio-bengaluru.json", inputs / "yoga.json")
@@ -37,9 +39,15 @@ async def test_the_bakeoff_needs_its_word_runs_books_every_cent_and_keeps_the_re
     ui.mkdir()
     (ui / "index.html").write_text("<!doctype html>", encoding="utf-8")
     app = create_app(svc, settings=ResearchSettings(), ui_path=ui, sweep_seconds=3600)
-    async with httpx.AsyncClient(transport=httpx.ASGITransport(app=app), base_url="http://test", headers=H) as c:
+    async with httpx.AsyncClient(
+        transport=httpx.ASGITransport(app=app), base_url="http://test", headers=H
+    ) as c:
         before = (await c.get("/api/tools/bakeoff")).json()
-        assert before["state"] == "idle" and before["plan"]["queries"] > 0 and "search_usd" in before["plan"]
+        assert (
+            before["state"] == "idle"
+            and before["plan"]["queries"] > 0
+            and "search_usd" in before["plan"]
+        )
         assert (await c.post("/api/tools/bakeoff", json={"confirm": "no"})).status_code == 409
         assert (await c.post("/api/tools/bakeoff", json={"confirm": "RUN"})).status_code == 202
         for _ in range(200):
@@ -49,7 +57,9 @@ async def test_the_bakeoff_needs_its_word_runs_books_every_cent_and_keeps_the_re
             await asyncio.sleep(0.05)
         assert st["state"] == "done", st
         res = st["result"]
-        assert {s["provider"] for s in res["summaries"]} == {"tavily", "serper"} and res["recommended"] in ("tavily", "serper")
+        assert {s["provider"] for s in res["summaries"]} == {"tavily", "serper"} and res[
+            "recommended"
+        ] in ("tavily", "serper")
         spend = (await c.get("/api/spend")).json()["record"]["entries"]
         entry = next(e for e in spend if e["kind"] == "bakeoff")
         assert entry["status"] == "done" and entry["total_micros"] > 0

@@ -57,6 +57,7 @@ def make_results_router() -> APIRouter:
         kind: str = "",
         store: str = "",
         q: str = "",
+        ids: str = "",
     ) -> Any:
         return JSONResponse(
             await svc.review_items(
@@ -72,6 +73,7 @@ def make_results_router() -> APIRouter:
                 kind=kind,
                 store=store,
                 q=q,
+                ids=ids,
             ),
             headers={"Cache-Control": "no-store"},
         )

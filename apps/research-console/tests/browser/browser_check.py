@@ -93,20 +93,20 @@ class Fake:
             self.proc.wait()
 
     def get(self, path: str, auth: bool = True):
-        req = urllib.request.Request(self.base + path)
+        req = urllib.request.Request(self.base + path)  # noqa: S310 - loopback test server
         if auth:
             req.add_header("Authorization", "Bearer dev-token")
-        with urllib.request.urlopen(req, timeout=10) as r:
+        with urllib.request.urlopen(req, timeout=10) as r:  # noqa: S310
             body = r.read().decode()
         return json.loads(body) if body.startswith(("{", "[")) else body
 
     def post(self, path: str, body: dict):
-        req = urllib.request.Request(
+        req = urllib.request.Request(  # noqa: S310 - loopback test server
             self.base + path, data=json.dumps(body).encode(), method="POST"
         )
         req.add_header("Authorization", "Bearer dev-token")
         req.add_header("Content-Type", "application/json")
-        with urllib.request.urlopen(req, timeout=10) as r:
+        with urllib.request.urlopen(req, timeout=10) as r:  # noqa: S310
             return json.loads(r.read().decode())
 
     def input_id(self, name_part: str) -> str:
@@ -758,8 +758,10 @@ def main_flow(browser, f: Fake) -> None:
     )
     check(
         "run view: counters show topics done of total and the cost by step",
-        ("of" in text(page, ".tile:has-text('Topics done') strong")
-        and "Search" in text(page, ".cost"))
+        (
+            "of" in text(page, ".tile:has-text('Topics done') strong")
+            and "Search" in text(page, ".cost")
+        )
         or "Web search" in text(page, ".cost"),
         text(page, ".cost"),
     )
@@ -846,7 +848,7 @@ def main_flow(browser, f: Fake) -> None:
     open_link.click()
     page.wait_for_url(f"**/#/run/{rid1}")
     check("same input twice: the link opens the active run", True)
-    rid2 = start_run_via_ui(page, "standard-produce")
+    start_run_via_ui(page, "standard-produce")
     page.wait_for_selector(".banner-info")
     q = text(page, ".nowline") + " " + text(page, ".banners")
     check(
@@ -916,8 +918,7 @@ def main_flow(browser, f: Fake) -> None:
     rows = pb.locator("tbody tr").count()
     check(
         "budget: the spend record table lists every run with cost by step and running total",
-        (rows >= 2
-        and "Running total" in pb.locator("thead").first.inner_text())
+        (rows >= 2 and "Running total" in pb.locator("thead").first.inner_text())
         or pb.locator("table").first.count() > 0,
         f"{rows} rows",
     )

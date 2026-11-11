@@ -10,6 +10,7 @@ data folder; "Use this provider" is the settings endpoint. One bake-off at a tim
 from __future__ import annotations
 
 import asyncio
+import contextlib
 import json
 from collections.abc import Callable
 from datetime import UTC, datetime
@@ -65,10 +66,8 @@ class BakeoffTool:
     def status(self) -> dict[str, Any]:
         out = dict(self.state)
         if out["state"] == "idle" and self.result_path and self.result_path.is_file():
-            try:
+            with contextlib.suppress(OSError, ValueError):
                 out["last"] = json.loads(self.result_path.read_text(encoding="utf-8"))
-            except (OSError, ValueError):
-                pass
         return out
 
     def start(self) -> dict[str, Any]:
@@ -146,7 +145,9 @@ class BakeoffTool:
                 "cost_usd": str(micros_to_usd(spent)),
             }
             if self.result_path:
-                self.result_path.write_text(json.dumps(result, indent=1, default=str), encoding="utf-8")
+                self.result_path.write_text(
+                    json.dumps(result, indent=1, default=str), encoding="utf-8"
+                )
             record.finish_entry(entry, "done")
             self.state = {"state": "done", "result": result}
         except Exception as exc:  # the tool never takes the app down; the owner sees why

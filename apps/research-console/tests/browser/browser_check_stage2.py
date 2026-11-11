@@ -30,7 +30,7 @@ def seeded(f: bc.Fake) -> dict:
             d = f.get("/api/fake/seeded", auth=False)
             if isinstance(d, dict) and d.get("big"):
                 return d
-        except Exception:
+        except Exception:  # noqa: S110 - the server is still starting
             pass
         time.sleep(0.5)
     raise RuntimeError("seed did not finish")
@@ -167,7 +167,7 @@ def scenario_results(browser, f: bc.Fake, ids: dict) -> None:
         "filters: only the final answer is shown (stale requests are cancelled)",
         "q=fees" in reqs[-1],
     )
-    t_none, _ = filtered(page, lambda: page.locator("#item-q").fill("zzzzqqqq"))
+    _t_none, _ = filtered(page, lambda: page.locator("#item-q").fill("zzzzqqqq"))
     time.sleep(0.5)
     check(
         "filters: no match says so and offers to clear",
@@ -186,7 +186,7 @@ def scenario_results(browser, f: bc.Fake, ids: dict) -> None:
     page.get_by_role("button", name="Clear filters").click()
     wait_for(page, "document.querySelector('.vscroll').getAttribute('data-total') === '450'")
     # item view with hostile text
-    a_before = page.evaluate("document.querySelectorAll('a').length")
+    page.evaluate("document.querySelectorAll('a').length")
     page.locator(".vrow-btn").first.click()
     page.wait_for_selector("dialog[open]")
     d = page.locator("dialog[open]")
