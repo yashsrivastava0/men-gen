@@ -3,6 +3,7 @@
 - **Status:** active, created 2026-11-10. Amends AD-02 (six stages), AD-27 (where probes run) and invariant I-1 (speculative work). Everything not named here stays as in docs 01-11.
 - **Owner directive D15 (2026-11-10, voice, lightly cleaned):** there are too many agents; aim for four, five at most. They exist only so the front-end engine can generate the whole app, so what it receives must be correct, detailed, sufficient and easy to consume, for big apps and for Android and iOS. Background and parallel execution are welcome. Decide on your own logic.
 - **Update 2026-11-11 (AD-44 to AD-48):** Research is now **foreground** after Gate 1 (no waves A and B, no read at G1 + 90 s), its depth comes from the Brief's content (research load), not from the tier (AD-49), and Spec starts from Compass's approved structure. Where §1, §4.2, §7, §8 and §11 below say otherwise, [doc 13](13-research-agent-design.md) and this note win.
+- **Update 2026-11-11 (v5, AD-55 to AD-59):** after the builder's offline build and a code review, Research v5 adds a **truth layer** (every item checked inside its topic, numbers must be in the quote, no unstated attributes, an evidence ladder and use rules for Spec), **three size caps with no silent deletion** (loop cap, main store plus appendix, packs in Spec), **capability signals and a light `trust` job**, parallel-not-batch execution, and a **proof plan** ([doc 14](14-research-proof-plan.md)). Where §4.2, §7 and §8 below say otherwise, doc 13 v5 wins. Nothing about Research is approved as working until its gate in doc 14 passes.
 - **Decisions:** AD-35 four agents · AD-36 background, parallel and speculative execution · AD-37 builder-needs contract · AD-38 the agent-boundary test · AD-39 to AD-43 the Research design, in [doc 13](13-research-agent-design.md).
 - Evidence labels as in doc 00. Time and cost numbers are estimates **[J]** until the first end-to-end run.
 
@@ -59,14 +60,14 @@ Every future agent (change controller, module factory and so on) must pass the s
 **Does:** the user dialogue; produces `brief.json`, consumer views, `research_requests`, assumptions, handoff probes (doc 11). **Changes from v3.1:** (a) *(superseded 2026-11-11, AD-45)* Research no longer starts after the first batch; the orchestrator starts it on `gate1.approved`, and Compass owes it trust flags (doc 13 §14, CR-1 to CR-3); (a2) Compass now also drafts an approved intent-level structure (modules, screens, flows, entities; see [notes/compass-as-built-2026-11-10.md](../notes/compass-as-built-2026-11-10.md)); (b) the Gate 1 "Blueprint planner" and "Design planner" canaries now stand for the Spec agent's Product and Design lanes. Hardening items stay in `STATE.md`.
 
 ### 4.2 Research (new; foreground after Gate 1)
-**Full design: [doc 13](13-research-agent-design.md) v3** (AD-39 and AD-41 to AD-43 kept in part; AD-45 to AD-52). This section is the summary; where it differs from doc 13, doc 13 wins.
+**Full design: [doc 13](13-research-agent-design.md) v5** (AD-39 and AD-41 to AD-43 kept in part; AD-45 to AD-59). This section is the summary; where it differs from doc 13, doc 13 wins.
 **Purpose.** Bring in what the user cannot tell us and the model must not guess: named products, regional providers, fees and rules, data shapes, integration specifics. It enriches and never decides: items are Default tier at most (I-6).
 **When and how.** It starts when **Gate 1 is approved** and runs visibly (live events, time box, Skip, cancel a topic); Spec starts when it commits. It reads Compass's `research` view plus trust flags. **It is never told the tier:** it computes a **research load** from the Brief's content (focused, standard, deep) that sets **ceilings** (searches 20 / 40 / 80, pages 24 / 60 / 140, time 3 / 6 / 10 min), and stops each target as soon as its typed slots are filled.
 **Method.** Code orchestrates (no free-running agent loop): a planner makes targets with slot schemas; **one worker per target runs in parallel with isolated context** (2 or 3 query variants merged by rank fusion, search, triage, passage reading, typed extraction, quote check); a coverage audit drives round 2 and at most round 3 for unfilled required slots and newly discovered entities; evidence-aware stopping.
-**Jobs (eight, organized by what Spec must decide; AD-53):** features, structure (screens, navigation, roles), flows, data and rules, services, design, screens, local. For each: how it is usually done, how common each choice is, and what is current, plus the idea's own details.
-**Output:** `research.json` v4, a **playbook per Spec lane**, **indexed by the Brief's ids**, with slot-typed records, computed `norms` (prevalence and recency), `suggestions` (never scope), `confirm` list, and code-rendered digests (blueprint, integrations, design, screens, mock, verify), sized by load class (soft: about 12k, 20k, 32k tokens).
-**Fails soft (RS-01).** No search, no results, time box or Skip: Spec proceeds on module defaults flagged `assumed`; Verify records "less research-backed".
-**Gate (doc 13 §14):** quote check 100%; high-impact items corroborated or flagged; zero category-only queries; required slots filled at least 70% on the real inputs; events complete and resumable; injection pass; fail-soft verified.
+**Jobs (eight, organized by what Spec must decide; AD-53, plus a conditional `trust` job, AD-57):** features, structure (screens, navigation, roles), flows, data and rules, services, design, screens, local; the light `trust` job (data-protection law per region, store privacy disclosure, sign-in and payment-security norms, consent patterns) runs for deep loads and when a content signal fires. For each: how it is usually done, how common each choice is, and what is current, plus the idea's own details.
+**Output:** `research.json` v5, a **playbook per Spec lane**, **indexed by the Brief's ids**, with merged findings that each carry an **`evidence` value** (`official`, `corroborated`, `single_source`, `unverified`), computed `norms` read as "mentioned in n of N", `suggestions` (never scope), a `confirm` list, **`lane_quality` and `bn_coverage`** per lane and builder need, filtered slices with code-rendered digests as an index, and a **main store plus an appendix**: **no fact is deleted for size (AD-55)**; the main store is limited to 40k tokens (a guess, to be measured) and the rest stays in the appendix and the rendered `research_report.md`. **Consumption contract (doc 13 §7.2, §9.5):** a main store at or under the threshold goes whole to every Spec call as a cached prefix; above it Spec builds per-call packs (records for the call's Brief ids, one hop, a title index; split, never truncate). Spec turns a finding into a Default only when its evidence is `official` or `corroborated`.
+**Fails soft (RS-01).** No search, no results, time box or Skip: Spec proceeds on module defaults flagged `assumed`; Verify records "less research-backed". A lane whose quality is `thin` or `none` tells Spec to write "assumed" and never to invent a source.
+**Gate (doc 14):** seven gates (bake-off, live Quick run, live Standard and Thorough runs with a planted-error test of the checker, the owner's spot-check of 60 items, a with-and-without-research probe, a full-store-against-pack comparison, failure drills) and a decision table; **none has run yet, so nothing is Proven.**
 
 ### 4.3 Spec (new; merges Blueprint, Design and Screens)
 **Purpose.** Decide what the product is, how it looks, and write every screen so a small model can build it without asking. One agent, one orchestrator, one Spec Graph commit; every lane writes through the same validators.
@@ -135,7 +136,7 @@ This table is the **shopping list and the mechanism**, not findings; Research co
 **Where the time goes (estimate [J], Standard app about 30 screens, about 30-60 s per model call as the Compass live runs show; some calls hit 90-150 s timeouts, so this is the main thing to measure):**
 | | Six stages in a line | Four agents, Phase 1 |
 |---|---|---|
-| Research after G1 | about 3-4 min | **about 2 to 3 min (focused load), 4 to 6 (standard), 7 to 10 (deep)**, foreground, parallel workers (2026-11-11; no longer hidden) |
+| Research after G1 | about 3-4 min | **about 2 to 3 min (focused load), 4 to 6 (standard), 7 to 10 (deep)** (the built soft ceilings are 3, 6 and 10 min; hard 5.5, 10 and 16), foreground, parallel workers; check-all adds seconds inside topics (doc 13 §7); **measured in the first live runs, not before** |
 | Product (Blueprint) | about 4-5 min | about 4-5 min (the critical path) |
 | Design | about 2 min | hidden (parallel with Product) |
 | Screens | about 1-1.5 min | about 1-1.5 min (parallel batches) |
@@ -153,7 +154,7 @@ The earlier 8-minute Standard target was optimistic for a line of six stages; wi
 |---|---|---|
 | Compass → Research | `research` view with `guidance`, `research_requests`, `search_hints`, plus trust flags (doc 13 §14) | trigger: `gate1.approved` (Brief hash); the orchestrator relays, agents never import each other |
 | Compass → Spec | `brief.json`, views and the **approved intent-level structure** (modules, screens, flows, entities), approved at G1 | bound to the Brief hash; Gate 1 probes already ran; the structure is a proposal that the Product lane refines (AD-44) |
-| Research → Spec | `research.json` (v2) | read at commit (or `skipped`); later findings follow doc 13 R7 (G2 toggles or change requests), never lane L1 |
+| Research → Spec | `research.json` (v5), the compact view and `research_report.md` | read at commit (or `skipped`); whole main store or packs by measured size; use rules R21 to R27 (doc 13 §9.5); later findings follow doc 13 R7 (G2 toggles or change requests), never lane L1 |
 | Spec → Verify | graph commits per step and per screen batch | Verify streams on commits; Freeze is an event |
 | Verify → Front-end | the package through the Spec Server | `APP_SPEC.md` hash bound at G2; every BN not `missing` |
 **Handoff probes (AD-27, amended).** Kept at the Compass → Research and Compass → Spec boundary (already built) and at the end (Verify's sufficiency probe on the slices the front-end will receive). **Inside Spec** the lane-to-lane checks are deterministic code validators, which are stricter and cheaper than an LLM canary.
@@ -181,13 +182,13 @@ Compass hardening and Phase 8 continue in parallel. Then: **Backbone** (Spec Gra
 | A lane failure stalls everything | Failure ladder per step; deterministic fallbacks (module recipes, design presets); `degraded` is flagged, never hidden |
 | Loss of the Blueprint → Design → Screens handoff probes | Replaced by code validators at the join and Freeze, a structure critic at Freeze, and the end-to-end sufficiency probe on real slices |
 | Context pollution inside one agent | AD-20 holds: every call receives only a view assembled by code, never the whole graph |
-| Research on the critical path (v2, foreground) | Parallel lanes, tier time boxes, Skip, resumable run; Phase 2 switches measured first (doc 13 §15) |
+| Research on the critical path (foreground) | Parallel lanes, soft and hard time limits, Skip, resumable run; checks run inside topics; Phase 2 switches measured first (doc 13 §7.3, §16) |
 | Thin Compass Briefs (§6) | Fill ladder plus coverage matrix; `missing` blocks G2 |
 | Model latency (150 s timeouts seen in Compass live runs) | Measure per call in the first end-to-end run; effort and model-class tuning is Phase 2 (a) |
 
 ## 12. Open items
 | ID | Item | My default |
 |---|---|---|
-| OI-11 | Search provider for Research | Decided in principle (AD-48, doc 13 §7): one provider at a time behind a port, Tavily default, Brave alternative, set by a bake-off. Owner approves the live spend and the accounts |
+| OI-11 | Search provider for Research | Both adapters are built (Tavily, Serper); the bake-off has not run; after it, a primary and a failover (doc 13 §8, OI-14). The owner runs it (doc 14 §10) |
 | OI-12 | Phase 2 speculation (Product lane at `brief_ready`; front-end foundation at Freeze) | Off until the chain works end to end; then measure hit rate before switching on |
 | OI-13 | Per-profile time targets | Recalibrate after the first end-to-end run |
