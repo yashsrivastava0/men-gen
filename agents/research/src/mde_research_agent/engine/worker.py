@@ -38,7 +38,7 @@ from mde_research_agent.core.passages import bm25_scores, render, select_passage
 from mde_research_agent.core.rrf import FusedHit, fuse
 from mde_research_agent.core.slots import Coverage, evaluate_target
 from mde_research_agent.core.sources import classify_source, own_site
-from mde_research_agent.core.text import stem, tokens
+from mde_research_agent.core.text import repair_mojibake, stem, tokens
 from mde_research_agent.core.urls import canonical_url, is_public_url, registrable_domain
 from mde_research_agent.domain.plan import Target
 from mde_research_agent.engine.checking import check_topic
@@ -429,7 +429,12 @@ async def _read_page(
         if not ctx.budget.try_page():
             await _pages_refused(ctx, ts)
             return None
-        text, source, published, final = hit.hit.content, "provider", hit.hit.published, url
+        text, source, published, final = (
+            repair_mojibake(hit.hit.content),
+            "provider",
+            hit.hit.published,
+            url,
+        )
         await ctx.events.emit(
             "page.read",
             target_id=t.id,

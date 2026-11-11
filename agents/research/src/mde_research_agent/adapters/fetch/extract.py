@@ -28,6 +28,8 @@ from lxml import etree  # pyright: ignore[reportAttributeAccessIssue]
 from lxml import html as lxml_html
 from pypdf import PasswordType, PdfReader
 
+from mde_research_agent.core.text import repair_mojibake
+
 DEFAULT_MAX_CHARS: Final = 400_000
 DEFAULT_MAX_PDF_PAGES: Final = 60
 
@@ -97,15 +99,23 @@ def _codec_name(label: str) -> str | None:
     key = label.strip().strip("\"'").lower()
     key = _CHARSET_ALIASES.get(key, key)
     try:
-        return codecs.lookup(key).name
+        name = codecs.lookup(key).name
     except LookupError:
         return None
+    # every spelling of Latin-1 ("iso_8859-1", "l1", "cp819", ...) is Windows-1252 on the web, like the aliases above
+    return "cp1252" if name == "iso8859-1" else name
 
 
 def _try_decode(data: bytes, label: str) -> str | None:
     name = _codec_name(label)
     if name is None:
         return None
+    if name == "cp1252" and not data.isascii():
+        # a page that says Latin-1 but is valid UTF-8 is UTF-8: real Latin-1 text with accents is almost never valid UTF-8
+        try:
+            return data.decode("utf-8")
+        except UnicodeDecodeError:
+            pass
     try:
         return data.decode(name, errors="replace")
     except (LookupError, UnicodeError, ValueError):  # a codec that is not a text encoding
@@ -129,7 +139,7 @@ def decode_body(data: bytes, charset: str | None = None, *, html: bool = False) 
         if data.startswith(bom):
             decoded = _try_decode(data, label)
             if decoded is not None:
-                return decoded
+                return repair_mojibake(decoded)
     labels = [charset] if charset else []
     if html and not labels:
         declared = _meta_charset(data)
@@ -138,8 +148,8 @@ def decode_body(data: bytes, charset: str | None = None, *, html: bool = False) 
     for label in labels:
         decoded = _try_decode(data, label)
         if decoded is not None:
-            return decoded
-    return data.decode("utf-8", errors="replace")
+            return repair_mojibake(decoded)
+    return repair_mojibake(data.decode("utf-8", errors="replace"))
 
 
 def sniff_media_type(prefix: bytes) -> str:

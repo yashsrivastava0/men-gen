@@ -141,3 +141,51 @@ def word_count(text: str) -> int:
 
 def clean_spaces(text: str) -> str:
     return " ".join(text.split())
+
+
+# --- mojibake: UTF-8 read as a single-byte code page, then written out again -------------------------------------
+# Some sites publish text that was decoded as Windows-1252 or Latin-1 and encoded as UTF-8 a second time ("double
+# encoded"): an apostrophe becomes ``â`` plus two invisible controls, the rupee sign ``₹`` becomes ``â`` + control + ``¹``.
+# Downstream that is worse than ugly: control characters are stripped and NFKC folds ``¹`` to ``1``, so "₹350" reads
+# "1350" and the number check rightly refuses every price on the page (Small run 2026-11-11: 7 of the 10 number
+# rejections were this, on the one page that held the studio prices). The repair is exact, not a guess: a run is
+# rewritten only when its characters are the bytes of ONE valid UTF-8 sequence; ordinary accented text never is.
+_CP1252_CONTINUATION = (
+    "€‚ƒ„…†‡ˆ‰Š‹ŒŽ‘’“”•–—˜™š›œžŸ"  # what bytes 0x80-0x9f look like in Windows-1252
+)
+_LEAD = regex.compile("[Â-ô]")
+
+
+def _as_byte(ch: str) -> int | None:
+    """The byte a character stands for when text is misread as Windows-1252 or Latin-1; None for any other character."""
+    code = ord(ch)
+    if 0x80 <= code <= 0xFF:  # Latin-1 range (the C1 controls 0x80-0x9f are Latin-1 only)
+        return code
+    if ch in _CP1252_CONTINUATION:
+        return ch.encode("cp1252")[0]
+    return None
+
+
+def repair_mojibake(text: str) -> str:
+    """``text`` with every double-encoded UTF-8 sequence rewritten to the character it stands for; the rest untouched."""
+    if not text or text.isascii():
+        return text
+    out: list[str] = []
+    i, n = 0, len(text)
+    while i < n:
+        ch = text[i]
+        if _LEAD.fullmatch(ch):
+            lead = ord(ch)
+            size = 2 if lead < 0xE0 else 3 if lead < 0xF0 else 4
+            chunk = text[i : i + size]
+            raw = [_as_byte(c) for c in chunk]
+            if len(chunk) == size and None not in raw and all(0x80 <= b <= 0xBF for b in raw[1:]):  # type: ignore[operator]
+                try:
+                    out.append(bytes(raw).decode("utf-8"))  # type: ignore[arg-type]
+                    i += size
+                    continue
+                except UnicodeDecodeError:
+                    pass
+        out.append(ch)
+        i += 1
+    return "".join(out)
