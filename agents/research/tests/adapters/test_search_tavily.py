@@ -324,11 +324,16 @@ async def test_domains_are_capped_at_the_documented_300() -> None:
     assert result.applied["domain_mode"] == "restrict"
 
 
-async def test_exact_uses_exact_match_and_a_quoted_phrase() -> None:
+async def test_exact_uses_exact_match_and_keeps_the_quoted_phrase() -> None:
     result, recorder = await run(SearchRequest('GST "rule 86B" limits', exact=True))
     assert recorder.body["exact_match"] is True
-    assert recorder.body["query"] == '"GST rule 86B limits"'
+    assert recorder.body["query"] == 'GST "rule 86B" limits'  # only the quoted phrase is exact
     assert result.applied["exact"] == "true"
+
+
+async def test_exact_without_a_quoted_phrase_quotes_the_whole_query() -> None:
+    _result, recorder = await run(SearchRequest("rule 86B limits", exact=True))
+    assert recorder.body["query"] == '"rule 86B limits"' and recorder.body["exact_match"] is True
 
 
 async def test_not_exact_leaves_the_query_alone() -> None:

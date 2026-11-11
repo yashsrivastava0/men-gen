@@ -167,7 +167,7 @@ The design had Serper "entirely unverified". Now: pricing, free allowance, rate 
 | `language` ("hi") | `language: "hi"` (boost); `filter_by_language` only if the adapter was built with it; not ISO 639-1 (for example `hi-Latn`): not sent, `locale_weak` | `hl: "hi"` (`zh-cn` sent as `zh-CN`); not ISO 639-1: not sent, `locale_weak` |
 | `domain_mode` restrict | `include_domains` + mode `restrict` (max 300) | `(site:a.com OR site:b.com) query` (max 10 domains) |
 | `domain_mode` prefer | `include_domains` + mode `prefer` | not supported, nothing sent, `applied` has no `domain_mode` (capability `domain_prefer=False`) |
-| `exact` | `exact_match: true` and the query in quotes | the query in quotes, `autocorrect: false` |
+| `exact` | `exact_match: true`; the quoted phrase(s) of the query stay as written, else the whole query is quoted | the same quoting, `autocorrect: false` |
 | `recency_months` N | `start_date` = today minus N calendar months (exact for any N) | `tbs=qdr:m` for N <= 1, else `qdr:y`; `applied["recency"]` says `1m` or `12m` (2 to 11 months becomes 12, coarser; above 12 becomes 12, narrower) |
 | `want_content` | `include_raw_content: "text"`, text in `SearchHit.content` | ignored (`page_content=False`) |
 | `max_results` | clamped 1..20 | `num`, clamped 1..100; hits trimmed to `max_results` |

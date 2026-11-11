@@ -343,7 +343,12 @@ def test_normalize_country_code() -> None:
 def test_clean_query_and_quote_phrase() -> None:
     assert clean_query("  best \t crm\n\x00 for   india ") == "best crm for india"
     assert clean_query(None) == ""
-    assert quote_phrase('say "hello"   world') == '"say hello world"'
+    # a query that quotes a phrase keeps it: only that phrase must match as written
+    assert quote_phrase('say "hello"   world') == 'say "hello" world'
+    assert quote_phrase('"Mindbody" features pricing') == '"Mindbody" features pricing'
+    # no quoted phrase, or unbalanced quotes: the whole query is one phrase
+    assert quote_phrase("rule 86B limits") == '"rule 86B limits"'
+    assert quote_phrase('say "hello world') == '"say hello world"'
     with pytest.raises(SearchError) as info:
         quote_phrase('" "')
     assert info.value.kind == "bad_request"

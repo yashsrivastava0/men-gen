@@ -14,7 +14,7 @@ How a ``SearchRequest`` maps:
   ``filter_by_language=True``, because strict filtering can return few or no results). A value that is not
   an ISO 639-1 code (for example "hi-Latn") is not sent and the result is ``locale_weak``.
 * domains: ``restrict`` and ``prefer`` are both native (``include_domains_mode``).
-* exact: ``exact_match`` plus the query as one quoted phrase (the docs ask for the quotes).
+* exact: ``exact_match`` plus quotes: a quoted phrase in the query stays as written, else the whole query is quoted.
 * recency: ``start_date`` = today minus N calendar months, so any N is exact; results with no detectable
   date are kept (``filter_by_published_date`` is not set).
 * want_content: ``include_raw_content`` "text" and the text comes back as ``SearchHit.content``.

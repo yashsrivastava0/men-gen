@@ -274,9 +274,9 @@ async def test_no_usable_domain_leaves_the_query_alone(mode: Any, domains: tuple
     assert "domain_mode" not in result.applied
 
 
-async def test_exact_wraps_the_query_in_quotes_and_turns_autocorrect_off() -> None:
+async def test_exact_keeps_a_quoted_phrase_and_turns_autocorrect_off() -> None:
     result, recorder = await run(SearchRequest('GST "rule 86B" limits', exact=True))
-    assert recorder.body["q"] == '"GST rule 86B limits"'
+    assert recorder.body["q"] == 'GST "rule 86B" limits'  # only the quoted phrase is exact
     assert recorder.body["autocorrect"] is False
     assert result.applied["exact"] == "true"
 

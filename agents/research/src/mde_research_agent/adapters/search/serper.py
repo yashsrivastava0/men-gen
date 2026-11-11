@@ -12,7 +12,7 @@ How a ``SearchRequest`` maps:
 * domains: ``restrict`` becomes ``site:`` operators in the query, ``(site:a.com OR site:b.com) query``
   (at most 10 domains). ``prefer`` has no native form and is NOT emulated: nothing is sent and
   ``applied`` carries no ``domain_mode``.
-* exact: the query as one quoted phrase, with ``autocorrect`` off so Google does not rewrite it.
+* exact: a quoted phrase in the query stays as written, else the whole query is quoted; ``autocorrect`` off so Google does not rewrite it.
 * recency: ``tbs`` is ``qdr:m`` for one month or less and ``qdr:y`` for anything longer. That is coarser
   than the request (3 months becomes 12; 24 months also becomes 12, which is narrower), and ``applied``
   reports the window that was really used ("1m" or "12m").

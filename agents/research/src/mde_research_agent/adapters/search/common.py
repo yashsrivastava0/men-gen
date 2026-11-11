@@ -171,8 +171,19 @@ def clean_query(text: object) -> str:
     return " ".join("".join(" " if ord(ch) < 32 or ord(ch) == 127 else ch for ch in text).split())
 
 
+_QUOTED_SPAN = re.compile(r'"([^"]+)"')
+
+
 def quote_phrase(query: str) -> str:
-    """``query`` as one quoted phrase; double quotes inside it are dropped so the quoting stays valid."""
+    """What ``exact`` sends. A query that already quotes a phrase (``"Mindbody" features pricing``) keeps its quotes:
+    only the quoted part must match as written, the other words stay ordinary. Without a (balanced, non-empty) quoted
+    span the whole query becomes one quoted phrase and inner double quotes are dropped so the quoting stays valid.
+
+    Wrapping a query that had quotes AND other words into one phrase asked the provider for a page containing the
+    whole sentence verbatim: the Small run's quoted-entity searches returned 0 or 1 hits from both providers."""
+    flat = " ".join(query.split())
+    if flat.count('"') % 2 == 0 and any(m.group(1).strip() for m in _QUOTED_SPAN.finditer(flat)):
+        return flat
     inner = " ".join(query.replace('"', " ").split())
     if not inner:
         raise SearchError("bad_request", "the query is empty")
