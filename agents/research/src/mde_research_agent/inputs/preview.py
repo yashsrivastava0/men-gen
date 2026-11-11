@@ -13,9 +13,7 @@ from typing import Any
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.plan.build import build_plan
-
-LIGHT_BELOW = 12  # doc 13 section 4.2: the load below which a tiny app may use light mode
-
+from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
 
 def compass_info(data: dict[str, Any]) -> dict[str, Any]:
     """Information only (never an input to the load): the Compass interview size and whether it ran degraded."""
@@ -27,45 +25,12 @@ def compass_info(data: dict[str, Any]) -> dict[str, Any]:
     }
 
 
-def light_mode(inp: ResearchInput, signals: list[str]) -> bool:
-    """Doc 13 section 4.2: a tiny app with nothing that needs outside facts."""
-    load = inp.load.score if inp.load else 0
-    rule_facts = [
-        f for f in inp.facts if (f.kind or "") in ("rule", "compliance", "integration_detail")
-    ]
-    has_place = bool(inp.geography.country or inp.geography.cities)
-    return (
-        load < LIGHT_BELOW
-        and not signals
-        and not inp.references
-        and not inp.integrations
-        and not rule_facts
-        and not has_place
-    )
-
-
-def trust_decision(inp: ResearchInput, signals: list[str]) -> dict[str, Any]:
-    """Whether the extra trust topics (privacy, security, store rules) run, and a plain reason why or why not."""
-    klass = inp.load.load_class if inp.load else "standard"
-    if klass == "deep":
-        return {
-            "on": True,
-            "why": "This is a big app: privacy, security and store rules are always checked.",
-        }
-    if inp.sensitive_flags:
-        return {
-            "on": True,
-            "why": "The Brief marks sensitive data, so privacy and security rules are checked.",
-        }
-    return {"on": False, "why": "Nothing in the Brief needs the extra privacy and security checks."}
-
-
 def build_preview(
     data: dict[str, Any], inp: ResearchInput, catalog: Catalog, estimates: Any
 ) -> dict[str, Any]:
     plan = build_plan(inp, catalog)
-    signals: list[str] = []
-    light = light_mode(inp, signals)
+    signals = list(compute_signals(inp, catalog.signals))
+    light = plan.light
     load = inp.load
     klass = load.load_class if load else "standard"
     size = estimates.size_class(klass, light=light)
@@ -129,7 +94,7 @@ def build_preview(
         "size_label": estimates.label(size),
         "light": light,
         "signals": signals,
-        "trust": trust_decision(inp, signals),
+        "trust": dict(zip(("on", "why"), trust_decision(inp, tuple(signals), catalog), strict=True)),
         "topics": {
             "total": len(plan.targets),
             "by_job": {

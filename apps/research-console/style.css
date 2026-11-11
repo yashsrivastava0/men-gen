@@ -353,3 +353,6 @@ kbd { font: 700 0.85rem ui-monospace, Menlo, Consolas, monospace; border: 1px so
   .data-rows dt { margin-top: 6px; }
   .vscroll { height: min(70vh, 40rem); }
 }
+
+.verdict-bar { position: sticky; bottom: 0; z-index: 5; background: var(--bg); border-top: 1px solid var(--border); padding: 4px 0 8px; margin-top: 8px; }
+.verdict-bar .verdicts { margin: 8px 0; }

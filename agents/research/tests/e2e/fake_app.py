@@ -143,7 +143,7 @@ def _item_variants(base_items: list[dict[str, Any]], n: int) -> list[dict[str, A
     for i in range(n):
         src = base_items[i % len(base_items)]
         it = json.loads(json.dumps(src))
-        it["id"] = f"RI-{i + 1:04d}"
+        it["id"] = f"RI-{i + 1:03d}"  # the same ids the norms and the confirm list point at
         it["label"] = f"{src['label']} (#{i + 1})"
         it["claim"] = f"{src['claim']} Variant {i + 1}."
         it["rank"] = i + 1

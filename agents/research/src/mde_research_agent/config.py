@@ -25,6 +25,7 @@ StoreName = Literal["file", "postgres"]
 RUN_SCOPE_KIND = "research_run"
 PERIOD_SCOPE_KIND = "research_period"
 USER_AGENT = "MobigenResearchBot/1.0 (product research)"
+UNTRUSTED_CHARS = 120_000
 
 
 class ResearchSettings(BaseSettings):
@@ -111,11 +112,19 @@ def research_budget_config(core_cap_usd: Decimal | str, total_usd: Decimal | str
 def gateway_config(*, offline: bool, lanes_extract: int = 16) -> GatewayConfig:
     """Concurrency for the extraction lanes; offline (mock) the rate limits are lifted."""
     concurrency = {"fast": max(8, lanes_extract), "standard": 8, "deep": 4}
+    # The gateway cuts every untrusted field at 20,000 characters by default; a checker batch (15 items with their passages
+    # and data) is longer, and a silent cut would drop the LAST items of the batch. 120,000 keeps a whole batch.
     if offline:
         return GatewayConfig(
-            concurrency=concurrency, rpm={"fast": 60_000, "standard": 60_000, "deep": 60_000}
+            concurrency=concurrency,
+            rpm={"fast": 60_000, "standard": 60_000, "deep": 60_000},
+            max_untrusted_chars=UNTRUSTED_CHARS,
         )
-    return GatewayConfig(concurrency=concurrency, rpm={"fast": 600, "standard": 240, "deep": 120})
+    return GatewayConfig(
+        concurrency=concurrency,
+        rpm={"fast": 600, "standard": 240, "deep": 120},
+        max_untrusted_chars=UNTRUSTED_CHARS,
+    )
 
 
 def repo_root() -> Path:

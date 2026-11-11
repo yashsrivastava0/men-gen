@@ -308,12 +308,21 @@ def compose_app(
 
     missing = readiness(core, cfg)
     switches_ok = not any(not ok for ok in live_switches(core).values())
+    primary_pref = _saved_provider(data) or cfg.research_search_provider
     chosen = (
-        cfg.research_search_provider
-        if cfg.research_search_provider != "auto"
+        primary_pref
+        if primary_pref != "auto"
         else choose_provider(cfg, DEFAULT_PROVIDER)
     )
-    search, fetch, closers = build_ports(chosen, cfg)
+    http = httpx.AsyncClient(timeout=15.0, trust_env=False)
+    search, fetch, _own = build_ports(chosen, cfg, client=http)
+    closers: list[Any] = [http.aclose]
+    other = "serper" if chosen == "tavily" else "tavily"
+    second, _f, _c = build_ports(other, cfg, client=http)
+    if search is not None and second is not None:  # both keys present: a failover and a limited second opinion
+        from mde_research_agent.adapters.search.failover import FailoverSearch
+
+        search = FailoverSearch(search, second)
     uploads = data / "uploads"
     estimates = Estimates()
     inputs = InputsStore(inputs_dir(cfg), catalog, estimates, uploads=uploads)
@@ -340,3 +349,14 @@ def compose_app(
         stale_after_s=cfg.research_stale_after_s,
         own_store=own_store,
     )
+
+
+def _saved_provider(data: Path) -> str | None:
+    """The primary provider the owner chose in the app (``settings.json``), when it is a known one."""
+    import json
+
+    try:
+        value = json.loads((data / "settings.json").read_text(encoding="utf-8")).get("primary_provider")
+    except (OSError, ValueError):
+        return None
+    return value if value in ("auto", "tavily", "serper") else None

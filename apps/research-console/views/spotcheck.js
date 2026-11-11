@@ -163,15 +163,17 @@ function mountCheck(root, ctx, checkId) {
         quoteBlock({ text: card.quote, domain: (card.source || {}).domain, published: (card.source || {}).published, url: (card.source || {}).url }),
         h("p", { class: "muted small" }, "Does the quote really say the claim, and is it right for this app?")
       ),
+      h("div", { class: "verdict-bar" },
       h("div", { class: "verdicts", role: "group", "aria-label": "Your verdict" }, verdictButtons),
-      h(
-        "div",
-        { class: "row" },
-        h("button", { type: "button", class: "btn", "data-fk": "v:skipped", "aria-keyshortcuts": SKIP.key, onclick: () => answer("skipped") }, h("kbd", null, SKIP.key.toUpperCase()), " Skip"),
-        h("button", { type: "button", class: "btn", "data-fk": "sc-prev", disabled: idx === 0, "aria-keyshortcuts": "ArrowLeft", onclick: () => go(idx - 1) }, "← Previous"),
-        current ? h("span", { class: "muted small" }, "Your answer so far: " + verdictLabel(current)) : null
+        h(
+          "div",
+          { class: "row" },
+          h("button", { type: "button", class: "btn", "data-fk": "v:skipped", "aria-keyshortcuts": SKIP.key, onclick: () => answer("skipped") }, h("kbd", null, SKIP.key.toUpperCase()), " Skip"),
+          h("button", { type: "button", class: "btn", "data-fk": "sc-prev", disabled: idx === 0, "aria-keyshortcuts": "ArrowLeft", onclick: () => go(idx - 1) }, "← Previous"),
+          current ? h("span", { class: "muted small" }, "Your answer so far: " + verdictLabel(current)) : null
+        ),
+        h("p", { class: "muted small" }, "Keys: 1 to 6 answer, S skips, the left arrow goes back. Each answer is saved at once.")
       ),
-      h("p", { class: "muted small" }, "Keys: 1 to 6 answer, S skips, the left arrow goes back. Each answer is saved at once."),
       h("div", { role: "alert", id: "sc-error" })
     );
     live.textContent = "Card " + (idx + 1) + " of " + p.total;

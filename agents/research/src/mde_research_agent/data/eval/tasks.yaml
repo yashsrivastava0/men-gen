@@ -1,0 +1,19 @@
+# The consumer probe (doc 14 section 6): five tasks a Spec lane performs. A stand-in model does each task twice, once from
+# the Brief alone and once with the research, and must cite finding ids for every statement or write ASSUMED. Generic
+# tasks only: nothing here names an app, a company or a place.
+tasks:
+  - id: features
+    instruction: "List the features of the first release, one statement each, ordered by importance, and say why each belongs in the first release."
+    need: BN-02
+  - id: entities
+    instruction: "List the main data entities with their fields, statuses and the numeric rules that apply to them, one statement each."
+    need: BN-04
+  - id: integrations
+    instruction: "For each integration the app needs, say which provider options exist, how they authenticate, and their fees and limits, one statement each."
+    need: BN-10
+  - id: screens
+    instruction: "For the five most important screens, give the sections, the actions and the states (loading, empty, error, success), one statement each."
+    need: BN-09
+  - id: sample_data
+    instruction: "Give realistic sample data formats for the main entities: formats, ranges and edge cases, one statement each."
+    need: BN-07

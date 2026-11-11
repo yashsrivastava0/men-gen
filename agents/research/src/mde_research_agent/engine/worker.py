@@ -321,6 +321,8 @@ async def search_one(
         ctx.queries.append(rec)
         return None
     ctx.budget.add_search_cost(result.cost_micros, result.provider)
+    for note in getattr(ctx.search, "drain_notes", lambda: [])():
+        await ctx.warn(note, target_id=t.id)
     rec.results = len(result.hits)
     rec.urls = [canonical_url(h.url) for h in result.hits]
     rec.cost_micros = result.cost_micros
