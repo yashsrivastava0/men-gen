@@ -15,7 +15,7 @@ from typing import Any, Final
 from starlette.datastructures import Headers, MutableHeaders
 
 from mde_compass.api.errors import REQUEST_ID_HEADER, error_response
-from mde_compass.api.headers import CSP, SECURITY_HEADERS
+from mde_compass.api.headers import CSP, SECURITY_HEADERS, security_headers
 from mde_core.ids import new_id
 
 Scope = MutableMapping[str, Any]
@@ -46,7 +46,8 @@ class SecurityAndLimitsMiddleware:
             if message["type"] == "http.response.start":
                 out = MutableHeaders(scope=message)
                 out[REQUEST_ID_HEADER] = rid
-                for key, value in SECURITY_HEADERS.items():
+                # read per response, so MDE_RESEARCH_ORIGIN takes effect without re-importing
+                for key, value in security_headers().items():
                     out[key] = value
             await send(message)
 

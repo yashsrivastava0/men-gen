@@ -7,6 +7,13 @@ import httpx
 import pytest
 
 from mde_compass.__main__ import bind_refusal, is_loopback, main
+from mde_compass.api.headers import (
+    DEFAULT_RESEARCH_ORIGINS,
+    RESEARCH_ORIGIN_ENV,
+    build_csp,
+    research_origins,
+    security_headers,
+)
 from mde_compass.api.middleware import CSP
 from mde_compass.api.settings import ApiSettings, load_api_settings, parse_token_table
 from mde_compass.api.testing import ScriptedService
@@ -87,13 +94,95 @@ async def test_security_headers_on_every_response(client: httpx.AsyncClient) -> 
     paths = ["/healthz", f"{P}/strings/en", f"{P}/sessions", "/nothing", "/ui/", "/ui/app.js", "/"]
     for path in paths:
         r = await unauth.get(path)
-        assert r.headers["content-security-policy"] == CSP, path
+        assert r.headers["content-security-policy"] == build_csp(), path
         assert r.headers["x-content-type-options"] == "nosniff", path
         assert r.headers["referrer-policy"] == "no-referrer", path
         assert r.headers["x-request-id"], path
     r = await client.get(f"{P}/sessions")
     assert "frame-ancestors 'none'" in r.headers["content-security-policy"]
     assert "script-src 'self'" in CSP and "unsafe-inline" not in CSP
+
+
+EXPECTED_DEFAULT_CSP = (
+    "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; "
+    "connect-src 'self' http://127.0.0.1:8120 http://localhost:8120; "
+    "frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+)
+
+
+def test_the_default_csp_allows_only_self_and_the_dev_research_origins(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.delenv(RESEARCH_ORIGIN_ENV, raising=False)
+    assert build_csp() == EXPECTED_DEFAULT_CSP == CSP
+    assert DEFAULT_RESEARCH_ORIGINS == "http://127.0.0.1:8120 http://localhost:8120"
+    assert research_origins() == ("http://127.0.0.1:8120", "http://localhost:8120")
+    assert security_headers()["Content-Security-Policy"] == EXPECTED_DEFAULT_CSP
+
+
+def test_research_origins_come_from_the_environment_and_only_connect_src_changes() -> None:
+    env = {
+        RESEARCH_ORIGIN_ENV: "https://research.example.com:9443 http://10.0.0.5:8120/,http://[::1]:8120"
+    }
+    csp = build_csp(env)
+    assert research_origins(env) == (
+        "https://research.example.com:9443",
+        "http://10.0.0.5:8120",
+        "http://[::1]:8120",
+    )
+    assert (
+        "connect-src 'self' https://research.example.com:9443 http://10.0.0.5:8120 http://[::1]:8120;"
+        in csp
+    )
+    assert "127.0.0.1" not in csp, "an explicit list replaces the default"
+    # every other directive is byte for byte the default one
+    other = [d for d in csp.split("; ") if not d.startswith("connect-src")]
+    assert other == [d for d in EXPECTED_DEFAULT_CSP.split("; ") if not d.startswith("connect-src")]
+    assert "unsafe-inline" not in csp and "unsafe-eval" not in csp
+
+
+@pytest.mark.parametrize(
+    "bad",
+    [
+        "*",
+        "http://*.example.com",
+        "https://a.example.com/path",
+        "http://x;script-src *",
+        "http://x.test' 'unsafe-inline",
+        "javascript:alert(1)",
+        "ftp://example.com",
+        "//example.com",
+        "http://",
+        "example.com",
+        "http://host:notaport",
+    ],
+)
+def test_malformed_research_origins_are_dropped(bad: str) -> None:
+    assert research_origins({RESEARCH_ORIGIN_ENV: bad}) == ()
+    csp = build_csp({RESEARCH_ORIGIN_ENV: bad})
+    assert "connect-src 'self';" in csp
+    assert "*" not in csp and "unsafe-inline" not in csp
+    assert csp.count(";") == EXPECTED_DEFAULT_CSP.count(";"), "no directive was smuggled in"
+
+
+def test_an_empty_research_origin_variable_means_none_and_duplicates_are_folded() -> None:
+    assert research_origins({RESEARCH_ORIGIN_ENV: ""}) == ()
+    assert "connect-src 'self';" in build_csp({RESEARCH_ORIGIN_ENV: ""})
+    assert research_origins({RESEARCH_ORIGIN_ENV: "http://a.test:1 http://a.test:1/"}) == (
+        "http://a.test:1",
+    )
+
+
+async def test_the_served_csp_follows_the_environment_on_every_kind_of_response(
+    client: httpx.AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setenv(RESEARCH_ORIGIN_ENV, "https://research.example.com")
+    unauth = httpx.AsyncClient(transport=client._transport, base_url="http://test")
+    for path in ("/healthz", f"{P}/sessions", "/ui/", "/nothing"):  # API, static, 401, 404
+        r = await unauth.get(path)
+        csp = r.headers["content-security-policy"]
+        assert "connect-src 'self' https://research.example.com;" in csp, path
+        assert "127.0.0.1:8120" not in csp, path
 
 
 async def test_request_id_is_kept_when_well_formed(client: httpx.AsyncClient) -> None:
@@ -112,7 +201,7 @@ async def test_body_size_limit() -> None:
         big = {"type": "user_message", "event_id": "e1", "text": "x" * 5000}
         r = await c.post(f"{P}/sessions/{sid}/events", json=big)
         assert r.status_code == 413 and r.json()["code"] == "payload_too_large"
-        assert r.headers["content-security-policy"] == CSP
+        assert r.headers["content-security-policy"] == build_csp()
         ok = {"type": "user_message", "event_id": "e2", "text": "x" * 500}
         assert (await c.post(f"{P}/sessions/{sid}/events", json=ok)).status_code == 200
         # uploads are excluded from the small-body limit: a body that is not multipart is a 422, never a 413
@@ -176,7 +265,7 @@ async def test_unexpected_error_is_a_500_error_body_without_details() -> None:
         r = await c.get(f"{P}/sessions")
     assert r.status_code == 500 and r.json()["code"] == "internal_error"
     assert "sk-12345" not in r.text
-    assert r.headers["content-security-policy"] == CSP
+    assert r.headers["content-security-policy"] == build_csp()
 
 
 async def test_core_errors_map_to_statuses() -> None:
