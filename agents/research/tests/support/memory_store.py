@@ -36,7 +36,17 @@ class InMemoryStore:
         row = self._runs.get(run_id)
         if row is None or row.tenant_id != tenant_id:
             raise NotFound(f"run {run_id}")
-        self._runs[run_id] = row.model_copy(update=fields)
+        new = row.model_copy(update=fields)
+        if new.status in ACTIVE_STATUSES and row.status not in ACTIVE_STATUSES:
+            for other in self._runs.values():
+                if (
+                    other.run_id != run_id
+                    and other.tenant_id == tenant_id
+                    and other.program_id == row.program_id
+                    and other.status in ACTIVE_STATUSES
+                ):
+                    raise RunActive(other.run_id)
+        self._runs[run_id] = new
 
     async def get_run(self, tenant_id: str, run_id: str) -> RunRow | None:
         row = self._runs.get(run_id)
@@ -60,6 +70,16 @@ class InMemoryStore:
         ]
         rows.sort(key=lambda x: (x.finished_at or x.created_at, x.run_id), reverse=True)
         return rows[0].model_copy(deep=True) if rows else None
+
+    async def list_runs(self, tenant_id: str, limit: int = 200) -> list[RunRow]:
+        rows = [r for r in self._runs.values() if r.tenant_id == tenant_id]
+        rows.sort(key=lambda x: (x.created_at, x.run_id), reverse=True)
+        return [r.model_copy(deep=True) for r in rows[:limit]]
+
+    async def active_runs(self) -> list[RunRow]:
+        rows = [r for r in self._runs.values() if r.status in ACTIVE_STATUSES]
+        rows.sort(key=lambda x: (x.created_at, x.run_id))
+        return [r.model_copy(deep=True) for r in rows]
 
     async def mark_interrupted(self) -> int:
         n = 0

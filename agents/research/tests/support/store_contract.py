@@ -182,6 +182,39 @@ async def check_restart_marks_active_runs_interrupted(store: Store) -> None:
     assert done.status == "complete"
 
 
+async def check_one_active_run_is_also_enforced_on_update(store: Store) -> None:
+    await store.create_run(row("rrn_1", status="complete"))
+    await store.create_run(row("rrn_2", at=1))  # active
+    with pytest.raises(RunActive) as err:
+        await store.update_run("t1", "rrn_1", status="running")  # would be a second active run
+    assert err.value.run_id == "rrn_2"
+    await store.update_run("t1", "rrn_2", status="partial")
+    await store.update_run("t1", "rrn_1", status="running")  # now it is the only one
+
+
+async def check_list_runs_and_active_runs(store: Store) -> None:
+    await store.create_run(row("rrn_1", at=0))
+    await store.update_run("t1", "rrn_1", status="complete")
+    await store.create_run(row("rrn_2", program="prog_2", at=5))
+    await store.create_run(row("rrn_3", tenant="t2", at=6))
+    listed = await store.list_runs("t1")
+    assert [r.run_id for r in listed] == ["rrn_2", "rrn_1"]  # newest first, own tenant only
+    assert [r.run_id for r in await store.list_runs("t1", limit=1)] == ["rrn_2"]
+    assert sorted(r.run_id for r in await store.active_runs()) == ["rrn_2", "rrn_3"]  # every tenant
+
+
+async def check_events_after_pages_in_order(store: Store) -> None:
+    await store.create_run(row("rrn_1"))
+    for i in range(1, 8):
+        await store.append_event(event("rrn_1", i))
+    assert [e.seq for e in await store.events_after("rrn_1", 0, limit=3)] == [1, 2, 3]
+    assert [e.seq for e in await store.events_after("rrn_1", 3, limit=3)] == [4, 5, 6]
+    assert [e.seq for e in await store.events_after("rrn_1", 6)] == [7]
+    assert await store.events_after("rrn_1", 7) == []
+    assert await store.events_after("rrn_missing", 0) == []
+    assert await store.last_seq("rrn_1") == 7
+
+
 CHECKS: list[Callable[[Store], Awaitable[None]]] = [
     check_create_and_get,
     check_one_active_run_per_program,
@@ -191,4 +224,7 @@ CHECKS: list[Callable[[Store], Awaitable[None]]] = [
     check_results_are_immutable_and_latest_wins,
     check_decisions_are_an_overlay,
     check_restart_marks_active_runs_interrupted,
+    check_one_active_run_is_also_enforced_on_update,
+    check_list_runs_and_active_runs,
+    check_events_after_pages_in_order,
 ]

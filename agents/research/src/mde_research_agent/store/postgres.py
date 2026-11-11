@@ -252,6 +252,27 @@ class PostgresStore:
             row = (await conn.execute(stmt)).first()
         return None if row is None else _run_from(row)
 
+    async def list_runs(self, tenant_id: str, limit: int = 200) -> list[RunRow]:
+        stmt = (
+            select(*RUNS.c)
+            .where(RUNS.c.tenant_id == tenant_id)
+            .order_by(RUNS.c.created_at.desc(), RUNS.c.run_id.desc())
+            .limit(limit)
+        )
+        async with self._engine.begin() as conn:
+            rows = (await conn.execute(stmt)).all()
+        return [_run_from(r) for r in rows]
+
+    async def active_runs(self) -> list[RunRow]:
+        stmt = (
+            select(*RUNS.c)
+            .where(RUNS.c.status.in_(ACTIVE_STATUSES))
+            .order_by(RUNS.c.created_at, RUNS.c.run_id)
+        )
+        async with self._engine.begin() as conn:
+            rows = (await conn.execute(stmt)).all()
+        return [_run_from(r) for r in rows]
+
     async def mark_interrupted(self) -> int:
         stmt = (
             update(RUNS)

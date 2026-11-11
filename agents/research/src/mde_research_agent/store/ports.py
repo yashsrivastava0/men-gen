@@ -1,4 +1,4 @@
-"""The persistence interface of Research (one Protocol, two implementations: in-memory and PostgreSQL).
+"""The persistence interface of Research (one Protocol; file-backed and PostgreSQL implementations, plus an in-memory test double).
 
 Rules every implementation follows (and the shared contract checks in ``store/contract.py`` verify):
 
@@ -16,7 +16,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Protocol
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 from mde_core.errors import Conflict
 from mde_research_agent.domain.events import Event
@@ -50,6 +50,7 @@ class RunRow(BaseModel):
     content_hash: str | None = None
     reason: str | None = None
     skip_requested: bool = False
+    meta: dict[str, Any] = Field(default_factory=dict)  # what the app records: input, size class, spend
     created_at: datetime
     started_at: datetime | None = None
     finished_at: datetime | None = None
@@ -71,6 +72,8 @@ class Store(Protocol):
     async def get_run(self, tenant_id: str, run_id: str) -> RunRow | None: ...
     async def active_run(self, tenant_id: str, program_id: str) -> RunRow | None: ...
     async def latest_committed(self, tenant_id: str, program_id: str) -> RunRow | None: ...
+    async def list_runs(self, tenant_id: str, limit: int = 200) -> list[RunRow]: ...
+    async def active_runs(self) -> list[RunRow]: ...
     async def mark_interrupted(self) -> int: ...
 
     async def append_event(self, event: Event) -> None: ...

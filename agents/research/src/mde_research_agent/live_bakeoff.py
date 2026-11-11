@@ -45,7 +45,7 @@ from mde_research_agent.config import keys_present, load_research_settings
 from mde_research_agent.core.countries import countries
 from mde_research_agent.core.sources import classify_source
 from mde_research_agent.core.urls import registrable_domain
-from mde_research_agent.fakes import FakeSearch, FakeWorld
+from mde_research_agent.devtools import fake_search, fake_world, script_service
 from mde_research_agent.intake import read_export
 from mde_research_agent.plan.build import build_plan
 from mde_research_agent.ports.search import SearchPort, SearchRequest, SearchResult
@@ -366,12 +366,16 @@ async def infer_countries(exports_dir: Path, mock: bool) -> dict[str, Any]:
     """One planner call per export (the real pipeline's way to find a country the Brief does not state)."""
     from mde_core.settings import load_settings
     from mde_research_agent.calls import plan as plan_call
-    from mde_research_agent.compose import build_service
     from mde_research_agent.engine.director import build_plan_in, proposal_from
 
     cat = load_catalog()
     core = load_settings(llm_mode="mock") if mock else load_settings()
-    svc = build_service(memory=True, core_settings=core, provider="fake" if mock else None)
+    svc = script_service(
+        core=core,
+        mock_or_replay=mock,
+        provider="fake" if mock else None,
+        world=fake_world() if mock else None,
+    )
     out: dict[str, Any] = {}
     try:
         runner = CallRunner(svc.gateway, run_id=svc.ids.new("rrn"))
@@ -439,9 +443,7 @@ async def run(args: argparse.Namespace) -> int:
     client = httpx.AsyncClient(timeout=15.0, trust_env=False)
     if args.mock:
         for name in providers:
-            fake = FakeSearch(FakeWorld())
-            fake.name = name
-            ports.append(fake)
+            ports.append(fake_search(name))
         core = None
     else:
         problems = preflight_live()
@@ -477,12 +479,13 @@ async def run(args: argparse.Namespace) -> int:
     if not args.mock:
         for st in stats:
             await measure_page_text(st, client)
-    from mde_research_agent.compose import build_service
+    from mde_core.settings import load_settings as _load
 
-    svc = build_service(
-        memory=True,
-        core_settings=core if core is not None else None,
+    svc = script_service(
+        core=core if core is not None else _load(llm_mode="mock"),
+        mock_or_replay=bool(args.mock),
         provider="fake" if args.mock else None,
+        world=fake_world() if args.mock else None,
     )
     try:
         runner = CallRunner(svc.gateway, run_id=svc.ids.new("rrn"))

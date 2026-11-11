@@ -58,14 +58,15 @@ def research_spent_micros(ledger: Path | str | None, *, prefix: str = SPEC_PREFI
 class GuardSpendBook:
     """Books a search call's cost into the shared guard (reserve, then commit the real cost)."""
 
-    def __init__(self, guard: Any, run_id: str, ids: Ids) -> None:
+    def __init__(self, guard: Any, run_id: str, ids: Ids, period_scope: str | None = None) -> None:
         self._guard = guard
         self._run_id = run_id
         self._ids = ids
+        self._scopes = (f"{RUN_SCOPE_KIND}:{run_id}", *((period_scope,) if period_scope else ()))
 
     def __call__(self, micros: int, provider: str) -> None:
         res = self._guard.reserve(
-            (f"{RUN_SCOPE_KIND}:{self._run_id}",),
+            self._scopes,
             micros,
             purpose="research.search",
             call_id=self._ids.new("call"),

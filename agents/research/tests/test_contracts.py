@@ -14,7 +14,7 @@ from mde_research_agent.schemas import (
     event_schema,
     research_v4_schema,
 )
-from mde_research_agent.testing import load_fixture, run_engine
+from support.testing import load_fixture, run_engine
 
 
 def test_committed_schemas_have_not_drifted() -> None:

@@ -4,7 +4,7 @@ from pathlib import Path
 import pytest
 
 from mde_research_agent.run import main, preflight_live, run_export, write_outputs
-from mde_research_agent.testing import AS_OF, load_fixture
+from support.testing import AS_OF, load_fixture
 
 QUICK = (
     Path(__file__).resolve().parent / "fixtures" / "exports" / "quick-yoga-studio-bengaluru.json"

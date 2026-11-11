@@ -217,7 +217,7 @@ async def _model_order(
     )
     if use_model and inp.lanes:
         res = await ctx.runner.run(asm_call.SPEC, inp)
-        ctx.budget.add_llm_cost(res.cost_micros)
+        ctx.budget.add_llm_cost(res.cost_micros, "assemble")
         if res.failed:
             ctx.failures.record("llm", res.reason or "failed")
             await ctx.warn("model_failed")

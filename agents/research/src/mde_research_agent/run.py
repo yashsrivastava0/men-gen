@@ -18,9 +18,8 @@ from pathlib import Path
 from typing import Any
 
 from mde_core.settings import load_settings
-from mde_research_agent.compose import build_service
 from mde_research_agent.config import keys_present, load_research_settings
-from mde_research_agent.fakes import FakeWorld
+from mde_research_agent.devtools import fake_world, script_service
 from mde_research_agent.intake import ExportRefused
 
 
@@ -50,11 +49,11 @@ async def run_export(
 ) -> tuple[dict[str, Any], dict[str, Any], list[str]]:
     """Run once; return ``(research.json, research_evidence, event lines)``. Files are written by the caller."""
     core = load_settings(llm_mode="mock") if mock else load_settings()
-    svc = build_service(
-        memory=True,
-        core_settings=core,
+    svc = script_service(
+        core=core,
+        mock_or_replay=mock,
         as_of=as_of,
-        world=FakeWorld(provider_content_every=3) if mock else None,
+        world=fake_world(provider_content_every=3) if mock else None,
         provider="fake" if mock else None,
     )
     try:

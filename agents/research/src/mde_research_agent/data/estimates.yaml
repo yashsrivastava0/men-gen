@@ -1,0 +1,35 @@
+# What a run is expected to cost and take, per size class, BEFORE it runs. These are seeded from the offline dry-run
+# plan sizes and the published search prices (data/provider_prices.yaml) plus the model price of one call per step;
+# they are ESTIMATES, not measurements. Once real runs exist the app replaces `mid` by the median of the measured
+# runs of the same class from the spend record (and keeps the range). Money is integer micro-USD.
+schema: 1
+# searches and pages are the expected counts (not the ceilings); minutes are wall-clock.
+classes:
+  tiny:
+    searches: {low: 4, mid: 7, high: 8}
+    pages: {low: 6, mid: 10, high: 14}
+    minutes: {low: 1, mid: 1, high: 2}
+    usd_micros: {low: 40000, mid: 90000, high: 180000}
+  small:
+    searches: {low: 12, mid: 18, high: 24}
+    pages: {low: 16, mid: 22, high: 30}
+    minutes: {low: 2, mid: 3, high: 5}
+    usd_micros: {low: 200000, mid: 380000, high: 650000}
+  medium:
+    searches: {low: 28, mid: 40, high: 56}
+    pages: {low: 40, mid: 58, high: 80}
+    minutes: {low: 4, mid: 7, high: 10}
+    usd_micros: {low: 450000, mid: 850000, high: 1400000}
+  big:
+    searches: {low: 60, mid: 85, high: 115}
+    pages: {low: 100, mid: 140, high: 190}
+    minutes: {low: 8, mid: 12, high: 16}
+    usd_micros: {low: 1200000, mid: 2000000, high: 3200000}
+# How the Research size classes are named for the person using the app.
+labels:
+  tiny: Tiny
+  small: Small
+  medium: Medium
+  big: Big
+# focused / standard / deep are the load classes of the engine; the app names them Small / Medium / Big.
+class_of_load: {focused: small, standard: medium, deep: big}

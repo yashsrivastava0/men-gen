@@ -39,10 +39,9 @@ from mde_research_agent.adapters.recording import (
     ReplaySearch,
 )
 from mde_research_agent.catalog import load_catalog
-from mde_research_agent.compose import build_service
 from mde_research_agent.config import keys_present, load_research_settings
+from mde_research_agent.devtools import fake_world, script_service
 from mde_research_agent.engine.spend import research_spent_micros
-from mde_research_agent.fakes import FakeWorld
 from mde_research_agent.intake import read_export
 from mde_research_agent.metrics import run_metrics
 from mde_research_agent.plan.build import build_plan
@@ -283,17 +282,16 @@ async def run_one(
     elif args.record and not args.mock:
         wrap_search = lambda s: RecordingSearch(s, cass)  # noqa: E731
         wrap_fetch = lambda f: RecordingFetch(f, cass)  # noqa: E731
-    svc = build_service(
-        memory=True,
-        core_settings=core,
+    svc = script_service(
+        core=core,
+        mock_or_replay=bool(args.mock or args.replay),
         provider=args.provider or provider,
-        world=FakeWorld(provider_content_every=3) if args.mock else None,
+        world=fake_world(provider_content_every=3) if args.mock else None,
         wrap_search=wrap_search,
         wrap_fetch=wrap_fetch,
         as_of=datetime.now(UTC).date() if not args.mock else date(2026, 11, 11),
+        live_budget_micros=(spent_before + allowance_micros) if mode == "live" else None,
     )
-    if mode == "live":
-        svc.live_budget_micros = spent_before + allowance_micros
     try:
         row = await svc.start_run("live", f"live-{name}", export)
         t0 = time.monotonic()

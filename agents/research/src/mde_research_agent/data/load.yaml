@@ -1,7 +1,7 @@
 # Research load: computed from the CONTENT of the Brief, never from the Compass tier (AD-49).
 #   load_score = features + facts(kinds below) + weights.app * apps + weights.sensitive * sensitive flags
 #                + weights.reference * named references
-# Class boundaries are calibrated on three real runs (about 17, 30 and 90); retune on more evidence.
+# Class boundaries are calibrated on three real runs (17, 27 and 83 on the three real exports); retune on more evidence.
 weights:
   feature: 1
   fact: 1

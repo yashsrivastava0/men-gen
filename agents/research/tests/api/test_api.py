@@ -9,9 +9,9 @@ import pytest
 
 from mde_research_agent.api import create_app
 from mde_research_agent.api.sse import event_stream
-from mde_research_agent.compose import build_service
+from support.compose import build_service
 from mde_research_agent.config import ResearchSettings
-from mde_research_agent.fakes import FakeWorld
+from support.fakes import FakeWorld
 
 FIX = Path(__file__).resolve().parent.parent / "fixtures" / "exports"
 H = {"Authorization": "Bearer dev-token", "X-Tenant-Id": "t1", "X-User-Id": "u1"}
@@ -23,7 +23,7 @@ def export(name: str = "quick-yoga-studio-bengaluru") -> dict[str, Any]:
 
 def make(world: FakeWorld | None = None):
     world = world or FakeWorld(provider_content_every=3)
-    svc = build_service(memory=True, world=world, as_of=date(2026, 11, 11))
+    svc = build_service(world=world, as_of=date(2026, 11, 11))
     app = create_app(svc, settings=ResearchSettings())
     return world, svc, app
 

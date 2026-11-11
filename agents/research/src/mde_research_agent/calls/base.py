@@ -97,7 +97,9 @@ class CallRunner:
         clock: Clock | None = None,
         ids: Ids | None = None,
         cancel: CancellationToken | None = None,
+        extra_scopes: tuple[str, ...] = (),
     ) -> None:
+        self._extra_scopes = extra_scopes
         self._gateway = gateway
         self._run_id = run_id
         self._tenant = tenant_id
@@ -110,6 +112,7 @@ class CallRunner:
         return CallContext(
             request_id=self._ids.new("call"),
             budget_scope=f"{RUN_SCOPE_KIND}:{self._run_id}",
+            extra_scopes=self._extra_scopes,
             purpose=f"research.{cs.id}",
             session_id=self._run_id,
             tenant_id=self._tenant,

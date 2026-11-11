@@ -9,10 +9,10 @@ from mde_research_agent.adapters.recording import (
     ReplaySearch,
 )
 from mde_research_agent.core.hashing import content_hash
-from mde_research_agent.fakes import FakeFetch, FakeSearch, FakeWorld
+from support.fakes import FakeFetch, FakeSearch, FakeWorld
 from mde_research_agent.metrics import run_metrics
 from mde_research_agent.ports.search import SearchError, SearchRequest
-from mde_research_agent.testing import load_fixture, run_engine
+from support.testing import load_fixture, run_engine
 
 
 async def test_metrics_report_the_design_targets_on_a_clean_run() -> None:

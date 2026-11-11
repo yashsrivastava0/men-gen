@@ -8,7 +8,6 @@ are woken, so a reload replays exactly what was shown.
 
 from __future__ import annotations
 
-import asyncio
 from collections.abc import Callable
 from typing import Any, Protocol
 
@@ -23,22 +22,6 @@ PAGE_BURST_PER_SECOND = 8
 
 class EventStore(Protocol):
     async def append_event(self, event: Event) -> None: ...
-
-
-class MemoryEventStore:
-    """Events in a list, with a condition that wakes SSE tailers."""
-
-    def __init__(self) -> None:
-        self.events: list[Event] = []
-        self.cond = asyncio.Condition()
-
-    async def append_event(self, event: Event) -> None:
-        async with self.cond:
-            self.events.append(event)
-            self.cond.notify_all()
-
-    def after(self, seq: int) -> list[Event]:
-        return [e for e in self.events if e.seq > seq]
 
 
 class EventWriter:

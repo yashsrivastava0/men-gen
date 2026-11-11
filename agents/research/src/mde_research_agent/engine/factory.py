@@ -32,6 +32,7 @@ def new_context(
     as_of: date,
     run_id: str | None = None,
     run_cap_micros: int | None = None,
+    period_scope: str | None = None,
     language: str = "en",
     checker_vendor: str = "none",
     sleep: Callable[[float], Awaitable[None]] | None = None,
@@ -45,7 +46,14 @@ def new_context(
         soft = soft.model_copy(update=ceilings_override.get("soft", {}))
         hard = hard.model_copy(update=ceilings_override.get("hard", {}))
     run_cancel = CancellationToken()
-    runner = CallRunner(gateway, run_id=rid, clock=clock, ids=ids, cancel=run_cancel)  # type: ignore[arg-type]
+    runner = CallRunner(
+        gateway,  # type: ignore[arg-type]
+        run_id=rid,
+        clock=clock,
+        ids=ids,
+        cancel=run_cancel,
+        extra_scopes=(period_scope,) if period_scope else (),
+    )
     holder: dict[str, RunContext] = {}
     writer = EventWriter(
         rid,

@@ -56,6 +56,10 @@ class RunBudget:
         self.search_micros = 0
         self.run_cap_micros = run_cap_micros
         self.on_search_cost: Callable[[int, str], None] | None = None
+        # Every cost as it happens: ``(step, micros)``. The service books it into the spend record at once, so a
+        # crash cannot lose spend. ``by_step`` is the same split for the run's metrics page.
+        self.on_cost: Callable[[str, int], None] | None = None
+        self.by_step: Counter[str] = Counter()
 
     # --- admission ------------------------------------------------------------------------------
     def try_search(self) -> bool:
@@ -71,13 +75,24 @@ class RunBudget:
         return True
 
     # --- money -----------------------------------------------------------------------------------
-    def add_llm_cost(self, micros: int) -> None:
-        self.llm_micros += max(0, micros)
+    def add_llm_cost(self, micros: int, step: str = "other") -> None:
+        micros = max(0, micros)
+        self.llm_micros += micros
+        self._booked(step, micros)
 
     def add_search_cost(self, micros: int, provider: str) -> None:
-        self.search_micros += max(0, micros)
+        micros = max(0, micros)
+        self.search_micros += micros
         if self.on_search_cost is not None and micros:
             self.on_search_cost(micros, provider)
+        self._booked(f"search.{provider}", micros)
+
+    def _booked(self, step: str, micros: int) -> None:
+        if not micros:
+            return
+        self.by_step[step] += micros
+        if self.on_cost is not None:
+            self.on_cost(step, micros)
 
     @property
     def usd_micros(self) -> int:

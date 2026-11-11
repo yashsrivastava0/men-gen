@@ -155,7 +155,7 @@ class Director:
         proposal: PlanProposal | None = None
         try:
             res = await ctx.runner.run(plan_call.SPEC, plan_input(ctx))
-            ctx.budget.add_llm_cost(res.cost_micros)
+            ctx.budget.add_llm_cost(res.cost_micros, "plan")
             if res.failed:
                 ctx.failures.record("llm", res.reason or "failed")
                 await ctx.warn("model_failed")
@@ -290,7 +290,7 @@ class Director:
         if not topics:
             return {}
         res = await ctx.runner.run(gap_call.SPEC, gap_call.GapIn(topics=topics))
-        ctx.budget.add_llm_cost(res.cost_micros)
+        ctx.budget.add_llm_cost(res.cost_micros, "queries")
         if res.failed:
             ctx.failures.record("llm", res.reason or "failed")
             await ctx.warn("model_failed")
@@ -496,7 +496,7 @@ class Director:
                     a.flags.add("unchecked")
                     ctx.drops.unchecked_high_impact += 1
                 continue
-            ctx.budget.add_llm_cost(res.cost_micros)
+            ctx.budget.add_llm_cost(res.cost_micros, "check")
             if res.failed:
                 ctx.failures.record("llm", res.reason or "failed")
                 await ctx.warn("model_failed")

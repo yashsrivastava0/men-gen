@@ -1,7 +1,7 @@
 import pytest
 
-from mde_research_agent.store import InMemoryStore
-from mde_research_agent.store.contract import CHECKS
+from support.memory_store import InMemoryStore
+from support.store_contract import CHECKS
 
 
 @pytest.mark.parametrize("check", CHECKS, ids=lambda c: c.__name__)

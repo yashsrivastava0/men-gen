@@ -9,6 +9,7 @@ other call still runs the real mock pipeline.
 
 from __future__ import annotations
 
+import asyncio
 from collections.abc import Callable, Sequence
 from typing import Any
 
@@ -121,13 +122,12 @@ from mde_research_agent.domain.research import ResearchOutput  # noqa: E402
 from mde_research_agent.engine.context import RunContext  # noqa: E402
 from mde_research_agent.engine.director import Director, DirectorResult  # noqa: E402
 from mde_research_agent.engine.factory import new_context  # noqa: E402
-from mde_research_agent.events.writer import MemoryEventStore  # noqa: E402
-from mde_research_agent.fakes import FakeFetch, FakeSearch, FakeWorld  # noqa: E402
+from support.fakes import FakeFetch, FakeSearch, FakeWorld  # noqa: E402
 from mde_research_agent.ids import CounterIds  # noqa: E402
 from mde_research_agent.intake import read_export  # noqa: E402
 from mde_research_agent.validators import ValidationContext, Violation, run_all  # noqa: E402
 
-FIXTURES = Path(__file__).resolve().parents[2] / "tests" / "fixtures"
+FIXTURES = Path(__file__).resolve().parents[1] / "fixtures"
 AS_OF = date(2026, 11, 11)
 
 
@@ -138,6 +138,22 @@ def load_fixture(name: str) -> dict:
         if path.exists():
             return json.loads(path.read_text(encoding="utf-8"))
     raise FileNotFoundError(name)
+
+
+class MemoryEventStore:
+    """Events in a list, with a condition that wakes SSE tailers."""
+
+    def __init__(self) -> None:
+        self.events: list[Event] = []
+        self.cond = asyncio.Condition()
+
+    async def append_event(self, event: Event) -> None:
+        async with self.cond:
+            self.events.append(event)
+            self.cond.notify_all()
+
+    def after(self, seq: int) -> list[Event]:
+        return [e for e in self.events if e.seq > seq]
 
 
 @dataclass

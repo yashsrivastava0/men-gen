@@ -89,6 +89,7 @@ class RunModel(Base):
     content_hash: Mapped[str | None] = mapped_column(Text)
     reason: Mapped[str | None] = mapped_column(Text)
     skip_requested: Mapped[bool] = mapped_column(Boolean, nullable=False)
+    meta: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, server_default=text("'{}'::jsonb"))
     created_at: Mapped[datetime] = mapped_column(TS, nullable=False)
     started_at: Mapped[datetime | None] = mapped_column(TS)
     finished_at: Mapped[datetime | None] = mapped_column(TS)

@@ -5,8 +5,8 @@ import random
 import pytest
 
 from mde_research_agent.core.hashing import content_hash
-from mde_research_agent.fakes import FakeWorld
-from mde_research_agent.testing import load_fixture, run_engine
+from support.fakes import FakeWorld
+from support.testing import load_fixture, run_engine
 
 
 @pytest.mark.parametrize(

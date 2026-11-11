@@ -47,6 +47,7 @@ RunStatus = Literal[
     "failed",
     "skipped",
     "interrupted",
+    "cancelled",
 ]
 TargetStatus = Literal[
     "queued", "running", "covered", "not_found", "cancelled", "skipped", "partial"

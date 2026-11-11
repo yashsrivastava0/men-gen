@@ -12,7 +12,7 @@ from typing import Protocol
 
 from mde_core.ids import new_ulid
 
-PREFIXES = frozenset({"rrn", "evt", "call", "pg", "qry", "atm"})
+PREFIXES = frozenset({"rrn", "evt", "call", "pg", "qry", "atm", "spn", "prd"})
 
 
 class Ids(Protocol):

@@ -7,9 +7,9 @@ import pytest
 
 from mde_core.clock import FakeClock
 from mde_research_agent.calls.queries import QueryOut, Variant
-from mde_research_agent.compose import build_service
-from mde_research_agent.fakes import FakeWorld
-from mde_research_agent.testing import (
+from support.compose import build_service
+from support.fakes import FakeWorld
+from support.testing import (
     AS_OF,
     atom,
     extractor,
@@ -24,7 +24,7 @@ THOROUGH = "thorough-freight-fleet-india"
 
 
 async def test_rs01_without_a_search_provider_the_run_is_skipped_and_never_blocks() -> None:
-    svc = build_service(memory=True, provider="none", as_of=AS_OF)
+    svc = build_service(provider="none", as_of=AS_OF)
     assert svc.search is None
     row = await svc.start_run("t", None, load_fixture(QUICK))
     await svc.wait(row.run_id, 30)

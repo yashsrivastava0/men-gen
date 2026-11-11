@@ -14,7 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from mde_core.clock import FakeClock
 from mde_core.errors import Conflict, NotFound
-from mde_research_agent.store.contract import CHECKS, T0, event, row
+from support.store_contract import CHECKS, T0, event, row
 from mde_research_agent.store.ports import Decision, RunActive, Store
 from mde_research_agent.store.postgres import PostgresStore, create_store_engine, normalize_url
 

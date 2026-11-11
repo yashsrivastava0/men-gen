@@ -19,7 +19,7 @@ from mde_research_agent.calls.registry import all_specs
 from mde_research_agent.core.quotes import verify_quote
 from mde_research_agent.domain.atoms import KINDS
 from mde_research_agent.ids import CounterIds
-from mde_research_agent.testing import OverrideGateway, make_client
+from support.testing import OverrideGateway, make_client
 
 SPECS = all_specs()
 

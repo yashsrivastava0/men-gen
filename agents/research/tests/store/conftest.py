@@ -13,7 +13,7 @@ from sqlalchemy.ext.asyncio import AsyncEngine
 
 from mde_core.clock import FakeClock
 from mde_research_agent.store.postgres import PostgresStore, create_store_engine
-from mde_research_agent.store.testing import (
+from support.pg_testing import (
     PostgresUnavailable,
     admin_dsn,
     drop_stale_databases,

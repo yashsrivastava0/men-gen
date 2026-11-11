@@ -201,7 +201,7 @@ async def write_variants(
     valid: list[FollowupQuery] = []
     async with ctx.llm_sem:
         res = await ctx.runner.run(q_calls.SPEC, inp)
-    ctx.budget.add_llm_cost(res.cost_micros)
+    ctx.budget.add_llm_cost(res.cost_micros, "queries")
     if res.failed:
         ctx.failures.record("llm", res.reason or "failed", t.id)
         await ctx.warn("model_failed", target_id=t.id)
@@ -556,7 +556,7 @@ async def extract_page(
         )
         async with ctx.llm_sem:
             res = await ctx.runner.run(EXTRACT_SPECS[t.job], inp)
-        ctx.budget.add_llm_cost(res.cost_micros)
+        ctx.budget.add_llm_cost(res.cost_micros, "extract")
         if res.failed:
             ctx.failures.record("llm", res.reason or "failed", t.id)
             await ctx.warn("model_failed", target_id=t.id)

@@ -4,9 +4,9 @@ from datetime import date
 
 from mde_research_agent.calls.extract import ExtractIn
 from mde_research_agent.core.quotes import verify_quote
-from mde_research_agent.fakes import FakeWorld
+from support.fakes import FakeWorld
 from mde_research_agent.ports.search import SearchError
-from mde_research_agent.testing import (
+from support.testing import (
     atom,
     extractor,
     load_fixture,
