@@ -638,14 +638,19 @@ async def extract_page(
         pending = retry
         if not pending or not ctx.active():
             break
-    for _ in pending:
+    for p in pending:
         ctx.drops.quote_not_found += 1
         await ctx.events.emit(
             "fact.rejected",
             target_id=t.id,
             round_=round_no,
             phase="verify",
-            detail={"reason": "quote_not_found", "topic": t.label},
+            # the label of the unchecked item the person saw as "checking", so the console can close that row
+            detail={
+                "reason": "quote_not_found",
+                "topic": t.label,
+                "label": getattr(p, "label", "") or "",
+            },
         )
     return verified
 

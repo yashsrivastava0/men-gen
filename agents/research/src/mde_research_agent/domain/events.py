@@ -69,7 +69,7 @@ DETAIL_ALLOWLIST: dict[str, frozenset[str]] = {
     "page.skipped": frozenset({"domain", "title", "reason"}),
     "fact.found": frozenset({"kind", "label", "topic"}),
     "fact.verified": frozenset({"kind", "label", "domain", "level", "topic"}),
-    "fact.rejected": frozenset({"reason", "topic"}),
+    "fact.rejected": frozenset({"reason", "topic", "label"}),
     "entity.discovered": frozenset({"name", "kind"}),
     "round.completed": frozenset({"round", "slots_filled", "slots_required", "new_slots"}),
     "gap.detected": frozenset({"targets", "count"}),

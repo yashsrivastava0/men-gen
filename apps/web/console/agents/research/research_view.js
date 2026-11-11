@@ -69,7 +69,11 @@
   var GAP_WORDS = {
     not_found: "We could not find reliable sources.", user_cancelled: "You stopped this topic.",
     provider_down: "A search service was not available.", skipped: "Research stopped before this topic.",
-    budget: "We reached the time or search limit.", timeout: "It took too long."
+    budget: "We reached the time or search limit.", timeout: "It took too long.",
+    budget_stop: "We reached the time or search limit.", not_run: "Research ended before this topic was reached.",
+    not_worthwhile: "This was not worth looking up for this app.",
+    conflict_unresolved: "Sources disagreed and we could not settle it.",
+    ambiguous_reference: "We could not tell which one you meant.", declined: "We left this out on purpose."
   };
   var SKIP_WORDS = {
     no_content: "no readable text", paywall: "behind a paywall", blocked: "the site did not let us in",

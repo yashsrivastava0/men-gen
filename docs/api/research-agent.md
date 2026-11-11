@@ -54,11 +54,11 @@ SSE frame: `id: <seq>`, `event: <type>`, `data: <Event JSON>`, blank line. A `re
 | `page.reading` / `page.read` / `page.skipped` | per page (throttled) | `domain`, `title`, `chars?`, `reason?` (`no_content`, `paywall`, `blocked`, ...) | feed line; skipped pages shown quietly |
 | `fact.found` | extraction returned (unchecked) | `kind`, `label`, `topic` | item marked "checking" |
 | `fact.verified` | code check passed | `kind`, `label`, `domain`, `level?` | the item moves to "checked" |
-| `fact.rejected` | check failed | `reason` | counted, not shown as a finding |
+| `fact.rejected` | check failed | `reason`, `topic`, `label?` (the label of the unchecked item, when one was shown as "checking") | counted, not shown as a finding; the matching "checking" row is closed |
 | `entity.discovered` | competitor, provider or authority found | `name`, `kind?` | "Found: NAME" chip |
 | `round.completed` | end of a round | `round`, `slots_filled`, `slots_required`, `new_slots` | coverage bar |
 | `gap.detected` | after the audit | `targets[]`, `count` | "Taking a second look at N topics" |
-| `warning` | slow provider, timeout, rate limit, budget stop | `code`, `message` | plain-language note, never an error dump |
+| `warning` | slow provider, timeout, rate limit, budget stop | `code` (`taking_longer`, `slow_provider`, `rate_limited`, `provider_down`, `no_results`, `no_keys`, `model_failed`, `budget_stop`), `message` | plain-language note, never an error dump; the first three read as "taking a bit longer" |
 | `run.finished` / `run.skipped` | end | `status` (`complete`/`partial`/`skipped`), `facts`, `pages`, `searches`, `usd`, `elapsed_s` | counts; open "What we found" |
 | `run.failed` | end | `status`, `reason`, `code` | plain-language failure; offer to retry |
 
@@ -113,3 +113,11 @@ The six lanes are `blueprint`, `integrations`, `design`, `screens`, `mock`, `ver
 ## `research.json` (`research.v4`)
 
 The committed file is described by `agents/research/contracts/research.v4.schema.json` and the events by `research.event.v1.schema.json` (generated from the package models; a test keeps them in sync). Quotes never appear in it.
+
+## Details the console relies on
+
+* **Gap reasons** (`gaps[].reason`): `not_found`, `budget_stop`, `provider_down`, `not_run`, `not_worthwhile`, `conflict_unresolved`, `user_cancelled`, `ambiguous_reference`, `declined`.
+* **409 `run_active`** carries a structured `run_id` next to the message (`{code, message, run_id}`); the console re-attaches to that run.
+* **Skip and per-topic cancel on a run that is not active**: `POST .../skip` on a finished run returns the run unchanged (no error); `POST .../targets/{id}/cancel` answers `{cancelled: false}`. The console just re-reads the snapshot.
+* **Preflight.** `Last-Event-ID` makes the event stream a non-simple request, so `OPTIONS` on `/events` is answered (the server allows the headers listed at the top).
+* **`fact.rejected.label`** is present when the rejected item had been announced by `fact.found`, so a client can close its "checking" row.
