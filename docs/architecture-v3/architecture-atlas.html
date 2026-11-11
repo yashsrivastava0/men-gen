@@ -1,0 +1,1082 @@
+<title>Mobile Design Engine Atlas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+/* Layout concept: a vertical atlas. Each section states the claim it proves, shows one diagram, then explains every block in plain words.
+   Encoding never changes: teal = a model does the work, slate = plain code, amber diamond = you decide, paper = a file that gets passed on. */
+:root{
+  --bg:#F3F5F8; --surface:#FFFFFF; --surface-2:#E8EDF4; --ink:#131B28; --muted:#566377; --line:#CBD3DF;
+  --accent:#2447C4; --accent-soft:#E2E9FB;
+  --llm:#0B7A84; --llm-soft:#D9EFF0;
+  --code:#46546C; --code-soft:#E2E7F0;
+  --gate:#B45F06; --gate-fill:#FCE5BF;
+  --ok:#1C7A49; --ok-soft:#DAF0E3;
+  --bad:#B3261E; --bad-soft:#FADDDA;
+  --display:"Bricolage Grotesque","Avenir Next","Segoe UI",system-ui,sans-serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0D131C; --surface:#141C28; --surface-2:#1B2535; --ink:#E7EDF5; --muted:#9BA8BC; --line:#2A3649;
+    --accent:#86A2FF; --accent-soft:#1C2849;
+    --llm:#3CC0CC; --llm-soft:#0F3338;
+    --code:#A5B4CB; --code-soft:#202B3C;
+    --gate:#F0A640; --gate-fill:#3B2A0C;
+    --ok:#52C98A; --ok-soft:#10301F;
+    --bad:#FF8F86; --bad-soft:#3E1A18;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0D131C; --surface:#141C28; --surface-2:#1B2535; --ink:#E7EDF5; --muted:#9BA8BC; --line:#2A3649;
+  --accent:#86A2FF; --accent-soft:#1C2849;
+  --llm:#3CC0CC; --llm-soft:#0F3338;
+  --code:#A5B4CB; --code-soft:#202B3C;
+  --gate:#F0A640; --gate-fill:#3B2A0C;
+  --ok:#52C98A; --ok-soft:#10301F;
+  --bad:#FF8F86; --bad-soft:#3E1A18;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.6;margin:0;
+  padding-left:max(16px, env(safe-area-inset-left, 0px));padding-right:max(16px, env(safe-area-inset-right, 0px));padding-block:0 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top, 0px);z-index:10;background:var(--bg)}
+.wrap{max-width:1080px;margin:0 auto}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.15;margin:0}
+h1{font-size:clamp(2rem,4.6vw,3rem);font-weight:700;letter-spacing:-0.01em}
+h2{font-size:clamp(1.35rem,2.6vw,1.8rem);font-weight:700;letter-spacing:-0.005em}
+h3{font-size:1.05rem;font-weight:700}
+p{margin:0}
+code,.mono{font-family:var(--mono);font-size:.88em}
+
+.hero{padding-block:44px 20px;display:grid;gap:14px}
+.eyebrow{font-family:var(--mono);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hero .sub{max-width:62ch;color:var(--muted);font-size:1.06rem}
+.legend{list-style:none;margin:6px 0 0;padding:0;display:flex;flex-wrap:wrap;gap:10px 22px;font-size:.88rem}
+.legend li{display:flex;align-items:center;gap:8px}
+.legend svg{flex:none}
+
+.nav{position:sticky;top:env(safe-area-inset-top, 0px);z-index:11;background:var(--bg);border-bottom:1px solid var(--line);
+  display:flex;gap:6px;overflow-x:auto;padding-block:10px;margin-bottom:8px;scrollbar-width:thin}
+.nav a{flex:none;text-decoration:none;color:var(--ink);font-size:.86rem;padding:5px 11px;border-radius:999px;border:1px solid var(--line);background:var(--surface)}
+.nav a:hover{border-color:var(--accent);color:var(--accent)}
+
+section.block{padding-block:44px 8px;scroll-margin-top:64px;display:grid;gap:16px}
+section.block>.lede{max-width:68ch;color:var(--muted)}
+.fig{margin:0;display:grid;gap:8px}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:12px}
+.fig svg{display:block;width:100%;height:auto;min-width:900px;color:var(--ink)}
+.fig figcaption{color:var(--muted);font-size:.88rem;max-width:80ch}
+.pan-hint{display:none;color:var(--muted);font-size:.8rem}
+@media (max-width:760px){.pan-hint{display:block}}
+
+svg text{font-family:var(--sans);font-size:12.5px;fill:currentColor}
+.t-b{font-weight:600}
+.t-m{fill:var(--muted)}
+.t-s{font-size:11px}
+.t-xs{font-size:10.5px}
+.t-mono{font-family:var(--mono)}
+.t-accent{fill:var(--accent)}
+.t-gate{fill:var(--gate)}
+.n-llm{fill:var(--llm-soft);stroke:var(--llm);stroke-width:1.5}
+.n-code{fill:var(--code-soft);stroke:var(--code);stroke-width:1.5}
+.n-gate{fill:var(--gate-fill);stroke:var(--gate);stroke-width:1.8}
+.n-gate.dash{stroke-dasharray:4 3}
+.n-doc{fill:var(--surface);stroke:var(--code);stroke-width:1.3}
+.n-box{fill:none;stroke:var(--line);stroke-width:1.6}
+.n-svc{fill:var(--surface-2);stroke:var(--line);stroke-width:1.2}
+.n-user{fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.5}
+.n-ok{fill:var(--ok-soft);stroke:var(--ok);stroke-width:1.5}
+.n-bad{fill:var(--bad-soft);stroke:var(--bad);stroke-width:1.5}
+.n-act{stroke:var(--accent);stroke-width:2.4}
+.edge{fill:none;stroke:var(--muted);stroke-width:1.6}
+.edge.dash{stroke-dasharray:5 4}
+.edge.fb{stroke:var(--accent)}
+.edge.thin{stroke-width:1.1}
+.ah{fill:var(--muted)}
+.ah.acc{fill:var(--accent)}
+.stage{cursor:pointer}
+.stage:focus{outline:none}
+.stage:hover rect.n-llm,.stage:focus-visible rect.n-llm{stroke:var(--accent);stroke-width:2.6}
+.stage.is-active rect.n-llm{stroke:var(--accent);stroke-width:3;fill:var(--accent-soft)}
+
+.blocks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:14px 28px;margin:6px 0 0}
+.blocks div{min-width:0}
+.blocks dt{font-family:var(--display);font-weight:700;margin-bottom:2px}
+.blocks dd{margin:0;color:var(--muted);font-size:.93rem}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:2px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);font-size:.8rem;white-space:nowrap}
+.chip.llm{border-color:var(--llm);background:var(--llm-soft)}
+.chip.code{border-color:var(--code);background:var(--code-soft)}
+.chip.gate{border-color:var(--gate);background:var(--gate-fill)}
+.chip.ok{border-color:var(--ok);background:var(--ok-soft)}
+.chip.bad{border-color:var(--bad);background:var(--bad-soft)}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+
+.panel{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:18px;display:grid;gap:14px}
+.panel h3 small{font-family:var(--sans);font-weight:500;color:var(--muted);font-size:.85rem;margin-left:8px}
+.panel .cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px 26px}
+.panel .cols>div{min-width:0}
+.k{font-size:.74rem;letter-spacing:.07em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:3px}
+.steps{list-style:none;margin:0;padding:0;display:grid;gap:7px}
+.steps li{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;font-size:.92rem}
+.steps .chip{font-size:.72rem;padding:1px 8px;margin-top:2px}
+
+table{border-collapse:collapse;width:100%;font-size:.9rem}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:.76rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);font-weight:600}
+td.c,th.c{text-align:center}
+.matrix .dot{font-size:1.05rem}
+.dot.full{color:var(--llm)} .dot.part{color:var(--gate)} .dot.none{color:var(--line)}
+.scroll table{min-width:560px}
+
+pre.code{margin:0;overflow-x:auto;background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-family:var(--mono);font-size:.8rem;line-height:1.55;white-space:pre}
+
+.ladder{display:grid;gap:8px}
+.ladder .row{display:grid;grid-template-columns:150px 1fr 1.1fr;gap:6px 16px;align-items:start;padding:10px 12px;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+.ladder .row>*{min-width:0}
+.ladder .name{font-family:var(--display);font-weight:700}
+.ladder .name b{display:inline-block;min-width:2ch;color:var(--accent)}
+.ladder .what{color:var(--muted);font-size:.9rem}
+.ladder .how{font-size:.9rem}
+@media (max-width:720px){.ladder .row{grid-template-columns:1fr}}
+
+.route{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,230px),1fr));gap:10px}
+.route div{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 12px;font-size:.9rem}
+.route b{font-family:var(--display)}
+
+.trace{display:grid;gap:14px}
+.trace-steps{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;gap:8px}
+.trace-steps button{font:inherit;font-size:.84rem;cursor:pointer;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:6px 12px;border-radius:999px}
+.trace-steps button[aria-selected="true"]{border-color:var(--accent);background:var(--accent-soft);color:var(--ink);font-weight:600}
+.trace-body{border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:18px;display:grid;gap:12px}
+.trace-nav{display:flex;gap:10px}
+.btn{font:inherit;font-size:.88rem;cursor:pointer;border:1px solid var(--accent);background:var(--accent);color:#fff;padding:7px 16px;border-radius:8px}
+.btn.ghost{background:transparent;color:var(--accent)}
+.btn[disabled]{opacity:.4;cursor:default}
+:root[data-theme="dark"] .btn{color:#0D131C}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn{color:#0D131C}}
+
+.road{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,200px),1fr));gap:10px}
+.road li{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:12px;display:grid;gap:4px;align-content:start}
+.road .n{font-family:var(--mono);font-size:.78rem;color:var(--accent);font-weight:500}
+.road .g{font-size:.82rem;color:var(--muted)}
+.road li.now{border-color:var(--accent);background:var(--accent-soft)}
+
+.meter{display:grid;gap:10px}
+.meter .row{display:grid;grid-template-columns:minmax(0,1.3fr) 92px minmax(0,1fr);gap:6px 14px;align-items:center;font-size:.9rem}
+.meter .segs{display:flex;gap:3px}
+.meter .segs i{display:block;height:10px;flex:1;border-radius:2px;background:var(--line)}
+.meter .segs i.on{background:var(--llm)}
+.meter .lv{color:var(--muted);font-size:.84rem}
+@media (max-width:560px){.meter .row{grid-template-columns:1fr 92px}.meter .lv{grid-column:1 / -1}}
+
+details{border:1px solid var(--line);border-radius:10px;background:var(--surface);padding:10px 14px}
+details summary{cursor:pointer;font-weight:600}
+.gl{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:12px 28px;margin:10px 0 0}
+.gl div{min-width:0}
+.gl dt{font-weight:600}
+.gl dd{margin:0;color:var(--muted);font-size:.9rem}
+.note{font-size:.84rem;color:var(--muted);max-width:80ch}
+footer{margin-top:56px;padding-top:18px;border-top:1px solid var(--line)}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <div class="eyebrow">Architecture v3.2 · updated 2026-11-10 · read top to bottom, each map zooms in one level</div>
+  <h1>Mobile Design Engine Atlas</h1>
+  <p class="sub">You bring an idea or a PRD. Four agents turn it into one approved spec: one interviews you, one researches in front of you, one writes the spec, and one checks and packages it. Small models build a live preview in parallel. You approve once, and the backend is built to match what you approved.</p>
+  <ul class="legend" aria-label="How to read the diagrams">
+    <li><svg width="32" height="20" viewBox="0 0 32 20" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="17" rx="6" class="n-llm"/></svg>A model does the work</li>
+    <li><svg width="32" height="20" viewBox="0 0 32 20" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="17" rx="2" class="n-code"/></svg>Plain code does it</li>
+    <li><svg width="26" height="24" viewBox="0 0 26 24" aria-hidden="true"><polygon points="13,1.5 24.5,12 13,22.5 1.5,12" class="n-gate"/></svg>You decide (a gate)</li>
+    <li><svg width="26" height="24" viewBox="0 0 26 24" aria-hidden="true"><path d="M3,1.5 H17 L24,8.5 V22 H3 Z" class="n-doc"/></svg>A file handed to the next block</li>
+    <li><svg width="32" height="20" viewBox="0 0 32 20" aria-hidden="true"><rect x="1.5" y="1.5" width="29" height="17" rx="6" class="n-user"/></svg>What you bring</li>
+  </ul>
+</header>
+
+<nav class="nav" aria-label="Sections">
+  <a href="#map">Map</a><a href="#context">Context</a><a href="#spec">Spec</a><a href="#probe">Proof</a><a href="#build">Build</a>
+  <a href="#preview">Preview</a><a href="#change">Change</a><a href="#modules">Modules</a><a href="#models">Models</a>
+  <a href="#trace">Walkthrough</a><a href="#roadmap">Order</a><a href="#business">Business</a><a href="#terms">Terms</a>
+</nav>
+
+<!-- ===== 1 MAP ===== -->
+<section id="map" class="block">
+  <h2>The whole platform on one page</h2>
+  <p class="lede">Four engines run in a fixed order under one orchestrator. You approve at three mandatory points. After the third one, everything runs by itself.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 570" role="img" aria-label="End-to-end flow. User input goes through the four-agent Context Engine and two approvals into a Spec Package. The Front-end Engine builds a preview. The user approves once at G3. The Backend and QA engines then run automatically. Shared services sit underneath and change requests loop back to the spec.">
+<defs>
+<marker id="a1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+<marker id="b1" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah acc"/></marker>
+</defs>
+<rect class="n-svc" x="20" y="12" width="960" height="36" rx="8"/>
+<text class="t-b" x="36" y="35">Program Orchestrator</text>
+<text class="t-m t-s" x="190" y="35">runs the engines in order · holds the gates, versions, change sets and audit trail</text>
+<path class="edge fb" d="M780,108 C780,66 305,66 305,108" marker-end="url(#b1)"/>
+<text class="t-accent t-s" x="542" y="64" text-anchor="middle">change requests become change sets on the spec, never edits around it</text>
+
+<text class="t-m t-s" x="20" y="114">What users bring</text>
+<rect class="n-user" x="20" y="124" width="128" height="40" rx="8"/><text class="t-s" x="84" y="148" text-anchor="middle">Idea, chat, voice</text>
+<rect class="n-user" x="20" y="174" width="128" height="40" rx="8"/><text class="t-s" x="84" y="198" text-anchor="middle">PRDs, decks, sheets</text>
+<rect class="n-user" x="20" y="224" width="128" height="40" rx="8"/><text class="t-s" x="84" y="248" text-anchor="middle">Brand, Figma, links</text>
+<path class="edge" d="M148,144 H164 M148,194 H164 M148,244 H164 M164,144 V244"/>
+<path class="edge" d="M164,194 H188" marker-end="url(#a1)"/>
+
+<rect class="n-box" x="190" y="108" width="230" height="178" rx="10"/>
+<text class="t-b" x="204" y="130">Context Engine</text>
+<text class="t-m t-xs" x="204" y="145">4 agents · each writes one file</text>
+<rect class="n-llm" x="204" y="156" width="210" height="24" rx="7"/><text class="t-s" x="309" y="172" text-anchor="middle">1 Compass (dialogue)</text>
+<rect class="n-llm" x="204" y="186" width="210" height="24" rx="7"/><text class="t-s" x="309" y="202" text-anchor="middle">2 Research (visible, after G1)</text>
+<rect class="n-llm" x="204" y="216" width="210" height="24" rx="7"/><text class="t-s" x="309" y="232" text-anchor="middle">3 Spec (three lanes)</text>
+<rect class="n-llm" x="204" y="246" width="210" height="24" rx="7"/><text class="t-s" x="309" y="262" text-anchor="middle">4 Verify and package</text>
+
+<path class="edge" d="M420,197 H450" marker-end="url(#a1)"/>
+<polygon class="n-gate" points="480,169 508,197 480,225 452,197"/>
+<text class="t-b t-xs" x="480" y="201" text-anchor="middle">G1·G2</text>
+<text class="t-m t-xs" x="480" y="242" text-anchor="middle">you approve the Brief,</text>
+<text class="t-m t-xs" x="480" y="255" text-anchor="middle">then the Spec</text>
+<path class="edge" d="M508,197 H546" marker-end="url(#a1)"/>
+<path class="n-doc" d="M548,160 H640 L660,180 V234 H548 Z"/><path class="n-doc" d="M640,160 V180 H660" style="fill:none"/>
+<text class="t-b t-s" x="604" y="190" text-anchor="middle">Spec Package</text>
+<text class="t-m t-xs" x="602" y="205" text-anchor="middle">one file + slices,</text>
+<text class="t-m t-xs" x="602" y="218" text-anchor="middle">tokens, contract,</text>
+<text class="t-m t-xs" x="602" y="231" text-anchor="middle">journeys, plan</text>
+<path class="edge" d="M660,197 H688" marker-end="url(#a1)"/>
+
+<rect class="n-box" x="690" y="108" width="180" height="178" rx="10"/>
+<text class="t-b" x="704" y="130">Front-end Engine</text>
+<text class="t-m t-xs" x="704" y="145">builds in parallel, mock data</text>
+<rect class="n-llm" x="704" y="156" width="152" height="30" rx="7"/><text class="t-s" x="780" y="175" text-anchor="middle">Parallel workers</text>
+<rect class="n-code" x="704" y="192" width="152" height="30" rx="4"/><text class="t-s" x="780" y="211" text-anchor="middle">Checks + visual QA</text>
+<rect class="n-code" x="704" y="228" width="152" height="30" rx="4"/><text class="t-s" x="780" y="247" text-anchor="middle">Live preview (web link)</text>
+
+<path class="edge" d="M870,197 H898" marker-end="url(#a1)"/>
+<polygon class="n-gate" points="930,167 960,197 930,227 900,197"/>
+<text class="t-b" x="930" y="202" text-anchor="middle">G3</text>
+<text class="t-m t-xs" x="930" y="243" text-anchor="middle">last user gate</text>
+<text class="t-m t-xs" x="930" y="256" text-anchor="middle">you approve once</text>
+<path class="edge" d="M930,266 V310 H84 V348" marker-end="url(#a1)"/>
+<text class="t-m t-s" x="520" y="304" text-anchor="middle">then everything below runs automatically</text>
+
+<path class="n-doc" d="M20,352 H132 L150,370 V448 H20 Z"/><path class="n-doc" d="M132,352 V370 H150" style="fill:none"/>
+<text class="t-b t-s" x="82" y="378" text-anchor="middle">Approved Build</text>
+<text class="t-b t-s" x="82" y="392" text-anchor="middle">Manifest</text>
+<text class="t-m t-xs" x="82" y="410" text-anchor="middle">Behavior Book,</text>
+<text class="t-m t-xs" x="82" y="423" text-anchor="middle">Contract v1, fixtures,</text>
+<text class="t-m t-xs" x="82" y="436" text-anchor="middle">golden journeys</text>
+<path class="edge" d="M150,400 H198" marker-end="url(#a1)"/>
+
+<rect class="n-box" x="200" y="332" width="210" height="140" rx="10"/>
+<text class="t-b" x="214" y="354">Backend Engine</text>
+<text class="t-m t-xs" x="214" y="369">built from what you approved</text>
+<rect class="n-llm" x="214" y="378" width="182" height="26" rx="7"/><text class="t-xs" x="305" y="395" text-anchor="middle">Data model + migrations</text>
+<rect class="n-llm" x="214" y="408" width="182" height="26" rx="7"/><text class="t-xs" x="305" y="425" text-anchor="middle">API implementing the contract</text>
+<rect class="n-llm" x="214" y="438" width="182" height="26" rx="7"/><text class="t-xs" x="305" y="455" text-anchor="middle">Rules, login, integrations</text>
+<path class="edge" d="M410,402 H434" marker-end="url(#a1)"/>
+
+<rect class="n-code" x="436" y="350" width="150" height="104" rx="6"/>
+<text class="t-b t-s" x="451" y="373">Accepted only if</text>
+<text class="t-xs" x="451" y="394">contract tests pass</text>
+<text class="t-xs" x="451" y="409">approved journeys replay</text>
+<text class="t-xs" x="451" y="424">with the same results</text>
+<text class="t-xs" x="451" y="439">as in the preview</text>
+<path class="edge" d="M586,402 H604" marker-end="url(#a1)"/>
+
+<rect class="n-box" x="606" y="346" width="136" height="112" rx="10"/>
+<text class="t-b" x="620" y="368">QA Engine</text>
+<rect class="n-llm" x="618" y="378" width="112" height="26" rx="7"/><text class="t-xs" x="674" y="395" text-anchor="middle">Replays journeys</text>
+<rect class="n-code" x="618" y="410" width="112" height="26" rx="4"/><text class="t-xs" x="674" y="427" text-anchor="middle">Store checklist</text>
+<path class="edge" d="M742,402 H760" marker-end="url(#a1)"/>
+<polygon class="n-gate dash" points="762,402 790,374 818,402 790,430"/>
+<text class="t-b t-xs" x="790" y="406" text-anchor="middle">G4</text>
+<text class="t-m t-xs" x="790" y="446" text-anchor="middle">optional</text>
+<text class="t-m t-xs" x="790" y="459" text-anchor="middle">sign-off</text>
+<path class="edge" d="M818,402 H846" marker-end="url(#a1)"/>
+<path class="n-doc" d="M848,352 H960 L980,370 V448 H848 Z"/><path class="n-doc" d="M960,352 V370 H980" style="fill:none"/>
+<text class="t-b t-s" x="912" y="380" text-anchor="middle">Delivered</text>
+<text class="t-m t-xs" x="912" y="401" text-anchor="middle">code export,</text>
+<text class="t-m t-xs" x="912" y="414" text-anchor="middle">running backend,</text>
+<text class="t-m t-xs" x="912" y="427" text-anchor="middle">release report</text>
+
+<text class="t-b t-s" x="20" y="500">Shared services every engine uses</text>
+<rect class="n-svc" x="20" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="74" y="533" text-anchor="middle">LLM gateway</text>
+<rect class="n-svc" x="136" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="190" y="533" text-anchor="middle">Artifact store</text>
+<rect class="n-svc" x="252" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="306" y="533" text-anchor="middle">Spec graph store</text>
+<rect class="n-svc" x="368" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="422" y="533" text-anchor="middle">Pack/kit registry</text>
+<rect class="n-svc" x="484" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="538" y="533" text-anchor="middle">Document parser</text>
+<rect class="n-svc" x="600" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="654" y="533" text-anchor="middle">Search + fetch</text>
+<rect class="n-svc" x="716" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="770" y="533" text-anchor="middle">Preview host</text>
+<rect class="n-svc" x="832" y="512" width="108" height="34" rx="6"/><text class="t-xs" x="886" y="533" text-anchor="middle">Eval harness</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>Left to right is the order of work. The blue arc is the feedback path: anything you ask for later becomes a controlled edit of the spec, and only the affected parts are rebuilt.</figcaption>
+  </figure>
+  <dl class="blocks">
+    <div><dt>Program Orchestrator</dt><dd>Keeps order. It runs one engine after another, remembers every version, holds your approvals and the audit trail, and turns change requests into controlled edits.</dd></div>
+    <div><dt>Context Engine</dt><dd>Turns conversation and documents into one verified spec. You approve twice here: the Brief (G1) and the Spec (G2).</dd></div>
+    <div><dt>Spec Package</dt><dd>The single source of truth: one readable file, plus small slices, design tokens, an API contract, test journeys and a build plan.</dd></div>
+    <div><dt>Front-end Engine</dt><dd>Small models build the app in parallel from slices, using mock data, and host a live preview you can click through.</dd></div>
+    <div><dt>G3: the last gate</dt><dd>You judge look and behavior on the live preview. Nothing after this needs you, apart from optional sign-off.</dd></div>
+    <div><dt>Approved Build Manifest</dt><dd>A frozen record of what you approved: rules in plain words, the API contract, sample data and the journeys you walked through.</dd></div>
+    <div><dt>Backend Engine</dt><dd>Builds the server from that record. It is accepted only if the API matches the contract and the approved journeys replay with the same results.</dd></div>
+    <div><dt>QA Engine</dt><dd>Replays the journeys, checks store readiness and writes the release report.</dd></div>
+    <div><dt>Shared services</dt><dd>One gateway for every model call, storage for files and the spec graph, a registry of modules and kits, document reading, search, preview hosting and the test harness.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== 2 CONTEXT ===== -->
+<section id="context" class="block">
+  <h2>The Context Engine: four agents, one file each</h2>
+  <p class="lede">Each agent reads only what it needs, mixes model calls with plain code, and writes one file for the next. Research runs in front of you right after you approve the Brief, with live progress and a Skip button. Select an agent to see exactly what it does.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 440" role="img" aria-label="Four agents in sequence. Compass interviews you and writes the Brief; G1 is your approval. Research runs in front of you after G1 and writes research.json. Spec runs three lanes: Product and Design side by side, then a freeze, then Screens in parallel batches, and commits one graph. Verify checks while Spec writes, then packages. G2 is your approval of the spec. A back-edge lets any step send needs_decision to an earlier lane.">
+<defs>
+<marker id="a2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+</defs>
+<g class="stage" tabindex="0" role="button" data-i="1" aria-label="Agent 2 Research, visible after G1, writes research.json"><rect class="n-llm" x="210" y="14" width="330" height="56" rx="10" style="stroke-dasharray:5 4"/><text class="t-b t-s" x="222" y="32">2 Research · visible after G1, never decides</text><text class="t-m t-xs" x="222" y="46">starts when you approve G1 · about 2 to 10 min</text><text class="t-m t-xs" x="222" y="60">time-boxed, Skip allowed · writes research.json</text></g>
+<path class="edge" d="M85,96 V42 H210" marker-end="url(#a2)"/>
+<text class="t-m t-xs" x="92" y="62">first batch</text>
+<polygon class="n-gate" points="200,125 226,151 200,177 174,151"/><text class="t-b t-xs" x="200" y="155" text-anchor="middle">G1</text>
+<text class="t-m t-xs" x="200" y="194" text-anchor="middle">you approve</text><text class="t-m t-xs" x="200" y="207" text-anchor="middle">the Brief</text>
+<path class="edge" d="M226,151 H500" marker-end="url(#a2)"/>
+<text class="t-m t-xs" x="363" y="143" text-anchor="middle">Brief approved</text>
+<path class="edge" d="M540,42 H620 V96" marker-end="url(#a2)"/>
+<text class="t-m t-xs" x="634" y="62">research.json, read when Research commits</text>
+
+<g class="stage is-active" tabindex="0" role="button" data-i="0" aria-label="Agent 1 Compass, dialogue, writes brief.json"><rect class="n-llm" x="20" y="96" width="130" height="110" rx="10"/><text class="t-b" x="32" y="118">1 Compass</text><text class="t-m t-xs" x="32" y="134">dialogue with you</text><text class="t-m t-xs" x="32" y="148">asks in batches</text><text class="t-m t-xs" x="32" y="162">writes brief.json</text></g>
+<g class="stage" tabindex="0" role="button" data-i="2" aria-label="Agent 3 Spec, three lanes, writes the spec graph"><rect class="n-box" x="500" y="96" width="260" height="206" rx="12"/><text class="t-b" x="514" y="116" style="font-size:13px">3 Spec · three lanes</text><text class="t-m t-xs" x="514" y="130">one graph, one commit at the end</text><rect class="n-llm" x="514" y="140" width="232" height="26" rx="6"/><text class="t-s" x="526" y="157">Product: BLUE-1 to BLUE-5</text><rect class="n-llm" x="514" y="172" width="232" height="26" rx="6"/><text class="t-s" x="526" y="189">Design: DSGN-1 to DSGN-3</text><rect class="n-gate dash" x="514" y="204" width="232" height="24" rx="6"/><text class="t-xs" x="526" y="220">join (code), then FREEZE</text><rect class="n-llm" x="514" y="234" width="232" height="26" rx="6"/><text class="t-s" x="526" y="251">Screens: SCRN-1 batches</text><text class="t-m t-xs" x="514" y="280">SCRN-2 copy · optional G1.5 at Freeze</text></g>
+<g class="stage" tabindex="0" role="button" data-i="3" aria-label="Agent 4 Verify and package, writes APP_SPEC.md"><rect class="n-llm" x="790" y="96" width="190" height="206" rx="10"/><text class="t-b t-s" x="804" y="116">4 Verify and package</text><text class="t-m t-xs" x="804" y="131">independent, streams</text><text class="t-m t-xs" x="804" y="150">critic at Freeze</text><text class="t-m t-xs" x="804" y="166">checks per screen batch</text><text class="t-m t-xs" x="804" y="182">final pass: all 23 rules</text><text class="t-m t-xs" x="804" y="198">coverage: BN-01 to BN-14</text><text class="t-m t-xs" x="804" y="214">repair, at most two rounds</text><text class="t-m t-xs" x="804" y="230">bundle the package</text><text class="t-m t-xs" x="804" y="256">a missing need blocks G2</text></g>
+
+<path class="edge dash" d="M760,200 H790" marker-end="url(#a2)"/>
+<path class="edge" d="M885,302 V318" marker-end="url(#a2)"/>
+<polygon class="n-gate" points="885,318 911,344 885,370 859,344"/><text class="t-b t-xs" x="885" y="348" text-anchor="middle">G2</text>
+<text class="t-m t-xs" x="850" y="338" text-anchor="end">you approve</text><text class="t-m t-xs" x="850" y="351" text-anchor="end">the spec</text>
+<path class="edge" d="M885,370 V388" marker-end="url(#a2)"/>
+<rect class="n-doc" x="790" y="390" width="190" height="40" rx="5"/><text class="t-mono t-xs" x="885" y="407" text-anchor="middle">APP_SPEC.md + package</text><text class="t-m t-xs" x="885" y="421" text-anchor="middle">one readable file + slices</text>
+<text class="t-accent t-xs" x="20" y="420">typed back-edge: any step may send needs_decision to an earlier lane (max 2 loops)</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>Select an agent. Gates in amber are your decisions. The dashed box is the visible Research step. The dashed blue path is how a late discovery (for example, a missing entity) goes back to the lane that owns it.</figcaption>
+  </figure>
+  <div id="stage-panel" class="panel" aria-live="polite"></div>
+
+  <h3 style="margin-top:8px">Three sizes of project, one engine</h3>
+  <div class="scroll">
+    <table>
+      <thead><tr><th></th><th>Express</th><th>Standard</th><th>Large</th></tr></thead>
+      <tbody>
+        <tr><td><b>Size</b></td><td>up to 12 screens, one app</td><td>13 to 60 screens, 1 to 2 apps</td><td>60+ screens, several apps and approvers</td></tr>
+        <tr><td><b>Interview</b></td><td>up to 5 questions; "just build it" allowed</td><td>about 7, never more than 10</td><td>per module, documents first</td></tr>
+        <tr><td><b>Research</b></td><td>Chosen from what you said: focused idea, up to 20 searches</td><td>Standard idea, up to 40 searches</td><td>Deep idea, up to 80 searches; each topic stops as soon as it is covered</td></tr>
+        <tr><td><b>Weak-model test</b></td><td>a sample</td><td>every screen</td><td>every slice, flow and operation</td></tr>
+        <tr><td><b>Your approvals</b></td><td>Brief and Plan on one page</td><td>G1 and G2 separately</td><td>G1, structure check, slice preview, G2, each by section</td></tr>
+        <tr><td><b>Target time after G1</b></td><td>about 3 min</td><td>about 8 min</td><td>about 15 min for 100 screens</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note">Times are initial targets (the architect's judgment), not measurements yet.</p>
+  <details>
+    <summary>Where the time goes after G1, and why it drops from about 15 to about 8 minutes</summary>
+    <div class="scroll" style="margin-top:10px"><table>
+      <thead><tr><th>Step (Standard app, about 30 screens)</th><th>Six stages in a line</th><th>Four agents</th></tr></thead>
+      <tbody>
+        <tr><td>Research</td><td>3 to 4 min, after G1</td><td>About 2 to 3 min (focused), 4 to 6 (standard), 7 to 10 (deep): it runs in front of you, in parallel, with live events, and you can skip it</td></tr>
+        <tr><td>Product (Blueprint)</td><td>4 to 5 min</td><td>4 to 5 min, the critical path</td></tr>
+        <tr><td>Design</td><td>About 2 min</td><td>Hidden: it runs beside Product</td></tr>
+        <tr><td>Screens</td><td>1 to 1.5 min</td><td>1 to 1.5 min, in parallel batches</td></tr>
+        <tr><td>Verify and package</td><td>3.5 to 4.5 min</td><td>About 2 min after the last batch (the critic and probes already ran)</td></tr>
+        <tr><td><b>Total after G1</b></td><td><b>About 15 min</b></td><td><b>About 8 min</b></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note">Estimates from the design, not measurements. One rule covers early work: it may start before its gate only if it is keyed by its input and thrown away when the approved input differs. Nothing is committed or shown as approved before its gate.</p>
+  </details>
+</section>
+
+<!-- ===== 3 SPEC ===== -->
+<section id="spec" class="block">
+  <h2>One spec, kept as a graph, served in small slices</h2>
+  <p class="lede">Every agent writes into one connected graph, and the Spec agent commits it in one place. Every file the other engines use is generated from it, so nothing can drift apart. Workers never read the whole spec; they get a small slice.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 380" role="img" aria-label="Four agents write into the spec graph (Spec through three lanes), which holds typed nodes with tiers and sources. Eight derived files come out of it, each read by a specific consumer.">
+<defs>
+<marker id="a3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+</defs>
+<text class="t-b t-s" x="20" y="38">Agents write into it</text>
+<rect class="n-llm" x="20" y="52" width="170" height="34" rx="7"/><text class="t-s" x="105" y="73" text-anchor="middle">Compass · your facts</text>
+<rect class="n-llm" x="20" y="102" width="170" height="34" rx="7"/><text class="t-s" x="105" y="123" text-anchor="middle">Research · sourced hints</text>
+<rect class="n-llm" x="20" y="152" width="170" height="34" rx="7"/><text class="t-s" x="105" y="173" text-anchor="middle">Spec · product lane</text>
+<rect class="n-llm" x="20" y="202" width="170" height="34" rx="7"/><text class="t-s" x="105" y="223" text-anchor="middle">Spec · design lane</text>
+<rect class="n-llm" x="20" y="252" width="170" height="34" rx="7"/><text class="t-s" x="105" y="273" text-anchor="middle">Spec · screens lane</text>
+<text class="t-m t-xs" x="20" y="306">Verify repairs what fails and marks</text>
+<text class="t-m t-xs" x="20" y="320">what stays degraded</text>
+<path class="edge" d="M190,69 H230 M190,119 H230 M190,169 H230 M190,219 H230 M190,269 H230 M230,69 V269"/>
+<path class="edge" d="M230,169 H266" marker-end="url(#a3)"/>
+
+<rect class="n-box" x="270" y="30" width="300" height="320" rx="12"/>
+<text class="t-b" x="286" y="56" style="font-size:14px">Spec graph</text>
+<text class="t-m t-xs" x="286" y="72">the canonical truth; every file on the right is derived</text>
+<path class="edge thin" d="M350,120 H400 M440,120 H490 M420,140 V176 M510,140 V176 M350,180 L400,150"/>
+<circle class="n-code" cx="330" cy="120" r="20"/><text class="t-b t-xs" x="330" y="124" text-anchor="middle">FTR</text>
+<circle class="n-code" cx="420" cy="120" r="20"/><text class="t-b t-xs" x="420" y="124" text-anchor="middle">SCR</text>
+<circle class="n-code" cx="510" cy="120" r="20"/><text class="t-b t-xs" x="510" y="124" text-anchor="middle">OP</text>
+<circle class="n-code" cx="330" cy="196" r="20"/><text class="t-b t-xs" x="330" y="200" text-anchor="middle">RUL</text>
+<circle class="n-code" cx="420" cy="196" r="20"/><text class="t-b t-xs" x="420" y="200" text-anchor="middle">ENT</text>
+<circle class="n-code" cx="510" cy="196" r="20"/><text class="t-b t-xs" x="510" y="200" text-anchor="middle">ROL</text>
+<text class="t-m" x="375" y="112" text-anchor="middle" style="font-size:9.5px">satisfies</text>
+<text class="t-m" x="465" y="112" text-anchor="middle" style="font-size:9.5px">calls</text>
+<text class="t-m" x="428" y="162" style="font-size:9.5px">reads</text>
+<text class="t-m" x="518" y="162" style="font-size:9.5px">gated by</text>
+<text class="t-m t-xs" x="420" y="240" text-anchor="middle">feature · screen · operation · rule · entity · role</text>
+<text class="t-xs" x="286" y="266">Every node has a stable ID (never reused), a source, and a tier:</text>
+<rect class="n-llm" x="286" y="274" width="268" height="22" rx="5"/><text class="t-xs" x="296" y="289"><tspan class="t-b">Locked</tspan> · you or a document said it</text>
+<rect class="n-code" x="286" y="300" width="268" height="22" rx="5"/><text class="t-xs" x="296" y="315"><tspan class="t-b">Default</tspan> · our recommendation, may change</text>
+<rect x="286" y="326" width="268" height="20" rx="5" style="fill:none;stroke:var(--muted);stroke-width:1.3;stroke-dasharray:4 3"/><text class="t-xs" x="296" y="340"><tspan class="t-b">Open</tspan> · the builder decides</text>
+
+<text class="t-b t-s" x="620" y="38">Derived files, and who reads them</text>
+<path class="edge" d="M570,190 H596" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,76 V342"/>
+<path class="edge thin" d="M596,76 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,114 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,152 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,190 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,228 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,266 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,304 H618" marker-end="url(#a3)"/>
+<path class="edge thin" d="M596,342 H618" marker-end="url(#a3)"/>
+<rect class="n-doc" x="620" y="62" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="80">APP_SPEC.md</text><text class="t-m t-xs" x="826" y="80">people and auditors</text>
+<rect class="n-doc" x="620" y="100" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="118">slices/ (tier 0 + screens)</text><text class="t-m t-xs" x="826" y="118">front-end workers</text>
+<rect class="n-doc" x="620" y="138" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="156">tokens.dtcg.json, DESIGN.md</text><text class="t-m t-xs" x="826" y="156">front-end, other agents</text>
+<rect class="n-doc" x="620" y="176" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="194">contract/ + fixtures</text><text class="t-m t-xs" x="826" y="194">mock API, backend, QA</text>
+<rect class="n-doc" x="620" y="214" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="232">build-plan.json</text><text class="t-m t-xs" x="826" y="232">front-end orchestrator</text>
+<rect class="n-doc" x="620" y="252" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="270">scenarios/ (journeys)</text><text class="t-m t-xs" x="826" y="270">preview runner, QA</text>
+<rect class="n-doc" x="620" y="290" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="308">scope-ledger.json</text><text class="t-m t-xs" x="826" y="308">review UI, change control</text>
+
+<rect class="n-doc" x="620" y="328" width="190" height="28" rx="5"/><text class="t-mono t-xs" x="632" y="346">exports/ (BRD/SRS, matrix)</text><text class="t-m t-xs" x="826" y="346">people</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>The graph is the truth; <code>APP_SPEC.md</code> is its readable render. Each derived file has a named reader, so a change in the graph reaches everyone consistently.</figcaption>
+  </figure>
+
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 150" role="img" aria-label="Two bars on one scale. The whole spec for two apps and a hundred screens is about 100 to 150 thousand tokens. What one worker receives is under 20 thousand tokens.">
+<text class="t-b t-s" x="20" y="22">Why slices: context size drawn to one scale (tokens)</text>
+<text class="t-s" x="20" y="54">Whole spec, 2 apps, 100 screens</text>
+<rect x="270" y="38" width="467" height="22" rx="3" style="fill:var(--code-soft);stroke:var(--code);stroke-width:1.2"/>
+<rect x="737" y="38" width="233" height="22" rx="3" style="fill:var(--surface-2);stroke:var(--line);stroke-width:1.2;stroke-dasharray:4 3"/>
+<text class="t-xs" x="280" y="53">about 100k</text><text class="t-m t-xs" x="747" y="53">up to about 150k</text>
+<text class="t-s" x="20" y="100">What one worker receives</text>
+<rect x="270" y="84" width="37" height="22" style="fill:var(--llm-soft);stroke:var(--llm);stroke-width:1.2"/>
+<rect x="307" y="84" width="28" height="22" style="fill:var(--accent-soft);stroke:var(--accent);stroke-width:1.2"/>
+<rect x="335" y="84" width="28" height="22" style="fill:var(--code-soft);stroke:var(--code);stroke-width:1.2"/>
+<text class="t-xs" x="378" y="100">under about 20k, roughly one seventh of the spec</text>
+<text class="t-m t-xs" x="270" y="126">shared rules (up to 8k) · one screen slice (up to 6k) · frozen interfaces and 1 to 2 example recipes (the rest)</text>
+</svg>
+    </div>
+    <figcaption>Long inputs make models less reliable even when the window is huge, so every worker gets only what its task needs. Sizes are estimates from the design, not measurements.</figcaption>
+  </figure>
+
+  <dl class="blocks">
+    <div><dt>Locked, Default, Open</dt><dd>Locked means you or a document said it, so builders must follow it. Default is our recommendation, which a builder may change if it records why. Open is left to the builder. This stops us from binding the designer and stops models from inventing requirements.</dd></div>
+    <div><dt>Sources on everything</dt><dd>Each item says where it came from: you said it, your PRD page 4, assumed (and why), researched (with a link), or a pattern default. Research and assumptions can never become Locked.</dd></div>
+    <div><dt>Stable IDs</dt><dd>An ID such as <code>SCR-021</code> is never reused, even after deletion. That keeps a hundred rounds of change, regeneration and traceability from tangling.</dd></div>
+    <div><dt>Spec Server</dt><dd>A read-only service that hands out slices over a standard protocol (MCP) and an AGENTS.md entry file, so any coding agent can use the same spec.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== 4 PROOF ===== -->
+<section id="probe" class="block">
+  <h2>How we know a weak model can build from the spec</h2>
+  <p class="lede">Before you see the plan, the spec passes three independent checks. They run while the spec is written, not only at the end, so problems are found before the expensive screen batches. The key one tests the spec against the same kind of model that will build from it: if that model has to ask a question, the spec is not finished.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 340" role="img" aria-label="Three checks before approval: code validators, a critic from a different vendor, and a sufficiency probe. The probe gives one slice to a weak model; if it can build from it the slice passes, otherwise each question becomes a gap that is closed with a default or by asking the user, then the slice is probed again up to two rounds.">
+<defs>
+<marker id="a4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+</defs>
+<text class="t-m t-s" x="20" y="20">Three independent checks before you see G2</text>
+<rect class="n-code" x="20" y="30" width="300" height="56" rx="6"/><text class="t-b t-s" x="34" y="52">1 · Code validators (23 rules)</text><text class="t-m t-xs" x="34" y="70">links resolve · reachable screens · all states</text>
+<rect class="n-llm" x="350" y="30" width="300" height="56" rx="8"/><text class="t-b t-s" x="364" y="52">2 · Critic from a different vendor</text><text class="t-m t-xs" x="364" y="70">compares the spec with your Brief</text>
+<rect class="n-llm n-act" x="680" y="30" width="300" height="56" rx="8"/><text class="t-b t-s" x="694" y="52">3 · Sufficiency probe</text><text class="t-m t-xs" x="694" y="70">a weak model tries to build each slice</text>
+<path class="edge dash fb" d="M830,86 V122" style="stroke:var(--accent)"/>
+<text class="t-accent t-xs" x="842" y="108">zoom in on check 3</text>
+
+<path class="n-doc" d="M20,172 H120 L140,190 V248 H20 Z"/><path class="n-doc" d="M120,172 V190 H140" style="fill:none"/>
+<text class="t-b t-s" x="76" y="200" text-anchor="middle">One slice</text>
+<text class="t-m t-xs" x="76" y="216" text-anchor="middle">shared rules +</text>
+<text class="t-m t-xs" x="76" y="230" text-anchor="middle">one screen</text>
+<path class="edge" d="M140,210 H176" marker-end="url(#a4)"/>
+<rect class="n-llm" x="178" y="164" width="180" height="92" rx="10"/>
+<text class="t-b" x="193" y="188">Weak canary model</text>
+<text class="t-xs" x="193" y="208">smallest model, low effort</text>
+<text class="t-xs" x="193" y="223">must build it, or ask</text>
+<text class="t-xs" x="193" y="238">not allowed to guess</text>
+
+<path class="edge" d="M358,190 H385 V152 H438" marker-end="url(#a4)"/>
+<text class="t-m t-xs" x="388" y="146">builds it</text>
+<path class="edge" d="M358,230 H385 V268 H438" marker-end="url(#a4)"/>
+<text class="t-m t-xs" x="388" y="284">asks</text>
+<rect class="n-ok" x="440" y="124" width="200" height="56" rx="8"/><text class="t-b t-s" x="454" y="146">Slice passes</text><text class="t-xs" x="454" y="161">outline covers every section,</text><text class="t-xs" x="454" y="174">state and action</text>
+<rect class="n-bad" x="440" y="240" width="200" height="56" rx="8"/><text class="t-b t-s" x="454" y="262">A question is a gap</text><text class="t-xs" x="454" y="277">the model could not build</text><text class="t-xs" x="454" y="290">without asking</text>
+<path class="edge" d="M640,152 H678" marker-end="url(#a4)"/>
+<rect class="n-box" x="680" y="124" width="300" height="56" rx="8"/><text class="t-xs" x="694" y="144">Initial target: 85%+ of sampled screens</text><text class="t-xs" x="694" y="158">build on the first try with a small model</text><text class="t-m t-xs" x="694" y="172">(to be measured)</text>
+<path class="edge" d="M640,268 H678" marker-end="url(#a4)"/>
+<rect class="n-code" x="680" y="236" width="300" height="64" rx="8"/><text class="t-b t-s" x="694" y="258">Close the gap</text><text class="t-xs" x="694" y="276">pattern default, listed as "we assumed"</text><text class="t-xs" x="694" y="291">or ask you, only for must-confirm items</text>
+<path class="edge fb" d="M830,300 V322 H268 V258" marker-end="url(#a4)" style="stroke:var(--accent)"/>
+<text class="t-accent t-xs" x="548" y="316" text-anchor="middle">probe again (at most 2 rounds)</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>The probe turns "is this spec good enough?" into something measurable: how many questions a weak model still has to ask.</figcaption>
+  </figure>
+  <dl class="blocks">
+    <div><dt>Why not just ask a smarter model?</dt><dd>2026 research found that stronger code models are not reliably better at noticing what is missing, and that they ask too few questions when several things are unclear. So we use structure and a weak tester, not "think harder".</dd></div>
+    <div><dt>Why a different vendor for the critic?</dt><dd>Two models from one family tend to share blind spots. Writer and critic come from different vendors, so their mistakes are less likely to match.</dd></div>
+    <div><dt>What you see</dt><dd>Anything the probe had to assume appears under "We assumed" at the Spec gate, each with a toggle. Parts that could not be fixed cleanly are flagged "degraded", never hidden.</dd></div>
+    <div><dt>Benchmark</dt><dd>A private test set (SpecBench-Mobile: 15 kinds of app, with and without a PRD, plus tricky and multi-language cases) scores every change to prompts or models. Any broken rule is an automatic fail.</dd></div>
+  </dl>
+  <details>
+    <summary>The 14 things a front-end builder must find in the package (builder needs, BN-01 to BN-14)</summary>
+    <p class="note" style="margin-top:8px">If the only input were "build a mobile app", the builder would have to ask these. The chain exists so that none of them reaches the builder unanswered. Verify marks each one satisfied, defaulted, degraded or missing. A missing one blocks the approval of the spec (G2).</p>
+    <div class="scroll" style="margin-top:10px"><table>
+      <thead><tr><th>Need</th><th>What the builder gets</th><th>Proved by</th></tr></thead>
+      <tbody>
+        <tr><td>BN-01</td><td>What it is, who uses it, which apps and roles</td><td>Brief checks, V-08, critic</td></tr>
+        <tr><td>BN-02</td><td>What to build first: in, later, out, with intent and priority</td><td>V-16, V-19, critic</td></tr>
+        <tr><td>BN-03</td><td>Which screens exist, how a user moves between them, who may open them</td><td>V-04, V-05, V-07</td></tr>
+        <tr><td>BN-04</td><td>The data: entities, fields, relations, statuses, who sees what</td><td>V-06, V-09, V-11</td></tr>
+        <tr><td>BN-05</td><td>The rules, formulas and permissions; unknown numbers flagged to confirm</td><td>V-08, V-09; the confirm list</td></tr>
+        <tr><td>BN-06</td><td>The contract: operations, errors, pagination, auth, mock fixtures</td><td>V-10, V-15</td></tr>
+        <tr><td>BN-07</td><td>Realistic data: local names, prices, formats, edge cases</td><td>V-15</td></tr>
+        <tr><td>BN-08</td><td>Look and feel: tokens, variants, density, tone, icon and image policy, accessibility, dark mode</td><td>V-12</td></tr>
+        <tr><td>BN-09</td><td>Per screen: sections, bindings, actions, every state, copy, acceptance</td><td>V-06, V-07, V-13, V-14, V-22; canary probe</td></tr>
+        <tr><td>BN-10</td><td>What talks to the outside world, and what is mocked for now</td><td>V-16; Integration Activation Checklist</td></tr>
+        <tr><td>BN-11</td><td>What is allowed: Expo and React Native versions, packages, kit components, icons</td><td>V-23; the Stack Kit header</td></tr>
+        <tr><td>BN-12</td><td>Build order: waves, parallel tasks, the files each task owns</td><td>Build-plan checks: acyclic, disjoint files</td></tr>
+        <tr><td>BN-13</td><td>What done means: acceptance criteria, golden journeys, test data; what is Locked, Default or Open</td><td>V-17; journey probe</td></tr>
+        <tr><td>BN-14</td><td>What is unknown, assumed or degraded, and how to ask when stuck</td><td>Assumptions register; degraded list</td></tr>
+      </tbody>
+    </table></div>
+  </details>
+</section>
+
+<!-- ===== 5 BUILD ===== -->
+<section id="build" class="block">
+  <h2>Build in parallel without collisions</h2>
+  <p class="lede">The spec ships with a build plan: small tasks, each owning its own files, run in waves. Because the plan is made before any code is written, workers cannot step on each other.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 410" role="img" aria-label="Build waves W0 to W7. After the foundation wave an interface freeze publishes the shared interfaces. The third wave runs many workers in parallel, each owning its own files. Plumbing is generated by code, and each task must pass its own checks before merging.">
+<text class="t-b" x="51" y="22" text-anchor="middle">W0</text><text class="t-m t-xs" x="51" y="36" text-anchor="middle">scaffold</text>
+<text class="t-b" x="148" y="22" text-anchor="middle">W1</text><text class="t-m t-xs" x="148" y="36" text-anchor="middle">foundation</text>
+<text class="t-b" x="272" y="22" text-anchor="middle">W2</text><text class="t-m t-xs" x="272" y="36" text-anchor="middle">first flow</text>
+<text class="t-b" x="480" y="22" text-anchor="middle">W3</text><text class="t-m t-xs" x="480" y="36" text-anchor="middle">screens in parallel</text>
+<text class="t-b" x="683" y="22" text-anchor="middle">W4</text><text class="t-m t-xs" x="683" y="36" text-anchor="middle">cross-cutting</text>
+<text class="t-b" x="774" y="22" text-anchor="middle">W5</text><text class="t-m t-xs" x="774" y="36" text-anchor="middle">mocks</text>
+<text class="t-b" x="860" y="22" text-anchor="middle">W6</text><text class="t-m t-xs" x="860" y="36" text-anchor="middle">polish</text>
+<text class="t-b" x="944" y="22" text-anchor="middle">W7</text><text class="t-m t-xs" x="944" y="36" text-anchor="middle">verify</text>
+
+<rect class="n-code" x="20" y="90" width="62" height="28" rx="4"/><text class="t-xs" x="51" y="108" text-anchor="middle">from kit</text>
+<rect class="n-code" x="92" y="90" width="112" height="22" rx="4"/><text class="t-xs" x="148" y="105" text-anchor="middle">tokens</text>
+<rect class="n-code" x="92" y="116" width="112" height="22" rx="4"/><text class="t-xs" x="148" y="131" text-anchor="middle">kit variants</text>
+<rect class="n-code" x="92" y="142" width="112" height="22" rx="4"/><text class="t-xs" x="148" y="157" text-anchor="middle">nav shell</text>
+<rect class="n-code" x="92" y="168" width="112" height="22" rx="4"/><text class="t-xs" x="148" y="183" text-anchor="middle">API client + mock</text>
+<rect class="n-llm" x="92" y="194" width="112" height="22" rx="4"/><text class="t-xs" x="148" y="209" text-anchor="middle">auth gate</text>
+<rect x="211" y="52" width="6" height="240" rx="2" style="fill:var(--gate)"/>
+
+<polygon class="n-gate" points="258,64 272,50 286,64 272,78"/>
+<text class="t-gate t-xs t-b" x="294" y="68">G2.5 slice preview: you look at a real first flow</text>
+<rect class="n-llm" x="224" y="90" width="96" height="44" rx="6"/><text class="t-xs" x="272" y="108" text-anchor="middle">primary flow,</text><text class="t-xs" x="272" y="122" text-anchor="middle">built for real</text>
+
+<rect class="n-llm" x="330" y="90" width="290" height="24" rx="5"/><text class="t-xs" x="340" y="106">customer · browse + search</text>
+<rect class="n-llm" x="330" y="120" width="250" height="24" rx="5"/><text class="t-xs" x="340" y="136">customer · cart + checkout</text>
+<rect class="n-llm" x="330" y="150" width="270" height="24" rx="5"/><text class="t-xs" x="340" y="166">customer · orders + profile</text>
+<rect class="n-llm" x="330" y="180" width="300" height="24" rx="5"/><text class="t-xs" x="340" y="196">admin · orders + menu</text>
+<rect class="n-llm" x="330" y="210" width="230" height="24" rx="5"/><text class="t-xs" x="340" y="226">admin · reports</text>
+<rect class="n-llm" x="330" y="240" width="260" height="24" rx="5"/><text class="t-xs" x="340" y="256">rider · tasks</text>
+<text class="t-m t-xs" x="480" y="282" text-anchor="middle">each bar is one worker; it owns its own files, so nobody collides</text>
+
+<rect class="n-llm" x="640" y="90" width="86" height="24" rx="5"/><text class="t-xs" x="683" y="106" text-anchor="middle">deep links</text>
+<rect class="n-llm" x="640" y="120" width="86" height="24" rx="5"/><text class="t-xs" x="683" y="136" text-anchor="middle">notifications</text>
+<rect class="n-llm" x="640" y="150" width="86" height="24" rx="5"/><text class="t-xs" x="683" y="166" text-anchor="middle">offline</text>
+<rect class="n-code" x="736" y="90" width="76" height="24" rx="4"/><text class="t-xs" x="774" y="106" text-anchor="middle">payments</text>
+<rect class="n-code" x="736" y="120" width="76" height="24" rx="4"/><text class="t-xs" x="774" y="136" text-anchor="middle">maps / OTP</text>
+<rect class="n-code" x="822" y="90" width="76" height="24" rx="4"/><text class="t-xs" x="860" y="106" text-anchor="middle">a11y</text>
+<rect class="n-llm" x="822" y="120" width="76" height="24" rx="5"/><text class="t-xs" x="860" y="136" text-anchor="middle">visual QA</text>
+<rect class="n-code" x="822" y="150" width="76" height="24" rx="4"/><text class="t-xs" x="860" y="166" text-anchor="middle">speed</text>
+<rect class="n-code" x="908" y="90" width="72" height="72" rx="4"/><text class="t-xs" x="944" y="116" text-anchor="middle">journeys</text><text class="t-xs" x="944" y="130" text-anchor="middle">all pass</text><text class="t-xs" x="944" y="144" text-anchor="middle">on mocks</text>
+
+<rect class="n-code" x="20" y="298" width="960" height="28" rx="6"/><text class="t-xs" x="34" y="316">Plumbing is generated by code, never by a model: routes · types · API client · token files · i18n keys · fixtures, so tasks never collide on shared files</text>
+<rect class="n-llm" x="20" y="334" width="960" height="28" rx="6"/><text class="t-xs" x="34" y="352">Every task must pass its own checks before it merges: type-check · lint · all states render · accessibility labels · journey steps</text>
+<rect class="n-gate" x="20" y="370" width="960" height="28" rx="6"/><text class="t-xs" x="34" y="388">Interface freeze (amber bar): route map, types, token names, component props and API signatures are published once, so parallel workers cannot drift apart</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>Teal bars are written by models, slate bars are produced by code. Wave 3 is where the speed comes from; wave 2 is where you get an early look before the rest is built.</figcaption>
+  </figure>
+  <h3>Which model builds which task</h3>
+  <div class="route">
+    <div><b>Easy (S)</b><br>Small model, quick. Simple lists, detail pages, static screens.</div>
+    <div><b>Medium (M)</b><br>Small model at high effort, or a mid-size model. Forms, dashboards, screens with several states.</div>
+    <div><b>Hard (L)</b><br>Mid-size or large model. Many states, custom components, rich animation or several integrations.</div>
+    <div><b>If a task fails twice</b><br>It moves up one class automatically, and the scoring rule is flagged for review.</div>
+  </div>
+  <p class="note">Each task gets a difficulty score from the spec (sections, states, side-effect actions, custom components, integrations, gestures). The Context Engine recommends; the front-end engine decides. A worker usually sees under 20k tokens.</p>
+  <dl class="blocks">
+    <div><dt>Task card</dt><dd>The unit of work. It names what the task depends on, which files it alone may write, what it reads, which checks it must pass, how hard it is, and when to escalate.</dd></div>
+    <div><dt>Interface freeze</dt><dd>After the foundation, the shared contracts are published once. A worker that needs a change must file an interface-change request, which re-queues only the tasks that depend on it.</dd></div>
+    <div><dt>Why this beats fixing conflicts later</dt><dd>Other tools merge parallel work afterward and use extra agents to resolve conflicts. Here the plan prevents the conflicts. A large public experiment that split work between strong planners and cheap workers cut merge conflicts from roughly 70,000 to under 1,000.</dd></div>
+    <div><dt>Honest limit</dt><dd>Models still miss on the hardest screens and on native features. Those are flagged ahead of time (tier B) and listed as hand-off tasks instead of being promised.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== 6 PREVIEW ===== -->
+<section id="preview" class="block">
+  <h2>You approve once on a live preview, then the backend follows</h2>
+  <p class="lede">The preview is not a screenshot. It is the real app on mock data, with controls that let a non-technical person check design, behavior and features. The journeys you walk through become the backend's exam.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 456" role="img" aria-label="Left: a phone preview with review controls: role switcher, state inspector, scenario runner, feature panel, element inspector and annotation. Right: G3 approval freezes the Approved Build Manifest, the backend is built, and it is accepted only if its API matches the contract and the approved journeys replay with the same results.">
+<defs>
+<marker id="a6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+<marker id="b6" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah acc"/></marker>
+</defs>
+<text class="t-b" x="20" y="24">Review Mode (the live preview)</text>
+<rect x="270" y="36" width="150" height="310" rx="24" style="fill:var(--surface);stroke:var(--ink);stroke-width:2"/>
+<rect x="280" y="52" width="130" height="278" rx="14" style="fill:var(--surface-2)"/>
+<rect x="290" y="62" width="110" height="6" rx="3" style="fill:var(--line)"/>
+<rect x="290" y="78" width="110" height="64" rx="6" style="fill:var(--line)"/>
+<rect x="290" y="152" width="84" height="10" rx="3" style="fill:var(--muted);opacity:.55"/>
+<rect x="290" y="170" width="56" height="8" rx="3" style="fill:var(--line)"/>
+<rect x="288" y="190" width="124" height="108" rx="6" style="fill:none;stroke:var(--accent);stroke-width:1.6;stroke-dasharray:4 3"/>
+<text class="t-mono" x="294" y="204" style="font-size:9px;fill:var(--accent)">SCR-021.menu</text>
+<rect x="296" y="212" width="86" height="12" rx="3" style="fill:var(--line)"/><circle cx="397" cy="218" r="6" style="fill:var(--llm)"/>
+<rect x="296" y="238" width="70" height="12" rx="3" style="fill:var(--line)"/><circle cx="397" cy="244" r="6" style="fill:var(--llm)"/>
+<rect x="296" y="264" width="92" height="12" rx="3" style="fill:var(--line)"/><circle cx="397" cy="270" r="6" style="fill:var(--llm)"/>
+
+<rect class="n-user" x="20" y="60" width="210" height="48" rx="8"/><text class="t-b t-s" x="32" y="80">Role switcher</text><text class="t-m t-xs" x="32" y="97">customer · admin · rider</text>
+<path class="edge thin" d="M230,86 H270"/>
+<rect class="n-user" x="20" y="140" width="210" height="48" rx="8"/><text class="t-b t-s" x="32" y="160">State inspector</text><text class="t-m t-xs" x="32" y="177">force loading, empty, error</text>
+<path class="edge thin" d="M230,166 H270"/>
+<rect class="n-user" x="20" y="220" width="210" height="48" rx="8"/><text class="t-b t-s" x="32" y="240">Scenario runner</text><text class="t-m t-xs" x="32" y="257">step through approved journeys</text>
+<path class="edge thin" d="M230,246 H270"/>
+<rect class="n-user" x="440" y="60" width="210" height="48" rx="8"/><text class="t-b t-s" x="452" y="80">Feature panel</text><text class="t-m t-xs" x="452" y="97">toggle in / later / out</text>
+<path class="edge thin" d="M440,86 H420"/>
+<rect class="n-user" x="440" y="140" width="210" height="48" rx="8"/><text class="t-b t-s" x="452" y="160">Inspector</text><text class="t-m t-xs" x="452" y="177">click an element → its spec</text>
+<path class="edge thin" d="M440,166 L412,230"/>
+<rect class="n-user" x="440" y="220" width="210" height="48" rx="8"/><text class="t-b t-s" x="452" y="240">Annotate</text><text class="t-m t-xs" x="452" y="257">pin a comment → change request</text>
+<path class="edge thin" d="M440,246 H420"/>
+
+<text class="t-m t-xs" x="810" y="36" text-anchor="end">Experience</text>
+<text class="t-m t-xs" x="810" y="50" text-anchor="end">Behavior Book</text>
+<text class="t-m t-xs" x="810" y="64" text-anchor="end">Integrations</text>
+<text class="t-m t-xs" x="810" y="78" text-anchor="end">Open items</text>
+<text class="t-m t-xs" x="810" y="92" text-anchor="end">What you approved</text>
+<polygon class="n-gate" points="820,62 850,32 880,62 850,92"/><text class="t-b" x="850" y="67" text-anchor="middle">G3</text>
+<text class="t-m t-xs" x="888" y="58">you approve</text><text class="t-m t-xs" x="888" y="72">once: the last</text><text class="t-m t-xs" x="888" y="86">mandatory gate</text>
+<path class="edge" d="M850,92 V116" marker-end="url(#a6)"/>
+<path class="n-doc" d="M690,118 H950 L970,136 V196 H690 Z"/><path class="n-doc" d="M950,118 V136 H970" style="fill:none"/>
+<text class="t-b t-s" x="820" y="144" text-anchor="middle">Approved Build Manifest</text>
+<text class="t-m t-xs" x="820" y="162" text-anchor="middle">Behavior Book · Contract v1 · fixtures</text>
+<text class="t-m t-xs" x="820" y="176" text-anchor="middle">golden journeys · chosen providers</text>
+<path class="edge" d="M830,196 V222" marker-end="url(#a6)"/>
+<rect class="n-llm" x="690" y="224" width="280" height="38" rx="8"/><text class="t-s" x="830" y="248" text-anchor="middle">Backend Engine builds it automatically</text>
+<path class="edge" d="M830,262 V286" marker-end="url(#a6)"/>
+<rect class="n-code" x="690" y="288" width="280" height="104" rx="8"/>
+<text class="t-b t-s" x="704" y="308">Accepted only if</text>
+<text class="t-xs" x="704" y="326">✓ API matches the contract (tests)</text>
+<text class="t-xs" x="704" y="342">✓ approved journeys replay, same results</text>
+<text class="t-xs" x="704" y="358">✓ acceptance tests pass</text>
+<text class="t-xs" x="704" y="374">✓ preview data loads as seed data</text>
+<path class="edge" d="M830,392 V414" marker-end="url(#a6)"/>
+<rect class="n-ok" x="690" y="416" width="280" height="28" rx="8"/><text class="t-xs" x="830" y="434" text-anchor="middle">Delivered · code export · release report</text>
+
+<path class="edge fb dash" d="M345,346 V398 H668 V340 H688" marker-end="url(#b6)" style="stroke:var(--accent)"/>
+<text class="t-accent t-xs" x="506" y="392" text-anchor="middle">the journeys you approved become the backend's exam</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>The dashed blue path is the key idea: what you saw and walked through on mocks is exactly what the real backend must reproduce.</figcaption>
+  </figure>
+  <dl class="blocks">
+    <div><dt>Web link first</dt><dd>The default preview is a web link anyone can open. Expo Go is used only when its version matches (the App Store copy lagged new releases in May 2026). Native-only features are shown as "simulated" with a badge.</dd></div>
+    <div><dt>Click any element</dt><dd>Generated files carry spec stamps, so a click shows the spec item, who said it or what it was based on, and a "change this" button.</dd></div>
+    <div><dt>Behavior Book</dt><dd>Business rules in plain words. Anything the mock simply hard-coded, or the PRD never said, is listed under "confirm" and must be answered before you approve.</dd></div>
+    <div><dt>Integration checklist</dt><dd>For each pretend integration (payments, SMS, maps, push) we recommend a provider. "Use recommended" is the default, and test keys are enough to finish. Real keys can come later and never block delivery.</dd></div>
+    <div><dt>After approval</dt><dd>Your preview stays live. Later changes become small release deltas: the contract diff, then the backend change, then the journeys re-run.</dd></div>
+    <div><dt>Never a store app that runs generated code</dt><dd>Apple enforced its rule against downloading app-changing code on several AI builders in 2026. Our deliverables are ordinary Expo projects built the normal way.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== 7 CHANGE ===== -->
+<section id="change" class="block">
+  <h2>Every change goes through the spec</h2>
+  <p class="lede">You can ask for a hundred changes. Each one is turned into exact edits, sorted by how big it is, checked on a copy, shown to you if it is big, applied, and can be undone.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 300" role="img" aria-label="A change request is interpreted by a model into spec edits, classified into a lane by code, dry-run on a copy, shown with its impact, applied with or without confirmation, and only affected tasks are rebuilt. Undo is always possible. A request for a feature that was marked out of scope branches into a Scope Change Protocol card.">
+<defs>
+<marker id="a7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+<marker id="b7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah acc"/></marker>
+</defs>
+<path class="edge fb dash" d="M907,62 V32 H215 V60" marker-end="url(#b7)" style="stroke:var(--accent)"/>
+<text class="t-accent t-xs" x="561" y="24" text-anchor="middle">undo: every change set can be reversed; history is never rewritten</text>
+
+<rect class="n-user" x="20" y="62" width="118" height="92" rx="8"/><text class="t-b t-s" x="30" y="84">You ask</text><text class="t-m t-xs" x="30" y="104">chat, voice, a</text><text class="t-m t-xs" x="30" y="118">comment, or click</text><text class="t-m t-xs" x="30" y="132">"change this"</text>
+<rect class="n-llm" x="157" y="62" width="118" height="92" rx="8"/><text class="t-b t-s" x="167" y="84">Words → edits</text><text class="t-m t-xs" x="167" y="104">a model turns the</text><text class="t-m t-xs" x="167" y="118">request into exact</text><text class="t-m t-xs" x="167" y="132">spec edits</text>
+<rect class="n-code" x="294" y="62" width="118" height="92" rx="4"/><text class="t-b t-s" x="304" y="84">Pick the lane</text><text class="t-m t-xs" x="304" y="104">code decides from</text><text class="t-m t-xs" x="304" y="118">what is touched,</text><text class="t-m t-xs" x="304" y="132">not the model</text>
+<rect class="n-code" x="431" y="62" width="118" height="92" rx="4"/><text class="t-b t-s" x="441" y="84">Dry run</text><text class="t-m t-xs" x="441" y="104">edits tried on a</text><text class="t-m t-xs" x="441" y="118">copy; validators</text><text class="t-m t-xs" x="441" y="132">must pass</text>
+<rect class="n-code" x="568" y="62" width="118" height="92" rx="4"/><text class="t-b t-s" x="578" y="84">Show impact</text><text class="t-m t-xs" x="578" y="104">screens, files,</text><text class="t-m t-xs" x="578" y="118">time and credits</text><text class="t-m t-xs" x="578" y="132">before you agree</text>
+<rect class="n-gate" x="705" y="62" width="118" height="92" rx="8"/><text class="t-b t-s" x="715" y="84">Apply</text><text class="t-m t-xs" x="715" y="104">small: now, with</text><text class="t-m t-xs" x="715" y="118">undo. big: you</text><text class="t-m t-xs" x="715" y="132">confirm first</text>
+<rect class="n-llm" x="842" y="62" width="118" height="92" rx="8"/><text class="t-b t-s" x="852" y="84">Rebuild</text><text class="t-m t-xs" x="852" y="104">only affected</text><text class="t-m t-xs" x="852" y="118">tasks; journeys</text><text class="t-m t-xs" x="852" y="132">re-checked</text>
+<path class="edge" d="M138,108 H155 M275,108 H292 M412,108 H429 M549,108 H566 M686,108 H703 M823,108 H840" marker-end="url(#a7)"/>
+
+<path class="edge" d="M353,154 V202" marker-end="url(#a7)"/>
+<text class="t-m t-xs" x="347" y="184" text-anchor="end">feature marked Later / Out / Unsupported</text>
+<rect class="n-gate" x="200" y="204" width="460" height="82" rx="10"/>
+<text class="t-b t-s" x="216" y="226">Scope Change Protocol card</text>
+<text class="t-xs" x="216" y="244">why it was excluded · what adding it costs (screens, time, credits)</text>
+<text class="t-xs" x="216" y="259">you choose: add now · add to Phase 2 · use a simpler alternative · cancel</text>
+<text class="t-xs" x="216" y="274">a Locked item can be overridden only with a recorded confirmation</text>
+<rect class="n-box" x="690" y="204" width="270" height="82" rx="10"/>
+<text class="t-b t-s" x="706" y="226">After G3</text>
+<text class="t-xs" x="706" y="244">changes become release deltas:</text>
+<text class="t-xs" x="706" y="259">contract diff → backend change →</text>
+<text class="t-xs" x="706" y="274">approved journeys run again</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>The model only translates words into edits. The size of the change, and whether you must confirm, is decided by code from what the edit touches.</figcaption>
+  </figure>
+
+  <h3>Six lanes, from tiny to foundational</h3>
+  <div class="ladder">
+    <div class="row"><div class="name"><b>L0</b> Explain</div><div class="what">"Why is this here?"</div><div class="how">Answered from the source of each item. Nothing changes.</div></div>
+    <div class="row"><div class="name"><b>L1</b> Cosmetic</div><div class="what">Colors, type, wording, icons, spacing, theme</div><div class="how">Applied right away with an undo button. One edit to tokens or copy, even if it touches every screen. Target: spec edit within about 10 seconds.</div></div>
+    <div class="row"><div class="name"><b>L2</b> Local behavior</div><div class="what">Add a field, a validation, a filter, an empty-state message</div><div class="how">Applied right away with undo. Only the affected screens are rebuilt, and API changes are additive only. Target: about a minute.</div></div>
+    <div class="row"><div class="name"><b>L3</b> Structural</div><div class="what">A new screen, role, entity, flow or report</div><div class="how">You confirm after seeing the impact. Affected sections need approval again. Target: a few minutes.</div></div>
+    <div class="row"><div class="name"><b>L4</b> Scope boundary</div><div class="what">Anything marked Later, Out or Unsupported, a Locked item, or a hard native feature</div><div class="how">Scope Change Protocol card with options. Unsupported things cannot be added, only replaced by an alternative or listed for engineers.</div></div>
+    <div class="row"><div class="name"><b>L5</b> Foundational</div><div class="what">Add an app, change the login model, change the kind of product</div><div class="how">A new program version. The Spec gate (G2) reopens and the pipeline restarts from the Blueprint.</div></div>
+  </div>
+  <p class="note">Latency targets are initial goals (the architect's judgment), not measurements yet.</p>
+  <dl class="blocks">
+    <div><dt>Scope ledger</dt><dd>Every feature is marked in, later, out, unsupported or needs-engineering. You can flip it in checklists at any gate and in the preview. This is also where "make it like [other app]" lands: a reference list you toggle.</dd></div>
+    <div><dt>Variants</dt><dd>Vague requests ("make it more modern") return three concrete options instead of a guess. A look can be forked, compared side by side, then merged or dropped.</dd></div>
+    <div><dt>Many changes at once</dt><dd>Rapid-fire or dictated lists are split into numbered requests and read back to you in one tap-to-confirm list. They are batched into change sets, each reversible.</dd></div>
+    <div><dt>Hand-edited code</dt><dd>If a developer edits generated files, they are locked and skipped on regeneration. A later change that touches them produces a conflict card instead of overwriting.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== 8 MODULES ===== -->
+<section id="modules" class="block">
+  <h2>Apps are composed from modules, not templated by category</h2>
+  <p class="lede">The stack is fixed (Expo, React Native, TypeScript). The kind of app is not. The engine selects, adapts and extends capability modules, so a food app and a banking-style app use the same machinery.</p>
+  <div class="scroll">
+    <table class="matrix" aria-label="Illustrative module use by example app">
+      <thead><tr><th>Module family</th><th class="c">Food delivery</th><th class="c">Banking-style app</th><th class="c">Field service</th><th class="c">Learning app</th></tr></thead>
+      <tbody>
+        <tr><td>Identity and access</td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td></tr>
+        <tr><td>Catalog and commerce</td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td></tr>
+        <tr><td>Booking and scheduling</td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td></tr>
+        <tr><td>Delivery and logistics</td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td></tr>
+        <tr><td>Payments and wallet</td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td></tr>
+        <tr><td>Communication (chat, notifications, support)</td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td></tr>
+        <tr><td>Content and community</td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td></tr>
+        <tr><td>Workflows (forms, approvals, tasks)</td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot part" aria-label="adapted">◐</span></td></tr>
+        <tr><td>Dashboards and admin</td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td></tr>
+        <tr><td>Finance (accounts, transfers, statements)</td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td></tr>
+        <tr><td>Learning (courses, quizzes, progress)</td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot none" aria-label="not used">–</span></td><td class="c"><span class="dot full" aria-label="used">●</span></td></tr>
+      </tbody>
+    </table>
+  </div>
+  <p class="note"><span class="dot full">●</span> used as is · <span class="dot part">◐</span> adapted · – not used. Illustrative only: it shows composition, not a fixed list of app types. Parts with no matching module become flagged custom modules with stricter checks.</p>
+  <dl class="blocks">
+    <div><dt>Why modules</dt><dd>A module carries proven screens, data, rules and states. Composing them gives consistent quality across many kinds of app and leaves less for a model to invent.</dd></div>
+    <div><dt>Honest tiers</dt><dd><span class="chip ok">A reliable</span> login, lists, forms, dashboards, checkout screens. <span class="chip gate">B flagged</span> real push, live tracking, payments SDKs, camera, offline sync. <span class="chip bad">C hand-off</span> custom native wrappers, on-device ML, live collaborative editing.</dd></div>
+    <div><dt>A Zomato-class program</dt><dd>We deliver the customer, restaurant, rider and admin app shells with flows and mock data (on the order of 60 to 120 screens), then a verified backend for the approved behavior. Live tracking and recommendations are listed as hand-off work, not promised.</dd></div>
+  </dl>
+  <details>
+    <summary>Declined categories, and what we offer instead</summary>
+    <div class="scroll" style="margin-top:10px"><table>
+      <thead><tr><th>Declined</th><th>Offered instead</th></tr></thead>
+      <tbody>
+        <tr><td>Games of any kind</td><td>Companion app: profile, store, community, leaderboard screens on mock data</td></tr>
+        <tr><td>AR, VR and 3D</td><td>Catalog or shell without the immersive view</td></tr>
+        <tr><td>Photo and video editors</td><td>Gallery, sharing and account shell</td></tr>
+        <tr><td>DRM streaming players</td><td>Browse, watchlist, profile and subscription shell; engineers add the player</td></tr>
+        <tr><td>Trading terminals</td><td>Portfolio, watchlist and order-ticket UI with delayed mock data</td></tr>
+        <tr><td>OS-level utilities (keyboards, launchers)</td><td>None</td></tr>
+        <tr><td>Medical-device or safety-critical software</td><td>Patient-facing scheduling and messaging shells only</td></tr>
+        <tr><td>Apps built on proprietary hardware SDKs</td><td>Dashboard shell with mocked device data</td></tr>
+      </tbody>
+    </table></div>
+  </details>
+</section>
+
+<!-- ===== 9 MODELS ===== -->
+<section id="models" class="block">
+  <h2>Every model call follows the same safe path</h2>
+  <p class="lede">All model calls go through one gateway. Output is checked, repaired once, and falls back to a safe default, so one bad answer never silently reaches the next stage.</p>
+  <figure class="fig">
+    <div class="scroll">
+<svg viewBox="0 0 1000 300" role="img" aria-label="One model call: call spec, input check, cache, model call with two vendors and failover, output check, one repair, safe default, result with cost and trace. Valid output goes straight through.">
+<defs>
+<marker id="a9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" class="ah"/></marker>
+</defs>
+<path class="edge" d="M620,70 V46 H945 V68" marker-end="url(#a9)"/>
+<text class="t-m t-xs" x="782" y="40" text-anchor="middle">valid output goes straight through</text>
+
+<rect class="n-doc" x="20" y="70" width="110" height="84" rx="6"/><text class="t-b t-s" x="75" y="94" text-anchor="middle">Call spec</text><text class="t-m t-xs" x="75" y="112" text-anchor="middle">schema · effort</text><text class="t-m t-xs" x="75" y="126" text-anchor="middle">model class</text>
+<rect class="n-code" x="150" y="70" width="100" height="84" rx="4"/><text class="t-b t-s" x="200" y="94" text-anchor="middle">Check input</text><text class="t-m t-xs" x="200" y="112" text-anchor="middle">documents are</text><text class="t-m t-xs" x="200" y="126" text-anchor="middle">data, no tools</text>
+<rect class="n-code" x="270" y="70" width="90" height="84" rx="4"/><text class="t-b t-s" x="315" y="94" text-anchor="middle">Cache</text><text class="t-m t-xs" x="315" y="112" text-anchor="middle">same input →</text><text class="t-m t-xs" x="315" y="126" text-anchor="middle">reuse output</text>
+<rect class="n-box" x="380" y="62" width="170" height="100" rx="10"/><text class="t-b t-s" x="395" y="80">Model call</text>
+<rect class="n-llm" x="392" y="88" width="146" height="28" rx="7"/><text class="t-xs" x="465" y="106" text-anchor="middle">Vendor A · writes</text>
+<rect class="n-llm" x="392" y="124" width="146" height="28" rx="7"/><text class="t-xs" x="465" y="142" text-anchor="middle">Vendor B · critic</text>
+<text class="t-m t-xs" x="465" y="178" text-anchor="middle">failover: the same call runs on the other vendor</text>
+<rect class="n-code" x="570" y="70" width="100" height="84" rx="4"/><text class="t-b t-s" x="620" y="94" text-anchor="middle">Check output</text><text class="t-m t-xs" x="620" y="112" text-anchor="middle">strict schema</text><text class="t-m t-xs" x="620" y="126" text-anchor="middle">+ validators</text>
+<rect class="n-llm" x="690" y="70" width="90" height="84" rx="8"/><text class="t-b t-s" x="735" y="94" text-anchor="middle">Repair once</text><text class="t-m t-xs" x="735" y="112" text-anchor="middle">if invalid,</text><text class="t-m t-xs" x="735" y="126" text-anchor="middle">low effort</text>
+<rect class="n-code" x="800" y="70" width="90" height="84" rx="4"/><text class="t-b t-s" x="845" y="94" text-anchor="middle">Safe default</text><text class="t-m t-xs" x="845" y="112" text-anchor="middle">still invalid:</text><text class="t-m t-xs" x="845" y="126" text-anchor="middle">mark degraded</text>
+<rect class="n-ok" x="910" y="70" width="70" height="84" rx="6"/><text class="t-b t-s" x="945" y="94" text-anchor="middle">Result</text><text class="t-m t-xs" x="945" y="112" text-anchor="middle">cost+trace</text>
+<path class="edge" d="M130,112 H148 M250,112 H268 M360,112 H378 M550,112 H568 M670,112 H688 M780,112 H798 M890,112 H908" marker-end="url(#a9)"/>
+
+<rect class="n-llm" x="20" y="204" width="300" height="62" rx="8"/><text class="t-b t-s" x="34" y="226">small · Haiku 5.5 or GPT-6 Luna</text><text class="t-xs" x="34" y="243">about $0.10 in / $0.50 out per million tokens</text><text class="t-xs" x="34" y="257">used for almost every stage, at high effort</text>
+<rect class="n-code" x="340" y="204" width="300" height="62" rx="8"/><text class="t-b t-s" x="354" y="226">mid · Sonnet 5.5 ($2 / $10)</text><text class="t-xs" x="354" y="243">only where tests show small is not enough</text><text class="t-xs" x="354" y="257">a setting, not a rewrite</text>
+<rect class="n-code" x="660" y="204" width="320" height="62" rx="8"/><text class="t-b t-s" x="674" y="226">large · Opus 5.5 ($4 / $20)</text><text class="t-xs" x="674" y="243">same rule; used for rare adjudication</text><text class="t-xs" x="674" y="257">a model change must pass the full test set first</text>
+<text class="t-m t-xs" x="20" y="288">Three lanes: writer · critic (the other vendor) · canary (the weakest model, used to test the spec)</text>
+</svg>
+    </div>
+    <p class="pan-hint">Swipe sideways to pan the diagram.</p>
+    <figcaption>Prices are per million tokens. Haiku 5.5, Sonnet 5.5 and Opus 5.5 prices come from Anthropic's documentation; GPT-6 Luna's come from aggregator sites and press and should be rechecked.</figcaption>
+  </figure>
+  <dl class="blocks">
+    <div><dt>Cost is not the constraint</dt><dd>Estimated model cost for the whole Context Engine on a 100-screen, two-app program is roughly $0.5 to $2 before retries (an estimate). The expensive parts are building and hosting, which is why the spec exists: to reduce rework there.</dd></div>
+    <div><dt>Two vendors</dt><dd>Anthropic and OpenAI models can both do any job. If one is down or slow, the same call runs on the other. This also lets us choose a better or cheaper model later by passing the test set, not by rewriting the product.</dd></div>
+    <div><dt>Pinned and tested</dt><dd>Models are pinned by name. Switching one needs a full benchmark run, equal or better results on every gate, a trial on part of the traffic, and a way back.</dd></div>
+    <div><dt>Plain baseline safety</dt><dd>Secrets are removed before text reaches a model, documents and web pages are treated as data and never as instructions, mock data is synthetic, and previews use expiring links. Deeper compliance work is deliberately deferred.</dd></div>
+  </dl>
+</section>
+
+<!-- ===== 10 TRACE ===== -->
+<section id="trace" class="block">
+  <h2>Follow one screen through the system</h2>
+  <p class="lede">A made-up city food-ordering program, "Dinewise", with a customer app and a restaurant-and-admin app. Step through to see which block acts and what it hands on. Numbers are examples.</p>
+  <div class="trace">
+    <ol class="trace-steps" id="trace-steps" role="tablist" aria-label="Walkthrough steps"></ol>
+    <div class="trace-body" id="trace-body" aria-live="polite"></div>
+    <div class="trace-nav"><button type="button" class="btn ghost" id="trace-prev">Back</button><button type="button" class="btn" id="trace-next">Next step</button></div>
+  </div>
+</section>
+
+<!-- ===== 11 ROADMAP ===== -->
+<section id="roadmap" class="block">
+  <h2>The order we build in, one agent at a time</h2>
+  <p class="lede">Each step has one prompt for the builder, one test gate, and your sign-off before the next. Gate numbers are initial targets, not measurements.</p>
+  <ol class="road">
+    <li class="now"><span class="n">NOW</span><b>Research agent: design review (v3)</b><span class="g">Doc 13 v3 and its build prompt are ready. You review them, then give the go for the build and the bake-off.</span></li>
+    <li><span class="n">STEP 0</span><b>Audit the repo</b><span class="g">Read-only. Gate: a reuse map of what exists versus this design. Folded into the Compass prompt's Phase 0.</span></li>
+    <li><span class="n">STEP 1</span><b>Backbone</b><span class="g">Spec graph v3, validator framework, schema registry, invariants. Gate: invariants pass; the same graph renders the same file.</span></li>
+    <li><span class="n">STEP 2</span><b>Gateway and test harness</b><span class="g">Second vendor and failover; search port for Research; benchmark skeleton. Gate: both vendors behave identically.</span></li>
+    <li><span class="n">STEP 3</span><b>Discovery (Compass)</b><span class="g">Built; hardening continues. Gate: the Brief checks pass on real interviews; 90%+ of PRD requirements captured; no unevidenced Locked items.</span></li>
+    <li><span class="n">STEP 4</span><b>Research agent</b><span class="g">Foreground run after G1, depth chosen from what you said, parallel workers per topic, entity-anchored queries, quote-verified typed facts indexed by your feature, role and data ids. Gate: every high-impact claim sourced, quoted and dated; zero generic queries; fails softly (doc 13 §14).</span></li>
+    <li><span class="n">STEP 5</span><b>Spec: Product lane</b><span class="g">Module library (first ~20 modules) and Contract v0. Gate: validators pass; screens mostly from proven modules.</span></li>
+    <li><span class="n">STEP 6</span><b>Spec: Design lane</b><span class="g">Tokens and composition rules. Gate: contrast always passes; three looks genuinely differ.</span></li>
+    <li><span class="n">STEP 7</span><b>Spec: Screens lane, join and Freeze</b><span class="g">Parallel screen batches after Freeze. Gate: all required states present; every reference resolves.</span></li>
+    <li><span class="n">STEP 8</span><b>Verify and package</b><span class="g">Streams while Spec writes; builder-needs coverage (BN-01 to BN-14). Gate: weak-model test passes on 85%+ of sampled screens; no need is missing.</span></li>
+    <li><span class="n">STEP 9</span><b>Programs, changes, views</b><span class="g">Multi-app, change lanes, review screens. Gate: lane sorting 95%+ correct; undo exact.</span></li>
+    <li><span class="n">STEP 10</span><b>Design the Front-end Engine</b><span class="g">Preview hosting, agent choice, model routing. Then Backend and QA design.</span></li>
+  </ol>
+  <p class="note">The order follows doc 09 §2 and doc 12 §10. The Spec agent is built in three phases that share one orchestrator (steps 5 to 7).</p>
+</section>
+
+<!-- ===== 12 BUSINESS ===== -->
+<section id="business" class="block">
+  <h2>Why this can become a company</h2>
+  <p class="lede">The product sold is predictable delivery: approve the experience on a live preview, and the matching backend is built and proven against the same journeys. Figures below are press-reported or the architect's judgment; check sources before using them with investors.</p>
+  <dl class="blocks">
+    <div><dt>Who pays</dt><dd><b>IT-services firms and agencies</b> (beachhead, India first) face AI-driven price pressure and need faster discovery and delivery. <b>Enterprise digital teams</b> in the US, EU and India want predictability and code they own. <b>Founders</b> are top of funnel.</dd></div>
+    <div><dt>What it replaces</dt><dd>A custom enterprise mobile app is commonly quoted at roughly $100k to $500k in agency blogs. A per-program price of $5k to $50k plus a platform fee is a hypothesis to test in pilots.</dd></div>
+    <div><dt>Sold alone first</dt><dd>The Context Engine can be sold by itself (requirements, wireframes, API contract, BRD/SRS in hours), which earns revenue and data before the other engines mature.</dd></div>
+    <div><dt>Not differentiators</dt><dd>Single sign-on, SOC 2 and private hosting (Replit already has them), parallel agents, and "has a planning step". Every serious competitor is adding these.</dd></div>
+  </dl>
+
+  <h3>What is hard to copy (architect's judgment, not measured)</h3>
+  <div class="meter" role="list">
+    <div class="row" role="listitem"><span>Benchmark and approved-spec data</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><span class="lv">High over time: others cannot copy measured quality</span></div>
+    <div class="row" role="listitem"><span>Capability module library</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i></span><span class="lv">High over time: depth across many categories</span></div>
+    <div class="row" role="listitem"><span>Spec as the system of record</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><span class="lv">Medium-high: approvals, changes, traceability</span></div>
+    <div class="row" role="listitem"><span>IT-services distribution</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i class="on"></i><i></i></span><span class="lv">Medium-high: slow channel to copy</span></div>
+    <div class="row" role="listitem"><span>Preview-to-backend proof</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="lv">Medium: process and tooling</span></div>
+    <div class="row" role="listitem"><span>Verified stack kits</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="lv">Medium: Expo ships roughly three versions a year</span></div>
+    <div class="row" role="listitem"><span>Strong planner, cheap workers</span><span class="segs" aria-hidden="true"><i class="on"></i><i class="on"></i><i></i><i></i></span><span class="lv">Medium: margin improves as models get cheaper</span></div>
+  </div>
+
+  <h3>Competitors at a glance (press-reported, mid-November 2026)</h3>
+  <div class="scroll"><table>
+    <thead><tr><th>Player</th><th>Mobile</th><th>Plan step</th><th>Reported funding</th><th>Gap we exploit</th></tr></thead>
+    <tbody>
+      <tr><td><b>Lovable</b></td><td>Web-first; mobile via conversion</td><td>Chat and plan modes</td><td>$400M at about $13.3B (Aug 2026)</td><td>No mobile-native spec; edits happen in chat</td></tr>
+      <tr><td><b>Replit</b></td><td>Expo to App Store path</td><td>Agent 4: parallel tasks</td><td>about $9B (Mar 2026)</td><td>Merges conflicts after the fact; no traceable spec</td></tr>
+      <tr><td><b>Emergent</b></td><td>Expo plus FastAPI mobile agent</td><td>Light</td><td>$130M at about $1.5B (Jul 2026)</td><td>Closest rival; no verified spec or preview-to-backend proof</td></tr>
+      <tr><td><b>Rork</b></td><td>Expo and React Native focus</td><td>Light</td><td>$15M seed (Apr 2026)</td><td>Prosumer, not enterprise workflow</td></tr>
+      <tr><td><b>Rocket</b></td><td>General apps</td><td>Research and PRD before build (Apr 2026)</td><td>Unverified</td><td>Plan step exists; no sufficiency test or backend proof</td></tr>
+      <tr><td><b>Pega, Power Apps</b></td><td>Inside their own platforms</td><td>Conversational plan and blueprint</td><td>Incumbents</td><td>Platform lock-in; not source code you own</td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Milestones for a raise (judgment)</h3>
+  <ol class="road">
+    <li><span class="n">0 TO 3 MONTHS</span><b>Context Engine end to end</b><span class="g">5+ kinds of app, benchmark numbers, 2 to 3 design-partner letters of intent.</span></li>
+    <li><span class="n">3 TO 6 MONTHS</span><b>Front-end with G3 preview</b><span class="g">3 paying pilots; first-pass build rate; change-request rate after G3.</span></li>
+    <li><span class="n">6 TO 12 MONTHS</span><b>Backend and QA proven</b><span class="g">Journey-replay acceptance; gross margin per program; first enterprise contracts; public benchmark.</span></li>
+  </ol>
+  <p class="note"><b>Biggest risks:</b> incumbents copying a planning step (answer: measured quality, modules, channel); Expo or Lovable moving up the stack; Apple or Google policy changes; large-scale generation cost not yet measured; competitors' headline numbers are press-reported. Privacy, security and regional compliance are baseline-only by decision, with the research kept for when a customer needs it.</p>
+</section>
+
+<!-- ===== 13 TERMS ===== -->
+<section id="terms" class="block">
+  <h2>Terms used above</h2>
+  <dl class="gl">
+    <div><dt>Brief</dt><dd>The first file: what you are building, for whom, the features, the look, the login, and what we assumed. You approve it at G1.</dd></div>
+    <div><dt>Agent</dt><dd>One of the four units of the Context Engine: Compass, Research, Spec, and Verify and package. Each writes one file.</dd></div>
+    <div><dt>Lane</dt><dd>A group of steps inside one agent that runs beside another lane. Spec has three: Product, Design and Screens.</dd></div>
+    <div><dt>Freeze</dt><dd>The point in Spec where the shared decisions (roles, data, operations, navigation, tokens) become read-only for the Screens lane.</dd></div>
+    <div><dt>Builder needs (BN-01 to BN-14)</dt><dd>The fourteen things a front-end builder must find in the package. Each is satisfied, defaulted, degraded or missing; missing blocks G2.</dd></div>
+    <div><dt>Visible research</dt><dd>Research runs in front of you right after you approve the Brief: only what the model cannot know is searched, with live progress, a time box and a Skip button.</dd></div>
+    <div><dt>Spec graph</dt><dd>The connected set of items (screens, features, data, rules, roles) that is the single source of truth.</dd></div>
+    <div><dt>Slice</dt><dd>A small, budgeted piece of the spec given to one worker: shared rules plus one screen.</dd></div>
+    <div><dt>Contract v0 / v1</dt><dd>The API shape (what the app asks the server and what comes back). v0 comes with the spec; v1 is frozen at G3 after checking what the app really calls.</dd></div>
+    <div><dt>Golden journey</dt><dd>A scripted walkthrough of an approved flow, with the expected result at each step. Used in the preview, then as the backend's test.</dd></div>
+    <div><dt>Behavior Book</dt><dd>The rules the backend will follow, written in plain language, with anything unconfirmed listed for you to answer.</dd></div>
+    <div><dt>Canary model</dt><dd>The deliberately weak model that tests whether a slice is clear enough to build from.</dd></div>
+    <div><dt>Tier A, B, C</dt><dd>How reliably we can build a capability: reliable, supported with a flag, or handed to engineers.</dd></div>
+    <div><dt>Change set</dt><dd>A group of exact spec edits made for one request, with its size, impact, approvals and an undo.</dd></div>
+    <div><dt>Wave</dt><dd>A phase of the build (W0 to W7). Tasks in the same wave can run at the same time. Research is a different thing: one visible run of the Research agent.</dd></div>
+    <div><dt>Module</dt><dd>A reusable block of screens, data and rules, such as "cart and checkout" or "appointments".</dd></div>
+    <div><dt>Degraded</dt><dd>A flag for an item the system could not fix cleanly. It is shown to you, never hidden.</dd></div>
+  </dl>
+  <footer>
+    <p class="note">Source: Architecture v3.2, updated 2026-11-10, in the project's <code>architecture/</code> folder (docs 00 to 13). Evidence is labelled in <code>architecture/10-research-log.md</code> as verified, secondary (press and vendor blogs) or judgment. Targets marked "initial" have not been measured.</p>
+  </footer>
+</section>
+
+</div>
+
+<script>
+(function(){
+  /* ---- Context Engine stage details ---- */
+  var STAGES=[
+    {n:1,name:"Compass",file:"brief.json",gate:"G1 Brief (you approve)",
+     job:"Interviews you and turns whatever you bring into one Brief that every later agent can rely on, asking as few questions as possible.",
+     reads:"Chat and voice notes; PDF, Word, Excel, PowerPoint and email; screenshots; links; your organization profile",
+     steps:[["code","Read every file into text and page images; split by headings; track how much was read"],["model","Extract claims from each part, each with a pointer to file, page and paragraph"],["model","Merge, remove duplicates, spot contradictions (what you say in chat beats a document)"],["model","Classify: kind of product, apps (customer and admin by default), modules, size, hard-to-build parts"],["code","Find what is missing; scan for vague or conflicting statements; ask one card per gap (a tap costs no model call)"],["model","Write domain-specific options inside a fixed card shape: three options, one recommended, plus 'you decide'"],["code","Build the feature list: each feature is in, later, out or unsupported"],["model","Compile the Brief, its research requests and a one-sentence summary"]],
+     checks:"Anything Locked needs your words or a document as evidence. At most 10 questions in guided mode. Documents are treated as data, never as instructions.",
+     edge:"Huge PRDs, scans, contradicting documents, hidden instructions, silence, changed minds, voice run-ons (rows IN-01 to IN-15 and IV-01 to IV-11)"},
+    {n:2,name:"Research",file:"research.json",gate:"No gate of its own; findings reach you at the spec review",
+     job:"Finds, for each thing the spec must decide (features, screens and navigation, flows, data and rules, integrations, design, per-screen content, sample data), how apps like yours usually do it, how common each choice is, and what is current, plus the details special to your idea. It runs in front of you right after you approve the Brief, with live progress, and you can skip it.",
+     reads:"The Research view of the Brief only: category, places, languages, named references and the research requests. Never the chat, never your raw documents",
+     steps:[["model","Plan the topics worth looking up (named entities, regional providers, fees and rules), each with the details the spec needs; skip what the model already knows. Depth comes from what you said, not from the tier"],["code","One worker per topic, in parallel: 2 or 3 query variants (each with an entity, a place and a language), searched together and merged by rank"],["code","Pick the best pages (at most 2 per domain, official sources first) and read the relevant passages"],["model","Extract a short quote and a paraphrase from each page; the page is data and the model has no tools"],["code","Check that every quote appears in the fetched page, and that every source is in the fetch log"],["model","For high-impact claims only: a second model from the other vendor checks that the quote supports the claim"],["model","Select and group the verified facts for each consumer; write no new facts"],["code","Check which details are still missing; look again only there, and read the official pages of the companies and providers found. Stop when covered. Then write research.json, typed, indexed by your ids and sliced per spec lane"]],
+     checks:"Research can suggest but never decide. Its items are Default at most, never Locked, and never change scope: new features appear as undecided suggestions. Results are capped at about 8k, 14k or 24k tokens by how much research the idea needed. You see live progress and can cancel a topic. If search fails, the pipeline continues and says so.",
+     edge:"No results, conflicting sources, huge competitor feature lists, stale facts, injected instructions, private names in queries, late findings after you approve (RS-01 to RS-10)"},
+    {n:3,name:"Spec",file:"spec graph, then the lane views",gate:"G1.5 structure check at Freeze (optional)",
+     job:"Decides what the product is and how it looks, then writes every screen. Three lanes inside one agent: Product and Design run side by side, the shared decisions are then frozen, and Screens is written in parallel batches.",
+     reads:"Brief and research (each lane reads its own part), the module library, the design presets",
+     steps:[["model","Product lane: summary, personas, roles, modules, what is in the first release, journeys, navigation, screen list"],["model","Product lane: entities, status flows, rules, API operations (Contract v0), integrations, sample-data plan"],["model","Design lane, beside Product: direction, tokens for color, type, spacing and motion, component variants, composition rules"],["code","Join: validators run on the graph; composition rules matched to screen types"],["code","Freeze: roles, entities, operations, navigation, tokens and the copy approach become read-only for the Screens lane"],["model","Screens lane: three or four screens per call, in parallel; purpose, sections, data, actions, every state, copy keys, test steps"],["code","One commit of the graph; each screen checked for resolved data, actions and required states"]],
+     checks:"Unknown values are flagged 'confirm' rather than guessed. Screens come from proven modules wherever one exists. Each lane keeps its own checks, so a lane can be split out later without a rewrite.",
+     edge:"Unreachable screens, too many screens, dense admin tables on phones, shared data with different permissions, existing enterprise APIs, a Screens gap that sends a question back to Product (BP-01 to BP-09, DS-01 to DS-07, SC-01 to SC-05)"},
+    {n:4,name:"Verify and package",file:"APP_SPEC.md + package",gate:"G2 Spec (you approve)",
+     job:"Checks the spec as it is written, proves that the builder-needs contract is met, then packages it for people and for the other engines. It is a separate agent because a checker must not share the writer's context or vendor.",
+     reads:"Everything, streamed as Spec commits",
+     steps:[["model","At Freeze: a structure critic from the other vendor compares Product and Design with the Brief"],["code","Per screen batch: validators (V-06, V-07, V-13, V-14, V-15, V-22, V-23)"],["model","Per screen batch: a weak canary model tries to build each slice; each question is a gap"],["model","Critic on screens against the rules"],["code","Final pass: all 23 validators and the builder-needs coverage matrix (BN-01 to BN-14)"],["code","Fill gaps with pattern defaults, or ask you only for must-confirm items"],["model","Repair, at most two rounds; if still failing, use the simplest valid pattern and flag it degraded"],["code","Package: slices, build plan, journeys, review views, exports; render APP_SPEC.md the same way every time and hash it"],["model","Write the plain-language plan summary for G2"]],
+     checks:"A builder need marked missing blocks G2. Same input always produces the same file. Nothing hidden: assumptions, deviations and degraded items are all listed at G2.",
+     edge:"Questions you cannot answer, repair not converging, critic disagreement, spec too large (VF-01 to VF-05, GT-01 to GT-06)"}
+  ];
+  var panel=document.getElementById('stage-panel');
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+  function renderStage(i){
+    var s=STAGES[i];
+    var steps=s.steps.map(function(x){return '<li><span class="chip '+(x[0]==='model'?'llm':'code')+'">'+(x[0]==='model'?'model':'code')+'</span><span>'+esc(x[1])+'</span></li>';}).join('');
+    panel.innerHTML=
+      '<h3>'+s.n+' · '+esc(s.name)+'<small>writes <code>'+esc(s.file)+'</code> · '+esc(s.gate)+'</small></h3>'+
+      '<p>'+esc(s.job)+'</p>'+
+      '<div class="cols"><div><div class="k">Reads</div><p>'+esc(s.reads)+'</p></div>'+
+      '<div><div class="k">Safeguards</div><p>'+esc(s.checks)+'</p></div>'+
+      '<div><div class="k">Tricky cases covered</div><p>'+esc(s.edge)+'</p></div></div>'+
+      '<div><div class="k">What happens, in order</div><ol class="steps" style="list-style:none">'+steps+'</ol></div>';
+    var gs=document.querySelectorAll('.stage');
+    for(var k=0;k<gs.length;k++){gs[k].classList.toggle('is-active',k===i);}
+  }
+  var stageEls=document.querySelectorAll('.stage');
+  for(var j=0;j<stageEls.length;j++){
+    (function(el){
+      var i=parseInt(el.getAttribute('data-i'),10);
+      el.addEventListener('click',function(){renderStage(i);});
+      el.addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();renderStage(i);}});
+    })(stageEls[j]);
+  }
+  renderStage(0);
+
+  /* ---- Walkthrough ---- */
+  var TRACE=[
+    {tab:"1 Bring",block:"Compass",writes:"brief.json",
+     say:"You upload a 40-page PRD and say: like the big delivery apps, plus an app for restaurants. The engine reads every page, finds 187 requirements (each with a page pointer), proposes two apps, and flags live tracking and payments as hard-to-build native features. Games are declined with an alternative.",
+     code:"FTR-014  Live order tracking  status: in         tier: Locked   source: PRD p.12   capability: B\nFTR-031  Group ordering       status: later      tier: Default  source: research R-007\nFTR-052  In-app games         status: unsupported            alternative: loyalty rewards"},
+    {tab:"2 Research",block:"Research",writes:"research.json",
+     say:"Right after you approve the Brief, research looks up what the model cannot know (comparable apps, regional providers, fees and rules), in front of you, with live progress and a Skip button. It can only suggest. Its findings are shown with their sources, and suggested features reach the spec review as toggles, never as a decision.",
+     code:"R-007  \"group ordering appears in 3 of 5 comparable apps\"   sources: 3 links + dates   rank: consider (a hint, not a scope status)\nmock-data hint: realistic price range and tax conventions for the region, quote checked"},
+    {tab:"3 Spec: product",block:"Spec, product lane",writes:"spec graph, product part",
+     say:"Roles, journeys, screens and data are decided. An order moves through a life cycle, rules say who may do what, and one rule has no value in the PRD, so it is flagged for you instead of guessed.",
+     code:"Order: placed -> accepted -> preparing -> ready -> picked_up -> delivered\n       side exits: rejected (restaurant, with reason) · cancelled (customer, until accepted)\nRUL-012  customer may cancel until the restaurant accepts\nRUL-020  delivery fee = base + distance band      confirm: true   (the PRD gives no table)\nOP-placeOrder  POST  role: customer  idempotency key  error 409: restaurant closed"},
+    {tab:"4 Spec: design",block:"Spec, design lane",writes:"tokens.dtcg.json, DESIGN.md",
+     say:"Three looks that genuinely differ are shown as style tiles. The choice lives in tokens, so changing the theme later is one edit, not a hundred.",
+     code:"directions: warm-vibrant | clean-minimal | bold-editorial\ntokens:     color.brand.primary · color.surface.card · radius.card · space.4 · type.title\nrule:       admin lists = table on tablet and web, cards on phone"},
+    {tab:"5 Spec: screens",block:"Spec, screens lane",writes:"screen records after Freeze",
+     say:"Each screen is written so a small model never has to guess: sections, data, every state, copy keys, test steps and sample data.",
+     code:"SCR-021 Restaurant detail   (difficulty M)\nsections: hero · header (badge open|closed|busy) · menu (sticky tabs, add to cart) · reviews\nstates:   loading skeleton · empty menu · error retry · offline cached · closed\ntest:     GIVEN a closed restaurant THEN Add is disabled and the reason is shown\nsample:   24 restaurants (3 closed, 2 without photos), one sold-out item, one very long name"},
+    {tab:"6 Verify",block:"Verify and package",writes:"APP_SPEC.md + package",
+     say:"The weak model tries to build the screen and asks what counts as busy. The answer becomes a default rule and shows up under \"We assumed\" for you. The critic from the other vendor notices the rider app has no delivery data, and the engine repairs it.",
+     code:"canary question: \"What counts as 'busy'?\"  -> blocking gap\nresolved:  RUL-021  busy = more than 15 active orders   tier: Default (assumed)   shown at G2\ncritic:    rider app in the PRD has no Delivery entity -> repair adds ENT-Delivery + 2 operations\npackage:   94 screens · 41 operations · 6 golden journeys · 212 tasks in 7 waves"},
+    {tab:"7 Build and change",block:"Front-end Engine",writes:"app + live preview",
+     say:"Small workers each build one task in parallel. In the preview you click the menu, see its spec, and ask for a veg-only toggle. It is a small local change, applied in about a minute, and you can undo it.",
+     code:"T-0142  owns app/(customer)/restaurant/[id].tsx    checks: tsc · lint · all states · journey FLW-003\nCS-0071 \"add a veg-only toggle\"   lane L2   affects SCR-021, SCR-018, OP-listMenu(+param)   about 45 s   undo available"},
+    {tab:"8 Approve",block:"G3, then Backend Engine",writes:"Approved Build Manifest",
+     say:"You answer the one open rule, check the integrations list, and approve once. The backend is then built and must pass the same journeys you walked through.",
+     code:"Behavior Book, confirm list:  RUL-020 delivery fee formula   [ answered at G3 ]\nBackend accepted when:  API matches contract ✓   6 of 6 golden journeys replay ✓   acceptance tests ✓   preview data loads as seed ✓"}
+  ];
+  var cur=0;
+  var tabs=document.getElementById('trace-steps'), body=document.getElementById('trace-body');
+  var prev=document.getElementById('trace-prev'), next=document.getElementById('trace-next');
+  TRACE.forEach(function(t,i){
+    var li=document.createElement('li'); var b=document.createElement('button');
+    b.type='button'; b.textContent=t.tab; b.setAttribute('role','tab'); b.setAttribute('aria-selected','false');
+    b.addEventListener('click',function(){show(i);}); li.appendChild(b); tabs.appendChild(li);
+  });
+  function show(i){
+    cur=i; var t=TRACE[i];
+    var btns=tabs.querySelectorAll('button');
+    for(var k=0;k<btns.length;k++){btns[k].setAttribute('aria-selected',k===i?'true':'false');}
+    body.innerHTML='';
+    var chips=document.createElement('div'); chips.className='chips';
+    chips.innerHTML='<span class="chip llm">Block acting: '+esc(t.block)+'</span><span class="chip">Hands on: '+esc(t.writes)+'</span>';
+    var p=document.createElement('p'); p.textContent=t.say;
+    var pre=document.createElement('pre'); pre.className='code'; pre.textContent=t.code;
+    body.appendChild(chips); body.appendChild(p); body.appendChild(pre);
+    prev.disabled=(i===0); next.disabled=(i===TRACE.length-1);
+    next.textContent=(i===TRACE.length-1)?'Done':'Next step';
+  }
+  prev.addEventListener('click',function(){if(cur>0)show(cur-1);});
+  next.addEventListener('click',function(){if(cur<TRACE.length-1)show(cur+1);});
+  show(0);
+})();
+</script>

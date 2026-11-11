@@ -1,5 +1,7 @@
 # 02. System architecture
 
+> **Note, 2026-11-10:** where this page says the Context Engine has "6 stages" or "six stage-engines", read **four agents** (Compass, Research, Spec, Verify and package; [doc 12](12-four-agent-pipeline.md)). The call catalog in §4.1 keeps its IDs (RSCH-4 and SRCH-1 were added on 2026-11-10 for Research, doc 13): BLUE-, DSGN- and SCRN- calls are steps of the Spec agent; VRFY- calls belong to the Verify agent.
+
 Scope: layers, orchestration, stores, the LLM gateway and its call catalog, services, reliability, and the baseline hygiene that replaces the deferred privacy/security work. Implementation language and framework decisions from the earlier brief stay in force unless noted (Python 3.13, FastAPI, Pydantic v2, PostgreSQL only, SSE, no agent frameworks, only the gateway imports provider SDKs).
 
 ## 1. Layers
@@ -76,6 +78,8 @@ Effort values are starting points. "small->mid" means start small and promote on
 | RSCH-1 | Plan queries from the Brief, within depth and budget | small | high | writer |
 | RSCH-2 | Extract facts from one page (no tools) | small | low-medium | writer |
 | RSCH-3 | Synthesize findings grouped by consumer | small | high | writer |
+| RSCH-4 | Support check: does the quote support the claim? High-impact items only; from the other vendor than RSCH-2 (doc 13 §5) | small | low | critic |
+| SRCH-1 | Provider search through `SearchPort` (Brave primary, Tavily fallback; AD-40). Code, not a model call; logs the cost (doc 13 §5) | none | — | code |
 | BLUE-1 | Product: PRD summary, personas, roles, modules, MVP vs later | small->mid | high | writer |
 | BLUE-2 | Structure: journeys, cross-app scenarios, navigation, screen inventory | small->mid | high | writer |
 | BLUE-3 | Domain: entities, lifecycles, rules | small->mid | high | writer |
@@ -95,13 +99,13 @@ Effort values are starting points. "small->mid" means start small and promote on
 | CHNG-3 | Variant generator: three concrete options for ambiguous asks | small | high | writer |
 | VIS-1 | Visual critic (front-end side): screenshot vs design intent | small (vision) | medium | critic |
 
-Web search is a gateway tool (S-style call) with citations; its content is billed as input tokens (about $0.011 per search measured in the earlier L0 smoke test).
+Web search in the earlier L0 smoke test was a gateway tool, about $0.011 per search (measured). For Research that path is replaced by `SearchPort` (AD-40, doc 13): code runs the searches, so lanes, quote checks and budgets stay under code control. Gateway search tools are not used on the Research path.
 
 ## 5. Services
 | Service | Responsibility | Notes |
 |---|---|---|
 | Doc-parse | PDF, DOCX, XLSX, PPT, email, CSV, images, audio to structured text plus page images | Layout-aware text first; render pages to images for scans and diagrams; transcription for audio; caps on size and pages with a visible coverage meter |
-| Search + fetch | Web search through the gateway; fetch of public URLs | SSRF-safe: public hosts only, size caps, no redirects to private ranges |
+| Search + fetch | `SearchPort` (Brave primary, Tavily fallback; adapters in the gateway) and `FetchPort` (public pages only, in `packages/webfetch`) | SSRF-safe: public hosts only, size caps, redirects re-checked, robots.txt respected (doc 13 R13) |
 | Render | Wireframes and app map from the spec | Deterministic; same graph gives same output |
 | Preview + build host | Builds the web preview and dev-build links, hosts them behind expiring links | Front-end engine; requirements in doc 06 |
 | Pack / Kit registry | Modules, recipes, Stack Kit, presets | See section 3 |
@@ -144,3 +148,6 @@ SaaS, multi-tenant first. The gateway and Spec Server keep BYO model endpoints a
 | Front-end -> Backend | Approved Build Manifest (Behavior Book, Contract v1, fixtures, journeys) | doc 04 |
 | Backend -> QA | Deployed backend plus manifest | doc 04 |
 | QA -> user | Release report; optional G4 | doc 06 |
+
+## 11. Repository layout (target, from 2026-11-09; AD-33, AD-34)
+`agents/<name>/` holds one self-contained folder per agent (LLM prompt templates, structured call specs, schemas, catalogs and data, engine logic, store, API router, tests, evals, README, and a copy of its build prompts). `apps/web/` is the **global front end** for all agents (a static HTML/CSS/vanilla-JS test console now; React later), never inside an agent folder. `apps/<other>/` holds other apps; `packages/*` holds shared infrastructure and legacy packages until replaced. Agents import shared packages only, never each other or any app; the front end talks to agents only through their HTTP API and shared JSON Schemas; each agent exposes `create_app()` and a `router` so the Context API can mount it. The commit policy (small atomic commits, task branches, `--no-ff` merges, tags per phase, no force-push, revert commands in every report) is in [`prompts/00-global-rules.md`](../prompts/00-global-rules.md) and applies to every task.

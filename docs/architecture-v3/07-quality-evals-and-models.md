@@ -1,5 +1,7 @@
 # 07. Quality, evaluation and model policy
 
+> **Note, 2026-11-10 (doc 12):** in §7 rows 3, 4 and 5 (Blueprint, Design, Screens) are now the **gates of the three Spec lanes**, evaluated per lane; row 6 is the **Verify agent** gate. Add the builder-needs coverage matrix (doc 12 §5: no need `missing`) to the Verify gate. Handoff probes (§3) run at agent boundaries; inside the Spec agent the lane checks are code validators. Research's gate (row 2) is expanded in [doc 13](13-research-agent-design.md) §11, and its checks RV-01 to RV-12 are defined in doc 13 §9.
+
 How we know a stage is done, how we prove a spec is sufficient for a weak model, how we score everything, and how models are chosen and changed. (AD-17, AD-18, AD-19)
 
 ## 1. Quality dimensions

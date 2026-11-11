@@ -5,7 +5,7 @@ The owner expects users to ask for changes a hundred times, including features w
 ## 1. Invariants (enforced in code, covered by property tests)
 | # | Invariant |
 |---|---|
-| I-1 | No downstream stage or engine starts before its gate is approved. |
+| I-1 | No downstream stage or engine commits to the Spec Graph, creates a baseline or shows anything as approved before its gate is approved. **Amended 2026-11-10 (AD-36):** read-only or sandboxed speculative work may start earlier if it is keyed by input hash and is discarded or reconciled when the approved hash differs. |
 | I-2 | Approvals are bound to artifact and section hashes; any change voids exactly the affected approvals. |
 | I-3 | Approved baselines are immutable; changes create new versions. |
 | I-4 | A Locked field changes only with a recorded override (who, when, why). |
@@ -124,7 +124,7 @@ Each row has a SpecBench-Mobile scenario named `SB-<ID>` (doc 07) and an owner (
 | IV-10 | Voice dictation run-ons | Segment into atomic statements; echo a numbered list for confirmation when three or more or ambiguous |
 | IV-11 | Returns after days | Resume from checkpoint with a recap; research older than N days flagged stale |
 
-### Research (Stage 2)
+### Research (Stage 2; v2, 2026-11-11: foreground after G1; full list RS-01 to RS-24 in [doc 13 §11](13-research-agent-design.md))
 | ID | Case | Rule |
 |---|---|---|
 | RS-01 | Search disabled or empty | Model knowledge flagged `assumed`; never blocks |
@@ -133,6 +133,11 @@ Each row has a SpecBench-Mobile scenario named `SB-<ID>` (doc 07) and an owner (
 | RS-04 | Stale SDK or stack facts | Stack Kit is authoritative; research never overrides stack facts; dates shown |
 | RS-05 | Research suggests unrequested scope | Default tier only; shown as toggles at G2; counts against the size budget |
 | RS-06 | Page contains injected instructions | No tools in extraction; directives ignored |
+| RS-07 | Search provider down, rate-limited or out of quota | Retry transport errors (max 3, backoff); fall back to the second provider if configured; else `partial` with gap `provider_down`. Never blocks (doc 13 §8) |
+| RS-08 | High-impact claim backed by one source | Flag `single-source`; shown `unverified` at G2 (doc 13 R8) |
+| RS-09 | A person's name or an identifier would reach a search query | Query dropped before sending (RV-06). The Brief fact is flagged for Compass to confirm, not rewritten silently |
+| RS-10 | Findings arrive after a Brief change or a re-run | Never silent: G2 toggles, or a change request in the lane of its change (doc 13 R7, §9) |
+| RS-11 to RS-24 | Template or thin requests, weak geography, own brand or unfindable entity, name collision, thin local-language web, time box, Skip, closed tab, missing page text, contradiction with a Locked value, more targets than budget, same-vendor checker, non-ASCII quotes, duplicate queries | See doc 13 §11 |
 
 ### Blueprint, Design, Screens (Stages 3-5)
 | ID | Case | Rule |
