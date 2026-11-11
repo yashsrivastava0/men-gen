@@ -380,6 +380,9 @@ def main_flow(browser, f: Fake) -> None:
     page.reload()
     page.wait_for_selector(".input-card")
     t_cards = page.evaluate("performance.now()")
+    page.wait_for_function(
+        "performance.getEntriesByName('first-contentful-paint').length > 0", timeout=2000
+    )
     fcp = page.evaluate(
         "(performance.getEntriesByName('first-contentful-paint')[0] || {startTime: -1}).startTime"
     )
@@ -1095,6 +1098,31 @@ def scenario_interrupted_and_unreachable(browser) -> None:
         f.kill()
 
 
+def scenario_tools(browser) -> None:
+    f = Fake(8149).start()
+    try:
+        page = new_page(browser)
+        page.goto(f.base + "/#/tools")
+        page.wait_for_selector("#settings-h")
+        check("tools: header says Tools", "Tools" in text(page, ".page-head h2"))
+        check(
+            "tools: settings card has primary search provider",
+            "Primary search provider" in text(page, "#settings-h"),
+        )
+        check(
+            "tools: provider options include Auto, Tavily and Serper",
+            page.locator("input[name='provider']").count() == 3,
+        )
+        page.locator("#p-serper").check()
+        page.wait_for_function("document.querySelector('#p-serper').checked")
+        check("tools: serper provider radio checked", page.locator("#p-serper").is_checked())
+        problems = four_shots(browser, f.base + "/#/tools", "tools-view", "#settings-h")
+        check("tools: no sideways scroll at 360 px", not problems, "; ".join(problems))
+        page.context.close()
+    finally:
+        f.kill()
+
+
 def main() -> int:
     global SHOTS
     ap = argparse.ArgumentParser()
@@ -1109,6 +1137,7 @@ def main() -> int:
         "budget": scenario_budget_colours_and_estimates,
         "main": scenario_main,
         "interrupted": scenario_interrupted_and_unreachable,
+        "tools": scenario_tools,
     }
     with sync_playwright() as p:
         browser = p.chromium.launch(channel="chrome")
