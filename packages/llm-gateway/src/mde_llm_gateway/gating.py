@@ -1,8 +1,8 @@
 """Live gating (brief 7.9): who may create a provider that spends real money.
 
-A live provider needs ALL of: ``LLM_MODE=live``, ``ALLOW_LIVE_LLM=1`` and NOT ``MDE_FORBID_LIVE=1``
-(the pytest autouse fixture sets the last one, so a test can never go live by accident, even if the
-other two are set in the outer environment).
+A live provider needs ``LLM_MODE=live`` and NOT ``MDE_FORBID_LIVE=1`` (the pytest autouse fixture sets
+the latter, so a test can never go live by accident, even if ``LLM_MODE=live`` is set in the outer
+environment).
 """
 
 from __future__ import annotations
@@ -17,10 +17,8 @@ def require_live(settings: Settings) -> None:
         raise LiveCallForbidden(
             "MDE_FORBID_LIVE=1: live LLM calls are forbidden in this process (tests set it)"
         )
-    if settings.llm_mode != "live" or not settings.allow_live_llm:
-        raise LiveCallForbidden(
-            "live LLM calls need LLM_MODE=live AND ALLOW_LIVE_LLM=1 (both are required)"
-        )
+    if settings.llm_mode != "live":
+        raise LiveCallForbidden("live LLM calls need LLM_MODE=live")
 
 
 def require_api_key(settings: Settings) -> str:

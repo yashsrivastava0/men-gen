@@ -52,7 +52,6 @@ def _json_files(root: Path) -> list[Path]:
 def live_settings(**kw: object) -> Settings:
     base: dict[str, object] = {
         "llm_mode": "live",
-        "allow_live_llm": True,
         "forbid_live": False,
         "openai_api_key": FAKE_KEY,
     }
@@ -61,21 +60,18 @@ def live_settings(**kw: object) -> Settings:
 
 # ---------------------------------------------------------------------------- live gating matrix
 @pytest.mark.parametrize(
-    ("mode", "allow", "forbid", "allowed"),
+    ("mode", "forbid", "allowed"),
     [
-        ("live", True, False, True),
-        ("live", True, True, False),  # MDE_FORBID_LIVE wins over the other two keys
-        ("live", False, False, False),
-        ("mock", True, False, False),
-        ("replay", True, False, False),
+        ("live", False, True),
+        ("live", True, False),  # MDE_FORBID_LIVE wins over LLM_MODE=live
+        ("mock", False, False),
+        ("replay", False, False),
     ],
 )
-def test_live_provider_construction_gating(
-    mode: str, allow: bool, forbid: bool, allowed: bool
-) -> None:
+def test_live_provider_construction_gating(mode: str, forbid: bool, allowed: bool) -> None:
     from mde_llm_gateway.providers.openai_responses import OpenAIResponsesProvider
 
-    settings = live_settings(llm_mode=mode, allow_live_llm=allow, forbid_live=forbid)
+    settings = live_settings(llm_mode=mode, forbid_live=forbid)
     if allowed:
         OpenAIResponsesProvider(object(), settings=settings)  # type: ignore[arg-type]
     else:
@@ -89,18 +85,14 @@ def test_forbid_live_message_names_the_flag() -> None:
 
 
 def test_the_autouse_fixture_makes_default_settings_forbid_live() -> None:
-    """The root conftest sets MDE_FORBID_LIVE=1: even LLM_MODE=live + ALLOW_LIVE_LLM=1 cannot go live."""
+    """The root conftest sets MDE_FORBID_LIVE=1: even LLM_MODE=live cannot go live."""
     import os
 
-    os.environ["LLM_MODE"] = "live"
-    os.environ["ALLOW_LIVE_LLM"] = "1"
-    try:
-        settings = Settings(_env_file=None)  # type: ignore[call-arg]
-        assert settings.forbid_live and not settings.live_enabled
-        with pytest.raises(LiveCallForbidden):
-            create_gateway(settings, make_test_registry())
-    finally:
-        del os.environ["ALLOW_LIVE_LLM"]  # monkeypatch restores LLM_MODE
+    os.environ["LLM_MODE"] = "live"  # monkeypatch restores LLM_MODE
+    settings = Settings(_env_file=None)  # type: ignore[call-arg]
+    assert settings.forbid_live and not settings.live_enabled
+    with pytest.raises(LiveCallForbidden):
+        create_gateway(settings, make_test_registry())
 
 
 def test_recording_provider_needs_live_too() -> None:

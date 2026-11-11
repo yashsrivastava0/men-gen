@@ -4,7 +4,7 @@ budget guard reconciling reservations against real usage.
 
 LEAD / live-runner ONLY. Never run by subagents. Needs, in the OUTER environment:
 
-    ALLOW_LIVE_LLM=1     (the root conftest then sets LLM_MODE=live and lets .env supply the key)
+    LLM_MODE=live     (the root conftest then lets .env supply the key)
 
 Run with ``just live-smoke`` (= ``uv run pytest tests/live -m live -k smoke -q``), then ``just budget``
 and write the new total into docs/implementation/PROGRESS.md.
@@ -74,10 +74,10 @@ def ctx(name: str) -> CallContext:
 def settings() -> Settings:
     """Live-enabled settings. Module-scoped fixtures run BEFORE the root conftest's per-test live
     guard, so they must not rely on its monkeypatching: skip unless the outer environment has
-    ALLOW_LIVE_LLM=1, and pass the live switches explicitly (.env supplies only the API key)."""
-    if os.environ.get("ALLOW_LIVE_LLM") != "1":
-        pytest.skip("live smoke: ALLOW_LIVE_LLM=1 must be set in the outer environment")
-    return load_settings(llm_mode="live", allow_live_llm=True, forbid_live=False)
+    LLM_MODE=live, and pass the live mode explicitly (.env supplies only the API key)."""
+    if os.environ.get("LLM_MODE") != "live":
+        pytest.skip("live smoke: LLM_MODE=live must be set in the outer environment")
+    return load_settings(llm_mode="live", forbid_live=False)
 
 
 @pytest.fixture(scope="module")

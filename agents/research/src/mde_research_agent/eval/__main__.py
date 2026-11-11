@@ -5,7 +5,7 @@
 
 Both need a COMMITTED run in the app's data folder (``--run``) or ``--research FILE --evidence FILE``. ``--dry-run`` prints the
 estimate and spends nothing; ``--mock`` runs offline over doubles; without either flag the commands are LIVE: they refuse
-unless the owner's switches are already set, print their estimate, book every cent in the spend record (kind ``probe``) and
+unless ``LLM_MODE=live`` is already set, print their estimate, book every cent in the spend record (kind ``probe``) and
 stop before the budget tripwire. Stop the app first: the data folder has one owner at a time.
 """
 

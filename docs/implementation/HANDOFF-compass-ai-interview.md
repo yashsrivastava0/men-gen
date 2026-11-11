@@ -29,7 +29,7 @@ Mobigen's Context Engine has a Compass agent (import `mde_compass`, folder `agen
 ## 4. Budget and live-call rules (important)
 
 - Compass ceiling USD 3.00 (stop at 2.85, per session 0.50, reserve 0.30; D-093). The repo-wide gateway cap is USD 6.00. The owner said: budget max USD 4, aim under 3, do not worry about cost. Live spend so far about USD 0.55 (ledger `data/.budget/ledger.jsonl`; `uv run mde budget`).
-- A live call needs `LLM_MODE=live` AND `ALLOW_LIVE_LLM=1` in the process environment (hard rule 3, D-069: the second key is the owner's decision). In the finished session the owner explicitly and repeatedly authorised live calls and a settings entry was used; later the owner asked to remove the key and deleted/restored `.claude`. In a NEW session the variable is probably unset: if live testing is wanted, ask the owner to set it (or run commands with the `!` prefix). Do not look for a way around the hook `.claude/hooks/guard_live.py`. Never read `.env`.
+- A live call needs `LLM_MODE=live` in the process environment (hard rule 3). In the finished session the owner explicitly and repeatedly authorised live calls; later the owner deleted/restored `.claude`. If live testing is wanted in a NEW session, ask the owner first (or run commands with the `!` prefix). Never read `.env`.
 - The ledger exists (`budget_cli init` was run). Cassettes: none are committed; recorded ones were deleted because prompts changed. Replay tests skip when no cassettes exist.
 
 ## 5. Live findings (D-104, D-105) and fixes already committed
@@ -65,7 +65,7 @@ Live results: batch E 23/23 checks, 0 fallbacks, project-term share 1.0, cross-i
 - Offline tests (about 1 minute): `uv run --offline pytest agents/compass apps/web/tests -q -p no:logging -m "not integration and not live"` -> 2601 passed, 3 skipped, 15 xfailed at the last run. Integration (private Postgres 54329 must be up): `-m integration` -> 77 passed. E2E 221 passed.
 - Do not run `tests/live` with the key set (the live smoke test would spend and, because the cap is cumulative, fails after batches).
 - App (mock, free): `uv run python -m mde_compass --memory --port 8139` then `http://127.0.0.1:8139/ui/` (trailing slash). Live, with persistence: set the two variables, then `uv run python -m mde_compass --port 8139` (run `just compass-migrate` once). API calls need headers `Authorization: Bearer dev-token`, `X-Tenant-Id: demo`, `X-User-Id: demo-user`; history `limit` max 200. Port 8110 had a stale server not started by the agent (kill it only with the owner's say-so).
-- Live batches (owner/lead only): `LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python -m mde_compass.live_batches --batch E` (E about 3 minutes, F about 50 minutes, G about 20 minutes). Reports: `agents/compass/evals/reports/live-<batch>.json` (gitignored).
+- Live batches (owner/lead only): `LLM_MODE=live uv run python -m mde_compass.live_batches --batch E` (E about 3 minutes, F about 50 minutes, G about 20 minutes). Reports: `agents/compass/evals/reports/live-<batch>.json` (gitignored).
 - A scratch driver for the HTTP app exists only in the old session's scratchpad; recreate if needed (create session `{mode, locale, user_label}`, post `card_answer` events, read new events from `/history`).
 
 ## 8. Environment gotchas
@@ -73,7 +73,7 @@ Live results: batch E 23/23 checks, 0 fallbacks, project-term share 1.0, cross-i
 - macOS, zsh: quote globs; BSD sed has no `\b`; a ruff-format hook rewraps files, so patch with Python reading the current text.
 - Run one test process at a time (little RAM). `just migrate` runs the MAIN repo migration (it was run once by mistake on the dev DB; harmless); Compass uses `just compass-migrate`.
 - Strict gateway schemas: max 5 nesting levels, all fields required; the gateway caps untrusted input at 20,000 chars.
-- The agent roster in `.claude/agents` and the permission classifier: writing `.claude/settings.local.json` was denied once as self-modification and allowed after explicit owner instruction; the owner later deleted it. Respect any new owner instruction about the key.
+- The agent roster in `.claude/agents` and the permission classifier: writing `.claude/settings.local.json` was denied once as self-modification and allowed after explicit owner instruction; the owner later deleted it.
 
 ## 9. Suggested next steps
 

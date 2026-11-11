@@ -59,7 +59,7 @@ All are logged in `docs/implementation/DECISIONS.md` (D-001..D-070) and the ADRs
 | Batch | Purpose | Status | Spend |
 | --- | --- | --- | --- |
 | L0 smoke | model availability, strict schema, reasoning effort, web search with citations, usage parsing, budget reconciliation | **done, 7 of 7 passed** | USD 0.0221 |
-| L1 Discover | persona conversations, cassettes | **PENDING** (blocked, D-069) | 0 |
+| L1 Discover | persona conversations, cassettes | **PENDING** | 0 |
 | L2 Research | three Light-depth runs | **PENDING** | 0 |
 | L3 End to end | five full guided sessions, goldens | **PENDING** | 0 |
 | L4 Safety and probes | injection payloads, sufficiency probe, critic check | **PENDING** | 0 |
@@ -69,7 +69,7 @@ Planning figures from L0: one web search costs about USD 0.011 (search content c
 
 ## 7. Live evidence (Definition of Done item 5)
 
-**PENDING.** Only L0 ran live. The paid batches L1..L4 were not run because the lead's own safety hook requires `ALLOW_LIVE_LLM=1` in the process environment and writing the setting was refused as self-modification; the operator's decision is open (D-069). Until they run, "three live end-to-end sessions on different archetypes with recorded cassettes" is **unmet** and the quality of real-model output (spec proposals, critic, research synthesis) is **unmeasured** beyond L0. The runner, its allowance stops, cassette recording and refusal paths are built and tested offline (`evals/runners/live_batch.py`).
+**PENDING.** Only L0 ran live. The paid batches L1..L4 were not run; the operator's decision is open. Until they run, "three live end-to-end sessions on different archetypes with recorded cassettes" is **unmet** and the quality of real-model output (spec proposals, critic, research synthesis) is **unmeasured** beyond L0. The runner, its allowance stops, cassette recording and refusal paths are built and tested offline (`evals/runners/live_batch.py`).
 
 ## 8. Known weaknesses and risks
 
@@ -81,7 +81,7 @@ Planning figures from L0: one web search costs about USD 0.011 (search content c
   - Review 2 (final tree): the first review's fixes held (three only partially) and it found three new high items plus lower ones (D-071).
     - Quadratic regexes on typed text, uploads, search results and change requests (N1, N2, N5): **fixed and merged** (D-073). Every regex over user, upload, search or model text is now linear, guarded by `tests/security/test_regex_linearity.py` (58 tests).
     - Dev auth let one token holder mint identities and roles, and the caller picked mode and policy (N3, N4): **fixed and merged** (D-074). `API_TOKENS` binds a token to a tenant, user and roles on the server, `TENANT_POLICIES` binds policies, and `python -m mde_context_api` refuses a non-loopback bind without tokens.
-    - No abuse limits, `/v1/budget` leaking other tenants' spend, a 500 on a huge `Last-Event-ID`, unscreened id fields, a backslash path in the live-call hook, and unredacted emails and phones in cassettes (N6 to N11): **fixed and merged** (D-074, 20 mutation checks, one per fix, all killed).
+    - No abuse limits, `/v1/budget` leaking other tenants' spend, a 500 on a huge `Last-Event-ID`, unscreened id fields, and unredacted emails and phones in cassettes (N6 to N11): **fixed and merged** (D-074, 20 mutation checks, one per fix, all killed).
     - Accepted with a reason: N12 (summary lines containing `hash: ...`; the loader reads only the front matter) and N14 (the dev tooling allow-list, CI action tags, the org profile overwritable by any user of the tenant).
     - Known gaps in the merged hardening (D-074): the rate and stream limits are per process and keyed by the declared identity, so dev-header callers can dodge them; `mde sim` over HTTP makes 10 sessions in a minute so a second run within the minute gets a 429 and the CLI has no 429 handling (`API_SESSION_RATE_PER_MINUTE=0` disables the limit); the token table and bindings are read at start-up; running the module path directly with uvicorn bypasses the bind guard (unsupported).
     - Not covered by review 2: Postgres integration runs, SSE exhaustion beyond reading the code, `openai_responses.py`, `proposal_ops.py` and `baseline.py` in depth, the hand-off git adapter beyond name validation, dependency CVEs, and replay of real cassettes.

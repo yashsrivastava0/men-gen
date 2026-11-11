@@ -11,11 +11,11 @@ QUICK = (
 )
 
 
-def test_live_refuses_without_the_owners_switches() -> None:
+def test_live_refuses_without_live_mode() -> None:
     problems = preflight_live({})
-    assert any("model mode" in p for p in problems) and any("second key" in p for p in problems)
-    owner_env = {"LLM_MODE": "live", "ALLOW_LIVE_LLM": "1"}
-    assert not any("model mode" in p or "second key" in p for p in preflight_live(owner_env))
+    assert any("model mode" in p for p in problems)
+    owner_env = {"LLM_MODE": "live"}
+    assert not any("model mode" in p for p in preflight_live(owner_env))
     assert any(
         "MDE_FORBID_LIVE" in p for p in preflight_live({**owner_env, "MDE_FORBID_LIVE": "1"})
     )
@@ -24,7 +24,7 @@ def test_live_refuses_without_the_owners_switches() -> None:
 def test_the_live_flag_exits_with_a_plain_reason_when_not_allowed(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    monkeypatch.delenv("ALLOW_LIVE_LLM", raising=False)
+    monkeypatch.setenv("LLM_MODE", "mock")
     assert main(["--export", str(QUICK), "--live"]) == 2
     assert "cannot run live" in capsys.readouterr().err
 

@@ -112,11 +112,7 @@ def build(args: argparse.Namespace, root: Path) -> Any:
     }
     if args.not_ready:
         kwargs["no_gateway"] = True
-        kwargs["missing"] = [
-            "LLM_MODE=live",
-            "ALLOW_LIVE_LLM=1",
-            "TAVILY_API_KEY or SERPER_API_KEY",
-        ]
+        kwargs["missing"] = ["TAVILY_API_KEY or SERPER_API_KEY"]
     svc = build_app_test_service(root, **kwargs)
     if args.spent and svc.record is not None and not svc.record.data["entries"]:
         from mde_core.money import usd_to_micros
@@ -314,7 +310,6 @@ class _Core:
     the gateway behind it is the offline double, so nothing here can reach a real model or the real web."""
 
     llm_mode = "live"
-    allow_live_llm = True
     forbid_live = False
 
     def model_for_route(self, route: str) -> str:
@@ -330,7 +325,12 @@ def make_app(args: argparse.Namespace, root: Path) -> Any:
 
     svc = build(args, root)
     core: Any = load_settings(llm_mode="mock") if args.not_ready else _Core()
-    app = create_app(svc, settings=ResearchSettings(), core=core, ui_path=UI, sweep_seconds=3600)
+    cfg = (
+        ResearchSettings(tavily_api_key=None, serper_api_key=None)
+        if args.not_ready
+        else ResearchSettings()
+    )
+    app = create_app(svc, settings=cfg, core=core, ui_path=UI, sweep_seconds=3600)
 
     async def fake() -> dict[str, Any]:
         return {"fake": True, "note": "TEST FAKE: offline doubles, no real research"}

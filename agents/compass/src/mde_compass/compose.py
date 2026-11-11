@@ -1,8 +1,8 @@
 """Composition root: build the real ``Service`` (store, gateway, call runner, ports, budget, hand-off).
 
 Mock mode is the default (``LLM_MODE=mock``): the real gateway pipeline runs with every call's mock handler, no
-network, no key. Live mode needs the repo's two keys (``LLM_MODE=live`` and ``ALLOW_LIVE_LLM=1`` in the process
-environment) plus ``OPENAI_API_KEY``; the Compass cap (``COMPASS_LIVE_BUDGET_USD``, at most 3.00, aim under 2.00) is enforced by
+network, no key. Live mode needs ``LLM_MODE=live`` in the process
+environment plus ``OPENAI_API_KEY``; the Compass cap (``COMPASS_LIVE_BUDGET_USD``, at most 3.00, aim under 2.00) is enforced by
 ``CompassBudget`` before every call.
 """
 

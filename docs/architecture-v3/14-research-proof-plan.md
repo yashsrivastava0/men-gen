@@ -2,7 +2,7 @@
 
 - **Status:** v1, written 2026-11-11 with Research design v5 ([doc 13](13-research-agent-design.md)). Decision **AD-59**. Linked from doc 13 §14.
 - **Owner's rule (2026-11-11):** "We do not approve anything unless we show that it will work." The builder's offline build proves the plumbing. **It proves nothing about the real web.** This document says what we run, what number counts as passing, and what we change when a number fails. A decision is **Proven** only after its gate passes; until then it is **Built** or **Proposed** (doc 13 header).
-- **Who runs what:** the owner types the live commands (the builder's scripts refuse to start without the owner's switches) and does the spot-check; the builder runs the offline harness; the planning chat reads the results, applies the decision table (§9) and updates the decision statuses (§12).
+- **Who runs what:** the owner types the live commands (the builder's scripts refuse to start without `LLM_MODE=live`) and does the spot-check; the builder runs the offline harness; the planning chat reads the results, applies the decision table (§9) and updates the decision statuses (§12).
 - Numbers marked **[J]** are architect judgment and may be retuned with evidence; they are written down first so that a result cannot move the goalposts afterwards.
 
 ## 1. What "works" means: five questions
@@ -109,8 +109,8 @@ Run the probe on the Thorough research twice: the whole main store as the prefix
 ## 10. Live protocol (order, commands, budget)
 0. **Builder (prompt 06, complete version):** the budget restart and spend record, the live-only standalone app with its own front end, the engine changes; it leaves the app running and tells you the address.
 1. **Stage A (owner, about USD 0.7), from the app:** Tools, provider bake-off (about USD 0.40), then run the **small** input. The CLI scripts still work: 
-   - `! LLM_MODE=live ALLOW_LIVE_LLM=1 LLM_BUDGET_USD=<cap the builder reports for USD 5.00> uv run python -m mde_research_agent.live_bakeoff --write-default`
-   - `! LLM_MODE=live ALLOW_LIVE_LLM=1 LLM_BUDGET_USD=<cap the builder reports for USD 5.00> uv run python -m mde_research_agent.live_runs --run quick --record`
+   - `! LLM_MODE=live LLM_BUDGET_USD=<cap the builder reports for USD 5.00> uv run python -m mde_research_agent.live_bakeoff --write-default`
+   - `! LLM_MODE=live LLM_BUDGET_USD=<cap the builder reports for USD 5.00> uv run python -m mde_research_agent.live_runs --run quick --record`
 2. **Stage B (owner, from the app, about USD 0.7):** run the **medium** input.
 3. **Stage C (owner, from the app, about USD 1.4):** run the **big** input, only after the small and medium runs passed PG-2. The synthetic Brief only if money is left at the end.
 4. **Stage D:** the planted-error test and the consumer probe (the builder's harness, on the recorded runs) and **your spot-check inside the app**.

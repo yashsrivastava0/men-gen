@@ -148,7 +148,6 @@ def _live_settings(ledger: Path) -> Settings:
     return Settings(
         _env_file=None,  # pyright: ignore[reportCallIssue]
         llm_mode="live",
-        allow_live_llm=True,
         forbid_live=False,
         openai_api_key="sk-" + "test" * 12,
         llm_budget_ledger=ledger,

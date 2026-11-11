@@ -1,6 +1,6 @@
 """RecordingProvider: wraps the live provider and writes sanitised cassettes (brief 7.4).
 
-Only constructible when live calls are allowed (``LLM_MODE=live`` + ``ALLOW_LIVE_LLM=1`` and not
+Only constructible when live calls are allowed (``LLM_MODE=live`` and not
 ``MDE_FORBID_LIVE``). Calls are billed like any live call (it is a live call), and the ledger sees
 them. With ``enabled=False`` it is a transparent pass-through.
 """

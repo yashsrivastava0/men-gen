@@ -280,14 +280,14 @@ async def test_a_service_that_is_not_ready_refuses_a_run_naming_what_to_set(tmp_
     inputs = tmp_path / "inputs"
     put(inputs, "yoga.json")
     svc = build_app_test_service(
-        tmp_path, inputs_dir=inputs, no_gateway=True, missing=["LLM_MODE=live", "ALLOW_LIVE_LLM=1"]
+        tmp_path, inputs_dir=inputs, no_gateway=True, missing=["TAVILY_API_KEY or SERPER_API_KEY"]
     )
     async with client(make_app(svc, tmp_path)) as c:
         iid = (await c.get("/api/inputs")).json()["inputs"][0]["id"]
         r = await c.post("/api/runs", json={"input_id": iid})
         pre = (await c.get("/api/preflight")).json()
     assert r.status_code == 409 and r.json()["code"] == "not_ready"
-    assert r.json()["missing"] == ["LLM_MODE=live", "ALLOW_LIVE_LLM=1"]
+    assert r.json()["missing"] == ["TAVILY_API_KEY or SERPER_API_KEY"]
     assert pre["ready"] is False
     assert any(not ch["ok"] and ch["fix"] for ch in pre["checks"])
     assert (

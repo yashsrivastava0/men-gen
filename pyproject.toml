@@ -143,7 +143,7 @@ addopts = "-ra --strict-markers --import-mode=importlib"
 markers = [
   "integration: needs the local PostgreSQL cluster (just db-up)",
   "e2e: end-to-end through the API in mock mode",
-  "live: calls the real OpenAI API; needs ALLOW_LIVE_LLM=1 in the outer environment",
+  "live: calls the real OpenAI API; needs LLM_MODE=live in the outer environment",
   "slow: slow test",
 ]
 filterwarnings = ["error::DeprecationWarning:mde_*"]

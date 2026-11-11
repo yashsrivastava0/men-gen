@@ -6,9 +6,8 @@
     uv run python scripts/research_app.py stop
     uv run python scripts/research_app.py restart
 
-The app is ``python -m mde_research_agent`` on ``127.0.0.1:8120`` (API and front end, one origin). This script never
-sets the live switches: ``start`` passes along whatever the person's shell already has. Run it from the owner's shell
-with the switches set when real research is wanted (``docs/runbooks/research-agent.md``).
+The app is ``python -m mde_research_agent`` on ``127.0.0.1:8120`` (API and front end, one origin). It always runs in
+live mode; a run spends money only when the person clicks Run and confirms (``docs/runbooks/research-agent.md``).
 """
 
 from __future__ import annotations

@@ -31,7 +31,7 @@ Research runs **in the foreground, visible**: it starts when the user approves G
 - **Numbers in this prompt (ceilings, caps, time boxes, thresholds, slot minimums) are starting defaults, not limits.** Tune them from what you see so that the output is as complete and useful as possible. Keep them in data/config files so they are easy to change.
 - **Iterate on quality.** After you have a working run, read the real outputs critically (as if you were the Spec Product lane) and improve prompts, slot schemas, query strategy and assembly until the output is genuinely rich (section 9, "Result quality bar"). Re-run what you need.
 - Stop and ask only for facts only the owner can supply (for example a missing key variable name) or a conflict you cannot resolve safely.
-- **Everything new lives inside `agents/research/`** (owner instruction). Outside it you may touch only: workspace and CI registration, the import-linter config, the existing static test front end (section 8), the docs copy, the guard hook if it blocks you (section 3), and, only if no public API exists, a minimal additive hook to record search costs in the existing ledger (prefer the public API; otherwise keep a research-local ledger and report it).
+- **Everything new lives inside `agents/research/`** (owner instruction). Outside it you may touch only: workspace and CI registration, the import-linter config, the existing static test front end (section 8), the docs copy, and, only if no public API exists, a minimal additive hook to record search costs in the existing ledger (prefer the public API; otherwise keep a research-local ledger and report it).
 - **Do not hard-code any of the three example inputs.** They are examples of Compass output (section 10).
 - Work in small commits, run tests as you go, and finish with a green suite, live verification and the front end working in a real browser.
 
@@ -39,9 +39,9 @@ Research runs **in the foreground, visible**: it starts when the user approves G
 
 **Secrets.** Never read `.env`, a key or a token, and never log or print keys. Use the repo's settings loader. Add (inside `agents/research/`) a `keys_present()` that returns booleans only (for example `{"tavily": true, "serper": true}`). Expected variable names `TAVILY_API_KEY` and `SERPER_API_KEY`; if the repo's `.env.example` or settings use other names, follow them; if a key is absent, tell the owner which variable to set and finish the offline work. **Privacy and security are baseline only** (owner decision): no personal-data or name filtering, no per-program cache isolation (the cache may be shared), no heavy security testing. Do not spend effort there; spend it on the result.
 
-**Models.** Model calls (writer Luna `gpt-6-luna`; a second "checker" model) go **only through the existing LLM gateway** with versioned call specs, mock handlers and deterministic fallbacks, like Compass. Reuse its ledger. Live use follows the repo's existing switches (`LLM_MODE=live`, `ALLOW_LIVE_LLM=1`) for models **and** search; the owner has approved live use (section 11) and sets the switches. If they are not set when you need them, tell the owner what to set.
+**Models.** Model calls (writer Luna `gpt-6-luna`; a second "checker" model) go **only through the existing LLM gateway** with versioned call specs, mock handlers and deterministic fallbacks, like Compass. Reuse its ledger. Live use follows the repo's existing switch (`LLM_MODE=live`) for models **and** search; the owner has approved live use (section 11) and sets it. If it is not set when you need it, tell the owner what to set.
 
-**Hook.** The repo's live-spend guard and formatter hooks failed for a while because bare `python` was missing, and the guard does not cover `mde_compass.live_batches`. Make the hook commands use `python3` or `uv run python`, and extend the guard to recognize `mde_research_agent.live_*` modules, so the guard works with your live scripts instead of blocking them.
+**Hook.** The repo's formatter hooks failed for a while because bare `python` was missing. Make the hook commands use `python3` or `uv run python`.
 
 **Code.**
 - Plain code controls the flow. LLM calls are single, structured, schema-validated. **No agent loops, no agent frameworks.** The only loop is the bounded round loop of section 6.5.
@@ -182,14 +182,13 @@ Verify it in a **real browser** if you have the tooling (screenshots or a script
 3. The test front end runs Research in a real browser (after Gate 1 and via "Load a saved Compass export"), with events, skip, cancel, findings and download working.
 4. The bake-off report, the three example runs and the synthetic run completed, and the output meets the result quality bar of section 9 (with your critical assessment).
 5. Provider adapters verified against official docs (URLs and dates in the report).
-6. Guard hook working with the live scripts.
-7. Final report (section 12), a README in `agents/research/` (how to run: offline, headless CLI, dev server, front end), and this prompt copied to `docs/build-prompts/`.
+6. Final report (section 12), a README in `agents/research/` (how to run: offline, headless CLI, dev server, front end), and this prompt copied to `docs/build-prompts/`.
 
 ## 11. Budget (approved by the owner, 2026-11-11)
 - **The owner has approved live use with a budget of USD 4.00 in total** for this task (bake-off, the three example runs, one synthetic run, and any re-runs needed for quality). **The budget can be raised later; the owner expects Research to cost more in real use.** Keep the budget as a config value (`agents/research/config`), not a constant in code.
 - Rough estimates [architect judgment, to be replaced by your measurements]: bake-off about USD 0.75; focused run about 0.05 to 0.30; standard about 0.2 to 0.8; deep about 0.8 to 2.0; synthetic about 0.3. These sum to about USD 4. **Allocate between batches as you see fit.**
 - **Result over thrift:** do not cut a run short or lower quality to save money. If you are approaching USD 4.00, **finish the run in progress**, do not start a new batch, report what you spent and what you would run next, and let the owner decide whether to raise the budget. Check the repo's global ledger; if it would block you, say so.
-- The owner sets the live switches (`LLM_MODE=live`, `ALLOW_LIVE_LLM=1`) and has put the keys in `.env`. No further approval sentence is needed for live use inside this budget.
+- The owner sets `LLM_MODE=live` and has put the keys in `.env`. No further approval sentence is needed for live use inside this budget.
 
 ## 12. Final report (end of task)
 - Branch, tags, `git log --oneline` for the task, working-tree status; exact revert commands (last commit; whole task; return to a tag without losing history).

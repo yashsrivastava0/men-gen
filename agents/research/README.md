@@ -19,12 +19,12 @@ Plain code controls the flow; every model call is one structured, schema-validat
 ## Run the app
 
 ```
-! LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python scripts/research_app.py start     # detached, prints the address
+uv run python scripts/research_app.py start     # detached, prints the address
 uv run python scripts/research_app.py status | logs | stop | restart
-just research-dev                                                                  # the same server in the foreground
+just research-dev                               # the same server in the foreground
 ```
 
-Without the switches or a search key the app still starts and its Preflight explains; every start-run action is refused with the names of what to set. Money: USD 5.00 in total, tripwire 4.50, one budget-period ledger file each, restartable from the Budget page. See the runbook.
+The app always runs live. Without a search key it still starts and its Preflight explains; every start-run action is refused with the names of what to set. Money: USD 5.00 in total, tripwire 4.50, one budget-period ledger file each, restartable from the Budget page. See the runbook.
 
 ## Run the tests (offline)
 

@@ -72,10 +72,10 @@ time, and the limits that remain are:
 
 ## Making a new one
 
-Start the live server yourself (the second key is yours to set), then walk the page and press **Download full output**:
+Start the live server yourself, then walk the page and press **Download full output**:
 
 ```
-! LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python -m mde_compass --memory --port 8110
+! LLM_MODE=live uv run python -m mde_compass --memory --port 8110
 ```
 
 or replay the structure alone on a saved ledger for about USD 0.02:

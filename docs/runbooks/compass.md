@@ -112,22 +112,21 @@ just ci-fast                                         # lint, typecheck, layers, 
 * `tests/scenarios` drives a real `Service` end to end in mock mode (welcome, idea, cards, review, gate, changes, undo, hand-off). `tests/api` covers the HTTP layer; the console contract and smoke tests are in `apps/web/tests`.
 * `tests/engine/test_interview_flow.py` drives whole sessions on the planner engine (it sets `engine="planner"` per test through `build_service(compass_config=...)`; the default is `planner` since the Phase 7 flip; `COMPASS_INTERVIEW_ENGINE=legacy` is the rollback). The pure modules have their own files in `tests/engine/` (`test_facts`, `test_quotes`, `test_fact_projector`, `test_needs`, `test_question_validators`, `test_interview_policy`, `test_context_pack`). To check exact behaviour without a model, a test injects a scripted gateway with hand-written outputs: `build_service(memory=True, gateway=...)`.
 * `tests/intake` covers the parsers, chunking, the SSRF-safe URL reader and the ingest pipeline; `tests/engine/flows` the targeted flows; `tests/scenarios` the 46 named `SB-*` scenarios (`data/*.yaml`), the flows, intake and the personas. These still run on the legacy engine; their move to the planner is Phase 6.
-* One test is marked `live`: `tests/live/test_live_smoke.py`. It skips itself unless the owner's second key is already in the outer environment (the root `conftest.py` guard), so `just compass-test` never runs it; its offline twin, `tests/test_smoke_driver_offline.py`, runs the same driver in mock mode. Nothing else here needs a key.
+* One test is marked `live`: `tests/live/test_live_smoke.py`. It skips itself unless `LLM_MODE=live` is already in the outer environment (the root `conftest.py` guard), so `just compass-test` never runs it; its offline twin, `tests/test_smoke_driver_offline.py`, runs the same driver in mock mode. Nothing else here needs a key.
 * The persona eval prints the report and (without `--no-write`) writes `agents/compass/evals/reports/latest.json` and a dated copy; that folder is git-ignored. Measured results are on [the package page](../packages/compass.md#measured-behaviour-mock-mode).
 * Layering: `just layers` must keep the `compass-isolated` contract.
 
 ## 5. Live calls (lead or the user only)
 
-Subagents and everyday development stay in mock or replay. Nothing in this section is a step for an agent to take, and nothing in it is a way around the live-call hook or the permission system.
+Subagents and everyday development stay in mock or replay.
 
 ### What a live run needs
 
-A live Compass call needs three things in the environment of the process that makes it, plus a key:
+A live Compass call needs two things in the environment of the process that makes it, plus a key:
 
 1. **Live mode switched on** (`LLM_MODE=live`).
-2. **The second key**, `ALLOW_LIVE_LLM=1`. It is the **owner's decision**, made for the batch at hand (D-069, D-091 point c); no agent adds it, asks for it to be added or looks for another way. The root `conftest.py` and the gateway both refuse live calls without it.
-3. **`MDE_FORBID_LIVE` unset** (the test fixtures set it; a normal shell does not).
-4. `OPENAI_API_KEY` present (never print, paste or commit it; `uv run mde doctor` and `uv run python scripts/doctor.py` report presence only).
+2. **`MDE_FORBID_LIVE` unset** (the test fixtures set it; a normal shell does not).
+3. `OPENAI_API_KEY` present (never print, paste or commit it; `uv run mde doctor` and `uv run python scripts/doctor.py` report presence only).
 
 Who may run what, the external dashboard backstop, the order of batches, the tripwires and how to read the ledger are in [live-llm-budget.md](live-llm-budget.md). Read it before any live work.
 
@@ -138,10 +137,10 @@ Who may run what, the external dashboard backstop, the order of batches, the tri
 ```
 uv run python -m mde_compass.live_structure --replay pune --band medium --mock        # offline, free
 uv run python -m mde_compass.live_structure --replay hospital --band large --dry-run  # plan only, no call
-LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python -m mde_compass.live_structure --replay hospital --band large   # owner's second key
+LLM_MODE=live uv run python -m mde_compass.live_structure --replay hospital --band large
 ```
 
-It prints the wall-clock of every call, fallbacks, cost, the counts against the band, the checks that are left and the structure as plain text (every module with its screens and roles, the flows with their acceptance lines, the entities with fields and access) for a manual realism review; the full report goes to `agents/compass/evals/reports/` (git-ignored). A live run goes through the same `preflight` as every batch (allowance against the ledger, the switches in the outer environment).
+It prints the wall-clock of every call, fallbacks, cost, the counts against the band, the checks that are left and the structure as plain text (every module with its screens and roles, the flows with their acceptance lines, the entities with fields and access) for a manual realism review; the full report goes to `agents/compass/evals/reports/` (git-ignored). A live run goes through the same `preflight` as every batch (allowance against the ledger, `LLM_MODE=live` in the outer environment).
 
 ### The numbers
 
@@ -174,9 +173,9 @@ Planned allowances (D-093): batch E (planner quality) about USD 0.50, F (full in
 uv run pytest agents/compass/tests/live -m live -q -s
 ```
 
-It skips itself unless the second key is in the environment, so it is the lead's or the owner's to run, in the owner's own terminal, after the owner's decision.
+It skips itself unless `LLM_MODE=live` is in the environment, so it is the lead's or the owner's to run.
 
-* The allowance is USD 0.10: the test sets `COMPASS_LIVE_BUDGET_USD=0.10` for itself and asserts the spend stays under it (see "How Compass spend is remembered": that is a cap on the Compass total in the ledger). The root `conftest.py` turns live mode on for `live`-marked tests only when the second key is present.
+* The allowance is USD 0.10: the test sets `COMPASS_LIVE_BUDGET_USD=0.10` for itself and asserts the spend stays under it (see "How Compass spend is remembered": that is a cap on the Compass total in the ledger). The root `conftest.py` runs `live`-marked tests only when `LLM_MODE=live` is set in the outer environment.
 * The report is printed (`-s`) and written to `agents/compass/evals/reports/live-smoke.json` (git-ignored). Read it for `fallbacks` (a call that fell back is a call the model could not satisfy: fix the prompt or the validator offline), `errors` and `cost_usd`; then `just budget` and write the new total in `docs/implementation/PROGRESS.md`.
 * The test passes only if the driver reports no errors, spend is at most 0.10 and the session ends in `BRIEF_REVIEW`, `INTERVIEWING` or `PROBING`.
 
@@ -202,8 +201,7 @@ Live batches E, F, G: runner documented when merged.
 | `No PostgreSQL available: ...` from `db-up` | `scripts/dev_db.py` found no `pg_ctl` | set `MDE_PG_BIN` to a PostgreSQL 16 `bin` folder (see section 1) |
 | Integration tests fail with a database error | the private cluster is down or on another port | `just db-up` (the `compass-test-int` recipe already does); `MDE_PG_PORT` must match |
 | `just compass-test-int` leaves `mde_test_compass_*` databases behind | a run was killed before cleanup | drop them with `psql` on port 54329; never touch databases you did not create |
-| A turn ends with an `error` event `turn_failed` | an exception inside the turn: in live mode without both switches the gateway raises `LiveCallForbidden`, which Compass does not hide behind a fallback; otherwise read the server log line `compass_turn_failed` | in mock mode this should not happen: report it with the log. In live mode check `LLM_MODE`, `ALLOW_LIVE_LLM`, `MDE_FORBID_LIVE` |
-| `Blocked by .claude/hooks/guard_live.py` | the live-call hook blocks commands that would turn live mode on unless `ALLOW_LIVE_LLM=1` is already in the session environment. It matches command **text**, so even a command that only quotes those spellings is blocked | do not work around it: live work is the lead's or the user's ([troubleshooting.md](troubleshooting.md#4-the-ledger-and-the-live-call-guard)). Put documentation text in files with the Write tool, not in shell commands |
+| A turn ends with an `error` event `turn_failed` | an exception inside the turn: when live calls are forbidden (`MDE_FORBID_LIVE`) the gateway raises `LiveCallForbidden`, which Compass does not hide behind a fallback; otherwise read the server log line `compass_turn_failed` | in mock mode this should not happen: report it with the log. In live mode check `LLM_MODE` and `MDE_FORBID_LIVE` |
 | `CassetteMissing: no cassette for cmp.<call> v1 (key ...)` | `LLM_MODE=replay` and the rendered request has no recorded cassette (none exist for Compass yet; any prompt, schema, model or effort change invalidates old ones). Replay never goes live | use `LLM_MODE=mock` (the default) for development; record only in an authorised live batch. A worktree replays only cassettes already in the main checkout |
 | `budget_exceeded` (429) or calls showing `fallback` with a budget reason | the Compass cap (USD 2.85, which is 95% of 3.00, in total, or 1.00 per session) or the gateway cap was reached; in live mode the counter starts from the ledger, so spend of earlier batches counts; the engine used the deterministic fallbacks | read the call log and `GET /v1/compass/budget`; `just budget`; raise nothing: caps only go down |
 | The Brief does not become approvable | a `must` slot is empty, a high-impact assumption has no decision, a hand-off probe has not passed, or the hash is stale | read `blockers` in the `brief_ready` event or `footer.blockers`; decide the assumption or edit the slot, then approve the **latest** version and hash |

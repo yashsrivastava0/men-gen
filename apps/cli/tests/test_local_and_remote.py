@@ -35,7 +35,7 @@ def test_local_is_mock_and_offline_even_when_the_environment_asks_for_live(
     runner: CliRunner, tmp_path: Path, write_script: Script, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     key = "sk-" + "proj-" + "A1b2C3d4E5f6G7h8I9j0K1l2M3n4O5p6"
-    for name, value in (("LLM_MODE", "live"), ("ALLOW_LIVE_LLM", "1"), ("OPENAI_API_KEY", key)):
+    for name, value in (("LLM_MODE", "live"), ("OPENAI_API_KEY", key)):
         monkeypatch.setenv(name, value)
     monkeypatch.delenv("MDE_FORBID_LIVE")
     result = runner.invoke(

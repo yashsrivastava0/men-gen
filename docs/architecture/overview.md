@@ -88,7 +88,7 @@ Every state change in steps 1 to 8 is made by `mde_flow.machine.apply`; the engi
 | --- | --- | --- |
 | `mock` (default) | deterministic handlers shipped with every call spec | none; no key, no network |
 | `replay` | recorded cassettes; a missing cassette fails, never goes live | none |
-| `live` | OpenAI Responses API; needs `ALLOW_LIVE_LLM=1` as well, and never under `MDE_FORBID_LIVE=1` | metered against a hard USD 8.00 ceiling (default cap in force 6.00) |
+| `live` | OpenAI Responses API; never under `MDE_FORBID_LIVE=1` | metered against a hard USD 8.00 ceiling (default cap in force 6.00) |
 
 The gateway runs in-process or as its own HTTP service (`GATEWAY_MODE=inprocess|http`); engines see only the `GatewayClient` protocol. Everything in the test suite is offline.
 

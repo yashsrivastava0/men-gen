@@ -30,7 +30,7 @@ from mde_prompts.registry import PromptRegistry
 
 pytestmark = pytest.mark.e2e
 
-LIVE_ENV: Mapping[str, str] = {"ALLOW_LIVE_LLM": "1", "LLM_MODE": "live"}
+LIVE_ENV: Mapping[str, str] = {"LLM_MODE": "live"}
 
 
 def status(spent_usd: str = "0", reserved_usd: str = "0", tripwire: str = "ok") -> BudgetStatus:
@@ -64,22 +64,19 @@ def test_the_plan_matches_the_budget_table_of_the_brief() -> None:
 @pytest.mark.parametrize(
     ("env", "needle"),
     [
-        ({}, "ALLOW_LIVE_LLM=1"),
-        ({"LLM_MODE": "live"}, "ALLOW_LIVE_LLM=1"),
-        ({"ALLOW_LIVE_LLM": "1"}, "LLM_MODE=live"),
-        ({"ALLOW_LIVE_LLM": "1", "LLM_MODE": "mock"}, "LLM_MODE=live"),
-        ({"ALLOW_LIVE_LLM": "0", "LLM_MODE": "live"}, "ALLOW_LIVE_LLM=1"),
+        ({}, "LLM_MODE=live"),
+        ({"LLM_MODE": "mock"}, "LLM_MODE=live"),
         ({**LIVE_ENV, "MDE_FORBID_LIVE": "1"}, "MDE_FORBID_LIVE"),
     ],
 )
-def test_it_refuses_without_both_switches_and_with_the_test_guard(
+def test_it_refuses_without_live_mode_and_with_the_test_guard(
     env: Mapping[str, str], needle: str
 ) -> None:
     reasons = lb.check_live_allowed(env, status(), lb.BATCHES["L1"])
     assert any(needle in r for r in reasons), reasons
 
 
-def test_it_allows_when_the_switches_are_set_and_the_budget_has_room() -> None:
+def test_it_allows_when_live_mode_is_set_and_the_budget_has_room() -> None:
     assert lb.check_live_allowed(LIVE_ENV, status(), lb.BATCHES["L3"]) == []
 
 
@@ -121,13 +118,13 @@ def test_main_dry_run_needs_no_switches_and_calls_nothing(
     assert "dry run: nothing was called" in capsys.readouterr().out
 
 
-def test_main_refuses_a_live_batch_without_the_switches(
+def test_main_refuses_a_live_batch_without_live_mode(
     capsys: pytest.CaptureFixture[str], monkeypatch: pytest.MonkeyPatch, tmp_path: Path
 ) -> None:
     monkeypatch.setenv("LLM_BUDGET_LEDGER", str(tmp_path / "ledger.jsonl"))
     assert lb.main(["--batch", "L1"], env={}) == 2
     err = capsys.readouterr().err
-    assert "REFUSED" in err and "ALLOW_LIVE_LLM=1" in err and "LLM_MODE=live" in err
+    assert "REFUSED" in err and "LLM_MODE=live" in err
     assert not (tmp_path / "ledger.jsonl").exists(), "a refusal must not touch the ledger"
 
 
@@ -255,7 +252,7 @@ def test_main_runs_a_batch_end_to_end_on_a_mock_gateway(
     tmp_path: Path,
     socket_guard: NetworkGuard,
 ) -> None:
-    """With the switches injected but the process still in mock mode (the root conftest), ``main``
+    """With live mode injected but the process still in mock mode (the root conftest), ``main``
     gets all the way through a batch, prints the ledger delta and writes the raw result."""
     monkeypatch.setenv("LLM_BUDGET_LEDGER", str(tmp_path / "ledger.jsonl"))
     monkeypatch.setattr(lb, "RAW", tmp_path / "raw")

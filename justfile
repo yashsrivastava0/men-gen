@@ -106,12 +106,12 @@ test-e2e: db-up
 scan-secrets:
     uv run pytest tests/security -q
 
-# Live batches: the lead / live-runner only. Needs ALLOW_LIVE_LLM=1 in the OUTER environment,
+# Live batches: the lead / live-runner only. Needs LLM_MODE=live in the OUTER environment,
 # otherwise every live test skips itself (see root conftest.py).
 live-smoke:
     uv run pytest tests/live -m live -k smoke -q
 
-# BATCH is L1, L2, L3 or L4 (see docs/evals/eval-plan.md); lead only, needs the live switches.
+# BATCH is L1, L2, L3 or L4 (see docs/evals/eval-plan.md); lead only, needs LLM_MODE=live.
 live-eval BATCH:
     uv run python -m evals.runners.live_batch --batch {{BATCH}}
 

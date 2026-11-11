@@ -125,7 +125,7 @@ The committed file is described by `agents/research/contracts/research.v4.schema
 
 ## The standalone app (`/api/*`)
 
-One process serves the API and the static front end (`apps/research-console/`). The page gets its dev token from `GET /api/session` (same origin only). Live models and the live web only: there is no mock mode, no replay mode and no in-memory store in the app. If the live switches (the model mode and the second key) or a search key are missing the app still starts; every start-run action returns `409 {code: "not_ready", missing: [<variable names>]}` and `GET /api/preflight` explains. Nothing falls back to canned content.
+One process serves the API and the static front end (`apps/research-console/`). The page gets its dev token from `GET /api/session` (same origin only). Live models and the live web only: there is no mock mode, no replay mode and no in-memory store in the app. The app always runs the gateway in live mode. If a search key is missing the app still starts; every start-run action returns `409 {code: "not_ready", missing: [<variable names>]}` and `GET /api/preflight` explains. Nothing falls back to canned content.
 
 | Method and path | Purpose |
 | --- | --- |

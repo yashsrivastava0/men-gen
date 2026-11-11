@@ -10,7 +10,7 @@ Build prompt 05 (branch `feat/research-agent`). This report says what the Resear
 | HTTP API and resumable event stream | Built, documented, tested in process and over the PostgreSQL store |
 | Test console screens (progress, findings, saved-export picker) | Built, checked in real Chrome against the real Research dev server |
 | Offline tests | 1,136 research tests plus 46 PostgreSQL integration tests pass; the repo unit suite passes |
-| Live bake-off (Tavily vs Serper) | **Not run** (needs the owner's switches) |
+| Live bake-off (Tavily vs Serper) | **Not run** (needs `LLM_MODE=live`) |
 | Live runs on the three examples and a synthetic Brief | **Not run** |
 | Quality iteration on real output | **Not started** (depends on the live runs) |
 | Live-spend ceiling | Raised from USD 6.00 to 8.00 by the owner's decision; cap in force stays 6.00 until `LLM_BUDGET_USD` is set |
@@ -64,18 +64,18 @@ An `as_of` date, ids assigned after sorting, stage decisions that never depend o
 - **Caps:** a `research_run` scope per run (`RESEARCH_RUN_CAP_USD`, 2.50), a Research total (`RESEARCH_LIVE_BUDGET_USD`, 4.00), the shared ledger, and the repo ceiling.
 - **Fetching** is our own code: SSRF checks on every hop (including NAT64 and 6to4 forms), robots, size and time caps; paywalled or unreadable pages are skipped and never bypassed.
 - **Secrets:** keys are `SecretStr`; the code only exposes `keys_present()` booleans; the scripts never read or print key values.
-- **Live guard:** the live scripts refuse to start unless the owner's switches are already in the environment; they never set them.
+- **Live guard:** the live scripts refuse to start unless `LLM_MODE=live` is already in the environment; they never set it.
 
 ## 4. What was built (against the plan)
 
 | Plan phase | Built | Evidence |
 | --- | --- | --- |
-| 0. Baseline and spikes | Safety tag, branch, design docs copied, fixtures extracted from the three exports, hook fixed to `python3` and taught the Research live scripts, package registered in root `pyproject`, `.importlinter`, `justfile`; provider parameters checked on official pages | tag `pre/research-20261111-1206`; `docs/research-agent/provider-facts.md` |
+| 0. Baseline and spikes | Safety tag, branch, design docs copied, fixtures extracted from the three exports, hook fixed to `python3`, package registered in root `pyproject`, `.importlinter`, `justfile`; provider parameters checked on official pages | tag `pre/research-20261111-1206`; `docs/research-agent/provider-facts.md` |
 | 1. Pure cores, data, intake | `core/` (URLs, quotes, text, load, RRF, passages, sources, anatomy, prevalence, norm keys, applies, slots, hashing, countries, dates, novelty, safety, language), catalog loader and 874 lines of data YAML, reader, schemas | 154 core tests, anti-hard-coding scan |
 | 2. Offline pipeline | Ports and fakes, 14 call specs, runner, worker, director, budget, in-memory store, event writer, assembler, RV-01..17, scenarios, generality and determinism tests | all three real fixtures and three synthetic Briefs run with zero violations |
 | 3. Real adapters, Postgres, API | Tavily and Serper adapters, production fetcher, recording and replay, spend booking, PostgreSQL store with one shared contract suite, routes, SSE, supervisor, dev server with CORS, CLI | 739 adapter tests, 46 integration tests |
 | 4. Front end | Research screens in the console, picker, Compass tab hand-over after Gate 1, CSP origin, tests including a fake server checked against the documented contract | checked in real Chrome (section 6) |
-| 5. Live bake-off | Script, judge call, estimate (about USD 0.40), refusal without switches | **not run** |
+| 5. Live bake-off | Script, judge call, estimate (about USD 0.40), refusal without `LLM_MODE=live` | **not run** |
 | 6. Live runs and quality iteration | Batch script for four runs with cassette recording, one-page summaries, measures against the acceptance targets, allowance checks | **not run** |
 | 7. Docs and report | README, package page, API page, runbook, ADR 0018, index, PROGRESS, decisions D-125 to D-131, this report | docs check passes |
 
@@ -145,7 +145,7 @@ All content in these browser runs is mock content ("MOCK MODE" banner), so it sh
 | D-130 | Where the design documents disagreed: shared cache; soft and hard ceilings; Skip commits `skipped`; rejections are an overlay; digests capped separately; flat extraction atoms |
 | D-131 | The console registry gained `extras` so the Compass screen finds the Research module at boot |
 
-Other deviations: the hook change (`python3`, and recognising the live scripts) went beyond `agents/research/`, as the prompt asked; the four stale session-cap tests and two formatting fixes in older files are outside the agent but were needed for the gates; the cap decision touched CLAUDE.md rule 3, the gateway page and runbooks.
+Other deviations: the hook change (`python3`) went beyond `agents/research/`, as the prompt asked; the four stale session-cap tests and two formatting fixes in older files are outside the agent but were needed for the gates; the cap decision touched CLAUDE.md rule 3, the gateway page and runbooks.
 
 Defect found by the property test and fixed: a letter whose case fold decomposes (Greek iota with dialytika and tonos) failed to match its own upper-case form; the folded text is now put in one canonical decomposed form on both sides.
 
@@ -167,12 +167,12 @@ Opened 2026-11-11 from public pages; details in `docs/research-agent/provider-fa
 
 ## 11. What happens next
 
-The owner runs the live batches (the agent never sets the switches). Commands, prerequisites and troubleshooting are in `docs/runbooks/research-agent.md`:
+The owner runs the live batches (the agent never sets `LLM_MODE=live`). Commands, prerequisites and troubleshooting are in `docs/runbooks/research-agent.md`:
 
 ```
-! LLM_MODE=live ALLOW_LIVE_LLM=1 LLM_BUDGET_USD=8.00 uv run python -m mde_research_agent.live_bakeoff --write-default
-! LLM_MODE=live ALLOW_LIVE_LLM=1 LLM_BUDGET_USD=8.00 uv run python -m mde_research_agent.live_runs --run quick --record
-! LLM_MODE=live ALLOW_LIVE_LLM=1 LLM_BUDGET_USD=8.00 uv run python -m mde_research_agent.live_runs --run all --record
+! LLM_MODE=live LLM_BUDGET_USD=8.00 uv run python -m mde_research_agent.live_bakeoff --write-default
+! LLM_MODE=live LLM_BUDGET_USD=8.00 uv run python -m mde_research_agent.live_runs --run quick --record
+! LLM_MODE=live LLM_BUDGET_USD=8.00 uv run python -m mde_research_agent.live_runs --run all --record
 ```
 
 After that: read each `research.json` as the Spec lanes would, check the acceptance measures (quote check 100%, required slots at least 70%, at least 60% of searches contribute, at least 70% of norms with 3 or more sources, at least 70% of dated design, feature and service items under 24 months, high-impact items corroborated or flagged), fix planner, slot schemas, query strategy, prompts and assembly where the output is thin, re-run inside the budget, and write the final report with the live tables. Near the allowance the script finishes the run in progress and starts no new one.

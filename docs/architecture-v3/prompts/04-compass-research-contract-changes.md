@@ -3,7 +3,7 @@
 - **Task id:** `prompt-04`. **Status:** ready, not started. Written 2026-11-11 by the planning chat from [doc 13 v3 §15](../architecture/13-research-agent-design.md) and the Compass author's corrections ([notes/compass-as-built-2026-11-10.md](../notes/compass-as-built-2026-11-10.md) §8b).
 - **Note (doc 13 v3):** Research no longer reads Compass's tier or `guidance.size_band/depth/search_budget/max_requests`; it computes its own research load from the Brief's content. Nothing in this task needs those fields to change.
 - **Small task.** It changes Compass's `research` consumer view and the meta that feeds it. It does not change interview behavior. The owner decides when and how this reaches the builder; Research (prompt 03) does not wait for it.
-- **No live calls.** Tests use mock or replay. Never set `ALLOW_LIVE_LLM`. Never read `.env`.
+- **No live calls.** Tests use mock or replay. Never set `LLM_MODE=live`. Never read `.env`.
 - Follow `prompts/00-global-rules.md` (baseline tag, small Conventional Commits, footers `Task: prompt-04`, `Refs: AD-44, AD-47`; local `main` only after tests pass; no push).
 
 ## Goal

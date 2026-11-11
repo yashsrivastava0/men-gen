@@ -7,7 +7,7 @@
 **Test:** `uv run pytest apps/cli` (about 3.5 minutes; `-m "not integration"` skips the PostgreSQL tests).
 
 **Conventions**
-- Works fully offline in mock mode; the CLI itself never calls a model. The only path that could is `mde sim --llm`, fenced by `llm_user.check_live_allowed` (both switches in the environment, the gateway's live check, the budget below the 80% tripwire). Never run it.
+- Works fully offline in mock mode; the CLI itself never calls a model. The only path that could is `mde sim --llm`, fenced by `llm_user.check_live_allowed` (`LLM_MODE=live` in the environment, the gateway's live check, the budget below the 80% tripwire). Never run it.
 - Never echo `.env` values, API keys or the dev token; a pasted secret is masked in the script echo.
 - A failure is one `error:` line and an exit code (0 ok, 1 problem, 2 bad input, 3 refused), never a stack trace; `MDE_DEBUG=1` re-raises.
 - The client has its own wire models and never imports the API package; `local.py` is the one module that loads `mde_context_api` (by name, because `.importlinter` makes the two siblings).

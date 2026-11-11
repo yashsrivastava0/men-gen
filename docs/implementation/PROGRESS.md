@@ -6,7 +6,7 @@ Verified state of main before the live batches (2026-11-08, commit a51cd42, afte
 
 Done in the resume session: `feat/apisec` was already merged (D-074); a FileLock first-acquire race on Windows fixed (9c8755e, D-075); Org Profile read by Discover for Enterprise sessions (da7acff, D-079); Standard and Deep research ceilings reachable (2429002, D-080); REPORT security paragraph and the live runbook corrected.
 
-REMAINING: (1) live batches L1 to L4 (the owner authorized the one-key file for this session, D-069 option 1); (2) cassettes plus replay tests; (3) REPORT, Definition of Done, final clean-checkout `just ci`, sweep.
+REMAINING: (1) live batches L1 to L4; (2) cassettes plus replay tests; (3) REPORT, Definition of Done, final clean-checkout `just ci`, sweep.
 
 Ledger note: `data/.budget/ledger.jsonl` had no `.guard` file before the first resumed live call (the guard is adopted on the first write for a ledger older than the guard feature, `ledger.py` `_verify`); the ledger was copied aside before the batches.
 
@@ -120,13 +120,13 @@ State at the end of the first working session (the 04:40 cutoff was a usage limi
 - [x] 46 named scenarios (`SB-*`), ten persona scripts and a metrics report (`cd packages/compass && PYTHONPATH=src python -m evals.run_personas`)
 - [x] Docs: README, `docs/packages/compass.md`, `docs/prompts/compass-calls.md`, `docs/api/compass.md`, `docs/runbooks/compass.md`
 - [x] Live smoke driver (`mde_compass.live_smoke`) with an offline twin test
-- [ ] **Live batch A (smoke, allowance USD 0.10): BLOCKED on the second key.** `ALLOW_LIVE_LLM=1` is not set in the environment (CLAUDE.md D-069: the user's decision). Run: `ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s` (report in `packages/compass/evals/reports/live-smoke.json`). Batches B to D were not authorized for this session.
+- [ ] **Live batch A (smoke, allowance USD 0.10): not run yet.** Run: `LLM_MODE=live uv run pytest packages/compass/tests/live -m live -q -s` (report in `packages/compass/evals/reports/live-smoke.json`). Batches B to D were not authorized for this session.
 
 Measured offline in mock mode (ten personas): 8 of 9 targets met. Questions: Standard/Express median 8 (target 7: the one miss), max 10, Express 3; Large (enterprise) is budgeted per module and reported separately (18). Locked without evidence 0; assumptions unchanged at Gate 1 100%; all three handoff probes 100%; cards valid or fallback 100%; hidden instructions ignored 100%; turns with errors 0; all ten personas reach approval.
 
 Open items and exact next steps:
 1. Median questions 8 against 7: the lever left is the policy of `auth.account_model` (risk high, must_confirm, asked as its own card): an owner decision (default `individual`, shown in "We assumed").
-2. Run live batch A once `ALLOW_LIVE_LLM=1` is set; read the report, tune `CALL_PROFILES` token caps, then record cassettes (secret-scanned) so the calls replay offline. Vision and streaming are unsupported by the gateway (no image input, no streaming).
+2. Run live batch A with `LLM_MODE=live`; read the report, tune `CALL_PROFILES` token caps, then record cassettes (secret-scanned) so the calls replay offline. Vision and streaming are unsupported by the gateway (no image input, no streaming).
 3. Intake scenarios still deferred (`tests/scenarios/data/DEFERRED.yaml`): huge document, scanned pages, contradictions across documents, mostly-vision PRD, sheets and decks. The intake tests cover duplicates, corrupt files, private links and the SSRF table.
 4. Not built: an HTTP route for `reopen_slot`, `ChainedRegistry` gateway hook, `CompassBudget.reconcile` against the ledger, per-language intake messages (English only), prefetch.
 5. Retiring `mde_discovery` is a later task (Compass does not import it; it is untouched and its suites pass).
@@ -162,7 +162,7 @@ Owner's list: a detailed, correct Brief; one batch at a time answered and submit
 - [x] BRIEF (merged 439b707, wired 10faf8f and 21c6b7b, D-110): fact kinds, consumer views, parallel compile v2 with digests, corrections and review assumptions, probes after compile, documents, lock guard; the document confirm card is built but not shown
 - [x] WEB (merged c79cb76, D-109): tier-first welcome, form for every batch, select-all / none of these / picks plus custom, You decide and Decide the rest, retry, phase-aware waiting, upload checks; 2789 offline tests green
 - [~] P6. Changing a slot-less assumption keeps the words (ledger + recompile). Left: panel edits writing facts, recompile of only the affected sections for Q&A edits
-- [ ] P7. Live verification: NOT RUN (needs the owner's second key; USD 3.00 ceiling, about 2.4 left). Run `python -m mde_compass.live_batches --batch E|F|G` (the players answer card by card with `default_ui_mode: one_at_a_time`; a batch-form player is the first thing to add) and measure first-batch and later-turn latency, fallbacks, closing last, cap
+- [ ] P7. Live verification: NOT RUN (USD 3.00 ceiling, about 2.4 left). Run `python -m mde_compass.live_batches --batch E|F|G` (the players answer card by card with `default_ui_mode: one_at_a_time`; a batch-form player is the first thing to add) and measure first-batch and later-turn latency, fallbacks, closing last, cap
 - Offline state at tag `compass/v2-p3`: 3031 passed, 3 skipped, 8 xfailed; integration 77; security 220; ruff, pyright, import-linter, docs-check clean
 
 ## Compass size: structure draft, size bands, research guidance (owner messages 2026-11-10; branch `feat/compass-speed-v3`; ADR 0017; plan `COMPASS-SIZE-PLAN-2026-11-10.md`; decisions D-113 to D-120; safe point tag `pre/compass-size-20261110`; tags `compass/size-s<n>`; no push)
@@ -206,4 +206,4 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] Phase C: RC-1 main store and appendix, RC-2 in-topic checker, RC-3 numbers and dates, RC-4 independence and fit, RC-5 report and endpoints, RC-6 v5 output and events, RC-7 honest metrics
 - [x] Phase D: RC-8 signals, trust job and light mode, RC-9 evaluation harness, RC-10 failover, stale-run expiry, bake-off tool
 - [ ] Front end stage 2 (results, spot-check, tools) and its browser verification
-- [ ] Live: the owner runs the checklist in `docs/runbooks/research-agent.md` (nothing has run live; the live smoke needs the owner's switches)
+- [ ] Live: the owner runs the checklist in `docs/runbooks/research-agent.md` (nothing has run live; the live smoke needs `LLM_MODE=live`)

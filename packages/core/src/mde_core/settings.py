@@ -34,7 +34,6 @@ class Settings(BaseSettings):
     openai_api_key: SecretStr | None = None
     openai_model: str = DEFAULT_MODEL
     llm_mode: LlmMode = "mock"
-    allow_live_llm: bool = False
     llm_budget_usd: Decimal = Decimal("6.00")
     # Relative paths are anchored to the MAIN repository root (see ``_anchor_shared_path``).
     llm_budget_ledger: Path = Field(
@@ -92,8 +91,8 @@ class Settings(BaseSettings):
 
     @property
     def live_enabled(self) -> bool:
-        """Live calls need LLM_MODE=live AND ALLOW_LIVE_LLM=1 AND not forbidden (brief 7.9)."""
-        return self.llm_mode == "live" and self.allow_live_llm and not self.forbid_live
+        """Live calls need LLM_MODE=live and not forbidden (brief 7.9)."""
+        return self.llm_mode == "live" and not self.forbid_live
 
     def model_for_route(self, route: str) -> str:
         return self.model_routes.get(route, self.openai_model)
@@ -133,7 +132,6 @@ def describe_presence(settings: Settings) -> dict[str, str]:
         report[name.upper()] = "present" if getattr(settings, name) is not None else "absent"
     report["OPENAI_MODEL"] = "default" if settings.openai_model == DEFAULT_MODEL else "custom"
     report["LLM_MODE"] = settings.llm_mode
-    report["ALLOW_LIVE_LLM"] = "1" if settings.allow_live_llm else "unset"
     report["LLM_BUDGET_USD"] = str(settings.llm_budget_usd)
     report["DATABASE_URL"] = "set"
     report["GATEWAY_MODE"] = settings.gateway_mode

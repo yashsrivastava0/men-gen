@@ -7,9 +7,9 @@
 
 ## 0. Rules that apply first
 - Follow `prompts/00-global-rules.md`. The first action is to make sure its text exists in the repo as `docs/implementation/GLOBAL_RULES.md` (create it from that text if missing, as commit `docs: add global build rules`) and that the repo's `CLAUDE.md` points to it.
-- Test runs use `LLM_MODE=replay`. Never set `ALLOW_LIVE_LLM`. Never read or print `.env`, a key or a token.
+- Test runs use `LLM_MODE=replay`. Never set `LLM_MODE=live`. Never read or print `.env`, a key or a token.
 - One test suite at a time, in the foreground, and only when memory allows.
-- Inspect files with the Read and Grep tools, not shell commands, where a hook matches command text. Use `python3` or `uv run python`, never a bare `python`, in any hook or script you add.
+- Use `python3` or `uv run python`, never a bare `python`, in any hook or script you add.
 
 ## 1. Read first
 1. `docs/architecture-v3/13-research-agent-design.md` (v3). The full specification for this task.
@@ -48,7 +48,7 @@ Build `agents/research` so that, from an approved Brief's research view, it runs
    - `create_app()` and `router` with the endpoints of doc 13 §10, including the events stream, skip and target cancel.
    - Tests, the agent's README, and a copy of this prompt in `docs/build-prompts/`.
 2. **`packages/contracts`:** `research.v3.schema.json` and `research.event.v1.schema.json` (shared: Spec and the front ends read them).
-3. **`packages/llm-gateway`:** `SearchPort` adapters for **Tavily** `POST /search` and **Serper** (Google results). **Brave is deferred** (owner provides two accounts only; do not build the Brave adapter, but keep the port generic so it can be added). All under the same ledger, budget and live-guard rules as LLM calls. Only the gateway imports provider SDKs or HTTP clients. They normalize to `SearchHit {url, title, snippet, content?, published?, rank, provider_score}`, support `domain_prefer`, `domain_restrict`, `exact_match`, `time_range`, country and language where the provider has them, and report which locale parameters were actually applied (`locale: weak` otherwise).
+3. **`packages/llm-gateway`:** `SearchPort` adapters for **Tavily** `POST /search` and **Serper** (Google results). **Brave is deferred** (owner provides two accounts only; do not build the Brave adapter, but keep the port generic so it can be added). All under the same ledger, budget and live-mode rules as LLM calls. Only the gateway imports provider SDKs or HTTP clients. They normalize to `SearchHit {url, title, snippet, content?, published?, rank, provider_score}`, support `domain_prefer`, `domain_restrict`, `exact_match`, `time_range`, country and language where the provider has them, and report which locale parameters were actually applied (`locale: weak` otherwise).
 4. **`packages/webfetch`** (name to confirm): the `FetchPort` implementation with **trafilatura** main-text extraction, the **PDF text layer**, SSRF rules (private, loopback and link-local refused, also after redirects), robots.txt, redirect limit, size caps, timeouts, content hash, the User-Agent rule (doc 13 R13). JavaScript-only pages are skipped and marked `no_content` (RS-19). No headless browser in this task.
 5. Import-linter contracts, CI paths and uv workspace members updated.
 
@@ -75,7 +75,7 @@ Suggested phases for the tags: (1) schemas, data files, validators and `Research
 - Determinism: replaying the same cassettes gives the same `research.json` hash twice in a row.
 - Cost accounting: every provider call logged with its cost; the run stops at a ceiling and records `budget_stop`. Time box, Skip and topic cancel tested.
 - Fail-soft: with the search port down, the run ends `partial` or `failed`, and the orchestrator receives a normal event.
-- One run per program at a time. The suite passes with `LLM_MODE=replay` and without `ALLOW_LIVE_LLM`.
+- One run per program at a time. The suite passes with `LLM_MODE=replay`.
 - The doc 13 §14 gate: every row that can be checked offline passes; live rows are marked `pending pilot`.
 
 ## 8. Live work (not in this task; each needs an explicit yes)

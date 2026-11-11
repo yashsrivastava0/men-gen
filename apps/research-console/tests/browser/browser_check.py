@@ -253,7 +253,7 @@ def scenario_not_ready(browser) -> None:
         why = card(page, "quick-yoga").locator(".why-off").inner_text()
         check(
             "not ready: the reason names the exact variables",
-            "LLM_MODE=live" in why and "ALLOW_LIVE_LLM=1" in why,
+            "TAVILY_API_KEY or SERPER_API_KEY" in why,
             why,
         )
         page.locator("#preflight-pill").click()
@@ -261,7 +261,7 @@ def scenario_not_ready(browser) -> None:
         panel = page.locator("dialog[open]").inner_text()
         check(
             "not ready: the panel lists each failing check with its fix",
-            "Needs fixing" in panel and "What to do" in panel and "LLM_MODE=live" in panel,
+            "Needs fixing" in panel and "What to do" in panel and "TAVILY_API_KEY" in panel,
             panel[:200],
         )
         check(
@@ -274,7 +274,7 @@ def scenario_not_ready(browser) -> None:
         res = page.locator("dialog[open] .ping-result").inner_text()
         check(
             "not ready: the connection test is refused in plain words and names what is missing",
-            "cannot start" in res.lower() and "LLM_MODE=live" in res,
+            "cannot start" in res.lower() and "TAVILY_API_KEY or SERPER_API_KEY" in res,
             res,
         )
         page.keyboard.press("Escape")
@@ -582,8 +582,8 @@ def main_flow(browser, f: Fake) -> None:
                 body=json.dumps(
                     {
                         "code": "not_ready",
-                        "message": "Research cannot start yet. Set: LLM_MODE=live, TAVILY_API_KEY or SERPER_API_KEY.",
-                        "missing": ["LLM_MODE=live", "TAVILY_API_KEY or SERPER_API_KEY"],
+                        "message": "Research cannot start yet. Set: TAVILY_API_KEY or SERPER_API_KEY.",
+                        "missing": ["TAVILY_API_KEY or SERPER_API_KEY"],
                     }
                 ),
             )
@@ -598,9 +598,7 @@ def main_flow(browser, f: Fake) -> None:
     err = page.locator("dialog[open] .dlg-error").inner_text()
     check(
         "refused start: shows the server's plain message and the missing variable names",
-        "cannot start yet" in err
-        and "LLM_MODE=live" in err
-        and "TAVILY_API_KEY or SERPER_API_KEY" in err,
+        "cannot start yet" in err and "TAVILY_API_KEY or SERPER_API_KEY" in err,
         err,
     )
     shot(page, "start-refused-1280-light", full=False)

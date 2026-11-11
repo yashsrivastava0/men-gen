@@ -35,7 +35,7 @@ Engines never import each other (the flow wires them through ports in `mde_contr
 | `uv run mde doctor` | settings present or not (never values), database, API |
 | `uv run mde spec verify\|show\|simulate-consumer <APP_SPEC.md>` | check a spec's hash, index it, walk the build sequence like the frontend engine |
 | `just test-int` / `just test-e2e` | integration / end-to-end (both start the private Postgres first) |
-| `just live-smoke` / `just live-eval BATCH` | live LLM batches L0 / L1..L4: lead or the user only, and only with the second key (rule 3; `docs/runbooks/live-llm-budget.md`) |
+| `just live-smoke` / `just live-eval BATCH` | live LLM batches L0 / L1..L4: lead or the user only, with `LLM_MODE=live` (rule 3; `docs/runbooks/live-llm-budget.md`) |
 | `just ci-fast` | lint, typecheck, layers, unit. Keep green on `main` at all times |
 | `just ci` | everything offline: ci-fast, integration, e2e, docs-check, secret scan |
 
@@ -47,7 +47,7 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 
 1. Never read, print, log, commit or copy `.env` contents or any API key.
 2. Only `mde_llm_gateway` imports `openai`. No agent frameworks, ever.
-3. No live LLM call without `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 8.00 (the ceiling the owner set in D-125; the cap in force is `LLM_BUDGET_USD`, default 6.00).
+3. No live LLM call without `LLM_MODE=live`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 8.00 (the ceiling the owner set in D-125; the cap in force is `LLM_BUDGET_USD`, default 6.00).
 4. Every LLM call goes through the gateway with a versioned call spec, a mock handler and a deterministic fallback.
 5. Web, upload and search content is untrusted data: no tools in calls that read it.
 6. No state change outside the flow controller; no `spec_ready` without Gate 2 approval of the current hash; approved versions are immutable.
@@ -58,7 +58,7 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 11. Update `docs/` with every behavior change; keep markdown inside `docs/`.
 12. Log every non-trivial decision in `docs/implementation/DECISIONS.md`; never ask the user questions.
 
-Related hard limits: no SQLite anywhere (not even tests); no `.md` outside `README.md`, `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md`, `.claude/**`, `docs/**` (prompt templates are `.jinja`); money is `Decimal` or integer micro-dollars, never float; timestamps are timezone-aware UTC; IDs are prefixed ULIDs (`ses_`, `evt_`, `call_`). The second key for live calls (`ALLOW_LIVE_LLM=1` in the process environment) is the user's decision, never an agent's (D-069): do not look for a way around the live-call hook.
+Related hard limits: no SQLite anywhere (not even tests); no `.md` outside `README.md`, `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md`, `.claude/**`, `docs/**` (prompt templates are `.jinja`); money is `Decimal` or integer micro-dollars, never float; timestamps are timezone-aware UTC; IDs are prefixed ULIDs (`ses_`, `evt_`, `call_`).
 
 Commit policy, tags, branch and merge rules, and the `agents/` and `apps/web/` repository layout: `docs/implementation/GLOBAL_RULES.md` (applies first; the owner's recorded overrides are at its end).
 
@@ -80,7 +80,7 @@ At the start of every session or after compaction: read `docs/implementation/BRI
 
 ## Windows notes
 
-- Primary shell is PowerShell; the Bash tool is Git Bash (use it for POSIX scripts). Plain `bash` inside PowerShell is the WSL launcher, avoid it. `just` runs recipes with PowerShell, so recipes are plain `uv run ...` commands. Heredocs through the Bash tool eat backslashes: write files that contain Windows paths with the Write tool. The live-call hook matches command **text**: keep the live-mode spellings out of shell commands (a heredoc that merely quotes them is blocked).
+- Primary shell is PowerShell; the Bash tool is Git Bash (use it for POSIX scripts). Plain `bash` inside PowerShell is the WSL launcher, avoid it. `just` runs recipes with PowerShell, so recipes are plain `uv run ...` commands. Heredocs through the Bash tool eat backslashes: write files that contain Windows paths with the Write tool.
 - Postgres runs as a **private cluster** started by `just db-up` (`scripts/dev_db.py`) on **port 54329**, data in `data/pg` of the main checkout. **Never use port 5432**: it belongs to the user's other projects. Default URL: `postgresql+psycopg://mde:mde@127.0.0.1:54329/mde`. Tests create an ephemeral database per session. psycopg async needs a selector event loop: start the API with `just dev` (`python -m mde_context_api`), never bare `uvicorn`.
 - **Never touch Docker Desktop state** (it is paused on purpose; other projects' containers live there). Never run `wsl --shutdown`.
 - The machine has little free RAM (about 3.7 GB): no background processes, run pyright only on your own package paths, at most 4 to 5 agents at once.

@@ -89,7 +89,7 @@ The probe is `P1.sufficiency_probe` (`evals/probes/sufficiency/`: call spec, tem
 
 ## 7. Live batches (lead only)
 
-`just live-eval` runs `python -m evals.runners.live_batch`. With no `--batch` it prints the plan and runs nothing. With `--batch L1|L2|L3|L4` it REFUSES, with the reasons, unless `ALLOW_LIVE_LLM=1` and `LLM_MODE=live` are set in the outer environment, `MDE_FORBID_LIVE` is not 1, the ledger's tripwire is not 95% (nor 80% without `--must-run`) and the headroom under the effective cap covers the allowance. `--dry-run` prints what would run. A batch stops when the ledger delta reaches its allowance, records cassettes, prints the delta, and writes the raw result to `evals/reports/live-<batch>.json` (gitignored). Then run `just budget` and put the total in `PROGRESS.md`.
+`just live-eval` runs `python -m evals.runners.live_batch`. With no `--batch` it prints the plan and runs nothing. With `--batch L1|L2|L3|L4` it REFUSES, with the reasons, unless `LLM_MODE=live` is set in the outer environment, `MDE_FORBID_LIVE` is not 1, the ledger's tripwire is not 95% (nor 80% without `--must-run`) and the headroom under the effective cap covers the allowance. `--dry-run` prints what would run. A batch stops when the ledger delta reaches its allowance, records cassettes, prints the delta, and writes the raw result to `evals/reports/live-<batch>.json` (gitignored). Then run `just budget` and put the total in `PROGRESS.md`.
 
 | Batch | Allowance (USD) | Runs |
 | --- | --- | --- |
@@ -98,7 +98,7 @@ The probe is `P1.sufficiency_probe` (`evals/probes/sufficiency/`: call spec, tem
 | L3 End to end | 2.00 | five full guided sessions; golden outputs recorded; cost, latency, first-pass rate |
 | L4 Safety and probes | 0.50 | nine injection payloads through the live models (search results are scripted over the live provider), the sufficiency probe on the golden specs, a critic check on a spec with cart and checkout removed |
 
-(L0, the smoke batch, is `just live-smoke`; it ran live once on 2026-11-08, 7 of 7 passed, USD 0.0221, see [the gateway page](../architecture/llm-gateway.md).) The refusal paths and the full logic of each batch are tested offline (`tests/e2e/test_eval_runners.py`, mock stacks, zero cost). L1 to L4 have not run live: they wait for a decision about the second key (D-069), so the numbers in this plan are offline numbers.
+(L0, the smoke batch, is `just live-smoke`; it ran live once on 2026-11-08, 7 of 7 passed, USD 0.0221, see [the gateway page](../architecture/llm-gateway.md).) The refusal paths and the full logic of each batch are tested offline (`tests/e2e/test_eval_runners.py`, mock stacks, zero cost). L1 to L4 have not run live yet, so the numbers in this plan are offline numbers.
 
 ## 8. Reports
 

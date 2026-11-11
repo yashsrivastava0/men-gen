@@ -1,7 +1,7 @@
 """``probe_model``: the cheap model-availability check used by ``scripts/doctor.py --live``.
 
 It calls ``models.retrieve`` (metadata only: no tokens, no cost) and needs live mode to be enabled
-(``LLM_MODE=live`` + ``ALLOW_LIVE_LLM=1``). The result string never contains the key.
+(``LLM_MODE=live``). The result string never contains the key.
 """
 
 from __future__ import annotations

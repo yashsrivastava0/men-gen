@@ -1,8 +1,8 @@
 """``python -m mde_research_agent``: the Research app (API and front end on one port, live models and the live web only).
 
 Options: ``--host`` (loopback only), ``--port`` (default 8120), ``--inputs DIR``, ``--data DIR``. With no flags it
-uses ``docs/compass/research-inputs`` for inputs and ``agents/research/.runtime`` for its data. If the live switches or a
-search key are missing the app still starts and its front end says exactly what to set; it never runs on made-up content.
+uses ``docs/compass/research-inputs`` for inputs and ``agents/research/.runtime`` for its data. The app always runs live; if a
+search key is missing it still starts and its front end says exactly what to set; it never runs on made-up content.
 """
 
 from __future__ import annotations

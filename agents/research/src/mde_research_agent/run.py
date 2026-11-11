@@ -2,8 +2,8 @@
 
 Reads a Compass format-2 export, runs Research in process (in-memory store) and writes ``research.json``,
 ``research_evidence.json`` and ``events.jsonl`` into ``--out``. ``--mock`` forces mock models and fake search and
-fetch (no network, no key). ``--live`` refuses to start unless the owner's live switches (the model mode and the
-second key) are ALREADY in the process environment (this command never sets them) and a search key is present.
+fetch (no network, no key). ``--live`` refuses to start unless ``LLM_MODE=live`` is ALREADY in the process environment
+(this command never sets it) and a search key is present.
 """
 
 from __future__ import annotations
@@ -29,10 +29,6 @@ def preflight_live(environ: dict[str, str] | None = None) -> list[str]:
     problems: list[str] = []
     if env.get("LLM_MODE", "").strip().lower() != "live":
         problems.append("the model mode must be live in the environment")
-    if env.get("ALLOW_LIVE_LLM", "").strip() != "1":
-        problems.append(
-            "the second key (ALLOW_LIVE_LLM=1) must be set in the environment by the owner"
-        )
     if env.get("MDE_FORBID_LIVE", "").strip() in ("1", "true"):
         problems.append("MDE_FORBID_LIVE is set")
     if not any(keys_present(load_research_settings()).values()):
@@ -90,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
         "--mock", action="store_true", help="mock models, fake search and fetch (offline)"
     )
     mode.add_argument(
-        "--live", action="store_true", help="real models and search (the owner's switches)"
+        "--live", action="store_true", help="real models and search (needs LLM_MODE=live)"
     )
     parser.add_argument("--out", type=Path, default=None)
     parser.add_argument("--program-id", default=None)

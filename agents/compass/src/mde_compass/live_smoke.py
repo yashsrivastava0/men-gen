@@ -1,7 +1,7 @@
 """Smoke driver: one real session plus one direct call of every call type, with a per-call report.
 
 Used twice with the same code: offline in mock mode (a test keeps it working) and live (batch A, at most
-USD 0.10, only with ``LLM_MODE=live`` and ``ALLOW_LIVE_LLM=1`` set by the user; see the runbook). It confirms
+USD 0.10, only with ``LLM_MODE=live`` set; see the runbook). It confirms
 the model id, that every strict schema is accepted, effort and cost reporting, and which calls fell back.
 Vision and streaming are reported as unsupported: the gateway has no image input and does not stream.
 """

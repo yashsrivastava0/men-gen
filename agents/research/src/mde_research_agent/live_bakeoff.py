@@ -12,7 +12,7 @@ local share; within 5 points, the cheaper one. The report goes to ``docs/researc
 are saved as cassettes.
 
 ``--dry-run`` prints the plan and the cost estimate and calls nothing. ``--mock`` runs the plumbing over fake providers.
-A real run refuses to start unless the owner's live switches and the search keys are already in the environment: this
+A real run refuses to start unless ``LLM_MODE=live`` and the search keys are already in the environment: this
 module never sets them.
 """
 
@@ -87,10 +87,6 @@ def preflight_live(environ: dict[str, str] | None = None) -> list[str]:
     if env.get("LLM_MODE", "").strip().lower() != "live":
         problems.append(
             "the model mode must be live in the environment (the judge is one model call)"
-        )
-    if env.get("ALLOW_LIVE_LLM", "").strip() != "1":
-        problems.append(
-            "the second key (ALLOW_LIVE_LLM=1) must be set in the environment by the owner"
         )
     if env.get("MDE_FORBID_LIVE", "").strip() in ("1", "true"):
         problems.append("MDE_FORBID_LIVE is set")

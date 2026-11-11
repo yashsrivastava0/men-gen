@@ -31,9 +31,9 @@ uv run python -m mde_compass --port 8110 --memory  # in-memory store: no databas
 | --- | --- |
 | `LLM_MODE=mock` (default) | every call runs its mock handler (the deterministic fallback) through the real gateway pipeline: no network, no key, cost 0 |
 | `LLM_MODE=replay` | answers from cassettes; a cassette per rendered request is needed (none are recorded for Compass yet) |
-| `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1` **and** `OPENAI_API_KEY` in the process environment | live calls through the gateway. `ALLOW_LIVE_LLM=1` is the user's decision, never an agent's |
+| `LLM_MODE=live` **and** `OPENAI_API_KEY` in the process environment | live calls through the gateway |
 
-The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smoke.py`, USD 0.10 allowance) is the lead's or the user's to run: `uv run pytest agents/compass/tests/live -m live -q -s` (with the second key in the process environment: the user's decision) ([runbook](../../docs/runbooks/compass.md#5-live-calls-lead-or-the-user-only)); it writes `evals/reports/live-smoke.json`. Live spend has two caps. The repo-wide USD 6.00 cap and ledger stay authoritative ([runbook](../../docs/runbooks/live-llm-budget.md)). Compass adds its own: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 3.00** (unparsable, non-positive or larger values never widen it), stop at 95% of it (2.85), per session 0.50, 0.30 kept in reserve; the spend counts every `cmp.*` call in the gateway ledger, across processes (D-093). When a check cannot prove the spend fits, the call is not made and the deterministic fallback runs instead (fails closed). Never paste, print or commit a key; `uv run mde doctor` reports presence only.
+The live smoke driver (`mde_compass.live_smoke`, test `tests/live/test_live_smoke.py`, USD 0.10 allowance) is the lead's or the user's to run: `LLM_MODE=live uv run pytest agents/compass/tests/live -m live -q -s` ([runbook](../../docs/runbooks/compass.md#5-live-calls-lead-or-the-user-only)); it writes `evals/reports/live-smoke.json`. Live spend has two caps. The repo-wide USD 6.00 cap and ledger stay authoritative ([runbook](../../docs/runbooks/live-llm-budget.md)). Compass adds its own: `COMPASS_LIVE_BUDGET_USD`, **clamped to at most 3.00** (unparsable, non-positive or larger values never widen it), stop at 95% of it (2.85), per session 0.50, 0.30 kept in reserve; the spend counts every `cmp.*` call in the gateway ledger, across processes (D-093). When a check cannot prove the spend fits, the call is not made and the deterministic fallback runs instead (fails closed). Never paste, print or commit a key; `uv run mde doctor` reports presence only.
 
 ## Test it
 
@@ -44,7 +44,7 @@ uv run pytest agents/compass                                  # everything that 
 uv run pytest agents/compass/tests/calls/plan_questions      # one call
 ```
 
-Integration tests (`tests/store`) create their own ephemeral database `mde_test_compass_<ulid>` inside the private cluster. The one `live` test skips itself unless `ALLOW_LIVE_LLM=1` is in the outer environment; its offline twin (`tests/test_smoke_driver_offline.py`) keeps the driver working.
+Integration tests (`tests/store`) create their own ephemeral database `mde_test_compass_<ulid>` inside the private cluster. The one `live` test skips itself unless `LLM_MODE=live` is in the outer environment; its offline twin (`tests/test_smoke_driver_offline.py`) keeps the driver working.
 
 **Scenarios and personas** (offline, mock mode, in-memory store): 46 named `SB-*` edge-case scripts in `tests/scenarios/data/*.yaml`, run by `mde_compass.scenarios` through `tests/scenarios`; ten persona scripts in `evals/personas/`:
 

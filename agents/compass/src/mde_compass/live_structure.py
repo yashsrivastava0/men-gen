@@ -7,10 +7,10 @@ prompts, token caps, the rule pack and the critic, and the way a 50-60 screen ca
 
     uv run python -m mde_compass.live_structure --replay pune --band medium --dry-run
     uv run python -m mde_compass.live_structure --replay pune --band medium --mock      # offline, free
-    LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python -m mde_compass.live_structure --replay pune --band large
+    LLM_MODE=live uv run python -m mde_compass.live_structure --replay pune --band large
 
-A live run needs ``LLM_MODE=live`` and the second key in the OUTER environment, like every live batch (the same
-``preflight`` of ``live_batches`` refuses without them and checks the allowance against the ledger). It prints the
+A live run needs ``LLM_MODE=live`` in the OUTER environment, like every live batch (the same
+``preflight`` of ``live_batches`` refuses without it and checks the allowance against the ledger). It prints the
 counts against the band, the checks that are left, the calls, the wall-clock and the cost, then the structure itself as
 plain text for a manual realism review, and writes the full report to ``agents/compass/evals/reports`` (git-ignored).
 """

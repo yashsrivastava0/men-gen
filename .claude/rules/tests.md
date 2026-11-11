@@ -9,7 +9,7 @@ paths:
 
 # Test rules
 
-- **Offline only** unless a test is marked `@pytest.mark.live`. The root autouse fixture forces `LLM_MODE=mock`, removes `ALLOW_LIVE_LLM` and `OPENAI_API_KEY`, and sets `MDE_FORBID_LIVE=1`; any live attempt outside a `live` test must fail.
+- **Offline only** unless a test is marked `@pytest.mark.live`. The root autouse fixture forces `LLM_MODE=mock`, removes `OPENAI_API_KEY`, and sets `MDE_FORBID_LIVE=1`; any live attempt outside a `live` test must fail.
 - Markers: `integration` (needs the Postgres from `just db-up`), `e2e` (mock mode, through the API), `live` (real LLM, budget-guarded, lead or `live-runner` only).
 - **No SQLite**, not even for tests. Integration tests use real Postgres via an ephemeral database per session.
 - Never read `.env` or any key value. Tests that scan for secrets compare hashes, never print values.

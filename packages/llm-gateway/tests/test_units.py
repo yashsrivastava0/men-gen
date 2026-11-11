@@ -212,9 +212,7 @@ def test_probe_model_reports_availability_and_failures() -> None:
 
     from mde_llm_gateway.doctor import probe_model
 
-    live = make_settings(
-        llm_mode="live", allow_live_llm=True, forbid_live=False, openai_api_key=fake_api_key()
-    )
+    live = make_settings(llm_mode="live", forbid_live=False, openai_api_key=fake_api_key())
 
     def resp(status: int) -> httpx2.Response:
         return httpx2.Response(

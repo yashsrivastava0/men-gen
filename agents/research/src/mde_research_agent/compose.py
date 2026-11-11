@@ -1,10 +1,9 @@
 """The composition root of the Research APP: live models and the live web only.
 
 There is no way to select a test double from here: no in-memory store, no fake search or fetch, no mock model
-mode. ``compose_app`` builds the real thing when the owner's two live switches (``LLM_MODE=live`` and
-``ALLOW_LIVE_LLM=1``) are set; when anything is missing it still builds a service so the front end can explain, but
-that service has no gateway and refuses every start-run action with a plain message (names of variables only,
-never values). Tests and the developer scripts build their own services from ``assemble_service`` with doubles that
+mode. ``compose_app`` always runs the gateway in live mode; when a search key is missing it still builds a service so
+the front end can explain, and that service refuses every start-run action with a plain message (names of variables
+only, never values). Tests and the developer scripts build their own services from ``assemble_service`` with doubles that
 live in ``tests/support/``.
 """
 
@@ -52,14 +51,6 @@ def default_provider() -> str:
 
 
 DEFAULT_PROVIDER = default_provider()
-
-
-def live_switches(core: Settings) -> dict[str, bool]:
-    """Which of the owner's switches are set (booleans only; the names are what the person must set)."""
-    return {
-        "LLM_MODE=live": core.llm_mode == "live",
-        "ALLOW_LIVE_LLM=1": bool(core.allow_live_llm) and not core.forbid_live,
-    }
 
 
 def guard_cap_usd(core: Settings, total_usd: Decimal) -> Decimal:
@@ -198,12 +189,11 @@ def build_live_service(
     ledger_path: Path | str | None = None,
     live_budget_micros: int | None = None,
 ) -> ResearchService:
-    """A service over the REAL gateway, search and fetch. Refuses (``LiveNotReady``) unless the switches are set."""
+    """A service over the REAL gateway, search and fetch. Refuses (``LiveNotReady``) unless ``LLM_MODE=live``."""
     core = core or load_settings()
     cfg = cfg or load_research_settings()
-    missing = [name for name, ok in live_switches(core).items() if not ok]
-    if missing:
-        raise LiveNotReady(missing)
+    if core.llm_mode != "live":
+        raise LiveNotReady(["LLM_MODE=live"])
     the_clock = clock or SystemClock()
     chosen = provider or (
         cfg.research_search_provider
@@ -231,16 +221,16 @@ def build_live_service(
 
 
 class LiveNotReady(RuntimeError):
-    """The owner's live switches are not all set. Carries the NAMES that are missing, never values."""
+    """Live mode is not set. Carries the NAMES that are missing, never values."""
 
     def __init__(self, missing: list[str]) -> None:
         super().__init__("not ready for live use: set " + ", ".join(missing))
         self.missing = missing
 
 
-def readiness(core: Settings, cfg: ResearchSettings) -> list[str]:
+def readiness(cfg: ResearchSettings) -> list[str]:
     """Plain names of what must still be set before a run can start (empty means ready). Booleans, never values."""
-    missing = [name for name, ok in live_switches(core).items() if not ok]
+    missing: list[str] = []
     keys = keys_present(cfg)
     if not any(keys.values()):
         missing.append("TAVILY_API_KEY or SERPER_API_KEY")
@@ -255,15 +245,15 @@ def compose_app(
 ) -> ResearchService:
     """The app's service: file store (or PostgreSQL), period ledger, spend record, inputs folder, live ports.
 
-    Always returns a service. When the live switches or every search key are missing the service has no gateway
-    (or no search) and ``start_run`` refuses with a plain message naming what to set. Nothing here can build a double.
+    Always returns a service. When every search key is missing the service has no search and ``start_run`` refuses
+    with a plain message naming what to set. Nothing here can build a double.
     """
     from mde_research_agent.config import data_dir, inputs_dir, repo_root
     from mde_research_agent.inputs import InputsStore
     from mde_research_agent.inputs.estimates import Estimates
     from mde_research_agent.spend import BudgetControl, SpendRecord
 
-    core = core or load_settings()
+    core = (core or load_settings()).model_copy(update={"llm_mode": "live"})
     cfg = cfg or load_research_settings()
     the_clock = clock or SystemClock()
     root = repo_root()
@@ -306,8 +296,7 @@ def compose_app(
         )
         return build_gateway(scoped, cfg, the_clock, cassette_dir=cassette_dir)
 
-    missing = readiness(core, cfg)
-    switches_ok = not any(not ok for ok in live_switches(core).values())
+    missing = readiness(cfg)
     primary_pref = _saved_provider(data) or cfg.research_search_provider
     chosen = primary_pref if primary_pref != "auto" else choose_provider(cfg, DEFAULT_PROVIDER)
     http = httpx.AsyncClient(timeout=15.0, trust_env=False)
@@ -328,7 +317,7 @@ def compose_app(
         store=store,
         search=search,
         fetch=fetch,
-        gateway=make_gateway(control) if switches_ok else None,
+        gateway=None if core.forbid_live else make_gateway(control),
         core=core,
         cfg=cfg,
         mode="live",

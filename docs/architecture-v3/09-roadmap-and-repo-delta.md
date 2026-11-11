@@ -45,7 +45,7 @@ Parallelism between steps: Steps 5 (Module Library authoring) and 4 can overlap,
 Known gaps from the Nov 8 status that remain relevant (Master 07 §3): live quality unmeasured beyond L0, token estimates unverified, review-2 coverage gaps. Branch and security items (`feat/apisec`, N3/N4/N6-N11) are **parked** by the owner's de-prioritization of security; Step 0 should still report their state.
 
 ## 4. Step 0: read-only repo audit (prompt draft for the builder)
-> You are auditing the Mobile design engine repo against a new architecture. This is **read-only**: no edits, no commits, no live LLM calls, no printing of `.env` or secrets. Use the Read and Grep tools (not shell commands) to inspect files, because the live-guard hook matches command text. Check free memory before running anything heavy; run at most one offline test suite at a time, in the foreground, and only if memory allows.
+> You are auditing the Mobile design engine repo against a new architecture. This is **read-only**: no edits, no commits, no live LLM calls, no printing of `.env` or secrets. Use the Read and Grep tools (not shell commands) to inspect files. Check free memory before running anything heavy; run at most one offline test suite at a time, in the foreground, and only if memory allows.
 >
 > Read `docs/architecture-v3/00-index-and-decisions.md`, then `03-context-engine.md`, `04-spec-package-and-handoffs.md`, `05-change-management-and-edge-cases.md`, `07-quality-evals-and-models.md`, `09-roadmap-and-repo-delta.md` (the repo-delta table).
 >

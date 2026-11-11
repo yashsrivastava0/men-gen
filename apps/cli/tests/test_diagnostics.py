@@ -118,7 +118,7 @@ def test_doctor_reports_presence_never_values(
     out = result.output
     assert result.exit_code == 1  # nothing listens on port 1
     assert "OPENAI_API_KEY: present" in out and "GATEWAY_SERVICE_TOKEN: present" in out
-    assert "LLM_MODE: mock" in out and "ALLOW_LIVE_LLM: unset" in out and "DATABASE_URL: set" in out
+    assert "LLM_MODE: mock" in out and "DATABASE_URL: set" in out
     assert "database: NOT reachable" in out and "dev_db.py up" in out
     for secret in (key, "gw-token-z9y8x7w6v5u4t3s2r1", "hunter2-pw", "127.0.0.1:1"):
         assert secret not in out
@@ -159,12 +159,12 @@ def test_doctor_checks_the_database_when_it_is_up(
     assert result.exit_code == 0 and "database: reachable" in result.output
 
 
-def test_the_model_is_only_probed_in_live_mode_with_both_switches(
+def test_the_model_is_only_probed_in_live_mode(
     runner: CliRunner, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     monkeypatch.setattr(diagnostics, "_check_database", lambda url: True)
     out = runner.invoke(app, ["doctor", "--live"]).output
-    assert "model: skipped (needs LLM_MODE=live and ALLOW_LIVE_LLM=1)" in out
+    assert "model: skipped (needs LLM_MODE=live)" in out
     assert "available" not in out  # nothing was called
 
 
@@ -183,9 +183,7 @@ def test_a_failing_model_probe_prints_the_error_type_only(
     monkeypatch.setattr(
         core_settings,
         "load_settings",
-        lambda **kw: real(**kw).model_copy(
-            update={"llm_mode": "live", "allow_live_llm": True, "forbid_live": False}
-        ),
+        lambda **kw: real(**kw).model_copy(update={"llm_mode": "live", "forbid_live": False}),
     )
     import mde_llm_gateway.doctor as gateway_doctor
 

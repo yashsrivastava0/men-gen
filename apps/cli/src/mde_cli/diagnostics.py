@@ -113,11 +113,9 @@ def run_doctor(*, live: bool, url: str | None, out: Out) -> int:
         ok = False
 
     if not live:
-        out.line(
-            "model: not checked (add --live; it also needs LLM_MODE=live and ALLOW_LIVE_LLM=1)"
-        )
+        out.line("model: not checked (add --live; it also needs LLM_MODE=live)")
     elif not settings.live_enabled:
-        out.line("model: skipped (needs LLM_MODE=live and ALLOW_LIVE_LLM=1)")
+        out.line("model: skipped (needs LLM_MODE=live)")
     else:
         try:
             from mde_llm_gateway.doctor import probe_model

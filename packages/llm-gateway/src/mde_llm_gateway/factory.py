@@ -5,7 +5,7 @@ The provider follows ``settings.llm_mode``:
 * ``mock``   -> :class:`MockProvider` (default; no key, no network)
 * ``replay`` -> :class:`ReplayProvider` over ``settings.cassette_dir`` (env ``CASSETTE_DIR``,
   default ``tests/cassettes`` in the MAIN repository, anchored like the ledger)
-* ``live``   -> :class:`OpenAIResponsesProvider`, ONLY if ``LLM_MODE=live`` AND ``ALLOW_LIVE_LLM=1``
+* ``live``   -> :class:`OpenAIResponsesProvider`, ONLY if ``LLM_MODE=live``
   and not ``MDE_FORBID_LIVE=1`` (else :class:`LiveCallForbidden`), optionally wrapped in a
   :class:`RecordingProvider` (``settings.record_cassettes``, env ``MDE_RECORD_CASSETTES=1``).
 

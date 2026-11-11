@@ -7,14 +7,14 @@ The Research agent runs as its own app: one process, one address (`http://127.0.
 The one-line commands (run from the repository folder; `just` recipes call the same script):
 
 ```
-! LLM_MODE=live ALLOW_LIVE_LLM=1 uv run python scripts/research_app.py start    # detached; prints the address
+uv run python scripts/research_app.py start                                     # detached; prints the address
 uv run python scripts/research_app.py status                                    # running? ready for live runs?
 uv run python scripts/research_app.py logs                                      # last lines of the app and process logs
 uv run python scripts/research_app.py stop
 uv run python scripts/research_app.py restart
 ```
 
-The `!` prefix runs the command in your own shell, with the two live switches (`LLM_MODE=live` and `ALLOW_LIVE_LLM=1`) that only you set. Search keys (`TAVILY_API_KEY`, and `SERPER_API_KEY` for the bake-off and failover) are read from your environment or `.env` as before (`uv run mde doctor` shows which exist, never the values). If a switch or key is missing the app still starts and its front end says exactly what to set; it never runs on made-up content. Plain `just research-dev` runs the same server in the foreground.
+The app always runs in live mode: no switches are needed, and money is spent only when you click Run and confirm. Search keys (`TAVILY_API_KEY`, and `SERPER_API_KEY` for the bake-off and failover) are read from your environment or `.env` as before (`uv run mde doctor` shows which exist, never the values). If a search key is missing the app still starts and its front end says exactly what to set; it never runs on made-up content. Plain `just research-dev` runs the same server in the foreground.
 
 ## Money
 
@@ -63,7 +63,7 @@ Every run records its search results, pages and model calls as compressed casset
 
 Start with the Report or the Quality tab. Look at lane quality (`strong`, `partial`, `thin`, `none`), the builder-need coverage, the checker rates (a rate under 1% rejections is a rubber-stamp signal) and the acceptance rows. A run that finishes `partial` is still usable: the gaps and the run summary say why. The weak points to expect: an unmeasured provider choice, a checker from the same model family as the writer (`checker_vendor: same`), English-only labels, and estimates that are seeded, not measured.
 
-## Developer scripts (offline unless the owner sets the switches)
+## Developer scripts (offline unless `LLM_MODE=live` is set)
 
 | What | Command |
 | --- | --- |
@@ -75,13 +75,13 @@ Start with the Report or the Quality tab. Look at lane quality (`strong`, `parti
 | Batch plan and cost estimate, calls nothing | `uv run python -m mde_research_agent.live_runs --run all --dry-run` |
 | Evaluation plan and cost estimate | `uv run python -m mde_research_agent.eval planted --dry-run` (and `probe`) |
 
-The evaluation commands (`planted`, `probe`) and the older batch scripts spend real money when run without `--dry-run`, `--mock` or `--replay`: only with the owner's switches, with the app stopped, booked in the spend record.
+The evaluation commands (`planted`, `probe`) and the older batch scripts spend real money when run without `--dry-run`, `--mock` or `--replay`: only with `LLM_MODE=live`, with the app stopped, booked in the spend record.
 
 ## Troubleshooting
 
 | Symptom | Cause and fix |
 | --- | --- |
-| Run refused: "Research cannot start yet. Set: ..." | a switch or key is missing; the message names which (never a value); restart the app with it |
+| Run refused: "Research cannot start yet. Set: ..." | a search key is missing; the message names which (never a value); restart the app with it |
 | "The budget tripwire was reached" | spend is at 4.50 or more; the run in progress finishes; restart the budget on the Budget page to continue |
 | A run shows Interrupted | the app restarted while it ran; what it spent is recorded; use Re-run |
 | A run is stuck with no events for 10 minutes | it is marked `failed: stalled` by the sweeper so its input is free again |

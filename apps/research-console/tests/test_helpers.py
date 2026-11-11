@@ -370,7 +370,7 @@ out({
   partial: B.estimateAdvice(est(200000, 380000, 650000), 500000),
   exact: B.estimateAdvice(est(1, 400000, 500000), 1000000),
   none: B.estimateAdvice(null, 1000000),
-  block: [B.startBlock(mk(0), { ready: true, checks: [] }).ok, B.startBlock(mk(0), { ready: false, checks: [{ id: "switch:X", label: "Live switch X", ok: false }, { id: "key:tavily", label: "Search key", ok: false }] }),
+  block: [B.startBlock(mk(0), { ready: true, checks: [] }).ok, B.startBlock(mk(0), { ready: false, checks: [{ id: "inputs", label: "Inputs folder", ok: false }, { id: "key:tavily", label: "Search key", ok: false }] }),
           B.startBlock(mk(4500000, "tripwire"), { ready: true }), B.startBlock(mk(5000000, "exhausted"), null).reason, B.startBlock(null, null).ok],
 });
 """
@@ -392,7 +392,7 @@ out({
     assert r["block"][0] is True
     assert r["block"][1] == {
         "ok": False,
-        "reason": "Not ready: Live switch X.",
+        "reason": "Not ready: Inputs folder.",
     }  # a missing optional key is not named
     assert r["block"][2]["ok"] is False and "tripwire" in r["block"][2]["reason"]
     assert "used up" in r["block"][3] and r["block"][4] is True

@@ -37,7 +37,7 @@ from mde_core.money import usd_to_micros
 from mde_core.settings import load_settings
 from mde_llm_gateway.pricing import Pricing
 
-LIVE_ENV = {"LLM_MODE": "live", "ALLOW_LIVE_LLM": "1"}
+LIVE_ENV = {"LLM_MODE": "live"}
 CAP = 3_000_000
 ALLOWANCE = 500_000
 
@@ -118,12 +118,11 @@ def make_card(
 @pytest.fixture(scope="module", autouse=True)
 def _offline_env() -> Iterator[None]:
     """Module-scoped fixtures run before the function-scoped guard of the root conftest: pin the same
-    offline environment for them (mock mode, forbid-live on, no .env, no second key)."""
+    offline environment for them (mock mode, forbid-live on, no .env)."""
     with pytest.MonkeyPatch.context() as mp:
         mp.setenv("LLM_MODE", "mock")
         mp.setenv("MDE_FORBID_LIVE", "1")
         mp.setenv("MDE_ENV_FILE", "")
-        mp.delenv("ALLOW_LIVE_LLM", raising=False)
         mp.delenv("OPENAI_API_KEY", raising=False)
         yield
 
@@ -226,10 +225,8 @@ def test_preflight_passes_when_every_condition_is_met(tmp_path: Path) -> None:
 @pytest.mark.parametrize(
     ("env", "needle"),
     [
-        ({"ALLOW_LIVE_LLM": "1"}, "LLM_MODE"),
-        ({"LLM_MODE": "mock", "ALLOW_LIVE_LLM": "1"}, "LLM_MODE"),
-        ({"LLM_MODE": "live"}, "second key"),
-        ({**LIVE_ENV, "ALLOW_LIVE_LLM": "0"}, "second key"),
+        ({}, "LLM_MODE"),
+        ({"LLM_MODE": "mock"}, "LLM_MODE"),
         ({**LIVE_ENV, "MDE_FORBID_LIVE": "1"}, "MDE_FORBID_LIVE"),
         ({**LIVE_ENV, "COMPASS_INTERVIEW_ENGINE": "legacy"}, "COMPASS_INTERVIEW_ENGINE"),
     ],
@@ -264,7 +261,7 @@ def test_preflight_refuses_an_absent_ledger_and_tells_the_operator_how_to_create
 
 def test_preflight_collects_every_reason_at_once(tmp_path: Path) -> None:
     reasons = lb.preflight({}, tmp_path / "nope.jsonl", ALLOWANCE, CAP, api_key_present=False)
-    assert len(reasons) == 4  # mode, second key, key, ledger
+    assert len(reasons) == 3  # mode, key, ledger
 
 
 def test_dry_run_needs_no_switches_and_no_ledger(tmp_path: Path) -> None:
@@ -328,7 +325,7 @@ def test_dry_run_prints_the_plan_and_exits_zero_without_building_anything(
     out = capsys.readouterr().out
     assert code == 0 and f"Batch {batch}" in out and "dry run: nothing was called" in out
     assert "expected cost" in out and "allowance" in out
-    assert "does not exist" not in out  # a dry run does not judge the ledger or the switches
+    assert "does not exist" not in out  # a dry run does not judge the ledger or live mode
     assert not ledger.exists()
 
 
@@ -340,7 +337,7 @@ def test_a_live_run_without_the_operators_switches_is_refused_and_calls_nothing(
         ["--batch", "E"], env={}, ledger_path=ledger, service_factory=boom, out_dir=tmp_path
     )
     err = capsys.readouterr().err
-    assert code == 2 and "REFUSED" in err and "second key" in err
+    assert code == 2 and "REFUSED" in err and "LLM_MODE" in err
     assert not list(tmp_path.glob("live-*.json"))
 
 
@@ -1216,14 +1213,12 @@ def test_the_legacy_engine_cannot_be_measured_by_mistake(monkeypatch: pytest.Mon
 def test_this_module_cannot_switch_live_mode_on_by_itself() -> None:
     """Mock and replay settings are forced whatever the process environment says; nothing sets a switch."""
     source = Path(lb.__file__).read_text(encoding="utf-8")
-    assert "ALLOW_LIVE_LLM" in source and "os.environ[" not in source and "putenv" not in source
+    assert "LLM_MODE" in source and "os.environ[" not in source and "putenv" not in source
     assert "setenv" not in source and "import openai" not in source
     for mode in ("mock", "replay"):
         svc = lb.default_service_factory(llm_mode=mode, clock=FakeClock())()  # type: ignore[arg-type]
         assert svc.mode_label == "mock"
-    assert (
-        load_settings().allow_live_llm is False
-    )  # the offline guard of the root conftest is in force
+    assert load_settings().forbid_live is True  # the offline guard of the root conftest is in force
 
 
 # ============================================================================================ replay twin

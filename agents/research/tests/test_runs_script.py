@@ -1,4 +1,4 @@
-"""The batch run script: refuses without the owner's switches, estimates offline, and a mock run never touches the repo."""
+"""The batch run script: refuses without live mode, estimates offline, and a mock run never touches the repo."""
 
 from __future__ import annotations
 
@@ -12,32 +12,28 @@ from mde_research_agent import live_runs as runs
 REPO = Path(__file__).resolve().parents[3]
 
 
-def test_preflight_refuses_without_the_owners_switches() -> None:
+def test_preflight_refuses_without_live_mode() -> None:
     problems = runs.preflight_live({})
-    assert any("live" in p for p in problems)
-    assert any("ALLOW_LIVE_LLM" in p for p in problems)
+    assert any("model mode" in p for p in problems)
 
 
-def test_preflight_still_refuses_with_only_the_mode_set() -> None:
+def test_preflight_accepts_live_mode() -> None:
     problems = runs.preflight_live({"LLM_MODE": "live"})
-    assert any("ALLOW_LIVE_LLM" in p for p in problems)
     assert not any("model mode" in p for p in problems)
 
 
-def test_the_bakeoff_refuses_before_any_model_call_without_the_switches(
+def test_the_bakeoff_refuses_before_any_model_call_without_live_mode(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
     from mde_research_agent import live_bakeoff as bakeoff
 
     assert bakeoff.main(["--queries", "4"]) == 2
     err = capsys.readouterr().err
-    assert "cannot run the bake-off" in err and "ALLOW_LIVE_LLM" in err
+    assert "cannot run the bake-off" in err and "model mode" in err
 
 
 def test_the_forbid_switch_is_honoured() -> None:
-    problems = runs.preflight_live(
-        {"LLM_MODE": "live", "ALLOW_LIVE_LLM": "1", "MDE_FORBID_LIVE": "1"}
-    )
+    problems = runs.preflight_live({"LLM_MODE": "live", "MDE_FORBID_LIVE": "1"})
     assert any("MDE_FORBID_LIVE" in p for p in problems)
 
 
@@ -49,10 +45,10 @@ def test_dry_run_estimates_and_calls_nothing(capsys: pytest.CaptureFixture[str])
     assert "estimated total USD" in out
 
 
-def test_a_live_run_without_the_switches_exits_without_running(
+def test_a_live_run_without_live_mode_exits_without_running(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    # the root test fixture forces mock mode and removes the second key, so this must refuse
+    # the root test fixture forces mock mode and sets MDE_FORBID_LIVE, so this must refuse
     assert runs.main(["--run", "quick"]) == 2
     assert "cannot run live" in capsys.readouterr().err
 

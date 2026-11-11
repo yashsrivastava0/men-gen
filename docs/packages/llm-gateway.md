@@ -51,7 +51,7 @@ just budget               # live spend by scope from the ledger
 
 ## Settings it reads
 
-`LLM_MODE`, `ALLOW_LIVE_LLM`, `MDE_FORBID_LIVE`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `MODEL_ROUTES`, `LLM_BUDGET_USD`, `LLM_BUDGET_LEDGER`, `LOG_PROMPTS`, `GATEWAY_SERVICE_TOKEN`, `CASSETTE_DIR` (`Settings.cassette_dir`, default `tests/cassettes` in the main repository, anchored like the ledger) and `MDE_RECORD_CASSETTES=1` (`Settings.record_cassettes`: record cassettes in live mode). The factory reads the two cassette switches from `Settings` (D-034), not from the environment; the `cassette_dir` and `record_cassettes` arguments of `create_gateway` override them.
+`LLM_MODE`, `MDE_FORBID_LIVE`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `MODEL_ROUTES`, `LLM_BUDGET_USD`, `LLM_BUDGET_LEDGER`, `LOG_PROMPTS`, `GATEWAY_SERVICE_TOKEN`, `CASSETTE_DIR` (`Settings.cassette_dir`, default `tests/cassettes` in the main repository, anchored like the ledger) and `MDE_RECORD_CASSETTES=1` (`Settings.record_cassettes`: record cassettes in live mode). The factory reads the two cassette switches from `Settings` (D-034), not from the environment; the `cassette_dir` and `record_cassettes` arguments of `create_gateway` override them.
 
 `GatewayConfig` knobs worth knowing: `breaker_failures` / `breaker_open_seconds` (circuit breakers are keyed by route and tool class: `breaker(route, tool_kinds)`), `concurrency` / `rpm` (per route), and `max_escalated_output_tokens` (ceiling of the one retry of a response that ran out of output tokens; see "Reasoning tokens and the output cap" in the architecture page).
 

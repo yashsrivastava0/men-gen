@@ -28,7 +28,7 @@ uv run mde chat               # ... and the CLI against it (terminal 2)
 
 A scripted run (the shortest full journey is four lines: an idea, `r*` to take the suggested answer to every question, then `1` and `1` to approve the Brief and the Plan): `uv run mde chat --local --memory --script journey.txt`. Other commands: `uv run mde sim` (ten scripted personas), `uv run mde budget` (live spend), `uv run mde doctor` (settings and database, never values), `uv run mde spec verify|show|simulate-consumer <APP_SPEC.md>`.
 
-`just` is installed with `uv tool install rust-just`. Live LLM calls are off by default (`LLM_MODE=mock`) and need a second key that only the user decides to add; read `docs/runbooks/live-llm-budget.md` before anyone enables them. When something fails: `docs/runbooks/troubleshooting.md`.
+`just` is installed with `uv tool install rust-just`. Live LLM calls are off by default (`LLM_MODE=mock`); set `LLM_MODE=live` to enable them, and read `docs/runbooks/live-llm-budget.md` first. When something fails: `docs/runbooks/troubleshooting.md`.
 
 ## Where things are
 

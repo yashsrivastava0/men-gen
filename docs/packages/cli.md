@@ -152,7 +152,7 @@ Exit 0 when every persona met its expectations, else 1 (2 for an unknown persona
 
 **`--llm` (a model plays the persona)** spends real money, so it is refused (exit 3, nothing runs, no session is created) unless **all** of this holds, checked by `mde_cli.llm_user.check_live_allowed` before anything else:
 
-1. `ALLOW_LIVE_LLM=1` and `LLM_MODE=live` are in the *environment*;
+1. `LLM_MODE=live` is in the *environment*;
 2. the gateway's own live check passes (`MDE_FORBID_LIVE` is not set; the pytest fixture sets it, so no test can go live);
 3. the budget ledger is intact and below the 80% tripwire (`just budget` / `mde budget` shows it).
 
@@ -172,7 +172,7 @@ The ledger summary: spend, percent of the cap, reserved, tripwire, live calls, s
 uv run mde doctor [--live] [--url http://127.0.0.1:8100]
 ```
 
-Settings present or absent (never values), the variable *names* of the dotenv file (`MDE_ENV_FILE`, default `.env`; an empty value disables it), duplicates, whether the database answers, with `--url` whether an API is ready, and the model **only** with `--live` in live mode with both switches (a metadata call that costs nothing). Exit 1 when something it checked is down. The logic of `scripts/doctor.py`, plus the API check.
+Settings present or absent (never values), the variable *names* of the dotenv file (`MDE_ENV_FILE`, default `.env`; an empty value disables it), duplicates, whether the database answers, with `--url` whether an API is ready, and the model **only** with `--live` in live mode (a metadata call that costs nothing). Exit 1 when something it checked is down. The logic of `scripts/doctor.py`, plus the API check.
 
 ## `mde spec ...`
 

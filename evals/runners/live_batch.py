@@ -2,11 +2,11 @@
 
     uv run python -m evals.runners.live_batch                    # print the plan, run nothing
     uv run python -m evals.runners.live_batch --batch L1 --dry-run
-    uv run python -m evals.runners.live_batch --batch L1         # runs live (needs the switches)
+    uv run python -m evals.runners.live_batch --batch L1         # runs live (needs LLM_MODE=live)
 
 It REFUSES to run unless ALL of these hold, and says why in plain words when one does not:
 
-* ``ALLOW_LIVE_LLM=1`` and ``LLM_MODE=live`` are set in the OUTER environment, and
+* ``LLM_MODE=live`` is set in the OUTER environment, and
   ``MDE_FORBID_LIVE`` is not ``1`` (the pytest guard);
 * the budget status read from the ledger allows it: the tripwire is not ``refuse_95`` (nor
   ``must_run_only_80`` unless ``--must-run``) and the headroom under the effective cap covers
@@ -157,8 +157,6 @@ def check_live_allowed(
 ) -> list[str]:
     """Why this batch must NOT run now (empty list = allowed). Never mentions a key value."""
     reasons: list[str] = []
-    if env.get("ALLOW_LIVE_LLM") != "1":
-        reasons.append("ALLOW_LIVE_LLM=1 is not set in the outer environment")
     if env.get("LLM_MODE") != "live":
         reasons.append("LLM_MODE=live is not set in the outer environment")
     if env.get("MDE_FORBID_LIVE") == "1":

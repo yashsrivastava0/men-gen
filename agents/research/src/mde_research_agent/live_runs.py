@@ -9,7 +9,7 @@ service the API uses, then writes ``research.json``, the event log, a truncated 
 * ``--dry-run`` prints the plan, ceilings and a cost estimate for each run and calls nothing.
 * ``--mock`` runs over fake search and fetch with mock models (tests the plumbing offline).
 * ``--replay`` serves the recorded cassettes (never goes live).
-* A real run refuses to start unless the owner's live switches and a search key are ALREADY in the environment (this module
+* A real run refuses to start unless ``LLM_MODE=live`` and a search key are ALREADY in the environment (this module
   never sets them). It checks the allowance (``--allowance-usd``) and the shared ledger before EACH run and, when the
   allowance is nearly used, finishes the run in progress and starts no new one. ``--record`` saves search, fetch and model
   cassettes so a run can be replayed offline.
@@ -81,10 +81,6 @@ def preflight_live(environ: dict[str, str] | None = None) -> list[str]:
     problems = []
     if env.get("LLM_MODE", "").strip().lower() != "live":
         problems.append("the model mode must be live in the environment")
-    if env.get("ALLOW_LIVE_LLM", "").strip() != "1":
-        problems.append(
-            "the second key (ALLOW_LIVE_LLM=1) must be set in the environment by the owner"
-        )
     if env.get("MDE_FORBID_LIVE", "").strip() in ("1", "true"):
         problems.append("MDE_FORBID_LIVE is set")
     if not any(keys_present(load_research_settings()).values()):

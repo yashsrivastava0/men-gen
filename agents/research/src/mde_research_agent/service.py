@@ -176,7 +176,7 @@ class ResearchService:
 
     def _require_ready(self) -> None:
         if not self.ready:
-            raise NotReady(self.missing or ["the live switches"])
+            raise NotReady(self.missing or ["a model gateway (MDE_FORBID_LIVE must be unset)"])
         if self.search is None:
             raise NotReady(["TAVILY_API_KEY or SERPER_API_KEY"])
         self._require_budget()

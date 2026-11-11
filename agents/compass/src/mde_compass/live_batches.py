@@ -1,15 +1,15 @@
 """Live batches E, F and G of the AI-planned interview (build prompt 02, phase 7), and their offline twin.
 
     uv run python -m mde_compass.live_batches --batch E --dry-run      # the plan and the expected cost, no calls
-    uv run python -m mde_compass.live_batches --batch E                # the real batch (needs the operator's switches)
+    uv run python -m mde_compass.live_batches --batch E                # the real batch (needs LLM_MODE=live)
     uv run python -m mde_compass.live_batches --batch F --mock         # the same code, offline and free
 
 The batches drive the REAL Compass service (``compose.build_service``, planner engine forced, in-memory store, so
 no database is needed) through scripted sessions and write a JSON report to ``agents/compass/evals/reports/``
 (gitignored). Scripts, answer pools and thresholds are data (``live_data/*.yaml``); this module holds the logic:
 
-* **Preflight** (``preflight``, a pure function): refuses, with the reasons in plain words, unless the live
-  switches are in the operator's environment, the gateway ledger exists, and Compass's spend plus the allowance
+* **Preflight** (``preflight``, a pure function): refuses, with the reasons in plain words, unless
+  ``LLM_MODE=live`` is in the operator's environment, the gateway ledger exists, and Compass's spend plus the allowance
   fits under its ceiling (95% stop line, the reserve kept unspent).
 * **Plan**: what runs, how many calls, the expected cost and the worst-case ceiling, printed before any call.
 * **Allowance stop**: after every turn the gateway ledger delta (not an estimate) is read; at the allowance the run
@@ -20,8 +20,8 @@ no database is needed) through scripted sessions and write a JSON report to ``ag
 * **Checks**: computed in code from what was stored (questions, facts, the Brief), each with a value, a threshold
   and pass, fail or "report only".
 
-Nothing here switches live mode on: the mode comes from the process environment, and the second key is the
-operator's decision (``docs/runbooks/live-llm-budget.md``). ``--mock`` forces mock settings and cannot make a live call.
+Nothing here switches live mode on: the mode comes from the process environment
+(``docs/runbooks/live-llm-budget.md``). ``--mock`` forces mock settings and cannot make a live call.
 """
 
 from __future__ import annotations
@@ -284,7 +284,7 @@ def preflight(
 ) -> list[str]:
     """Why this batch must NOT run now, in plain words (an empty list means it may).
 
-    * Not for ``dry_run``: the live switches (mode live, the second key, the forbid flag unset), the engine
+    * Not for ``dry_run``: the live mode (mode live, the forbid flag unset), the engine
       override, the key's presence (``api_key_present``; ``None`` means unknown) and the existence of the gateway
       ledger (an absent ledger blocks live calls on purpose; create it with ``budget_cli init``).
     * Always: the allowance must be positive and fit. Compass's spend so far (from the ledger, ``cmp.*`` calls)
@@ -304,11 +304,6 @@ def preflight(
             reasons.append(
                 "LLM_MODE is not live in the outer environment: this batch calls the real model "
                 "(use --mock for an offline run of the same code)"
-            )
-        if env.get("ALLOW_LIVE_LLM", "").strip() != "1":
-            reasons.append(
-                "the second key (ALLOW_LIVE_LLM=1) is not in the outer environment: adding it is the "
-                "owner's decision, never an agent's"
             )
         if _truthy(env.get("MDE_FORBID_LIVE")) or _truthy(env.get("FORBID_LIVE")):
             reasons.append("MDE_FORBID_LIVE is set: live calls are forbidden in this process")

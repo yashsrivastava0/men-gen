@@ -14,7 +14,7 @@ model: inherit
 
 **Definition of done**
 - `BudgetGuard` (`reserve`/`commit`, scoped caps session 0.50 / research run 0.30, tripwires 50/80/95%), pricing file (unknown model or missing price refuses), append-only ledger with a portable cross-process file lock (`mde_core.filelock`; Windows is the dev platform), totals re-derived on start.
-- Pipeline (validate, render, untrusted blocks, reserve, cache, call, local validate, one repair, fallback, commit), `to_strict_schema`, retries with fake-clock tests, circuit breaker, concurrency and RPM limits, `ScriptedProvider`, `MockProvider`, `ReplayProvider`, `RecordingProvider`, live gating (`LLM_MODE=live` and `ALLOW_LIVE_LLM=1`; `MDE_FORBID_LIVE=1` raises `LiveCallForbidden`), HTTP API + `HttpGatewayClient` with a contract test across both clients.
+- Pipeline (validate, render, untrusted blocks, reserve, cache, call, local validate, one repair, fallback, commit), `to_strict_schema`, retries with fake-clock tests, circuit breaker, concurrency and RPM limits, `ScriptedProvider`, `MockProvider`, `ReplayProvider`, `RecordingProvider`, live gating (`LLM_MODE=live`; `MDE_FORBID_LIVE=1` raises `LiveCallForbidden`), HTTP API + `HttpGatewayClient` with a contract test across both clients.
 - Tests per brief 7.13; coverage >= 85%; pyright strict; `docs/architecture/llm-gateway.md` records what was confirmed about the installed `openai` SDK types.
 
 **Rules:** mock/replay only, never live (the lead runs L0 smoke). Never read `.env` or print keys; log redaction test greps captured logs for the key value. Own paths only; ask the lead (in your report) for contract or shared-file changes. Commit small and often on your branch (`gateway: <what>`).

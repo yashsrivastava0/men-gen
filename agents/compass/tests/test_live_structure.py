@@ -61,7 +61,7 @@ def test_a_live_run_is_refused_without_the_switches_and_a_dry_run_calls_nothing(
     ledger = tmp_path / "ledger.sqlite3"
     refused = main(["--replay", "pune"], env={}, ledger_path=ledger, out_dir=tmp_path)
     err = capsys.readouterr().err
-    assert refused == 2 and "REFUSED" in err and "ALLOW_LIVE_LLM" in err
+    assert refused == 2 and "REFUSED" in err and "LLM_MODE" in err
     assert not list(tmp_path.glob("H-*.json"))
     dry = main(["--replay", "pune", "--dry-run"], env={}, ledger_path=ledger, out_dir=tmp_path)
     out = capsys.readouterr().out

@@ -9,7 +9,7 @@ $env:GATEWAY_SERVICE_TOKEN = "any-non-empty-local-value"    # without a token ev
 just gateway-dev                                              # uvicorn mde_llm_gateway_api.main:app --port 8101
 ```
 
-The default mode is `LLM_MODE=mock`: no key, no network, no cost. Live mode needs the three switches of [the live budget runbook](../runbooks/live-llm-budget.md) and is never started by this app on its own: `create_app()` builds the gateway from settings, so a forbidden or keyless live configuration fails at start-up, not on the first call. To make the context API use it: `GATEWAY_MODE=http`, `GATEWAY_URL=http://127.0.0.1:8101` and the same `GATEWAY_SERVICE_TOKEN` (both required, otherwise `ConfigError`).
+The default mode is `LLM_MODE=mock`: no key, no network, no cost. Live mode needs `LLM_MODE=live` (see [the live budget runbook](../runbooks/live-llm-budget.md)) and is never started by this app on its own: `create_app()` builds the gateway from settings, so a forbidden or keyless live configuration fails at start-up, not on the first call. To make the context API use it: `GATEWAY_MODE=http`, `GATEWAY_URL=http://127.0.0.1:8101` and the same `GATEWAY_SERVICE_TOKEN` (both required, otherwise `ConfigError`).
 
 ## Routes
 

@@ -15,7 +15,7 @@ model: inherit
 
 **Review checklist**
 - **Gates and state:** any path that emits or enables `spec_ready` without Gate 2 approval of the *current* hash; approvals surviving a version change; mutation of an approved version; state changes outside `mde_flow`; typed approval accepted with no gate open or low confidence; two active runs.
-- **Budget:** any LLM or search call that bypasses the gateway or `BudgetGuard.reserve`; repairs/retries not metered; unknown model not refused; ledger races (parallel processes); cap arithmetic (floats, rounding); live gating (`LLM_MODE=live` and `ALLOW_LIVE_LLM=1`; `MDE_FORBID_LIVE`).
+- **Budget:** any LLM or search call that bypasses the gateway or `BudgetGuard.reserve`; repairs/retries not metered; unknown model not refused; ledger races (parallel processes); cap arithmetic (floats, rounding); live gating (`LLM_MODE=live`; `MDE_FORBID_LIVE`).
 - **Secrets:** any place `.env` or an API key could be read, logged, committed, put in a cassette, test, doc or error message; redaction coverage for pasted secrets.
 - **Injection:** untrusted blocks, specs combining untrusted inputs with tools, instructions in uploads or search results reaching a tool-enabled call, hidden/zero-width characters, system-prompt leaks.
 - **Data:** tenant isolation in every repository query; SQL built from strings; idempotency; event replay leaking other tenants' events.

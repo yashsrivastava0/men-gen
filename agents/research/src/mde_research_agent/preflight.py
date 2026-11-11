@@ -12,7 +12,6 @@ from typing import Any
 
 from mde_core.money import micros_to_usd
 from mde_core.settings import Settings
-from mde_research_agent.compose import live_switches
 from mde_research_agent.config import (
     ResearchSettings,
     data_dir,
@@ -44,17 +43,6 @@ def run_preflight(
     service: ResearchService, core: Settings, cfg: ResearchSettings
 ) -> dict[str, Any]:
     checks: list[dict[str, Any]] = []
-    sw = live_switches(core)
-    for name, ok in sw.items():
-        checks.append(
-            _check(
-                f"switch:{name}",
-                f"Live switch {name}",
-                ok,
-                "set" if ok else "not set",
-                f"Start the app with {name} in its environment (the owner sets this).",
-            )
-        )
     keys = keys_present(cfg)
     for provider, env in (("tavily", "TAVILY_API_KEY"), ("serper", "SERPER_API_KEY")):
         checks.append(
