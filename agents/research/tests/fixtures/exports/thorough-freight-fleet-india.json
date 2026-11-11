@@ -9833,5 +9833,16 @@
   },
   "calls": 100,
   "cost_micros": 488929
+ },
+ "structure": {
+  "band": "large",
+  "counts": {
+   "entities": 22,
+   "flows": 20,
+   "modules": 11,
+   "screens": 132
+  },
+  "issues_count": 76,
+  "source": "tier"
  }
 }

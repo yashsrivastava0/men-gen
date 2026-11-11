@@ -13,9 +13,9 @@ from pathlib import Path
 from typing import Any
 
 import yaml
+
 from mde_core.errors import ConfigError
 from mde_core.hashing import hash_json
-
 from mde_research_agent.catalog.models import (
     AuthorityEntry,
     Catalog,
@@ -25,6 +25,7 @@ from mde_research_agent.catalog.models import (
     JobSpec,
     Labels,
     LanesConfig,
+    LanguagesConfig,
     LoadConfig,
     NeedsConfig,
     PrevalenceConfig,
@@ -168,6 +169,7 @@ def load_catalog(data_dir: Path | None = None) -> Catalog:
         "prevalence": PrevalenceConfig.model_validate(_yaml(root / "prevalence.yaml")),
         "lanes": LanesConfig.model_validate(_yaml(root / "lanes.yaml")),
         "needs": NeedsConfig.model_validate(_yaml(root / "need_keywords.yaml")),
+        "languages": LanguagesConfig.model_validate(_yaml(root / "languages.yaml")).languages,
         "labels": _labels(root),
     }
     _validate(parts)

@@ -3,8 +3,8 @@ from pathlib import Path
 
 import pytest
 import yaml
-from mde_core.errors import ConfigError
 
+from mde_core.errors import ConfigError
 from mde_research_agent.catalog import DATA_DIR, EVENT_TYPES, JOB_NAMES, load_catalog
 
 
@@ -50,7 +50,7 @@ def test_a_missing_event_label_fails_at_load(tmp_path: Path) -> None:
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     del raw["events"]["page.read"]
     path.write_text(yaml.safe_dump(raw, allow_unicode=True), encoding="utf-8")
-    with pytest.raises(ConfigError, match="page.read"):
+    with pytest.raises(ConfigError, match=r"page\.read"):
         load_catalog(dst)
 
 

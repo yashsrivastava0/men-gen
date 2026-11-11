@@ -2705,5 +2705,16 @@
   },
   "calls": 37,
   "cost_micros": 26929
+ },
+ "structure": {
+  "band": "small",
+  "counts": {
+   "entities": 5,
+   "flows": 4,
+   "modules": 4,
+   "screens": 13
+  },
+  "issues_count": 1,
+  "source": "tier"
  }
 }

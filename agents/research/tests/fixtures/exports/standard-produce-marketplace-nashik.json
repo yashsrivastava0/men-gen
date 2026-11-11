@@ -3753,5 +3753,16 @@
   },
   "calls": 68,
   "cost_micros": 106789
+ },
+ "structure": {
+  "band": "medium",
+  "counts": {
+   "entities": 10,
+   "flows": 7,
+   "modules": 5,
+   "screens": 28
+  },
+  "issues_count": 4,
+  "source": "tier"
  }
 }

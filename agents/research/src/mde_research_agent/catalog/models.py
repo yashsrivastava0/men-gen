@@ -199,6 +199,8 @@ class TemplatePatterns(Frozen):
     repeated_audience_share: float
     template_fact_prefixes: tuple[str, ...]
     junk_tokens: tuple[str, ...]
+    own_brand_cues: tuple[str, ...]
+    fragment_term_chars: int
 
 
 class StaleMonths(Frozen):
@@ -242,6 +244,17 @@ class NeedsConfig(Frozen):
     format_words: tuple[str, ...]
 
 
+class LanguageInfo(Frozen):
+    name: str
+    script: str
+    direction: Literal["ltr", "rtl"]
+    latin: bool
+
+
+class LanguagesConfig(Frozen):
+    languages: dict[str, LanguageInfo]
+
+
 class Labels(Frozen):
     depth_words: dict[str, str]
     events: dict[str, str]
@@ -263,5 +276,6 @@ class Catalog(Frozen):
     prevalence: PrevalenceConfig
     lanes: LanesConfig
     needs: NeedsConfig
+    languages: dict[str, LanguageInfo]
     labels: dict[str, Labels]
     catalog_hash: str

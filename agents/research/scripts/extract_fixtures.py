@@ -116,6 +116,12 @@ def slim_export(export: dict[str, Any], source_name: str) -> dict[str, Any]:
             },
         },
         "brief": slim_brief,
+        "structure": {
+            "band": export.get("structure", {}).get("band"),
+            "source": export.get("structure", {}).get("source"),
+            "counts": export.get("structure", {}).get("counts"),
+            "issues_count": len(export.get("structure", {}).get("issues", [])),
+        },
         "consumer_views": {"research": export["consumer_views"]["research"]},
         "spend": {
             "calls": spend.get("calls"),
