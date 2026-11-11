@@ -114,7 +114,7 @@ class SlotSpec(Frozen):
     ``count``: at least ``min`` items of ``kind`` (distinct by ``distinct_by``); when ``attr`` is set an
     item only counts when that list attribute has at least ``attr_min`` entries (and every ``extra_attrs``
     rule holds). ``distinct_values``: at least ``min`` distinct values across the ``attr`` of all items of
-    ``kind``.
+    ``kind`` (each value supported by at least ``min_support`` distinct items).
     """
 
     key: str
@@ -125,6 +125,9 @@ class SlotSpec(Frozen):
     attr: str | None = None
     attr_min: int = 0
     extra_attrs: tuple[ExtraAttr, ...] = ()
+    min_support: int = (
+        1  # distinct_values: a value counts only when this many distinct items show it
+    )
     required: bool = True
 
 

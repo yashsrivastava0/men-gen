@@ -22,7 +22,7 @@ targets:
     anchor: category
     slots:
       - {key: competitors, type: count, kind: competitor, distinct_by: name, min: 3, attr: features, attr_min: 5, required: true}
-      - {key: feature_norms, type: distinct_values, kind: competitor, attr: features, min: 8, required: true}
+      - {key: feature_norms, type: distinct_values, kind: competitor, distinct_by: name, attr: features, min: 8, min_support: 2, required: true}
   - id: references
     label: "Apps you mentioned: {entity}"
     foreach: reference

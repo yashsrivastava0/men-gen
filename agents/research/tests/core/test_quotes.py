@@ -150,7 +150,7 @@ def test_perturbing_a_real_substring_keeps_it_verified(words: list[str], seed: i
         return
     noisy = []
     for w in quote_words:
-        w = rng.choice([w, w.upper(), w.lower()])
+        w = rng.choice([v for v in (w, w.upper(), w.lower()) if v.casefold() == w.casefold()])  # not Turkish dotless i
         if len(w) > 2 and rng.random() < 0.5:
             cut = rng.randrange(1, len(w))
             w = w[:cut] + rng.choice(["​", "‌", "﻿", "­"]) + w[cut:]
