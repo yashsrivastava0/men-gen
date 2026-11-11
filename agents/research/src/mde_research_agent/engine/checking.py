@@ -16,18 +16,21 @@ import asyncio
 import hashlib
 import json
 import re
+from collections.abc import Callable
 from typing import Any
 
 from mde_core.errors import BudgetExceeded, CallCancelled, CassetteMissing, LiveCallForbidden
 from mde_research_agent.calls import check as check_call
 from mde_research_agent.catalog.models import LanesConfig
 from mde_research_agent.core.quotes import verify_quote
+from mde_research_agent.domain.atoms import NON_WIRE, is_identifying
 from mde_research_agent.engine.context import RunContext
 from mde_research_agent.engine.state import AtomRecord, PageRecord, TargetState
 
 CHECK_BATCH = 15
 PASSAGE_WORDS = 150
 MAX_DATA_CHARS = 2500
+_PATH_HEAD = re.compile(r"^\s*([A-Za-z_][A-Za-z0-9_]*)")
 _LOOSE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[(\d+)\])?(?:\..+)$")
 _PATH = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[(\d+)\])?(?:\.([A-Za-z_][A-Za-z0-9_]*))?$")
 _STOP = (BudgetExceeded, CassetteMissing, LiveCallForbidden)
@@ -49,7 +52,11 @@ def passage_window(page: PageRecord, quote: str, words: int = PASSAGE_WORDS) -> 
     return " ".join([*left, mid, *right])
 
 
-def null_paths(data: dict[str, Any], paths: list[str]) -> tuple[dict[str, Any], list[str]]:
+def null_paths(
+    data: dict[str, Any],
+    paths: list[str],
+    identifying: Callable[[str, str], bool] | None = None,
+) -> tuple[dict[str, Any], list[str]]:
     """``data`` without the fields the checker said the page does not state. A path is ``field``, ``field[i]`` or
     ``field[i].sub``; a top-level scalar becomes null, a list becomes empty, a list element is removed, a nested
     attribute becomes null. Unknown paths are ignored. Returns ``(new data, the paths applied)``."""
@@ -78,7 +85,12 @@ def null_paths(data: dict[str, Any], paths: list[str]) -> tuple[dict[str, Any], 
                 removals.append((name, int(idx)))
                 applied.append(p)
             elif isinstance(value[int(idx)], dict) and sub in value[int(idx)]:
-                value[int(idx)][sub] = None
+                if identifying is not None and identifying(name, sub):
+                    removals.append(
+                        (name, int(idx))
+                    )  # a required attribute cannot be null: the element goes
+                else:
+                    value[int(idx)][sub] = None
                 applied.append(p)
     for name, i in sorted(
         set(removals), key=lambda t: (t[0], -t[1])
@@ -171,8 +183,15 @@ async def _apply(
             },
         )
         return
-    if v.unsupported_fields:
-        data, applied = null_paths(a.data, v.unsupported_fields)
+    # the checker may name a field that CODE set (legal_adjacent, url, the *_variants): those are not the model's claims
+    owned = NON_WIRE.get(a.kind, frozenset())
+    paths = [
+        p for p in v.unsupported_fields if (h := _PATH_HEAD.match(p)) is None or h[1] not in owned
+    ]
+    if paths:
+        data, applied = null_paths(
+            a.data, paths, identifying=lambda field, sub: is_identifying(a.kind, field, sub)
+        )
         if applied:
             a.data = data
             a.unsupported_fields = applied

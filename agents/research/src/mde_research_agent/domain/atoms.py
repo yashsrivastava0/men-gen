@@ -45,7 +45,9 @@ class W(BaseModel):
 
 class FeatureLevel(W):
     feature_key: str
-    level: Literal["core", "standard", "premium"]
+    level: Literal["core", "standard", "premium"] | None = (
+        None  # null: the page does not say which tier
+    )
 
 
 class ScreenRef(W):
@@ -54,7 +56,7 @@ class ScreenRef(W):
 
 class ScreenState(W):
     state: Literal["loading", "empty", "error", "success", "default", "offline"]
-    content: str
+    content: str | None = None  # null: the page does not describe what the state shows
 
 
 class FieldSpec(W):
@@ -68,7 +70,7 @@ class FieldSpec(W):
 class Transition(W):
     from_state: str
     to_state: str
-    trigger: str
+    trigger: str | None = None  # null: the page does not say what causes it
 
 
 class CompetitorData(W):
@@ -299,6 +301,20 @@ def wire_atom_model(kind: str) -> type[AtomCommon]:
     model = create_model(f"{camel}Atom", __base__=AtomCommon, **fields)
     _WIRE_CACHE[kind] = model
     return model
+
+
+def is_identifying(kind: str, field: str, sub: str) -> bool:
+    """Is ``sub`` a REQUIRED attribute of the elements of the list ``field`` (a feature key, a state, a transition end)?
+    Nulling it would leave an element that is not valid and means nothing, so the checker's path removes the element."""
+    model = PAYLOADS.get(kind)
+    info = model.model_fields.get(field) if model else None
+    if info is None:
+        return False
+    for arg in getattr(info.annotation, "__args__", ()):
+        fields = getattr(arg, "model_fields", None)
+        if fields and sub in fields:
+            return bool(fields[sub].is_required())
+    return False
 
 
 def payload_from_wire(kind: str, atom: AtomCommon) -> dict[str, Any]:

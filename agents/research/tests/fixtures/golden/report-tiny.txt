@@ -5,7 +5,7 @@
 - Signals: none
 - Work: 10 searches, 19 pages, 0 s, USD 0.00
 - Topics: 1 covered, 1 not found, of 2; required slots 2 of 3
-- Items: 32 (main store about 10697 tokens, appendix 0)
+- Items: 32 (main store about 10923 tokens, appendix 0)
 - Provider: fake; models: gpt-6-luna / checker gpt-6-luna (same)
 
 ## Lane quality
@@ -577,7 +577,7 @@ Each unit converter screens record has a status, a created date, an owner and a 
 - sections: each; unit; converter; screens; record; has
 - key_components: each; unit; converter; screens; record; has; screen; roles; navigation
 - actions: each; unit; converter; screens; record; has; screen; roles; navigation
-- states: {"state": "loading", "content": "each"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- states: {"state": "loading", "content": "each unit converter screens"}; {"state": "loading", "content": "each unit converter screens"}; {"state": "loading", "content": "each unit converter screens"}; {"state": "loading", "content": "each unit converter screen"}; {"state": "loading", "content": "each unit converter roles"}; {"state": "loading", "content": "each unit converter navigation"}
 - validations: each; unit; converter; screens; record; has; screen; roles; navigation
 - microcopy_notes: each; unit; converter; screens; record; has; screen; roles; navigation
 - section_variants: ['each', 'unit', 'converter', 'screen', 'record', 'has']; ['each', 'unit', 'converter', 'roles', 'record', 'has']; ['each', 'unit', 'converter', 'navigation', 'record', 'has']
@@ -600,7 +600,7 @@ Fees for unit converter roles start at 5 percent and funds settle in 4 business 
 - sections: fees; unit; converter; roles; start; percent
 - key_components: fees; unit; converter; roles; start; percent
 - actions: fees; unit; converter; roles; start; percent
-- states: {"state": "loading", "content": "fees"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- states: {"state": "loading", "content": "fees unit converter roles"}; {"state": "loading", "content": "fees unit converter roles"}; {"state": "loading", "content": "fees unit converter roles"}
 - validations: fees; unit; converter; roles; start; percent
 - microcopy_notes: fees; unit; converter; roles; start; percent
 - Applies to: NEW (suggests)
@@ -622,7 +622,7 @@ Most unit converter roles providers list converter and roles as core features on
 - sections: most; unit; converter; roles; providers; list
 - key_components: most; unit; converter; roles; providers; list
 - actions: most; unit; converter; roles; providers; list
-- states: {"state": "loading", "content": "most"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- states: {"state": "loading", "content": "most unit converter roles"}; {"state": "loading", "content": "most unit converter roles"}; {"state": "loading", "content": "most unit converter roles"}
 - validations: most; unit; converter; roles; providers; list
 - microcopy_notes: most; unit; converter; roles; providers; list
 - Applies to: NEW (suggests)
@@ -650,7 +650,7 @@ Recent updates added converter and improved screen for unit converter screen use
 - sections: recent; updates; added; converter; improved; screen
 - key_components: recent; updates; added; converter; improved; screen; navigation; screens; roles
 - actions: recent; updates; added; converter; improved; screen; navigation; screens; roles
-- states: {"state": "loading", "content": "recent"}; {"state": "loading", "content": "updates"}; {"state": "loading", "content": "added"}
+- states: {"state": "loading", "content": "recent updates added converter"}; {"state": "loading", "content": "recent updates added converter"}; {"state": "loading", "content": "recent updates added converter"}
 - validations: recent; updates; added; converter; improved; screen; navigation; screens; roles
 - microcopy_notes: recent; updates; added; converter; improved; screen; navigation; screens; roles
 - section_variants: ['recent', 'updates', 'added', 'converter', 'improved', 'navigation']; ['recent', 'updates', 'added', 'converter', 'improved', 'screens']; ['recent', 'updates', 'added', 'converter', 'improved', 'roles']
@@ -674,7 +674,7 @@ The sandbox for unit converter navigation supports test keys, webhook events for
 - sections: sandbox; unit; converter; navigation; supports; test
 - key_components: sandbox; unit; converter; navigation; supports; test; roles
 - actions: sandbox; unit; converter; navigation; supports; test; roles
-- states: {"state": "loading", "content": "sandbox"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- states: {"state": "loading", "content": "sandbox unit converter navigation"}; {"state": "loading", "content": "sandbox unit converter navigation"}; {"state": "loading", "content": "sandbox unit converter navigation"}; {"state": "loading", "content": "sandbox unit converter roles"}
 - validations: sandbox; unit; converter; navigation; supports; test; roles
 - microcopy_notes: sandbox; unit; converter; navigation; supports; test; roles
 - section_variants: ['sandbox', 'unit', 'converter', 'roles', 'supports', 'test']
@@ -703,7 +703,7 @@ A typical unit converter navigation screen shows converter first, then navigatio
 - sections: typical; unit; converter; navigation; screen; shows
 - key_components: typical; unit; converter; navigation; screen; shows; roles; screens; first
 - actions: typical; unit; converter; navigation; screen; shows; roles; screens; first
-- states: {"state": "loading", "content": "typical"}; {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}
+- states: {"state": "loading", "content": "typical unit converter navigation"}; {"state": "loading", "content": "typical unit converter navigation"}; {"state": "loading", "content": "typical unit converter navigation"}; {"state": "loading", "content": "typical unit converter roles"}; {"state": "loading", "content": "typical unit converter screens"}; {"state": "loading", "content": "typical unit converter screen"}
 - validations: typical; unit; converter; navigation; screen; shows; roles; screens; first
 - microcopy_notes: typical; unit; converter; navigation; screen; shows; roles; screens; first
 - section_variants: ['typical', 'unit', 'converter', 'roles', 'screen', 'shows']; ['typical', 'unit', 'converter', 'screens', 'screen', 'shows']; ['typical', 'unit', 'converter', 'screen', 'shows', 'first']
@@ -729,7 +729,7 @@ Unit converter screen apps let members converter and manage screen directly from
 - sections: unit; converter; screen; let; members; manage
 - key_components: unit; converter; screen; let; members; manage; screens
 - actions: unit; converter; screen; let; members; manage; screens
-- states: {"state": "loading", "content": "unit"}; {"state": "loading", "content": "converter"}; {"state": "loading", "content": "screen"}; {"state": "loading", "content": "screens"}
+- states: {"state": "loading", "content": "unit converter screen let"}; {"state": "loading", "content": "unit converter screen let"}; {"state": "loading", "content": "unit converter screen let"}; {"state": "loading", "content": "unit converter screens let"}
 - validations: unit; converter; screen; let; members; manage; screens
 - microcopy_notes: unit; converter; screen; let; members; manage; screens
 - section_variants: ['unit', 'converter', 'screens', 'let', 'members', 'manage']

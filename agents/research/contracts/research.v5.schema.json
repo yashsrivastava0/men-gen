@@ -1378,18 +1378,25 @@
           "type": "string"
         },
         "level": {
-          "enum": [
-            "core",
-            "standard",
-            "premium"
+          "anyOf": [
+            {
+              "enum": [
+                "core",
+                "standard",
+                "premium"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Level",
-          "type": "string"
+          "default": null,
+          "title": "Level"
         }
       },
       "required": [
-        "feature_key",
-        "level"
+        "feature_key"
       ],
       "title": "FeatureLevel",
       "type": "object"
@@ -2417,14 +2424,21 @@
           "type": "string"
         },
         "trigger": {
-          "title": "Trigger",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Trigger"
         }
       },
       "required": [
         "from_state",
-        "to_state",
-        "trigger"
+        "to_state"
       ],
       "title": "Transition",
       "type": "object"
@@ -2437,18 +2451,25 @@
           "type": "string"
         },
         "level": {
-          "enum": [
-            "core",
-            "standard",
-            "premium"
+          "anyOf": [
+            {
+              "enum": [
+                "core",
+                "standard",
+                "premium"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Level",
-          "type": "string"
+          "default": null,
+          "title": "Level"
         }
       },
       "required": [
-        "feature_key",
-        "level"
+        "feature_key"
       ],
       "title": "FeatureLevel",
       "type": "object"
@@ -2457,8 +2478,16 @@
       "additionalProperties": false,
       "properties": {
         "content": {
-          "title": "Content",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Content"
         },
         "state": {
           "enum": [
@@ -2474,8 +2503,7 @@
         }
       },
       "required": [
-        "state",
-        "content"
+        "state"
       ],
       "title": "ScreenState",
       "type": "object"

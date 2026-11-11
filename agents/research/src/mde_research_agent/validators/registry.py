@@ -30,7 +30,7 @@ from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
 from mde_research_agent.core.slots import evaluate_target
 from mde_research_agent.core.sources import can_support_high_impact, independent_count
 from mde_research_agent.core.text import stem_set, tokens
-from mde_research_agent.domain.atoms import validate_payload
+from mde_research_agent.domain.atoms import is_identifying, validate_payload
 from mde_research_agent.domain.events import DETAIL_ALLOWLIST, Event
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan
@@ -560,6 +560,17 @@ def rv20_region_entity(v: ValidationContext) -> list[Violation]:
 
 
 _ELEMENT_PATH = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*\[\d+\]$")
+_NESTED_PATH = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\[\d+\]\.([A-Za-z_][A-Za-z0-9_]*)$")
+
+
+def _removes_an_element(kind: str, path: str) -> bool:
+    """Does this path take an element OUT of a list (``steps[0]``, or ``features[0].feature_key``, a required attribute)?
+    Re-applying such a path hits the next element, so RV-21 cannot check it after the fact."""
+    p = path.strip()
+    if _ELEMENT_PATH.match(p):
+        return True
+    m = _NESTED_PATH.match(p)
+    return bool(m and is_identifying(kind, m[1], m[2]))
 
 
 def rv21_checked(v: ValidationContext) -> list[Violation]:
@@ -580,7 +591,9 @@ def rv21_checked(v: ValidationContext) -> list[Violation]:
         # look like a leftover: only paths that are idempotent (a scalar, a list emptied, "field[i].sub") can be checked
         # after the fact. The first live run with many checked items had 10 false RV-21 errors and was marked partial.
         paths = [
-            p for p in (a.get("unsupported_fields") or []) if not _ELEMENT_PATH.match(p.strip())
+            p
+            for p in (a.get("unsupported_fields") or [])
+            if not _removes_an_element(a.get("kind", ""), p)
         ]
         if paths:
             rest, _applied = null_paths(a.get("data") or {}, paths)

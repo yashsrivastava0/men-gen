@@ -261,6 +261,7 @@ def test_rv21_does_not_call_a_removed_list_element_a_leftover() -> None:
     atom = {
         "status": "verified",
         "item_id": "RI-001",
+        "kind": "workflow",
         "checked": True,
         "unsupported_fields": ["steps[0]", "purpose"],
         "data": after_removal,
