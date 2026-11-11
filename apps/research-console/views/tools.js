@@ -1,9 +1,8 @@
 /* Tools (#/tools): search provider bake-off and provider settings.
    Non-engineers can compare providers head-to-head and choose which one handles live searches. */
-import { h, clear, setKids, untrusted, navLink, put } from "../lib/dom.js";
+import { h, clear, setKids, untrusted, put } from "../lib/dom.js";
 import { modal } from "./dialogs.js";
 import { problemBanner } from "./shared.js";
-import { usd, usdNum, formatDateTime } from "../lib/format.js";
 import { ApiError } from "../lib/api.js";
 
 const PROVIDER_NAMES = {
@@ -80,7 +79,7 @@ export function mount(root, ctx) {
 
     const state = bakeoffData.state || "idle";
     const plan = bakeoffData.plan || {};
-    const last = bakeoffData.last || null;
+    const last = bakeoffData.result || bakeoffData.last || null;
 
     if (state === "running") {
       bakeoffCard.appendChild(
@@ -104,38 +103,70 @@ export function mount(root, ctx) {
       timer = null;
     }
 
+    if (state === "failed") {
+      const msg = bakeoffData.message || bakeoffData.error || "The provider bake-off could not complete.";
+      bakeoffCard.appendChild(
+        h("div", { class: "banner banner-bad", role: "alert" }, h("p", null, h("strong", null, "Bake-off failed: "), untrusted(msg)))
+      );
+    }
+
     // Plan and Start button
     const estCost = plan.total_usd ? "USD " + plan.total_usd : "about USD 0.40";
     const planInfo = h(
       "div",
       { class: "facts-box muted small pad" },
-      h("p", null, "Next run plan: ", h("strong", null, String(plan.queries_sent || 80)), " queries across ", (plan.providers || []).join(", ") || "providers", " · estimated cost: ", h("strong", null, estCost))
+      h(
+        "p",
+        null,
+        "Next run plan: ",
+        h("strong", null, String(plan.queries_sent || 80)),
+        " queries across ",
+        (plan.providers || []).join(", ") || "providers",
+        " · estimated cost: ",
+        h("strong", null, estCost)
+      )
     );
 
-    const startBtn = h("button", { type: "button", class: "btn btn-primary", "data-fk": "start-bakeoff", onclick: openConfirmBakeoff }, "Run provider bake-off…");
+    const startBtn = h(
+      "button",
+      { type: "button", class: "btn btn-primary", "data-fk": "start-bakeoff", onclick: openConfirmBakeoff },
+      state === "done" ? "Run provider bake-off again…" : "Run provider bake-off…"
+    );
     bakeoffCard.appendChild(planInfo);
     bakeoffCard.appendChild(h("div", { class: "actions" }, startBtn));
 
     // Previous results if available
     if (last) {
-      bakeoffCard.appendChild(h("h4", null, "Latest bake-off result"));
-      if (last.chosen) {
+      const chosen = last.recommended || last.chosen || null;
+      const reason = last.why || last.reason || null;
+      const summaries = Array.isArray(last.summaries) ? last.summaries : Array.isArray(last.summary) ? last.summary : [];
+
+      bakeoffCard.appendChild(h("h4", null, state === "done" ? "Bake-off result" : "Latest bake-off result"));
+      if (chosen) {
         bakeoffCard.appendChild(
           h(
             "div",
             { class: "banner banner-ok" },
-            h("p", null, "Recommended provider: ", h("strong", null, untrusted(last.chosen)), last.reason ? " — " + untrusted(last.reason) : "")
+            h("p", null, "Recommended provider: ", h("strong", null, untrusted(chosen)), reason ? " — " + untrusted(reason) : "")
           )
         );
       }
-      if (Array.isArray(last.summary) && last.summary.length) {
-        bakeoffCard.appendChild(bakeoffSummaryTable(last.summary, last.chosen));
+      if (summaries.length) {
+        bakeoffCard.appendChild(bakeoffSummaryTable(summaries, chosen));
       }
     }
   }
 
   function bakeoffSummaryTable(summary, chosen) {
-    const head = h("thead", null, h("tr", null, ["Provider", "Local share", "On-topic", "Average speed", "Total cost", ""].map((t) => h("th", { scope: "col" }, t))));
+    const head = h(
+      "thead",
+      null,
+      h(
+        "tr",
+        null,
+        ["Provider", "Local share", "On-topic", "Average speed", "Total cost", ""].map((t) => h("th", { scope: "col" }, t))
+      )
+    );
     const body = h(
       "tbody",
       null,
@@ -150,14 +181,28 @@ export function mount(root, ctx) {
           },
           "Use " + row.provider
         );
+        const ontopic =
+          typeof row.on_topic_share === "number"
+            ? (row.on_topic_share * 100).toFixed(1) + "%"
+            : typeof row.ontopic_share === "number"
+            ? (row.ontopic_share * 100).toFixed(1) + "%"
+            : "–";
+        const speed =
+          typeof row.latency_ms_mean === "number"
+            ? (row.latency_ms_mean / 1000).toFixed(2) + " s"
+            : typeof row.avg_latency_s === "number"
+            ? row.avg_latency_s.toFixed(2) + " s"
+            : "–";
+        const cost = row.total_cost_usd ? "USD " + row.total_cost_usd : row.cost_usd ? "USD " + row.cost_usd : "–";
+
         return h(
           "tr",
           null,
           h("td", { "data-label": "Provider" }, h("strong", null, untrusted(row.provider)), isChosen ? h("span", { class: "chip chip-ok" }, "Recommended") : null),
-          h("td", { "data-label": "Local share" }, row.local_share !== undefined ? (row.local_share * 100).toFixed(1) + "%" : "–"),
-          h("td", { "data-label": "On-topic" }, row.ontopic_share !== undefined ? (row.ontopic_share * 100).toFixed(1) + "%" : "–"),
-          h("td", { "data-label": "Speed" }, row.avg_latency_s !== undefined ? row.avg_latency_s.toFixed(2) + " s" : "–"),
-          h("td", { "data-label": "Cost" }, row.cost_usd ? "USD " + row.cost_usd : "–"),
+          h("td", { "data-label": "Local share" }, typeof row.local_share === "number" ? (row.local_share * 100).toFixed(1) + "%" : "–"),
+          h("td", { "data-label": "On-topic" }, ontopic),
+          h("td", { "data-label": "Speed" }, speed),
+          h("td", { "data-label": "Cost" }, cost),
           h("td", { "data-label": "Action" }, setBtn)
         );
       })
@@ -220,11 +265,11 @@ export function mount(root, ctx) {
 
     const current = settingsData.primary_provider || "auto";
     const form = h("form", { class: "form-group" });
-    const note = h("div", { role: "status" });
+    const noteBox = h("div", { role: "status" });
 
     for (const [key, label] of Object.entries(PROVIDER_NAMES)) {
       const radio = h("input", { type: "radio", name: "provider", id: "p-" + key, value: key, checked: key === current });
-      radio.addEventListener("change", () => switchProvider(key));
+      radio.addEventListener("change", () => switchProvider(key, noteBox));
       const row = h(
         "div",
         { class: "radio-row pad-small" },
@@ -236,20 +281,26 @@ export function mount(root, ctx) {
       form.appendChild(row);
     }
 
+    settingsCard.appendChild(noteBox);
     settingsCard.appendChild(form);
-    settingsCard.appendChild(note);
     if (settingsData.applies) {
       settingsCard.appendChild(h("p", { class: "muted small" }, "Setting applies: " + untrusted(settingsData.applies)));
     }
   }
 
-  async function switchProvider(name) {
+  async function switchProvider(name, noteBox) {
+    if (noteBox) clear(noteBox);
     try {
       await ctx.api.post("/api/settings", { primary_provider: name });
       ctx.announce("Primary provider changed to " + name);
       load();
     } catch (e) {
-      setKids(settingsCard, problemBanner(e instanceof ApiError ? e.problem : { text: "Could not save provider setting." }));
+      const err = e instanceof ApiError ? e.problem : { text: "Could not save provider setting." };
+      if (noteBox) {
+        setKids(noteBox, problemBanner(err));
+      } else {
+        setKids(settingsCard, problemBanner(err), h("button", { type: "button", class: "btn", onclick: load }, "Reload settings"));
+      }
     }
   }
 
