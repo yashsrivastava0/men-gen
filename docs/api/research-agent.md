@@ -151,3 +151,23 @@ USD 5.00 in total (`RESEARCH_LIVE_BUDGET_USD`), a tripwire at 4.50 (`RESEARCH_TR
 ### Preview (on every input card; no model call, no web call, no cost)
 
 `{idea, place, languages, counts: {features, roles, apps, integrations, references, facts: {kind: n}}, compass: {tier, degraded} (information only), load: {score, class, components}, size_class: "tiny" | "small" | "medium" | "big", size_label, light, signals, trust: {on, why}, topics: {total, by_job: {job: {count, labels}}, not_run}, declined, dropped, warnings: [{code, text}], requests, estimate: {size_class, searches, pages, minutes, usd_micros: {low, mid, high}, basis: "estimate" | "measured", note}}`. The estimate says "estimate, not measured" until the spend record holds a finished run of that size class; then `mid` is the median of the measured runs.
+
+
+## Results, review, sources, report, spot-check (contract for the app's front end)
+
+These read a **committed** run (404 until committed). Item shape follows `research.json` (`research.v4` now, `research.v5` after the engine changes; the front end must tolerate both: fields such as `evidence`, `store`, `about_region`, `rank`, `tokens_est`, `lane_quality`, `bn_coverage` and `validation` may be absent on v4). An owner rejection is an overlay (`rejected: true`); the committed file never changes.
+
+| Method and path | Purpose |
+| --- | --- |
+| `GET /v1/research/runs/{id}/overview` | Everything except the item list: `{run_id, schema, status, content_hash, program_id, input_name, size_class, created_at, finished_at, profile, coverage, budget, input_quality, lane_quality, bn_coverage, validation, norms, suggestions, confirm, gaps, conflicts, defaults_proposed, slices, dropped, flagged, metrics, rejected_ids, spend_micros, fallbacks}`. |
+| `GET /v1/research/runs/{id}/review?limit=50&offset=0&job=&lane=&evidence=&flag=&impact=&kind=&store=&q=` | Paged, filtered, ordered items: `{total, offset, limit, items: [...], facets: {job: {name: n}, lane, evidence, flag, impact, kind, store}}`. Each item is the `research.json` item plus `lane`, `job`, `rejected`, `best_quote: {text, source_id, domain, url, published}` (the quote from the evidence file) and `sources: [{id, domain, url, title, published, class}]`. `q` is a case-insensitive text match on label, claim and quote. Filters answer from memory in well under 100 ms. |
+| `GET /v1/research/runs/{id}/sources?limit=100&offset=0&q=` | Every page the run used: `{total, items: [{id, url, domain, title, class, published, used_items}]}`. |
+| `GET /v1/research/runs/{id}/report` | The readable Markdown report (`text/markdown`), rendered on demand, never stored. |
+| `GET /v1/research/runs/{id}/metrics` | The run's metrics page (quote pass rate first-try and final, number-check rejections, fetch success by reason, searches contributing, slots filled per job, appendix share, lane quality, checker rates, merge rate, stage timings and cost by stage and call kind, fallbacks used). |
+| `GET /v1/research/programs/{id}/latest?view=compact` | A deterministic compact projection (main-store items, sources in one table). |
+| `GET /v1/research/programs/{id}/decisions` | The owner's rejections: `{decisions: [{run_id, item_id, kind, reason, at}]}`. |
+| `POST /api/spot-checks` | Body `{run_ids: [..], seed?: int, per_run?: 20}`. Creates and stores a sample (seeded, stratified 8 high-impact, 6 service or integration, 3 typed-data, 3 ordinary per run; a short stratum is topped up from the next and the card says so). `201 {id, seed, run_ids, cards: [{key, run_id, item_id, stratum, topped_up, job, kind, claim, data, quote, source: {domain, url, published}, evidence, impact}], verdicts: {}}`. |
+| `GET /api/spot-checks`, `GET /api/spot-checks/{id}` | List, or one check with its verdicts (resumable). |
+| `PUT /api/spot-checks/{id}/verdicts/{card_key}` | Body `{verdict}`: `ok`, `not_relevant`, `claim_not_in_quote`, `wrong_or_outdated`, `wrong_place_or_company`, `invented_detail`, `skipped`. Saved at once. |
+| `GET /api/spot-checks/{id}/summary` | `{counts, answered, total, supported_pct, ok_pct, invented_high_impact, invented_total, pass: {supported, ok, no_invented}, passed, worst: {job|kind: ...}}` against the thresholds (supported 95% or more, ok 90% or more, no invented detail on a high-impact item and fewer than 3 overall). |
+| `GET /api/spot-checks/{id}/export?format=md\|json` | The result as a download. |
