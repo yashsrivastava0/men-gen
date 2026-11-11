@@ -27,7 +27,7 @@ from mde_research_agent.store.postgres import normalize_url
 pytestmark = pytest.mark.integration
 
 EXPECTED_TABLES = {"rsch_runs", "rsch_events", "rsch_results", "rsch_decisions"}
-HEAD = "0001"
+HEAD = "0002"
 
 
 def _dsn(url: URL) -> str:
