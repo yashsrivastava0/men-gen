@@ -8,6 +8,7 @@ RV-04 (a Locked tier) and RV-13 (hash binding) refuse the commit outright.
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
@@ -558,6 +559,9 @@ def rv20_region_entity(v: ValidationContext) -> list[Violation]:
     return out
 
 
+_ELEMENT_PATH = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*\[\d+\]$")
+
+
 def rv21_checked(v: ValidationContext) -> list[Violation]:
     """Every verified item has a verdict or the unchecked flag; no unsupported field remains in its data."""
     out = []
@@ -572,7 +576,12 @@ def rv21_checked(v: ValidationContext) -> list[Violation]:
                     "RV-21", "an item has neither a verdict nor the unchecked flag", item["id"]
                 )
             )
-        paths = a.get("unsupported_fields") or []
+        # A removed list element ("steps[0]") shifts the list, so applying the path again would remove the NEXT element and
+        # look like a leftover: only paths that are idempotent (a scalar, a list emptied, "field[i].sub") can be checked
+        # after the fact. The first live run with many checked items had 10 false RV-21 errors and was marked partial.
+        paths = [
+            p for p in (a.get("unsupported_fields") or []) if not _ELEMENT_PATH.match(p.strip())
+        ]
         if paths:
             rest, _applied = null_paths(a.get("data") or {}, paths)
             if rest != (a.get("data") or {}):

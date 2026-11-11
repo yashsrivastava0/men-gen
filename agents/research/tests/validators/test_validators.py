@@ -247,3 +247,26 @@ def test_only_binding_and_tier_failures_refuse_the_commit(good) -> None:
 def test_a_crashing_validator_is_reported_not_raised(good) -> None:
     bad = vctx(good, lambda o, e, ev: o.update(items="not a list"))
     assert isinstance(run_all(bad), list)
+
+
+def test_rv21_does_not_call_a_removed_list_element_a_leftover() -> None:
+    """The first live run with many checked items had 10 false RV-21 errors: re-applying "steps[0]" to a list whose first
+    element was already removed removes the NEXT element, which looked like a leftover."""
+    from types import SimpleNamespace
+
+    from mde_research_agent.validators.registry import rv21_checked
+
+    item = {"id": "RI-001", "flags": []}
+    after_removal = {"steps": ["second", "third"], "purpose": None, "role": None}
+    atom = {
+        "status": "verified",
+        "item_id": "RI-001",
+        "checked": True,
+        "unsupported_fields": ["steps[0]", "purpose"],
+        "data": after_removal,
+    }
+    ctx = SimpleNamespace(output={"items": [item]}, evidence={"atoms": [atom]})
+    assert rv21_checked(ctx) == []  # type: ignore[arg-type]
+    # a scalar the checker flagged but that is still set IS a leftover
+    atom["data"] = {"steps": ["second"], "purpose": "still here", "role": None}
+    assert [v.rule for v in rv21_checked(ctx)] == ["RV-21"]  # type: ignore[arg-type]
