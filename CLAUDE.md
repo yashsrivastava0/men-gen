@@ -57,6 +57,7 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 10. Offline tests only, except tests marked `live`.
 11. Update `docs/` with every behavior change; keep markdown inside `docs/`.
 12. Log every non-trivial decision in `docs/implementation/DECISIONS.md`; never ask the user questions.
+13. **Live mode is one switch: `LLM_MODE=live` (strict owner policy, D-140).** Never add a second live-call key, an extra permission or approval variable, an extra readiness check for live mode, or a hook or check that blocks `LLM_MODE=live`: not in code, tests, docs, `.claude/`, prompts or messages to the owner. When the owner asks to run something live, run it with `LLM_MODE=live` within the budget caps. `tests/security/test_single_live_switch.py` fails if such a gate reappears.
 
 Related hard limits: no SQLite anywhere (not even tests); no `.md` outside `README.md`, `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md`, `.claude/**`, `docs/**` (prompt templates are `.jinja`); money is `Decimal` or integer micro-dollars, never float; timestamps are timezone-aware UTC; IDs are prefixed ULIDs (`ses_`, `evt_`, `call_`).
 
