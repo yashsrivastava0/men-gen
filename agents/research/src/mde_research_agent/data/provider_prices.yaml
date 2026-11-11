@@ -1,0 +1,48 @@
+# What one search call costs, per provider, in integer micro-USD (1 USD = 1,000,000 micros). Money is never a
+# float. The adapters read this file once; a constructor argument (cost_per_call_micros) overrides it.
+#
+# Every number is the most EXPENSIVE public rate (a conservative ceiling for the budget ledger): a cheaper
+# plan or a free-tier call simply costs less than we book. Provenance is in docs/research-agent/provider-facts.md.
+# `verified: true`  = read on the provider's own official page on 2026-11-11.
+# `verified: false` = third-party only or inferred; kept as a conservative estimate until someone confirms it.
+schema: 1
+checked_on: "2026-11-11"
+currency: USD
+
+tavily:
+  # https://docs.tavily.com/documentation/api-credits (opened 2026-11-11): pay-as-you-go USD 0.008 per credit;
+  # monthly plans USD 0.0075 down to 0.005 per credit; free plan 1,000 credits per month.
+  unit: credit
+  micros_per_credit: 8000
+  verified: true
+  # Credits per search call by search_depth: the official OpenAPI spec says basic, fast and ultra-fast cost 1
+  # and advanced costs 2.
+  credits_per_search:
+    basic: 1
+    fast: 1
+    ultra-fast: 1
+    advanced: 2
+  credits_verified: true
+  # include_raw_content: no surcharge is listed on the credits page or in the OpenAPI spec ("search depth
+  # determines the cost"). Treated as 0 extra credits. Re-check against the first live invoice.
+  raw_content_extra_credits: 0
+  raw_content_extra_verified: false
+  # include_published_date, chunks_per_source, country, language, domains: no credit effect is documented.
+
+serper:
+  # https://serper.dev (home page pricing table, opened 2026-11-11): prepaid packs, USD 50 per 50k credits
+  # (USD 1.00 per 1,000) down to USD 3,750 per 12.5M credits (USD 0.30 per 1,000); credits valid 6 months;
+  # 2,500 free queries for a new account. The Starter pack rate is booked (the most expensive).
+  unit: credit
+  micros_per_credit: 1000
+  verified: true
+  # One credit per query for up to 10 results: implied by the pricing table (credits equal queries) and
+  # repeated by third parties; the page never says "1 credit per query" in words.
+  credits_per_query: 1
+  credits_per_query_verified: false
+  # num above 10 (up to 100) costs 2 credits: third-party reports only (Hacker News, May 2025; pricing blogs
+  # 2026). NOT on serper.dev. Google stopped serving 100 results per page in September 2025, so the real
+  # behaviour may differ; the adapter prefers the `credits` field of the response when present.
+  credits_when_num_over_10: 2
+  credits_when_num_over_10_verified: false
+  num_threshold: 10

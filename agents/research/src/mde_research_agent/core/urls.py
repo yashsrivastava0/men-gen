@@ -123,10 +123,26 @@ def _numeric_ip(host: str) -> ipaddress.IPv4Address | ipaddress.IPv6Address | No
     return None
 
 
+_NAT64 = ipaddress.ip_network("64:ff9b::/96")  # the well-known NAT64 prefix embeds an IPv4 address
+_SIX_TO_FOUR = ipaddress.ip_network("2002::/16")  # 6to4 embeds one too
+
+
+def _embedded_ipv4(ip: ipaddress.IPv6Address) -> ipaddress.IPv4Address | None:
+    if ip.ipv4_mapped is not None:
+        return ip.ipv4_mapped
+    if ip in _NAT64:
+        return ipaddress.IPv4Address(int(ip) & 0xFFFFFFFF)
+    if ip in _SIX_TO_FOUR:
+        return ipaddress.IPv4Address((int(ip) >> 80) & 0xFFFFFFFF)
+    return None
+
+
 def ip_is_public(ip: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
-    """True only for a globally routable address (IPv4-mapped IPv6 is judged by its IPv4 part)."""
-    if isinstance(ip, ipaddress.IPv6Address) and ip.ipv4_mapped is not None:
-        ip = ip.ipv4_mapped
+    """True only for a globally routable address (an IPv6 form that embeds IPv4 is judged by that IPv4)."""
+    if isinstance(ip, ipaddress.IPv6Address):
+        inner = _embedded_ipv4(ip)
+        if inner is not None:
+            ip = inner
     return ip.is_global and not (ip.is_multicast or ip.is_loopback or ip.is_link_local)
 
 

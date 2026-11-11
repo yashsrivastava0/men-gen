@@ -84,6 +84,9 @@ def test_host_of_strips_www() -> None:
         "http://017700000001/",  # octal
         "http://[::1]/",
         "http://[::ffff:127.0.0.1]/",  # IPv4-mapped loopback
+        "http://[64:ff9b::7f00:1]/",  # NAT64 embedding 127.0.0.1
+        "http://[64:ff9b::a00:5]/",  # NAT64 embedding 10.0.0.5
+        "http://[2002:c0a8:101::]/",  # 6to4 embedding 192.168.1.1
         "http://10.0.0.5/admin",
         "http://192.168.1.1/",
         "http://172.16.4.4/",
@@ -113,6 +116,7 @@ def test_private_or_odd_urls_are_not_public(url: str) -> None:
         "https://docs.stripe.com/api",
         "https://93.184.216.34/",  # a public literal
         "https://eway.nic.in",
+        "http://[64:ff9b::5db8:d822]/",  # NAT64 embedding a public IPv4 (93.184.216.34)
     ],
 )
 def test_public_urls(url: str) -> None:
