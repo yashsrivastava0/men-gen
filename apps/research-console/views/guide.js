@@ -5,9 +5,9 @@ const STEPS = [
   ["1. Check that the app is ready", "Look at the pill at the top of the page. It should say Ready. If it says Not ready, click it: each problem is listed with what to do. You can also press “Test the connection” there; it costs about one cent and proves a real search and a real model answer."],
   ["2. Run the Small input", "Go to Inputs. Find the card marked Small and press Run research. A box shows what it will probably cost. Confirm. This is the cheapest real test, so start here."],
   ["3. Watch it", "The run page shows the plan (what will be looked up), a live feed (searches, sites, facts being checked), the time and the cost so far. You can close the tab and come back: the run keeps going and the page catches up. Skip research stops it and keeps what was already checked."],
-  ["4. Read the result", "When the run ends, press Open the results. The detailed results view arrives in the next version; until then you can download the whole result as one file."],
+  ["4. Read the result", "When the run ends, press Open the results. Browse the nine tabs: the Playbook of verified findings with quotes, Norms across sources, what to Confirm, Gaps and conflicts, Appendix, Quality measures, Sources, a readable Markdown Report, and Raw JSON. You can reject any finding you disagree with."],
   ["5. Run Medium, then Big", "Only after the Small run looks right. The Big input costs much more and takes longer; the confirm box will warn you if it is a large part of what is left."],
-  ["6. Spot-check", "The spot-check (sixty facts, checked by you against their sources) arrives in the next version."],
+  ["6. Spot-check", "Open Spot-check to judge a sample of findings (20 per run) against their verbatim quotes and web sources using keys 1 to 6. The end screen compares your verdicts against the quality thresholds (95% supported, no high-impact invented detail)."],
   ["7. Read the budget", "Open Budget. Every search and model call is written down as it happens, with the running total. The bar at the top turns amber at 80% and red at the tripwire."],
 ];
 const IFS = [
