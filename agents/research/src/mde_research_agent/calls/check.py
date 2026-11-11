@@ -28,7 +28,9 @@ from mde_research_agent.core.text import stem_set
 
 CALL_ID = "rsch.check"
 Verdict = Literal["supported", "partial", "not_supported"]
-_PATH = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\[\d+\])?(\.[A-Za-z_][A-Za-z0-9_]*)?$")
+# A path starts with a field of the data. The model sometimes appends prose to it ("pricing_model.free trial"): that still
+# names the field, and the engine nulls the WHOLE field (never less than was meant), so the call is not thrown away.
+_PATH = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(\[\d+\])?(\..+)?$")
 
 
 class W(BaseModel):

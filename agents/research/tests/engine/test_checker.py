@@ -214,3 +214,35 @@ async def test_a_full_checker_batch_reaches_the_model_whole() -> None:
     )
     batch = CheckIn(items=[item.model_copy(update={"id": f"C{i}"}) for i in range(15)])
     assert len(batch.text) < UNTRUSTED_CHARS
+
+
+def test_a_path_with_prose_after_the_field_nulls_the_whole_field_instead_of_failing_the_call() -> (
+    None
+):
+    """Live runs: ['pricing_model.subscription mentioned', ...] failed the whole checker call, so its items went out
+    unchecked. The path still names a field: the engine nulls all of it (never less than was meant)."""
+    from mde_research_agent.calls.check import CheckIn, CheckItem, CheckOut, CheckVerdict, validate
+    from mde_research_agent.engine.checking import null_paths
+
+    data = {"pricing_model": "subscription or one-time", "features": ["a", "b", "c"], "name": "X"}
+    out, applied = null_paths(
+        data, ["pricing_model.subscription mentioned", "features[1].some prose"]
+    )
+    assert out == {"pricing_model": None, "features": ["a", "c"], "name": "X"}
+    assert applied == ["pricing_model.subscription mentioned", "features[1].some prose"]
+    # unknown fields are still ignored, a path that does not start with a field is still refused by the call's validator
+    assert null_paths(data, ["ghost.thing"])[0] == data
+    inp = CheckIn(items=[CheckItem(id="C1", claim="c", quote="q")])
+    ok = CheckOut(
+        verdicts=[
+            CheckVerdict(
+                id="C1", verdict="partial", unsupported_fields=["pricing_model.free trial"]
+            )
+        ]
+    )
+    bad = CheckOut(
+        verdicts=[
+            CheckVerdict(id="C1", verdict="partial", unsupported_fields=["the pricing model"])
+        ]
+    )
+    assert validate(inp, ok) == [] and validate(inp, bad)

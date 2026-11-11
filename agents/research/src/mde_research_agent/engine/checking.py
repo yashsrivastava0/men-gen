@@ -28,6 +28,7 @@ from mde_research_agent.engine.state import AtomRecord, PageRecord, TargetState
 CHECK_BATCH = 15
 PASSAGE_WORDS = 150
 MAX_DATA_CHARS = 2500
+_LOOSE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[(\d+)\])?(?:\..+)$")
 _PATH = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)(?:\[(\d+)\])?(?:\.([A-Za-z_][A-Za-z0-9_]*))?$")
 _STOP = (BudgetExceeded, CassetteMissing, LiveCallForbidden)
 
@@ -57,9 +58,15 @@ def null_paths(data: dict[str, Any], paths: list[str]) -> tuple[dict[str, Any], 
     removals: list[tuple[str, int]] = []
     for p in paths:
         m = _PATH.match(p.strip())
-        if not m or m[1] not in out:
+        if m:
+            name, idx, sub = m[1], m[2], m[3]
+        else:  # "pricing_model.free trial": the part after the dot is prose, not a field: null the whole field
+            loose = _LOOSE.match(p.strip())
+            if not loose:
+                continue
+            name, idx, sub = loose[1], loose[2], None
+        if name not in out:
             continue
-        name, idx, sub = m[1], m[2], m[3]
         value = out[name]
         if idx is None:
             if sub is not None:
