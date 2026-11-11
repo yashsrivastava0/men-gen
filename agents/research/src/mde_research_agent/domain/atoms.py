@@ -73,7 +73,9 @@ class Transition(W):
 
 class CompetitorData(W):
     name: str
-    kind: Literal["app", "platform", "service", "marketplace", "other"]
+    kind: Literal["app", "platform", "service", "marketplace", "other"] | None = (
+        None  # null: not stated
+    )
     region: str | None = None
     url: str | None = None  # filled by code from the source page, never by the model
     platforms: list[str]
@@ -92,7 +94,9 @@ class ReferenceCheckData(W):
 
 class ScreenPatternData(W):
     screen_key: str
-    purpose: str
+    purpose: str | None = (
+        None  # null: the page does not state it (the checker may null it: RV-01 must still pass)
+    )
     role: str | None = None
     sections: list[str]  # ordered: never joined across sources
     key_components: list[str]
@@ -107,7 +111,7 @@ class ScreenPatternData(W):
 
 class NavigationPatternData(W):
     pattern: str
-    when_used: str
+    when_used: str | None = None  # null: the page does not state it (the checker may null it)
     typical_items: list[str]
 
 
@@ -197,7 +201,7 @@ class DesignConventionData(W):
 class ScriptNeedData(W):
     script: str
     languages: list[str]
-    direction: Literal["ltr", "rtl"]
+    direction: Literal["ltr", "rtl"] | None = None  # null: the page does not state it
     font_notes: str | None = None
     text_expansion: str | None = None
 
@@ -219,7 +223,7 @@ class TrendData(W):
     topic: str
     what_changed: str
     since: str | None = None
-    direction: Literal["rising", "declining", "stable", "unknown"]
+    direction: Literal["rising", "declining", "stable", "unknown"] | None = None  # null: not stated
 
 
 PAYLOADS: dict[str, type[W]] = {

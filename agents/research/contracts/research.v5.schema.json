@@ -1419,15 +1419,23 @@
           "type": "array"
         },
         "kind": {
-          "enum": [
-            "app",
-            "platform",
-            "service",
-            "marketplace",
-            "other"
+          "anyOf": [
+            {
+              "enum": [
+                "app",
+                "platform",
+                "service",
+                "marketplace",
+                "other"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Kind",
-          "type": "string"
+          "default": null,
+          "title": "Kind"
         },
         "name": {
           "title": "Name",
@@ -1486,7 +1494,6 @@
       },
       "required": [
         "name",
-        "kind",
         "platforms",
         "features",
         "screens"
@@ -1778,13 +1785,20 @@
           "type": "array"
         },
         "when_used": {
-          "title": "When Used",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "When Used"
         }
       },
       "required": [
         "pattern",
-        "when_used",
         "typical_items"
       ],
       "title": "NavigationPatternData",
@@ -1960,8 +1974,16 @@
           "type": "array"
         },
         "purpose": {
-          "title": "Purpose",
-          "type": "string"
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Purpose"
         },
         "role": {
           "anyOf": [
@@ -2013,7 +2035,6 @@
       },
       "required": [
         "screen_key",
-        "purpose",
         "sections",
         "key_components",
         "actions",
@@ -2028,12 +2049,20 @@
       "additionalProperties": false,
       "properties": {
         "direction": {
-          "enum": [
-            "ltr",
-            "rtl"
+          "anyOf": [
+            {
+              "enum": [
+                "ltr",
+                "rtl"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Direction",
-          "type": "string"
+          "default": null,
+          "title": "Direction"
         },
         "font_notes": {
           "anyOf": [
@@ -2073,8 +2102,7 @@
       },
       "required": [
         "script",
-        "languages",
-        "direction"
+        "languages"
       ],
       "title": "ScriptNeedData",
       "type": "object"
@@ -2202,14 +2230,22 @@
       "additionalProperties": false,
       "properties": {
         "direction": {
-          "enum": [
-            "rising",
-            "declining",
-            "stable",
-            "unknown"
+          "anyOf": [
+            {
+              "enum": [
+                "rising",
+                "declining",
+                "stable",
+                "unknown"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
           ],
-          "title": "Direction",
-          "type": "string"
+          "default": null,
+          "title": "Direction"
         },
         "since": {
           "anyOf": [
@@ -2234,8 +2270,7 @@
       },
       "required": [
         "topic",
-        "what_changed",
-        "direction"
+        "what_changed"
       ],
       "title": "TrendData",
       "type": "object"
