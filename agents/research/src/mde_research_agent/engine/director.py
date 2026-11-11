@@ -380,6 +380,13 @@ class Director:
                 if budget.exhausted():
                     ctx.budget_stopped = True
                     break
+                if budget.pages_exhausted():
+                    # a paid round whose pages cannot be read buys nothing (Small run 2026-11-11: 7 searches, 0 pages)
+                    ctx.pages_refused += 1
+                    for ts in open_:
+                        ts.reason = ts.reason or "budget_stop"
+                    await ctx.warn("pages_exhausted")
+                    break
                 if round_no >= max_rounds:
                     await ctx.warn("taking_longer")
                 before = self._remaining(open_)
@@ -458,7 +465,13 @@ class Director:
         ctx = self.ctx
         if ts.status in ("cancelled", "covered", "not_found", "partial"):
             return
-        stopped = ctx.budget_stopped or ctx.drain or ctx.provider_down or ctx.run_cancel.cancelled
+        stopped = (
+            ctx.budget_stopped
+            or ctx.drain
+            or ctx.provider_down
+            or ctx.run_cancel.cancelled
+            or ts.reason == "budget_stop"  # it asked for a page and the ceiling was used up
+        )
         ts.status = "partial" if stopped else "not_found"
         ts.reason = ts.reason or (
             "budget_stop"
@@ -515,10 +528,10 @@ class Director:
         unfinished = [
             ts for ts in ctx.targets.values() if ts.status in ("partial", "queued", "running")
         ]
-        if unfinished or ctx.budget_stopped or ctx.provider_down or ctx.drain:
+        if unfinished or ctx.budget_stopped or ctx.provider_down or ctx.drain or ctx.pages_refused:
             reason = (
                 "budget_stop"
-                if ctx.budget_stopped
+                if ctx.budget_stopped or ctx.pages_refused
                 else "provider_down"
                 if ctx.provider_down
                 else "unfinished"

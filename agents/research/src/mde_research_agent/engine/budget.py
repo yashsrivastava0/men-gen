@@ -5,6 +5,12 @@ exceeded however many workers race. Soft ceilings are targets the run aims at; h
 from an injectable clock so tests never sleep. Money is integer micro-dollars. ``FailureLedger`` counts terminal
 failures by channel and reason (a timeout and a zero-token model call are failures; retries and rate-limit waits
 are tracked separately).
+
+A page is a page the run actually READ. A page that could not be read (a robots refusal, no text, a wall, a timeout)
+is refunded with ``refund_page``: it spent no model money and holds no evidence, so it must not use up the ceiling that
+the topics still waiting for their first page need (the Small run of 2026-11-11 lost its payments topic and all of
+round 2 to seven refused pages). Attempts are bounded separately, at ``PAGE_ATTEMPT_FACTOR`` times the ceiling, so a
+refund can never make the loop endless.
 """
 
 from __future__ import annotations
@@ -42,6 +48,9 @@ class FailureLedger:
         ]
 
 
+PAGE_ATTEMPT_FACTOR = 1.5
+
+
 class RunBudget:
     def __init__(
         self, soft: Ceiling, hard: HardLimits, clock: Clock, *, run_cap_micros: int | None = None
@@ -51,7 +60,8 @@ class RunBudget:
         self._clock = clock
         self._t0 = clock.monotonic()
         self.searches_used = 0
-        self.pages_read = 0
+        self.pages_read = 0  # pages admitted and not refunded: what counts against the hard ceiling
+        self.page_attempts = 0  # every admission, refunded or not
         self.llm_micros = 0
         self.search_micros = 0
         self.run_cap_micros = run_cap_micros
@@ -69,10 +79,23 @@ class RunBudget:
         return True
 
     def try_page(self) -> bool:
-        if self.pages_read >= self.hard.pages or self.time_up_hard() or self.over_money():
+        if self.pages_exhausted() or self.time_up_hard() or self.over_money():
             return False
         self.pages_read += 1
+        self.page_attempts += 1
         return True
+
+    def refund_page(self) -> None:
+        """A page admitted by ``try_page`` that could not be read: it does not count against the ceiling."""
+        self.pages_read = max(0, self.pages_read - 1)
+
+    def pages_exhausted(self) -> bool:
+        return self.pages_read >= self.hard.pages or self.page_attempts >= int(
+            self.hard.pages * PAGE_ATTEMPT_FACTOR
+        )
+
+    def pages_left(self) -> int:
+        return max(0, self.hard.pages - self.pages_read)
 
     # --- money -----------------------------------------------------------------------------------
     def add_llm_cost(self, micros: int, step: str = "other") -> None:
@@ -115,7 +138,8 @@ class RunBudget:
         return max(0, self.hard.searches - self.searches_used)
 
     def exhausted(self) -> str | None:
-        """Why no new search can start (None while there is room)."""
+        """Why no new search can start (None while there is room). Pages are not part of it: a run whose pages are
+        used up still finishes what it holds; ``pages_exhausted`` is what the director asks before paying for a round."""
         if self.searches_used >= self.hard.searches:
             return "searches"
         if self.time_up_hard():

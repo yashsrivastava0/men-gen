@@ -223,7 +223,9 @@ async def test_events_replay_and_resume_lose_nothing() -> None:
     async with client(app) as c:
         run = (await c.post("/v1/research/runs", json={"brief_export": export()})).json()
         await finish(svc, run["run_id"])
-        stored = await svc.store.events_after(run["run_id"], 0)
+        stored = await svc.store.events_after(
+            run["run_id"], 0, limit=100_000
+        )  # the whole log, not one page
 
         async def active() -> bool:
             return False

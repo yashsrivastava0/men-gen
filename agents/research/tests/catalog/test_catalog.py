@@ -84,3 +84,21 @@ def test_changing_a_data_value_changes_the_hash(tmp_path: Path) -> None:
     path = dst / "load.yaml"
     path.write_text(path.read_text(encoding="utf-8").replace("app: 3", "app: 4"), encoding="utf-8")
     assert load_catalog(dst).catalog_hash != before
+
+
+def test_a_page_ceiling_that_cannot_feed_round_one_fails_at_load(tmp_path: Path) -> None:
+    """Small run 2026-11-11: ten topics x five pages needs more than the old hard ceiling of 40."""
+    dst = _copy(tmp_path)
+    path = dst / "ceilings.yaml"
+    raw = yaml.safe_load(path.read_text(encoding="utf-8"))
+    raw["focused"]["hard"]["pages"] = 40
+    path.write_text(yaml.safe_dump(raw), encoding="utf-8")
+    with pytest.raises(ConfigError, match="round one"):
+        load_catalog(dst)
+
+
+def test_the_shipped_ceilings_let_every_topic_read_its_pages() -> None:
+    cat = load_catalog()
+    for cls in ("focused", "standard", "deep"):
+        cs = cat.ceilings.for_class(cls)  # type: ignore[arg-type]
+        assert cs.hard.pages >= cs.soft.targets * cat.ceilings.pages_per_topic.max

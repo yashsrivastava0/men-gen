@@ -76,6 +76,7 @@ CLASS_WEIGHT = {
     "seo": 0.1,
 }
 MIN_PROVIDER_TEXT = 300
+BACKFILL_SPARES = 3  # candidates kept behind the picks, to replace a page that could not be read
 
 
 @dataclass(frozen=True)
@@ -373,11 +374,16 @@ def triage(
     seen_domains: dict[str, int] = {}
     picks: list[tuple[FusedHit, str]] = []
     done = set(ts.page_ids)
+    walled = ctx.catalog.source_rules.walled_domains
     for _, h, cls in scored:
         page = ctx.pages.get(h.url)
         if page is not None and page.id in done:
             continue
+        if h.url in ctx.unreadable:
+            continue  # the reader already failed on it in this run
         dom = registrable_domain(h.url)
+        if dom in walled and len(h.hit.content or "") < MIN_PROVIDER_TEXT:
+            continue  # it refuses our reader and the provider gave no text: not worth a page attempt
         if seen_domains.get(dom, 0) >= cfg.max_per_domain:
             continue
         seen_domains[dom] = seen_domains.get(dom, 0) + 1
@@ -402,6 +408,16 @@ async def read_page(
         return await _read_page(ctx, ts, hit, cls, round_no)
 
 
+async def _pages_refused(ctx: RunContext, ts: TargetState) -> None:
+    """The page ceiling is used up: this topic cannot read. Say so (it is a budget stop, never silent) and mark it."""
+    if not ctx.budget.pages_exhausted():  # time or money ran out, not the page ceiling
+        ctx.budget_stopped = ctx.budget_stopped or bool(ctx.budget.exhausted())
+        return
+    ctx.pages_refused += 1
+    ts.reason = ts.reason or "budget_stop"
+    await ctx.warn("pages_exhausted", target_id=ts.target.id)
+
+
 async def _read_page(
     ctx: RunContext, ts: TargetState, hit: FusedHit, cls: str, round_no: int
 ) -> PageRecord | None:
@@ -411,7 +427,7 @@ async def _read_page(
     title = hit.hit.title
     if hit.hit.content and len(hit.hit.content) >= MIN_PROVIDER_TEXT:
         if not ctx.budget.try_page():
-            ctx.budget_stopped = ctx.budget_stopped or bool(ctx.budget.exhausted())
+            await _pages_refused(ctx, ts)
             return None
         text, source, published, final = hit.hit.content, "provider", hit.hit.published, url
         await ctx.events.emit(
@@ -423,8 +439,10 @@ async def _read_page(
             detail={"domain": dom, "title": title, "chars": len(text)},
         )
     else:
-        if not ctx.active() or ts.cancel.cancelled or not ctx.budget.try_page():
-            ctx.budget_stopped = ctx.budget_stopped or bool(ctx.budget.exhausted())
+        if not ctx.active() or ts.cancel.cancelled:
+            return None
+        if not ctx.budget.try_page():
+            await _pages_refused(ctx, ts)
             return None
         await ctx.events.emit(
             "page.reading",
@@ -441,6 +459,8 @@ async def _read_page(
                         ctx.fetch.fetch(hit.hit.url), timeout=FETCH_TIMEOUT_S
                     )
             except TimeoutError:
+                ctx.budget.refund_page()
+                ctx.unreadable.add(hit.url)
                 ctx.failures.record("fetch", "timeout", t.id)
                 await ctx.events.emit(
                     "page.skipped",
@@ -452,6 +472,8 @@ async def _read_page(
                 )
                 return None
         if not page.ok:
+            ctx.budget.refund_page()
+            ctx.unreadable.add(hit.url)
             reason = page.reason or "error"
             if reason in ("error",):
                 ctx.failures.record("fetch", reason, t.id)
@@ -753,20 +775,32 @@ async def run_topic(
             return 0
         fused = fuse([list(r.hits) for _, r in usable])
         cap = ctx.catalog.ceilings.pages_per_topic
-        picks = triage(ctx, ts, fused, cap.max if round_no == 1 else min(cap.max, 3))
+        want_pages = cap.max if round_no == 1 else min(cap.max, 3)
+        ranked = triage(ctx, ts, fused, want_pages + BACKFILL_SPARES)
+        picks, spares = ranked[:want_pages], ranked[want_pages:]
         seed_urls = {canonical_url(h.url) for v, r in usable if v.seed for h in r.hits}
         non_seed_urls = {canonical_url(h.url) for v, r in usable if not v.seed for h in r.hits}
 
-        async def process(hit: FusedHit, cls: str) -> int:
+        async def process(hit: FusedHit, cls: str) -> tuple[int, bool]:
+            """``(newly verified items, the page could not be read and a spare may take its place)``."""
             page = await read_page(ctx, ts, hit, cls, round_no)
-            if page is None or ts.cancel.cancelled or ctx.run_cancel.cancelled:
-                return 0
+            if page is None:
+                return 0, hit.url in ctx.unreadable
+            if ts.cancel.cancelled or ctx.run_cancel.cancelled:
+                return 0, False
             if page.id not in ts.page_ids:
                 ts.page_ids.append(page.id)
             via_seed = page.url in seed_urls and page.url not in non_seed_urls
-            return await extract_page(ctx, ts, page, round_no, cov, via_seed)
+            return await extract_page(ctx, ts, page, round_no, cov, via_seed), False
 
-        counts = await asyncio.gather(*[process(h, c) for h, c in picks])
+        results = await asyncio.gather(*[process(h, c) for h, c in picks])
+        counts = [n for n, _ in results]
+        lost = sum(1 for _, replace in results if replace)
+        while lost and spares and ctx.active() and not ts.cancel.cancelled:
+            batch, spares = spares[:lost], spares[lost:]
+            more = await asyncio.gather(*[process(h, c) for h, c in batch])
+            counts += [n for n, _ in more]
+            lost = sum(1 for _, replace in more if replace)
         await check_topic(
             ctx, ts
         )  # every verified item is checked BEFORE the coverage audit (a rejection reopens its slot)

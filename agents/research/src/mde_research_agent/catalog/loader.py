@@ -150,6 +150,11 @@ def _validate(cat_parts: dict[str, Any]) -> None:
             or cs.hard.seconds < cs.soft.seconds
         ):
             problems.append(f"ceilings.yaml: {cls} hard limits are below the soft ones")
+        if cs.hard.pages < cs.soft.targets * ceilings.pages_per_topic.max:
+            problems.append(
+                f"ceilings.yaml: {cls} hard pages {cs.hard.pages} cannot give each of {cs.soft.targets} topics "
+                f"{ceilings.pages_per_topic.max} pages in round one"
+            )
     if problems:
         raise ConfigError("invalid research data files: " + "; ".join(problems))
 

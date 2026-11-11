@@ -251,6 +251,9 @@ class SourceClassRules(Frozen):
     seo_domains: tuple[str, ...]
     seo_title_patterns: tuple[str, ...]
     press_domains: tuple[str, ...]
+    walled_domains: tuple[
+        str, ...
+    ] = ()  # refuse our reader: read only when the search provider returned the text
     cannot_support_high_impact: tuple[str, ...]
     authoritative: tuple[str, ...]
 

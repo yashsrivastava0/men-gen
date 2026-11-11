@@ -1,10 +1,14 @@
 # Ceilings per research-load class. SOFT numbers are targets the run aims at (a covered topic simply stops
 # early); HARD numbers are never exceeded (RV-12). Result quality first: raise these when runs end with
-# coverage still improving. Seconds are wall-clock. The three caps (store_tokens, chunk_items,
-# digest_tokens) replace the old silent size cap: items above the store limit move to an appendix, none is deleted.
+# coverage still improving. Seconds are wall-clock. A page is one the run READ (a refused page is refunded): it costs about
+# 0.05 of a search (one extraction call), so the hard page ceiling must let every planned topic read its pages_per_topic.max
+# in round one and still leave room for round two; the loader refuses data that does not (the Small run of 2026-11-11
+# ran out of pages at 40 with ten topics, starved a topic and paid seven searches that could read nothing).
+# The three caps (store_tokens, chunk_items, digest_tokens) replace the old silent size cap: items above the store limit
+# move to an appendix, none is deleted.
 focused:
-  soft: {searches: 20, pages: 24, seconds: 180, rounds: 2, lanes_search: 6, lanes_extract: 8, targets: 10, followups_per_topic: 2}
-  hard: {searches: 32, pages: 40, seconds: 330, rounds: 3, followups_per_topic: 3}
+  soft: {searches: 20, pages: 32, seconds: 180, rounds: 2, lanes_search: 6, lanes_extract: 8, targets: 10, followups_per_topic: 2}
+  hard: {searches: 32, pages: 64, seconds: 330, rounds: 3, followups_per_topic: 3}
   store_tokens: 40000
   chunk_items: 120
   digest_tokens: 4000

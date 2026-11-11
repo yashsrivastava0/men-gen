@@ -73,6 +73,10 @@ class RunContext:
     check_inflight: dict[str, Any] = field(
         default_factory=dict
     )  # pair key -> future of the checker's verdict
+    unreadable: set[str] = field(
+        default_factory=set
+    )  # URLs the fetcher could not read this run: never tried twice, and a spare page takes their place
+    pages_refused: int = 0  # reads refused because the page ceiling was used up: the run is partial
     provider_down: bool = False
     budget_stopped: bool = False
     no_results: bool = False  # round 1 found nothing for any topic
