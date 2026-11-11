@@ -9,7 +9,7 @@ import { createRunFeed } from "../lib/runfeed.js";
 import { ApiError } from "../lib/api.js";
 import { problemText } from "../lib/safe.js";
 import {
-  applySnapshot, ingest, groupTargets, coverage, counterTexts, clocks, nowLine, depthSentence, failureText, partialText, feedRow, topicTotals, topicPercent,
+  applySnapshot, snapshotFacts, ingest, groupTargets, coverage, counterTexts, clocks, nowLine, depthSentence, failureText, partialText, feedRow, topicTotals, topicPercent,
   isActiveStatus, isTerminalStatus, FEED_CAP,
 } from "../lib/reducer.js";
 import { usd, formatDuration, remainingText, stepWord, jobTitle, topicWord, runWord, formatDateTime, plural, statusTone, humanize } from "../lib/format.js";
@@ -205,6 +205,10 @@ export function mount(root, ctx, params) {
       state.contentHash = snap.content_hash || state.contentHash;
       state.finishedAt = snap.finished_at || state.finishedAt;
       if (snap.counters) state.counters = Object.assign({}, snap.counters);
+      if (Array.isArray(snap.facts)) {
+        state.facts = snapshotFacts(snap.facts); // the final snapshot is the authoritative list of findings
+        state.factsRejected = Math.max(state.factsRejected, state.facts.filter((f) => f.status === "rejected").length);
+      }
       if (isTerminalStatus(state.status) && !state.failure && (state.status === "failed" || state.status === "interrupted" || state.status === "cancelled")) {
         state.failure = { reason: snap.reason || "", code: state.status };
       }

@@ -184,6 +184,21 @@ export function applyEvent(state, ev, nowMs) {
   return state;
 }
 
+/** The snapshot's facts list ([{fact_id, label, kind, topic, state, level, reason, domain}]) as the run screen's fact rows. */
+export function snapshotFacts(list) {
+  return (list || []).map((f) => ({
+    id: f.fact_id || "",
+    key: factKey(f.fact_id, f.label),
+    label: f.label || "",
+    kind: f.kind || "",
+    topic: f.topic || "",
+    status: f.state === "checked" || f.state === "rejected" ? f.state : "checking",
+    domain: f.domain || "",
+    level: f.level || "",
+    reason: f.reason || "",
+  }));
+}
+
 /** GET /runs/{id} -> state. The snapshot's feed (the last 60 events) is folded first, then its own fields win, so a
     reloaded page shows what the server knows now and continues from `last_seq`. */
 export function applySnapshot(snap, nowMs) {
@@ -216,17 +231,7 @@ export function applySnapshot(snap, nowMs) {
   if (num(snap.slots_required) !== null) state.slotsRequired = snap.slots_required;
   if (Array.isArray(snap.facts)) {
     // the snapshot's list is the whole list: a reloaded page shows every finding, not just the last events
-    state.facts = snap.facts.map((f) => ({
-      id: f.fact_id || "",
-      key: factKey(f.fact_id, f.label),
-      label: f.label || "",
-      kind: f.kind || "",
-      topic: f.topic || "",
-      status: f.state === "checked" || f.state === "rejected" ? f.state : "checking",
-      domain: f.domain || "",
-      level: f.level || "",
-      reason: f.reason || "",
-    }));
+    state.facts = snapshotFacts(snap.facts);
     state.factsRejected = Math.max(state.factsRejected, state.facts.filter((f) => f.status === "rejected").length);
   }
   state.lastSeq = num(snap.last_seq) !== null ? snap.last_seq : state.lastSeq;

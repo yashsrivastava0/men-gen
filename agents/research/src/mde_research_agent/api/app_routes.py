@@ -38,6 +38,12 @@ class RestartBody(BaseModel):
     confirm: str
 
 
+class ConfirmBody(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    confirm: str
+
+
 class SettingsBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
@@ -219,6 +225,22 @@ def make_api_router() -> APIRouter:
     async def ping(_: Auth, svc: Svc) -> dict[str, Any]:
         """About USD 0.01: one search and one tiny model call, booked in the spend record."""
         return await svc.ping()
+
+    @router.get("/tools/bakeoff")
+    async def bakeoff_status(_: Auth, svc: Svc) -> dict[str, Any]:
+        if svc.bakeoff is None:
+            raise NotFound("bakeoff")
+        return {**svc.bakeoff.status(), "plan": svc.bakeoff.plan()}
+
+    @router.post("/tools/bakeoff", status_code=202)
+    async def bakeoff_start(body: ConfirmBody, _: Auth, svc: Svc) -> dict[str, Any]:
+        """Starts the provider bake-off (about USD 0.40: it needs the word ``RUN`` and enough budget left)."""
+        if svc.bakeoff is None:
+            raise NotFound("bakeoff")
+        if body.confirm != "RUN":
+            raise Conflict("Confirm to start: this costs real money.")
+        svc._require_ready()
+        return svc.bakeoff.start()  # type: ignore[no-any-return]
 
     @router.get("/settings")
     async def get_settings(request: Request, _: Auth) -> dict[str, Any]:

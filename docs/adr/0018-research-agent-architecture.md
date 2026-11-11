@@ -36,3 +36,21 @@ Compass hands over an approved, hash-bound Brief (export format 2). Spec needs a
 - Two research packages exist until the older one is retired in a separate task.
 - A checker from the same model family as the writers is flagged (`checker_vendor: same`); a different checker is one route setting and one price row.
 - English-only labels; intent words for other languages are flagged `reviewed: false` until a native speaker reviews them.
+
+## Addendum 2026-11-11: v5, the standalone live-only app (AD-55 to AD-60; build prompt 06)
+
+Status: accepted by the owner's direction; built offline, **not yet run live**.
+
+Context: the offline build (prompt 05) had never touched the real web, and the planning review of its code found a silent size cap, a late and shallow checker, no grounding of numbers or attributes, metrics that could not fail, no report, a thin planner and weak operations. The owner will test the agent alone, from a front end, with live models and the live web, on USD 5.00 in total.
+
+Decision:
+- The agent is a standalone app (own server, own UI at `apps/research-console/`, own port 8120, same origin), live only: no mock path, no in-memory store and no fake ports in the composition root; test doubles live in `tests/support/`. Inputs are found automatically in `docs/compass/research-inputs/`. See D-132, D-133.
+- Money: USD 5.00 in total (tripwire 4.50, atomic hard stop through a period scope in the guard), restartable per budget period with its own ledger file, every action in `spend-record.json`. No per-run or call-count cap. See D-134.
+- Output `research.v5`: a main store and an appendix instead of silent deletion (D-135); a truth layer (check every item inside its topic, numbers must be in the quote, dates and region by code, independence by content, an evidence ladder, use rules for Spec; D-136); capability signals, a `trust` job and light mode (D-137).
+- Proof: the owner's spot-check, planted errors and the consumer probe are built in (D-139); the metrics page measures what can fail.
+
+Consequences:
+- Spec reads the whole main store when it is small and builds per-call packs when it is big; Research guarantees every main item has a Brief link or `NEW`.
+- A run costs more than the offline numbers suggested (a check call per 15 items); the estimates are seeded and say so until real runs calibrate them.
+- The old Compass-console hand-over is not maintained; it stays in the repo until the owner says it can go.
+- The quality of the research on the real web is still unmeasured: the owner's checklist (runbook) is how it will be judged.

@@ -164,6 +164,7 @@ class ResearchService:
             own_store  # a single-process store (file): every active run at startup is an orphan
         )
         self._review_cache: dict[str, ReviewIndex] = {}
+        self.bakeoff: Any = None  # the Tools bake-off (set by the app composition)
         self.queue: list[str] = []
         self._running: set[str] = set()
         self._pump_lock = asyncio.Lock()

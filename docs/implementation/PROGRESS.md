@@ -197,3 +197,13 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [ ] B1 live bake-off (owner starts it, `docs/runbooks/research-agent.md`)
 - [ ] B2 live runs on the three examples and a synthetic Brief, then read the outputs as the Spec lanes would and iterate (prompts, slot schemas, query strategy, assembly)
 - [ ] Final report (prompt section 12)
+
+## Research v5: standalone live-only app (build prompt 06; started 2026-11-11; branch `feat/research-agent-v5`; safe-point tag `pre/research-v5-20261111-1512`; ADR 0018 addendum; decisions D-132..D-139)
+
+- [x] Design docs 12 to 14 and prompt 06 copied into the repo
+- [x] Phase A: file store, spend record and period ledgers, inputs discovery and preview, run queue, preflight, same-origin security, app API, hook and scripts
+- [x] Phase B: front end stage 1 (`apps/research-console/`: inputs, run view, runs, budget, guide), fake app, 131 browser checks in Chrome
+- [x] Phase C: RC-1 main store and appendix, RC-2 in-topic checker, RC-3 numbers and dates, RC-4 independence and fit, RC-5 report and endpoints, RC-6 v5 output and events, RC-7 honest metrics
+- [x] Phase D: RC-8 signals, trust job and light mode, RC-9 evaluation harness, RC-10 failover, stale-run expiry, bake-off tool
+- [ ] Front end stage 2 (results, spot-check, tools) and its browser verification
+- [ ] Live: the owner runs the checklist in `docs/runbooks/research-agent.md` (nothing has run live; the live smoke needs the owner's switches)

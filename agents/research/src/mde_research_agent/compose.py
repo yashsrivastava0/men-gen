@@ -324,7 +324,7 @@ def compose_app(
     uploads = data / "uploads"
     estimates = Estimates()
     inputs = InputsStore(inputs_dir(cfg), catalog, estimates, uploads=uploads)
-    return assemble_service(
+    svc = assemble_service(
         store=store,
         search=search,
         fetch=fetch,
@@ -347,6 +347,15 @@ def compose_app(
         stale_after_s=cfg.research_stale_after_s,
         own_store=own_store,
     )
+
+    def providers(client: httpx.AsyncClient) -> list[SearchPort]:
+        ports = [build_ports(name, cfg, client=client)[0] for name in ("tavily", "serper")]
+        return [p for p in ports if p is not None]
+
+    from mde_research_agent.tools import BakeoffTool
+
+    svc.bakeoff = BakeoffTool(svc, providers)
+    return svc
 
 
 def _saved_provider(data: Path) -> str | None:

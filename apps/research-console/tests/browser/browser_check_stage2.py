@@ -627,9 +627,15 @@ def scenario_run_view(browser, f: bc.Fake) -> None:
     )
     page.wait_for_selector(".banner-ok, .banner-warn", timeout=90000)
     wait_for(page, "document.querySelectorAll('.fact').length >= 120", 10)
+    server_facts = len(f.get(f"/v1/research/runs/{rid}")["facts"])
+    wait_for(
+        page,
+        "Number(document.querySelector('[data-fact-counts]').getAttribute('data-fact-counts')) === "
+        + str(server_facts),
+        8,
+    )
     final_total = int(page.locator("[data-fact-counts]").get_attribute("data-fact-counts"))
     final_rows = page.locator(".fact").count()
-    server_facts = len(f.get(f"/v1/research/runs/{rid}")["facts"])
     check(
         "run view: after the reload and the end, the finding count equals the server's list (no duplicates, none lost)",
         final_total == server_facts and final_rows == min(final_total, 120),

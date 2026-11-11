@@ -1,6 +1,6 @@
 # research-agent
 
-Package `mde_research_agent` (`agents/research/`, distribution `mde-research-agent`). The second agent of the Context Engine: after Gate 1 it turns the approved Brief into `research.json` (`research.v4`), a quote-verified, id-indexed playbook for the Spec lanes. Not the older `mde_research` (`packages/research`, see [research](research.md)), which is untouched (D-126). Design: [architecture-v3/13](../architecture-v3/13-research-agent-design.md). Contract: [api/research-agent](../api/research-agent.md). Run it: [runbooks/research-agent](../runbooks/research-agent.md). Decision: [ADR 0018](../adr/0018-research-agent-architecture.md).
+Package `mde_research_agent` (`agents/research/`, distribution `mde-research-agent`). The second agent of the Context Engine: after Gate 1 it turns the approved Brief into `research.json` (`research.v5`), a quote-verified, id-indexed playbook for the Spec lanes. Not the older `mde_research` (`packages/research`, see [research](research.md)), which is untouched (D-126). Design: [architecture-v3/13](../architecture-v3/13-research-agent-design.md). Contract: [api/research-agent](../api/research-agent.md). Run it: [runbooks/research-agent](../runbooks/research-agent.md). Decision: [ADR 0018](../adr/0018-research-agent-architecture.md).
 
 ## Boundaries
 
@@ -39,3 +39,13 @@ RV-01..RV-17 (RV-11 reserved) in `validators/registry.py`, one pass test and one
 ## Tests
 
 `uv run pytest agents/research -m "not integration and not live"` (offline; scenarios RS-01..34, determinism with random delays, generality, contract and CLI tests); `just research-test-int` for the PostgreSQL store. Replay of a recorded run gives the same content hash.
+
+## v5 additions (standalone app)
+
+- **App:** `python -m mde_research_agent` serves the API and `apps/research-console/` on 127.0.0.1:8120; `scripts/research_app.py` starts it detached. Live only (see D-132); the composition is `mde_research_agent.compose.compose_app`.
+- **Inputs, preview, queue:** `inputs/` (discovery by content hash, preview with no model or web call), one run at a time by default with a queue, the file store (`store/files.py`) or PostgreSQL.
+- **Money:** `spend/` (period ledgers, `spend-record.json`, the budget control).
+- **Truth layer:** `engine/checking.py`, `core/numbers.py`, `engine/verify.py`, evidence and independence in `assemble/items.py`, RV-18..23.
+- **Reading a result:** `review.py`, `report.py`, `metrics.py`, `spotcheck.py`, endpoints in `api/results_routes.py`.
+- **Operations:** `adapters/search/failover.py`, `tools.py` (bake-off), `eval/` (planted errors, consumer probe).
+- Configuration, data files and the runbook: `agents/research/README.md`, `docs/runbooks/research-agent.md`.
