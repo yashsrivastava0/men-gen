@@ -294,6 +294,18 @@ CASES: list[tuple[str, bool]] = [
     ("uv run python evals//runners//live_batch.py", True),
     ("uv run python ev''als\\ru''nners\\live_''batch.py", True),  # quoting inside the path too
     ("python -m evals.runners.live_batch", True),
+    # --- the Research agent's live scripts: named by module or by path; live forms need the second key
+    ("uv run python -m mde_research_agent.live_bakeoff", True),
+    ("uv run python -m mde_research_agent.live_runs --run quick", True),
+    ("python3 -m mde_research_agent.live_smoke", True),
+    ("uv run python -m mde_research_agent.live_runs --allowance-usd 1.50", True),
+    ("uv run python agents/research/src/mde_research_agent/live_bakeoff.py", True),
+    ("uv run python agents\\research\\src\\mde_research_agent\\live_runs.py", True),
+    ("uv run python -m MDE_RESEARCH_AGENT.LIVE_RUNS", True),
+    (
+        "uv run python -m mde_research_agent.live_runs; echo --mock",
+        True,
+    ),  # a flag after `;` is another command
     # --- must NOT be blocked
     ("just test", False),
     ("just ci", False),
@@ -315,6 +327,15 @@ CASES: list[tuple[str, bool]] = [
     ("Get-ChildItem Env:LLM_MODE", False),
     ("echo $env:LLM_MODE", False),
     ("uv run python scripts/doctor.py", False),
+    # the Research agent: its offline forms, its server and its headless runner are not live scripts
+    ("uv run python -m mde_research_agent.live_bakeoff --dry-run", False),
+    ("uv run python -m mde_research_agent.live_runs --mock", False),
+    ("uv run python -m mde_research_agent.live_runs --replay --run quick", False),
+    ("uv run python -m mde_research_agent.live_smoke --dry-run --offline", False),
+    ("uv run python -m mde_research_agent --memory --port 8120", False),
+    ("uv run python -m mde_research_agent.run --export x.json --mock", False),
+    ("uv run pytest agents/research -m 'not integration and not live' -q", False),
+    ("grep -rn live_runs agents/research/README.md", False),
     # a path that merely looks similar, with either separator, is not the runner
     ("uv run python evals\\runners\\run_mock.py", False),
     ("uv run python evals/runners/mock_batch.py", False),

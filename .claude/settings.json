@@ -79,7 +79,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_py.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/format_py.py\""
           }
         ]
       }
@@ -90,7 +90,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_live.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_live.py\""
           }
         ]
       },
@@ -99,7 +99,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_live.py\""
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/guard_live.py\""
           }
         ]
       }

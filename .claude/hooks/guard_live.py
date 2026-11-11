@@ -10,6 +10,8 @@ Blocks (exit code 2, reason on stderr) any command that
 * assigns ``LLM_MODE`` a value it cannot prove is not live (``$(echo live)``, a backtick
   substitution, ``$X`` or ``${X:-live}``): a dynamic value is treated as live;
 * runs ``just live-*`` or the live eval runner directly,
+* runs a Research agent live script (``mde_research_agent.live_*``, by module name or by file path)
+  without an offline flag (``--dry-run``, ``--mock``, ``--replay``),
 
 unless the *environment* already has ``ALLOW_LIVE_LLM=1`` (the lead's live session). The command is
 first normalised (case-folded, invisible characters, quotes, backticks, carets, backslashes,
@@ -41,7 +43,8 @@ import unicodedata
 
 MESSAGE = (
     "Blocked by .claude/hooks/guard_live.py: this command would enable live LLM calls "
-    "(LLM_MODE=live, a dynamic LLM_MODE value, or `just live-*`) but ALLOW_LIVE_LLM=1 is not set "
+    "(LLM_MODE=live, a dynamic LLM_MODE value, `just live-*` or a `mde_research_agent.live_*` script "
+    "without --dry-run/--mock/--replay) but ALLOW_LIVE_LLM=1 is not set "
     "in the environment. Rule 3: only the lead or `live-runner` runs live batches, within the "
     "USD 6.00 cap (run `just budget` first). Subagents must use mock or replay mode."
 )
@@ -58,9 +61,15 @@ _JUST_LIVE = re.compile(r"(?:^|[;&|(\s])just\b[^;&|\r\n]*?\slive-[a-z]")
 _LIVE_RUNNER = re.compile(r"evals[./\\]+runners[./\\]+live_batch")
 _VALUE_TOKEN = re.compile(r"[^\s;&|)]*")
 _HARMLESS_DYNAMIC = ("$null", "$false")
+# The Research agent's live scripts (``python -m mde_research_agent.live_bakeoff``, ``.live_runs``,
+# ``.live_smoke``) and their file paths. They carry their own preflight (as ``mde_compass.live_batches``
+# does), but they are named here so the hook knows them: their live forms need the second key in the
+# environment, while the offline forms (``--dry-run``, ``--mock``, ``--replay``) stay allowed.
+_RESEARCH_LIVE = re.compile(r"mde_research_agent[./\\]+live_[a-z]")
+_OFFLINE_FLAG = re.compile(r"(?:^|\s)--(?:dry-run|mock|replay)(?=\s|$|=|;)")
 
 # Kept for callers that import the old name; matching now goes through ``is_live_command``.
-LIVE_PATTERNS = (_ASSIGN, _ARGS, _JUST_LIVE, _LIVE_RUNNER)
+LIVE_PATTERNS = (_ASSIGN, _ARGS, _JUST_LIVE, _LIVE_RUNNER, _RESEARCH_LIVE)
 
 
 def normalise(command: str, *, paths: bool = False) -> str:
@@ -105,6 +114,20 @@ def _assigns_live(text: str) -> bool:
     return False
 
 
+def _runs_research_live(command: str, text: str) -> bool:
+    """A ``mde_research_agent.live_*`` script without an offline flag (``--dry-run``/``--mock``/``--replay``)."""
+    # Per command segment (split on ``;`` ``&`` ``|``): an offline flag only counts in the SAME command
+    # as the script, so ``...live_runs; echo --mock`` is still live.
+    for reading in (
+        text,
+        normalise(command, paths=True),
+    ):  # the second reads agents\research\... as a path
+        for segment in re.split(r"[;&|]+", reading):
+            if _RESEARCH_LIVE.search(segment) and _OFFLINE_FLAG.search(segment) is None:
+                return True
+    return False
+
+
 def is_live_command(command: str) -> bool:
     """True when ``command`` would turn live LLM calls on (see the module docstring)."""
     text = normalise(command)
@@ -114,6 +137,7 @@ def is_live_command(command: str) -> bool:
         or _JUST_LIVE.search(text) is not None
         or _LIVE_RUNNER.search(text) is not None
         or _LIVE_RUNNER.search(normalise(command, paths=True)) is not None  # evals\runners\...
+        or _runs_research_live(command, text)
     )
 
 
