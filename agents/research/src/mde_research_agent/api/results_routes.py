@@ -38,7 +38,9 @@ def make_results_router() -> APIRouter:
 
     @router.get(f"{runs}/{{run_id}}/overview")
     async def overview(run_id: str, who: Auth, svc: Svc) -> Any:
-        return JSONResponse(await svc.overview(who.tenant_id, run_id), headers={"Cache-Control": "no-store"})
+        return JSONResponse(
+            await svc.overview(who.tenant_id, run_id), headers={"Cache-Control": "no-store"}
+        )
 
     @router.get(f"{runs}/{{run_id}}/review")
     async def review(
@@ -58,8 +60,18 @@ def make_results_router() -> APIRouter:
     ) -> Any:
         return JSONResponse(
             await svc.review_items(
-                who.tenant_id, run_id, limit=limit, offset=offset, job=job, lane=lane, evidence=evidence,
-                flag=flag, impact=impact, kind=kind, store=store, q=q,
+                who.tenant_id,
+                run_id,
+                limit=limit,
+                offset=offset,
+                job=job,
+                lane=lane,
+                evidence=evidence,
+                flag=flag,
+                impact=impact,
+                kind=kind,
+                store=store,
+                q=q,
             ),
             headers={"Cache-Control": "no-store"},
         )
@@ -73,7 +85,9 @@ def make_results_router() -> APIRouter:
         offset: Annotated[int, Query(ge=0)] = 0,
         q: str = "",
     ) -> Any:
-        return JSONResponse(await svc.sources(who.tenant_id, run_id, limit=limit, offset=offset, q=q))
+        return JSONResponse(
+            await svc.sources(who.tenant_id, run_id, limit=limit, offset=offset, q=q)
+        )
 
     @router.get(f"{runs}/{{run_id}}/report")
     async def report(run_id: str, who: Auth, svc: Svc) -> Response:
@@ -81,7 +95,10 @@ def make_results_router() -> APIRouter:
         return PlainTextResponse(
             text,
             media_type="text/markdown; charset=utf-8",
-            headers={"Content-Disposition": f'attachment; filename="research-report-{run_id}.md"', "Cache-Control": "no-store"},
+            headers={
+                "Content-Disposition": f'attachment; filename="research-report-{run_id}.md"',
+                "Cache-Control": "no-store",
+            },
         )
 
     @router.get(f"{runs}/{{run_id}}/metrics")
@@ -95,7 +112,9 @@ def make_results_router() -> APIRouter:
     # --- spot-check ------------------------------------------------------------------------------------------------
     @router.post("/api/spot-checks", status_code=201)
     async def create(body: SpotCheckBody, who: Auth, svc: Svc) -> Any:
-        return await svc.new_spot_check(who.tenant_id, body.run_ids, body.seed, max(1, min(body.per_run, 60)))
+        return await svc.new_spot_check(
+            who.tenant_id, body.run_ids, body.seed, max(1, min(body.per_run, 60))
+        )
 
     @router.get("/api/spot-checks")
     async def listing(_: Auth, svc: Svc) -> Any:
@@ -120,7 +139,7 @@ def make_results_router() -> APIRouter:
         return summarize(check)
 
     @router.get("/api/spot-checks/{check_id}/export")
-    async def export(check_id: str, _: Auth, svc: Svc, format: str = "json") -> Response:  # noqa: A002
+    async def export(check_id: str, _: Auth, svc: Svc, format: str = "json") -> Response:
         check = svc.spot_checks.get(check_id)
         if check is None:
             raise NotFound(f"spot-check {check_id}")

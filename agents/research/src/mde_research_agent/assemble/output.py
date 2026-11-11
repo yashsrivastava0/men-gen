@@ -21,21 +21,21 @@ from mde_core.money import micros_to_usd
 from mde_research_agent import SCHEMA_VERSION
 from mde_research_agent.assemble import digest as dg
 from mde_research_agent.assemble.items import BuiltItem, build_items
-from mde_research_agent.assemble.notes import openers
-from mde_research_agent.assemble.quality import (
-    bn_coverage,
-    TargetInfo,
-    flagged_counts,
-    lane_quality,
-)
-from mde_research_agent.assemble.quality import lane_items as lane_items_of
-from mde_research_agent.assemble.store import assign_store, compact_item, tokens_of
 from mde_research_agent.assemble.norms import (
     apply_norms,
     build_suggestions,
     compute_norms,
     detect_conflicts,
 )
+from mde_research_agent.assemble.notes import openers
+from mde_research_agent.assemble.quality import (
+    TargetInfo,
+    bn_coverage,
+    flagged_counts,
+    lane_quality,
+)
+from mde_research_agent.assemble.quality import lane_items as lane_items_of
+from mde_research_agent.assemble.store import assign_store, compact_item, tokens_of
 from mde_research_agent.calls import assemble as asm_call
 from mde_research_agent.catalog.loader import DATA_DIR
 from mde_research_agent.core.applies import BriefIndex
@@ -413,8 +413,7 @@ async def assemble_output(
             rounds=result.rounds,
             light=ctx.plan.light,
             signals=list(ctx.plan.signals),
-            store_tokens=overhead
-            + sum(b.item.tokens_est for b in built if b.item.store == "main"),
+            store_tokens=overhead + sum(b.item.tokens_est for b in built if b.item.store == "main"),
             appendix_items=sum(1 for b in built if b.item.store == "appendix"),
             store_over_limit=splan.protected_over_limit,
             digest_tokens=sum(tokens_of(s.digest) for s in slices.values()),
@@ -452,7 +451,11 @@ async def assemble_output(
         dropped=drops,
         flagged=flagged_counts([b.item for b in built]),
         lane_quality=lane_quality(
-            lane_items_of([b.item for b in built], cat.lanes, {tid: [t.lane, *t.also_lanes] for tid, t in targets.items()}),
+            lane_items_of(
+                [b.item for b in built],
+                cat.lanes,
+                {tid: [t.lane, *t.also_lanes] for tid, t in targets.items()},
+            ),
             _target_infos(ctx),
             list(cat.lanes.lanes),
         ),

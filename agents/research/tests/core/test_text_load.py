@@ -67,11 +67,25 @@ def test_classes_have_the_documented_boundaries_with_a_margin_of_three() -> None
     assert CFG.class_margin == 3
     # a score within 3 points BELOW a boundary already uses the larger class: the cuts are 22 and 58
     assert [classify(n, CFG) for n in (0, 17, 21, 22, 23, 27, 57, 58, 60, 83, 200)] == [
-        "focused", "focused", "focused", "standard", "standard", "standard",
-        "standard", "deep", "deep", "deep", "deep",
+        "focused",
+        "focused",
+        "focused",
+        "standard",
+        "standard",
+        "standard",
+        "standard",
+        "deep",
+        "deep",
+        "deep",
+        "deep",
     ]
     no_margin = CFG.model_copy(update={"class_margin": 0})
-    assert [classify(n, no_margin) for n in (24, 25, 60, 61)] == ["focused", "standard", "standard", "deep"]
+    assert [classify(n, no_margin) for n in (24, 25, 60, 61)] == [
+        "focused",
+        "standard",
+        "standard",
+        "deep",
+    ]
 
 
 def test_load_score_components_and_weights() -> None:

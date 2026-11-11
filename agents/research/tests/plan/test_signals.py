@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -28,7 +29,11 @@ def inp_of(name: str) -> ResearchInput:
 def tiny(*features: tuple[str, str]) -> ResearchInput:
     base = inp_of("unit-converter-tiny")
     return base.model_copy(
-        update={"features": tuple(Feature(id=f"FTR-{i:03d}", name=n, intent=t) for i, (n, t) in enumerate(features, 1))}
+        update={
+            "features": tuple(
+                Feature(id=f"FTR-{i:03d}", name=n, intent=t) for i, (n, t) in enumerate(features, 1)
+            )
+        }
     )
 
 
@@ -61,7 +66,13 @@ def test_payments_alone_is_a_signal_but_not_a_trust_trigger() -> None:
 
 
 def test_loose_words_no_longer_make_an_integration_need() -> None:
-    sig = compute_signals(tiny(("Order id on the list", "Show the order id and a buy button"), ("Sign here", "Sign the note")), CAT.signals)
+    sig = compute_signals(
+        tiny(
+            ("Order id on the list", "Show the order id and a buy button"),
+            ("Sign here", "Sign the note"),
+        ),
+        CAT.signals,
+    )
     assert "identity_kyc" not in sig and "payments" not in sig
     strong = compute_signals(tiny(("Pay online", "Take a card payment at checkout")), CAT.signals)
     assert "payments" in strong
@@ -69,7 +80,9 @@ def test_loose_words_no_longer_make_an_integration_need() -> None:
 
 def test_a_weak_word_needs_two_different_places() -> None:
     one = compute_signals(tiny(("Reminders", "Remind people")), CAT.signals)
-    two = compute_signals(tiny(("Reminders", "Remind people"), ("Alerts", "Send an alert by email")), CAT.signals)
+    two = compute_signals(
+        tiny(("Reminders", "Remind people"), ("Alerts", "Send an alert by email")), CAT.signals
+    )
     assert "messaging" not in one and "messaging" in two
 
 
@@ -80,18 +93,34 @@ def test_the_tiny_converter_is_light_and_plans_two_topics_with_visible_gaps() ->
     plan = build_plan(inp, CAT)
     assert plan.light and len(plan.targets) == 2
     assert {f"{t.job}:{t.template_id}" for t in plan.targets} == set(CAT.signals.light.templates)
-    assert plan.dropped and all(d.reason == "trivia" for d in plan.dropped if d.reason != "declined")
+    assert plan.dropped and all(
+        d.reason == "trivia" for d in plan.dropped if d.reason != "declined"
+    )
 
 
 def test_real_exports_keep_their_load_classes() -> None:
-    got = {n: inp_of(n).load for n in ("quick-yoga-studio-bengaluru", "standard-produce-marketplace-nashik", "thorough-freight-fleet-india")}
-    assert [(g.score, g.load_class) for g in got.values()] == [(17, "focused"), (27, "standard"), (83, "deep")]
+    got: dict[str, Any] = {
+        n: inp_of(n).load
+        for n in (
+            "quick-yoga-studio-bengaluru",
+            "standard-produce-marketplace-nashik",
+            "thorough-freight-fleet-india",
+        )
+    }
+    assert [(g.score, g.load_class) for g in got.values()] == [
+        (17, "focused"),
+        (27, "standard"),
+        (83, "deep"),
+    ]
 
 
 def test_the_design_job_requires_checkable_facts_and_leaves_conventions_optional() -> None:
     design = CAT.jobs["design"]
     by_id = {t.id: t for t in design.targets}
-    assert all(s.required for s in by_id["platform_guidelines"].slots) and by_id["platform_guidelines"].slots[0].min == 3
+    assert (
+        all(s.required for s in by_id["platform_guidelines"].slots)
+        and by_id["platform_guidelines"].slots[0].min == 3
+    )
     assert by_id["accessibility"].slots[0].required and by_id["accessibility"].slots[0].min == 2
     assert not any(s.required for s in by_id["conventions"].slots)
     key = next(t for t in CAT.jobs["screens"].targets if t.id == "key_screens").slots[0]

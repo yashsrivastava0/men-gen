@@ -25,9 +25,15 @@ async def test_a_finding_keeps_one_id_from_checking_to_checked_and_the_snapshot_
     assert {e.detail["fact_id"] for e in done if e.type == "fact.verified"} <= ids_found
     facts = fold(run.events)["facts"]
     assert {f.fact_id for f in facts} >= ids_found
-    assert all(f.state in ("checked", "rejected") for f in facts if f.fact_id in {e.detail["fact_id"] for e in done})
+    assert all(
+        f.state in ("checked", "rejected")
+        for f in facts
+        if f.fact_id in {e.detail["fact_id"] for e in done}
+    )
     verified_atoms = {a["id"] for a in run.evidence["atoms"] if a["status"] == "verified"}
-    assert verified_atoms <= {f.fact_id for f in facts if f.state == "checked"}  # the id is the atom's id
+    assert verified_atoms <= {
+        f.fact_id for f in facts if f.state == "checked"
+    }  # the id is the atom's id
 
 
 async def test_the_run_block_records_stage_timings_models_cost_by_step_and_fallbacks() -> None:

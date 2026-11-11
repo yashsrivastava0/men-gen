@@ -156,7 +156,9 @@ def widen_quote(page: PageRecord, start: int, end: int, needed: list[Any]) -> st
     spans = _sentence_spans(page.text)
     if not spans:
         return None
-    first = next((i for i, (s, e) in enumerate(spans) if s <= start < e or start < s), len(spans) - 1)
+    first = next(
+        (i for i, (s, e) in enumerate(spans) if s <= start < e or start < s), len(spans) - 1
+    )
     last = next((i for i, (s, e) in enumerate(spans) if s < end <= e), len(spans) - 1)
     last = max(last, first)
     windows = [(first, last)]

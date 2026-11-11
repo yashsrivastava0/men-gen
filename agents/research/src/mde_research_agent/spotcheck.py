@@ -107,7 +107,7 @@ def draw(
 def summarize(check: dict[str, Any]) -> dict[str, Any]:
     cards = {c["key"]: c for c in check["cards"]}
     answered = {k: v for k, v in check["verdicts"].items() if k in cards and v != "skipped"}
-    counts: dict[str, int] = {v: 0 for v in VERDICTS}
+    counts: dict[str, int] = dict.fromkeys(VERDICTS, 0)
     for v in check["verdicts"].values():
         counts[v] = counts.get(v, 0) + 1
     n = len(answered)

@@ -12,11 +12,13 @@ from mde_research_agent.catalog.models import Catalog, SignalsConfig
 from mde_research_agent.core.text import stem_set
 from mde_research_agent.domain.input import ResearchInput
 
-SELLER_ROLE_WORDS = frozenset({"seller", "vendor", "merchant", "supplier", "farmer", "trader", "shopkeeper"})
+SELLER_ROLE_WORDS = frozenset(
+    {"seller", "vendor", "merchant", "supplier", "farmer", "trader", "shopkeeper"}
+)
 BUYER_ROLE_WORDS = frozenset({"buyer", "customer", "consumer", "shopper", "client", "restaurant"})
 
 
-def _units(inp: ResearchInput) -> list[set[str]]:
+def _units(inp: ResearchInput) -> list[frozenset[str]]:
     """One stem set per piece of the Brief that can reveal a capability."""
     texts: list[str] = []
     texts += [f"{f.name} {f.intent}" for f in inp.features if f.duplicate_of is None]
@@ -29,7 +31,7 @@ def _units(inp: ResearchInput) -> list[set[str]]:
     return [stem_set(t) for t in texts if t.strip()]
 
 
-def _hit(word: str, unit: set[str]) -> bool:
+def _hit(word: str, unit: frozenset[str]) -> bool:
     stems = stem_set(word)
     return bool(stems) and stems <= unit
 
@@ -61,9 +63,7 @@ def compute_signals(inp: ResearchInput, cfg: SignalsConfig) -> tuple[str, ...]:
     return tuple(sorted(found))
 
 
-def trust_decision(
-    inp: ResearchInput, signals: tuple[str, ...], cat: Catalog
-) -> tuple[bool, str]:
+def trust_decision(inp: ResearchInput, signals: tuple[str, ...], cat: Catalog) -> tuple[bool, str]:
     """Whether the ``trust`` job runs, with a plain reason. ``payments`` ALONE never triggers it; payments together with
     two-sided money (payouts, commissions) does; a content trigger overrides size; the deep class always runs it."""
     cfg = cat.signals.trust
@@ -72,9 +72,14 @@ def trust_decision(
         return True, "This is a big app: privacy, security and store rules are always checked."
     fired = [s for s in cfg.triggers if s in signals]
     if fired:
-        return True, "The Brief shows " + ", ".join(s.replace("_", " ") for s in fired) + ", so privacy and security rules are checked."
+        return True, "The Brief shows " + ", ".join(
+            s.replace("_", " ") for s in fired
+        ) + ", so privacy and security rules are checked."
     if all(s in signals for s in cfg.together):
-        return True, "Money moves between people (payments with sellers and buyers), so payment rules and privacy are checked."
+        return (
+            True,
+            "Money moves between people (payments with sellers and buyers), so payment rules and privacy are checked.",
+        )
     return False, "Nothing in the Brief needs the extra privacy and security checks."
 
 
@@ -82,7 +87,9 @@ def light_mode(inp: ResearchInput, signals: tuple[str, ...], cat: Catalog) -> bo
     """A tiny app that needs no outside facts (doc 13 4.2): load below the limit, no signal, no named reference, no
     integration or rule fact and no place. Only the feature norms and the screen inventory are researched."""
     load = inp.load.score if inp.load else 0
-    rule_facts = [f for f in inp.facts if (f.kind or "") in cat.plan.rule_fact_kinds and not f.is_template]
+    rule_facts = [
+        f for f in inp.facts if (f.kind or "") in cat.plan.rule_fact_kinds and not f.is_template
+    ]
     has_place = bool(inp.geography.country or inp.geography.cities)
     return (
         load < cat.signals.light.below

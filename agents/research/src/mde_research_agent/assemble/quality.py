@@ -24,7 +24,7 @@ from mde_research_agent.calls.extract import JOB_KINDS
 from mde_research_agent.catalog.loader import DATA_DIR
 from mde_research_agent.catalog.models import LanesConfig
 from mde_research_agent.domain.research import BnValue, Item, LaneQuality, LaneQualityValue
-from dataclasses import dataclass
+
 
 @dataclass(frozen=True)
 class TargetInfo:
@@ -91,12 +91,17 @@ def lane_quality(
     return out
 
 
-def bn_coverage(items: list[Item], targets: list[TargetInfo], cfg: LanesConfig) -> dict[str, BnValue]:
+def bn_coverage(
+    items: list[Item], targets: list[TargetInfo], cfg: LanesConfig
+) -> dict[str, BnValue]:
     needs = sorted({k.need for k in cfg.kinds.values()})
     by_need: dict[str, list[Item]] = {n: [] for n in needs}
     for i in items:
         by_need[cfg.kinds[i.kind].need].append(i)
-    job_needs = {job: {cfg.kinds[k].need for k in kinds if k in cfg.kinds} for job, kinds in JOB_KINDS.items()}
+    job_needs = {
+        job: {cfg.kinds[k].need for k in kinds if k in cfg.kinds}
+        for job, kinds in JOB_KINDS.items()
+    }
     out: dict[str, BnValue] = {}
     for n in needs:
         found = by_need[n]
@@ -105,10 +110,19 @@ def bn_coverage(items: list[Item], targets: list[TargetInfo], cfg: LanesConfig) 
         elif found and all(i.evidence != "unverified" for i in found):
             out[n] = "single_source_only"
         elif found:
-            out[n] = "single_source_only"  # only unverified or single-source evidence: Spec must not default from it
+            out[n] = (
+                "single_source_only"  # only unverified or single-source evidence: Spec must not default from it
+            )
         else:
             tried = [ts for ts in targets if n in job_needs.get(ts.job, set())]
-            out[n] = "gap" if tried and all(ts.status in ("not_found", "queued", "cancelled", "skipped") for ts in tried) else "defaulted_only"
+            out[n] = (
+                "gap"
+                if tried
+                and all(
+                    ts.status in ("not_found", "queued", "cancelled", "skipped") for ts in tried
+                )
+                else "defaulted_only"
+            )
     return out
 
 
@@ -121,13 +135,17 @@ def flagged_counts(items: list[Item]) -> dict[str, int]:
     return {k: c[k] for k in COUNTED_FLAGS if c[k]}
 
 
-def lane_items(items: list[Item], lanes_cfg: LanesConfig, lane_of_target: dict[str, list[str]]) -> dict[str, list[Item]]:
+def lane_items(
+    items: list[Item], lanes_cfg: LanesConfig, lane_of_target: dict[str, list[str]]
+) -> dict[str, list[Item]]:
     """Main-store items by lane (a kind can feed several lanes; the topic's own lanes count too)."""
     out: dict[str, list[Item]] = {lane: [] for lane in lanes_cfg.lanes}
     for i in items:
         if i.store != "main":
             continue
-        for lane in dict.fromkeys([*lanes_cfg.kinds[i.kind].lanes, *lane_of_target.get(i.target_id, [])]):
+        for lane in dict.fromkeys(
+            [*lanes_cfg.kinds[i.kind].lanes, *lane_of_target.get(i.target_id, [])]
+        ):
             if lane in out:
                 out[lane].append(i)
     return out

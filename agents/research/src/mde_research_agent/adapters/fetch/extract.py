@@ -465,6 +465,6 @@ def detect_soft_wall(title: str, text: str, final_url: str = "") -> WallKind | N
             by_name = t.startswith(phrase) or phrase in t or first.startswith(phrase)
             if (kind == "not_found" and by_name) or (short and (by_name or phrase in head)):
                 return kind  # type: ignore[return-value]
-    if t.startswith(_LOGIN_TITLES) and short or (_LOGIN_PATHS.search(final_url) and short):
+    if (t.startswith(_LOGIN_TITLES) and short) or (_LOGIN_PATHS.search(final_url) and short):
         return "paywall"
     return None

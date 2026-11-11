@@ -100,7 +100,9 @@ class ScreenPatternData(W):
     states: list[ScreenState]
     validations: list[str]
     microcopy_notes: list[str]
-    section_variants: list[list[str]] = Field(default_factory=list)  # set by code when sources order differently
+    section_variants: list[list[str]] = Field(
+        default_factory=list
+    )  # set by code when sources order differently
 
 
 class NavigationPatternData(W):
@@ -122,7 +124,9 @@ class WorkflowData(W):
     alternates: list[str]
     exceptions: list[str]
     empty_error_offline_cases: list[str]
-    step_variants: list[list[str]] = Field(default_factory=list)  # set by code when sources order differently
+    step_variants: list[list[str]] = Field(
+        default_factory=list
+    )  # set by code when sources order differently
 
 
 class EntityPatternData(W):
@@ -136,7 +140,9 @@ class LifecycleData(W):
     entity: str
     states: list[str]
     transitions: list[Transition]  # ordered: never joined across sources
-    transition_variants: list[list[str]] = Field(default_factory=list)  # "from>to: trigger" lines, set by code
+    transition_variants: list[list[str]] = Field(
+        default_factory=list
+    )  # "from>to: trigger" lines, set by code
 
 
 class RuleData(W):
@@ -263,7 +269,9 @@ class AtomCommon(W):
         Impact  # high: prices, fees, rules, legal or payment facts, formats that change validation
     )
     about_region: str  # ISO 3166-1 alpha-2 (lowercase) of the country the item is about, "global" or "unknown"
-    about_entity: str | None = None  # the company, product or authority the item is about, else null
+    about_entity: str | None = (
+        None  # the company, product or authority the item is about, else null
+    )
 
 
 _WIRE_CACHE: dict[str, type[AtomCommon]] = {}

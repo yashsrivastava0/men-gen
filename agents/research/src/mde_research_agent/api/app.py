@@ -27,9 +27,9 @@ from mde_core.logging import get_logger
 from mde_core.settings import Settings, load_settings
 from mde_research_agent import API_PREFIX
 from mde_research_agent.api.app_routes import make_api_router
-from mde_research_agent.api.results_routes import make_results_router
 from mde_research_agent.api.deps import Auth, Svc
 from mde_research_agent.api.errors import install_error_handlers
+from mde_research_agent.api.results_routes import make_results_router
 from mde_research_agent.api.security import SameOrigin
 from mde_research_agent.api.sse import event_stream
 from mde_research_agent.config import ResearchSettings, keys_present, load_research_settings, ui_dir

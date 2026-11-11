@@ -9,12 +9,12 @@ from support.testing import extractor, load_fixture, rule_extractor, run_engine
 
 from mde_core.errors import ProviderError
 from mde_research_agent.calls.check import CheckIn, CheckOut, CheckVerdict
+from mde_research_agent.catalog import load_catalog
 from mde_research_agent.engine.checking import (
     meets_minimum,
     null_paths,
     passage_window,
 )
-from mde_research_agent.catalog import load_catalog
 from mde_research_agent.engine.state import PageRecord
 
 STANDARD = "standard-produce-marketplace-nashik"
@@ -200,9 +200,17 @@ def test_the_passage_window_is_about_150_words_around_the_quote() -> None:
 
 async def test_a_full_checker_batch_reaches_the_model_whole() -> None:
     """The gateway cuts untrusted text at a limit; a batch of 15 items with passages must fit under Research's limit."""
-    from mde_research_agent.config import UNTRUSTED_CHARS
     from mde_research_agent.calls.check import CheckItem
+    from mde_research_agent.config import UNTRUSTED_CHARS
 
-    item = CheckItem(id="C1", claim="c " * 100, quote="q " * 40, data="d" * 2500, passage="p " * 450, page_title="t", page_domain="a.example")
+    item = CheckItem(
+        id="C1",
+        claim="c " * 100,
+        quote="q " * 40,
+        data="d" * 2500,
+        passage="p " * 450,
+        page_title="t",
+        page_domain="a.example",
+    )
     batch = CheckIn(items=[item.model_copy(update={"id": f"C{i}"}) for i in range(15)])
     assert len(batch.text) < UNTRUSTED_CHARS

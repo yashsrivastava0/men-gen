@@ -4,6 +4,7 @@ claims are never clipped mid-sentence."""
 from __future__ import annotations
 
 from datetime import date
+from typing import Any
 
 from support.testing import atom
 
@@ -52,7 +53,7 @@ def candidates(items: list[tuple[str, dict]], pg: PageRecord) -> list[Candidate 
     return candidates_from_output(extract_out_model("data").model_validate(data), pg)
 
 
-def rule(quote: str, claim: str, **kw: object) -> tuple[str, dict]:
+def rule(quote: str, claim: str, **kw: Any) -> tuple[str, dict]:
     return atom(
         "rule", quote, key="card fee", label="Card payment fee", claim=claim, impact="high", **kw
     )

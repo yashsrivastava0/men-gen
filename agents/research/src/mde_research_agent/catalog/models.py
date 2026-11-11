@@ -82,7 +82,9 @@ class LoadConfig(Frozen):
     weights: LoadWeights
     fact_kinds: tuple[str, ...]
     classes: tuple[LoadCut, ...]
-    class_margin: int = 0  # a score within this many points BELOW a boundary already uses the larger class
+    class_margin: int = (
+        0  # a score within this many points BELOW a boundary already uses the larger class
+    )
 
 
 class SignalWords(Frozen):

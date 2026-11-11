@@ -14,7 +14,7 @@ from collections.abc import Callable
 from dataclasses import dataclass, field
 
 from mde_core.clock import Clock
-from mde_research_agent.catalog.models import Ceiling
+from mde_research_agent.catalog.models import Ceiling, HardLimits
 
 
 @dataclass
@@ -44,7 +44,7 @@ class FailureLedger:
 
 class RunBudget:
     def __init__(
-        self, soft: Ceiling, hard: Ceiling, clock: Clock, *, run_cap_micros: int | None = None
+        self, soft: Ceiling, hard: HardLimits, clock: Clock, *, run_cap_micros: int | None = None
     ) -> None:
         self.soft = soft
         self.hard = hard

@@ -263,8 +263,8 @@ async def run_engine(
                 )
                 or cs.hard.model_dump(),
                 store_tokens=cs.store_tokens,
-        chunk_items=cs.chunk_items,
-        digest_tokens=cs.digest_tokens,
+                chunk_items=cs.chunk_items,
+                digest_tokens=cs.digest_tokens,
             )
         )
     return run

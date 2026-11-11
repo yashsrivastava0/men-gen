@@ -151,7 +151,9 @@ def test_every_link_is_made_by_the_safe_helpers() -> None:
         code = code_only(f.read_text(encoding="utf-8"))
         if f.name == "dom.js":
             continue
-        assert not re.search(r"\.href\s*=(?!=)|[\"']href[\"']|\bhref\s*:", code), f"{f.name}: an address attribute outside dom.js"
+        assert not re.search(r"\.href\s*=(?!=)|[\"']href[\"']|\bhref\s*:", code), (
+            f"{f.name}: an address attribute outside dom.js"
+        )
         assert not re.search(
             r"\.src\s*=|\"src\"|\blocation\.(?:href|assign|replace)\b|\.action\s*=", code
         ), f.name
@@ -172,12 +174,14 @@ def test_text_from_outside_goes_in_as_text() -> None:
         assert (
             ".textContent =" in code
             or "untrusted(" in code
-            or f.name in {"guide.js", "soon.js", "dialogs.js", "results_data.js", "results_report.js"}
+            or f.name
+            in {"guide.js", "soon.js", "dialogs.js", "results_data.js", "results_report.js"}
         )
 
 
 def test_the_app_serves_it_with_the_strict_policy_and_script_types() -> None:
     import anyio
+
     from mde_research_agent.api import create_app
     from mde_research_agent.config import ResearchSettings
 
@@ -211,7 +215,9 @@ def test_the_app_serves_it_with_the_strict_policy_and_script_types() -> None:
 def test_the_report_preview_is_built_from_text_nodes_only() -> None:
     """The Markdown preview: the parser returns plain data, and the screen draws it only through h(), link() and text."""
     parser = code_only((ROOT / "lib" / "markdown.js").read_text(encoding="utf-8"))
-    assert "document" not in parser and "createElement" not in parser, "the Markdown reader must not touch the page"
+    assert "document" not in parser and "createElement" not in parser, (
+        "the Markdown reader must not touch the page"
+    )
     assert "safeUrl" in parser
     view = code_only((ROOT / "views" / "results_report.js").read_text(encoding="utf-8"))
     assert "link(s.url, s.text)" in view and "parseMarkdown(" in view

@@ -63,10 +63,16 @@ class RunContext:
     queries: list[QueryRecord] = field(default_factory=list)
     entities: dict[str, EntityRecord] = field(default_factory=dict)
     drops: DropCounts = field(default_factory=DropCounts)
-    timings: dict[str, float] = field(default_factory=dict)  # work seconds by stage (parallel work adds up)
-    extraction: dict[str, int] = field(default_factory=dict)  # honest extraction counters (doc 14 section 3)
+    timings: dict[str, float] = field(
+        default_factory=dict
+    )  # work seconds by stage (parallel work adds up)
+    extraction: dict[str, int] = field(
+        default_factory=dict
+    )  # honest extraction counters (doc 14 section 3)
     fallbacks: dict[str, int] = field(default_factory=dict)  # degraded paths used, by name
-    check_inflight: dict[str, Any] = field(default_factory=dict)  # pair key -> future of the checker's verdict
+    check_inflight: dict[str, Any] = field(
+        default_factory=dict
+    )  # pair key -> future of the checker's verdict
     provider_down: bool = False
     budget_stopped: bool = False
     no_results: bool = False  # round 1 found nothing for any topic
@@ -102,7 +108,11 @@ class RunContext:
 
     def count_drop(self, reason: str) -> None:
         """Count one dropped item under its reason (an unknown reason is counted as ``invalid``)."""
-        name = reason if hasattr(self.drops, reason) and reason != "unchecked_high_impact" else "invalid"
+        name = (
+            reason
+            if hasattr(self.drops, reason) and reason != "unchecked_high_impact"
+            else "invalid"
+        )
         setattr(self.drops, name, getattr(self.drops, name) + 1)
 
     def all_atoms(self) -> list[AtomRecord]:

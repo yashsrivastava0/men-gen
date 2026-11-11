@@ -130,7 +130,7 @@ def build(args: argparse.Namespace, root: Path) -> Any:
 
 HOSTILE = {
     "label": "<img src=x onerror=alert(1)> Fees",
-    "claim": "<script>alert(2)</script> Fees start at 2 percent. <a href=\"javascript:alert(3)\">pay</a>",
+    "claim": '<script>alert(2)</script> Fees start at 2 percent. <a href="javascript:alert(3)">pay</a>',
     "quote": "<b onmouseover=alert(4)>Fees start at 2 percent</b> javascript:alert(5)",
     "title": "<img src=x onerror=alert(6)> Pricing page",
     "url": "javascript:alert(7)",
@@ -205,7 +205,11 @@ def make_big_result(
                     "published_on": "2026-01-01",
                 }
             ] + it["sources"][:1]
-            it["data"] = {"name": HOSTILE["label"], "notes": [HOSTILE["claim"]], "url": HOSTILE["url"]}
+            it["data"] = {
+                "name": HOSTILE["label"],
+                "notes": [HOSTILE["claim"]],
+                "url": HOSTILE["url"],
+            }
         for a in src_atoms[:1]:
             na = json.loads(json.dumps(a))
             na["id"] = f"atm_BIG{i + 1:06d}"
@@ -216,7 +220,10 @@ def make_big_result(
             new_atoms.append(na)
     ev["atoms"] = [a for a in ev["atoms"] if a.get("item_id") not in old_ids] + new_atoms
     res["items"] = items
-    res["profile"] = {**res["profile"], "appendix_items": sum(1 for i in items if i["store"] == "appendix")}
+    res["profile"] = {
+        **res["profile"],
+        "appendix_items": sum(1 for i in items if i["store"] == "appendix"),
+    }
     return res, ev
 
 
@@ -236,27 +243,67 @@ async def seed_runs(svc: Any, n_items: int) -> dict[str, str]:
     evidence = await svc.store.get_evidence(row.run_id)
     made: dict[str, str] = {"base": row.run_id}
 
-    async def commit(tag: str, res: dict[str, Any], ev: dict[str, Any], status: str, reason: str | None) -> None:
+    async def commit(
+        tag: str, res: dict[str, Any], ev: dict[str, Any], status: str, reason: str | None
+    ) -> None:
         rid = svc.ids.new("rrn")
-        meta = {**(base_row.meta or {}), "input_name": f"seeded-{tag}.json", "idea": f"Seeded {tag} result"}
+        meta = {
+            **(base_row.meta or {}),
+            "input_name": f"seeded-{tag}.json",
+            "idea": f"Seeded {tag} result",
+        }
         new = base_row.model_copy(
-            update={"run_id": rid, "status": status, "result_status": status, "reason": reason, "meta": meta}
+            update={
+                "run_id": rid,
+                "status": status,
+                "result_status": status,
+                "reason": reason,
+                "meta": meta,
+            }
         )
         await svc.store.create_run(new)
         res["status"] = status
-        await svc.store.save_result(rid, res, {**ev, "run_id": rid}, base_row.content_hash or "0" * 64)
+        await svc.store.save_result(
+            rid, res, {**ev, "run_id": rid}, base_row.content_hash or "0" * 64
+        )
         made[tag] = rid
 
     big, big_ev = make_big_result(research, evidence, n_items)
     await commit("big", big, big_ev, "complete", None)
     part = json.loads(json.dumps(research))
     part["gaps"] = [
-        {"target_id": "T-09", "reason": "budget_stop", "label": "Key screens of yoga studio apps", "queries": []},
-        {"target_id": "T-10", "reason": "not_run", "label": "Realistic Booking data", "queries": []},
-        {"target_id": "T-02", "reason": "provider_down", "label": "Providers for messages", "queries": ["sms providers"]},
-        {"target_id": "T-04", "reason": "user_cancelled", "label": "Rules and limits: pricing", "queries": []},
+        {
+            "target_id": "T-09",
+            "reason": "budget_stop",
+            "label": "Key screens of yoga studio apps",
+            "queries": [],
+        },
+        {
+            "target_id": "T-10",
+            "reason": "not_run",
+            "label": "Realistic Booking data",
+            "queries": [],
+        },
+        {
+            "target_id": "T-02",
+            "reason": "provider_down",
+            "label": "Providers for messages",
+            "queries": ["sms providers"],
+        },
+        {
+            "target_id": "T-04",
+            "reason": "user_cancelled",
+            "label": "Rules and limits: pricing",
+            "queries": [],
+        },
     ] + part["gaps"][:2]
-    await commit("partial", part, evidence, "partial", "The budget limit was reached, so two topics were not finished.")
+    await commit(
+        "partial",
+        part,
+        evidence,
+        "partial",
+        "The budget limit was reached, so two topics were not finished.",
+    )
     return made
 
 
@@ -274,6 +321,7 @@ class _Core:
 
 def make_app(args: argparse.Namespace, root: Path) -> Any:
     from fastapi.routing import APIRoute
+
     from mde_core.settings import load_settings
     from mde_research_agent.api import create_app
     from mde_research_agent.config import ResearchSettings
@@ -301,7 +349,9 @@ def make_app(args: argparse.Namespace, root: Path) -> Any:
                     try:
                         a.state.seeded = await seed_runs(a.state.service, n_seed)
                         print("seeded runs:", a.state.seeded, flush=True)
-                    except Exception as exc:  # the fake still serves; the seed is reported as missing
+                    except (
+                        Exception
+                    ) as exc:  # the fake still serves; the seed is reported as missing
                         a.state.seeded = {"error": repr(exc)[:300]}
                         print("SEED FAILED:", repr(exc)[:300], flush=True)
                 yield

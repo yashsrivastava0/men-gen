@@ -78,10 +78,30 @@ DETAIL_ALLOWLIST: dict[str, frozenset[str]] = {
     "gap.detected": frozenset({"targets", "count"}),
     "warning": frozenset({"code", "message"}),
     "run.finished": frozenset(
-        {"status", "facts", "pages", "searches", "usd", "elapsed_s", "stages", "cost_by_step", "fallbacks"}
+        {
+            "status",
+            "facts",
+            "pages",
+            "searches",
+            "usd",
+            "elapsed_s",
+            "stages",
+            "cost_by_step",
+            "fallbacks",
+        }
     ),
     "run.skipped": frozenset(
-        {"status", "facts", "pages", "searches", "usd", "elapsed_s", "stages", "cost_by_step", "fallbacks"}
+        {
+            "status",
+            "facts",
+            "pages",
+            "searches",
+            "usd",
+            "elapsed_s",
+            "stages",
+            "cost_by_step",
+            "fallbacks",
+        }
     ),
     "run.failed": frozenset({"status", "reason", "code"}),
 }

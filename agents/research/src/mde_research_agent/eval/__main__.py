@@ -46,7 +46,6 @@ async def _run(args: argparse.Namespace) -> int:
         )
         return 0
     from mde_core.settings import load_settings
-
     from mde_research_agent.calls.base import CallRunner
     from mde_research_agent.devtools import script_service
     from mde_research_agent.run import preflight_live

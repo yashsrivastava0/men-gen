@@ -94,5 +94,7 @@ class Plan(Frozen):
     discovery_names: tuple[str, ...] = ()
     plan_source: PlanSource = "from_request"
     notes: tuple[str, ...] = ()
-    light: bool = False  # a tiny app: only the feature norms and the screen inventory are researched
+    light: bool = (
+        False  # a tiny app: only the feature norms and the screen inventory are researched
+    )
     signals: tuple[str, ...] = ()  # capability signals found in the Brief (doc 13 4.1)

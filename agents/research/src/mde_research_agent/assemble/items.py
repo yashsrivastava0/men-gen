@@ -18,15 +18,15 @@ from typing import Any
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.applies import BriefIndex, retag
-from mde_research_agent.domain.atoms import ORDERED_FIELDS
 from mde_research_agent.core.norm_keys import clean_key, match_brief, reconcile
 from mde_research_agent.core.prevalence import is_fee_text, is_stale, recency_of
-from mde_research_agent.core.sources import can_support_high_impact, independent_count, org_key
-from mde_research_agent.engine.checking import passage_window
+from mde_research_agent.core.sources import can_support_high_impact, independent_count
 from mde_research_agent.core.text import stem_set
+from mde_research_agent.domain.atoms import ORDERED_FIELDS
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Target
 from mde_research_agent.domain.research import AppliesTo, Item, Recency, SourceRef
+from mde_research_agent.engine.checking import passage_window
 from mde_research_agent.engine.context import RunContext
 from mde_research_agent.engine.state import AtomRecord, PageRecord
 
@@ -47,7 +47,9 @@ class BuiltItem:
     )
     pages: list[PageRecord] = field(default_factory=list)
     target_ids: set[str] = field(default_factory=set)
-    windows: list[tuple[str, str]] = field(default_factory=list)  # (page url, passage window): content-independence
+    windows: list[tuple[str, str]] = field(
+        default_factory=list
+    )  # (page url, passage window): content-independence
     excluded: bool = False  # every source is about another region or entity: out of corroboration, norms, prevalence
 
 
@@ -108,7 +110,9 @@ def _variant_of(value: Any) -> list[str]:
     out: list[str] = []
     for x in value or []:
         if isinstance(x, dict):
-            out.append(f"{x.get('from_state', '')}>{x.get('to_state', '')}: {x.get('trigger', '')}".strip())
+            out.append(
+                f"{x.get('from_state', '')}>{x.get('to_state', '')}: {x.get('trigger', '')}".strip()
+            )
         else:
             out.append(str(x))
     return out
@@ -132,7 +136,7 @@ def merge_payloads(
                 alt = _variant_of(v)
                 if alt and alt != _variant_of(out.get(k)) and alt not in variants:
                     variants.append(alt)
-            elif k in {vf for vf in ordered.values()}:
+            elif k in set(ordered.values()):
                 continue
             elif isinstance(v, list) and isinstance(out.get(k), list):
                 out[k] = _merge_lists(out[k], v)
@@ -286,7 +290,9 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
         fit = {m.id: atom_fit_flags(m, t) for m in members}
         clean = [m for m in members if not fit[m.id]]
         excluded = not clean  # every source is about another region or entity
-        src_members = clean or members  # flagged sources never corroborate; when ALL are flagged the item stays, unverified
+        src_members = (
+            clean or members
+        )  # flagged sources never corroborate; when ALL are flagged the item stays, unverified
         primary = src_members[0]
         kind = primary.kind
         area = lanes.kinds[kind].area
@@ -299,7 +305,12 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
                 seen_pages.add(p.url)
                 pages.append(p)
                 windows.append((p.url, passage_window(p, a.quote)))
-        order = {p.url: i for i, p in enumerate(sorted(pages, key=lambda p: (CLASS_RANK.get(p.source_class, 9), p.url)))}
+        order = {
+            p.url: i
+            for i, p in enumerate(
+                sorted(pages, key=lambda p: (CLASS_RANK.get(p.source_class, 9), p.url))
+            )
+        }
         pages.sort(key=lambda p: order[p.url])
         windows.sort(key=lambda w: order[w[0]])
         data = merge_payloads(primary.data, [m.data for m in src_members[1:]], kind)
@@ -307,8 +318,14 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
         # one organisation. The passage window around the quote is what is compared.
         independent = independent_count([u for u, _ in windows], texts=[w for _, w in windows])
         orgs = len({p.domain for p in pages})
-        non_low = [(u, w) for (u, w), p in zip(windows, pages, strict=True) if p.source_class not in LOW_CLASSES]
-        independent_non_low = independent_count([u for u, _ in non_low], texts=[w for _, w in non_low])
+        non_low = [
+            (u, w)
+            for (u, w), p in zip(windows, pages, strict=True)
+            if p.source_class not in LOW_CLASSES
+        ]
+        independent_non_low = independent_count(
+            [u for u, _ in non_low], texts=[w for _, w in non_low]
+        )
         impact = "high" if any(a.impact == "high" for a in members) else "normal"
         dates = [p.published for p in pages] + [a.published_on for a in src_members]
         newest = max((d for d in dates if d), default=None)
@@ -434,7 +451,9 @@ def primary_page_language(
 ) -> str | None:
     """The language of the page the item's main facts came from (a hint for Spec; quotes stay in this language)."""
     p = pages_by_id.get(primary.page_id)
-    return (p.language if p is not None else None) or next((q.language for q in pages if q.language), None)
+    return (p.language if p is not None else None) or next(
+        (q.language for q in pages if q.language), None
+    )
 
 
 def _slot_of(t: Target, kind: str) -> str | None:

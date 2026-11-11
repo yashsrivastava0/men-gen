@@ -14,7 +14,6 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from mde_research_agent.catalog.loader import JOB_NAMES
-from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
 from mde_research_agent.catalog.models import Catalog, JobSpec, TargetTemplate
 from mde_research_agent.core.text import same_thing, stem_set, tokens
 from mde_research_agent.domain.input import ResearchInput
@@ -27,6 +26,7 @@ from mde_research_agent.plan.candidates import (
 )
 from mde_research_agent.plan.place import build_place
 from mde_research_agent.plan.proposal import PlanProposal, ProposedTarget
+from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
 
 RECENCY_MONTHS = 24
 _FORMAT_FIELD = re.compile(r"\{(\w+)\}")
@@ -60,14 +60,28 @@ def category_noun(category: str) -> str:
 
 SIGNAL_CONDITIONS = frozenset(
     {
-        "payments", "messaging", "maps_location", "tracking", "identity_kyc", "government_documents",
-        "accounting", "scheduling", "two_sided", "media_upload", "health_data", "minors", "multi_region",
-        "many_roles", "sensitive_data",
+        "payments",
+        "messaging",
+        "maps_location",
+        "tracking",
+        "identity_kyc",
+        "government_documents",
+        "accounting",
+        "scheduling",
+        "two_sided",
+        "media_upload",
+        "health_data",
+        "minors",
+        "multi_region",
+        "many_roles",
+        "sensitive_data",
     }
 )
 
 
-def _conditions_hold(tpl: TargetTemplate, inp: ResearchInput, active: frozenset[str] = frozenset()) -> bool:
+def _conditions_hold(
+    tpl: TargetTemplate, inp: ResearchInput, active: frozenset[str] = frozenset()
+) -> bool:
     for cond in tpl.when:
         if cond in active:
             continue

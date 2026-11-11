@@ -41,6 +41,7 @@ from mde_research_agent.core.sources import classify_source, own_site
 from mde_research_agent.core.text import stem, tokens
 from mde_research_agent.core.urls import canonical_url, is_public_url, registrable_domain
 from mde_research_agent.domain.plan import Target
+from mde_research_agent.engine.checking import check_topic
 from mde_research_agent.engine.context import (
     FETCH_TIMEOUT_S,
     PASSAGE_CHARS,
@@ -56,7 +57,6 @@ from mde_research_agent.engine.state import (
     QueryRecord,
     TargetState,
 )
-from mde_research_agent.engine.checking import check_topic
 from mde_research_agent.engine.verify import (
     Candidate,
     Rejected,
@@ -551,7 +551,9 @@ async def extract_page(
     )
     verified = 0
     pending: list[Candidate | Rejected] = []
-    fids: dict[tuple[str, str, str], str] = {}  # one stable id per finding, from "checking" to "checked"
+    fids: dict[
+        tuple[str, str, str], str
+    ] = {}  # one stable id per finding, from "checking" to "checked"
     for attempt in range(2):
         inp = (
             base
@@ -575,7 +577,9 @@ async def extract_page(
         existing = {(a.kind, a.norm_key, a.page_id) for a in ts.atoms}
         for cand in candidates_from_output(res.output, page):
             if attempt == 0:
-                ctx.count("extracted")  # EVERY item the model returned, including malformed and empty ones
+                ctx.count(
+                    "extracted"
+                )  # EVERY item the model returned, including malformed and empty ones
             if isinstance(cand, Rejected):
                 ctx.count_drop(cand.reason)
                 await ctx.events.emit(
@@ -610,7 +614,9 @@ async def extract_page(
                 if checked.reason == "quote_not_found":
                     if attempt == 0:
                         ctx.count("quote_failed_first")
-                    retry.append(cand)  # one retry ("quote exactly"); still failing after it is counted below
+                    retry.append(
+                        cand
+                    )  # one retry ("quote exactly"); still failing after it is counted below
                     continue
                 ctx.count_drop(checked.reason)
                 await ctx.events.emit(
@@ -761,7 +767,9 @@ async def run_topic(
             return await extract_page(ctx, ts, page, round_no, cov, via_seed)
 
         counts = await asyncio.gather(*[process(h, c) for h, c in picks])
-        await check_topic(ctx, ts)  # every verified item is checked BEFORE the coverage audit (a rejection reopens its slot)
+        await check_topic(
+            ctx, ts
+        )  # every verified item is checked BEFORE the coverage audit (a rejection reopens its slot)
         update_coverage(ts)
         return sum(counts)
     except CallCancelled:

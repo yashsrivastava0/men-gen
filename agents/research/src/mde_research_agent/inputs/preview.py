@@ -13,12 +13,13 @@ from typing import Any
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.plan.build import build_plan
-from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
+from mde_research_agent.plan.signals import compute_signals, trust_decision
+
 
 def compass_info(data: dict[str, Any]) -> dict[str, Any]:
     """Information only (never an input to the load): the Compass interview size and whether it ran degraded."""
-    meta = (data.get("brief") or {}).get("meta") or {}
-    plan = meta.get("plan") if isinstance(meta.get("plan"), dict) else {}
+    meta: dict[str, Any] = (data.get("brief") or {}).get("meta") or {}
+    plan: dict[str, Any] = meta["plan"] if isinstance(meta.get("plan"), dict) else {}
     return {
         "tier": str(plan.get("interview_budget") or "unknown"),
         "degraded": bool(meta.get("degraded")),
@@ -94,7 +95,9 @@ def build_preview(
         "size_label": estimates.label(size),
         "light": light,
         "signals": signals,
-        "trust": dict(zip(("on", "why"), trust_decision(inp, tuple(signals), catalog), strict=True)),
+        "trust": dict(
+            zip(("on", "why"), trust_decision(inp, tuple(signals), catalog), strict=True)
+        ),
         "topics": {
             "total": len(plan.targets),
             "by_job": {

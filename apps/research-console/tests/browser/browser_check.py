@@ -52,7 +52,9 @@ EXPECTED_CONSOLE = (
 def check(name: str, ok: object, detail: str = "") -> None:
     RESULTS.append((name, bool(ok), detail))
     print(
-        ("PASS  " if ok else "FAIL  ") + name + (f"   [{detail}]" if detail and not ok else ""),
+        ("PASS  " if ok else "FAIL  ")
+        + name
+        + (f"   [{detail}]" if detail and (not ok or " ms" in detail) else ""),
         flush=True,
     )
 
@@ -756,8 +758,8 @@ def main_flow(browser, f: Fake) -> None:
     )
     check(
         "run view: counters show topics done of total and the cost by step",
-        "of" in text(page, ".tile:has-text('Topics done') strong")
-        and "Search" in text(page, ".cost")
+        ("of" in text(page, ".tile:has-text('Topics done') strong")
+        and "Search" in text(page, ".cost"))
         or "Web search" in text(page, ".cost"),
         text(page, ".cost"),
     )
@@ -773,11 +775,12 @@ def main_flow(browser, f: Fake) -> None:
     page.get_by_role("link", name="Open the results").click()
     page.wait_for_selector(".results-head")
     check(
-        "results: header with status, cost and time and the stage-2 placeholder",
+        "results: header with status, cost and time and the nine tabs",
         "Cost" in text(page, ".results-head")
         and "Time" in text(page, ".results-head")
-        and "Results view comes in stage 2" in text(page, "main"),
+        and page.get_by_role("tab").count() == 9,
     )
+    page.get_by_role("tab", name="Raw JSON", exact=True).click()
     with page.expect_download() as dl:
         page.get_by_role("button", name="Download research.json").click()
     path = dl.value.path()
@@ -787,7 +790,7 @@ def main_flow(browser, f: Fake) -> None:
         isinstance(data, dict) and bool(data),
         str(list(data)[:3]),
     )
-    problems = four_shots(browser, base + f"/#/results/{run_id}", "results", ".results-head")
+    problems = four_shots(browser, base + f"/#/results/{run_id}", "results", ".tabs")
     check("results: no sideways scroll at 360 px", not problems, "; ".join(problems))
     # runs history
     page.get_by_role("link", name="Runs", exact=True).click()
@@ -913,8 +916,8 @@ def main_flow(browser, f: Fake) -> None:
     rows = pb.locator("tbody tr").count()
     check(
         "budget: the spend record table lists every run with cost by step and running total",
-        rows >= 2
-        and "Running total" in pb.locator("thead").first.inner_text()
+        (rows >= 2
+        and "Running total" in pb.locator("thead").first.inner_text())
         or pb.locator("table").first.count() > 0,
         f"{rows} rows",
     )

@@ -155,7 +155,8 @@ def high_item(out: dict[str, Any]) -> dict[str, Any]:
         (
             "RV-18",
             lambda o, e, ev: next(a for a in e["atoms"] if a.get("item_id")).update(
-                claim="Costs 987654 dollars every month", quote="a sentence with no figure in it at all"
+                claim="Costs 987654 dollars every month",
+                quote="a sentence with no figure in it at all",
             ),
         ),
         (
@@ -166,13 +167,14 @@ def high_item(out: dict[str, Any]) -> dict[str, Any]:
         ),
         (
             "RV-20",
-            lambda o, e, ev: [
-                a.update(about_region="zz")
-                for a in e["atoms"]
-                if a.get("item_id")
-                and e["targets"]
-            ]
-            and [t.update(place="in") for t in e["targets"]],
+            lambda o, e, ev: (
+                [
+                    a.update(about_region="zz")
+                    for a in e["atoms"]
+                    if a.get("item_id") and e["targets"]
+                ]
+                and [t.update(place="in") for t in e["targets"]]
+            ),
         ),
         (
             "RV-21",
@@ -182,9 +184,26 @@ def high_item(out: dict[str, Any]) -> dict[str, Any]:
             ],
         ),
         ("RV-22", lambda o, e, ev: o["profile"].update(store_tokens=10_000_000)),
-        ("RV-22", lambda o, e, ev: o["items"].append(o["items"][0] | {"id": "RI-9999", "store": "appendix", "appendix_reason": None})),
-        ("RV-23", lambda o, e, ev: o["items"][0].update(evidence="official" if o["items"][0]["evidence"] != "official" else "unverified")),
-        ("RV-23", lambda o, e, ev: o["lane_quality"]["blueprint"].update(quality="strong" if o["lane_quality"]["blueprint"]["quality"] != "strong" else "none")),
+        (
+            "RV-22",
+            lambda o, e, ev: o["items"].append(
+                o["items"][0] | {"id": "RI-9999", "store": "appendix", "appendix_reason": None}
+            ),
+        ),
+        (
+            "RV-23",
+            lambda o, e, ev: o["items"][0].update(
+                evidence="official" if o["items"][0]["evidence"] != "official" else "unverified"
+            ),
+        ),
+        (
+            "RV-23",
+            lambda o, e, ev: o["lane_quality"]["blueprint"].update(
+                quality="strong"
+                if o["lane_quality"]["blueprint"]["quality"] != "strong"
+                else "none"
+            ),
+        ),
         ("RV-17", lambda o, e, ev: ev[0].detail.update(secret_field="x")),
         ("RV-17", lambda o, e, ev: ev[3].__setattr__("label", " ")),
     ],

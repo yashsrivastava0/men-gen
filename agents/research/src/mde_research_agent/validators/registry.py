@@ -15,14 +15,17 @@ from typing import Any
 
 import jsonschema
 
+from mde_research_agent.assemble.items import LOW_CLASSES, evidence_of
+from mde_research_agent.assemble.notes import openers
+from mde_research_agent.assemble.quality import TargetInfo, bn_coverage, lane_quality
+from mde_research_agent.assemble.quality import lane_items as lane_items_of
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.anatomy import check_query, hygiene_problems
 from mde_research_agent.core.applies import BriefIndex
 from mde_research_agent.core.applies import problem as applies_problem
 from mde_research_agent.core.novelty import novel_tokens
-from mde_research_agent.assemble.notes import openers
-from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
 from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
+from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
 from mde_research_agent.core.slots import evaluate_target
 from mde_research_agent.core.sources import can_support_high_impact, independent_count
 from mde_research_agent.core.text import stem_set, tokens
@@ -30,9 +33,6 @@ from mde_research_agent.domain.atoms import validate_payload
 from mde_research_agent.domain.events import DETAIL_ALLOWLIST, Event
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan
-from mde_research_agent.assemble.items import LOW_CLASSES, evidence_of
-from mde_research_agent.assemble.quality import TargetInfo, bn_coverage, lane_quality
-from mde_research_agent.assemble.quality import lane_items as lane_items_of
 from mde_research_agent.domain.research import AppliesTo, Item
 from mde_research_agent.engine.checking import null_paths, passage_window
 from mde_research_agent.engine.state import PageRecord
@@ -252,7 +252,12 @@ def rv09_caps(v: ValidationContext) -> list[Violation]:
         if v.chunk_items:
             for n, chunk in enumerate(sl.get("chunks", [])):
                 if len(chunk) > v.chunk_items:
-                    out.append(Violation("RV-09", f"{lane} chunk {n} has {len(chunk)} items, over {v.chunk_items}"))
+                    out.append(
+                        Violation(
+                            "RV-09",
+                            f"{lane} chunk {n} has {len(chunk)} items, over {v.chunk_items}",
+                        )
+                    )
         ids = sl.get("item_ids", [])
         if ids != [i for chunk in sl.get("chunks", []) for i in chunk]:
             out.append(Violation("RV-09", f"{lane} chunks do not add up to its item list"))
@@ -461,8 +466,10 @@ def _fit(a: dict[str, Any], t: dict[str, Any] | None) -> set[str]:
     region = a.get("about_region") or "unknown"
     if place and region not in ("global", "unknown", place):
         flags.add("other_region")
-    if t.get("entity") and a.get("about_entity") and not (
-        stem_set(t["entity"]) & stem_set(a["about_entity"])
+    if (
+        t.get("entity")
+        and a.get("about_entity")
+        and not (stem_set(t["entity"]) & stem_set(a["about_entity"]))
     ):
         flags.add("other_entity")
     return flags
@@ -488,7 +495,7 @@ def _windows(v: ValidationContext, atoms: list[dict[str, Any]]) -> list[tuple[st
             content_hash=p.get("content_hash", ""),
             text_source=p.get("text_source", ""),
             published=None,
-            retrieved_on=date.today(),
+            retrieved_on=date(1970, 1, 1),
         )
         out.append((p["url"], p["source_class"], passage_window(rec, a["quote"])))
     return out
@@ -559,12 +566,20 @@ def rv21_checked(v: ValidationContext) -> list[Violation]:
         if item is None:
             continue
         if not a.get("checked") and "unchecked" not in item.get("flags", []):
-            out.append(Violation("RV-21", "an item has neither a verdict nor the unchecked flag", item["id"]))
+            out.append(
+                Violation(
+                    "RV-21", "an item has neither a verdict nor the unchecked flag", item["id"]
+                )
+            )
         paths = a.get("unsupported_fields") or []
         if paths:
-            rest, applied = null_paths(a.get("data") or {}, paths)
+            rest, _applied = null_paths(a.get("data") or {}, paths)
             if rest != (a.get("data") or {}):
-                out.append(Violation("RV-21", f"unsupported field {paths[0]!r} is still in the data", item["id"]))
+                out.append(
+                    Violation(
+                        "RV-21", f"unsupported field {paths[0]!r} is still in the data", item["id"]
+                    )
+                )
     return out
 
 
@@ -573,14 +588,15 @@ def rv22_store(v: ValidationContext) -> list[Violation]:
     reason, and the counts are conserved: verified atoms = items + merged."""
     out = []
     items = v.output.get("items", [])
-    main = [i for i in items if i.get("store", "main") == "main"]
     for i in items:
         if i.get("store") == "appendix" and not i.get("appendix_reason"):
             out.append(Violation("RV-22", "an appendix item has no reason", i["id"]))
     profile = v.output.get("profile", {})
     store_tokens = profile.get("store_tokens", 0)
     if v.store_tokens and store_tokens > v.store_tokens + 1 and not profile.get("store_over_limit"):
-        out.append(Violation("RV-22", f"main store is about {store_tokens} tokens, over {v.store_tokens}"))
+        out.append(
+            Violation("RV-22", f"main store is about {store_tokens} tokens, over {v.store_tokens}")
+        )
     atoms = _verified_atoms(v)
     if len(atoms) < len(items):
         out.append(Violation("RV-22", f"{len(items)} items from {len(atoms)} verified atoms"))
@@ -605,18 +621,38 @@ def rv23_recomputed(v: ValidationContext) -> list[Violation]:
             flags=set(i.get("flags", [])),
             classes=[c for _, c, _ in w],
             independent=i.get("independent_domains", 0),
-            independent_non_low=independent_count([u for u, _ in non_low], texts=[x for _, x in non_low]) if non_low else 0,
+            independent_non_low=independent_count(
+                [u for u, _ in non_low], texts=[x for _, x in non_low]
+            )
+            if non_low
+            else 0,
         )
         if got != i.get("evidence"):
-            out.append(Violation("RV-23", f"evidence is {i.get('evidence')!r}, recomputed {got!r}", i["id"]))
+            out.append(
+                Violation(
+                    "RV-23", f"evidence is {i.get('evidence')!r}, recomputed {got!r}", i["id"]
+                )
+            )
     infos = [
-        TargetInfo(t["job"], t.get("lane", ""), t["status"], t.get("slots_required", 0), t.get("slots_filled", 0))
+        TargetInfo(
+            t["job"],
+            t.get("lane", ""),
+            t["status"],
+            t.get("slots_required", 0),
+            t.get("slots_filled", 0),
+        )
         for t in v.evidence.get("targets", [])
     ]
     models = [Item.model_validate(i) for i in items]
-    lane_of = {t["id"]: [t.get("lane", ""), *t.get("also_lanes", [])] for t in v.evidence.get("targets", [])}
+    lane_of = {
+        t["id"]: [t.get("lane", ""), *t.get("also_lanes", [])]
+        for t in v.evidence.get("targets", [])
+    }
     per_lane = lane_items_of(models, v.catalog.lanes, lane_of)
-    expect_lq = {k: q.model_dump() for k, q in lane_quality(per_lane, infos, list(v.catalog.lanes.lanes)).items()}
+    expect_lq = {
+        k: q.model_dump()
+        for k, q in lane_quality(per_lane, infos, list(v.catalog.lanes.lanes)).items()
+    }
     if expect_lq != v.output.get("lane_quality"):
         out.append(Violation("RV-23", "lane_quality differs from the recomputed value"))
     if bn_coverage(models, infos, v.catalog.lanes) != v.output.get("bn_coverage"):

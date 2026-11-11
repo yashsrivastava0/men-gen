@@ -287,7 +287,9 @@ class HttpFetcher:
         if len(text) < self._min_text_chars:
             raise _Skip(detect_wall(extracted.title, text, state.final_url) or "no_content")
         soft = detect_soft_wall(extracted.title, text, state.final_url)
-        if soft is not None:  # a soft 404 or a wall that came back as content: not research material
+        if (
+            soft is not None
+        ):  # a soft 404 or a wall that came back as content: not research material
             raise _Skip(soft)
         return FetchedPage(
             url=state.url,

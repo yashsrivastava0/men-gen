@@ -37,7 +37,9 @@ async def test_synthetic_briefs_in_other_domains_and_languages_give_valid_output
     countries_seen = {r.country for r in run.search.requests}
     if name.startswith("dental"):
         assert countries_seen <= {"ae", None}
-        assert any(r.language == "ar" for r in run.search.requests) == _has_local(run), "Arabic only in the local job"
+        assert any(r.language == "ar" for r in run.search.requests) == _has_local(run), (
+            "Arabic only in the local job"
+        )
     if name.startswith("coffee"):
         assert countries_seen <= {"ke", None}
         assert any(r.language == "sw" for r in run.search.requests) == _has_local(run)
@@ -49,7 +51,10 @@ async def test_synthetic_briefs_in_other_domains_and_languages_give_valid_output
 def _has_local(run) -> bool:  # type: ignore[no-untyped-def]
     """Local-language variants run only in the local job (regional language is not a focus)."""
     local = {t.id for t in run.ctx.plan.targets if t.job == "local"}
-    return any(e.type == "query.issued" and e.target_id in local and e.detail.get("variant") == "local" for e in run.events)
+    return any(
+        e.type == "query.issued" and e.target_id in local and e.detail.get("variant") == "local"
+        for e in run.events
+    )
 
 
 def _identifiers() -> set[str]:

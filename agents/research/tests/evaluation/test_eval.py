@@ -63,10 +63,11 @@ def test_code_catches_a_changed_number_and_another_country_but_not_a_flipped_con
 
 async def test_the_planted_test_reports_code_and_checker_separately_and_is_repeatable() -> None:
     run = await run_engine(load_fixture("standard-produce-marketplace-nashik"))
-    runner = CallRunner(run.gateway, run_id="eval", ids=CounterIds())
+    runner = CallRunner(run.gateway, run_id="eval", ids=CounterIds())  # type: ignore[arg-type]
     a = await run_planted(runner, run.research, run.evidence, n=12, seed=3)
+    runner2 = CallRunner(run.gateway, run_id="eval", ids=CounterIds())  # type: ignore[arg-type]
     b = await run_planted(
-        CallRunner(run.gateway, run_id="eval", ids=CounterIds()),
+        runner2,
         run.research,
         run.evidence,
         n=12,
@@ -90,7 +91,8 @@ async def test_the_planted_test_reports_code_and_checker_separately_and_is_repea
 async def test_the_probe_scores_both_arms_for_every_task_and_prefers_the_research() -> None:
     run = await run_engine(load_fixture("standard-produce-marketplace-nashik"))
     assert "RI-001" in findings_text(run.research)
-    rep = await run_probe(CallRunner(run.gateway, run_id="eval", ids=CounterIds()), run.research)
+    runner = CallRunner(run.gateway, run_id="eval", ids=CounterIds())  # type: ignore[arg-type]
+    rep = await run_probe(runner, run.research)
     assert [t["task"] for t in rep["tasks"]] == [t["id"] for t in tasks()] and len(tasks()) == 5
     assert rep["totals"]["B"]["supported"] > rep["totals"]["A"]["supported"]
     assert (

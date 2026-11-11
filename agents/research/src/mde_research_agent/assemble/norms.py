@@ -19,7 +19,7 @@ from mde_research_agent.catalog.models import PrevalenceConfig
 from mde_research_agent.core.applies import problem as applies_problem  # noqa: F401  (re-exported for callers)
 from mde_research_agent.core.norm_keys import clean_key, match_brief, reconcile
 from mde_research_agent.core.prevalence import age_months, make_prevalence
-from mde_research_agent.core.sources import independent_count, org_key, own_site
+from mde_research_agent.core.sources import independent_count, own_site
 from mde_research_agent.core.text import stem_set
 from mde_research_agent.core.urls import host_of
 from mde_research_agent.domain.input import ResearchInput
@@ -35,7 +35,9 @@ from mde_research_agent.domain.research import (
 GENERIC = frozenset({"app", "user", "list", "screen", "page", "manage", "view"})
 
 
-def _sources_of(members: list[BuiltItem], *, skip: Callable[[str], bool] | None = None) -> list[tuple[str, str]]:
+def _sources_of(
+    members: list[BuiltItem], *, skip: Callable[[str], bool] | None = None
+) -> list[tuple[str, str]]:
     """``(url, passage window)`` of every source of the items, one per page, optionally without some domains."""
     seen: set[str] = set()
     out: list[tuple[str, str]] = []
@@ -198,7 +200,15 @@ def compute_norms(
                 name = str(members[0].item.data.get("provider", prov))
                 total = _independent(pool, skip=lambda u, pool=pool: _is_own(u, pool))
                 seen = _independent(members, skip=lambda u, n=name: own_site(n, host_of(u)))
-                add("integration", f"{need}: {prov}", name, seen, max(total, seen), members, need if need else None)
+                add(
+                    "integration",
+                    f"{need}: {prov}",
+                    name,
+                    seen,
+                    max(total, seen),
+                    members,
+                    need if need else None,
+                )
     return sorted(norms, key=lambda n: (n.area, n.key))
 
 

@@ -357,7 +357,11 @@ async def test_rs15_thin_local_language_web_falls_back_to_english() -> None:
         e for e in run.events if e.type == "query.issued" and e.detail.get("variant") == "local"
     ]
     jobs = {t.id: t.job for t in run.ctx.plan.targets}
-    assert all(jobs[e.target_id] == "local" for e in local), "the local-language variant runs only in the local job"
-    if local:  # when the local job ran a query in the local language, a thin result falls back to English
+    assert all(jobs[e.target_id or ""] == "local" for e in local), (
+        "the local-language variant runs only in the local job"
+    )
+    if (
+        local
+    ):  # when the local job ran a query in the local language, a thin result falls back to English
         assert any(e.type == "search.results" and e.detail["count"] == 0 for e in run.events)
     assert run.research["items"], "English results still fill the playbook"

@@ -11,7 +11,7 @@ import re
 from pathlib import Path
 from typing import Any
 
-from pydantic import BaseModel, ConfigDict, model_validator
+from pydantic import BaseModel, ConfigDict
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec

@@ -36,7 +36,7 @@ def _page(p: dict[str, Any]) -> PageRecord:
         content_hash=p.get("content_hash", ""),
         text_source=p.get("text_source", ""),
         published=None,
-        retrieved_on=date.today(),
+        retrieved_on=date(1970, 1, 1),
     )
 
 

@@ -188,7 +188,9 @@ class Profile(Model):
     store_tokens: int = 0  # main store, measured on the compact view
     appendix_items: int = 0
     digest_tokens: int = 0
-    store_over_limit: bool = False  # the protected items alone were over store_tokens: nothing was moved
+    store_over_limit: bool = (
+        False  # the protected items alone were over store_tokens: nothing was moved
+    )
 
 
 LaneQualityValue = Literal["strong", "partial", "thin", "none"]
@@ -252,8 +254,12 @@ class RunInfo(Model):
     search_provider: str = ""
     plan_source: str = ""
     notes: list[str] = Field(default_factory=list)
-    stages: dict[str, float] = Field(default_factory=dict)  # work seconds by stage (parallel work adds up)
-    cost_by_step: dict[str, int] = Field(default_factory=dict)  # micro-USD by step (search, plan, queries, extract, check, assemble)
+    stages: dict[str, float] = Field(
+        default_factory=dict
+    )  # work seconds by stage (parallel work adds up)
+    cost_by_step: dict[str, int] = Field(
+        default_factory=dict
+    )  # micro-USD by step (search, plan, queries, extract, check, assemble)
     fallbacks: dict[str, int] = Field(default_factory=dict)  # degraded paths used, by call id
 
 

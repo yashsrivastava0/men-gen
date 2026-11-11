@@ -89,7 +89,9 @@ class AtomRecord:
     checked: bool = False
     about_region: str = "unknown"
     about_entity: str | None = None
-    unsupported_fields: list[str] = field(default_factory=list)  # paths in ``data`` the checker could not back
+    unsupported_fields: list[str] = field(
+        default_factory=list
+    )  # paths in ``data`` the checker could not back
 
 
 @dataclass

@@ -17,8 +17,8 @@ import gzip
 import hashlib
 from collections.abc import Callable
 from dataclasses import dataclass, field
-from decimal import Decimal
 from datetime import date, datetime, timedelta
+from decimal import Decimal
 from pathlib import Path
 from typing import Any, cast
 
@@ -31,9 +31,11 @@ from mde_core.errors import (
     NotFound,
 )
 from mde_core.hashing import hash_json
-from mde_core.money import micros_to_usd
 from mde_core.logging import get_logger
+from mde_core.money import micros_to_usd
 from mde_research_agent.assemble.output import assemble_output
+from mde_research_agent.assemble.store import compact_view
+from mde_research_agent.calls import assemble as asm_call
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.config import ResearchSettings
 from mde_research_agent.core.hashing import content_hash
@@ -47,14 +49,12 @@ from mde_research_agent.events.reducer import fold
 from mde_research_agent.events.writer import EventWriter
 from mde_research_agent.ids import Ids, UlidIds
 from mde_research_agent.intake import read_export
+from mde_research_agent.metrics import run_metrics
 from mde_research_agent.ports.fetch import FetchPort
 from mde_research_agent.ports.search import SearchPort
-from mde_research_agent.spend import BudgetControl, SpendRecord, ledger_run_spend
-from mde_research_agent.assemble.store import compact_view
-from mde_research_agent.calls import assemble as asm_call
-from mde_research_agent.metrics import run_metrics
 from mde_research_agent.report import render_report
 from mde_research_agent.review import ReviewIndex, build_index, overview, review_page, sources_page
+from mde_research_agent.spend import BudgetControl, SpendRecord, ledger_run_spend
 from mde_research_agent.spotcheck import VERDICTS, SpotCheckStore, draw, summarize
 from mde_research_agent.store.ports import ACTIVE_STATUSES, Decision, RunRow, Store
 from mde_research_agent.validators import ValidationContext, run_all
@@ -475,8 +475,13 @@ class ResearchService:
             )
         enforced = [v for v in violations if v.rule in ENFORCED and v.severity == "error"]
         if enforced and dumped.get("status") == "complete":
-            dumped["status"] = "partial"  # a bug in the assembler: still committed, never claimed as complete
-            dumped["run"]["notes"] = [*dumped["run"].get("notes", []), f"validation: {enforced[0].rule} {enforced[0].message}"[:200]]
+            dumped["status"] = (
+                "partial"  # a bug in the assembler: still committed, never claimed as complete
+            )
+            dumped["run"]["notes"] = [
+                *dumped["run"].get("notes", []),
+                f"validation: {enforced[0].rule} {enforced[0].message}"[:200],
+            ]
             await ctx.warn("validation_failed")
         by_rule: dict[str, int] = {}
         for v_ in violations:
@@ -663,7 +668,9 @@ class ResearchService:
     async def _rejected(self, run_id: str) -> set[str]:
         return {d.item_id for d in await self.store.list_decisions(run_id) if d.kind == "reject"}
 
-    async def _index(self, tenant_id: str, run_id: str) -> tuple[ReviewIndex, dict[str, Any], dict[str, Any]]:
+    async def _index(
+        self, tenant_id: str, run_id: str
+    ) -> tuple[ReviewIndex, dict[str, Any], dict[str, Any]]:
         """The review index of a committed run (built once: a committed run never changes)."""
         _row, res = await self._committed(tenant_id, run_id)
         cached = self._review_cache.get(run_id)
@@ -715,7 +722,13 @@ class ResearchService:
         if row is None:
             raise NotFound(f"research for program {program_id}")
         return [
-            {"run_id": d.run_id, "item_id": d.item_id, "kind": d.kind, "reason": d.reason, "at": d.at.isoformat()}
+            {
+                "run_id": d.run_id,
+                "item_id": d.item_id,
+                "kind": d.kind,
+                "reason": d.reason,
+                "at": d.at.isoformat(),
+            }
             for d in await self.store.list_decisions(row.run_id)
         ]
 
@@ -742,7 +755,11 @@ class ResearchService:
     ) -> dict[str, Any]:
         if not run_ids:
             raise Conflict("Pick at least one run.")
-        chosen = seed if seed is not None else int(hashlib.sha256("|".join(sorted(run_ids)).encode()).hexdigest()[:8], 16)
+        chosen = (
+            seed
+            if seed is not None
+            else int(hashlib.sha256("|".join(sorted(run_ids)).encode()).hexdigest()[:8], 16)
+        )
         cards: list[dict[str, Any]] = []
         for rid in run_ids:
             index, _res, _ev = await self._index(tenant_id, rid)

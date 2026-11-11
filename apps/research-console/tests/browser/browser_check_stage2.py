@@ -18,8 +18,8 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import browser_check as bc  # noqa: E402
-from playwright.sync_api import sync_playwright  # noqa: E402
+import browser_check as bc
+from playwright.sync_api import sync_playwright
 
 check = bc.check
 
@@ -241,8 +241,16 @@ def scenario_results(browser, f: bc.Fake, ids: dict) -> None:
         and "{" not in d.locator("dl.data-rows").first.inner_text(),
     )
     bc.shot(page, "item-view-1280-light", full=False)
+    focused_tag = page.evaluate("document.activeElement.tagName")
     page.keyboard.press("Escape")
-    check("item view: opened with a heading focused and Escape closes it", True)
+    wait_for(page, "!document.querySelector('dialog[open]')", 3)
+    check(
+        "item view: opens with its heading focused, Escape closes it and focus returns to the row",
+        focused_tag == "H3"
+        and page.locator("dialog[open]").count() == 0
+        and page.evaluate("document.activeElement.classList.contains('vrow-btn')"),
+        focused_tag,
+    )
     problems = bc.four_shots(browser, f"{base}/#/results/{big}", "results-playbook", ".vrow-btn")
     check(
         "results playbook: no sideways scroll at 360 px; screenshots in four themes",
@@ -445,12 +453,14 @@ def scenario_results(browser, f: bc.Fake, ids: dict) -> None:
         + " || document.querySelectorAll('tbody tr').length === 1",
         5,
     )
+    evil_rows = page.locator("tbody tr", has_text="evil.example")
     check(
-        "sources: search narrows the list (and the hostile address is not a link)",
-        page.locator("tbody tr").count() >= 1
+        "sources: search narrows the list, and the hostile address is plain text, not a link",
+        1 <= page.locator("tbody tr").count() < n_before
+        and evil_rows.count() >= 1
+        and evil_rows.first.locator("a").count() == 0
         and page.locator("tbody a[href^='javascript' i]").count() == 0
-        and "javascript:alert(7)" in bc.text(page, "tbody")
-        or page.locator("tbody tr").count() >= 1,
+        and "<img src=x onerror=alert(6)> Pricing page" in bc.text(page, "tbody"),
         str(n_before),
     )
     problems = bc.four_shots(
@@ -585,7 +595,11 @@ def scenario_run_view(browser, f: bc.Fake) -> None:
     page.wait_for_selector(".input-card")
     rid = bc.start_run_via_ui(page, "quick-yoga")
     page.wait_for_selector(".topic", timeout=15000)
-    wait_for(page, "Number(document.querySelector('[data-fact-counts]')?.getAttribute('data-fact-counts') || 0) > 60", 60)
+    wait_for(
+        page,
+        "Number(document.querySelector('[data-fact-counts]')?.getAttribute('data-fact-counts') || 0) > 60",
+        60,
+    )
     tile = bc.text(page, ".tile:has-text('Required facts found') strong")
     check(
         "run view: 'required facts found x of y' tile and bar",
@@ -611,13 +625,16 @@ def scenario_run_view(browser, f: bc.Fake) -> None:
         n_after >= n_before and n_after > 60 and shown >= min(n_after, 120),
         f"before {n_before}, after reload {n_after}, rows {shown}",
     )
-    check(
-        "run view: no duplicate findings after the reload",
-        page.evaluate(
-            "(() => { const t = Array.from(document.querySelectorAll('.fact')).map(e => e.textContent); return true; })()"
-        ),
-    )
     page.wait_for_selector(".banner-ok, .banner-warn", timeout=90000)
+    wait_for(page, "document.querySelectorAll('.fact').length >= 120", 10)
+    final_total = int(page.locator("[data-fact-counts]").get_attribute("data-fact-counts"))
+    final_rows = page.locator(".fact").count()
+    server_facts = len(f.get(f"/v1/research/runs/{rid}")["facts"])
+    check(
+        "run view: after the reload and the end, the finding count equals the server's list (no duplicates, none lost)",
+        final_total == server_facts and final_rows == min(final_total, 120),
+        f"page {final_total}, rows {final_rows}, server {server_facts}",
+    )
     page.wait_for_selector(".run-summary .card", timeout=10000)
     st = bc.text(page, ".run-summary")
     check(

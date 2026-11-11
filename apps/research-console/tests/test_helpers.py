@@ -114,7 +114,9 @@ out({ calls, events, states, last: feed.lastSeq });
     assert r["events"] == [1, 2, 3, 4]
     assert r["last"] == 4
     assert r["states"][-1] == "ended"
-    assert r["states"].count("retry:1") == 2  # one short pause after the clean close, one back-off after the failure
+    assert (
+        r["states"].count("retry:1") == 2
+    )  # one short pause after the clean close, one back-off after the failure
 
 
 def test_run_feed_stops_on_404_and_when_asked() -> None:
@@ -545,7 +547,10 @@ out({
     ]
     assert r["active"] == [2, 0, 0]
     assert r["pages"] == [[0], [0, 2], [], []]
-    assert r["debounce"] == {"calls": ["yog"], "before": 0}  # only the last typed value, 150 ms after the last key; cancel drops one
+    assert r["debounce"] == {
+        "calls": ["yog"],
+        "before": 0,
+    }  # only the last typed value, 150 ms after the last key; cancel drops one
     assert r["stale"] == {"aborted": 2, "current": [False, False, True]}
 
 
@@ -574,9 +579,25 @@ out({
 });
 """
     )
-    assert r["ev"] == ["Official source", "Several sources agree", "Only one source", "Not fully verified", "bad", "Odd new"]
-    assert r["flags"] == ["Only one source", "May be out of date", "Same text on several sites", "Brand new flag"]
-    assert r["gaps"][0].startswith("We could not find") and "budget limit" in r["gaps"][1] and "search service" in r["gaps"][2]
+    assert r["ev"] == [
+        "Official source",
+        "Several sources agree",
+        "Only one source",
+        "Not fully verified",
+        "bad",
+        "Odd new",
+    ]
+    assert r["flags"] == [
+        "Only one source",
+        "May be out of date",
+        "Same text on several sites",
+        "Brand new flag",
+    ]
+    assert (
+        r["gaps"][0].startswith("We could not find")
+        and "budget limit" in r["gaps"][1]
+        and "search service" in r["gaps"][2]
+    )
     assert "was not worth" in r["gaps"][4] or "not worth" in r["gaps"][4]
     assert "You stopped" in r["gaps"][6] and r["gaps"][9] == "We could not finish this topic."
     assert r["acc"] == [
@@ -584,18 +605,37 @@ out({
         ["Findings dropped because a number was not in the quote", "5%", "at most 3%", "bad"],
         ["Pages that could be read", "not measured", "at least 70%", "none"],
     ]
-    assert r["cost"][0] == [{"step": "search.tavily", "micros": 232000}, {"step": "extract", "micros": 1500}]
-    assert r["cost"][1] == [{"step": "search.fake", "micros": 232000}, {"step": "check", "micros": 10000}]
+    assert r["cost"][0] == [
+        {"step": "search.tavily", "micros": 232000},
+        {"step": "extract", "micros": 1500},
+    ]
+    assert r["cost"][1] == [
+        {"step": "search.fake", "micros": 232000},
+        {"step": "check", "micros": 10000},
+    ]
     rows = {x["label"]: x for x in r["rows"]}
-    assert "Empty" not in rows and "None" not in rows and "List" not in rows  # empty values are left out
-    assert rows["Name"]["value"] == "Razorpay" and rows["Flag"]["value"] == "yes" and rows["Notes"]["list"] == ["a", "b"]
+    assert (
+        "Empty" not in rows and "None" not in rows and "List" not in rows
+    )  # empty values are left out
+    assert (
+        rows["Name"]["value"] == "Razorpay"
+        and rows["Flag"]["value"] == "yes"
+        and rows["Notes"]["list"] == ["a", "b"]
+    )
     assert [x["label"] for x in rows["Fees"]["rows"]] == ["Setup", "Rate", "Deep"]
     assert rows["Steps"]["list"] == ["Name: pay; Detail: tap", "Name: done"]
     assert r["applies"] == ["Feature FTR-003 (expects)", "Not in your Brief (suggests)"]
-    assert r["prevalence"] == ["mentioned in 3 of 14 sources", "newest source 1 Sep 2026 (2 months ago)"]
+    assert r["prevalence"] == [
+        "mentioned in 3 of 14 sources",
+        "newest source 1 Sep 2026 (2 months ago)",
+    ]
     assert r["groups"] == [["Features", ["z", "a"]], ["Screens", ["b"]]]
     assert r["gg"] == [["not_found", 2], ["budget_stop", 1]]
-    assert r["trust"][0].startswith("60% of the 10 findings") and any("too lenient" in t for t in r["trust"]) and any("3 findings need" in t for t in r["trust"])
+    assert (
+        r["trust"][0].startswith("60% of the 10 findings")
+        and any("too lenient" in t for t in r["trust"])
+        and any("3 findings need" in t for t in r["trust"])
+    )
 
 
 def test_markdown_preview_never_makes_html_and_only_http_links() -> None:
@@ -627,14 +667,26 @@ out({
 """
     )
     assert r["types"] == ["h1", "ul", "ol", "quote", "table", "p", "hr", "p"]
-    assert r["heading"] == "Research report <script>alert(1)</script>"  # markup stays the characters it is
-    assert r["ul"][0] == ["text:Status: ", "bold:complete", "text: and ", "code:RI-001", "text: <img src=x onerror=alert(2)>"]
+    assert (
+        r["heading"] == "Research report <script>alert(1)</script>"
+    )  # markup stays the characters it is
+    assert r["ul"][0] == [
+        "text:Status: ",
+        "bold:complete",
+        "text: and ",
+        "code:RI-001",
+        "text: <img src=x onerror=alert(2)>",
+    ]
     links = dict((str(u), t) for t, u in r["links"])
     assert ("link", "https://docs.example.com/a?b=1") in [tuple(x) for x in r["links"]]
-    assert sum(1 for t, _ in r["links"] if t == "link") == 1  # javascript: and data: are plain text, not links
+    assert (
+        sum(1 for t, _ in r["links"] if t == "link") == 1
+    )  # javascript: and data: are plain text, not links
     assert r["ol"] == 2 and r["quote"] == 2 and r["table"] == [2, 2, "bold"]
     assert r["para"] == "plain paragraph continues here"
-    assert set(x.split(":")[0] for x in r["raw"]) == {"text"}  # a bare <script> line and an unsafe link are only characters
+    assert set(x.split(":")[0] for x in r["raw"]) == {
+        "text"
+    }  # a bare <script> line and an unsafe link are only characters
     assert r["inline"] == ["text", "bold", "text", "code", "text", "link", "text"]
     assert r["empty"] == [[], [], []] and links
 
@@ -660,15 +712,48 @@ out({
 });
 """
     )
-    assert r["keys"] == ["ok", "not_relevant", "claim_not_in_quote", "wrong_or_outdated", "wrong_place_or_company", "invented_detail", "skipped", "skipped", None, None, None, None]
+    assert r["keys"] == [
+        "ok",
+        "not_relevant",
+        "claim_not_in_quote",
+        "wrong_or_outdated",
+        "wrong_place_or_company",
+        "invented_detail",
+        "skipped",
+        "skipped",
+        None,
+        None,
+        None,
+        None,
+    ]
     assert r["modifiers"] == [None, None, None] and r["none"] == [None, None]
-    assert r["order"] == [["1", "ok"], ["2", "not_relevant"], ["3", "claim_not_in_quote"], ["4", "wrong_or_outdated"], ["5", "wrong_place_or_company"], ["6", "invented_detail"]]
-    assert r["next"] == [2, -1, -1, 1]  # the first card with no verdict at all; a skipped card counts as answered
+    assert r["order"] == [
+        ["1", "ok"],
+        ["2", "not_relevant"],
+        ["3", "claim_not_in_quote"],
+        ["4", "wrong_or_outdated"],
+        ["5", "wrong_place_or_company"],
+        ["6", "invented_detail"],
+    ]
+    assert r["next"] == [
+        2,
+        -1,
+        -1,
+        1,
+    ]  # the first card with no verdict at all; a skipped card counts as answered
     assert r["prog"] == {"total": 4, "answered": 2, "skipped": 1, "left": 1}
     assert r["label"] == ["Invented detail", "Skipped", ""]
-    assert r["rowsPass"][0][:2] == ["95%", "at least 95%"] and r["rowsPass"][1][:2] == ["90%", "at least 90%"] and all(x[2] for x in r["rowsPass"])
+    assert (
+        r["rowsPass"][0][:2] == ["95%", "at least 95%"]
+        and r["rowsPass"][1][:2] == ["90%", "at least 90%"]
+        and all(x[2] for x in r["rowsPass"])
+    )
     assert r["rowsFail"] == [True, False, False]
-    assert r["text"][0].startswith("Passed") and r["text"][1].startswith("Not passed") and r["text"][2] == "Nothing answered yet."
+    assert (
+        r["text"][0].startswith("Passed")
+        and r["text"][1].startswith("Not passed")
+        and r["text"][2] == "Nothing answered yet."
+    )
     assert r["worst"] == ["services (4 not OK)", "service option (3 not OK)"]
     assert r["strata"][0].startswith("A fact where a mistake") and r["strata"][2] == "A fact"
 
@@ -694,8 +779,18 @@ out({ before, after: s.facts.map((f) => [f.id || f.label, f.status, f.reason]), 
   fin: [fin.status, fin.result.stages, fin.result.cost_by_step, fin.result.fallbacks] });
 """
     )
-    assert r["before"] == [["atm_1", "checked"], ["atm_2", "checking"], ["atm_3", "rejected"]]  # the whole list, not the last events
-    assert r["after"] == [["atm_1", "checked", ""], ["atm_2", "checked", ""], ["atm_3", "rejected", "quote_missing"], ["atm_9", "checking", ""], ["No id fact", "rejected", "x"]]
+    assert r["before"] == [
+        ["atm_1", "checked"],
+        ["atm_2", "checking"],
+        ["atm_3", "rejected"],
+    ]  # the whole list, not the last events
+    assert r["after"] == [
+        ["atm_1", "checked", ""],
+        ["atm_2", "checked", ""],
+        ["atm_3", "rejected", "quote_missing"],
+        ["atm_9", "checking", ""],
+        ["No id fact", "rejected", "x"],
+    ]
     assert r["cov"] == {"filled": 1, "required": 5, "percent": 20} and r["req"] == 5
     assert r["rejected"] >= 2
     assert r["fin"] == ["complete", {"plan": 1, "search": 2}, {"search.fake": "0.2320"}, {}]

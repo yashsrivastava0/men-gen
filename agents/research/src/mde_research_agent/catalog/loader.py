@@ -29,8 +29,8 @@ from mde_research_agent.catalog.models import (
     LoadConfig,
     NeedsConfig,
     PlanConfig,
-    SignalsConfig,
     PrevalenceConfig,
+    SignalsConfig,
     SourceClassRules,
     TemplatePatterns,
 )
