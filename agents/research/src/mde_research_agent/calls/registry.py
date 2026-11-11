@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from mde_research_agent.calls import assemble, check, gaps, plan, queries
+from mde_research_agent.calls import assemble, check, gaps, judge, plan, queries
 from mde_research_agent.calls.base import ResearchCallSpec
 from mde_research_agent.calls.extract import SPECS as EXTRACT_SPECS
 
@@ -17,4 +17,5 @@ def all_specs() -> list[ResearchCallSpec[Any, Any]]:
         *EXTRACT_SPECS.values(),
         assemble.SPEC,
         check.SPEC,
+        judge.SPEC,
     ]

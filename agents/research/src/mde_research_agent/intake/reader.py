@@ -94,6 +94,11 @@ def _slot(value: Any) -> tuple[Any, Tier, float | None]:
     return value, "default", None
 
 
+def _m(value: Any) -> Mapping[str, Any]:
+    """``value`` when it is a mapping, else an empty one."""
+    return value if isinstance(value, Mapping) else {}
+
+
 def _s(value: Any) -> str:
     return value.strip() if isinstance(value, str) else ""
 
@@ -257,7 +262,7 @@ def _requests(
     ]
     pat = cat.template_patterns
     repeated = re.compile(pat.repeated_word_regex, re.I)
-    audience = view.get("audience") if isinstance(view.get("audience"), Mapping) else {}
+    audience = _m(view.get("audience"))
     segments = ", ".join(_strs((audience or {}).get("segments")))
     questions = [_s(r.get("question")).casefold() for r in raw_requests]
     audience_in_most = (
@@ -268,7 +273,7 @@ def _requests(
             >= pat.repeated_audience_share
         )
     )
-    idea = view.get("idea") if isinstance(view.get("idea"), Mapping) else {}
+    idea = _m(view.get("idea"))
     category_stems = stem_set(_s((idea or {}).get("category")))
     hints_empty = not (hints.synonyms or hints.local_competitors or hints.disambiguated_names)
     out: list[Request] = []
@@ -321,8 +326,8 @@ def _requests(
 
 
 def _geography(brief: Mapping[str, Any], view: Mapping[str, Any]) -> Geography:
-    raw_view = view.get("geography") if isinstance(view.get("geography"), Mapping) else {}
-    context = brief.get("context") if isinstance(brief.get("context"), Mapping) else {}
+    raw_view = _m(view.get("geography"))
+    context = _m(brief.get("context"))
     geo_slot = (context or {}).get("geo")
     geo_value, tier, conf = _slot(geo_slot)
     value = geo_value if isinstance(geo_value, Mapping) else (raw_view or {})
@@ -346,7 +351,7 @@ def _geography(brief: Mapping[str, Any], view: Mapping[str, Any]) -> Geography:
 
 
 def _locales(brief: Mapping[str, Any], view: Mapping[str, Any], cat: Catalog) -> Locales:
-    lang = view.get("languages") if isinstance(view.get("languages"), Mapping) else {}
+    lang = _m(view.get("languages"))
     codes = _strs((lang or {}).get("locales")) or _strs((brief.get("meta") or {}).get("locales"))
     search = _strs((lang or {}).get("search_languages")) or codes
     info = cat.languages
@@ -365,7 +370,7 @@ def _locales(brief: Mapping[str, Any], view: Mapping[str, Any], cat: Catalog) ->
 
 def _failures(data: Mapping[str, Any]) -> tuple[tuple[Failure, ...], int]:
     """Failures recomputed from ``spend.by_call`` plus Compass's own fallback count."""
-    spend = data.get("spend") if isinstance(data.get("spend"), Mapping) else {}
+    spend = _m(data.get("spend"))
     found: list[Failure] = []
     for call, st in sorted(((spend or {}).get("by_call") or {}).items()):
         if not isinstance(st, Mapping) or not st.get("calls"):
@@ -406,7 +411,7 @@ def read_export(
         raise ExportRefused("missing_research_view", "The export has no research view.")
     flags: list[str] = []
 
-    idea_raw = view.get("idea") if isinstance(view.get("idea"), Mapping) else {}
+    idea_raw = _m(view.get("idea"))
     idea = Idea(
         summary=_s(idea_raw.get("summary")),
         category=_s(idea_raw.get("category")),
@@ -418,7 +423,7 @@ def read_export(
     features = _features(brief)
     roles, apps = _roles_and_apps(brief)
 
-    raw_hints = brief.get("search_hints") if isinstance(brief.get("search_hints"), Mapping) else {}
+    raw_hints = _m(brief.get("search_hints"))
     hints = SearchHints(
         disambiguated_names=tuple(
             n for n in _strs(raw_hints.get("disambiguated_names")) if not _is_own_brand(n, own)
@@ -443,12 +448,12 @@ def read_export(
     geography = _geography(brief, view)
     locales = _locales(brief, view, catalog)
 
-    data_section = brief.get("data") if isinstance(brief.get("data"), Mapping) else {}
+    data_section = _m(brief.get("data"))
     sens_value, _, _ = _slot((data_section or {}).get("sensitive"))
     sensitive = _strs(sens_value)
 
     failures, fallback_count = _failures(data)
-    meta = brief.get("meta") if isinstance(brief.get("meta"), Mapping) else {}
+    meta = _m(brief.get("meta"))
     probes = (meta or {}).get("probes") if isinstance((meta or {}).get("probes"), Mapping) else {}
     failing = tuple(sorted(k for k, ok in (probes or {}).items() if ok is False))
     if "quality" not in view:
@@ -520,13 +525,13 @@ def read_export(
         config=catalog.load,
     )
 
-    guidance = view.get("guidance") if isinstance(view.get("guidance"), Mapping) else {}
+    guidance = _m(view.get("guidance"))
     focus = tuple(
         FocusTopic(topic=_s(f.get("topic")), about=_strs(f.get("about")))
         for f in (guidance or {}).get("focus") or []
         if isinstance(f, Mapping) and _s(f.get("topic"))
     )
-    audience_raw = view.get("audience") if isinstance(view.get("audience"), Mapping) else {}
+    audience_raw = _m(view.get("audience"))
     session_id = _s((data.get("export") or {}).get("session_id")) or _s(meta.get("session_id"))
     return ResearchInput(
         program_id=program_id or _s(meta.get("program_id")) or session_id,

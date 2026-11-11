@@ -274,7 +274,7 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
             use_note="",
             slot=_slot_of(t, kind),
             impact=impact,
-            confidence=conf,
+            confidence=conf,  # type: ignore[arg-type]
             tier=tier,  # type: ignore[arg-type]
             flags=sorted(flags),  # type: ignore[arg-type]
             applies_to=_applies(

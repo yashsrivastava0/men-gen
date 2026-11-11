@@ -24,7 +24,7 @@ from datetime import date
 from typing import Final, Literal
 
 import trafilatura
-from lxml import etree
+from lxml import etree  # pyright: ignore[reportAttributeAccessIssue]
 from lxml import html as lxml_html
 from pypdf import PasswordType, PdfReader
 

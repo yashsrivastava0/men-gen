@@ -15,7 +15,7 @@ import asyncio
 import contextlib
 from dataclasses import dataclass, field
 from datetime import date, datetime
-from typing import Any
+from typing import Any, cast
 
 from mde_core.clock import Clock, SystemClock
 from mde_core.errors import BudgetExceeded, CassetteMissing, LiveCallForbidden, NotFound
@@ -144,7 +144,7 @@ class ResearchService:
             ctx = new_context(
                 inp=live.inp,
                 catalog=self.catalog,
-                search=self.search or _NoSearch(),
+                search=self.search or cast("SearchPort", _NoSearch()),
                 fetch=self.fetch,
                 gateway=self.gateway,
                 events=self.store,

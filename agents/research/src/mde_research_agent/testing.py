@@ -175,6 +175,8 @@ async def run_engine(
     checker_vendor: str = "same",
     sleep=None,
     watch_interval: float = 0.01,
+    search_port=None,
+    fetch_port=None,
 ) -> EngineRun:
     """Plan, run, assemble and validate one run in process (no HTTP, no store) over fakes."""
     cat = load_catalog()
@@ -183,7 +185,8 @@ async def run_engine(
     the_world = world or FakeWorld(provider_content_every=3, clock=the_clock)
     if the_world.clock is None:
         the_world.clock = the_clock
-    search, fetch = FakeSearch(the_world), FakeFetch(the_world)
+    search = search_port or FakeSearch(the_world)
+    fetch = fetch_port or FakeFetch(the_world)
     gateway = OverrideGateway(make_client(), overrides, mode=mode)
 
     async def no_sleep(_: float) -> None:

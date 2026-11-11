@@ -22,9 +22,11 @@ from mde_core.errors import BudgetExceeded, CallCancelled, CassetteMissing, Live
 from mde_research_agent.calls import check as check_call
 from mde_research_agent.calls import gaps as gap_call
 from mde_research_agent.calls import plan as plan_call
+from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.anatomy import is_repeat
 from mde_research_agent.core.slots import Coverage
 from mde_research_agent.core.text import tokens
+from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan, Target
 from mde_research_agent.engine.context import RunContext
 from mde_research_agent.engine.state import TargetState
@@ -76,8 +78,12 @@ def proposal_from(out: plan_call.PlanOut) -> PlanProposal:
 
 
 def plan_input(ctx: RunContext) -> plan_call.PlanIn:
-    inp = ctx.input
-    base = build_plan(inp, ctx.catalog)
+    return build_plan_in(ctx.input, ctx.catalog)
+
+
+def build_plan_in(inp: ResearchInput, catalog: Catalog) -> plan_call.PlanIn:
+    """The planner call's input for a Brief: the Brief's values plus the topics the deterministic planner already has."""
+    base = build_plan(inp, catalog)
     trusted = [r for r in inp.requests if r.origin != "template" and not r.thin]
     return plan_call.PlanIn(
         language=(inp.locales.codes[0] if inp.locales.codes else "en"),
@@ -102,7 +108,7 @@ def plan_input(ctx: RunContext) -> plan_call.PlanIn:
         facts=[
             f.statement[:200]
             for f in inp.facts
-            if f.kind in set(ctx.catalog.plan.rule_fact_kinds) and not f.is_template
+            if f.kind in set(catalog.plan.rule_fact_kinds) and not f.is_template
         ][:40],
         requests=[
             plan_call.RequestIn(id=r.id, topic=r.topic[:160], question=r.question[:240])

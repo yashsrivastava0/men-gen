@@ -223,7 +223,7 @@ def _from_proposals(
     targets: list[Target] = []
     dropped: list[Dropped] = []
     for p in list(proposals)[: cat.plan.max_extra_targets]:
-        job = JOB_NAMES and next((j for j in JOB_NAMES if j == p.job), None)
+        job = next((j for j in JOB_NAMES if j == p.job), None)
         if job is None or not p.anchor.strip() or not p.question.strip():
             continue
         if p.trivia or not p.needs:

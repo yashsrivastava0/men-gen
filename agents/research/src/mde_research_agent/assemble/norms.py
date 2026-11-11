@@ -38,7 +38,11 @@ def _orgs(b: BuiltItem) -> set[str]:
 
 
 def _newest(items: list[BuiltItem]) -> date | None:
-    dates = [d for b in items for d in (b.item.recency.newest_source,) if b.item.recency and d]
+    dates: list[date] = []
+    for b in items:
+        recency = b.item.recency
+        if recency is not None and recency.newest_source is not None:
+            dates.append(recency.newest_source)
     return max(dates) if dates else None
 
 
@@ -72,7 +76,7 @@ def compute_norms(
         prev = make_prevalence(seen, of, newest_age_months=age, rising=rising, cfg=cfg)
         norms.append(
             Norm(
-                area=area,
+                area=area,  # type: ignore[arg-type]
                 key=key,
                 label=label,
                 prevalence=prev,  # type: ignore[arg-type]

@@ -1,0 +1,4 @@
+# The measured default search provider. `live_bakeoff` sets it from a bake-off on the real requests of the example
+# Briefs; until one has run it is the design's starting default. `choose_provider` falls back to the other provider
+# when the default's key is missing.
+default: tavily

@@ -27,7 +27,21 @@ from mde_research_agent.ports.search import SearchPort
 from mde_research_agent.service import ResearchService
 from mde_research_agent.store.ports import Store
 
-DEFAULT_PROVIDER = "tavily"  # the measured default (data); the bake-off sets it
+
+def default_provider() -> str:
+    """The measured default search provider (``data/providers.yaml``, written by the bake-off)."""
+    import yaml
+
+    from mde_research_agent.catalog.loader import DATA_DIR
+
+    return str(
+        (yaml.safe_load((DATA_DIR / "providers.yaml").read_text(encoding="utf-8")) or {}).get(
+            "default", "tavily"
+        )
+    )
+
+
+DEFAULT_PROVIDER = default_provider()
 
 
 def build_ports(
@@ -82,6 +96,8 @@ def build_service(
     provider: str | None = None,
     sleep: Any = None,
     client: httpx.AsyncClient | None = None,
+    wrap_search: Any = None,
+    wrap_fetch: Any = None,
 ) -> ResearchService:
     """Everything a run needs. In mock LLM mode the search and fetch are offline fakes unless a provider is forced."""
     core = core_settings or load_settings()
@@ -107,6 +123,10 @@ def build_service(
         else ("fake" if mode == "mock" else choose_provider(cfg, DEFAULT_PROVIDER))
     )
     search, fetch, closers = build_ports(chosen, cfg, world=world, client=client)
+    if wrap_search is not None and search is not None:
+        search = wrap_search(search)
+    if wrap_fetch is not None:
+        fetch = wrap_fetch(fetch)
     if search is not None and chosen != "fake":
         from mde_research_agent.adapters.search.caching import CachingSearch
 
