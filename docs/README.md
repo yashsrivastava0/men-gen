@@ -73,6 +73,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [runbooks/live-llm-budget.md](runbooks/live-llm-budget.md): USD 6.00 cap, tripwires, the second key, the ledger, the lead-only batch procedure
 - [runbooks/troubleshooting.md](runbooks/troubleshooting.md): real failure modes: database, tests, event loop, ledger, the live-call hook, worktrees
 - [runbooks/research-agent.md](runbooks/research-agent.md): run, test and (owner only) run live the Research agent: offline commands, live prerequisites, the bake-off and batch runs, reading a run, troubleshooting
+- [research-agent/reports/research-agent-build-report-2026-11-11.md](research-agent/reports/research-agent-build-report-2026-11-11.md): the Research agent build report: what it is, how it works, what was built against the plan, tests, limits, decisions, next steps (written before the live runs)
 - [research-agent/provider-facts.md](research-agent/provider-facts.md): Tavily and Serper parameters, checked against the official documentation, with URLs and dates
 - [runbooks/compass.md](runbooks/compass.md): run, migrate and test Compass (port 8110, private Postgres, `MDE_PG_BIN` on the Mac), live prerequisites, troubleshooting
 
