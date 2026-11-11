@@ -18,7 +18,7 @@ targets:
     question: "Which {category} apps are used in {place}, which features does each offer and how is each priced?"
     decision_unlocked: "Which features belong in the first release and which are common, advanced or emerging"
     needs: [norm, entity, current]
-    priority: 95
+    priority: 100
     anchor: category
     slots:
       - {key: competitors, type: count, kind: competitor, distinct_by: name, min: 3, attr: features, attr_min: 5, required: true}

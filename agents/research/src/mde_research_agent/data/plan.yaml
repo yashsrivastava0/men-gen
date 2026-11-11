@@ -1,0 +1,43 @@
+# Planner heuristics. Everything the planner decides from the Brief with plain code lives here as data.
+# Names in these lists are generic words (never a company, place or product from any one example).
+
+# Entity, module and topic names that are generic scaffolding in almost every app: still researched when
+# there is budget (norms for Spec-critical areas are always worth grounding) but ranked low.
+generic_entities: [user, users, account, accounts, role, roles, session, setting, settings, notification, notifications, audit log, log, permission, permissions, profile]
+generic_modules: [account, accounts, settings, notifications, profile, sign in, onboarding, admin, help]
+# Fact topic tags that say nothing about a rule worth researching.
+generic_topics: [users, user, location, idea, scope, languages, language, business, requirements, requirement, roles, role, apps, app, data, constraints, constraint, brand, general, context, integrations, preference, preferences, summary, goal, goals, audience, launch]
+# Fact kinds that carry rules, numbers and legal-adjacent statements.
+rule_fact_kinds: [rule, compliance, number, nfr, integration_detail]
+# Priority adjustments (the template's own priority is the base, 0 to 100).
+priority_bonus:
+  must: 8
+  nice: 0
+  later: -4
+  locked: 5
+  default_tier: 0
+  request_high: 10
+  request_medium: 4
+  generic_entity: -20
+  generic_module: -15
+  geo_uncertain: 0
+  template_request: 0
+# Platform guideline sources: named official documentation, researched as design conventions (restrict to the domain).
+platforms:
+  - {name: "Apple Human Interface Guidelines", domain: developer.apple.com}
+  - {name: "Material Design", domain: m3.material.io}
+# Words in a trusted request's topic or question that say which job it belongs to (en first; other languages extend this list).
+request_jobs:
+  services: [api, provider, providers, gateway, integration, integrations, sms, otp, messaging, whatsapp, payment, payments, telematics, gps, tracking, fastag, webhook, sandbox, portal]
+  data: [rules, rule, compliance, regulation, regulations, requirements, tax, gst, invoice, invoicing, fees, fee, commission, commissions, legal, permit, permits, licence, license, penalty, audit]
+  features: [features, comparable, competitors, differentiation, alternatives, demand, landscape, marketplaces, platforms]
+  flows: [flow, flows, journey, process, workflow, onboarding, booking, dispatch, delivery]
+  structure: [roles, access, accounts, staff, permissions, sign-in, signin, login]
+  local: [format, formats, id, numbers, local, terms]
+  design: [design, look, ux, ui, brand, style]
+# Maximum number of model-proposed extra topics accepted per run (the code validates every one).
+max_extra_targets: 6
+# Discovery names from model memory (competitors, providers): only used in discovery queries, labelled entity_from_model.
+max_discovery_names: 6
+# Terms mixed into a topic's query terms for passage selection, in addition to its anchors and slot terms.
+base_terms_max: 24

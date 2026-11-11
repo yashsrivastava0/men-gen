@@ -285,8 +285,13 @@ def _requests(
         template = bool(reasons)
         entity_stems = stem_set(entity)
         no_entity = not entity or (bool(category_stems) and entity_stems <= category_stems)
-        thin = (not template) and no_entity and hints_empty and not _strs(r.get("references"))
-        if thin:
+        empty = not topic and not _s(r.get("question"))
+        thin = (not template) and (
+            empty or (no_entity and hints_empty and not _strs(r.get("references")))
+        )
+        if empty:
+            reasons.append("empty")
+        elif thin:
             reasons.append("no_named_entity")
         declared = _s(r.get("origin")).lower()
         origin = (

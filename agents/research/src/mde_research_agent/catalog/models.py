@@ -227,6 +227,7 @@ class KindLane(Frozen):
     lanes: tuple[LaneName, ...]
     need: str
     area: str
+    terms: tuple[str, ...] = ()
 
 
 class LanesConfig(Frozen):
@@ -258,12 +259,31 @@ class LanguagesConfig(Frozen):
     languages: dict[str, LanguageInfo]
 
 
+class PlatformSource(Frozen):
+    name: str
+    domain: str
+
+
+class PlanConfig(Frozen):
+    generic_entities: tuple[str, ...]
+    generic_modules: tuple[str, ...]
+    generic_topics: tuple[str, ...]
+    rule_fact_kinds: tuple[str, ...]
+    priority_bonus: dict[str, int]
+    platforms: tuple[PlatformSource, ...]
+    request_jobs: dict[str, tuple[str, ...]]
+    max_extra_targets: int
+    max_discovery_names: int
+    base_terms_max: int
+
+
 class Labels(Frozen):
     depth_words: dict[str, str]
     events: dict[str, str]
     warnings: dict[str, str]
     reasons: dict[str, str]
     declined: str
+    declined_user: str
 
 
 class Catalog(Frozen):
@@ -279,6 +299,7 @@ class Catalog(Frozen):
     prevalence: PrevalenceConfig
     lanes: LanesConfig
     needs: NeedsConfig
+    plan: PlanConfig
     languages: dict[str, LanguageInfo]
     labels: dict[str, Labels]
     catalog_hash: str

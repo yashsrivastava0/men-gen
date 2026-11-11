@@ -13,7 +13,7 @@ extract_focus: >
   the empty, error and offline cases as their own workflows when the page describes them.
 targets:
   - id: journeys
-    label: "How {flow} usually works"
+    label: "Journey: {flow}"
     foreach: flow
     max: 6
     question: "How does a typical {flow} journey work in {category} apps, step by step, including alternatives and what goes wrong?"

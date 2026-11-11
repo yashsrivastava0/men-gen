@@ -47,3 +47,4 @@ reasons:
   not_found: "page not found"
   error: "could not be read"
 declined: "We already know this: {topic}"
+declined_user: "Left out as you asked: {topic}"

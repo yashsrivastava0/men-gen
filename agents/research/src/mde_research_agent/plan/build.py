@@ -1,0 +1,386 @@
+"""The deterministic planner: ``ResearchInput`` + data files -> a :class:`Plan` of targets.
+
+Research is organised by what Spec must decide. For each of the eight jobs the data files list target
+templates; each template is expanded over what the Brief actually contains (roles, journeys, entities, needs,
+rule topics, ...), merged with the trusted Compass requests and the model's optional suggestions, passed
+through the worthiness gate, ranked and trimmed to the load class's ceiling. The result needs no model call:
+a model may reword and add (RSCH-1), but this baseline is what runs when it fails.
+"""
+
+from __future__ import annotations
+
+import re
+from collections import defaultdict
+from collections.abc import Iterable
+
+from mde_research_agent.catalog.loader import JOB_NAMES
+from mde_research_agent.catalog.models import Catalog, JobSpec, TargetTemplate
+from mde_research_agent.core.text import same_thing, stem_set, tokens
+from mde_research_agent.domain.input import ResearchInput
+from mde_research_agent.domain.plan import Dropped, Links, Place, Plan, Target
+from mde_research_agent.plan.candidates import (
+    Candidate,
+    candidates_for,
+    short_phrase,
+    trusted_requests,
+)
+from mde_research_agent.plan.place import build_place
+from mde_research_agent.plan.proposal import PlanProposal, ProposedTarget
+
+RECENCY_MONTHS = 24
+_FORMAT_FIELD = re.compile(r"\{(\w+)\}")
+
+
+def category_phrase(inp: ResearchInput, proposal: PlanProposal | None = None) -> str:
+    """A short noun phrase for the kind of app, in the user's own words."""
+    raw = inp.idea.category.strip()
+    if (
+        "_" in raw
+    ):  # a family code ("delivery_logistics"), not the user's words: prefer a clean synonym
+        synonym = next((s for s in inp.hints.synonyms if s.isascii() and len(s.split()) <= 4), "")
+        raw = synonym or raw.replace("_", " ")
+    if (not raw or "_" in inp.idea.category) and proposal and proposal.category_phrase:
+        raw = proposal.category_phrase
+    if not raw and proposal and proposal.category_phrase:
+        raw = proposal.category_phrase
+    if not raw:
+        names = [f.name for f in inp.features if f.duplicate_of is None][:2]
+        raw = " and ".join(names) if names else short_phrase(inp.idea.summary, 5)
+    return short_phrase(raw, 6) or raw
+
+
+def _conditions_hold(tpl: TargetTemplate, inp: ResearchInput) -> bool:
+    for cond in tpl.when:
+        if cond == "non_latin_locale" and not inp.locales.non_latin:
+            return False
+        if cond == "has_integrations" and not inp.integrations:
+            return False
+        if cond == "multi_app" and sum(1 for a in inp.apps if a.is_real) < 2:
+            return False
+        if cond == "has_sensitive_data" and not inp.sensitive_flags:
+            return False
+    return True
+
+
+def _fmt(text: str, values: dict[str, str]) -> str:
+    return " ".join(_FORMAT_FIELD.sub(lambda m: values.get(m.group(1), ""), text).split())
+
+
+def _make_target(
+    job: JobSpec,
+    tpl: TargetTemplate,
+    cand: Candidate,
+    *,
+    place: Place,
+    category: str,
+    cat: Catalog,
+    inp: ResearchInput,
+) -> Target:
+    name = cand.name
+    values = {
+        "category": category,
+        "place": place.text if tpl.place == "brief" else "",
+        "entity": name,
+        "need": name,
+        "module": name,
+        "role": name,
+        "flow": name,
+        "topic": name,
+        "platform": name,
+        "language": name,
+    }
+    primary = tpl.anchor
+    if primary == "category":
+        anchors = (category,)
+    else:
+        anchors = tuple(
+            dict.fromkeys(
+                [short_phrase(name, 4) or name, *cand.anchors, cand.extra.get("need_key", "")]
+            )
+        )
+        anchors = tuple(a for a in anchors if a)
+    slot_terms: list[str] = []
+    for slot in tpl.slots:
+        slot_terms += list(cat.lanes.kinds[slot.kind].terms)
+    terms = tuple(
+        dict.fromkeys([*tokens(" ".join(anchors)), *job.intent, *slot_terms, *cand.terms])
+    )[: cat.plan.base_terms_max]
+    bonus = cand.bonus
+    flags = list(cand.flags)
+    if place.uncertain and tpl.place == "brief":
+        flags.append("geo_uncertain")
+    domain = cand.extra.get("domain")
+    is_entity = tpl.foreach == "reference"
+    return Target(
+        id="",
+        job=job.job,
+        template_id=tpl.id,
+        spec_need=job.spec_need,
+        lane=job.lane,
+        also_lanes=job.also_lanes,
+        label=_fmt(cand.label_override or tpl.label, values),
+        question=_fmt(tpl.question, values),
+        decision_unlocked=tpl.decision_unlocked,
+        anchors=anchors,
+        entity=name if is_entity else None,
+        place=place if tpl.place == "brief" and not place.unknown else None,
+        intent=job.intent,
+        needs=tpl.needs,
+        priority=max(0, min(100, tpl.priority + bonus)),
+        slots=tpl.slots,
+        links=cand.links,
+        flags=tuple(dict.fromkeys(flags)),
+        recency_months=RECENCY_MONTHS if job.recency else None,
+        origin="request" if cand.links.requests and not cand.links.features else "template",
+        terms=terms,
+        domain_restrict=(domain,) if domain else (),
+    )
+
+
+def _expand(
+    job: JobSpec, tpl: TargetTemplate, inp: ResearchInput, cat: Catalog, place: Place, category: str
+) -> list[Target]:
+    if not _conditions_hold(tpl, inp):
+        return []
+    if tpl.foreach == "none":
+        cands = [Candidate(category)]
+    else:
+        cands = candidates_for(tpl.foreach, inp, cat)[: tpl.max]
+    return [
+        _make_target(job, tpl, c, place=place, category=category, cat=cat, inp=inp) for c in cands
+    ]
+
+
+def _job_of_request(text: str, cat: Catalog) -> str | None:
+    """The job a request topic belongs to, by word overlap with ``plan.request_jobs`` (ties: job order)."""
+    stems = stem_set(text)
+    best: tuple[int, int, str] | None = None
+    for order, job in enumerate(JOB_NAMES):
+        words = {w for word in cat.plan.request_jobs.get(job, ()) for w in stem_set(word)}
+        score = len(stems & words)
+        if score and (best is None or (score, -order) > (best[0], -best[1])):
+            best = (score, order, job)
+    return best[2] if best else None
+
+
+def _attach_requests(targets: list[Target], inp: ResearchInput, cat: Catalog) -> list[Target]:
+    """Link trusted requests to the targets they inform (merge by entity and job); add their words and rank."""
+    out = list(targets)
+    for req in trusted_requests(inp):
+        job = _job_of_request(f"{req.topic} {req.question}", cat)
+        if job is None:
+            continue
+        subject = short_phrase(req.entity or req.topic, 5)
+        pool = [i for i, t in enumerate(out) if t.job == job]
+        pick = next(
+            (
+                i
+                for i in pool
+                if any(same_thing(subject, a) for a in out[i].anchors)
+                or req.id in out[i].links.requests
+            ),
+            None,
+        )
+        if pick is None:
+            pick = next(
+                (i for i in pool if out[i].template_id and not out[i].links.requests),
+                pool[0] if pool else None,
+            )
+        if pick is None:
+            continue
+        t = out[pick]
+        if req.id in t.links.requests:
+            continue
+        bonus = cat.plan.priority_bonus.get(
+            "request_high" if req.priority == "high" else "request_medium", 0
+        )
+        links = Links(**{**t.links.model_dump(), "requests": (*t.links.requests, req.id)})
+        extra_terms = tuple(w for w in tokens(" ".join(req.terms[:4])) if len(w) > 2)
+        out[pick] = t.model_copy(
+            update={
+                "links": links,
+                "priority": min(100, t.priority + bonus),
+                "terms": tuple(dict.fromkeys([*t.terms, *extra_terms]))[: cat.plan.base_terms_max],
+            }
+        )
+    return out
+
+
+def _from_proposals(
+    proposals: Iterable[ProposedTarget], cat: Catalog, place: Place, category: str
+) -> tuple[list[Target], list[Dropped]]:
+    targets: list[Target] = []
+    dropped: list[Dropped] = []
+    for p in list(proposals)[: cat.plan.max_extra_targets]:
+        job = JOB_NAMES and next((j for j in JOB_NAMES if j == p.job), None)
+        if job is None or not p.anchor.strip() or not p.question.strip():
+            continue
+        if p.trivia or not p.needs:
+            dropped.append(Dropped(label=p.anchor, reason="trivia", job=p.job))
+            continue
+        spec = cat.jobs[job]
+        tpl = spec.targets[0]
+        slots = tuple(s for t in spec.targets for s in t.slots if s.required)[:2] or tpl.slots
+        targets.append(
+            Target(
+                id="",
+                job=job,
+                template_id=f"model:{job}",
+                spec_need=spec.spec_need,
+                lane=spec.lane,
+                also_lanes=spec.also_lanes,
+                label=short_phrase(p.anchor, 6),
+                question=p.question.strip(),
+                decision_unlocked=p.decision_unlocked.strip() or spec.spec_need,
+                anchors=(short_phrase(p.anchor, 4) or p.anchor,),
+                place=None if place.unknown else place,
+                intent=spec.intent,
+                needs=tuple(n for n in p.needs if n in ("current", "norm", "entity", "number")),
+                priority=max(0, min(90, p.priority)),
+                slots=slots,
+                recency_months=RECENCY_MONTHS if spec.recency else None,
+                origin="model",
+                terms=tuple(dict.fromkeys([*tokens(p.anchor), *spec.intent, *p.terms]))[
+                    : cat.plan.base_terms_max
+                ],
+                flags=("assumption_derived",),
+            )
+        )
+    del category
+    return targets, dropped
+
+
+def _gate(
+    targets: list[Target], inp: ResearchInput, cat: Catalog
+) -> tuple[list[Target], list[Dropped]]:
+    """Worthiness gate: drop what the person declined, the own brand alone, and anything without an anchor."""
+    generic = {s for w in cat.intent_words.generic_words for s in stem_set(w)}
+    declined = [(d, stem_set(d) - generic) for d in inp.declined]
+    own = [stem_set(o) for o in inp.own_brand_terms if stem_set(o)]
+    keep: list[Target] = []
+    dropped: list[Dropped] = []
+    for t in targets:
+        subject = stem_set(" ".join((*t.anchors, t.label)))
+        hit = next((d for d, s in declined if s and s <= subject), None)
+        if hit is not None:
+            dropped.append(Dropped(label=hit, reason="declined", job=t.job, links=t.links))
+            continue
+        if (
+            t.template_id.startswith("references")
+            and own
+            and any(s <= stem_set(t.entity or "") for s in own)
+        ):
+            dropped.append(Dropped(label=t.label, reason="own_brand", job=t.job, links=t.links))
+            continue
+        if not t.anchors or not t.decision_unlocked or not t.intent:
+            dropped.append(
+                Dropped(label=t.label, reason="not_worthwhile", job=t.job, links=t.links)
+            )
+            continue
+        keep.append(t)
+    return keep, dropped
+
+
+def _merge_same(targets: list[Target]) -> list[Target]:
+    """Merge targets of one job whose anchors mean the same thing (merge by entity), keeping the best-ranked."""
+    out: list[Target] = []
+    for t in sorted(
+        targets, key=lambda x: (-x.priority, -len(x.links.requests), x.job, x.template_id, x.label)
+    ):
+        twin = next(
+            (
+                i
+                for i, o in enumerate(out)
+                if o.job == t.job
+                and o.template_id == t.template_id
+                and any(same_thing(a, b) for a in o.anchors for b in t.anchors)
+            ),
+            None,
+        )
+        if twin is None:
+            out.append(t)
+            continue
+        o = out[twin]
+        links = Links(
+            **{
+                f: tuple(dict.fromkeys(getattr(o.links, f) + getattr(t.links, f)))
+                for f in Links.model_fields
+            }
+        )
+        out[twin] = o.model_copy(
+            update={"links": links, "terms": tuple(dict.fromkeys([*o.terms, *t.terms]))}
+        )
+    return out
+
+
+def _trim(targets: list[Target], cap: int) -> tuple[list[Target], list[Target]]:
+    """Keep the ``cap`` best, but never leave a job with targets without at least one of them."""
+    ordered = sorted(
+        targets, key=lambda x: (-x.priority, -len(x.links.requests), x.job, x.template_id, x.label)
+    )
+    if len(ordered) <= cap:
+        return ordered, []
+    kept = ordered[:cap]
+    by_job: dict[str, list[Target]] = defaultdict(list)
+    for t in kept:
+        by_job[t.job].append(t)
+    for job in JOB_NAMES:
+        if by_job.get(job) or not any(t.job == job for t in ordered):
+            continue
+        best = next(t for t in ordered if t.job == job)
+        donor = min(
+            (t for t in kept if len(by_job[t.job]) > 1),
+            key=lambda x: (x.priority, x.label),
+            default=None,
+        )
+        if donor is None:
+            break
+        kept.remove(donor)
+        by_job[donor.job].remove(donor)
+        kept.append(best)
+        by_job[job].append(best)
+    kept.sort(key=lambda x: (-x.priority, -len(x.links.requests), x.job, x.template_id, x.label))
+    rest = [t for t in ordered if t not in kept]
+    return kept, rest
+
+
+def build_plan(inp: ResearchInput, cat: Catalog, *, proposal: PlanProposal | None = None) -> Plan:
+    """Targets for this Brief, numbered ``T-01``... in rank order; deterministic for the same inputs."""
+    place = build_place(inp, cat, proposal)
+    category = category_phrase(inp, proposal)
+    targets: list[Target] = []
+    for name in JOB_NAMES:
+        job = cat.jobs[name]
+        for tpl in job.targets:
+            targets += _expand(job, tpl, inp, cat, place, category)
+    targets = _attach_requests(targets, inp, cat)
+    extra, dropped = _from_proposals(
+        proposal.extra_targets if proposal else (), cat, place, category
+    )
+    targets += extra
+    targets, gate_dropped = _gate(targets, inp, cat)
+    dropped += gate_dropped
+    targets = _merge_same(targets)
+    load_class = inp.load.load_class if inp.load else "standard"
+    cap = cat.ceilings.for_class(load_class).soft.targets
+    kept, rest = _trim(targets, cap)
+    numbered = tuple(t.model_copy(update={"id": f"T-{i:02d}"}) for i, t in enumerate(kept, start=1))
+    unrun = tuple(t.model_copy(update={"id": f"U-{i:02d}"}) for i, t in enumerate(rest, start=1))
+    plan_source = "rebuilt" if not trusted_requests(inp) else inp.quality.plan_source
+    notes: list[str] = []
+    if rest:
+        notes.append(f"{len(rest)} lower-ranked topics were not run (over the ceiling)")
+    if place.inferred:
+        notes.append("country inferred by the planner; confirm")
+    return Plan(
+        targets=numbered,
+        dropped=tuple(dropped),
+        unrun=unrun,
+        place=place,
+        category_phrase=category,
+        discovery_names=tuple(
+            (proposal.discovery_names if proposal else ())[: cat.plan.max_discovery_names]
+        ),
+        plan_source=plan_source,
+        notes=tuple(notes),
+    )

@@ -3,7 +3,7 @@
 needs:
   payments:
     label: "online payments"
-    words: [payment, payments, pay, pays, paid, checkout, invoice, billing, subscription, refund, wallet, card, upi, commission, fee, fees, settlement, payout, pass, pack, packs, purchase, buy]
+    words: [payment, payments, pay, pays, paid, checkout, invoice, billing, subscription, refund, wallet, card, upi, commission, fee, fees, settlement, payout, purchase, buy]
   messaging:
     label: "SMS, WhatsApp and push messages"
     words: [sms, otp, whatsapp, message, messages, notification, notifications, reminder, reminders, alert, alerts, email, push, announcement]
@@ -23,10 +23,10 @@ needs:
     label: "accounting systems"
     words: [accounting, accounts, ledger, tally, erp, quickbooks, bookkeeping, reconciliation]
   calendar_booking:
-    label: "calendar and scheduling"
-    words: [calendar, schedule, scheduling, appointment, appointments, booking, bookings, slot, slots, timetable]
+    label: "calendar sync"
+    words: [calendar, ical, outlook, gcal]
   storage_media:
     label: "file and media storage"
-    words: [upload, photo, photos, image, images, document, documents, pdf, scan, attachment, video]
+    words: [upload, photo, photos, image, images, pdf, scan, attachment, video]
 # Words that tell a Brief fact is about a format worth searching (an unusual ID, number or document format).
 format_words: [id, number, licence, license, registration, permit, invoice, plate, code, certificate, receipt, tax, pin]

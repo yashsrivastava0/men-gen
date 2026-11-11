@@ -28,6 +28,7 @@ from mde_research_agent.catalog.models import (
     LanguagesConfig,
     LoadConfig,
     NeedsConfig,
+    PlanConfig,
     PrevalenceConfig,
     SourceClassRules,
     TemplatePatterns,
@@ -169,6 +170,7 @@ def load_catalog(data_dir: Path | None = None) -> Catalog:
         "prevalence": PrevalenceConfig.model_validate(_yaml(root / "prevalence.yaml")),
         "lanes": LanesConfig.model_validate(_yaml(root / "lanes.yaml")),
         "needs": NeedsConfig.model_validate(_yaml(root / "need_keywords.yaml")),
+        "plan": PlanConfig.model_validate(_yaml(root / "plan.yaml")),
         "languages": LanguagesConfig.model_validate(_yaml(root / "languages.yaml")).languages,
         "labels": _labels(root),
     }
