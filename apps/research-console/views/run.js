@@ -41,7 +41,9 @@ export function mount(root, ctx, params) {
     chip: h("span", { class: "chip chip-plain" }, "Loading"),
     sub: h("p", { class: "muted small" }, ""),
     banners: h("div", { class: "banners" }),
+    nowLabel: h("p", { class: "now-label muted small" }, "What it is doing now"),
     now: h("p", { class: "nowline", "aria-hidden": "true" }, ""),
+    nowNote: h("p", { class: "now-note muted small" }, ""),
     controls: h("div", { class: "row controls" }),
     tiles: {},
     tileBox: h("div", { class: "tiles" }),
@@ -69,7 +71,7 @@ export function mount(root, ctx, params) {
   root.append(
     h("div", { class: "page-head" }, h("div", null, ui.title, ui.sub), ui.chip),
     ui.banners,
-    h("div", { class: "card now" }, h("p", { class: "now-label muted small" }, "What it is doing now"), ui.now, ui.controls),
+    h("div", { class: "card now" }, ui.nowLabel, ui.now, ui.nowNote, ui.controls),
     h("section", { class: "card", "aria-label": "Progress" }, ui.tileBox, h("div", { class: "progress-row" }, ui.progress, ui.progressText), h("div", { class: "progress-row" }, ui.reqProgress, ui.reqText), ui.cost),
     ui.summary,
     h(
@@ -258,8 +260,33 @@ export function mount(root, ctx, params) {
     const depth = depthSentence(state);
     setText(ui.sub, bits.join(" · ") + (bits.length && depth ? " · " : "") + depth);
     const queuePos = meta ? meta.queue_position : null;
-    setText(ui.now, nowLine(state, queuePos));
-    ui.now.hidden = !ui.now.textContent;
+    const isTerm = isTerminalStatus(state.status);
+    if (isTerm) {
+      setText(ui.nowLabel, "Run status");
+      const summaryText =
+        state.status === "complete"
+          ? "All planned topics are complete and verified. Findings are saved in the result."
+          : state.status === "partial"
+          ? "Finished with gaps. Some topics could not be completed; verified findings are saved."
+          : state.status === "skipped"
+          ? "Stopped early. Research was skipped; findings verified so far are saved."
+          : "Run ended (" + runWord(state.status) + ").";
+      setText(ui.now, summaryText);
+      ui.now.hidden = false;
+      setText(ui.nowNote, "");
+      ui.nowNote.hidden = true;
+    } else {
+      setText(ui.nowLabel, state.status === "queued" ? "Queue status" : "What it is doing now");
+      setText(ui.now, nowLine(state, queuePos));
+      ui.now.hidden = !ui.now.textContent;
+      if (isActiveStatus(state.status) && state.countersAt && Date.now() - state.countersAt > 25000) {
+        setText(ui.nowNote, "Waiting for search or page responses… research is active in the background.");
+        ui.nowNote.hidden = false;
+      } else {
+        setText(ui.nowNote, "");
+        ui.nowNote.hidden = true;
+      }
+    }
   }
   function renderBanners() {
     const out = [];
@@ -332,6 +359,13 @@ export function mount(root, ctx, params) {
     const c = clocks(state, Date.now());
     setText(ui.tiles.elapsed, c.elapsed === null ? "–" : formatDuration(c.elapsed));
     setText(ui.tiles.eta, remainingText(c.eta));
+    if (state.countersAt && Date.now() - state.countersAt > 25000) {
+      setText(ui.nowNote, "Waiting for search or page responses… research is active in the background.");
+      ui.nowNote.hidden = false;
+    } else {
+      setText(ui.nowNote, "");
+      ui.nowNote.hidden = true;
+    }
   }
   function renderCost() {
     const total = meta ? meta.spend_micros || 0 : spendEntry ? spendEntry.total_micros || 0 : 0;

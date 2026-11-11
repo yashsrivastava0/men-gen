@@ -225,6 +225,7 @@ main:focus { outline: none; }
 /* ---- run screen ---- */
 .nowline { font-size: 1.15rem; font-weight: 600; margin: 2px 0 10px; }
 .now-label { margin: 0; }
+.now-note { font-style: italic; color: var(--muted); margin: -4px 0 8px; }
 .tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(8.2rem, 1fr)); gap: 10px; margin-bottom: 12px; }
 .tile { background: var(--surface-2); border-radius: 8px; padding: 8px 10px; display: flex; flex-direction: column; }
 .tile-label { color: var(--muted); font-size: 0.8rem; }
