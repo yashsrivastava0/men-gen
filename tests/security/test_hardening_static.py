@@ -302,7 +302,10 @@ CASES: list[tuple[str, bool]] = [
     ("uv run python agents/research/src/mde_research_agent/live_bakeoff.py", True),
     ("uv run python agents\\research\\src\\mde_research_agent\\live_runs.py", True),
     ("uv run python -m MDE_RESEARCH_AGENT.LIVE_RUNS", True),
-    ("uv run python -m mde_research_agent.eval planted", True),  # the evaluation harness spends real money
+    (
+        "uv run python -m mde_research_agent.eval planted",
+        True,
+    ),  # the evaluation harness spends real money
     ("uv run python -m mde_research_agent.eval probe --seed 3", True),
     ("uv run python agents/research/src/mde_research_agent/eval/planted.py", True),
     (
@@ -335,7 +338,10 @@ CASES: list[tuple[str, bool]] = [
     ("uv run python -m mde_research_agent.live_runs --mock", False),
     ("uv run python -m mde_research_agent.live_runs --replay --run quick", False),
     ("uv run python -m mde_research_agent.live_smoke --dry-run --offline", False),
-    ("uv run python -m mde_research_agent --port 8120", False),  # the app: it spends only on a person's click
+    (
+        "uv run python -m mde_research_agent --port 8120",
+        False,
+    ),  # the app: it spends only on a person's click
     ("scripts/research_app start", False),
     ("uv run python -m mde_research_agent.eval planted --dry-run", False),
     ("uv run python -m mde_research_agent.evaluate_something", False),
