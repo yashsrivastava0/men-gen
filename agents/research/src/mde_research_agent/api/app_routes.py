@@ -248,7 +248,7 @@ def make_api_router() -> APIRouter:
         return {
             "primary_provider": s.get("primary_provider", "auto"),
             "providers": list(PROVIDERS),
-            "applies": "on the next run",
+            "applies": "after the app is restarted",
         }
 
     @router.post("/settings")
@@ -264,7 +264,7 @@ def make_api_router() -> APIRouter:
         tmp = path.with_name(path.name + ".tmp")
         tmp.write_text(json.dumps(s, indent=1), encoding="utf-8")
         tmp.replace(path)
-        return {"primary_provider": body.primary_provider, "applies": "on the next run"}
+        return {"primary_provider": body.primary_provider, "applies": "after the app is restarted"}
 
     return router
 

@@ -142,7 +142,7 @@ One process serves the API and the static front end (`apps/research-console/`). 
 | `POST /api/budget/restart` | Body `{"confirm": "RESTART"}`. Closes the period (history kept), opens the next at 0.00 with its own gateway ledger file. `409` while a run is active or queued, or without the confirm word. |
 | `GET /api/preflight` | `{ready, checks: [{id, label, ok, detail, fix}], model, checker_vendor, time}`. Switches, provider keys (booleans), search provider, inputs folder, data folder writable, store, budget, front-end files, model routes. |
 | `POST /api/preflight/ping` | About USD 0.01: one search and one tiny model call, booked in the spend record. `{search: {ok, ...}, model: {ok, ...}}`. |
-| `GET /api/settings`, `POST /api/settings` | `{primary_provider: "auto" \| "tavily" \| "serper"}`, saved in the data folder; takes effect on the next run. |
+| `GET /api/settings`, `POST /api/settings` | `{primary_provider: "auto" \| "tavily" \| "serper"}`, saved in the data folder; the search provider is built when the app starts, so it takes effect after the app is restarted (`uv run python scripts/research_app.py restart`; a run in progress is never affected). |
 
 ### Money
 
