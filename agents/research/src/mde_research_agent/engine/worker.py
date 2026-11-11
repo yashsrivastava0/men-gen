@@ -166,7 +166,8 @@ def build_query_in(
     ctx: RunContext, ts: TargetState, round_no: int, cov: Coverage, want: int
 ) -> q_calls.QueryIn:
     t = ts.target
-    langs = list(t.place.languages[:1]) if t.place else []
+    # a local-language variant runs only in the local job (regional language is not a focus: owner, 2026-11-11)
+    langs = list(t.place.languages[:1]) if t.place and t.job == "local" else []
     local_terms = [s for s in ctx.input.hints.synonyms if not s.isascii()][:3] if langs else []
     info = ctx.catalog.intent_words.languages.get(langs[0]) if langs else None
     seeds = (

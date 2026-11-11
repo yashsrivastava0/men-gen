@@ -14,6 +14,7 @@ from collections import defaultdict
 from collections.abc import Iterable
 
 from mde_research_agent.catalog.loader import JOB_NAMES
+from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
 from mde_research_agent.catalog.models import Catalog, JobSpec, TargetTemplate
 from mde_research_agent.core.text import same_thing, stem_set, tokens
 from mde_research_agent.domain.input import ResearchInput
@@ -57,8 +58,19 @@ def category_noun(category: str) -> str:
     return " ".join(words)
 
 
-def _conditions_hold(tpl: TargetTemplate, inp: ResearchInput) -> bool:
+SIGNAL_CONDITIONS = frozenset(
+    {
+        "payments", "messaging", "maps_location", "tracking", "identity_kyc", "government_documents",
+        "accounting", "scheduling", "two_sided", "media_upload", "health_data", "minors", "multi_region",
+        "many_roles", "sensitive_data",
+    }
+)
+
+
+def _conditions_hold(tpl: TargetTemplate, inp: ResearchInput, active: frozenset[str] = frozenset()) -> bool:
     for cond in tpl.when:
+        if cond in active:
+            continue
         if cond == "non_latin_locale" and not inp.locales.non_latin:
             return False
         if cond == "has_integrations" and not inp.integrations:
@@ -67,6 +79,8 @@ def _conditions_hold(tpl: TargetTemplate, inp: ResearchInput) -> bool:
             return False
         if cond == "has_sensitive_data" and not inp.sensitive_flags:
             return False
+        if cond in SIGNAL_CONDITIONS or cond == "trust":
+            return False  # a signal (or the trust decision) that is not active
     return True
 
 
@@ -138,7 +152,12 @@ def _make_target(
         intent=job.intent,
         needs=tpl.needs,
         priority=max(0, min(100, tpl.priority + bonus)),
-        slots=tpl.slots,
+        slots=tuple(
+            s.model_copy(update={"min": s.deep_min})
+            if s.deep_min and inp.load and inp.load.load_class == "deep"
+            else s
+            for s in tpl.slots
+        ),
         links=cand.links,
         flags=tuple(dict.fromkeys(flags)),
         recency_months=RECENCY_MONTHS if job.recency else None,
@@ -149,9 +168,15 @@ def _make_target(
 
 
 def _expand(
-    job: JobSpec, tpl: TargetTemplate, inp: ResearchInput, cat: Catalog, place: Place, category: str
+    job: JobSpec,
+    tpl: TargetTemplate,
+    inp: ResearchInput,
+    cat: Catalog,
+    place: Place,
+    category: str,
+    active: frozenset[str] = frozenset(),
 ) -> list[Target]:
-    if not _conditions_hold(tpl, inp):
+    if not _conditions_hold(tpl, inp, active):
         return []
     if tpl.foreach == "none":
         cands = [Candidate(category)]
@@ -360,17 +385,30 @@ def build_plan(inp: ResearchInput, cat: Catalog, *, proposal: PlanProposal | Non
     place = build_place(inp, cat, proposal)
     category = category_phrase(inp, proposal)
     targets: list[Target] = []
+    signals = compute_signals(inp, cat.signals)
+    trust_on, _why = trust_decision(inp, signals, cat)
+    light = light_mode(inp, signals, cat)
+    active = frozenset({*signals, *(("trust",) if trust_on else ())})
     for name in JOB_NAMES:
         job = cat.jobs[name]
         for tpl in job.targets:
-            targets += _expand(job, tpl, inp, cat, place, category)
+            targets += _expand(job, tpl, inp, cat, place, category, active)
+    light_dropped: list[Dropped] = []
+    if light:  # a tiny app: only the feature norms and the screen inventory (doc 13 4.2)
+        keep = set(cat.signals.light.templates)
+        light_dropped = [
+            Dropped(label=t.label, reason="trivia", job=t.job, links=t.links)
+            for t in targets
+            if f"{t.job}:{t.template_id}" not in keep
+        ]
+        targets = [t for t in targets if f"{t.job}:{t.template_id}" in keep]
     targets = _attach_requests(targets, inp, cat)
     extra, dropped = _from_proposals(
         proposal.extra_targets if proposal else (), cat, place, category
     )
     targets += extra
     targets, gate_dropped = _gate(targets, inp, cat)
-    dropped += gate_dropped
+    dropped += gate_dropped + light_dropped
     targets = _merge_same(targets)
     load_class = inp.load.load_class if inp.load else "standard"
     cap = cat.ceilings.for_class(load_class).soft.targets
@@ -394,4 +432,6 @@ def build_plan(inp: ResearchInput, cat: Catalog, *, proposal: PlanProposal | Non
         ),
         plan_source=plan_source,
         notes=tuple(notes),
+        light=light,
+        signals=signals,
     )

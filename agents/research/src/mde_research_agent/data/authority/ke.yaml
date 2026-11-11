@@ -7,3 +7,4 @@ entries:
   - {domain: ca.go.ke, topics: [telecom, sms, regulation], class: official}
   - {domain: developer.safaricom.co.ke, topics: [mpesa, daraja, mobile money, payments api], class: official}
   - {domain: safaricom.co.ke, topics: [mpesa, mobile money], class: official}
+  - {domain: odpc.go.ke, topics: [data protection, privacy, regulation], class: official}

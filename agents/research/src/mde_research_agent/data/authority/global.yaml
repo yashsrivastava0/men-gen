@@ -14,3 +14,11 @@ entries:
   - {domain: reactnative.dev, topics: [react native], class: official}
   - {domain: docs.expo.dev, topics: [expo], class: official}
   - {domain: pcisecuritystandards.org, topics: [pci, card payments], class: official}
+  # store policy and data-protection (the trust job)
+  - {domain: play.google.com, topics: [data safety, google play policy, privacy, store listing], class: official}
+  - {domain: edpb.europa.eu, topics: [data protection, privacy, gdpr], class: official}
+  - {domain: commission.europa.eu, topics: [data protection, privacy, gdpr, regulation], class: official}
+  - {domain: ico.org.uk, topics: [data protection, privacy, consent], class: official}
+  - {domain: ftc.gov, topics: [privacy, consumer protection], class: official}
+  - {domain: owasp.org, topics: [security, authentication, session management, mobile security], class: official}
+  - {domain: nist.gov, topics: [security, authentication, digital identity], class: official}

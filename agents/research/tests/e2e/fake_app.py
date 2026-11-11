@@ -16,6 +16,7 @@ Flags
     --max-concurrent N  runs at once (default 1: a second start queues)
     --total USD         the budget total (default 5.00); --tripwire USD (default 4.50)
     --spent USD         book this much spend before starting (a fresh data folder only)
+    --seed N            commit extra runs at startup: one with N synthetic items (hostile text in the first three), one partial
     --data-dir PATH     keep everything here (a restart with the same folder finds the old runs, which show as
                         interrupted if the process was killed mid-run); default is a new temporary folder
 
@@ -98,6 +99,7 @@ def build(args: argparse.Namespace, root: Path) -> Any:
     elif not inputs.exists():
         write_inputs(inputs)
     world = FakeWorld(provider_content_every=3)
+    world_ref = world
     if args.slow:
         world.jitter = lambda: float(args.delay)
     kwargs: dict[str, Any] = {
@@ -122,7 +124,140 @@ def build(args: argparse.Namespace, root: Path) -> Any:
         eid = svc.record.start_entry("smoke", label="Earlier live checks (test fake)")
         svc.record.add_cost(eid, "plan", usd_to_micros(args.spent))
         svc.record.finish_entry(eid, "complete")
+    svc._fake_world = world_ref  # type: ignore[attr-defined]
     return svc
+
+
+HOSTILE = {
+    "label": "<img src=x onerror=alert(1)> Fees",
+    "claim": "<script>alert(2)</script> Fees start at 2 percent. <a href=\"javascript:alert(3)\">pay</a>",
+    "quote": "<b onmouseover=alert(4)>Fees start at 2 percent</b> javascript:alert(5)",
+    "title": "<img src=x onerror=alert(6)> Pricing page",
+    "url": "javascript:alert(7)",
+}
+
+
+def _item_variants(base_items: list[dict[str, Any]], n: int) -> list[dict[str, Any]]:
+    """``n`` items cloned from real ones: new ids, mixed evidence and impact, a main/appendix split."""
+    out = []
+    for i in range(n):
+        src = base_items[i % len(base_items)]
+        it = json.loads(json.dumps(src))
+        it["id"] = f"RI-{i + 1:04d}"
+        it["label"] = f"{src['label']} (#{i + 1})"
+        it["claim"] = f"{src['claim']} Variant {i + 1}."
+        it["rank"] = i + 1
+        it["evidence"] = ("official", "corroborated", "single_source", "unverified")[i % 4]
+        it["impact"] = "high" if i % 5 == 0 else "normal"
+        flags = [f for f in it.get("flags", []) if f not in ("stale", "needs-confirm")]
+        if i % 7 == 0:
+            flags.append("stale")
+        if i % 11 == 0:
+            flags.append("needs-confirm")
+        it["flags"] = sorted(set(flags))
+        it["store"] = "main" if i < int(n * 0.75) else "appendix"
+        it["appendix_reason"] = None if it["store"] == "main" else "over_store_limit"
+        out.append(it)
+    return out
+
+
+def make_big_result(
+    research: dict[str, Any], evidence: dict[str, Any], n: int
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """A committed result with ``n`` items (and hostile text in the first three), built from a real committed one."""
+    res = json.loads(json.dumps(research))
+    ev = json.loads(json.dumps(evidence))
+    items = _item_variants(res["items"], n)
+    atoms_by_item: dict[str, list[dict[str, Any]]] = {}
+    for a in ev["atoms"]:
+        if a.get("item_id") and a.get("status") == "verified":
+            atoms_by_item.setdefault(a["item_id"], []).append(a)
+    old_ids = [it["id"] for it in research["items"]]
+    new_atoms = []
+    bad_page = {
+        "id": "pg_HOSTILE0001",
+        "url": HOSTILE["url"],
+        "final_url": HOSTILE["url"],
+        "domain": "evil.example",
+        "source_class": "blog",
+        "title": HOSTILE["title"],
+        "published": "2026-01-01",
+        "retrieved_on": "2026-11-11",
+        "text_source": "fetch",
+        "source_language": "en",
+        "content_hash": "0" * 64,
+        "text": "",
+    }
+    ev["pages"].append(bad_page)
+    for i, it in enumerate(items):
+        base_id = old_ids[i % len(old_ids)]
+        src_atoms = atoms_by_item.get(base_id, [])
+        if i < 3:
+            it["label"], it["claim"] = HOSTILE["label"], HOSTILE["claim"]
+            it["use_note"] = "<img src=x onerror=alert(8)>"
+            it["sources"] = [
+                {
+                    "id": "S-900",
+                    "domain": "evil.example",
+                    "source_class": "blog",
+                    "url": HOSTILE["url"],
+                    "retrieved_on": "2026-11-11",
+                    "published_on": "2026-01-01",
+                }
+            ] + it["sources"][:1]
+            it["data"] = {"name": HOSTILE["label"], "notes": [HOSTILE["claim"]], "url": HOSTILE["url"]}
+        for a in src_atoms[:1]:
+            na = json.loads(json.dumps(a))
+            na["id"] = f"atm_BIG{i + 1:06d}"
+            na["item_id"] = it["id"]
+            if i < 3:
+                na["quote"] = HOSTILE["quote"]
+                na["page_id"] = bad_page["id"]
+            new_atoms.append(na)
+    ev["atoms"] = [a for a in ev["atoms"] if a.get("item_id") not in old_ids] + new_atoms
+    res["items"] = items
+    res["profile"] = {**res["profile"], "appendix_items": sum(1 for i in items if i["store"] == "appendix")}
+    return res, ev
+
+
+async def seed_runs(svc: Any, n_items: int) -> dict[str, str]:
+    """Commit extra runs through the store API: a result with ``n_items`` items and a partial one."""
+    world = getattr(svc, "_fake_world", None)
+    saved = world.jitter if world is not None else None
+    if world is not None:
+        world.jitter = None
+    entry = next(e for e in svc.inputs.scan().valid if e.name.startswith("quick-yoga"))
+    row, _ = await svc.start_from_input("demo", entry.id)
+    await svc.wait(row.run_id, 120)
+    if world is not None:
+        world.jitter = saved
+    base_row = await svc.store.get_run("demo", row.run_id)
+    research = await svc.store.get_result(row.run_id)
+    evidence = await svc.store.get_evidence(row.run_id)
+    made: dict[str, str] = {"base": row.run_id}
+
+    async def commit(tag: str, res: dict[str, Any], ev: dict[str, Any], status: str, reason: str | None) -> None:
+        rid = svc.ids.new("rrn")
+        meta = {**(base_row.meta or {}), "input_name": f"seeded-{tag}.json", "idea": f"Seeded {tag} result"}
+        new = base_row.model_copy(
+            update={"run_id": rid, "status": status, "result_status": status, "reason": reason, "meta": meta}
+        )
+        await svc.store.create_run(new)
+        res["status"] = status
+        await svc.store.save_result(rid, res, {**ev, "run_id": rid}, base_row.content_hash or "0" * 64)
+        made[tag] = rid
+
+    big, big_ev = make_big_result(research, evidence, n_items)
+    await commit("big", big, big_ev, "complete", None)
+    part = json.loads(json.dumps(research))
+    part["gaps"] = [
+        {"target_id": "T-09", "reason": "budget_stop", "label": "Key screens of yoga studio apps", "queries": []},
+        {"target_id": "T-10", "reason": "not_run", "label": "Realistic Booking data", "queries": []},
+        {"target_id": "T-02", "reason": "provider_down", "label": "Providers for messages", "queries": ["sms providers"]},
+        {"target_id": "T-04", "reason": "user_cancelled", "label": "Rules and limits: pricing", "queries": []},
+    ] + part["gaps"][:2]
+    await commit("partial", part, evidence, "partial", "The budget limit was reached, so two topics were not finished.")
+    return made
 
 
 class _Core:
@@ -153,6 +288,30 @@ def make_app(args: argparse.Namespace, root: Path) -> Any:
     # Before the static mount, which would otherwise answer every path.
     app.router.routes.insert(0, APIRoute("/api/fake", fake, methods=["GET"]))
     app.state.fake_ns = SimpleNamespace(root=root)
+    n_seed = int(getattr(args, "seed", 0) or 0)
+    if n_seed:
+        from contextlib import asynccontextmanager
+
+        original = app.router.lifespan_context
+
+        @asynccontextmanager
+        async def lifespan(a: Any):  # type: ignore[no-untyped-def]
+            async with original(a):
+                if not getattr(a.state, "seeded", None):
+                    try:
+                        a.state.seeded = await seed_runs(a.state.service, n_seed)
+                        print("seeded runs:", a.state.seeded, flush=True)
+                    except Exception as exc:  # the fake still serves; the seed is reported as missing
+                        a.state.seeded = {"error": repr(exc)[:300]}
+                        print("SEED FAILED:", repr(exc)[:300], flush=True)
+                yield
+
+        app.router.lifespan_context = lifespan
+
+        async def seeded() -> dict[str, Any]:
+            return dict(getattr(app.state, "seeded", {}) or {})
+
+        app.router.routes.insert(0, APIRoute("/api/fake/seeded", seeded, methods=["GET"]))
     return app
 
 
@@ -172,6 +331,12 @@ def main() -> None:
     p.add_argument("--tripwire", default="4.50")
     p.add_argument("--spent", type=float, default=0.0)
     p.add_argument("--data-dir", default="")
+    p.add_argument(
+        "--seed",
+        type=int,
+        default=0,
+        help="also commit a result with this many items (try 600), a partial one, and show their ids at /api/fake/seeded",
+    )
     args = p.parse_args()
     if args.host not in ("127.0.0.1", "localhost"):
         raise SystemExit("The test fake only listens on localhost.")

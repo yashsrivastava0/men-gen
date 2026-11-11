@@ -92,7 +92,7 @@ def _confirm(built: list[BuiltItem], reasons: dict[str, str]) -> list[Confirm]:
             and (d.get("fees") or d.get("limits"))
         ):
             why = reasons["number"]
-        elif "legal-adjacent" in flags and it.impact == "high":
+        elif it.job == "trust" or ("legal-adjacent" in flags and it.impact == "high"):
             why = reasons["legal"]
         elif "single-source" in flags and it.impact == "high":
             why = reasons["single_source"]

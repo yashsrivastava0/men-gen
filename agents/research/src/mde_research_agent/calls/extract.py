@@ -34,6 +34,7 @@ JOB_KINDS: dict[str, tuple[str, ...]] = {
     "design": ("design_convention", "script_need", "trend"),
     "screens": ("screen_pattern",),
     "local": ("local_format", "data_hint"),
+    "trust": ("compliance_note", "rule", "service_option"),
 }
 KIND_GUIDE: dict[str, str] = {
     "competitor": "competitor: one comparable app or product: its name, kind, region, platforms, pricing model, and every feature it lists (feature_key short lowercase, level core/standard/premium) and screens it shows.",

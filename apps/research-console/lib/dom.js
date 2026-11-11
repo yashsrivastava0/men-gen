@@ -49,6 +49,12 @@ export function h(tag, attrs, ...kids) {
   return el;
 }
 
+/** Append children (strings become text nodes; arrays are flattened; null and false are skipped). Unlike the native
+    append(), nothing is turned into a string by accident. */
+export function put(node, ...kids) {
+  append(node, kids);
+  return node;
+}
 export function clear(node) {
   while (node.firstChild) node.removeChild(node.firstChild);
   return node;

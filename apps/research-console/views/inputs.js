@@ -1,6 +1,6 @@
 /* Inputs (home): the approved Compass exports found in the inputs folder, each with a free preview, an estimate and a
    Run button behind a confirm dialog. Auto-refreshes every 10 s while the tab is visible and on focus. */
-import { h, clear, setKids, untrusted, navLink, keepFocus } from "../lib/dom.js";
+import { h, clear, setKids, untrusted, navLink, keepFocus, put } from "../lib/dom.js";
 import { modal } from "./dialogs.js";
 import { statusChip, sizeBadge, estimateParts, placeText, countsText, row, problemBanner } from "./shared.js";
 import { usd, usdNum, ago, formatDateTime, bytesText, jobTitle, plural, humanize, sizeWord } from "../lib/format.js";
@@ -255,7 +255,8 @@ export function mount(root, ctx) {
     const idea = p.idea || {};
     const topics = p.topics || { by_job: {} };
     const box = h("div", { class: "details-body" });
-    box.append(
+    put(
+      box,
       h("h4", null, "Brief summary"),
       h("dl", { class: "facts" }, ...row("Idea", idea.summary || "", true), ...row("Category", [idea.category, idea.subcategory].filter(Boolean).join(" — "), true), ...row("Compass interview", p.compass ? "size " + p.compass.tier + (p.compass.degraded ? ", some steps degraded" : "") : "")),
       h("h4", null, "Topics we would research"),
@@ -323,7 +324,7 @@ export function mount(root, ctx) {
     const advice = b && b.enabled ? estimateAdvice(p.estimate, b.remaining_micros) : null;
     const m = modal("Start research?");
     const errorBox = h("div", { class: "dlg-error", role: "alert" });
-    m.body.append(
+    put(m.body, 
       h("p", { class: "dlg-line" }, h("strong", null, "This will start real searches and real model calls, and it costs money.")),
       h("p", null, untrusted((p.idea && p.idea.category) || input.name, "", "strong"), " — ", sizeWord(p.size_class), " size"),
       h(

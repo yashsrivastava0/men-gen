@@ -27,6 +27,9 @@ REQUIRED = [
     "lib/sse.js",
     "lib/store.js",
     "lib/vlist.js",
+    "lib/markdown.js",
+    "lib/results.js",
+    "lib/spotcheck.js",
     "views/inputs.js",
     "views/run.js",
     "views/runs.js",
@@ -37,6 +40,15 @@ REQUIRED = [
     "views/dialogs.js",
     "views/shared.js",
     "views/soon.js",
+    "views/item.js",
+    "views/results_data.js",
+    "views/results_items.js",
+    "views/results_norms.js",
+    "views/results_notes.js",
+    "views/results_quality.js",
+    "views/results_report.js",
+    "views/results_sources.js",
+    "views/spotcheck.js",
 ]
 
 
@@ -160,7 +172,7 @@ def test_text_from_outside_goes_in_as_text() -> None:
         assert (
             ".textContent =" in code
             or "untrusted(" in code
-            or f.name in {"guide.js", "soon.js", "dialogs.js"}
+            or f.name in {"guide.js", "soon.js", "dialogs.js", "results_data.js", "results_report.js"}
         )
 
 
@@ -194,3 +206,13 @@ def test_the_app_serves_it_with_the_strict_policy_and_script_types() -> None:
         r = anyio.run(fetch, path)
         assert r.status_code == 200 and "javascript" in r.headers["content-type"], path
     assert "text/css" in anyio.run(fetch, "/style.css").headers["content-type"]
+
+
+def test_the_report_preview_is_built_from_text_nodes_only() -> None:
+    """The Markdown preview: the parser returns plain data, and the screen draws it only through h(), link() and text."""
+    parser = code_only((ROOT / "lib" / "markdown.js").read_text(encoding="utf-8"))
+    assert "document" not in parser and "createElement" not in parser, "the Markdown reader must not touch the page"
+    assert "safeUrl" in parser
+    view = code_only((ROOT / "views" / "results_report.js").read_text(encoding="utf-8"))
+    assert "link(s.url, s.text)" in view and "parseMarkdown(" in view
+    assert "innerHTML" not in view and "createElement" not in view

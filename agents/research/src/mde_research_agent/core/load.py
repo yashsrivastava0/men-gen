@@ -14,9 +14,11 @@ from mde_research_agent.domain.input import LoadClass, LoadComponents, LoadInfo
 
 
 def classify(score: int, config: LoadConfig) -> LoadClass:
-    """``focused`` below 25, ``standard`` below 61, ``deep`` otherwise (cuts come from the data file)."""
+    """``focused`` below 25, ``standard`` below 61, ``deep`` otherwise (cuts come from the data file). A score within
+    ``class_margin`` points below a boundary already uses the larger class (22 is standard with a margin of 3): the
+    boundary is a guess, and under-researching a borderline app costs more than over-researching it."""
     for cut in config.classes:
-        if cut.below is None or score < cut.below:
+        if cut.below is None or score < cut.below - config.class_margin:
             return cut.name
     return config.classes[-1].name
 

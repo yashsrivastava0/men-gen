@@ -158,7 +158,7 @@ const VIEWS = {
   results: { title: "Results", nav: "runs", load: () => import("./views/results.js") },
   budget: { title: "Budget", nav: "budget", load: () => import("./views/budget.js") },
   guide: { title: "Guide", nav: "guide", load: () => import("./views/guide.js") },
-  spotcheck: { title: "Spot-check", nav: "", load: () => import("./views/soon.js") },
+  spotcheck: { title: "Spot-check", nav: "spotcheck", load: () => import("./views/spotcheck.js") },
   tools: { title: "Tools", nav: "", load: () => import("./views/soon.js") },
 };
 function parseRoute(hash) {

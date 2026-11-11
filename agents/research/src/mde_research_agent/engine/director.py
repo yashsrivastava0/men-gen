@@ -175,6 +175,11 @@ class Director:
             for d in plan.dropped
             if d.reason in ("declined", "trivia")
         ]
+        if plan.light:  # light mode: a small soft ceiling (the hard limits stay as they are)
+            lc = ctx.catalog.signals.light
+            ctx.budget.soft = ctx.budget.soft.model_copy(
+                update={"searches": lc.soft_searches, "seconds": lc.soft_seconds}
+            )
         await ctx.events.emit(
             "plan.ready",
             phase="plan",

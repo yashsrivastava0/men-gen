@@ -13,7 +13,7 @@ from typing import Annotated, Literal
 from pydantic import BaseModel, ConfigDict, Field
 
 JobName = Literal[
-    "features", "structure", "flows", "data", "services", "design", "screens", "local"
+    "features", "structure", "flows", "data", "services", "design", "screens", "local", "trust"
 ]
 LaneName = Literal["blueprint", "integrations", "design", "screens", "mock", "verify"]
 LoadClass = Literal["focused", "standard", "deep"]
@@ -31,7 +31,28 @@ Foreach = Literal[
     "platform",
     "script_locale",
 ]
-Condition = Literal["non_latin_locale", "has_integrations", "multi_app", "has_sensitive_data"]
+Condition = Literal[
+    "non_latin_locale",
+    "has_integrations",
+    "multi_app",
+    "has_sensitive_data",
+    "trust",
+    "payments",
+    "messaging",
+    "maps_location",
+    "tracking",
+    "identity_kyc",
+    "government_documents",
+    "accounting",
+    "scheduling",
+    "two_sided",
+    "media_upload",
+    "health_data",
+    "minors",
+    "multi_region",
+    "many_roles",
+    "sensitive_data",
+]
 Anchor = Literal[
     "category", "entity", "role", "flow", "module", "need", "topic", "platform", "language"
 ]
@@ -61,6 +82,38 @@ class LoadConfig(Frozen):
     weights: LoadWeights
     fact_kinds: tuple[str, ...]
     classes: tuple[LoadCut, ...]
+    class_margin: int = 0  # a score within this many points BELOW a boundary already uses the larger class
+
+
+class SignalWords(Frozen):
+    strong: tuple[str, ...] = ()
+    weak: tuple[str, ...] = ()
+
+
+class LightConfig(Frozen):
+    below: int
+    templates: tuple[str, ...]
+    soft_searches: int
+    soft_seconds: int
+
+
+class TrustConfig(Frozen):
+    always_for: tuple[str, ...]
+    triggers: tuple[str, ...]
+    together: tuple[str, ...]
+
+
+class StructureSignals(Frozen):
+    many_roles_at_least: int
+    multi_app_at_least: int
+
+
+class SignalsConfig(Frozen):
+    signals: dict[str, SignalWords]
+    structure: StructureSignals
+    trust: TrustConfig
+    light: LightConfig
+    need_signal: dict[str, str]
 
 
 class Ceiling(Frozen):
@@ -138,6 +191,7 @@ class SlotSpec(Frozen):
     attr: str | None = None
     attr_min: int = 0
     extra_attrs: tuple[ExtraAttr, ...] = ()
+    deep_min: int | None = None  # a larger minimum for the deep class
     min_support: int = (
         1  # distinct_values: a value counts only when this many distinct items show it
     )
@@ -315,6 +369,7 @@ class Catalog(Frozen):
     lanes: LanesConfig
     needs: NeedsConfig
     plan: PlanConfig
+    signals: SignalsConfig
     languages: dict[str, LanguageInfo]
     labels: dict[str, Labels]
     catalog_hash: str

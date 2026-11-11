@@ -78,6 +78,13 @@ export function createApi(opts) {
     async get(path, o) {
       return readJson(await send("GET", path, o));
     },
+    async put(path, json, o) {
+      return readJson(await send("PUT", path, Object.assign({ json: json === undefined ? {} : json }, o || {})));
+    },
+    /** GET a text body (the Markdown report). */
+    async text(path, o) {
+      return (await send("GET", path, o)).text();
+    },
     async post(path, json, o) {
       return readJson(await send("POST", path, Object.assign({ json: json === undefined ? {} : json }, o || {})));
     },

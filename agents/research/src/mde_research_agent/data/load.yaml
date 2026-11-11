@@ -9,6 +9,8 @@ weights:
   sensitive: 5
   reference: 2
 fact_kinds: [rule, compliance, integration_detail, nfr]
+# A score within this many points below a class boundary uses the larger class (boundaries become 22 and 58).
+class_margin: 3
 # A class applies while score < below; the last class has no bound.
 classes:
   - {name: focused, below: 25}

@@ -9,3 +9,5 @@ entries:
   - {domain: dubaihealthcare.ae, topics: [health, clinic], class: official}
   - {domain: mof.gov.ae, topics: [tax, vat], class: official}
   - {domain: tax.gov.ae, topics: [tax, vat], class: official}
+  - {domain: u.ae, topics: [data protection, privacy, regulation, government services], class: official}
+  - {domain: tdra.gov.ae, topics: [data protection, telecom, regulation], class: official}

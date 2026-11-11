@@ -35,6 +35,9 @@ def test_authority_registry_is_organised_by_country_and_has_global_entries() -> 
 def test_every_job_has_a_required_slot_on_its_main_targets() -> None:
     cat = load_catalog()
     for job in cat.jobs.values():
+        if job.job == "trust":  # conditional and informational: every slot is optional (doc 13 4.1)
+            assert not any(s.required for t in job.targets for s in t.slots)
+            continue
         assert any(any(s.required for s in t.slots) for t in job.targets), job.job
 
 

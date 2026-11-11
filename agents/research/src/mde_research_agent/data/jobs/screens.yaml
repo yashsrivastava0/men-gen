@@ -31,4 +31,4 @@ targets:
     priority: 66
     anchor: category
     slots:
-      - {key: key_patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 5, attr: states, attr_min: 3, required: true}
+      - {key: key_patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, deep_min: 5, attr: states, attr_min: 3, required: true}

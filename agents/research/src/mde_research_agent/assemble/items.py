@@ -323,7 +323,7 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
             flags.add("number_widened")
         if any(a.seed for a in members):
             flags.add("entity_from_model")
-        if kind in lanes.legal_adjacent_kinds:
+        if kind in lanes.legal_adjacent_kinds or primary.job == "trust":
             flags.add("legal-adjacent")
         if impact == "high" and (
             independent < 2 or not any(can_support_high_impact(p.source_class, cat) for p in pages)

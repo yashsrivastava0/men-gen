@@ -1,0 +1,74 @@
+# Job: trust (conditional). Spec decision: non-functional requirements, the permission model, consent and delete-account
+# screens and the payment integration. Information only, never legal advice: always legal-adjacent and on the confirm
+# list. Runs for the deep class, and for smaller apps when a signal such as health data, minors, identity checks,
+# several regions or sensitive data fires, or payments fire together with two-sided money (data/signals.yaml).
+job: trust
+spec_need: "Non-functional requirements and consent"
+lane: blueprint
+also_lanes: [integrations, screens, verify]
+recency: false
+intent: [privacy, security, compliance, consent]
+kinds: [compliance_note, rule, service_option]
+extract_focus: >
+  Record each requirement as information: the topic, the authority that states it (a regulator, a platform owner or
+  a standards body), what it requires in one sentence, and any number, deadline or condition exactly as the page
+  states it. Do not give advice. Prefer the authority's own pages.
+targets:
+  - id: data_protection_law
+    label: "Data-protection rules for {place}"
+    foreach: none
+    when: [trust]
+    question: "What data-protection and privacy law applies to mobile apps that collect personal data in {place}, and what does it require for consent, access, deletion, retention and breach notice?"
+    decision_unlocked: "Consent, data-subject rights, retention and breach-notice requirements"
+    needs: [current, number]
+    priority: 45
+    anchor: category
+    slots:
+      - {key: law, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
+  - id: store_disclosure
+    label: "Store privacy disclosure: {platform}"
+    foreach: platform
+    max: 2
+    when: [trust]
+    question: "What does the {platform} require an app to declare about the data it collects and how it is used?"
+    decision_unlocked: "The privacy and data-safety declaration the app must publish"
+    needs: [current, norm]
+    priority: 45
+    anchor: platform
+    place: global
+    slots:
+      - {key: disclosure, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
+  - id: signin_session
+    label: "Sign-in and session norms for {category_apps}"
+    foreach: none
+    when: [trust]
+    question: "How do {category_noun} mobile apps usually handle sign-in, one-time codes, session length and device binding?"
+    decision_unlocked: "The sign-in method and session rules"
+    needs: [norm, current]
+    priority: 45
+    anchor: category
+    slots:
+      - {key: signin, type: count, kind: rule, distinct_by: norm_key, min: 1, required: false}
+  - id: payment_security
+    label: "Payment security scope in {place}"
+    foreach: none
+    when: [trust, payments]
+    question: "What card-data, tokenisation and payment-security rules apply to a mobile app that takes payments in {place}?"
+    decision_unlocked: "What the payment integration must and must not store"
+    needs: [current, number]
+    priority: 45
+    anchor: category
+    slots:
+      - {key: payment_security, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
+      - {key: payment_providers, type: count, kind: service_option, distinct_by: norm_key, min: 1, required: false}
+  - id: roles_audit
+    label: "Roles, permissions and audit for {category_apps}"
+    foreach: none
+    when: [trust]
+    question: "What role, permission and audit-log practices do {category_noun} mobile apps follow for staff and customer data?"
+    decision_unlocked: "The permission model and audit requirements"
+    needs: [norm, current]
+    priority: 40
+    anchor: category
+    slots:
+      - {key: audit, type: count, kind: rule, distinct_by: norm_key, min: 1, required: false}

@@ -4,7 +4,7 @@
 languages:
   en:
     reviewed: true
-    words: [features, feature, screens, screen, flow, journey, steps, onboarding, fees, fee, pricing, price, commission, charges, rules, regulation, rule, api, sandbox, limits, webhook, documentation, integration, ux, design, layout, navigation, accessibility, comparison, alternatives, formats, format, validation, requirements, how, process, workflow, fields, statuses, roles, permissions, guidelines, trends, examples, apps, providers, compliance, penalty, deadline]
+    words: [features, feature, screens, screen, flow, journey, steps, onboarding, fees, fee, pricing, price, commission, charges, rules, regulation, rule, api, sandbox, limits, webhook, documentation, integration, ux, design, layout, navigation, accessibility, comparison, alternatives, formats, format, validation, requirements, how, process, workflow, fields, statuses, roles, permissions, guidelines, trends, examples, apps, providers, compliance, penalty, deadline, privacy, security, consent, law, retention, disclosure, audit]
   hi:
     reviewed: false
     words: [सुविधाएं, फीचर, स्क्रीन, प्रक्रिया, चरण, शुल्क, कीमत, कमीशन, नियम, एपीआई, सीमा, डिज़ाइन, तुलना, प्रारूप, आवश्यकताएं, कैसे, भुगतान, अनुपालन, दस्तावेज़]

@@ -511,3 +511,191 @@ out({ stale, refused, down, echo, raw, seen, streamOk: stream.ok, probe });
     assert all(s[3] == "demo" for s in r["seen"] if s[1] not in ("/api/session", "/api/fake"))
     assert [s[4] for s in r["seen"] if "/events" in s[1]] == ["41"]  # Last-Event-ID
     assert r["probe"] == [None, None]
+
+
+# ------------------------------------------------------------------------------------------------ stage 2: results helpers
+def test_review_query_paging_debounce_and_stale_requests() -> None:
+    r = js(
+        """
+const R = await load("results");
+const fake = { handle: 0, jobs: new Map(), now: 0,
+  set(fn, ms) { const id = ++this.handle; this.jobs.set(id, { fn, at: this.now + ms }); return id; },
+  clear(id) { this.jobs.delete(id); },
+  advance(ms) { this.now += ms; for (const [id, j] of Array.from(this.jobs)) if (j.at <= this.now) { this.jobs.delete(id); j.fn(); } } };
+const calls = [];
+const d = R.debounce((v) => calls.push(v), 150, fake);
+d("y"); fake.advance(100); d("yo"); fake.advance(100); d("yog"); fake.advance(149); const before = calls.length; fake.advance(1);
+d("later"); d.cancel(); fake.advance(500);
+const aborted = [];
+const gate = R.latestOnly(() => { const c = { aborted: false, abort() { this.aborted = true; aborted.push(1); }, signal: {} }; return c; });
+const a = gate.begin(); const b = gate.begin(); const c = gate.begin();
+out({
+  q: [R.reviewQuery({ lane: "blueprint", q: "pack & fees", evidence: "" }, "main", 100, 100), R.reviewQuery({}, "", 0, 50), R.reviewQuery({ job: "a b" }, "appendix")],
+  active: [R.activeFilterCount({ lane: "x", q: "y", impact: "" }), R.activeFilterCount({}), R.activeFilterCount(null)],
+  pages: [R.pagesNeeded(0, 15, 100, new Set()), R.pagesNeeded(95, 205, 100, new Set([1])), R.pagesNeeded(0, 15, 100, new Set([0])), R.pagesNeeded(10, 10, 100, new Set())],
+  debounce: { calls, before },
+  stale: { aborted: aborted.length, current: [gate.current(a.id), gate.current(b.id), gate.current(c.id)] },
+});
+"""
+    )
+    assert r["q"] == [
+        "lane=blueprint&q=pack%20%26%20fees&store=main&offset=100&limit=100",
+        "offset=0&limit=50",
+        "job=a%20b&store=appendix&offset=0&limit=50",
+    ]
+    assert r["active"] == [2, 0, 0]
+    assert r["pages"] == [[0], [0, 2], [], []]
+    assert r["debounce"] == {"calls": ["yog"], "before": 0}  # only the last typed value, 150 ms after the last key; cancel drops one
+    assert r["stale"] == {"aborted": 2, "current": [False, False, True]}
+
+
+def test_results_words_metrics_rows_and_readable_data() -> None:
+    r = js(
+        """
+const R = await load("results");
+const metrics = { acceptance: {
+  extraction_quote_pass_first_try: { value: 1.0, target: 0.9, kind: "min", ok: true },
+  number_rejection_rate: { value: 0.05, target: 0.03, kind: "max", ok: false },
+  fetch_success: { value: null, target: 0.7, kind: "min", ok: null } } };
+const data = { name: "Razorpay", empty: "", none: null, list: [], notes: ["a", "b"], flag: true, fees: { setup: "free", rate: "2%", deep: { a: { b: { c: 1 } } } },
+  steps: [{ name: "pay", detail: "tap" }, { name: "done", detail: null }] };
+out({
+  ev: [R.evidenceWord("official"), R.evidenceWord("corroborated"), R.evidenceWord("single_source"), R.evidenceWord("unverified"), R.evidenceTone("unverified"), R.evidenceWord("odd_new")],
+  flags: [R.flagWord("single-source"), R.flagWord("stale"), R.flagWord("duplicate_source"), R.flagWord("brand_new_flag")],
+  gaps: ["not_found", "budget_stop", "provider_down", "not_run", "not_worthwhile", "conflict_unresolved", "user_cancelled", "ambiguous_reference", "declined", "zzz"].map(R.gapWord),
+  acc: R.acceptanceRows(metrics).map((x) => [x.label, x.value, x.target, x.state]),
+  cost: [R.costSteps({ "search.tavily": 232000, plan: 0, extract: 1500 }), R.costSteps({ "search.fake": "0.2320", check: "0.0100" })],
+  rows: R.dataRows(data),
+  applies: [R.appliesText({ kind: "FTR", id: "FTR-003", relation: "expects" }), R.appliesText({ kind: "NEW", id: null, relation: "suggests" })],
+  prevalence: [R.prevalenceText({ seen_in: 3, of: 14 }), R.recencyText({ newest_source: "2026-09-01", age_months: 2 })],
+  groups: R.normGroups([{ area: "screen", label: "b", prevalence: { seen_in: 1, of: 4 } }, { area: "feature", label: "a", prevalence: { seen_in: 3, of: 4 } }, { area: "feature", label: "z", prevalence: { seen_in: 4, of: 4 } }]).map((g) => [g.title, g.norms.map((n) => n.label)]),
+  gg: R.gapGroups([{ reason: "not_found", label: "x" }, { reason: "budget_stop", label: "y" }, { reason: "not_found", label: "z" }]).map((g) => [g.reason, g.gaps.length]),
+  trust: R.trustLines({ metrics: { evidence: { official: 6, single_source: 4 }, checker: { supported: 0.9, unchecked: 0.1, rubber_stamp_signal: true }, flags: { "needs-confirm": 3 } }, profile: { appendix_items: 2 } }),
+});
+"""
+    )
+    assert r["ev"] == ["Official source", "Several sources agree", "Only one source", "Not fully verified", "bad", "Odd new"]
+    assert r["flags"] == ["Only one source", "May be out of date", "Same text on several sites", "Brand new flag"]
+    assert r["gaps"][0].startswith("We could not find") and "budget limit" in r["gaps"][1] and "search service" in r["gaps"][2]
+    assert "was not worth" in r["gaps"][4] or "not worth" in r["gaps"][4]
+    assert "You stopped" in r["gaps"][6] and r["gaps"][9] == "We could not finish this topic."
+    assert r["acc"] == [
+        ["Quotes found in the page the first time", "100%", "at least 90%", "ok"],
+        ["Findings dropped because a number was not in the quote", "5%", "at most 3%", "bad"],
+        ["Pages that could be read", "not measured", "at least 70%", "none"],
+    ]
+    assert r["cost"][0] == [{"step": "search.tavily", "micros": 232000}, {"step": "extract", "micros": 1500}]
+    assert r["cost"][1] == [{"step": "search.fake", "micros": 232000}, {"step": "check", "micros": 10000}]
+    rows = {x["label"]: x for x in r["rows"]}
+    assert "Empty" not in rows and "None" not in rows and "List" not in rows  # empty values are left out
+    assert rows["Name"]["value"] == "Razorpay" and rows["Flag"]["value"] == "yes" and rows["Notes"]["list"] == ["a", "b"]
+    assert [x["label"] for x in rows["Fees"]["rows"]] == ["Setup", "Rate", "Deep"]
+    assert rows["Steps"]["list"] == ["Name: pay; Detail: tap", "Name: done"]
+    assert r["applies"] == ["Feature FTR-003 (expects)", "Not in your Brief (suggests)"]
+    assert r["prevalence"] == ["mentioned in 3 of 14 sources", "newest source 1 Sep 2026 (2 months ago)"]
+    assert r["groups"] == [["Features", ["z", "a"]], ["Screens", ["b"]]]
+    assert r["gg"] == [["not_found", 2], ["budget_stop", 1]]
+    assert r["trust"][0].startswith("60% of the 10 findings") and any("too lenient" in t for t in r["trust"]) and any("3 findings need" in t for t in r["trust"])
+
+
+def test_markdown_preview_never_makes_html_and_only_http_links() -> None:
+    r = js(
+        """
+const M = await load("markdown");
+const text = [
+  "# Research report <script>alert(1)</script>", "",
+  "- Status: **complete** and `RI-001` <img src=x onerror=alert(2)>",
+  "- [good](https://docs.example.com/a?b=1) and [bad](javascript:alert(3)) and [data](data:text/html,<script>alert(4)</script>)", "",
+  "1. first", "2. second", "",
+  "> A quote <b onmouseover=alert(5)>bold</b>", "> second line", "",
+  "| Lane | Quality |", "| --- | --- |", "| blueprint | partial |", "| <i>x</i> | **ok** |", "",
+  "plain paragraph", "continues here", "", "---", "",
+  "<script>alert(6)</script>", "[x](//evil.example/y)",
+].join("\\n");
+const blocks = M.parseMarkdown(text);
+const spans = (b) => JSON.stringify(b);
+out({
+  types: blocks.map((b) => b.type + (b.level || "")),
+  heading: blocks[0].spans[0].text,
+  ul: blocks[1].items.map((i) => i.map((s) => s.t + ":" + s.text)),
+  links: blocks[1].items[1].map((s) => [s.t, s.url || null]),
+  ol: blocks[2].items.length, quote: blocks[3].lines.length, table: [blocks[4].head.length, blocks[4].rows.length, blocks[4].rows[1][1][0].t],
+  para: blocks[5].spans[0].text, raw: blocks[7].spans.map((s) => s.t + ":" + s.text), anyHtml: spans(blocks).includes("innerHTML"),
+  inline: M.inlineSpans("a **b** c `d` [e](https://x.example/) [f](http://") .map((s) => s.t),
+  empty: [M.parseMarkdown(""), M.parseMarkdown(null), M.inlineSpans("")],
+});
+"""
+    )
+    assert r["types"] == ["h1", "ul", "ol", "quote", "table", "p", "hr", "p"]
+    assert r["heading"] == "Research report <script>alert(1)</script>"  # markup stays the characters it is
+    assert r["ul"][0] == ["text:Status: ", "bold:complete", "text: and ", "code:RI-001", "text: <img src=x onerror=alert(2)>"]
+    links = dict((str(u), t) for t, u in r["links"])
+    assert ("link", "https://docs.example.com/a?b=1") in [tuple(x) for x in r["links"]]
+    assert sum(1 for t, _ in r["links"] if t == "link") == 1  # javascript: and data: are plain text, not links
+    assert r["ol"] == 2 and r["quote"] == 2 and r["table"] == [2, 2, "bold"]
+    assert r["para"] == "plain paragraph continues here"
+    assert set(x.split(":")[0] for x in r["raw"]) == {"text"}  # a bare <script> line and an unsafe link are only characters
+    assert r["inline"] == ["text", "bold", "text", "code", "text", "link", "text"]
+    assert r["empty"] == [[], [], []] and links
+
+
+def test_spot_check_keys_progress_and_summary_wording() -> None:
+    r = js(
+        """
+const S = await load("spotcheck");
+const key = (k, extra) => S.verdictForKey(Object.assign({ key: k }, extra || {}));
+const cards = [{ key: "r:1" }, { key: "r:2" }, { key: "r:3" }, { key: "r:4" }];
+const check = { cards, verdicts: { "r:1": "ok", "r:2": "skipped", "r:4": "invented_detail" } };
+const passing = { answered: 20, total: 20, passed: true, supported_pct: 0.95, ok_pct: 0.9, invented_total: 0, invented_high_impact: 0, pass: { supported: true, ok: true, no_invented: true }, thresholds: { supported: 0.95, ok: 0.9, invented_total_below: 3 }, worst: [] };
+const failing = Object.assign({}, passing, { passed: false, ok_pct: 0.85, invented_total: 3, invented_high_impact: 1, pass: { supported: true, ok: false, no_invented: false }, worst: [{ where: "job:services", count: 4 }, { where: "kind:service_option", count: 3 }] });
+out({
+  keys: ["1", "2", "3", "4", "5", "6", "s", "S", "7", "0", "a", "Enter"].map((k) => key(k)),
+  modifiers: [key("1", { ctrlKey: true }), key("1", { metaKey: true }), key("1", { altKey: true })], none: [S.verdictForKey(null), S.verdictForKey({})],
+  order: S.VERDICTS.map((v) => [v.key, v.id]),
+  next: [S.nextUnanswered(check, 0), S.nextUnanswered(check, 3), S.nextUnanswered({ cards, verdicts: { "r:1": "ok", "r:2": "ok", "r:3": "ok", "r:4": "ok" } }, 0), S.nextSkipped(check)],
+  prog: S.progress(check), label: [S.verdictLabel("invented_detail"), S.verdictLabel("skipped"), S.verdictLabel("zz")],
+  rowsPass: S.summaryRows(passing).map((x) => [x.value, x.target, x.ok]), rowsFail: S.summaryRows(failing).map((x) => x.ok),
+  text: [S.verdictText(passing), S.verdictText(failing), S.verdictText({ answered: 0 })],
+  worst: failing.worst.map(S.worstText), strata: [S.strataWord("high_impact"), S.strataWord("service"), S.strataWord("zz")],
+});
+"""
+    )
+    assert r["keys"] == ["ok", "not_relevant", "claim_not_in_quote", "wrong_or_outdated", "wrong_place_or_company", "invented_detail", "skipped", "skipped", None, None, None, None]
+    assert r["modifiers"] == [None, None, None] and r["none"] == [None, None]
+    assert r["order"] == [["1", "ok"], ["2", "not_relevant"], ["3", "claim_not_in_quote"], ["4", "wrong_or_outdated"], ["5", "wrong_place_or_company"], ["6", "invented_detail"]]
+    assert r["next"] == [2, -1, -1, 1]  # the first card with no verdict at all; a skipped card counts as answered
+    assert r["prog"] == {"total": 4, "answered": 2, "skipped": 1, "left": 1}
+    assert r["label"] == ["Invented detail", "Skipped", ""]
+    assert r["rowsPass"][0][:2] == ["95%", "at least 95%"] and r["rowsPass"][1][:2] == ["90%", "at least 90%"] and all(x[2] for x in r["rowsPass"])
+    assert r["rowsFail"] == [True, False, False]
+    assert r["text"][0].startswith("Passed") and r["text"][1].startswith("Not passed") and r["text"][2] == "Nothing answered yet."
+    assert r["worst"] == ["services (4 not OK)", "service option (3 not OK)"]
+    assert r["strata"][0].startswith("A fact where a mistake") and r["strata"][2] == "A fact"
+
+
+def test_run_screen_wiring_facts_from_the_snapshot_and_required_facts() -> None:
+    r = js(
+        """
+const R = await load("reducer");
+const plan = ev(2, "plan.ready", { detail: { slots_required: 5, targets: [
+  { id: "T-01", label: "A", job: "features", priority: 9, slots_required: 3 }, { id: "T-02", label: "B", job: "services", priority: 8, slots_required: 1 } ] } });
+const snap = { run_id: "rrn_1", program_id: "p", status: "running", last_seq: 6, slots_required: 5, counters: { targets_total: 2 },
+  feed: [ev(1, "run.started"), plan, ev(3, "target.started", { target_id: "T-01", detail: { slots_filled: 0, slots_required: 3 } }), ev(4, "fact.found", { detail: { fact_id: "atm_1", label: "Pack fees" } })],
+  targets: [{ id: "T-01", label: "A", job: "features", status: "running", slots_filled: 1, slots_required: 3 }, { id: "T-02", label: "B", job: "services", status: "queued", slots_filled: 0, slots_required: 1 }],
+  facts: [{ fact_id: "atm_1", label: "Pack fees", kind: "rule", topic: "A", state: "checked", level: "supported", reason: null, domain: "docs.a.example" },
+          { fact_id: "atm_2", label: "Refunds", kind: "rule", topic: "A", state: "checking", level: null, reason: null, domain: null },
+          { fact_id: "atm_3", label: "Bad one", kind: "rule", topic: "A", state: "rejected", level: null, reason: "quote_missing", domain: null }] };
+const s = R.applySnapshot(snap, 0);
+const before = s.facts.map((f) => [f.id, f.status]);
+R.ingest(s, [ev(7, "fact.verified", { detail: { fact_id: "atm_2", label: "Refunds", domain: "x.example", level: "official" } }), ev(8, "fact.found", { detail: { fact_id: "atm_9", label: "New one" } }), ev(9, "fact.found", { detail: { label: "No id fact" } }), ev(10, "fact.rejected", { detail: { label: "No id fact", reason: "x" } })], 0);
+const fin = R.emptyState();
+R.applyEvent(fin, ev(1, "run.finished", { detail: { status: "complete", facts: 5, pages: 2, searches: 3, usd: "0.2320", elapsed_s: 4, stages: { plan: 1, search: 2 }, cost_by_step: { "search.fake": "0.2320" }, fallbacks: {} } }), 0);
+out({ before, after: s.facts.map((f) => [f.id || f.label, f.status, f.reason]), cov: R.coverage(s), req: s.slotsRequired, rejected: s.factsRejected,
+  fin: [fin.status, fin.result.stages, fin.result.cost_by_step, fin.result.fallbacks] });
+"""
+    )
+    assert r["before"] == [["atm_1", "checked"], ["atm_2", "checking"], ["atm_3", "rejected"]]  # the whole list, not the last events
+    assert r["after"] == [["atm_1", "checked", ""], ["atm_2", "checked", ""], ["atm_3", "rejected", "quote_missing"], ["atm_9", "checking", ""], ["No id fact", "rejected", "x"]]
+    assert r["cov"] == {"filled": 1, "required": 5, "percent": 20} and r["req"] == 5
+    assert r["rejected"] >= 2
+    assert r["fin"] == ["complete", {"plan": 1, "search": 2}, {"search.fake": "0.2320"}, {}]

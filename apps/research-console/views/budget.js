@@ -1,6 +1,6 @@
 /* Budget (#/budget): the spend record as a table (date, what, run, cost by step, running total), the periods
    including the history of restarts, and "Restart budget" behind a dialog that needs the word RESTART. */
-import { h, clear, setKids, untrusted, navLink } from "../lib/dom.js";
+import { h, clear, setKids, untrusted, navLink, put } from "../lib/dom.js";
 import { modal } from "./dialogs.js";
 import { problemBanner } from "./shared.js";
 import { usd, usdNum, formatDateTime, kindWord, stepWord } from "../lib/format.js";
@@ -108,7 +108,7 @@ export function mount(root, ctx) {
     const field = h("input", { type: "text", id: "restart-word", class: "text-input", autocomplete: "off", "aria-describedby": "restart-help", "data-autofocus": "1" });
     const err = h("div", { role: "alert" });
     const go = h("button", { type: "button", class: "btn btn-danger", disabled: true }, "Restart budget");
-    m.body.append(
+    put(m.body, 
       h("p", { class: "dlg-line" }, "This closes the current period and starts a new one at USD 0.00, with a fresh total."),
       h("ul", null, h("li", null, "History is kept: every earlier entry stays in the spend record."), h("li", null, "The old ledger file is not touched, moved or reset."), h("li", null, "It cannot be done while a run is going or waiting.")),
       h("label", { for: "restart-word", id: "restart-help" }, "Type the word ", h("strong", null, "RESTART"), " to confirm:"),

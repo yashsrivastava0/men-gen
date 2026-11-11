@@ -36,6 +36,7 @@ def args(**kw) -> argparse.Namespace:
         total="5.00",
         tripwire="4.50",
         spent=0.0,
+        seed=0,
     )
     base.update(kw)
     return argparse.Namespace(**base)
@@ -95,3 +96,24 @@ async def test_the_real_app_has_no_fake_endpoint(tmp_path: Path) -> None:
         transport=httpx.ASGITransport(app=app), base_url="http://test"
     ) as c:
         assert (await c.get("/api/fake")).status_code == 404
+
+
+async def test_seed_commits_a_big_and_a_partial_result_with_hostile_text(tmp_path: Path) -> None:
+    fake = load_fake()
+    app = fake.make_app(args(seed=60), tmp_path)
+    async with app.router.lifespan_context(app):
+        async with httpx.AsyncClient(
+            transport=httpx.ASGITransport(app=app), base_url="http://test", headers=H
+        ) as c:
+            seeded = (await c.get("/api/fake/seeded")).json()
+            big, part = seeded["big"], seeded["partial"]
+            ov = (await c.get(f"/v1/research/runs/{big}/overview")).json()
+            page = (await c.get(f"/v1/research/runs/{big}/review?limit=100&store=main")).json()
+            appendix = (await c.get(f"/v1/research/runs/{big}/review?store=appendix&limit=5")).json()
+            first = page["items"][0]
+            report = (await c.get(f"/v1/research/runs/{big}/report")).text
+            partial = (await c.get(f"/v1/research/runs/{part}/overview")).json()
+    assert ov["item_count"] == 60 and page["total"] == 45 and appendix["total"] == 15
+    assert "<img src=x onerror=alert(1)>" in first["label"] and first["best_quote"]["url"] == "javascript:alert(7)"
+    assert "<script>alert(2)</script>" in report
+    assert partial["status"] == "partial" and {g["reason"] for g in partial["gaps"]} >= {"budget_stop", "not_run"}

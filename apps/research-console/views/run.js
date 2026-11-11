@@ -9,10 +9,11 @@ import { createRunFeed } from "../lib/runfeed.js";
 import { ApiError } from "../lib/api.js";
 import { problemText } from "../lib/safe.js";
 import {
-  applySnapshot, ingest, groupTargets, counterTexts, clocks, nowLine, depthSentence, failureText, partialText, feedRow, topicTotals, topicPercent,
+  applySnapshot, ingest, groupTargets, coverage, counterTexts, clocks, nowLine, depthSentence, failureText, partialText, feedRow, topicTotals, topicPercent,
   isActiveStatus, isTerminalStatus, FEED_CAP,
 } from "../lib/reducer.js";
-import { usd, formatDuration, remainingText, stepWord, jobTitle, topicWord, runWord, formatDateTime, plural, statusTone } from "../lib/format.js";
+import { usd, formatDuration, remainingText, stepWord, jobTitle, topicWord, runWord, formatDateTime, plural, statusTone, humanize } from "../lib/format.js";
+import { costSteps, stageRows } from "../lib/results.js";
 
 const META_MS = 4000;
 
@@ -46,6 +47,9 @@ export function mount(root, ctx, params) {
     tileBox: h("div", { class: "tiles" }),
     progress: h("progress", { max: "100", value: "0", "aria-label": "Topics done" }),
     progressText: h("span", { class: "muted small" }, ""),
+    reqProgress: h("progress", { max: "100", value: "0", "aria-label": "Required facts found" }),
+    reqText: h("span", { class: "muted small" }, ""),
+    summary: h("div", { class: "run-summary" }),
     cost: h("div", { class: "cost" }),
     plan: h("div", { class: "plan" }),
     feedList: h("ol", { class: "feed", tabindex: "0", "aria-label": "Live feed, newest first" }),
@@ -55,7 +59,7 @@ export function mount(root, ctx, params) {
     foot: h("p", { class: "muted small foot" }, ""),
   };
   for (const [key, label] of [
-    ["searches", "Searches"], ["pages", "Pages read"], ["facts", "Facts checked"], ["rejected", "Facts dropped"], ["topics", "Topics done"], ["elapsed", "Time so far"], ["eta", "Time left"], ["cost", "Cost so far"],
+    ["searches", "Searches"], ["pages", "Pages read"], ["facts", "Facts checked"], ["required", "Required facts found"], ["rejected", "Facts dropped"], ["topics", "Topics done"], ["elapsed", "Time so far"], ["eta", "Time left"], ["cost", "Cost so far"],
   ]) {
     const value = h("strong", { class: "tile-value" }, "–");
     ui.tiles[key] = value;
@@ -66,7 +70,8 @@ export function mount(root, ctx, params) {
     h("div", { class: "page-head" }, h("div", null, ui.title, ui.sub), ui.chip),
     ui.banners,
     h("div", { class: "card now" }, h("p", { class: "now-label muted small" }, "What it is doing now"), ui.now, ui.controls),
-    h("section", { class: "card", "aria-label": "Progress" }, ui.tileBox, h("div", { class: "progress-row" }, ui.progress, ui.progressText), ui.cost),
+    h("section", { class: "card", "aria-label": "Progress" }, ui.tileBox, h("div", { class: "progress-row" }, ui.progress, ui.progressText), h("div", { class: "progress-row" }, ui.reqProgress, ui.reqText), ui.cost),
+    ui.summary,
     h(
       "div",
       { class: "run-grid" },
@@ -226,6 +231,7 @@ export function mount(root, ctx, params) {
       renderPlan();
       renderFeed();
       renderFacts();
+      renderSummary();
       renderEntities();
       renderWarnings();
       renderCost();
@@ -311,7 +317,11 @@ export function mount(root, ctx, params) {
     setText(ui.tiles.eta, isActiveStatus(state.status) ? remainingText(c.eta) : "–");
     const tt = topicTotals(state);
     ui.progress.value = topicPercent(state);
-    setText(ui.progressText, tt.total ? tt.done + " of " + tt.total + " topics" : "");
+    setText(ui.progressText, tt.total ? tt.done + " of " + tt.total + " topics done" : "");
+    const cov = coverage(state);
+    setText(ui.tiles.required, cov.required ? cov.filled + " of " + cov.required : "–");
+    ui.reqProgress.value = cov.percent;
+    setText(ui.reqText, cov.required ? "required facts found: " + cov.filled + " of " + cov.required : "");
   }
   function tickClocks() {
     if (gone || document.hidden || !state || !isActiveStatus(state.status)) return;
@@ -448,20 +458,53 @@ export function mount(root, ctx, params) {
     renderedSeq = fresh[fresh.length - 1].seq;
     while (ui.feedList.children.length > FEED_CAP) ui.feedList.removeChild(ui.feedList.lastChild);
   }
+  let showAllFacts = false;
   function renderFacts() {
-    const facts = state.facts.slice().reverse();
-    const sig = facts.map((f) => f.key + f.status).join("|");
+    const all = state.facts.slice().reverse();
+    const sig = all.map((f) => f.key + f.status).join("|") + showAllFacts;
     if (sig === factSig) return;
     factSig = sig;
-    if (!facts.length) {
+    if (!all.length) {
       setKids(ui.facts, h("li", { class: "muted" }, "Facts appear here while they are being checked against their sources."));
       return;
     }
     const word = { checking: "checking", checked: "checked", rejected: "dropped" };
     const tone = { checking: "busy", checked: "ok", rejected: "warn" };
+    const counts = { checking: 0, checked: 0, rejected: 0 };
+    for (const f of all) counts[f.status] += 1;
+    const facts = showAllFacts ? all : all.slice(0, 120);
+    const head = h("li", { class: "muted small", "data-fact-counts": all.length }, all.length + " in all: " + counts.checked + " checked, " + counts.checking + " being checked, " + counts.rejected + " dropped.");
+    const rows = facts.map((f) => h("li", { class: "fact fact-" + f.status }, h("span", { class: "chip chip-" + tone[f.status], title: f.reason ? "Dropped: " + f.reason.replace(/_/g, " ") : "" }, word[f.status]), " ", untrusted(f.label), f.domain ? h("span", { class: "muted small" }, " \u2014 ", untrusted(f.domain)) : null));
+    const more = all.length > 120 ? h("li", null, h("button", { type: "button", class: "btn btn-small", "data-fk": "facts-all", onclick: () => { showAllFacts = !showAllFacts; later(renderAll); } }, showAllFacts ? "Show only the newest 120" : "Show all " + all.length)) : null;
+    setKids(ui.facts, head, rows, more);
+  }
+  function renderSummary() {
+    const r = state.result;
+    const done = isTerminalStatus(state.status) && r && (r.stages || r.cost_by_step || r.fallbacks);
+    if (!done) {
+      if (ui.summary.firstChild) clear(ui.summary);
+      return;
+    }
+    const sig = JSON.stringify([r.stages, r.cost_by_step, r.fallbacks]);
+    if (ui.summary.getAttribute("data-sig") === sig) return;
+    ui.summary.setAttribute("data-sig", sig);
+    const stages = stageRows(r.stages);
+    const steps = costSteps(r.cost_by_step);
+    const fb = r.fallbacks && typeof r.fallbacks === "object" ? Object.keys(r.fallbacks) : [];
     setKids(
-      ui.facts,
-      facts.map((f) => h("li", { class: "fact fact-" + f.status }, h("span", { class: "chip chip-" + tone[f.status] }, word[f.status]), " ", untrusted(f.label), f.domain ? h("span", { class: "muted small" }, " — ", untrusted(f.domain)) : null))
+      ui.summary,
+      h(
+        "section",
+        { class: "card", "aria-labelledby": "sum-h" },
+        h("h3", { id: "sum-h" }, "What the run did"),
+        h("p", { class: "muted small" }, [typeof r.facts === "number" ? plural(r.facts, "checked finding") : "", typeof r.pages === "number" ? plural(r.pages, "page") + " read" : "", typeof r.searches === "number" ? plural(r.searches, "search", "searches") : "", typeof r.usd === "string" || typeof r.usd === "number" ? "USD " + Number(r.usd).toFixed(2) : ""].filter(Boolean).join(" \u00b7 ")),
+        h("h4", null, "Time by stage"),
+        stages.length ? h("ul", { class: "steps" }, stages.map((x) => h("li", null, x.label + ": ", h("strong", null, formatDuration(x.seconds))))) : h("p", { class: "muted small" }, "No timings recorded."),
+        h("h4", null, "Cost by step"),
+        steps.length ? h("ul", { class: "steps" }, steps.map((x) => h("li", null, stepWord(x.step) + ": ", h("strong", null, usd(x.micros))))) : h("p", { class: "muted small" }, "No cost recorded."),
+        h("h4", null, "Fallbacks used"),
+        fb.length ? h("ul", { class: "plain-list" }, fb.map((k) => h("li", null, humanize(k) + ": " + (typeof r.fallbacks[k] === "object" ? JSON.stringify(r.fallbacks[k]) : r.fallbacks[k])))) : h("p", { class: "muted small" }, "None: every model step answered normally.")
+      )
     );
   }
   function renderEntities() {

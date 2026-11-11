@@ -25,3 +25,5 @@ entries:
   - {domain: agmarknet.gov.in, topics: [mandi, market prices, agriculture], class: official}
   - {domain: enam.gov.in, topics: [mandi, agriculture market, trading], class: official}
   - {domain: indiapost.gov.in, topics: [postal, pin code], class: official}
+  - {domain: meity.gov.in, topics: [data protection, privacy, it rules, regulation], class: official}
+  - {domain: dpb.gov.in, topics: [data protection, privacy], class: official}

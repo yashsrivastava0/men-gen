@@ -6,7 +6,7 @@ import { checkSeq } from "./sse.js";
 import { plainReason } from "./safe.js";
 
 export const FEED_CAP = 100; // lines kept in the live feed
-export const FACT_CAP = 40; // facts kept in the "being checked" list
+export const FACT_CAP = 600; // facts kept (a reloaded page shows them all; the screen draws the newest ones)
 export const WARNING_CAP = 30;
 const ACTIVE = { queued: true, running: true, committing: true };
 const TERMINAL_TYPES = { "run.finished": true, "run.skipped": true, "run.failed": true };
@@ -36,6 +36,7 @@ export function emptyState() {
     minutes: null,
     degraded: false,
     targets: [],
+    slotsRequired: 0,
     declined: [],
     entities: [],
     facts: [],
@@ -56,6 +57,20 @@ export function emptyState() {
     finishedAt: null,
     now: "",
   };
+}
+
+
+const factKey = (id, label) => (id ? "id:" + id : nameKey(label));
+/** The fact an event is about: by its id when it has one, else the first "checking" fact with the same label. */
+function findFact(state, id, label, anyStatus) {
+  if (id) {
+    for (const f of state.facts) if (f.id === id) return f;
+  }
+  const key = nameKey(label);
+  if (!key) return null;
+  for (const f of state.facts) if (!f.id && f.key === key && (anyStatus || f.status === "checking")) return f;
+  for (const f of state.facts) if (f.id && nameKey(f.label) === key && f.status === "checking") return f;
+  return null;
 }
 
 function toTarget(t) {
@@ -108,6 +123,7 @@ export function applyEvent(state, ev, nowMs) {
   } else if (type === "plan.ready") {
     state.targets = (d.targets || []).map(toTarget);
     state.declined = (d.declined || []).map(String);
+    if (num(d.slots_required) !== null) state.slotsRequired = d.slots_required;
   } else if (TARGET_STATUS[type]) {
     let t = targetOf(state, ev.target_id);
     if (!t && ev.target_id) {
@@ -122,11 +138,9 @@ export function applyEvent(state, ev, nowMs) {
     }
   } else if (type === "fact.found" || type === "fact.verified") {
     const label = d.label || ev.label;
-    const key = d.fact_id ? "id:" + d.fact_id : nameKey(label);
-    let fact = null;
-    for (const f of state.facts) if (f.key === key && f.status !== "rejected") fact = f;
+    let fact = findFact(state, d.fact_id, label, type === "fact.found");
     if (!fact) {
-      fact = { key: key, label: label, kind: d.kind || "", topic: d.topic || "", status: "checking", domain: "", level: "" };
+      fact = { id: d.fact_id || "", key: factKey(d.fact_id, label), label: label, kind: d.kind || "", topic: d.topic || "", status: "checking", domain: "", level: "", reason: "" };
       state.facts.push(fact);
       if (state.facts.length > FACT_CAP) state.facts.shift();
     }
@@ -137,8 +151,11 @@ export function applyEvent(state, ev, nowMs) {
     }
   } else if (type === "fact.rejected") {
     state.factsRejected += 1;
-    const key = d.fact_id ? "id:" + d.fact_id : nameKey(d.label);
-    if (key && key !== "id:") for (const f of state.facts) if (f.key === key && f.status === "checking") f.status = "rejected";
+    const fact = findFact(state, d.fact_id, d.label, false);
+    if (fact) {
+      fact.status = "rejected";
+      fact.reason = d.reason || "";
+    }
   } else if (type === "entity.discovered") {
     const name = String(d.name || "").trim();
     if (name && !state.entities.some((n) => nameKey(n) === nameKey(name))) state.entities.push(name);
@@ -196,6 +213,22 @@ export function applySnapshot(snap, nowMs) {
     for (const n of snap.entities.concat(state.entities)) if (!names.some((e) => nameKey(e) === nameKey(n))) names.push(String(n));
     state.entities = names;
   }
+  if (num(snap.slots_required) !== null) state.slotsRequired = snap.slots_required;
+  if (Array.isArray(snap.facts)) {
+    // the snapshot's list is the whole list: a reloaded page shows every finding, not just the last events
+    state.facts = snap.facts.map((f) => ({
+      id: f.fact_id || "",
+      key: factKey(f.fact_id, f.label),
+      label: f.label || "",
+      kind: f.kind || "",
+      topic: f.topic || "",
+      status: f.state === "checked" || f.state === "rejected" ? f.state : "checking",
+      domain: f.domain || "",
+      level: f.level || "",
+      reason: f.reason || "",
+    }));
+    state.factsRejected = Math.max(state.factsRejected, state.facts.filter((f) => f.status === "rejected").length);
+  }
   state.lastSeq = num(snap.last_seq) !== null ? snap.last_seq : state.lastSeq;
   if (isTerminalStatus(snap.status) && snap.status !== "complete" && !state.failure && (snap.status === "failed" || snap.status === "interrupted" || snap.status === "cancelled")) {
     state.failure = { reason: snap.reason || "", code: snap.status };
@@ -229,6 +262,21 @@ export function groupTargets(state) {
   for (const t of state.targets) (by[t.job || "other"] = by[t.job || "other"] || []).push(t);
   const order = JOB_ORDER.filter((j) => by[j]).concat(Object.keys(by).filter((j) => JOB_ORDER.indexOf(j) === -1).sort());
   return order.map((job) => ({ job: job, targets: by[job].slice().sort((a, b) => b.priority - a.priority || (a.id < b.id ? -1 : 1)) }));
+}
+/** Required facts found of required: the per-topic numbers when known, the plan's total otherwise. */
+export function coverage(state) {
+  let filled = 0;
+  let required = 0;
+  for (const t of state.targets) {
+    required += t.slotsRequired;
+    filled += Math.min(t.slotsFilled, t.slotsRequired);
+  }
+  if (num(state.slotsRequired) !== null && state.slotsRequired > required) required = state.slotsRequired;
+  if (!(required > 0) && state.roundCoverage) {
+    filled = state.roundCoverage.filled;
+    required = state.roundCoverage.required;
+  }
+  return { filled: filled, required: required, percent: pct(filled, required) };
 }
 /** Topics done of total: the server's counters when sent, else counted from the topic rows. */
 export function topicTotals(state) {

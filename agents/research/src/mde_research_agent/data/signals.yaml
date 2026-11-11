@@ -1,0 +1,71 @@
+# Capability signals (doc 13 section 4.1): generic capabilities found in the Brief by code, never a category name or a brand.
+# A STRONG word is enough on its own; WEAK words count only when at least two different features, facts, roles or apps
+# contain one. Words are matched as stems (plural and singular are one word). A phrase needs all its words in one text.
+# The same signal gives the same slot pack in a clinic, a shop or a fleet app. Retune on measured runs.
+signals:
+  payments:
+    strong: [payment, payout, refund, checkout, settlement, gateway, wallet, "credit card", "debit card", "mobile money", "pay online", commission, escrow]
+    weak: [pay, price, fee, subscription, invoice, billing, purchase, buy, charge]
+  messaging:
+    strong: [sms, otp, whatsapp, "push notification", "text message", messaging]
+    weak: [reminder, notification, alert, email, message, announcement]
+  maps_location:
+    strong: [map, geolocation, geocoding, directions, "live location", gps]
+    weak: [location, address, nearby, route, delivery, pickup, distance, branch]
+  tracking:
+    strong: [telematics, tracking, "fleet management", "track vehicle", "live tracking"]
+    weak: [fleet, vehicle, truck, driver, shipment, delivery, trip]
+  identity_kyc:
+    strong: [kyc, "identity verification", "id verification", passport, "national id", biometric, "know your customer"]
+    weak: [verification, verify, licence, license, "proof of identity", background]
+  government_documents:
+    strong: [tax, vat, permit, "customs duty", "customs declaration", "tax invoice", "e-invoice", "e-way", "compliance filing"]
+    weak: [registration, regulation, compliance, certificate, filing, licence, license, "legal requirement"]
+  accounting:
+    strong: [accounting, ledger, bookkeeping, reconciliation, erp, payroll]
+    weak: [accounts, invoice, expense, "balance sheet"]
+  scheduling:
+    strong: [booking, appointment, schedule, timetable, reservation, calendar]
+    weak: [slot, availability, waitlist, reschedule, reminder, session]
+  two_sided:
+    strong: [marketplace, "buyers and sellers", "two-sided", escrow, payout, seller, vendor, supplier]
+    weak: []
+  media_upload:
+    strong: [upload, photo, image, video, attachment, camera, "scan document"]
+    weak: [document, pdf, file, receipt]
+  health_data:
+    strong: [patient, medical, "health record", diagnosis, prescription, clinic, hospital, doctor, dentist, dental, therapy, medication, nurse, symptom, treatment]
+    weak: [health, wellness, injury, allergy, insurance]
+  minors:
+    strong: [child, children, minor, kid, student, school, parental, guardian, "under 18", "under 13", pupil]
+    weak: [teen, youth, family, "age group"]
+  multi_region:
+    strong: [multi-country, international, cross-border, "multiple countries", "several countries", "each country", "many countries", worldwide, global]
+    weak: [region, abroad, overseas, "other countries", expat]
+# Signals computed from structure rather than words: non_latin_locale (a non-Latin app language), many_roles (5 or more
+# distinct roles), multi_app (2 or more real apps), sensitive_data (Compass marked sensitive data).
+structure:
+  many_roles_at_least: 5
+  multi_app_at_least: 2
+trust:
+  # the job runs for the deep class always, and for any size when one of these signals fires, or when all of `together` fire.
+  always_for: [deep]
+  triggers: [health_data, minors, identity_kyc, multi_region, sensitive_data]
+  together: [payments, two_sided]
+light:
+  # a tiny app: no signal, no named reference, no integration or rule fact, no place (doc 13 section 4.2)
+  below: 12
+  templates: ["features:landscape", "structure:screen_inventory"]
+  soft_searches: 8
+  soft_seconds: 90
+# Which signal turns on which integration need of data/need_keywords.yaml (the need's words only link features to it).
+need_signal:
+  payments: payments
+  messaging: messaging
+  maps_location: maps_location
+  tracking_telematics: tracking
+  identity: identity_kyc
+  documents_government: government_documents
+  accounting: accounting
+  calendar_booking: scheduling
+  storage_media: media_upload

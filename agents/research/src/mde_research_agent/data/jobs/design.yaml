@@ -1,6 +1,7 @@
-# Job: design. Spec decision: look and feel (DSGN). Category UI and UX conventions: layout and navigation
-# patterns, onboarding, component patterns, colour and tone mood, typography and density, iconography, motion,
-# accessibility; platform guidelines as official sources; script and font needs; recent design trends.
+# Job: design. Spec decision: look and feel (DSGN). CHECKABLE facts first and required: the platform guidelines (3 or
+# more conventions, official sources) and accessibility guidance (2 or more); a script need when the locale is not
+# Latin. OPTIONAL, only when a page states them in text: category conventions (layout, onboarding, components, colour
+# and tone, typography and density, iconography, motion) and recent design trends.
 job: design
 spec_need: "Look and feel"
 lane: design
@@ -19,11 +20,11 @@ targets:
     question: "What UI and UX conventions do {category_noun} mobile apps follow for layout, navigation, onboarding, components, colour and tone, typography, density, iconography, motion and accessibility?"
     decision_unlocked: "The design language, density and component patterns"
     needs: [norm, current]
-    priority: 70
+    priority: 60
     anchor: category
     slots:
-      - {key: conventions, type: count, kind: design_convention, distinct_by: norm_key, min: 6, required: true}
-      - {key: aspects, type: distinct_values, kind: design_convention, attr: aspect, min: 4, required: true}
+      - {key: conventions, type: count, kind: design_convention, distinct_by: norm_key, min: 3, required: false}
+      - {key: aspects, type: distinct_values, kind: design_convention, attr: aspect, min: 2, required: false}
   - id: platform_guidelines
     label: "Platform guidelines: {platform}"
     foreach: platform
@@ -35,7 +36,18 @@ targets:
     anchor: platform
     place: global
     slots:
-      - {key: guidelines, type: count, kind: design_convention, distinct_by: norm_key, min: 3, required: false}
+      - {key: guidelines, type: count, kind: design_convention, distinct_by: norm_key, min: 3, required: true}
+  - id: accessibility
+    label: "Accessibility guidance for mobile apps"
+    foreach: none
+    question: "What do the accessibility guidelines say mobile apps must do for touch target size, contrast, text scaling, screen readers and focus order?"
+    decision_unlocked: "The accessibility requirements the design must meet"
+    needs: [norm, current]
+    priority: 52
+    anchor: category
+    place: global
+    slots:
+      - {key: accessibility, type: count, kind: design_convention, distinct_by: norm_key, min: 2, required: true}
   - id: script_needs
     label: "Fonts and text for {language}"
     foreach: script_locale

@@ -14,6 +14,7 @@ from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.text import same_thing, stem_set, tokens
 from mde_research_agent.domain.input import Request, ResearchInput
 from mde_research_agent.domain.plan import Links
+from mde_research_agent.plan.signals import compute_signals
 
 PRIORITY_RANK = {"must": 0, "nice": 1, "later": 2}
 MAX_PHRASE_WORDS = 4
@@ -190,12 +191,16 @@ def need_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
     need only when the request itself is about services, so one broad request is not attached to every need.
     """
     corpus = [(stem_set(text), links) for text, links, _ in _corpus(inp)]
+    signals = set(compute_signals(inp, cat.signals))
     service_words = {
         w for word in cat.plan.request_jobs.get("services", ()) for w in stem_set(word)
     }
     requests = [(stem_set(f"{r.topic} {r.question}"), r) for r in trusted_requests(inp)]
     scored: list[tuple[int, int, Candidate]] = []
     for order, (key, need) in enumerate(cat.needs.needs.items()):
+        wanted = cat.signals.need_signal.get(key)
+        if wanted is not None and wanted not in signals:
+            continue  # a need is researched when its capability signal fires, not on one loose word ("id", "buy")
         words = {w for word in need.words for w in stem_set(word)}
         hits = 0
         links = Links()
@@ -204,7 +209,7 @@ def need_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
                 hits += 1
                 links = _merge_links(links, ln)
         rids = tuple(r.id for stems, r in requests if stems & words and stems & service_words)
-        if hits or rids:
+        if hits or rids or wanted in signals:
             links = _merge_links(links, Links(requests=rids))
             bonus = min(5, hits) + (3 if rids else 0)
             scored.append(

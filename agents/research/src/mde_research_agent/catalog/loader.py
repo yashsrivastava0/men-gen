@@ -29,6 +29,7 @@ from mde_research_agent.catalog.models import (
     LoadConfig,
     NeedsConfig,
     PlanConfig,
+    SignalsConfig,
     PrevalenceConfig,
     SourceClassRules,
     TemplatePatterns,
@@ -44,6 +45,7 @@ JOB_NAMES: tuple[JobName, ...] = (
     "design",
     "screens",
     "local",
+    "trust",
 )
 EVENT_TYPES: tuple[str, ...] = (
     "run.started",
@@ -171,6 +173,7 @@ def load_catalog(data_dir: Path | None = None) -> Catalog:
         "lanes": LanesConfig.model_validate(_yaml(root / "lanes.yaml")),
         "needs": NeedsConfig.model_validate(_yaml(root / "need_keywords.yaml")),
         "plan": PlanConfig.model_validate(_yaml(root / "plan.yaml")),
+        "signals": SignalsConfig.model_validate(_yaml(root / "signals.yaml")),
         "languages": LanguagesConfig.model_validate(_yaml(root / "languages.yaml")).languages,
         "labels": _labels(root),
     }
