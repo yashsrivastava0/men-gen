@@ -297,3 +297,20 @@ When the builder implements pipeline optimizations, we recommend the following o
 4. [ ] **Pre-filter extraction candidates:** Add simple relevance gating on page text before invoking `rsch.extract.screens` and `rsch.extract.flows`.
 5. [ ] **Persistent search cache:** Add disk serialization for `CachingSearch` across runs.
 6. [ ] **Run Search Bake-off Tool:** Compare Tavily and Serper head-to-head on the console, and switch default to Serper if quality scores are within 5%.
+
+---
+
+## 10. Front-End Improvement Requests for the Claude Code Builder
+
+Per Job B constraints ("If a front-end improvement needs a backend or API change, do not make it. Write it as a request for the builder, with the exact need"), the following backend/test accommodations are requested:
+
+1. **Mount BakeoffTool in Test Fake (`agents/research/tests/e2e/fake_app.py`):**
+   - *Current issue:* `fake_app.py` builds the service without initializing `svc.bakeoff`, causing `GET /api/tools/bakeoff` to return 404 in offline fake browser tests.
+   - *Exact need:* Initialize an offline double for `BakeoffTool` in `fake_app.py` with mock probes so the bake-off UI can be driven and asserted in all headless testing modes.
+2. **Server-Sent Events for Bake-off Progress (`GET /api/tools/bakeoff/events`):**
+   - *Current issue:* The console polls `GET /api/tools/bakeoff` every 3 seconds while `state === "running"`.
+   - *Exact need:* Add an SSE endpoint or include bakeoff progress in the global event stream to replace HTTP polling with real-time push updates.
+3. **Structured Missing Keys in Preflight (`GET /api/preflight`):**
+   - *Current issue:* The front end must inspect individual checks (`key:*`) to determine if all search keys are absent.
+   - *Exact need:* Add an explicit `"missing_keys": ["TAVILY_API_KEY", "SERPER_API_KEY"]` field to the preflight response JSON when `ready: false`.
+
