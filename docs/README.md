@@ -75,6 +75,7 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [runbooks/research-agent.md](runbooks/research-agent.md): run, test and (owner only) run live the Research agent: offline commands, live prerequisites, the bake-off and batch runs, reading a run, troubleshooting
 - [research-agent/reports/research-agent-build-report-2026-11-11.md](research-agent/reports/research-agent-build-report-2026-11-11.md): the Research agent build report: what it is, how it works, what was built against the plan, tests, limits, decisions, next steps (written before the live runs)
 - [research-agent/provider-facts.md](research-agent/provider-facts.md): Tavily and Serper parameters, checked against the official documentation, with URLs and dates
+- [research-agent/second-opinion-cost-and-yield.md](research-agent/second-opinion-cost-and-yield.md): the second opinion on the Small run's cost and yield: which findings hold, what was missed (page ceiling, page mojibake), the order of work
 - [runbooks/compass.md](runbooks/compass.md): run, migrate and test Compass (port 8110, private Postgres, `MDE_PG_BIN` on the Mac), live prerequisites, troubleshooting
 
 ## API (generated)
