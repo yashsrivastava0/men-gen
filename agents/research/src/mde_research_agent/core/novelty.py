@@ -15,6 +15,7 @@ from mde_research_agent.core.text import tokens
 
 _URL = re.compile(r"(https?://\S+|www\.\S+|\S+@\S+\.\S+)", re.I)
 _NUMBER = re.compile(r"\d[\d,.]*")
+_ID_LIKE = re.compile(r"^[A-Z]{1,4}-\d+$")
 _NAME = re.compile(r"(?<![.!?]\s)(?<!^)\b([A-Z][\w-]{2,})")
 
 
@@ -31,6 +32,8 @@ def novel_tokens(text: str, sources: Iterable[str]) -> list[str]:
             found.append(num)
     for m in _NAME.finditer(_URL.sub(" ", text)):
         word = m.group(1)
+        if _ID_LIKE.match(word):
+            continue  # an item id such as RI-061 is a reference, not a name
         if word.casefold() not in known:
             found.append(word)
     return found

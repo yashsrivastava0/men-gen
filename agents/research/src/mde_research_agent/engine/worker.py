@@ -136,7 +136,14 @@ def _intent_words(ctx: RunContext) -> list[str]:
     return [w for lang in ctx.catalog.intent_words.languages.values() for w in lang.words]
 
 
-def _check(ctx: RunContext, t: Target, text: str, *, extra_anchors: Sequence[str] = ()) -> bool:
+def _check(
+    ctx: RunContext,
+    t: Target,
+    text: str,
+    *,
+    extra_anchors: Sequence[str] = (),
+    require_place: bool | None = None,
+) -> bool:
     intent = [*_intent_words(ctx), *t.intent]
     res = check_query(
         text,
@@ -145,7 +152,9 @@ def _check(ctx: RunContext, t: Target, text: str, *, extra_anchors: Sequence[str
         intent_words=intent,
         generic_words=ctx.catalog.intent_words.generic_words,
         own_brand=ctx.input.own_brand_terms,
-        require_place=bool(t.place and not t.place.unknown),
+        require_place=bool(t.place and not t.place.unknown)
+        if require_place is None
+        else require_place,
     )
     return res.ok
 
@@ -666,11 +675,18 @@ async def run_topic(
             )
         cov = update_coverage(ts)
         want = quota or ctx.catalog.ceilings.variants_per_topic
-        variants = (
-            list(followups)
-            if followups is not None
-            else await write_variants(ctx, ts, round_no, cov, want)
-        )
+        if followups is not None:
+            names = [e.name for e in ctx.entities.values()]
+            variants = [
+                f
+                for f in followups
+                if not is_repeat(f.text, ts.queries)
+                and _check(
+                    ctx, t, f.text, extra_anchors=names, require_place=False if f.domain else None
+                )
+            ]
+        else:
+            variants = await write_variants(ctx, ts, round_no, cov, want)
         if not variants:
             ctx.failures.record("plan", "no_query", t.id)
             return 0

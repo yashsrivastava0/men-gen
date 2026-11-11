@@ -96,3 +96,18 @@ def is_repeat(query: str, earlier: Sequence[str]) -> bool:
     """Is ``query`` the same search as an earlier one (same tokens, any order)?"""
     key = sorted(tokens(query))
     return any(sorted(tokens(e)) == key for e in earlier)
+
+
+def hygiene_problems(query: str, *, max_words: int = MAX_WORDS) -> list[str]:
+    """Only the hygiene part of the anatomy gate (RV-06): URL, key-like string, too long, empty."""
+    text = query.strip()
+    problems: list[str] = []
+    if not text:
+        return ["empty"]
+    if _URLISH.search(text):
+        problems.append("url")
+    if _KEYISH.search(text):
+        problems.append("key_like")
+    if len(text.split()) > max_words:
+        problems.append("too_long")
+    return problems

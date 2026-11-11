@@ -1,0 +1,2368 @@
+{
+  "$defs": {
+    "AppliesTo": {
+      "additionalProperties": false,
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "kind": {
+          "enum": [
+            "FTR",
+            "ROL",
+            "APP",
+            "MOD",
+            "ENT",
+            "FLW",
+            "INT",
+            "NEW"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "relation": {
+          "default": "expects",
+          "enum": [
+            "expects",
+            "constrains",
+            "refines",
+            "alternative",
+            "suggests"
+          ],
+          "title": "Relation",
+          "type": "string"
+        }
+      },
+      "required": [
+        "kind"
+      ],
+      "title": "AppliesTo",
+      "type": "object"
+    },
+    "Budget": {
+      "additionalProperties": false,
+      "properties": {
+        "failures": {
+          "default": 0,
+          "title": "Failures",
+          "type": "integer"
+        },
+        "pages_read": {
+          "default": 0,
+          "title": "Pages Read",
+          "type": "integer"
+        },
+        "searches_used": {
+          "default": 0,
+          "title": "Searches Used",
+          "type": "integer"
+        },
+        "seconds": {
+          "default": 0,
+          "title": "Seconds",
+          "type": "integer"
+        },
+        "usd": {
+          "default": "0",
+          "title": "Usd",
+          "type": "string"
+        },
+        "usd_micros": {
+          "default": 0,
+          "title": "Usd Micros",
+          "type": "integer"
+        }
+      },
+      "title": "Budget",
+      "type": "object"
+    },
+    "Confirm": {
+      "additionalProperties": false,
+      "properties": {
+        "item_id": {
+          "title": "Item Id",
+          "type": "string"
+        },
+        "why": {
+          "title": "Why",
+          "type": "string"
+        }
+      },
+      "required": [
+        "item_id",
+        "why"
+      ],
+      "title": "Confirm",
+      "type": "object"
+    },
+    "Conflict": {
+      "additionalProperties": false,
+      "properties": {
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "item_ids"
+      ],
+      "title": "Conflict",
+      "type": "object"
+    },
+    "Coverage": {
+      "additionalProperties": false,
+      "properties": {
+        "covered": {
+          "default": 0,
+          "title": "Covered",
+          "type": "integer"
+        },
+        "not_found": {
+          "default": 0,
+          "title": "Not Found",
+          "type": "integer"
+        },
+        "slots_filled": {
+          "default": 0,
+          "title": "Slots Filled",
+          "type": "integer"
+        },
+        "slots_required": {
+          "default": 0,
+          "title": "Slots Required",
+          "type": "integer"
+        },
+        "targets": {
+          "default": 0,
+          "title": "Targets",
+          "type": "integer"
+        }
+      },
+      "title": "Coverage",
+      "type": "object"
+    },
+    "DefaultProposed": {
+      "additionalProperties": false,
+      "properties": {
+        "default": {
+          "title": "Default",
+          "type": "string"
+        },
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "need": {
+          "title": "Need",
+          "type": "string"
+        },
+        "state": {
+          "const": "defaulted",
+          "default": "defaulted",
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "need",
+        "item_ids",
+        "default"
+      ],
+      "title": "DefaultProposed",
+      "type": "object"
+    },
+    "Dropped": {
+      "additionalProperties": false,
+      "properties": {
+        "forbidden_pattern": {
+          "default": 0,
+          "title": "Forbidden Pattern",
+          "type": "integer"
+        },
+        "not_supported": {
+          "default": 0,
+          "title": "Not Supported",
+          "type": "integer"
+        },
+        "quote_not_found": {
+          "default": 0,
+          "title": "Quote Not Found",
+          "type": "integer"
+        },
+        "size_cap": {
+          "default": 0,
+          "title": "Size Cap",
+          "type": "integer"
+        },
+        "unchecked_high_impact": {
+          "default": 0,
+          "title": "Unchecked High Impact",
+          "type": "integer"
+        }
+      },
+      "title": "Dropped",
+      "type": "object"
+    },
+    "Gap": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "default": "",
+          "title": "Label",
+          "type": "string"
+        },
+        "queries": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Queries",
+          "type": "array"
+        },
+        "reason": {
+          "enum": [
+            "not_found",
+            "budget_stop",
+            "provider_down",
+            "not_run",
+            "not_worthwhile",
+            "conflict_unresolved",
+            "user_cancelled",
+            "ambiguous_reference",
+            "declined"
+          ],
+          "title": "Reason",
+          "type": "string"
+        },
+        "target_id": {
+          "title": "Target Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target_id",
+        "reason"
+      ],
+      "title": "Gap",
+      "type": "object"
+    },
+    "Item": {
+      "additionalProperties": false,
+      "allOf": [
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "competitor"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__competitor"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "compliance_note"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__compliance_note"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "data_hint"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__data_hint"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "design_convention"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__design_convention"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "entity_pattern"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__entity_pattern"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "lifecycle"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__lifecycle"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "local_format"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__local_format"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "navigation_pattern"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__navigation_pattern"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "reference_check"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__reference_check"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "role_pattern"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__role_pattern"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "rule"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__rule"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "screen_pattern"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__screen_pattern"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "script_need"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__script_need"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "service_option"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__service_option"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "trend"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__trend"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "workflow"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__workflow"
+              }
+            }
+          }
+        }
+      ],
+      "properties": {
+        "applies_to": {
+          "items": {
+            "$ref": "#/$defs/AppliesTo"
+          },
+          "title": "Applies To",
+          "type": "array"
+        },
+        "claim": {
+          "title": "Claim",
+          "type": "string"
+        },
+        "confidence": {
+          "default": "medium",
+          "enum": [
+            "high",
+            "medium",
+            "low"
+          ],
+          "title": "Confidence",
+          "type": "string"
+        },
+        "data": {
+          "additionalProperties": true,
+          "title": "Data",
+          "type": "object"
+        },
+        "flags": {
+          "items": {
+            "enum": [
+              "single-source",
+              "conflict",
+              "stale",
+              "needs-confirm",
+              "legal-adjacent",
+              "entity_from_model",
+              "assumption_derived",
+              "geo_uncertain",
+              "limited_evidence",
+              "withdrawn",
+              "unchecked",
+              "checker_same_vendor"
+            ],
+            "type": "string"
+          },
+          "title": "Flags",
+          "type": "array"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "impact": {
+          "default": "normal",
+          "enum": [
+            "normal",
+            "high"
+          ],
+          "title": "Impact",
+          "type": "string"
+        },
+        "independent_domains": {
+          "default": 0,
+          "title": "Independent Domains",
+          "type": "integer"
+        },
+        "job": {
+          "title": "Job",
+          "type": "string"
+        },
+        "kind": {
+          "enum": [
+            "competitor",
+            "compliance_note",
+            "data_hint",
+            "design_convention",
+            "entity_pattern",
+            "lifecycle",
+            "local_format",
+            "navigation_pattern",
+            "reference_check",
+            "role_pattern",
+            "rule",
+            "screen_pattern",
+            "script_need",
+            "service_option",
+            "trend",
+            "workflow"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "prevalence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Prevalence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "recency": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Recency"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "request_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Request Ids",
+          "type": "array"
+        },
+        "slot": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Slot"
+        },
+        "sources": {
+          "items": {
+            "$ref": "#/$defs/SourceRef"
+          },
+          "title": "Sources",
+          "type": "array"
+        },
+        "spec_need": {
+          "title": "Spec Need",
+          "type": "string"
+        },
+        "target_id": {
+          "default": "",
+          "title": "Target Id",
+          "type": "string"
+        },
+        "tier": {
+          "default": "default",
+          "enum": [
+            "default",
+            "open"
+          ],
+          "title": "Tier",
+          "type": "string"
+        },
+        "use_note": {
+          "default": "",
+          "title": "Use Note",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "job",
+        "spec_need",
+        "kind",
+        "label",
+        "claim"
+      ],
+      "title": "Item",
+      "type": "object"
+    },
+    "Norm": {
+      "additionalProperties": false,
+      "properties": {
+        "area": {
+          "enum": [
+            "feature",
+            "screen",
+            "flow",
+            "entity",
+            "integration",
+            "design"
+          ],
+          "title": "Area",
+          "type": "string"
+        },
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "key": {
+          "title": "Key",
+          "type": "string"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "matches_brief": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Matches Brief"
+        },
+        "prevalence": {
+          "$ref": "#/$defs/Prevalence"
+        },
+        "recency": {
+          "$ref": "#/$defs/Recency"
+        }
+      },
+      "required": [
+        "area",
+        "key",
+        "label",
+        "prevalence",
+        "recency",
+        "item_ids"
+      ],
+      "title": "Norm",
+      "type": "object"
+    },
+    "Prevalence": {
+      "additionalProperties": false,
+      "properties": {
+        "level": {
+          "enum": [
+            "core",
+            "common",
+            "advanced",
+            "emerging",
+            "limited_evidence"
+          ],
+          "title": "Level",
+          "type": "string"
+        },
+        "of": {
+          "title": "Of",
+          "type": "integer"
+        },
+        "seen_in": {
+          "title": "Seen In",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "seen_in",
+        "of",
+        "level"
+      ],
+      "title": "Prevalence",
+      "type": "object"
+    },
+    "Profile": {
+      "additionalProperties": false,
+      "properties": {
+        "load_class": {
+          "enum": [
+            "focused",
+            "standard",
+            "deep"
+          ],
+          "title": "Load Class",
+          "type": "string"
+        },
+        "load_score": {
+          "title": "Load Score",
+          "type": "integer"
+        },
+        "rounds": {
+          "default": 0,
+          "title": "Rounds",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "load_score",
+        "load_class"
+      ],
+      "title": "Profile",
+      "type": "object"
+    },
+    "Recency": {
+      "additionalProperties": false,
+      "properties": {
+        "age_months": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Age Months"
+        },
+        "newest_source": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Newest Source"
+        },
+        "trend": {
+          "default": "unknown",
+          "enum": [
+            "stable",
+            "rising",
+            "declining",
+            "unknown"
+          ],
+          "title": "Trend",
+          "type": "string"
+        }
+      },
+      "title": "Recency",
+      "type": "object"
+    },
+    "RunInfo": {
+      "additionalProperties": false,
+      "description": "Volatile values: excluded from the content hash.",
+      "properties": {
+        "as_of": {
+          "format": "date",
+          "title": "As Of",
+          "type": "string"
+        },
+        "catalog_hash": {
+          "default": "",
+          "title": "Catalog Hash",
+          "type": "string"
+        },
+        "checker_model": {
+          "default": "",
+          "title": "Checker Model",
+          "type": "string"
+        },
+        "checker_vendor": {
+          "default": "none",
+          "enum": [
+            "same",
+            "different",
+            "none"
+          ],
+          "title": "Checker Vendor",
+          "type": "string"
+        },
+        "finished_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Finished At"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        },
+        "plan_source": {
+          "default": "",
+          "title": "Plan Source",
+          "type": "string"
+        },
+        "run_id": {
+          "title": "Run Id",
+          "type": "string"
+        },
+        "search_provider": {
+          "default": "",
+          "title": "Search Provider",
+          "type": "string"
+        },
+        "started_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Started At"
+        },
+        "writer_model": {
+          "default": "",
+          "title": "Writer Model",
+          "type": "string"
+        }
+      },
+      "required": [
+        "run_id",
+        "as_of"
+      ],
+      "title": "RunInfo",
+      "type": "object"
+    },
+    "Slice": {
+      "additionalProperties": false,
+      "properties": {
+        "digest": {
+          "default": "",
+          "title": "Digest",
+          "type": "string"
+        },
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        }
+      },
+      "title": "Slice",
+      "type": "object"
+    },
+    "SourceRef": {
+      "additionalProperties": false,
+      "properties": {
+        "domain": {
+          "title": "Domain",
+          "type": "string"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "published_on": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Published On"
+        },
+        "retrieved_on": {
+          "format": "date",
+          "title": "Retrieved On",
+          "type": "string"
+        },
+        "source_class": {
+          "enum": [
+            "official",
+            "store",
+            "help",
+            "press",
+            "blog",
+            "forum",
+            "seo"
+          ],
+          "title": "Source Class",
+          "type": "string"
+        },
+        "url": {
+          "title": "Url",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "domain",
+        "source_class",
+        "url",
+        "retrieved_on"
+      ],
+      "title": "SourceRef",
+      "type": "object"
+    },
+    "Suggestion": {
+      "additionalProperties": false,
+      "properties": {
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "prevalence": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/Prevalence"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "state": {
+          "const": "undecided",
+          "default": "undecided",
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "item_ids"
+      ],
+      "title": "Suggestion",
+      "type": "object"
+    },
+    "Suggestions": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "screens": {
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          },
+          "title": "Screens",
+          "type": "array"
+        },
+        "states": {
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          },
+          "title": "States",
+          "type": "array"
+        },
+        "validations": {
+          "items": {
+            "$ref": "#/$defs/Suggestion"
+          },
+          "title": "Validations",
+          "type": "array"
+        }
+      },
+      "title": "Suggestions",
+      "type": "object"
+    },
+    "competitor__FeatureLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "feature_key": {
+          "title": "Feature Key",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "core",
+            "standard",
+            "premium"
+          ],
+          "title": "Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feature_key",
+        "level"
+      ],
+      "title": "FeatureLevel",
+      "type": "object"
+    },
+    "competitor__ScreenRef": {
+      "additionalProperties": false,
+      "properties": {
+        "screen_key": {
+          "title": "Screen Key",
+          "type": "string"
+        }
+      },
+      "required": [
+        "screen_key"
+      ],
+      "title": "ScreenRef",
+      "type": "object"
+    },
+    "data__competitor": {
+      "additionalProperties": false,
+      "properties": {
+        "features": {
+          "items": {
+            "$ref": "#/$defs/competitor__FeatureLevel"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "app",
+            "platform",
+            "service",
+            "marketplace",
+            "other"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "platforms": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Platforms",
+          "type": "array"
+        },
+        "pricing_model": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Pricing Model"
+        },
+        "region": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Region"
+        },
+        "screens": {
+          "items": {
+            "$ref": "#/$defs/competitor__ScreenRef"
+          },
+          "title": "Screens",
+          "type": "array"
+        },
+        "url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Url"
+        }
+      },
+      "required": [
+        "name",
+        "kind",
+        "platforms",
+        "features",
+        "screens"
+      ],
+      "title": "CompetitorData",
+      "type": "object"
+    },
+    "data__compliance_note": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority"
+        },
+        "effective_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective Date"
+        },
+        "legal_adjacent": {
+          "default": true,
+          "title": "Legal Adjacent",
+          "type": "boolean"
+        },
+        "summary": {
+          "title": "Summary",
+          "type": "string"
+        },
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "summary"
+      ],
+      "title": "ComplianceNoteData",
+      "type": "object"
+    },
+    "data__data_hint": {
+      "additionalProperties": false,
+      "properties": {
+        "examples": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Examples",
+          "type": "array"
+        },
+        "kind": {
+          "enum": [
+            "name_style",
+            "price_range",
+            "unit",
+            "edge_case",
+            "sample_record"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "value_range": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value Range"
+        }
+      },
+      "required": [
+        "kind",
+        "examples"
+      ],
+      "title": "DataHintData",
+      "type": "object"
+    },
+    "data__design_convention": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_to_category": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Applies To Category"
+        },
+        "aspect": {
+          "enum": [
+            "layout",
+            "navigation",
+            "onboarding",
+            "components",
+            "color_mood",
+            "typography",
+            "density",
+            "iconography",
+            "motion",
+            "accessibility"
+          ],
+          "title": "Aspect",
+          "type": "string"
+        },
+        "convention": {
+          "title": "Convention",
+          "type": "string"
+        },
+        "examples": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Examples",
+          "type": "array"
+        }
+      },
+      "required": [
+        "aspect",
+        "convention",
+        "examples"
+      ],
+      "title": "DesignConventionData",
+      "type": "object"
+    },
+    "data__entity_pattern": {
+      "additionalProperties": false,
+      "properties": {
+        "entity": {
+          "title": "Entity",
+          "type": "string"
+        },
+        "fields": {
+          "items": {
+            "$ref": "#/$defs/entity_pattern__FieldSpec"
+          },
+          "title": "Fields",
+          "type": "array"
+        },
+        "kpis": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Kpis",
+          "type": "array"
+        },
+        "relations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Relations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "entity",
+        "fields",
+        "relations",
+        "kpis"
+      ],
+      "title": "EntityPatternData",
+      "type": "object"
+    },
+    "data__lifecycle": {
+      "additionalProperties": false,
+      "properties": {
+        "entity": {
+          "title": "Entity",
+          "type": "string"
+        },
+        "states": {
+          "items": {
+            "type": "string"
+          },
+          "title": "States",
+          "type": "array"
+        },
+        "transitions": {
+          "items": {
+            "$ref": "#/$defs/lifecycle__Transition"
+          },
+          "title": "Transitions",
+          "type": "array"
+        }
+      },
+      "required": [
+        "entity",
+        "states",
+        "transitions"
+      ],
+      "title": "LifecycleData",
+      "type": "object"
+    },
+    "data__local_format": {
+      "additionalProperties": false,
+      "properties": {
+        "example": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Example"
+        },
+        "kind": {
+          "enum": [
+            "currency",
+            "phone",
+            "address",
+            "date",
+            "number",
+            "id_format"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation"
+        }
+      },
+      "required": [
+        "kind",
+        "pattern"
+      ],
+      "title": "LocalFormatData",
+      "type": "object"
+    },
+    "data__navigation_pattern": {
+      "additionalProperties": false,
+      "properties": {
+        "pattern": {
+          "title": "Pattern",
+          "type": "string"
+        },
+        "typical_items": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Typical Items",
+          "type": "array"
+        },
+        "when_used": {
+          "title": "When Used",
+          "type": "string"
+        }
+      },
+      "required": [
+        "pattern",
+        "when_used",
+        "typical_items"
+      ],
+      "title": "NavigationPatternData",
+      "type": "object"
+    },
+    "data__reference_check": {
+      "additionalProperties": false,
+      "properties": {
+        "candidates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Candidates",
+          "type": "array"
+        },
+        "features": {
+          "items": {
+            "$ref": "#/$defs/reference_check__FeatureLevel"
+          },
+          "title": "Features",
+          "type": "array"
+        },
+        "flows": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Flows",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "found",
+            "not_found",
+            "ambiguous"
+          ],
+          "title": "Status",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name",
+        "status",
+        "candidates",
+        "features",
+        "flows"
+      ],
+      "title": "ReferenceCheckData",
+      "type": "object"
+    },
+    "data__role_pattern": {
+      "additionalProperties": false,
+      "properties": {
+        "role": {
+          "title": "Role",
+          "type": "string"
+        },
+        "typical_permissions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Typical Permissions",
+          "type": "array"
+        },
+        "typical_tasks": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Typical Tasks",
+          "type": "array"
+        }
+      },
+      "required": [
+        "role",
+        "typical_tasks",
+        "typical_permissions"
+      ],
+      "title": "RolePatternData",
+      "type": "object"
+    },
+    "data__rule": {
+      "additionalProperties": false,
+      "properties": {
+        "authority": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority"
+        },
+        "formula": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Formula"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        }
+      },
+      "required": [
+        "statement",
+        "subject"
+      ],
+      "title": "RuleData",
+      "type": "object"
+    },
+    "data__screen_pattern": {
+      "additionalProperties": false,
+      "properties": {
+        "actions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Actions",
+          "type": "array"
+        },
+        "key_components": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Key Components",
+          "type": "array"
+        },
+        "microcopy_notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Microcopy Notes",
+          "type": "array"
+        },
+        "purpose": {
+          "title": "Purpose",
+          "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "screen_key": {
+          "title": "Screen Key",
+          "type": "string"
+        },
+        "sections": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Sections",
+          "type": "array"
+        },
+        "states": {
+          "items": {
+            "$ref": "#/$defs/screen_pattern__ScreenState"
+          },
+          "title": "States",
+          "type": "array"
+        },
+        "validations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Validations",
+          "type": "array"
+        }
+      },
+      "required": [
+        "screen_key",
+        "purpose",
+        "sections",
+        "key_components",
+        "actions",
+        "states",
+        "validations",
+        "microcopy_notes"
+      ],
+      "title": "ScreenPatternData",
+      "type": "object"
+    },
+    "data__script_need": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "enum": [
+            "ltr",
+            "rtl"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "font_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Font Notes"
+        },
+        "languages": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Languages",
+          "type": "array"
+        },
+        "script": {
+          "title": "Script",
+          "type": "string"
+        },
+        "text_expansion": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Text Expansion"
+        }
+      },
+      "required": [
+        "script",
+        "languages",
+        "direction"
+      ],
+      "title": "ScriptNeedData",
+      "type": "object"
+    },
+    "data__service_option": {
+      "additionalProperties": false,
+      "properties": {
+        "auth_method": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Auth Method"
+        },
+        "constraints": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Constraints",
+          "type": "array"
+        },
+        "current_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Current Status"
+        },
+        "endpoints_or_events": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Endpoints Or Events",
+          "type": "array"
+        },
+        "fees": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Fees"
+        },
+        "integration_notes": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Integration Notes"
+        },
+        "limits": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Limits"
+        },
+        "need": {
+          "title": "Need",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "region_fit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Region Fit"
+        },
+        "sandbox": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sandbox"
+        }
+      },
+      "required": [
+        "need",
+        "provider",
+        "endpoints_or_events",
+        "constraints"
+      ],
+      "title": "ServiceOptionData",
+      "type": "object"
+    },
+    "data__trend": {
+      "additionalProperties": false,
+      "properties": {
+        "direction": {
+          "enum": [
+            "rising",
+            "declining",
+            "stable",
+            "unknown"
+          ],
+          "title": "Direction",
+          "type": "string"
+        },
+        "since": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Since"
+        },
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        },
+        "what_changed": {
+          "title": "What Changed",
+          "type": "string"
+        }
+      },
+      "required": [
+        "topic",
+        "what_changed",
+        "direction"
+      ],
+      "title": "TrendData",
+      "type": "object"
+    },
+    "data__workflow": {
+      "additionalProperties": false,
+      "properties": {
+        "alternates": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Alternates",
+          "type": "array"
+        },
+        "empty_error_offline_cases": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Empty Error Offline Cases",
+          "type": "array"
+        },
+        "exceptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Exceptions",
+          "type": "array"
+        },
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "role": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Role"
+        },
+        "steps": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Steps",
+          "type": "array"
+        }
+      },
+      "required": [
+        "name",
+        "steps",
+        "alternates",
+        "exceptions",
+        "empty_error_offline_cases"
+      ],
+      "title": "WorkflowData",
+      "type": "object"
+    },
+    "entity_pattern__FieldSpec": {
+      "additionalProperties": false,
+      "properties": {
+        "name": {
+          "title": "Name",
+          "type": "string"
+        },
+        "required": {
+          "title": "Required",
+          "type": "boolean"
+        },
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "validation": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Validation"
+        },
+        "values": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Values"
+        }
+      },
+      "required": [
+        "name",
+        "type",
+        "required"
+      ],
+      "title": "FieldSpec",
+      "type": "object"
+    },
+    "lifecycle__Transition": {
+      "additionalProperties": false,
+      "properties": {
+        "from_state": {
+          "title": "From State",
+          "type": "string"
+        },
+        "to_state": {
+          "title": "To State",
+          "type": "string"
+        },
+        "trigger": {
+          "title": "Trigger",
+          "type": "string"
+        }
+      },
+      "required": [
+        "from_state",
+        "to_state",
+        "trigger"
+      ],
+      "title": "Transition",
+      "type": "object"
+    },
+    "reference_check__FeatureLevel": {
+      "additionalProperties": false,
+      "properties": {
+        "feature_key": {
+          "title": "Feature Key",
+          "type": "string"
+        },
+        "level": {
+          "enum": [
+            "core",
+            "standard",
+            "premium"
+          ],
+          "title": "Level",
+          "type": "string"
+        }
+      },
+      "required": [
+        "feature_key",
+        "level"
+      ],
+      "title": "FeatureLevel",
+      "type": "object"
+    },
+    "screen_pattern__ScreenState": {
+      "additionalProperties": false,
+      "properties": {
+        "content": {
+          "title": "Content",
+          "type": "string"
+        },
+        "state": {
+          "enum": [
+            "loading",
+            "empty",
+            "error",
+            "success",
+            "default",
+            "offline"
+          ],
+          "title": "State",
+          "type": "string"
+        }
+      },
+      "required": [
+        "state",
+        "content"
+      ],
+      "title": "ScreenState",
+      "type": "object"
+    }
+  },
+  "$id": "research.v4",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "brief_hash": {
+      "title": "Brief Hash",
+      "type": "string"
+    },
+    "budget": {
+      "$ref": "#/$defs/Budget"
+    },
+    "by_entity": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "By Entity",
+      "type": "object"
+    },
+    "by_feature": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "By Feature",
+      "type": "object"
+    },
+    "by_flow": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "By Flow",
+      "type": "object"
+    },
+    "by_integration": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "By Integration",
+      "type": "object"
+    },
+    "by_role": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "By Role",
+      "type": "object"
+    },
+    "claims_used": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Claims Used",
+      "type": "array"
+    },
+    "confirm": {
+      "items": {
+        "$ref": "#/$defs/Confirm"
+      },
+      "title": "Confirm",
+      "type": "array"
+    },
+    "conflicts": {
+      "items": {
+        "$ref": "#/$defs/Conflict"
+      },
+      "title": "Conflicts",
+      "type": "array"
+    },
+    "coverage": {
+      "$ref": "#/$defs/Coverage"
+    },
+    "defaults_proposed": {
+      "items": {
+        "$ref": "#/$defs/DefaultProposed"
+      },
+      "title": "Defaults Proposed",
+      "type": "array"
+    },
+    "dropped": {
+      "$ref": "#/$defs/Dropped"
+    },
+    "gaps": {
+      "items": {
+        "$ref": "#/$defs/Gap"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "input_quality": {
+      "additionalProperties": true,
+      "title": "Input Quality",
+      "type": "object"
+    },
+    "items": {
+      "items": {
+        "$ref": "#/$defs/Item"
+      },
+      "title": "Items",
+      "type": "array"
+    },
+    "norms": {
+      "items": {
+        "$ref": "#/$defs/Norm"
+      },
+      "title": "Norms",
+      "type": "array"
+    },
+    "profile": {
+      "$ref": "#/$defs/Profile"
+    },
+    "program_id": {
+      "title": "Program Id",
+      "type": "string"
+    },
+    "run": {
+      "$ref": "#/$defs/RunInfo"
+    },
+    "schema": {
+      "default": "research.v4",
+      "title": "Schema",
+      "type": "string"
+    },
+    "slices": {
+      "additionalProperties": {
+        "$ref": "#/$defs/Slice"
+      },
+      "title": "Slices",
+      "type": "object"
+    },
+    "status": {
+      "enum": [
+        "complete",
+        "partial",
+        "failed",
+        "skipped"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "suggestions": {
+      "$ref": "#/$defs/Suggestions"
+    }
+  },
+  "required": [
+    "program_id",
+    "brief_hash",
+    "status",
+    "profile",
+    "input_quality",
+    "run"
+  ],
+  "title": "ResearchOutput",
+  "type": "object"
+}

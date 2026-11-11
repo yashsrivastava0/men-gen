@@ -496,6 +496,7 @@ def build_evidence(
                 "page_id": a.page_id,
                 "status": a.status,
                 "reject_reason": a.reject_reason,
+                "data": a.data,
                 "verdict": a.verdict,
                 "checked": a.checked,
                 "flags": sorted(a.flags),
