@@ -277,7 +277,7 @@ async def assemble_output(
     while True:
         norms = compute_norms(built, ctx.input, cat.prevalence, ctx.as_of)
         built = apply_norms(built, norms)
-        conflicts = detect_conflicts(built)
+        conflicts = detect_conflicts(built, ctx.input)
         confirm = _confirm(built, defaults["confirm_reasons"])
         suggestions = build_suggestions(built, norms)
         probe = [b.item.model_dump(mode="json") for b in built]
@@ -455,6 +455,7 @@ def build_evidence(
                 "published": p.published.isoformat() if p.published else None,
                 "retrieved_on": p.retrieved_on.isoformat(),
                 "text_source": p.text_source,
+                "source_language": p.language,
                 "content_hash": p.content_hash,
                 "text": p.text,
             }

@@ -107,6 +107,10 @@ def build_service(
         else ("fake" if mode == "mock" else choose_provider(cfg, DEFAULT_PROVIDER))
     )
     search, fetch, closers = build_ports(chosen, cfg, world=world, client=client)
+    if search is not None and chosen != "fake":
+        from mde_research_agent.adapters.search.caching import CachingSearch
+
+        search = CachingSearch(search, fee_words=catalog.prevalence.fee_words)
     the_gateway = gateway or InProcessGatewayClient(
         create_gateway(
             core,

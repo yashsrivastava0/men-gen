@@ -1,0 +1,619 @@
+{
+ "_fixture": {
+  "note": "Hand-written synthetic Brief for the generality tests.",
+  "source": "synthetic:coffee-loyalty-nairobi-sw-en"
+ },
+ "brief": {
+  "_hash": "477a2fe0491e820ef9a3c6307c08eab0668471cfefeedca96a511cf967c10aba",
+  "_section_hashes": {},
+  "apps": [
+   {
+    "audience": "",
+    "confidence": 0.9,
+    "id": "APP-001",
+    "name": "Customer app",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "purpose": "Collect stamps and order",
+    "roles": [],
+    "status": "volunteered",
+    "surface": "mobile",
+    "tier": "Default"
+   }
+  ],
+  "audience": {
+   "segments": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "Customers",
+     "Baristas",
+     "Shop owner"
+    ]
+   }
+  },
+  "context": {
+   "geo": {
+    "confidence": 0.95,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": {
+     "city": "Nairobi",
+     "country": "Kenya"
+    }
+   }
+  },
+  "data": {},
+  "declined": [],
+  "domain_facts": [
+   {
+    "confidence": 0.9,
+    "consumers": [
+     "research",
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-001",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "quote": "A customer earns a free coffee after collecting ten stamps.",
+    "refs": [],
+    "statement": "A customer earns a free coffee after collecting ten stamps.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "rewards"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.9,
+    "consumers": [
+     "research",
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-002",
+    "kind": "integration_detail",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Customers pay with mobile money from their phone.",
+    "refs": [],
+    "statement": "Customers pay with mobile money from their phone.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "payments"
+    ],
+    "type": "context"
+   }
+  ],
+  "entities": [
+   {
+    "confidence": 0.9,
+    "id": "ENT-001",
+    "key": "customer",
+    "module": null,
+    "name": "Customer",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-002",
+    "key": "stamp",
+    "module": null,
+    "name": "Stamp",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-003",
+    "key": "reward",
+    "module": null,
+    "name": "Reward",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-004",
+    "key": "order",
+    "module": null,
+    "name": "Order",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   }
+  ],
+  "experience": {
+   "brand.name": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "Kahawa Corner"
+   }
+  },
+  "flows": [],
+  "glossary": [],
+  "idea": {
+   "category": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "coffee shop loyalty app"
+   },
+   "summary": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "A loyalty app for a small chain of coffee shops in Nairobi, in Swahili and English."
+   }
+  },
+  "ids": {
+   "counters": {}
+  },
+  "integrations": [
+   {
+    "confidence": 0.9,
+    "name": "payments",
+    "notes": "",
+    "preference": "real_later",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "meta": {
+   "degraded": false,
+   "interview": {
+    "fallback_count": 0
+   },
+   "locales": [
+    "sw",
+    "en"
+   ],
+   "probes": {
+    "blueprint": true,
+    "design": true,
+    "research": true
+   },
+   "program_id": "",
+   "session_id": "ses_synthetic_coffee-loyalty-nairobi-sw-en"
+  },
+  "modules": [
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "id": "MOD-001",
+    "name": "Loyalty",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "roles": [],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "id": "MOD-002",
+    "name": "Orders",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "roles": [],
+    "status": "volunteered",
+    "tier": "Default"
+   }
+  ],
+  "references": [],
+  "research_requests": [
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which features belong in the first release",
+    "depth": "standard",
+    "entity": "coffee shop loyalty apps",
+    "geography": "Nairobi, Kenya",
+    "id": "RR-001",
+    "prefer_sources": [],
+    "priority": "high",
+    "question": "Which features do coffee shop loyalty apps in Nairobi usually offer?",
+    "references": [],
+    "shown_to_user_as": "Coffee loyalty apps in Nairobi",
+    "source_languages": [
+     "sw",
+     "en"
+    ],
+    "terms": [
+     "coffee",
+     "loyalty",
+     "Nairobi"
+    ],
+    "topic": "Coffee loyalty apps in Nairobi",
+    "user_added": false
+   }
+  ],
+  "roles": [
+   {
+    "confidence": 0.9,
+    "goal": "Collect stamps and pay",
+    "id": "ROL-001",
+    "name_in_user_words": "Customer",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.9,
+    "goal": "Scan codes and confirm orders",
+    "id": "ROL-002",
+    "name_in_user_words": "Barista",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.9,
+    "goal": "See sales and manage offers",
+    "id": "ROL-003",
+    "name_in_user_words": "Shop owner",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "scope": [
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-001",
+    "intent": "Digital stamp card",
+    "name": "Digital stamp card",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-002",
+    "intent": "Pay with mobile money",
+    "name": "Pay with mobile money",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-003",
+    "intent": "Order ahead",
+    "name": "Order ahead",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-004",
+    "intent": "Vouchers and offers",
+    "name": "Vouchers and offers",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-005",
+    "intent": "Branch locator",
+    "name": "Branch locator",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "languages": [
+    "sw",
+    "en"
+   ],
+   "local_competitors": [],
+   "synonyms": [
+    "programu ya zawadi ya kahawa",
+    "kadi ya stempu"
+   ]
+  },
+  "version": 1
+ },
+ "consumer_views": {
+  "research": {
+   "audience": {
+    "segments": [
+     "Customers",
+     "Baristas",
+     "Shop owner"
+    ],
+    "usage_context": []
+   },
+   "declined": [],
+   "domain_facts": [],
+   "entities": [
+    "Customer",
+    "Stamp",
+    "Reward",
+    "Order"
+   ],
+   "feature_intents": [
+    {
+     "family": null,
+     "intent": "Digital stamp card",
+     "name": "Digital stamp card"
+    },
+    {
+     "family": null,
+     "intent": "Pay with mobile money",
+     "name": "Pay with mobile money"
+    },
+    {
+     "family": null,
+     "intent": "Order ahead",
+     "name": "Order ahead"
+    },
+    {
+     "family": null,
+     "intent": "Vouchers and offers",
+     "name": "Vouchers and offers"
+    },
+    {
+     "family": null,
+     "intent": "Branch locator",
+     "name": "Branch locator"
+    }
+   ],
+   "geography": {
+    "city": "Nairobi",
+    "country": "Kenya"
+   },
+   "glossary": [],
+   "guidance": {
+    "category": "coffee shop loyalty app",
+    "depth": "light",
+    "focus": [],
+    "gap_fill": false,
+    "max_requests": 6,
+    "search_budget": 6,
+    "size_band": "small"
+   },
+   "idea": {
+    "business_model": "Free app; rewards drive repeat visits",
+    "category": "coffee shop loyalty app",
+    "pitch": "",
+    "subcategory": "",
+    "summary": "A loyalty app for a small chain of coffee shops in Nairobi, in Swahili and English."
+   },
+   "languages": {
+    "locales": [
+     "sw",
+     "en"
+    ],
+    "meta_locales": [
+     "sw",
+     "en"
+    ],
+    "search_languages": [
+     "sw",
+     "en"
+    ]
+   },
+   "modules": [
+    "Loyalty",
+    "Orders"
+   ],
+   "references": [],
+   "research_requests": [
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which features belong in the first release",
+     "depth": "standard",
+     "entity": "coffee shop loyalty apps",
+     "geography": "Nairobi, Kenya",
+     "id": "RR-001",
+     "prefer_sources": [],
+     "priority": "high",
+     "question": "Which features do coffee shop loyalty apps in Nairobi usually offer?",
+     "references": [],
+     "shown_to_user_as": "Coffee loyalty apps in Nairobi",
+     "source_languages": [
+      "sw",
+      "en"
+     ],
+     "terms": [
+      "coffee",
+      "loyalty",
+      "Nairobi"
+     ],
+     "topic": "Coffee loyalty apps in Nairobi",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [],
+    "languages": [
+     "sw",
+     "en"
+    ],
+    "local_competitors": [],
+    "synonyms": [
+     "programu ya zawadi ya kahawa",
+     "kadi ya stempu"
+    ]
+   }
+  }
+ },
+ "export": {
+  "approved_baseline": {
+   "hash": "477a2fe0491e820ef9a3c6307c08eab0668471cfefeedca96a511cf967c10aba",
+   "section_hashes": {},
+   "version": 1
+  },
+  "brief_hash": "477a2fe0491e820ef9a3c6307c08eab0668471cfefeedca96a511cf967c10aba",
+  "brief_version": 1,
+  "format": "compass-full-output",
+  "format_version": 2,
+  "session_id": "ses_synthetic_coffee-loyalty-nairobi-sw-en"
+ },
+ "spend": {
+  "by_call": {},
+  "calls": 0,
+  "cost_micros": 0
+ },
+ "structure": {
+  "band": null,
+  "counts": null,
+  "issues_count": 0,
+  "source": null
+ }
+}

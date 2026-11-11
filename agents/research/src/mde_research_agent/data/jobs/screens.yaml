@@ -15,7 +15,7 @@ targets:
     label: "Screens in {module}"
     foreach: module
     max: 8
-    question: "What sections, components, actions and states do {module} screens usually have in {category} apps?"
+    question: "What sections, components, actions and states do {module} screens usually have in {category_apps}?"
     decision_unlocked: "The content of the key screens of this module"
     needs: [norm, entity]
     priority: 62
@@ -23,9 +23,9 @@ targets:
     slots:
       - {key: patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, attr: states, attr_min: 3, extra_attrs: [{attr: sections, min: 3}], required: true}
   - id: key_screens
-    label: "Key screens of {category} apps"
+    label: "Key screens of {category_apps}"
     foreach: none
-    question: "What sections, components, actions and states do the most important screens of {category} apps contain?"
+    question: "What sections, components, actions and states do the most important screens of {category_apps} contain?"
     decision_unlocked: "The content of the most important screens"
     needs: [norm]
     priority: 66

@@ -18,7 +18,7 @@ targets:
     label: "What a {entity} record holds"
     foreach: entity
     max: 6
-    question: "What fields, statuses and validation rules does a {entity} record have in {category} systems?"
+    question: "What fields, statuses and validation rules does a {entity} record have in {category_noun} systems?"
     decision_unlocked: "The fields, statuses and relations of this entity"
     needs: [norm, entity]
     priority: 75

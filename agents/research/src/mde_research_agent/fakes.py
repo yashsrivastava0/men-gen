@@ -92,6 +92,10 @@ class FakeWorld:
     provider_content_every: int = 0  # every Nth generated hit carries page text (0 = none)
     search_cost_micros: int = 0
     fail_search: Callable[[SearchRequest], SearchError | None] | None = None
+    clock: object | None = (
+        None  # a FakeClock: every search advances it by search_seconds (time-box tests)
+    )
+    search_seconds: float = 0.0
     gate: asyncio.Event | None = (
         None  # when set and not open, every search waits (tests hold a run mid-flight)
     )
@@ -241,6 +245,8 @@ class FakeSearch:
         self.requests.append(request)
         if self.world.gate is not None:
             await self.world.gate.wait()
+        if self.world.clock is not None and self.world.search_seconds:
+            self.world.clock.advance(self.world.search_seconds)  # type: ignore[attr-defined]
         if self.world.fail_search is not None:
             err = self.world.fail_search(request)
             if err is not None:

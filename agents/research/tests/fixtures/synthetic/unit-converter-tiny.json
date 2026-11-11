@@ -1,0 +1,209 @@
+{
+ "_fixture": {
+  "note": "Hand-written synthetic Brief for the generality tests.",
+  "source": "synthetic:unit-converter-tiny"
+ },
+ "brief": {
+  "_hash": "1df78d22849e40afdd02f28458b3892aeb6a969d2cd3888ae0e472cf64cf20bd",
+  "_section_hashes": {},
+  "apps": [],
+  "audience": {
+   "segments": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": []
+   }
+  },
+  "context": {},
+  "data": {},
+  "declined": [],
+  "domain_facts": [],
+  "entities": [],
+  "experience": {},
+  "flows": [],
+  "glossary": [],
+  "idea": {
+   "category": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "unit converter"
+   },
+   "summary": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "A tiny app that converts one unit to another."
+   }
+  },
+  "ids": {
+   "counters": {}
+  },
+  "integrations": [],
+  "meta": {
+   "degraded": false,
+   "interview": {
+    "fallback_count": 0
+   },
+   "locales": [
+    "en"
+   ],
+   "probes": {
+    "blueprint": true,
+    "design": true,
+    "research": true
+   },
+   "program_id": "",
+   "session_id": "ses_synthetic_unit-converter-tiny"
+  },
+  "modules": [],
+  "references": [],
+  "research_requests": [],
+  "roles": [
+   {
+    "confidence": 0.9,
+    "goal": "Convert a value",
+    "id": "ROL-001",
+    "name_in_user_words": "User",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "scope": [
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-001",
+    "intent": "Convert units",
+    "name": "Convert units",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "languages": [
+    "en"
+   ],
+   "local_competitors": [],
+   "synonyms": []
+  },
+  "version": 1
+ },
+ "consumer_views": {
+  "research": {
+   "audience": {
+    "segments": [],
+    "usage_context": []
+   },
+   "declined": [],
+   "domain_facts": [],
+   "entities": [],
+   "feature_intents": [
+    {
+     "family": null,
+     "intent": "Convert units",
+     "name": "Convert units"
+    }
+   ],
+   "geography": {},
+   "glossary": [],
+   "guidance": {
+    "category": "unit converter",
+    "depth": "light",
+    "focus": [],
+    "gap_fill": false,
+    "max_requests": 6,
+    "search_budget": 6,
+    "size_band": "small"
+   },
+   "idea": {
+    "business_model": "",
+    "category": "unit converter",
+    "pitch": "",
+    "subcategory": "",
+    "summary": "A tiny app that converts one unit to another."
+   },
+   "languages": {
+    "locales": [
+     "en"
+    ],
+    "meta_locales": [
+     "en"
+    ],
+    "search_languages": [
+     "en"
+    ]
+   },
+   "modules": [],
+   "references": [],
+   "research_requests": [],
+   "search_hints": {
+    "disambiguated_names": [],
+    "languages": [
+     "en"
+    ],
+    "local_competitors": [],
+    "synonyms": []
+   }
+  }
+ },
+ "export": {
+  "approved_baseline": {
+   "hash": "1df78d22849e40afdd02f28458b3892aeb6a969d2cd3888ae0e472cf64cf20bd",
+   "section_hashes": {},
+   "version": 1
+  },
+  "brief_hash": "1df78d22849e40afdd02f28458b3892aeb6a969d2cd3888ae0e472cf64cf20bd",
+  "brief_version": 1,
+  "format": "compass-full-output",
+  "format_version": 2,
+  "session_id": "ses_synthetic_unit-converter-tiny"
+ },
+ "spend": {
+  "by_call": {},
+  "calls": 0,
+  "cost_micros": 0
+ },
+ "structure": {
+  "band": null,
+  "counts": null,
+  "issues_count": 0,
+  "source": null
+ }
+}

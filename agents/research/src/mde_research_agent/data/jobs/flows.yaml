@@ -16,7 +16,7 @@ targets:
     label: "Journey: {flow}"
     foreach: flow
     max: 6
-    question: "How does a typical {flow} journey work in {category} apps, step by step, including alternatives and what goes wrong?"
+    question: "How does a typical {flow} journey work in {category_apps}, step by step, including alternatives and what goes wrong?"
     decision_unlocked: "The steps, alternates and exceptions of each main journey"
     needs: [norm, entity]
     priority: 80
@@ -26,7 +26,7 @@ targets:
   - id: onboarding
     label: "Sign-up and first use"
     foreach: none
-    question: "How do {category} apps handle sign-up, sign-in and first-time onboarding in {place}?"
+    question: "How do {category_apps} handle sign-up, sign-in and first-time onboarding in {place}?"
     decision_unlocked: "The onboarding and sign-in flow"
     needs: [norm, current]
     priority: 60
@@ -36,7 +36,7 @@ targets:
   - id: empty_error_offline
     label: "Empty, error and offline states"
     foreach: none
-    question: "What do {category} mobile apps show when there is no data yet, when something fails or when the connection drops?"
+    question: "What do {category_noun} mobile apps show when there is no data yet, when something fails or when the connection drops?"
     decision_unlocked: "The empty, error and offline states of every screen"
     needs: [norm]
     priority: 45

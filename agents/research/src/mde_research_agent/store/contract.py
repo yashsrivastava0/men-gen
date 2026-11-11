@@ -11,7 +11,7 @@ from datetime import UTC, datetime, timedelta
 
 import pytest
 
-from mde_research_agent.domain.events import Counters, Event
+from mde_research_agent.domain.events import Counters, Event, EventType
 from mde_research_agent.store.ports import Decision, RunActive, RunRow, Store
 
 T0 = datetime(2026, 11, 11, 12, 0, tzinfo=UTC)
@@ -35,14 +35,14 @@ def row(
     )
 
 
-def event(run_id: str, seq: int, type_: str = "query.issued") -> Event:
+def event(run_id: str, seq: int, type_: EventType = "query.issued") -> Event:
     return Event(
         id=f"evt_{run_id}_{seq}",
         seq=seq,
         ts=T0 + timedelta(seconds=seq),
         run_id=run_id,
         type=type_,
-        label=f"event {seq}",  # type: ignore[arg-type]
+        label=f"event {seq}",
         detail={"query": "q"},
         counters=Counters(searches_used=seq),
     )

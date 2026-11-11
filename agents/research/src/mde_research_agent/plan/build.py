@@ -49,6 +49,14 @@ def category_phrase(inp: ResearchInput, proposal: PlanProposal | None = None) ->
     return short_phrase(raw, 6) or raw
 
 
+def category_noun(category: str) -> str:
+    """The category without a trailing "app" or "apps" ("dental clinic app" -> "dental clinic"), for labels."""
+    words = category.split()
+    while len(words) > 1 and words[-1].casefold() in ("app", "apps", "application", "applications"):
+        words.pop()
+    return " ".join(words)
+
+
 def _conditions_hold(tpl: TargetTemplate, inp: ResearchInput) -> bool:
     for cond in tpl.when:
         if cond == "non_latin_locale" and not inp.locales.non_latin:
@@ -77,8 +85,11 @@ def _make_target(
     inp: ResearchInput,
 ) -> Target:
     name = cand.name
+    noun = category_noun(category)
     values = {
         "category": category,
+        "category_noun": noun,
+        "category_apps": f"{noun} apps",
         "place": place.text if tpl.place == "brief" else "",
         "entity": name,
         "need": name,

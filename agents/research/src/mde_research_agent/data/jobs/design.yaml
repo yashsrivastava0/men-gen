@@ -14,9 +14,9 @@ extract_focus: >
   conventions, not facts: state them as how apps of this kind usually look.
 targets:
   - id: conventions
-    label: "Look and feel of {category} apps"
+    label: "Look and feel of {category_apps}"
     foreach: none
-    question: "What UI and UX conventions do {category} mobile apps follow for layout, navigation, onboarding, components, colour and tone, typography, density, iconography, motion and accessibility?"
+    question: "What UI and UX conventions do {category_noun} mobile apps follow for layout, navigation, onboarding, components, colour and tone, typography, density, iconography, motion and accessibility?"
     decision_unlocked: "The design language, density and component patterns"
     needs: [norm, current]
     priority: 70
@@ -49,9 +49,9 @@ targets:
     slots:
       - {key: script, type: count, kind: script_need, distinct_by: norm_key, min: 1, required: true}
   - id: trends
-    label: "Recent design trends in {category} apps"
+    label: "Recent design trends in {category_apps}"
     foreach: none
-    question: "What recent design trends are visible in {category} mobile apps?"
+    question: "What recent design trends are visible in {category_noun} mobile apps?"
     decision_unlocked: "Which recent patterns to consider for the look"
     needs: [current, norm]
     priority: 40

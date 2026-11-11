@@ -29,7 +29,7 @@ targets:
     label: "Realistic {entity} data"
     foreach: entity
     max: 3
-    question: "What do realistic {entity} records look like for {category} apps in {place}: typical names, price ranges, units and edge cases?"
+    question: "What do realistic {entity} records look like for {category_apps} in {place}: typical names, price ranges, units and edge cases?"
     decision_unlocked: "The mock data for this entity"
     needs: [entity, current]
     priority: 48

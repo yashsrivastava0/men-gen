@@ -9,6 +9,7 @@ reconciled so two wordings count as one. A norm that matches nothing in the Brie
 
 from __future__ import annotations
 
+import re
 from collections import defaultdict
 from datetime import date
 
@@ -192,7 +193,7 @@ def apply_norms(built: list[BuiltItem], norms: list[Norm]) -> list[BuiltItem]:
     return built
 
 
-def detect_conflicts(built: list[BuiltItem]) -> list[Conflict]:
+def detect_conflicts(built: list[BuiltItem], inp: ResearchInput | None = None) -> list[Conflict]:
     """Rules about the same subject and unit with different values: keep both, flag, ask for confirmation."""
     groups: dict[tuple[str, str], list[BuiltItem]] = defaultdict(list)
     for b in built:
@@ -222,6 +223,48 @@ def detect_conflicts(built: list[BuiltItem]) -> list[Conflict]:
                 note=listing[:240],
             )
         )
+    out += _against_locked(built, inp)
+    return out
+
+
+_NUM = re.compile(r"\d+(?:[.,]\d+)?")
+
+
+def _against_locked(built: list[BuiltItem], inp: ResearchInput | None) -> list[Conflict]:
+    """A researched value that contradicts a number the person stated (Locked) is shown as a conflict; Locked wins."""
+    if inp is None:
+        return []
+    locked = [
+        (f, set(_NUM.findall(f.statement)))
+        for f in inp.facts
+        if f.tier == "locked"
+        and f.has_quote
+        and f.kind in ("rule", "number")
+        and _NUM.search(f.statement)
+    ]
+    out: list[Conflict] = []
+    for b in built:
+        d = b.item.data
+        if b.item.kind != "rule" or not d.get("value"):
+            continue
+        mine = set(_NUM.findall(str(d["value"])))
+        if not mine:
+            continue
+        words = stem_set(f"{d.get('subject', '')} {b.item.label}")
+        for fact, nums in locked:
+            if len(words & stem_set(fact.statement)) >= 2 and nums and not (nums & mine):
+                flags = set(b.item.flags) | {"conflict", "needs-confirm"}
+                b.item = b.item.model_copy(update={"flags": sorted(flags), "tier": "open"})
+                out.append(
+                    Conflict(
+                        topic=f"{d.get('subject', 'rule')} (your Brief)",
+                        item_ids=[b.item.id],
+                        note=f"Your Brief says {', '.join(sorted(nums))} (Locked); the web says {d['value']}. Locked wins."[
+                            :240
+                        ],
+                    )
+                )
+                break
     return out
 
 

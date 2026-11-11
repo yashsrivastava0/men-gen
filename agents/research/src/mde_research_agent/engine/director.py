@@ -39,6 +39,7 @@ from mde_research_agent.plan.build import build_plan
 from mde_research_agent.plan.proposal import PlanProposal, ProposedTarget
 
 CHECK_BATCH = 15
+REPEATED_FAILURES = 5  # this many failed calls end a run at best partial (RS-34)
 TIME_WATCH_S = 0.5
 
 
@@ -548,6 +549,8 @@ class Director:
                 else "unfinished"
             )
             return "partial", reason
+        if ctx.failures.total >= REPEATED_FAILURES:
+            return "partial", "failures"
         return "complete", None
 
 

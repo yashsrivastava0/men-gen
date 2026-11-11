@@ -13,9 +13,9 @@ extract_focus: >
   Record recent additions as trends with the date.
 targets:
   - id: landscape
-    label: "Comparable {category} apps"
+    label: "Comparable {category_apps}"
     foreach: none
-    question: "Which {category} apps are used in {place}, which features does each offer and how is each priced?"
+    question: "Which {category_apps} are used in {place}, which features does each offer and how is each priced?"
     decision_unlocked: "Which features belong in the first release and which are common, advanced or emerging"
     needs: [norm, entity, current]
     priority: 100
@@ -35,9 +35,9 @@ targets:
     slots:
       - {key: reference_check, type: count, kind: reference_check, distinct_by: name, min: 1, required: true}
   - id: recent
-    label: "What changed recently in {category} apps"
+    label: "What changed recently in {category_apps}"
     foreach: none
-    question: "What features have {category} apps added or started to emphasise recently in {place}?"
+    question: "What features have {category_apps} added or started to emphasise recently in {place}?"
     decision_unlocked: "Which emerging features to consider"
     needs: [current, norm]
     priority: 55

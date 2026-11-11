@@ -31,6 +31,8 @@ from mde_research_agent.calls.extract import (
     SPECS as EXTRACT_SPECS,
 )
 from mde_research_agent.core.anatomy import check_query, is_repeat
+from mde_research_agent.core.hashing import text_hash
+from mde_research_agent.core.language import guess_language
 from mde_research_agent.core.norm_keys import clean_key
 from mde_research_agent.core.passages import bm25_scores, render, select_passages
 from mde_research_agent.core.rrf import FusedHit, fuse
@@ -458,8 +460,8 @@ async def read_page(
             params={"domain": dom},
             detail={"domain": dom, "title": title, "chars": len(text)},
         )
-    from mde_research_agent.core.hashing import text_hash
 
+    lang = guess_language(text, list(t.place.languages) if t.place else [], ctx.catalog.languages)
     rec = PageRecord(
         id=ctx.ids.new("pg"),
         url=url,
@@ -472,6 +474,7 @@ async def read_page(
         text_source=source,
         published=published,
         retrieved_on=ctx.as_of,
+        language=lang,
     )
     ctx.pages[url] = rec
     return rec
@@ -688,7 +691,10 @@ async def run_topic(
         else:
             variants = await write_variants(ctx, ts, round_no, cov, want)
         if not variants:
-            ctx.failures.record("plan", "no_query", t.id)
+            if (
+                followups is None
+            ):  # no distinct follow-up left is a normal end; no first-round query is a failure
+                ctx.failures.record("plan", "no_query", t.id)
             return 0
         results = await asyncio.gather(*[search_one(ctx, ts, v, round_no) for v in variants])
         usable = [(v, r) for v, r in zip(variants, results, strict=True) if r is not None]
