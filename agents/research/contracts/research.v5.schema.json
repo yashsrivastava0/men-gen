@@ -663,7 +663,8 @@
               "other_region",
               "other_entity",
               "duplicate_source",
-              "number_widened"
+              "number_widened",
+              "figures_dropped"
             ],
             "type": "string"
           },

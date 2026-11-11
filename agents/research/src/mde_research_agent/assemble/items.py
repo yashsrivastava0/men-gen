@@ -338,6 +338,8 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
             flags.add("duplicate_source")
         if all("number_widened" in m.flags for m in src_members):
             flags.add("number_widened")
+        if all("figures_dropped" in m.flags for m in src_members):
+            flags.add("figures_dropped")
         if any(a.seed for a in members):
             flags.add("entity_from_model")
         if kind in lanes.legal_adjacent_kinds or primary.job == "trust":

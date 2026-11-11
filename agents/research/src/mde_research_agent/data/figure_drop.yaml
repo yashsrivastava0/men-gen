@@ -1,0 +1,13 @@
+# Where an unverified figure may be DROPPED instead of rejecting the whole item (engine/verify.py).
+#
+# Every number in an item must be in its quote. When one is not, the item is rejected, except for the kinds listed here:
+# items about an entity (a provider, a competitor) whose identity does not depend on the figure. For them the figure-bearing
+# fields listed below become null, and a later sentence of the claim that states the figure is cut; the item is kept with the
+# flag `figures_dropped` and counted apart from the rejections. The label and the first sentence of the claim must be clean.
+# Rules, formats, compliance notes and every other kind are never listed: for them the figure IS the finding, so a missing
+# figure still rejects the item. An empty map switches the repair off.
+#
+# Small run 2026-11-11: three provider items (messaging) were rejected because the quote held the endpoint sentence and the
+# fees sat in `data.fees` or in the next sentence of the claim.
+service_option: [fees, limits, constraints]
+competitor: [pricing_model]

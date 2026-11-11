@@ -44,6 +44,7 @@ COUNTED_FLAGS = (
     "other_entity",
     "duplicate_source",
     "number_widened",
+    "figures_dropped",
     "single-source",
     "conflict",
     "stale",

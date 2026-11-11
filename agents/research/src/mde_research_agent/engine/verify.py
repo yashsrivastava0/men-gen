@@ -5,7 +5,9 @@ Pure functions. A candidate is a wire atom (common fields + the kind's fields). 
 * the quote must be a substring of the stored page text after normalisation (RV-02);
 * every number, amount, percentage and date in the claim, the label and the numeric data must be IN the quote (RV-18):
   a missing one is fixed by widening the quote to the smallest enclosing sentence of the page (at most 40 words, flag
-  ``number_widened``), else the item is rejected as ``number_not_in_quote``;
+  ``number_widened``); failing that the unverified figure is DROPPED and the rest kept (the claim loses the sentences
+  that state it, a figure-bearing data field becomes null, flag ``figures_dropped``) when the item's label and first
+  sentence are clean; else the item is rejected as ``number_not_in_quote``. No figure the quote lacks ever survives;
 * the date of an item is the page's own date, else a date CODE reads from the quote, the title or the URL: the
   model's idea of a date is not asked for and never used;
 * a claim is cut only at the end of a sentence within 40 words, else rejected as ``claim_too_long`` (no clipped
@@ -16,15 +18,22 @@ Pure functions. A candidate is a wire atom (common fields + the kind's fields). 
 from __future__ import annotations
 
 import re
+from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from datetime import date
 from typing import Any
 
+import regex
 from pydantic import BaseModel
 
 from mde_research_agent.core.dates import date_in_text
 from mde_research_agent.core.norm_keys import clean_key
-from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
+from mde_research_agent.core.numbers import (
+    claim_figures,
+    figures,
+    missing_figures,
+    strip_unverified,
+)
 from mde_research_agent.core.quotes import verify_quote
 from mde_research_agent.core.safety import forbidden_in_value
 from mde_research_agent.domain.atoms import COMMON_FIELDS, payload_from_wire, wire_atom_model
@@ -36,6 +45,9 @@ MAX_CLAIM_WORDS = 40
 MAX_LABEL_WORDS = 8
 _REGION = re.compile(r"^[a-z]{2}$")
 _SENTENCE_END = re.compile(r"(?<=[.!?।。])\s+|\n+")
+# Claim sentences for the figure drop: a full stop ends one only before a capital letter or an opening quote, so "Rs. 599",
+# "No. 5" and "e.g. fees" stay whole (a danda or an ideographic stop always ends one).
+_CLAIM_SENTENCE = regex.compile(r"(?<=[।。])\s+|(?<=[.!?])\s+(?=[\p{Lu}\"“‘(\[])")
 
 
 @dataclass(frozen=True)
@@ -175,8 +187,12 @@ def widen_quote(page: PageRecord, start: int, end: int, needed: list[Any]) -> st
     return None
 
 
-def check_candidate(c: Candidate, page: PageRecord) -> Candidate | Rejected:
-    """The candidate (its quote possibly widened) when it is really on the page and backs its numbers; else why not."""
+def check_candidate(
+    c: Candidate, page: PageRecord, droppable: Mapping[str, Sequence[str]] | None = None
+) -> Candidate | Rejected:
+    """The candidate (its quote possibly widened, or an unverified figure dropped where ``droppable`` allows it) when it
+    is really on the page and backs its numbers; else why not. ``droppable`` is the catalog's ``figure_drop`` map
+    (kind to fields); None or an empty map means a missing figure always rejects the item."""
     res = verify_quote(page.norm, c.quote)
     if not res.ok:
         return Rejected(c.kind, c.norm_key, "quote_not_found", c.label)
@@ -185,6 +201,38 @@ def check_candidate(c: Candidate, page: PageRecord) -> Candidate | Rejected:
     if not missing:
         return c
     wide = widen_quote(page, res.start, res.end, needed)
-    if wide is None:
+    if wide is not None:
+        return replace(c, quote=wide, flags=(*c.flags, "number_widened"))
+    kept = drop_unverified_figures(c, droppable.get(c.kind, ()) if droppable else ())
+    if kept is None:
         return Rejected(c.kind, c.norm_key, "number_not_in_quote", c.label)
-    return replace(c, quote=wide, flags=(*c.flags, "number_widened"))
+    return kept
+
+
+def drop_unverified_figures(c: Candidate, fields: Sequence[str]) -> Candidate | None:
+    """The candidate without the figures its quote does not contain, or None when what is left is not the item any more.
+
+    The Small run lost three provider items to ``number_not_in_quote`` although each quote backed what the item was
+    about (the endpoint sentence): the fees sat in ``data.fees`` or in a later sentence of the claim, and a quote is one
+    sentence. The label and the FIRST sentence of the claim are the item's headline: if either states a figure the
+    quote lacks, the item is rejected as before. Later sentences with an unverified figure are cut, and figure-bearing
+    data fields with one become null, but only the ``fields`` the catalog lists for the kind (none: nothing is dropped).
+    The result is checked again: it must hold no unverified figure."""
+    if not fields:
+        return None
+    quote_figs = figures(c.quote)
+    if missing_figures(figures(c.label, claim_side=True), quote_figs):
+        return None
+    sentences = [s for s in _CLAIM_SENTENCE.split(c.claim) if s.strip()]
+    kept = [s for s in sentences if not missing_figures(figures(s, claim_side=True), quote_figs)]
+    if not kept or not sentences or kept[0] != sentences[0]:
+        return None
+    out = replace(
+        c,
+        claim=" ".join(" ".join(kept).split()),
+        data=strip_unverified(c.data, quote_figs, fields),
+        flags=(*c.flags, "figures_dropped"),
+    )
+    if missing_figures(claim_figures(out.claim, out.label, out.data), quote_figs):
+        return None
+    return out

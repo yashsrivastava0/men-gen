@@ -121,6 +121,8 @@ def run_metrics(research: dict[str, Any], evidence: dict[str, Any]) -> dict[str,
             "recovered_by_retry": ext.get("recovered_by_retry", 0),
             "number_not_in_quote": dropped.get("number_not_in_quote", 0),
             "number_rejection_rate": _ratio(dropped.get("number_not_in_quote", 0), extracted),
+            # items kept WITHOUT the figure their quote lacked: not a rejection, and not hidden by the rate above
+            "figures_dropped": ext.get("figures_dropped", 0),
             "invalid": dropped.get("invalid", 0),
             "claim_too_long": dropped.get("claim_too_long", 0),
             "forbidden_pattern": dropped.get("forbidden_pattern", 0),

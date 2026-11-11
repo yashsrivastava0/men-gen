@@ -40,6 +40,7 @@ Flag = Literal[
     "other_entity",
     "duplicate_source",
     "number_widened",
+    "figures_dropped",
 ]
 Evidence = Literal["official", "corroborated", "single_source", "unverified"]
 AppliesKind = Literal["FTR", "ROL", "APP", "MOD", "ENT", "FLW", "INT", "NEW"]

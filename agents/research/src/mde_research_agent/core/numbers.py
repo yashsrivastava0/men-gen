@@ -252,3 +252,36 @@ def claim_figures(claim: str, label: str, data: Mapping[str, Any]) -> list[Figur
     for text in data_figure_texts(data):
         out += figures(text, claim_side=True)
     return out
+
+
+def strip_unverified(
+    data: Mapping[str, Any], quote_figs: Iterable[Figure], only: Iterable[str] | None = None
+) -> dict[str, Any]:
+    """``data`` without the parts whose figures the quote does not contain: a figure-bearing string (the fields that
+    ``data_figure_texts`` checks) becomes ``None`` and a list loses the entries that carry such a string. Everything
+    else, names and short phrases, is untouched. The rest of the item stays; only the unverified number goes.
+    ``only`` limits it to those top-level fields (a figure anywhere else stays, and the caller's re-check fails)."""
+    qfigs = list(quote_figs)
+    allowed = None if only is None else frozenset(only)
+
+    def bad(text: str) -> bool:
+        return bool(missing_figures(figures(text, claim_side=True), qfigs))
+
+    def walk(key: str, value: Any) -> Any:
+        if isinstance(value, str):
+            grounded = key in NUMERIC_FIELDS or _MARKED.search(value)
+            return None if grounded and bad(value) else value
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, (int, float)):
+            return None if key in NUMERIC_FIELDS and bad(str(value)) else value
+        if isinstance(value, Mapping):
+            return {str(k): walk(str(k), v) for k, v in value.items()}
+        if isinstance(value, (list, tuple)):
+            return [kept for kept in (walk(key, v) for v in value) if kept is not None]
+        return value
+
+    return {
+        str(k): (v if allowed is not None and str(k) not in allowed else walk(str(k), v))
+        for k, v in data.items()
+    }

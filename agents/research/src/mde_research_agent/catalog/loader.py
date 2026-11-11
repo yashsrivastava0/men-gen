@@ -20,6 +20,7 @@ from mde_research_agent.catalog.models import (
     AuthorityEntry,
     Catalog,
     CeilingsConfig,
+    FigureDrop,
     IntentWords,
     JobName,
     JobSpec,
@@ -179,6 +180,7 @@ def load_catalog(data_dir: Path | None = None) -> Catalog:
         "needs": NeedsConfig.model_validate(_yaml(root / "need_keywords.yaml")),
         "plan": PlanConfig.model_validate(_yaml(root / "plan.yaml")),
         "signals": SignalsConfig.model_validate(_yaml(root / "signals.yaml")),
+        "figure_drop": FigureDrop(fields=_yaml(root / "figure_drop.yaml")),
         "languages": LanguagesConfig.model_validate(_yaml(root / "languages.yaml")).languages,
         "labels": _labels(root),
     }

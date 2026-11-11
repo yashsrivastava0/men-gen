@@ -373,6 +373,12 @@ class Labels(Frozen):
     declined_user: str
 
 
+class FigureDrop(Frozen):
+    """Kinds whose figure-bearing fields may be nulled (and later claim sentences cut) instead of rejecting the item."""
+
+    fields: dict[str, tuple[str, ...]]
+
+
 class Catalog(Frozen):
     """Everything loaded from the data folder, validated, with a content hash."""
 
@@ -388,6 +394,7 @@ class Catalog(Frozen):
     needs: NeedsConfig
     plan: PlanConfig
     signals: SignalsConfig
+    figure_drop: FigureDrop
     languages: dict[str, LanguageInfo]
     labels: dict[str, Labels]
     catalog_hash: str

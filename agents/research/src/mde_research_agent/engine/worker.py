@@ -638,7 +638,7 @@ async def extract_page(
                 params={"topic": t.label},
                 detail={"kind": cand.kind, "label": cand.label, "topic": t.label, "fact_id": fid},
             )
-            checked = check_candidate(cand, page)
+            checked = check_candidate(cand, page, ctx.catalog.figure_drop.fields)
             if isinstance(checked, Rejected):
                 if checked.reason == "quote_not_found":
                     if attempt == 0:
@@ -663,6 +663,10 @@ async def extract_page(
                 continue
             cand = checked
             ctx.count("first_try_ok" if attempt == 0 else "recovered_by_retry")
+            if "figures_dropped" in cand.flags:
+                ctx.count(
+                    "figures_dropped"
+                )  # kept without an unverified figure: counted apart from the rejections
             existing.add(key)
             atom = AtomRecord(
                 id=fid,

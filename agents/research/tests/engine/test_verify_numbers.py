@@ -193,3 +193,110 @@ def test_region_is_a_country_code_global_or_unknown() -> None:
         and region_of("India") == "unknown"
         and region_of(None) == "unknown"
     )
+
+
+# --- the figure drop: the three provider items of the Small run, rebuilt ---------------------------------------------
+
+DROP = {"service_option": ["fees", "limits", "constraints"], "competitor": ["pricing_model"]}
+SERVICES_TEXT = (
+    "MessageBot offers transactional, promotional and OTP SMS for India. A REST API with webhook support is included. "
+    "Transactional SMS costs Rs. 0.16 to Rs. 0.25 per SMS depending on volume, plus 18% GST. "
+    "WA.Expert exposes webhooks that push events to your server in real time. "
+    "Full developer API access is included in the Complete plan at Rs. 599 a month."
+)
+
+
+def services(quote: str, claim: str, label: str, **payload: Any) -> Candidate | Rejected:
+    pg = page(SERVICES_TEXT)
+    out = candidates_from_output(
+        extract_out_model("services").model_validate(
+            {
+                "service_option": [
+                    atom(
+                        "service_option",
+                        quote,
+                        key="provider x",
+                        label=label,
+                        claim=claim,
+                        **payload,
+                    )[1]
+                ],
+                "compliance_note": [],
+            }
+        ),
+        pg,
+    )[0]
+    assert isinstance(out, Candidate), out
+    return check_candidate(out, pg, DROP)
+
+
+def test_fees_that_only_the_data_states_are_dropped_and_the_item_is_kept() -> None:
+    """MessageBot: the quote is the endpoint sentence; the fees are in data.fees."""
+    out = services(
+        "A REST API with webhook support is included.",
+        "MessageBot offers transactional SMS for India with a REST API and webhook support.",
+        "MessageBot SMS",
+        fees="Transactional SMS costs Rs. 0.16 to Rs. 0.25 per SMS plus 18% GST.",
+    )
+    assert isinstance(out, Candidate) and "figures_dropped" in out.flags
+    assert out.data["fees"] is None and out.claim.startswith("MessageBot offers")
+
+
+def test_a_later_claim_sentence_with_an_unverified_figure_is_cut() -> None:
+    """WA.Expert: sentence one is backed by the quote, sentence two states Rs. 599."""
+    out = services(
+        "WA.Expert exposes webhooks that push events to your server in real time.",
+        "WA.Expert sends webhook events in real time. Developer API access is in the Complete plan at Rs. 599 a month.",
+        "WA.Expert WhatsApp API",
+        fees="Included in the Complete plan at Rs. 599 a month.",
+    )
+    assert isinstance(out, Candidate) and "figures_dropped" in out.flags
+    assert out.claim == "WA.Expert sends webhook events in real time." and out.data["fees"] is None
+
+
+def test_a_figure_in_the_first_sentence_or_the_label_still_rejects() -> None:
+    first = services(
+        "A REST API with webhook support is included.",
+        "Approval takes 2-3 weeks and a REST API with webhook support is included.",
+        "MessageBot SMS",
+    )
+    assert isinstance(first, Rejected) and first.reason == "number_not_in_quote"
+    label = services(
+        "A REST API with webhook support is included.",
+        "MessageBot has a REST API.",
+        "MessageBot 99 SMS",
+    )
+    assert isinstance(label, Rejected)
+
+
+def test_kinds_that_are_not_listed_never_drop_a_figure() -> None:
+    """A rule's figure IS the finding: with the claim clean and only data.value unverified the item is still rejected."""
+    pg = page()
+    c = first(
+        candidates(
+            [
+                rule(
+                    "Settlement takes 3 business days after capture",
+                    "Settlement is quick.",
+                    value="7",
+                )
+            ],
+            pg,
+        )
+    )
+    assert isinstance(check_candidate(c, pg, DROP), Rejected)
+    assert isinstance(check_candidate(c, pg), Rejected)  # no map at all: the old behaviour
+
+
+def test_what_survives_a_drop_holds_no_unverified_figure() -> None:
+    from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
+
+    out = services(
+        "A REST API with webhook support is included.",
+        "MessageBot has a REST API. It costs Rs. 0.16 per SMS.",
+        "MessageBot SMS",
+        fees="Rs. 0.16 per SMS",
+        limits="18% GST applies",
+    )
+    assert isinstance(out, Candidate)
+    assert not missing_figures(claim_figures(out.claim, out.label, out.data), figures(out.quote))
