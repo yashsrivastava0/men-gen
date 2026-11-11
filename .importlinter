@@ -12,6 +12,7 @@ root_packages =
     mde_spec_builder
     mde_flow
     mde_compass
+    mde_research_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -22,7 +23,7 @@ name = Package layering (brief 5.2)
 type = layers
 layers =
     mde_cli
-    mde_context_api | mde_llm_gateway_api | mde_compass
+    mde_context_api | mde_llm_gateway_api | mde_compass | mde_research_agent
     mde_flow
     mde_discovery | mde_research | mde_spec_builder
     mde_prompts
@@ -62,6 +63,7 @@ source_modules =
     mde_spec_builder
     mde_flow
     mde_compass
+    mde_research_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -85,6 +87,7 @@ source_modules =
     mde_spec_builder
     mde_flow
     mde_compass
+    mde_research_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -125,11 +128,32 @@ source_modules =
 forbidden_modules =
     mde_discovery
     mde_research
+    mde_research_agent
     mde_spec_builder
     mde_flow
     mde_prompts
     mde_content
     mde_spec_loader
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+allow_indirect_imports = True
+
+[importlinter:contract:research-agent-isolated]
+name = The Research agent imports only core, contracts and llm_gateway (and third-party libraries); no other agent, app or the older mde_research
+type = forbidden
+source_modules =
+    mde_research_agent
+forbidden_modules =
+    mde_compass
+    mde_discovery
+    mde_research
+    mde_spec_builder
+    mde_flow
+    mde_prompts
+    mde_content
+    mde_spec_loader
+    mde_persistence
     mde_context_api
     mde_llm_gateway_api
     mde_cli

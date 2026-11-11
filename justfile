@@ -50,6 +50,22 @@ compass-test:
 compass-test-int: db-up
     uv run pytest agents/compass -m integration -q
 
+# Research (the second agent): dev server with CORS for the test UI on port 8120
+research-dev:
+    uv run python -m mde_research_agent --port 8120
+
+research-dev-memory:
+    uv run python -m mde_research_agent --memory --port 8120
+
+research-migrate:
+    uv run python -m mde_research_agent.store.migrate
+
+research-test:
+    uv run pytest agents/research -m "not integration and not live" -q
+
+research-test-int: db-up
+    uv run pytest agents/research -m integration -q
+
 # --- quality --------------------------------------------------------------
 lint:
     uv run ruff check .
