@@ -24,7 +24,9 @@ def parse_args(argv: list[str]) -> argparse.Namespace:
     )
     parser.add_argument("session_id", help="Compass session ID (ses_...)")
     parser.add_argument("--tenant-id", default="default", help="Tenant ID (default: default)")
-    parser.add_argument("--limit", type=int, default=200, help="Maximum calls to inspect (default: 200)")
+    parser.add_argument(
+        "--limit", type=int, default=200, help="Maximum calls to inspect (default: 200)"
+    )
     return parser.parse_args(argv)
 
 
@@ -76,7 +78,9 @@ def generate_report(session_id: str, entries: list[CallLogEntry]) -> str:
     max_concurrency_seen = 1
 
     for turn_idx, (turn_key, calls) in enumerate(turns.items(), start=1):
-        lines.append(f"Turn #{turn_idx}: {turn_key} ({len(calls)} call{'s' if len(calls) > 1 else ''})")
+        lines.append(
+            f"Turn #{turn_idx}: {turn_key} ({len(calls)} call{'s' if len(calls) > 1 else ''})"
+        )
         lines.append("-" * 80)
 
         # Compute times
@@ -116,8 +120,10 @@ def generate_report(session_id: str, entries: list[CallLogEntry]) -> str:
             max_concurrency_seen = peak_concurrency
 
         # Print table header
-        lines.append(f"{'Spec ID':<26} {'Latency':<9} {'Timeline':<42} {'Tokens (In/Out)':<16} Outcome")
-        lines.append(f"{'-'*26} {'-'*9} {'-'*42} {'-'*16} -------")
+        lines.append(
+            f"{'Spec ID':<26} {'Latency':<9} {'Timeline':<42} {'Tokens (In/Out)':<16} Outcome"
+        )
+        lines.append(f"{'-' * 26} {'-' * 9} {'-' * 42} {'-' * 16} -------")
 
         for c in calls:
             if c.at and earliest != utc_min:
@@ -137,14 +143,18 @@ def generate_report(session_id: str, entries: list[CallLogEntry]) -> str:
         lines.append("\n")
 
     overall_savings_ms = max(0, overall_sequential_ms - overall_wall_ms)
-    overall_savings_pct = (overall_savings_ms / overall_sequential_ms * 100) if overall_sequential_ms > 0 else 0
+    overall_savings_pct = (
+        (overall_savings_ms / overall_sequential_ms * 100) if overall_sequential_ms > 0 else 0
+    )
 
     lines.append("=" * 80)
     lines.append(" SUMMARY")
     lines.append("=" * 80)
     lines.append(f"Total Sequential Model Time : {overall_sequential_ms:,} ms")
     lines.append(f"Total Elapsed Wall Time     : {overall_wall_ms:,} ms")
-    lines.append(f"Total Parallel Savings       : {overall_savings_ms:,} ms ({overall_savings_pct:.1f}%)")
+    lines.append(
+        f"Total Parallel Savings       : {overall_savings_ms:,} ms ({overall_savings_pct:.1f}%)"
+    )
     lines.append(f"Max Concurrent Calls Observed: {max_concurrency_seen}x")
     lines.append("=" * 80)
 

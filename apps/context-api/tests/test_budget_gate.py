@@ -153,12 +153,12 @@ async def test_a_client_without_a_status_never_pauses_planning() -> None:
 async def test_the_composition_root_wires_the_gate_with_the_configured_reserve(
     tmp_path: Path,
 ) -> None:
-    settings = make_settings(tmp_path, budget_plan_reserve_usd="1.00")  # more than a session cap
+    settings = make_settings(tmp_path, budget_plan_reserve_usd="1.10")  # more than a session cap
     state = await build_app_state(settings, store=InMemoryStore(), fake_builder=True)
     try:
         assert isinstance(state.flow.budget_gate, GatewayBudgetGate)
         v = await state.flow.budget_gate.check(session_id="ses_1", tenant_id="t")
-        assert not v.ok  # the default session cap (USD 0.50) cannot hold a USD 1.00 plan
+        assert not v.ok  # the default session cap (USD 1.00, D-124) cannot hold a USD 1.10 plan
     finally:
         await state.aclose()
     default = await build_app_state(
