@@ -45,6 +45,7 @@ COUNTED_FLAGS = (
     "duplicate_source",
     "number_widened",
     "figures_dropped",
+    "tightened",
     "single-source",
     "conflict",
     "stale",

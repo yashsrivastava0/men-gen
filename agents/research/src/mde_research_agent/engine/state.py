@@ -92,6 +92,15 @@ class AtomRecord:
     unsupported_fields: list[str] = field(
         default_factory=list
     )  # paths in ``data`` the checker could not back
+    unsupported_sentences: list[int] = field(
+        default_factory=list
+    )  # the checker's numbers (from 1) of claim sentences the passage does not state
+    claim_original: str | None = (
+        None  # the claim before the unsupported sentences were dropped (D-159)
+    )
+    dropped_sentences: list[str] = field(
+        default_factory=list
+    )  # what was dropped, kept for the evidence file
 
 
 @dataclass

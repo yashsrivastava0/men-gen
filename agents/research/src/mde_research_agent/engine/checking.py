@@ -22,6 +22,7 @@ from typing import Any
 from mde_core.errors import BudgetExceeded, CallCancelled, CassetteMissing, LiveCallForbidden
 from mde_research_agent.calls import check as check_call
 from mde_research_agent.catalog.models import LanesConfig
+from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
 from mde_research_agent.core.quotes import verify_quote
 from mde_research_agent.domain.atoms import NON_WIRE, is_identifying
 from mde_research_agent.engine.context import RunContext
@@ -212,7 +213,72 @@ async def _apply(
                 return
     if v.verdict == "partial":
         a.flags.add("partial_support")
+        a.unsupported_sentences = list(v.unsupported_sentences)
     await _announce(ctx, ts, a, v.verdict)
+
+
+def tightened_claim(claim: str, numbers: list[int]) -> tuple[str, list[str]] | None:
+    """The claim without the sentences the checker named, and what was dropped; None when nothing can be dropped
+    (no valid number, or every sentence was named, which would leave no claim). Only removes words, never adds."""
+    sentences = check_call.claim_sentences(claim)
+    drop = sorted({n for n in numbers if 1 <= n <= len(sentences)})
+    if not drop or len(drop) >= len(sentences):
+        return None
+    kept = [s for n, s in enumerate(sentences, 1) if n not in drop]
+    return " ".join(kept), [sentences[n - 1] for n in drop]
+
+
+async def _tighten(ctx: RunContext, ts: TargetState, atoms: list[AtomRecord]) -> None:
+    """Partial items whose checker named unsupported sentences: drop those sentences and ask the same checker once more.
+
+    The item climbs to ``supported`` only if the checker then says so with nothing left to null, and every figure of the
+    shorter claim is still in the quote (it cannot be otherwise: words were only removed). Otherwise the original claim
+    is restored and the item stays partial. A bare second question about an unchanged claim is never asked: it would only
+    resample a noisy answer (7 of 20 partials came back supported on a plain re-ask, D-159).
+    """
+    tried: list[AtomRecord] = []
+    for a in atoms:
+        if a.status != "verified" or a.verdict != "partial" or not a.unsupported_sentences:
+            continue
+        cut = tightened_claim(a.claim, a.unsupported_sentences)
+        if cut is None:
+            continue
+        a.claim_original, (a.claim, a.dropped_sentences) = a.claim, cut
+        tried.append(a)
+    if not tried or _stopped(ctx, ts):
+        for a in tried:
+            _restore(a)
+        return
+    unique: dict[str, AtomRecord] = {}
+    for a in tried:
+        unique.setdefault(pair_key(a), a)
+    to_run = list(unique.items())
+    results: dict[str, check_call.CheckVerdict | None] = {}
+    batches = [to_run[i : i + CHECK_BATCH] for i in range(0, len(to_run), CHECK_BATCH)]
+    for got in await asyncio.gather(*[_run_batch(ctx, ts, b) for b in batches]):
+        results.update(got)
+    for a in tried:
+        ctx.count("tightened")
+        v = results.get(pair_key(a))
+        ok = (
+            v is not None
+            and v.verdict == "supported"
+            and not v.unsupported_fields
+            and not missing_figures(claim_figures(a.claim, a.label, a.data), figures(a.quote))
+        )
+        if not ok:
+            _restore(a)
+            continue
+        ctx.count("tightened_supported")
+        a.verdict = "supported"
+        a.flags.discard("partial_support")
+        a.flags.add("tightened")
+        await _announce(ctx, ts, a, "supported")
+
+
+def _restore(a: AtomRecord) -> None:
+    if a.claim_original is not None:
+        a.claim, a.claim_original, a.dropped_sentences = a.claim_original, None, []
 
 
 async def _run_batch(
@@ -237,6 +303,8 @@ async def _run_batch(
                 passage=passage_window(page, a.quote),
                 page_title=page.title,
                 page_domain=page.domain,
+                about_region="" if a.about_region == "unknown" else a.about_region,
+                about_entity=a.about_entity or "",
             )
         )
     try:
@@ -301,3 +369,4 @@ async def check_topic(ctx: RunContext, ts: TargetState) -> None:
         results[key] = await fut
     for key, a in keyed:
         await _apply(ctx, ts, a, results.get(key))
+    await _tighten(ctx, ts, [a for _, a in keyed])

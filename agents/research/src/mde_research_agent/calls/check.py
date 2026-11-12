@@ -1,11 +1,13 @@
-"""RSCH-4 (v2): the checker. A second model reads, for EACH item of a topic, the claim, the typed data and the page
+"""RSCH-4 (v3): the checker. A second model reads, for EACH item of a topic, the claim, the typed data and the page
 passage around the quote, and says whether the passage supports them.
 
 Every verified item is checked (not only high-impact ones), inside its topic and before the coverage audit, so a
 rejected item reopens its slot and a follow-up can run. The checker sees the claim, the data as compact JSON, the
 passage window (about 150 words around the quote, from the stored page), the page title and domain: no URL, no tools.
-It returns a verdict (``supported`` / ``partial`` / ``not_supported``) and ``unsupported_fields``: the paths in
-``data`` that the passage does not state. CODE then nulls those fields, drops an item that lost its minimum, flags a
+It returns a verdict (``supported`` / ``partial`` / ``not_supported``), ``unsupported_fields`` (the paths in ``data`` that
+the passage does not state) and, v3, ``unsupported_sentences`` (the numbers of the claim's sentences the passage does not
+state). CODE then nulls those fields, may drop those sentences and ask once more (D-159: it removes words, it never adds
+any, and the same checker must then say ``supported``), drops an item that lost its minimum, flags a
 partial one and rejects a ``not_supported`` one. Code checks stay primary (quote on the page, numbers in the quote,
 region and entity fit, independence); this call is a second opinion. It runs on the ``standard`` route, which
 Research reserves for it, so a different model is one ``MODEL_ROUTES`` entry away; until one is configured the
@@ -37,6 +39,43 @@ class W(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
 
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[\"'(\[]?[A-Z])")
+# A full stop after one of these does not end a sentence ("Dr. Rao", "Rs. 500", "9 a.m. daily").
+_ABBREVIATIONS = frozenset(
+    {
+        "dr.",
+        "mr.",
+        "mrs.",
+        "ms.",
+        "st.",
+        "no.",
+        "inc.",
+        "ltd.",
+        "vs.",
+        "rs.",
+        "e.g.",
+        "i.e.",
+        "a.m.",
+        "p.m.",
+        "approx.",
+    }
+)
+
+
+def claim_sentences(claim: str) -> list[str]:
+    """The claim's sentences, in order. The checker is shown them numbered from 1 and answers with those numbers, and
+    the engine drops by the same split, so both must use this one function."""
+    out: list[str] = []
+    for piece in (x.strip() for x in _SENTENCE_END.split(claim.strip())):
+        if not piece:
+            continue
+        if out and out[-1].split()[-1].lower() in _ABBREVIATIONS:
+            out[-1] = f"{out[-1]} {piece}"
+        else:
+            out.append(piece)
+    return out
+
+
 class CheckItem(W):
     id: str
     claim: str
@@ -45,20 +84,42 @@ class CheckItem(W):
     passage: str = ""  # about 150 words of the stored page around the quote
     page_title: str = ""
     page_domain: str = ""
+    about_region: str = ""  # the country the item says it is about ("" when not given)
+    about_entity: str = ""  # the company, product or authority the item says it is about
 
 
 class CheckIn(W):
     items: list[CheckItem]
+    legacy: bool = (
+        False  # v2 layout (no numbered sentences, no ABOUT line): the baseline of the experiments
+    )
     text: str = ""  # everything the model reads about the items as ONE untrusted block
 
     @model_validator(mode="after")
     def _build_text(self) -> CheckIn:
-        self.text = "\n\n".join(
-            f"[{i.id}] page: {i.page_title} ({i.page_domain})\nCLAIM: {i.claim}\nQUOTE: {i.quote}\n"
-            f"DATA: {i.data}\nPASSAGE: {i.passage or i.quote}"
-            for i in self.items
-        )
+        self.text = "\n\n".join(self._block(i) for i in self.items)
         return self
+
+    def _block(self, i: CheckItem) -> str:
+        head = f"[{i.id}] page: {i.page_title} ({i.page_domain})\n"
+        tail = f"QUOTE: {i.quote}\nDATA: {i.data}\nPASSAGE: {i.passage or i.quote}"
+        if self.legacy:
+            return f"{head}CLAIM: {i.claim}\n{tail}"
+        sentences = claim_sentences(i.claim)
+        claim = (
+            " ".join(f"[{n}] {s}" for n, s in enumerate(sentences, 1))
+            if len(sentences) > 1
+            else i.claim
+        )
+        about = ", ".join(
+            x
+            for x in (
+                i.about_region and f"country {i.about_region}",
+                i.about_entity and f"about {i.about_entity}",
+            )
+            if x
+        )
+        return f"{head}CLAIM: {claim}\n{tail}" + (f"\nABOUT: {about}" if about else "")
 
 
 class CheckVerdict(W):
@@ -67,6 +128,9 @@ class CheckVerdict(W):
     unsupported_fields: list[str] = Field(
         default_factory=list
     )  # paths in DATA the passage does not state
+    unsupported_sentences: list[int] = Field(
+        default_factory=list
+    )  # numbers (from 1) of the claim's sentences the passage does not state; only for "partial"
 
 
 class CheckOut(W):
@@ -113,26 +177,34 @@ def validate(inp: CheckIn, out: CheckOut) -> list[str]:
     return problems
 
 
-SPEC: ResearchCallSpec[CheckIn, CheckOut] = ResearchCallSpec(
-    spec=CallSpec(
-        id=CALL_ID,
-        version=2,
-        input_model=CheckIn,
-        output_model=CheckOut,
-        system_template="check.system.jinja",
-        user_template="check.user.jinja",
-        template_root=Path(__file__).parent / "templates",
-        route="standard",
-        reasoning_effort="low",
-        max_output_tokens=4000,
-        mock_handler="mde_research_agent.calls.check:handle",
-        untrusted_inputs=("text",),
-        cacheable=True,
-        repair=True,
-        fallback="research.check",
-    ),
-    timeout_s=90.0,
-    fallback=unchecked,
-    validators=(validate,),
-    checker=True,
+def _spec(version: int, system: str, user: str) -> ResearchCallSpec[CheckIn, CheckOut]:
+    return ResearchCallSpec(
+        spec=CallSpec(
+            id=CALL_ID,
+            version=version,
+            input_model=CheckIn,
+            output_model=CheckOut,
+            system_template=system,
+            user_template=user,
+            template_root=Path(__file__).parent / "templates",
+            route="standard",
+            reasoning_effort="low",
+            max_output_tokens=4000,
+            mock_handler="mde_research_agent.calls.check:handle",
+            untrusted_inputs=("text",),
+            cacheable=True,
+            repair=True,
+            fallback="research.check",
+        ),
+        timeout_s=90.0,
+        fallback=unchecked,
+        validators=(validate,),
+        checker=True,
+    )
+
+
+SPEC: ResearchCallSpec[CheckIn, CheckOut] = _spec(3, "check.system.jinja", "check.user.jinja")
+# The v2 checker, kept only so an experiment can measure the new one against it (``CheckIn(legacy=True)``).
+SPEC_V2: ResearchCallSpec[CheckIn, CheckOut] = _spec(
+    2, "check_v2.system.jinja", "check_v2.user.jinja"
 )

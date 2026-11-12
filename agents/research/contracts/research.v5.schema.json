@@ -664,7 +664,8 @@
               "other_entity",
               "duplicate_source",
               "number_widened",
-              "figures_dropped"
+              "figures_dropped",
+              "tightened"
             ],
             "type": "string"
           },

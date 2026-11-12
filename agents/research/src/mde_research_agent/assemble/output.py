@@ -555,6 +555,8 @@ def build_evidence(
                 "about_region": a.about_region,
                 "about_entity": a.about_entity,
                 "unsupported_fields": a.unsupported_fields,
+                "claim_original": a.claim_original,
+                "dropped_sentences": a.dropped_sentences,
             }
             for ts in sorted(ctx.targets.values(), key=lambda s: s.target.id)
             for a in ts.atoms
