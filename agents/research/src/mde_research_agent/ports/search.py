@@ -24,6 +24,7 @@ SearchErrorKind = Literal[
     "http_error",
     "network",
     "bad_response",
+    "private_term",  # refused before the provider: the query names something private from the Brief
 ]
 
 

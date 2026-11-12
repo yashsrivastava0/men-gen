@@ -29,6 +29,12 @@ class FailureLedger:
     by_target: Counter[str] = field(default_factory=Counter)
     retries: int = 0
     rate_limit_waits: int = 0
+    private_blocked: int = (
+        0  # queries refused for naming something private (core/privacy.py); not a failure
+    )
+
+    def count_private(self) -> None:
+        self.private_blocked += 1
 
     def record(self, channel: str, reason: str, target_id: str | None = None) -> None:
         self.by_kind[(channel, reason)] += 1
@@ -43,9 +49,14 @@ class FailureLedger:
         return self.by_kind.get((channel, reason), 0)
 
     def as_list(self) -> list[dict[str, object]]:
-        return [
+        rows: list[dict[str, object]] = [
             {"channel": c, "reason": r, "count": n} for (c, r), n in sorted(self.by_kind.items())
         ]
+        if self.private_blocked:
+            rows.append(
+                {"channel": "query", "reason": "private_term", "count": self.private_blocked}
+            )
+        return rows
 
 
 PAGE_ATTEMPT_FACTOR = 1.5
