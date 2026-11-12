@@ -15,6 +15,8 @@ import asyncio
 import contextlib
 import gzip
 import hashlib
+import math
+import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date, datetime, timedelta
@@ -37,7 +39,7 @@ from mde_research_agent.assemble.output import assemble_output
 from mde_research_agent.assemble.store import compact_view
 from mde_research_agent.calls import assemble as asm_call
 from mde_research_agent.catalog.models import Catalog
-from mde_research_agent.config import ResearchSettings
+from mde_research_agent.config import ResearchSettings, keys_present
 from mde_research_agent.core.hashing import content_hash
 from mde_research_agent.domain.events import Counters, RunSnapshot
 from mde_research_agent.domain.input import ResearchInput
@@ -55,12 +57,23 @@ from mde_research_agent.ports.search import SearchPort
 from mde_research_agent.report import render_report
 from mde_research_agent.review import ReviewIndex, build_index, overview, review_page, sources_page
 from mde_research_agent.spend import BudgetControl, SpendRecord, ledger_run_spend
+from mde_research_agent.spend import credits as credit_ledger_module
+from mde_research_agent.spend.credits import (
+    CreditLedger,
+    describe,
+    key_fingerprint,
+    per_run,
+    set_current_run,
+)
 from mde_research_agent.spotcheck import VERDICTS, SpotCheckStore, draw, summarize
 from mde_research_agent.store.ports import ACTIVE_STATUSES, Decision, RunRow, Store
 from mde_research_agent.validators import ValidationContext, run_all
 from mde_research_agent.validators.registry import ENFORCED, must_refuse
 
 log = get_logger(__name__)
+
+CREDITS_THROTTLE_S = 60.0  # Tavily's /usage is rate limited: at most one call a minute, however often it is asked for
+CREDITS_BACKOFF_MAX_S = 3600.0
 
 
 class NotReady(Conflict):
@@ -133,6 +146,8 @@ class ResearchService:
         gateway_factory: Callable[..., Any] | None = None,
         stale_after_s: int = 600,
         own_store: bool = False,
+        credits: CreditLedger | None = None,
+        credits_http: Any = None,
     ) -> None:
         self.store = store
         self.catalog = catalog
@@ -165,6 +180,18 @@ class ResearchService:
         )
         self._review_cache: dict[str, ReviewIndex] = {}
         self.bakeoff: Any = None  # the Tools bake-off (set by the app composition)
+        # The global provider-credit ledger (advisory). A service with a data folder and no ledger of its own gets one
+        # IN that folder, so a test service never reaches the owner's file. ``credits_http`` is the client the
+        # ``GET /usage`` check uses; without one (tests) nothing is ever asked of the network.
+        if credits is None and data_dir is not None:
+            credits = CreditLedger(data_dir / credit_ledger_module.FILE_NAME, clock=self.clock)
+        self.credits = credits
+        self.credits_http = credits_http
+        self._credits_next_ok = 0.0  # monotonic seconds before which /usage is not asked again
+        self._credits_check: dict[str, Any] = {"checked_at": None, "error": None}
+        self._credits_lock = asyncio.Lock()
+        self._mono: Callable[[], float] = time.monotonic
+        self._background: set[asyncio.Task[Any]] = set()
         self.queue: list[str] = []
         self._running: set[str] = set()
         self._pump_lock = asyncio.Lock()
@@ -320,6 +347,9 @@ class ResearchService:
 
     async def _execute(self, live: LiveRun) -> None:
         rid = live.run_id
+        set_current_run(
+            rid
+        )  # this task's own context: MeteredSearch books each search's credits to this run
         started = self.clock.now()
         entry_id: str | None = None
         status_for_record = "failed"
@@ -423,6 +453,7 @@ class ResearchService:
             await self._fail(live, "internal_error", f"{type(exc).__name__}")
         finally:
             self._finish_record(entry_id, status_for_record, rid)
+            self._check_credits_later()
             self.live.pop(rid, None)
             self._running.discard(rid)
             self._pump_later()
@@ -430,6 +461,12 @@ class ResearchService:
     def _finish_record(self, entry_id: str | None, status: str, run_id: str) -> None:
         if entry_id is None or self.record is None:
             return
+        try:
+            credits = self._run_credits(run_id)
+            if credits:
+                self.record.update_meta(entry_id, {"credits": credits})
+        except Exception:  # the record must never break a run
+            log.exception("research_spend_credits_failed", run_id=run_id)
         try:
             has_ledger = self.control is not None and self.control.ledger_path.is_file()
             ledger = (
@@ -497,9 +534,17 @@ class ResearchService:
             for v in violations
         ]
         evidence["events"] = [e.model_dump(mode="json") for e in events]
+        # Credits the providers billed this run (advisory): beside the result (evidence), never inside research.json.
+        run_credits = self._run_credits(rid)
+        if run_credits:
+            evidence["credits"] = run_credits
         digest = content_hash(dumped)
         await self.store.save_result(rid, dumped, evidence, digest)
         status = str(dumped["status"])
+        extra: dict[str, Any] = {}
+        if run_credits:
+            row_now = await self.get_row(live.tenant_id, rid)
+            extra["meta"] = {**(row_now.meta or {}), "credits": run_credits}
         await self.store.update_run(
             live.tenant_id,
             rid,
@@ -508,6 +553,7 @@ class ResearchService:
             result_status=status,
             content_hash=digest,
             reason=result.reason,
+            **extra,
         )
         counts = {
             "status": status,
@@ -1014,6 +1060,125 @@ class ResearchService:
                 self.record.finish_entry(entry, "done")
         return out
 
+    # --- provider credits (advisory: they warn, they never block) -------------------------------------------------------
+    def _run_credits(self, run_id: str) -> dict[str, int]:
+        """What the providers billed one run, per provider (empty without a ledger or without searches)."""
+        if self.credits is None:
+            return {}
+        try:
+            return self.credits.run_credits(run_id)
+        except Exception:  # advisory: never break a run
+            log.exception("research_credits_read_failed", run_id=run_id)
+            return {}
+
+    def _credit_hint(self) -> dict[str, Any]:
+        """Expected credits per size class (``data/estimates.yaml``; measured medians once runs exist)."""
+        if self.estimates is None:
+            return {}
+        entries = self.record.data["entries"] if self.record else []
+        return {
+            cls: self.estimates.for_class(cls, entries).get("credits", {})
+            for cls in self.estimates.data["classes"]
+        }
+
+    def credits_status(self) -> dict[str, Any]:
+        """The ``GET /api/credits`` body. Reads the ledger file only: no network, no cost."""
+        if self.credits is None:
+            return {"enabled": False, "providers": [], "per_run": [], "estimate_hint": {}}
+        snap = self.credits.snapshot()
+        hint = self._credit_hint()
+        small = hint.get("small", {})
+        need = {p: int(small[p]["high"]) for p in credit_ledger_module.PROVIDERS if p in small}
+        wait = max(0.0, self._credits_next_ok - self._mono())
+        return {
+            "enabled": True,
+            "providers": describe(snap, need_high=need, keys=keys_present(self.settings)),
+            "per_run": per_run(snap),
+            "estimate_hint": hint,
+            "primary": self.search.name if self.search is not None else None,
+            "write_failed": bool(snap.get("write_failed")),
+            "check": {**self._credits_check, "wait_s": math.ceil(wait)},
+        }
+
+    def _key_fingerprint(self, provider: str) -> str | None:
+        secret = getattr(self.settings, f"{provider}_api_key", None)
+        value = secret.get_secret_value() if secret is not None else ""
+        return key_fingerprint(value) if value else None
+
+    async def refresh_credits(self) -> dict[str, Any]:
+        """Ask Tavily for its own credit count (``GET /usage``) and store the reading. Never raises.
+
+        Throttled to one call a minute (and longer after a 429's ``Retry-After``). Without a key, a ledger or an HTTP
+        client it does nothing. Serper has no balance endpoint: it is counted from each answer's ``credits``.
+        """
+        try:
+            return await self._refresh_credits()
+        except Exception:  # advisory: a problem here is never a problem for a run
+            log.exception("research_credits_refresh_failed")
+            return {"done": False, "throttled": False, "error": "internal"}
+
+    async def _refresh_credits(self) -> dict[str, Any]:
+        from mde_research_agent.adapters.search.usage import fetch_tavily_usage
+
+        secret = self.settings.tavily_api_key
+        key = secret.get_secret_value() if secret is not None else ""
+        if self.credits is None or self.credits_http is None or not key:
+            return {"done": False, "throttled": False, "error": "not_available"}
+        async with self._credits_lock:
+            now = self._mono()
+            if now < self._credits_next_ok:
+                return {
+                    "done": False,
+                    "throttled": True,
+                    "wait_s": math.ceil(self._credits_next_ok - now),
+                    "error": self._credits_check.get("error"),
+                }
+            self._credits_next_ok = (
+                now + CREDITS_THROTTLE_S
+            )  # a failed call waits too: never hammer the endpoint
+            result = await fetch_tavily_usage(key, self.credits_http, now=self.clock.now())
+            self._credits_check = {
+                "checked_at": self.clock.now().isoformat(),
+                "error": result.error,
+            }
+            if result.reading is not None:
+                await asyncio.to_thread(
+                    self.credits.record_reading,
+                    "tavily",
+                    result.reading,
+                    fingerprint=key_fingerprint(key),
+                )
+            elif result.retry_after:
+                self._credits_next_ok = now + min(
+                    max(CREDITS_THROTTLE_S, result.retry_after), CREDITS_BACKOFF_MAX_S
+                )
+            return {"done": result.reading is not None, "throttled": False, "error": result.error}
+
+    def _check_credits_later(self) -> None:
+        """After a run: read Tavily's count in the background (never delays the run's own end)."""
+        if self.credits is None or self.credits_http is None:
+            return
+        with contextlib.suppress(RuntimeError):
+            task = asyncio.get_running_loop().create_task(self.refresh_credits())
+            self._background.add(task)
+            task.add_done_callback(self._background.discard)
+
+    async def set_credit_baseline(
+        self, provider: str, kind: str, amount: int, limit: int | None = None
+    ) -> dict[str, Any]:
+        """The owner's reading of a balance. ``ValueError`` (a plain sentence) on an impossible figure."""
+        if self.credits is None:
+            raise NotFound("credits")
+        await asyncio.to_thread(
+            self.credits.set_baseline,
+            provider,
+            kind,
+            amount,
+            limit,
+            fingerprint=self._key_fingerprint(provider),
+        )
+        return self.credits_status()
+
     def budget_status(self) -> dict[str, Any]:
         if self.control is None:
             return {"enabled": False}
@@ -1049,6 +1214,11 @@ class ResearchService:
             if live.task is not None:
                 with contextlib.suppress(asyncio.CancelledError, Exception):
                     await live.task
+        for task in list(self._background):
+            task.cancel()
+        for task in list(self._background):
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await task
         for closer in self._closers:
             try:
                 res = closer()

@@ -194,6 +194,16 @@ class SpendRecord:
             self._entry(entry_id)["meta"] = {k: v for k, v in meta.items() if v is not None}
             self._save()
 
+    def update_meta(self, entry_id: str, meta: dict[str, Any]) -> None:
+        """Merge ``meta`` into the entry's meta (``set_meta`` replaces it). Used for the credits a run booked."""
+        with self._lock:
+            entry = self._entry(entry_id)
+            entry["meta"] = {
+                **(entry.get("meta") or {}),
+                **{k: v for k, v in meta.items() if v is not None},
+            }
+            self._save()
+
     def add_cost(self, entry_id: str, step: str, micros: int) -> None:
         if micros <= 0:
             return

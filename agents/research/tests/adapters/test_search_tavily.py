@@ -32,6 +32,7 @@ ALLOWED_BODY_KEYS = frozenset(
         "topic",
         "max_results",
         "include_published_date",
+        "include_usage",
         "exact_match",
         "country",
         "language",
@@ -161,6 +162,7 @@ async def test_request_goes_to_the_official_endpoint_with_a_bearer_header() -> N
         "topic": "general",
         "max_results": 10,
         "include_published_date": True,
+        "include_usage": True,
     }
 
 
@@ -422,6 +424,7 @@ async def test_the_full_request_maps_every_parameter_at_once() -> None:
         "topic": "general",
         "max_results": 5,
         "include_published_date": True,
+        "include_usage": True,
         "exact_match": True,
         "country": "india",
         "language": "hi",

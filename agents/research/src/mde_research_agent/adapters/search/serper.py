@@ -152,12 +152,20 @@ class SerperAdapter(JsonSearchAdapter):
             body["tbs"], applied["recency"] = ("qdr:m", "1m") if months <= 1 else ("qdr:y", "12m")
         return _Plan(body, applied, locale_weak, num)
 
+    @staticmethod
+    def _credits(data: dict[str, Any]) -> int | None:
+        """The credits the answer says it billed (``credits``, 1 to 10); None when it carries no usable count."""
+        credits = data.get("credits")
+        if isinstance(credits, bool) or not isinstance(credits, int) or not 1 <= credits <= 10:
+            return None
+        return credits
+
     def _cost(self, num: int, data: dict[str, Any]) -> int:
         if self._cost_override is not None:
             return self._cost_override
         prices = load_prices()["serper"]
-        credits = data.get("credits")
-        if isinstance(credits, bool) or not isinstance(credits, int) or not 1 <= credits <= 10:
+        credits = self._credits(data)
+        if credits is None:
             heavy = num > price_int(prices, "num_threshold")
             credits = price_int(
                 prices, "credits_when_num_over_10" if heavy else "credits_per_query"
@@ -211,4 +219,5 @@ class SerperAdapter(JsonSearchAdapter):
             applied=plan.applied,
             locale_weak=plan.locale_weak,
             latency_ms=latency_ms,
+            credits=self._credits(data),
         )

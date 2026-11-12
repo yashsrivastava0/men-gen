@@ -19,6 +19,7 @@ from __future__ import annotations
 
 import asyncio
 import calendar
+import hashlib
 import math
 import re
 import time
@@ -538,6 +539,11 @@ class JsonSearchAdapter:
         return f"{type(self).__name__}(base_url={self._base_url!r}, timeout_s={self._timeout_s!r})"
 
     __str__ = __repr__
+
+    def key_fingerprint(self) -> str:
+        """A one-way fingerprint of the API key (12 hex characters of its SHA-256): names the account in the credit
+        ledger without the key ever leaving the ``Secret``."""
+        return hashlib.sha256(self._secret.reveal().encode("utf-8")).hexdigest()[:12]
 
     async def __aenter__(self) -> Self:
         return self

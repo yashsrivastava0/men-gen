@@ -28,6 +28,34 @@ def _check(cid: str, label: str, ok: bool, detail: str, fix: str = "") -> dict[s
     return {"id": cid, "label": label, "ok": ok, "detail": detail, "fix": "" if ok else fix}
 
 
+def _credit_checks(service: ResearchService, keys: dict[str, bool]) -> list[dict[str, Any]]:
+    """Information about provider credits, one line per provider whose key is set.
+
+    ``ok`` is ALWAYS true: credits only inform (they never make the app "not ready" and never stop a run). When a
+    provider is running low the line carries a plain ``note`` the front end can show.
+    """
+    out: list[dict[str, Any]] = []
+    try:
+        status = service.credits_status()
+    except Exception:  # information only: never let it break the preflight
+        return out
+    for p in status.get("providers", []):
+        if not keys.get(p["provider"]):
+            continue
+        used, limit, left = p["used"], p["limit"], p["remaining"]
+        if used is not None and limit:
+            detail = f"{used:,} of {limit:,} credits used"
+        elif left is not None:
+            detail = f"{left:,} credits left"
+        else:
+            detail = "no count yet"
+        check = _check(f"credits:{p['provider']}", f"Search credits: {p['label']}", True, detail)
+        check["note"] = p["note"] if p["level"] in ("amber", "red") else ""
+        check["level"] = p["level"]
+        out.append(check)
+    return out
+
+
 def _writable(folder: Path) -> bool:
     try:
         folder.mkdir(parents=True, exist_ok=True)
@@ -123,7 +151,13 @@ def run_preflight(
             ", ".join(f"{k}={v}" for k, v in routes.items()),
         )
     )
-    ready = all(c["ok"] for c in checks if c["id"] != "key:tavily" and c["id"] != "key:serper")
+    checks.extend(_credit_checks(service, keys))
+    # Credits are information only: whatever they say, they are not part of "ready".
+    ready = all(
+        c["ok"]
+        for c in checks
+        if c["id"] not in ("key:tavily", "key:serper") and not c["id"].startswith("credits:")
+    )
     return {
         "ready": ready and service.ready,
         "checks": checks,

@@ -2,6 +2,22 @@
 # plan sizes and the published search prices (data/provider_prices.yaml) plus the model price of one call per step;
 # they are ESTIMATES, not measurements. Once real runs exist the app replaces `mid` by the median of the measured
 # runs of the same class from the spend record (and keeps the range). Money is integer micro-USD.
+#
+# Where the numbers come from (checked 2026-11-13):
+# * SMALL searches and pages are MEASURED: the 7 recorded Small runs of 2026-11-11 (3 on Tavily, 4 on Serper) used
+#   27 to 32 searches (median 29) and 13 to 64 pages read (median 56). The earlier 12/18/24 searches were a dry-run
+#   guess and were too low by about a third.
+# * Small CREDITS are measured too: the Tavily runs billed 31 to 34 credits (a little above their searches: a failed
+#   attempt that is retried, and a thin answer that gets a relaxed retry, are each billed again) and the Serper runs
+#   23 to 29 credits (a search answered from the cache is billed nothing).
+# * TINY, MEDIUM and BIG have never been measured with the current code: their searches and pages are the old
+#   dry-run figures, kept as they are until a real run of that size exists (the app then uses the measured median).
+#   Their credits are derived by the same rule as Small's (below).
+# * `credits` are integer provider credits, not money (a Tavily basic search is 1 credit, a Serper query 1 credit):
+#   `mid` is the searches' mid (x 1.1 for Tavily, whose billed credits ran about 10% above its searches), `low` the
+#   searches' low, and `high` is 1.2 x the searches' HIGH. The 1.2 is deliberate: a search can be billed more than once,
+#   by a retry in the worker, by the failover's relaxed retry or by its second opinion (up to 15% of all searches), so a
+#   run can bill more credits than it makes searches. The credit ledger counts what the providers billed, not searches.
 schema: 1
 # searches and pages are the expected counts (not the ceilings); minutes are wall-clock.
 classes:
@@ -10,21 +26,33 @@ classes:
     pages: {low: 6, mid: 10, high: 14}
     minutes: {low: 1, mid: 1, high: 2}
     usd_micros: {low: 40000, mid: 90000, high: 180000}
+    credits:
+      tavily: {low: 4, mid: 8, high: 10}
+      serper: {low: 4, mid: 7, high: 10}
   small:
-    searches: {low: 12, mid: 18, high: 24}
-    pages: {low: 16, mid: 22, high: 30}
+    searches: {low: 26, mid: 29, high: 34}
+    pages: {low: 30, mid: 56, high: 66}
     minutes: {low: 2, mid: 3, high: 5}
     usd_micros: {low: 200000, mid: 380000, high: 650000}
+    credits:
+      tavily: {low: 28, mid: 32, high: 41}
+      serper: {low: 22, mid: 26, high: 41}
   medium:
     searches: {low: 28, mid: 40, high: 56}
     pages: {low: 40, mid: 58, high: 80}
     minutes: {low: 4, mid: 7, high: 10}
     usd_micros: {low: 450000, mid: 850000, high: 1400000}
+    credits:
+      tavily: {low: 28, mid: 44, high: 68}
+      serper: {low: 28, mid: 40, high: 68}
   big:
     searches: {low: 60, mid: 85, high: 115}
     pages: {low: 100, mid: 140, high: 190}
     minutes: {low: 8, mid: 12, high: 16}
     usd_micros: {low: 1200000, mid: 2000000, high: 3200000}
+    credits:
+      tavily: {low: 60, mid: 94, high: 138}
+      serper: {low: 60, mid: 85, high: 138}
 # How the Research size classes are named for the person using the app.
 labels:
   tiny: Tiny

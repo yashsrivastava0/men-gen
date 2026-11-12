@@ -25,6 +25,7 @@ from mde_research_agent.catalog import load_catalog
 from mde_research_agent.config import (
     ResearchSettings,
     choose_provider,
+    data_dir,
     gateway_config,
     keys_present,
     load_research_settings,
@@ -34,6 +35,8 @@ from mde_research_agent.ids import Ids, UlidIds
 from mde_research_agent.ports.fetch import FetchPort
 from mde_research_agent.ports.search import SearchPort
 from mde_research_agent.service import ResearchService
+from mde_research_agent.spend.credits import FILE_NAME as CREDITS_FILE
+from mde_research_agent.spend.credits import CreditLedger
 from mde_research_agent.store.ports import Store
 
 
@@ -66,11 +69,29 @@ def guard_cap_usd(core: Settings, total_usd: Decimal) -> Decimal:
     return max(core.llm_budget_usd, need)
 
 
+def credit_ledger(settings: ResearchSettings, *, clock: Clock | None = None) -> CreditLedger:
+    """The global credit ledger of the app: ``<data_dir>/provider-credits.json`` (``RESEARCH_DATA_DIR`` moves it).
+
+    One file for the whole app, outside the budget periods. Tests point ``RESEARCH_DATA_DIR`` (or pass their own
+    ``CreditLedger``) at a temporary folder; they never touch the owner's file.
+    """
+    return CreditLedger(data_dir(settings) / CREDITS_FILE, clock=clock)
+
+
 def build_ports(
-    provider: str, settings: ResearchSettings, *, client: httpx.AsyncClient | None = None
+    provider: str,
+    settings: ResearchSettings,
+    *,
+    client: httpx.AsyncClient | None = None,
+    credits: CreditLedger | None = None,
 ) -> tuple[SearchPort | None, FetchPort, list[Any]]:
-    """``(search, fetch, closers)`` for ``tavily``, ``serper`` or ``none`` (no key: no search, the app explains)."""
+    """``(search, fetch, closers)`` for ``tavily``, ``serper`` or ``none`` (no key: no search, the app explains).
+
+    Each real adapter is wrapped in ``MeteredSearch`` (below failover and cache) so the credits every provider billed
+    are booked in the global ledger: ``credits`` if given, else the app's own ledger under the settings' data folder.
+    """
     from mde_research_agent.adapters.fetch.http import HttpFetcher
+    from mde_research_agent.adapters.search.metered import MeteredSearch
 
     closers: list[Any] = []
     http = client or httpx.AsyncClient(timeout=15.0, trust_env=False)
@@ -81,7 +102,11 @@ def build_ports(
         from mde_research_agent.adapters.search.tavily import TavilyAdapter
 
         return (
-            TavilyAdapter(settings.tavily_api_key.get_secret_value(), client=http),
+            MeteredSearch(
+                TavilyAdapter(settings.tavily_api_key.get_secret_value(), client=http),
+                credits if credits is not None else credit_ledger(settings),
+                "tavily",
+            ),
             fetch,
             closers,
         )
@@ -89,7 +114,11 @@ def build_ports(
         from mde_research_agent.adapters.search.serper import SerperAdapter
 
         return (
-            SerperAdapter(settings.serper_api_key.get_secret_value(), client=http),
+            MeteredSearch(
+                SerperAdapter(settings.serper_api_key.get_secret_value(), client=http),
+                credits if credits is not None else credit_ledger(settings),
+                "serper",
+            ),
             fetch,
             closers,
         )
@@ -200,7 +229,8 @@ def build_live_service(
         if cfg.research_search_provider != "auto"
         else choose_provider(cfg, DEFAULT_PROVIDER)
     )
-    search, fetch, closers = build_ports(chosen, cfg, client=client)
+    credits = credit_ledger(cfg, clock=the_clock)
+    search, fetch, closers = build_ports(chosen, cfg, client=client, credits=credits)
     return assemble_service(
         store=store,
         search=search,
@@ -217,6 +247,7 @@ def build_live_service(
         wrap_fetch=wrap_fetch,
         ledger_path=ledger_path,
         live_budget_micros=live_budget_micros,
+        credits=credits,
     )
 
 
@@ -248,7 +279,7 @@ def compose_app(
     Always returns a service. When every search key is missing the service has no search and ``start_run`` refuses
     with a plain message naming what to set. Nothing here can build a double.
     """
-    from mde_research_agent.config import data_dir, inputs_dir, repo_root
+    from mde_research_agent.config import inputs_dir, repo_root
     from mde_research_agent.inputs import InputsStore
     from mde_research_agent.inputs.estimates import Estimates
     from mde_research_agent.spend import BudgetControl, SpendRecord
@@ -300,10 +331,11 @@ def compose_app(
     primary_pref = _saved_provider(data) or cfg.research_search_provider
     chosen = primary_pref if primary_pref != "auto" else choose_provider(cfg, DEFAULT_PROVIDER)
     http = httpx.AsyncClient(timeout=15.0, trust_env=False)
-    search, fetch, _own = build_ports(chosen, cfg, client=http)
+    credits = credit_ledger(cfg, clock=the_clock)  # global: one file, outside the budget periods
+    search, fetch, _own = build_ports(chosen, cfg, client=http, credits=credits)
     closers: list[Any] = [http.aclose]
     other = "serper" if chosen == "tavily" else "tavily"
-    second, _f, _c = build_ports(other, cfg, client=http)
+    second, _f, _c = build_ports(other, cfg, client=http, credits=credits)
     if (
         search is not None and second is not None
     ):  # both keys present: a failover and a limited second opinion
@@ -335,10 +367,15 @@ def compose_app(
         gateway_factory=make_gateway,
         stale_after_s=cfg.research_stale_after_s,
         own_store=own_store,
+        credits=credits,
+        credits_http=http,
     )
 
     def providers(client: httpx.AsyncClient) -> list[SearchPort]:
-        ports = [build_ports(name, cfg, client=client)[0] for name in ("tavily", "serper")]
+        ports = [
+            build_ports(name, cfg, client=client, credits=credits)[0]
+            for name in ("tavily", "serper")
+        ]
         return [p for p in ports if p is not None]
 
     from mde_research_agent.tools import BakeoffTool
