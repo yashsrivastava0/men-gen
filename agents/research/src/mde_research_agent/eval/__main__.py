@@ -1,7 +1,8 @@
 """``python -m mde_research_agent.eval planted|probe``: the evaluation harness for the owner to run later.
 
     planted --run RUN_ID [--seed N]     plant errors in a recorded run's items and measure what the checks catch
-    probe   --run RUN_ID                stand-in Spec with and without the research, judged
+    probe   --run RUN_ID                stand-in Spec with and without the research, judged; it is given the run's real
+                                        Brief (from the run's stored input, or --input FILE with a ResearchInput json)
 
 Both need a COMMITTED run in the app's data folder (``--run``) or ``--research FILE --evidence FILE``. ``--dry-run`` prints the
 estimate and spends nothing; ``--mock`` runs offline over doubles; without either flag the commands are LIVE: they refuse
@@ -30,6 +31,12 @@ def _load_files(args: argparse.Namespace) -> tuple[dict[str, Any], dict[str, Any
     )
 
 
+def _load_brief(args: argparse.Namespace) -> str:
+    if not args.input:
+        return ""
+    return probe_mod.brief_from_input(json.loads(Path(args.input).read_text(encoding="utf-8")))
+
+
 async def _run(args: argparse.Namespace) -> int:
     if args.dry_run:
         est = (
@@ -50,6 +57,7 @@ async def _run(args: argparse.Namespace) -> int:
     from mde_research_agent.devtools import script_service
     from mde_research_agent.run import preflight_live
 
+    brief = _load_brief(args)
     if args.mock:
         svc = script_service(
             core=load_settings(llm_mode="mock"), mock_or_replay=True, provider="fake"
@@ -79,6 +87,9 @@ async def _run(args: argparse.Namespace) -> int:
                 sys.stderr.write("that run is not committed in the data folder\n")
                 return 2
             research, evidence = res, ev
+            row = await svc.store.get_run(args.tenant, args.run)
+            if row is not None and row.input_json and not brief:
+                brief = probe_mod.brief_from_input(dict(row.input_json))
         else:
             research, evidence = _load_files(args)
         scope = (svc.control.period_scope,)
@@ -89,7 +100,7 @@ async def _run(args: argparse.Namespace) -> int:
         report = (
             await planted_mod.run_planted(runner, research, evidence, seed=args.seed)
             if args.what == "planted"
-            else await probe_mod.run_probe(runner, research)
+            else await probe_mod.run_probe(runner, research, brief=brief)
         )
     finally:
         cost = sum(r.cost_micros for _, r in runner.calls)
@@ -98,7 +109,7 @@ async def _run(args: argparse.Namespace) -> int:
             record.finish_entry(entry, "done")
         await svc.aclose()
     report["cost_usd"] = micros_to_usd(report.get("cost_micros", cost))
-    sys.stdout.write(json.dumps(report, indent=1) + "\n")
+    sys.stdout.write(json.dumps(report, indent=1, default=str) + "\n")
     return 0 if report.get("passed") else 1
 
 
@@ -109,6 +120,14 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--research", default=None)
     p.add_argument("--evidence", default=None)
     p.add_argument("--seed", type=int, default=1)
+    p.add_argument(
+        "--tenant", default="demo", help="the tenant the run was made under (the app's default)"
+    )
+    p.add_argument(
+        "--input",
+        default=None,
+        help="probe: a ResearchInput json (a run's input_json) to use as the Brief",
+    )
     mode = p.add_mutually_exclusive_group()
     mode.add_argument("--dry-run", action="store_true")
     mode.add_argument("--mock", action="store_true")

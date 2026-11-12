@@ -42,18 +42,69 @@ def findings_text(
     return "\n".join(lines)[:MAX_FINDING_CHARS]
 
 
+MAX_BRIEF_CHARS = 12_000
+
+
+def _names(rows: Any, *keys: str) -> list[str]:
+    out: list[str] = []
+    for r in rows or []:
+        if isinstance(r, str):
+            out.append(r)
+        elif isinstance(r, dict):
+            text = next((str(r[k]) for k in keys if r.get(k)), "")
+            if text:
+                out.append(text)
+    return out
+
+
+def brief_from_input(inp: dict[str, Any]) -> str:
+    """The Brief as plain lines, from a run's stored research input (what a Spec stand-in would be given)."""
+    idea = inp.get("idea") or {}
+    geo = inp.get("geography") or {}
+    lines = [f"Idea: {idea.get('summary') or ''} ({idea.get('category') or 'no category'})"]
+    where = ", ".join(
+        str(x) for x in (*(geo.get("cities") or []), geo.get("region"), geo.get("country")) if x
+    )
+    if where:
+        lines.append(f"Place: {where}")
+    locales = (inp.get("locales") or {}).get("codes") or []
+    if locales:
+        lines.append("Languages: " + ", ".join(locales))
+    for f in inp.get("features") or []:
+        if isinstance(f, dict) and f.get("name"):
+            lines.append(
+                f"Feature {f.get('id', '')}: {f['name']} ({f.get('priority', 'nice')}) {f.get('intent', '')}"
+            )
+    for label, key in (
+        ("Role", "roles"),
+        ("App", "apps"),
+        ("Module", "modules"),
+        ("Entity", "entities"),
+    ):
+        for n in _names(inp.get(key), "name", "label", "title"):
+            lines.append(f"{label}: {n}")
+    for n in _names(inp.get("integrations"), "name", "label", "need"):
+        lines.append(f"Integration: {n}")
+    for fact in inp.get("facts") or []:
+        if isinstance(fact, dict) and fact.get("statement"):
+            lines.append(f"Fact: {str(fact['statement'])[:200]}")
+    return "\n".join(lines)[:MAX_BRIEF_CHARS]
+
+
 def brief_text(research: dict[str, Any], summary: str = "") -> str:
+    """The Brief the stand-in sees: the real one when given, else a stub from the file's profile (said so, never silent)."""
     prof = research.get("profile", {})
     return (
         summary
-        or f"An app (size {prof.get('load_class')}, signals: {', '.join(prof.get('signals', [])) or 'none'})."
-    )[:4000]
+        or "NO BRIEF WAS GIVEN (stub): "
+        f"an app (size {prof.get('load_class')}, signals: {', '.join(prof.get('signals', [])) or 'none'})."
+    )[:MAX_BRIEF_CHARS]
 
 
 async def run_probe(runner: Any, research: dict[str, Any], *, brief: str = "") -> dict[str, Any]:
     findings = findings_text(research)
     ids = set(probe_calls.ID_RX.findall(findings))
-    out: dict[str, Any] = {"tasks": [], "cost_micros": 0}
+    out: dict[str, Any] = {"tasks": [], "cost_micros": 0, "brief_given": bool(brief)}
     totals = {
         "A": {"supported": 0, "assumed": 0, "invented": 0},
         "B": {"supported": 0, "assumed": 0, "invented": 0},
