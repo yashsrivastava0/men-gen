@@ -42,8 +42,33 @@ def _read(path: Path) -> dict[str, Any]:
         return json.load(fh)  # type: ignore[no-any-return]
 
 
+# The nine fields a SearchRequest had when the first runs were recorded. A field added later never changes the key
+# of a request that leaves it at its default, so every recorded run keeps replaying (D-163).
+_ORIGINAL_FIELDS = (
+    "query",
+    "country",
+    "language",
+    "domain_mode",
+    "domains",
+    "exact",
+    "recency_months",
+    "want_content",
+    "max_results",
+)
+
+
+def key_payload(fields: dict[str, Any], defaults: dict[str, Any]) -> dict[str, Any]:
+    """The part of a request that identifies it: the original fields, plus later fields set to a non-default value."""
+    out = {k: fields[k] for k in _ORIGINAL_FIELDS}
+    for k, v in fields.items():
+        if k not in _ORIGINAL_FIELDS and v != defaults.get(k):
+            out[k] = v
+    return out
+
+
 def search_key(r: SearchRequest) -> str:
-    raw = json.dumps(asdict(r), sort_keys=True, default=str)
+    payload = key_payload(asdict(r), asdict(SearchRequest(query="")))
+    raw = json.dumps(payload, sort_keys=True, default=str)
     return hashlib.sha256(raw.encode()).hexdigest()[:24]
 
 

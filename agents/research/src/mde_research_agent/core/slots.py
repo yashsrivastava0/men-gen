@@ -16,7 +16,7 @@ from typing import Any, Protocol
 from mde_research_agent.catalog.models import SlotSpec
 from mde_research_agent.core.norm_keys import clean_key
 
-_VALUE_KEYS = ("feature_key", "screen_key", "name", "key", "value")
+_VALUE_KEYS = ("feature_key", "screen_key", "name", "key", "value", "state")
 
 
 class AtomLike(Protocol):
@@ -66,6 +66,11 @@ def values_of(value: Any) -> list[str]:
         for k in _VALUE_KEYS:
             if isinstance(value.get(k), str) and value[k].strip():
                 return [value[k]]
+        # A small object of a shape nobody listed above (D-160: ``{state, content}`` was read as empty, so the
+        # Screens slot could never fill): its first non-empty text field names it.
+        for v in value.values():
+            if isinstance(v, str) and v.strip():
+                return [v]
         return []
     if isinstance(value, (list, tuple)):
         out: list[str] = []
