@@ -166,6 +166,29 @@ def assign_store(
     return StorePlan(decisions, used, over)
 
 
+def _present(value: Any) -> Any:
+    """``value`` without null, empty text, empty list and empty object entries (a nested walk), for the compact view."""
+    if isinstance(value, dict):
+        out = {k: _present(v) for k, v in value.items()}
+        return {k: v for k, v in out.items() if v not in (None, "", [], {})}
+    if isinstance(value, list):
+        return [_present(v) for v in value]
+    return value
+
+
+def compact_dossier(d: dict[str, Any]) -> dict[str, Any]:
+    """A dossier in the compact view: empty parts are dropped, but a field that is empty keeps its ``null_reason`` (an
+    explicit unknown, R27) and a conflict keeps every value."""
+    out = _present({k: v for k, v in d.items() if k != "fields"})
+    out["fields"] = {
+        key: _present(f)
+        if f.get("value") is not None or f.get("values")
+        else {"null_reason": f.get("null_reason")}
+        for key, f in d.get("fields", {}).items()
+    }
+    return out
+
+
 def compact_view(research: dict[str, Any], default_notes: dict[str, str]) -> dict[str, Any]:
     """The deterministic compact projection of a ``research.json`` (main-store items only, sources in one table)."""
     items = [i for i in research.get("items", []) if i.get("store", "main") == "main"]
@@ -196,5 +219,10 @@ def compact_view(research: dict[str, Any], default_notes: dict[str, str]) -> dic
         "confirm": research.get("confirm", []),
         "conflicts": research.get("conflicts", []),
         "gaps": research.get("gaps", []),
+        "dossiers": [compact_dossier(d) for d in research.get("dossiers", [])],
+        "dossiers_by_integration": research.get("dossiers_by_integration", {}),
+        "platform_constraints": research.get("platform_constraints", []),
+        "compliance_register": research.get("compliance_register", []),
+        "lane_decisions": research.get("lane_decisions", []),
         "appendix_items": sum(1 for i in research.get("items", []) if i.get("store") == "appendix"),
     }

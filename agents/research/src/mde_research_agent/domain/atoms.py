@@ -18,6 +18,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, create_model
 
+from mde_research_agent.domain.typed import ground_provider_fact
+
 KINDS: tuple[str, ...] = (
     "competitor",
     "reference_check",
@@ -29,6 +31,8 @@ KINDS: tuple[str, ...] = (
     "lifecycle",
     "rule",
     "service_option",
+    "provider_fact",
+    "platform_constraint",
     "compliance_note",
     "design_convention",
     "script_need",
@@ -174,11 +178,59 @@ class ServiceOptionData(W):
     current_status: str | None = None
 
 
+class TypedValue(W):
+    """A figure the page states, in parts. Every part is optional and only filled when the quote states it; code checks
+    the amount and the currency against the quote (``domain/typed.py``). ``amount`` is a decimal STRING, never a float."""
+
+    amount: str | None = (
+        None  # "2.9", "0.30", "1500": the number as the quote writes it, no separators or signs
+    )
+    currency: str | None = None  # ISO 4217 code, only when the quote shows the currency
+    unit: str | None = None  # "percent", "transaction", "request", "day" ...
+    period: str | None = None  # "month", "year", "business days" ...
+    condition: str | None = None  # "above 10000", "for refunds": what the amount depends on
+
+
+class ProviderFactData(W):
+    """ONE fact about a provider with ONE quote (D-159): the dossier of a provider is assembled by code from these."""
+
+    provider: str  # the name as the page states it
+    need: str  # what the provider is for: payments, messaging, maps ...
+    field: str  # a key of ``data/dossiers.yaml`` (code rejects any other)
+    value: str  # the fact as the page states it
+    typed: TypedValue | None = None  # fees, limits and times only
+    countries: list[str]  # countries or regions the fact is stated for, as the page writes them
+
+
+Platform = Literal["ios", "android", "both", "expo", "react_native", "web"]
+EffectOnBuild = Literal[
+    "needs_development_build", "needs_permission", "review_risk", "needs_config_plugin", "none"
+]
+
+
+class PlatformConstraintData(W):
+    """One platform or toolchain rule for one capability (push, background location, in-app payments ...)."""
+
+    capability: str
+    platform: Platform | None = None  # null: the page does not say which platform
+    rule: str
+    effect_on_build: EffectOnBuild | None = (
+        None  # null unless the page states what the rule means for the build (R27)
+    )
+    status: str | None = None  # "required", "deprecated", "recommended" ... only when stated
+
+
 class ComplianceNoteData(W):
     topic: str
     authority: str | None = None
     summary: str
     effective_date: str | None = None
+    regime: str | None = None  # the law, scheme or policy by name, as the page states it
+    country: str | None = None  # the country it applies in, as the page writes it
+    applies_to: list[str] = Field(
+        default_factory=list
+    )  # flows, roles or kinds of data it covers, as stated
+    penalty: str | None = None  # the penalty or sanction, only when the page states one
     legal_adjacent: bool = True  # always true; set by code
 
 
@@ -239,6 +291,8 @@ PAYLOADS: dict[str, type[W]] = {
     "lifecycle": LifecycleData,
     "rule": RuleData,
     "service_option": ServiceOptionData,
+    "provider_fact": ProviderFactData,
+    "platform_constraint": PlatformConstraintData,
     "compliance_note": ComplianceNoteData,
     "design_convention": DesignConventionData,
     "script_need": ScriptNeedData,
@@ -318,9 +372,17 @@ def is_identifying(kind: str, field: str, sub: str) -> bool:
 
 
 def payload_from_wire(kind: str, atom: AtomCommon) -> dict[str, Any]:
-    """The ``data`` payload of an item from a validated wire atom (common fields removed)."""
+    """The ``data`` payload of an item from a validated wire atom (common fields removed).
+
+    A kind with fields code can check against the atom's own quote (a typed value, a dossier field key) is checked here:
+    a problem raises ``ValueError`` and the candidate becomes ``Rejected(invalid)``, one item at a time, so the model's
+    other items on the page survive (the same path as a payload that does not fit its kind).
+    """
     raw = atom.model_dump(mode="json", exclude=set(COMMON_FIELDS))
-    return PAYLOADS[kind].model_validate(raw).model_dump(mode="json")
+    data = PAYLOADS[kind].model_validate(raw).model_dump(mode="json")
+    if kind == "provider_fact":
+        return ground_provider_fact(data, atom.quote)
+    return data
 
 
 def validate_payload(kind: str, data: dict[str, Any]) -> list[str]:

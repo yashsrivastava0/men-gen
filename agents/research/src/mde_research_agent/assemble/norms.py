@@ -14,7 +14,8 @@ from collections import defaultdict
 from collections.abc import Callable
 from datetime import date
 
-from mde_research_agent.assemble.items import BuiltItem
+from mde_research_agent.assemble.items import BuiltItem, canonical_amount, typed_slot
+from mde_research_agent.catalog.content import dossier_config
 from mde_research_agent.catalog.models import PrevalenceConfig
 from mde_research_agent.core.applies import problem as applies_problem  # noqa: F401  (re-exported for callers)
 from mde_research_agent.core.norm_keys import clean_key, match_brief, reconcile
@@ -61,6 +62,15 @@ def _is_own(url: str, pool: list[BuiltItem]) -> bool:
     """Is ``url`` the home of any provider in ``pool``?"""
     host = host_of(url)
     return any(own_site(str(b.item.data.get("provider", "")), host) for b in pool)
+
+
+def _need_of(b: BuiltItem) -> str:
+    """The integration need of a provider item: the need key code mapped it to (the INT entry of ``applies_to``), else the
+    words the page used. One provider's facts and its summary therefore meet in ONE norm."""
+    for a in b.item.applies_to:
+        if a.kind == "INT" and a.id and b.item.kind == "provider_fact":
+            return clean_key(a.id)
+    return clean_key(str(b.item.data.get("need", "")))
 
 
 def _count_windows(pairs: list[tuple[str, str]]) -> int:
@@ -186,11 +196,11 @@ def compute_norms(
     # --- integrations: ONE norm per (need, provider), merged across items. ``seen_in`` counts only INDEPENDENT
     # third-party mentions: a provider's own documentation is evidence of what it offers (``official``), not a
     # vote that others use it. ``of`` is the third-party sources for the need.
-    svc = [b for b in built if b.item.kind == "service_option"]
+    svc = [b for b in built if b.item.kind in ("service_option", "provider_fact")]
     if svc:
         by_need: dict[str, dict[str, list[BuiltItem]]] = defaultdict(lambda: defaultdict(list))
         for b in svc:
-            need = clean_key(str(b.item.data.get("need", "")))
+            need = _need_of(b)
             prov = clean_key(str(b.item.data.get("provider", "")))
             by_need[need][prov].append(b)
         for need in sorted(by_need):
@@ -265,7 +275,55 @@ def detect_conflicts(built: list[BuiltItem], inp: ResearchInput | None = None) -
                 note=listing[:240],
             )
         )
+    out += _provider_conflicts(built)
     out += _against_locked(built, inp)
+    return out
+
+
+def _provider_conflicts(built: list[BuiltItem]) -> list[Conflict]:
+    """Provider facts that state DIFFERENT values for the same thing: two amounts for one provider, field, unit, period,
+    condition, currency and country, or two statuses. Both items stay (they are separate items by construction), both are
+    flagged ``conflict`` and go on the confirm list; the dossier shows the field as a conflict with both values.
+    Fields of kind ``list`` never conflict: several values side by side are the normal case."""
+    cfg = dossier_config()
+    groups: dict[tuple[str, ...], list[tuple[str, BuiltItem]]] = defaultdict(list)
+    for b in built:
+        if b.item.kind != "provider_fact" or b.excluded:
+            continue
+        d = b.item.data
+        spec = cfg.fields.get(str(d.get("field", "")))
+        if spec is None or spec.kind == "list":
+            continue
+        where = (
+            b.item.about_region,
+            *sorted(clean_key(str(c)) for c in d.get("countries", [])),
+        )
+        base = (clean_key(str(d.get("provider", ""))), str(d.get("field")), *where)
+        if spec.kind == "typed":
+            amount = canonical_amount(d.get("typed"))
+            if amount:
+                currency = amount.split(" ", 1)[1] if " " in amount else ""
+                groups[(*base, currency, *typed_slot(d.get("typed")))].append((amount, b))
+        elif d.get("value"):
+            groups[base].append((clean_key(str(d["value"])), b))
+    out: list[Conflict] = []
+    for key, members in sorted(groups.items()):
+        if len({v for v, _ in members}) < 2:
+            continue
+        for _, m in members:
+            flags = set(m.item.flags) | {"conflict", "needs-confirm"}
+            m.item = m.item.model_copy(update={"flags": sorted(flags), "tier": "open"})
+        listing = "; ".join(
+            f"{m.item.data.get('value')} ({m.item.sources[0].domain if m.item.sources else '?'})"
+            for _, m in members
+        )
+        out.append(
+            Conflict(
+                topic=f"{members[0][1].item.data.get('provider')}: {key[1]}"[:120],
+                item_ids=sorted(m.item.id for _, m in members),
+                note=listing[:240],
+            )
+        )
     return out
 
 

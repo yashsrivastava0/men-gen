@@ -20,7 +20,9 @@ import yaml
 from mde_core.money import micros_to_usd
 from mde_research_agent import SCHEMA_VERSION
 from mde_research_agent.assemble import digest as dg
-from mde_research_agent.assemble.items import BuiltItem, build_items
+from mde_research_agent.assemble.decisions import build_decisions
+from mde_research_agent.assemble.dossier import build_dossiers
+from mde_research_agent.assemble.items import BuiltItem, build_items, canonical_amount
 from mde_research_agent.assemble.norms import (
     apply_norms,
     build_suggestions,
@@ -28,6 +30,7 @@ from mde_research_agent.assemble.norms import (
     detect_conflicts,
 )
 from mde_research_agent.assemble.notes import openers
+from mde_research_agent.assemble.platform import build_platform_constraints
 from mde_research_agent.assemble.quality import (
     TargetInfo,
     bn_coverage,
@@ -35,6 +38,7 @@ from mde_research_agent.assemble.quality import (
     lane_quality,
 )
 from mde_research_agent.assemble.quality import lane_items as lane_items_of
+from mde_research_agent.assemble.register import build_register
 from mde_research_agent.assemble.store import assign_store, compact_item, tokens_of
 from mde_research_agent.calls import assemble as asm_call
 from mde_research_agent.catalog.loader import DATA_DIR
@@ -86,13 +90,22 @@ def _confirm(built: list[BuiltItem], reasons: dict[str, str]) -> list[Confirm]:
         d = it.data
         if "conflict" in flags:
             why = reasons["conflict"]
-        elif (it.kind in ("rule",) and it.impact == "high" and d.get("value")) or (
-            it.kind == "service_option"
-            and it.impact == "high"
-            and (d.get("fees") or d.get("limits"))
+        elif (
+            (it.kind in ("rule",) and it.impact == "high" and d.get("value"))
+            or (
+                it.kind == "service_option"
+                and it.impact == "high"
+                and (d.get("fees") or d.get("limits"))
+            )
+            or (it.kind == "provider_fact" and canonical_amount(d.get("typed")))
         ):
             why = reasons["number"]
-        elif it.job == "trust" or ("legal-adjacent" in flags and it.impact == "high"):
+        elif (
+            it.job == "trust"
+            or it.kind
+            == "compliance_note"  # every entry of the compliance register is on the list (RV-26)
+            or ("legal-adjacent" in flags and it.impact == "high")
+        ):
             why = reasons["legal"]
         elif "single-source" in flags and it.impact == "high":
             why = reasons["single_source"]
@@ -395,6 +408,14 @@ async def assemble_output(
             chunks=[ids[i : i + cs.chunk_items] for i in range(0, len(ids), cs.chunk_items)],
             digest=digests.get(lane, ""),
         )
+    final_items = [b.item for b in built]
+    dossiers, dossier_index = build_dossiers(final_items, cat)
+    lane_decisions = build_decisions(
+        final_items,
+        {lane: sl.item_ids for lane, sl in slices.items()},
+        cat,
+        [(ts.target.job, ts.status) for ts in ctx.targets.values()],
+    )
     idx = _indexes(built)
     states = [ts.status for ts in ctx.targets.values()]
     required = sum(ts.slots_required for ts in ctx.targets.values())
@@ -417,6 +438,7 @@ async def assemble_output(
             appendix_items=sum(1 for b in built if b.item.store == "appendix"),
             store_over_limit=splan.protected_over_limit,
             digest_tokens=sum(tokens_of(s.digest) for s in slices.values()),
+            digest_tokens_cap_per_lane=cs.digest_tokens,
         ),
         input_quality=iq,
         budget=Budget(
@@ -446,6 +468,11 @@ async def assemble_output(
         confirm=confirm,
         gaps=gaps,
         conflicts=conflicts,
+        dossiers=dossiers,
+        dossiers_by_integration=dossier_index,
+        platform_constraints=build_platform_constraints(final_items, cat.capabilities),
+        compliance_register=build_register(final_items),
+        lane_decisions=lane_decisions,
         slices=slices,
         claims_used=[],
         dropped=drops,

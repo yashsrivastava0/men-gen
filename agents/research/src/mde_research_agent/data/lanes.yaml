@@ -20,9 +20,51 @@ kinds:
   local_format:      {lanes: [design, mock, screens], need: BN-07, area: format, terms: [format, pattern, validation, example, number, id], min_all: [kind, pattern], min_any: []}
   data_hint:         {lanes: [mock], need: BN-07, area: sample, terms: [examples, names, prices, units, range], min_all: [kind], min_any: [examples, value_range]}
   trend:             {lanes: [blueprint, design], need: BN-02, area: trend, terms: [new, recent, trend, added, launched], min_all: [topic, what_changed], min_any: []}
+  provider_fact:     {lanes: [integrations, verify], need: BN-10, area: provider_fact, terms: [api, authentication, sandbox, fees, limits, webhook, sdk, onboarding, settlement, status], min_all: [provider, need, field, value], min_any: []}
+  platform_constraint: {lanes: [integrations, screens, verify], need: BN-10, area: platform, terms: [permission, review, policy, config, plugin, development, build, requirement, guideline], min_all: [capability, rule], min_any: []}
 # Kinds whose claims are high impact by default (prices, fees, rules, legal and payment facts, formats that
 # change validation). The extraction model may raise impact; code never lowers these.
 high_impact_kinds: [rule, compliance_note, service_option, local_format]
 legal_adjacent_kinds: [rule, compliance_note]
 # Kinds counted into norms (prevalence): the area of a norm and the key the code reads.
 norm_areas: [feature, screen, flow, entity, integration, design]
+# The decisions each Spec lane must make, and the kinds of item (optionally narrowed to dossier `fields`, or to items carrying
+# one of `flags_any`) that inform each. `lane_decisions` in research.json lists, for every decision, the main-store items of
+# the lane that inform it with a usable evidence label, or an explicit gap with its reason, so Spec sees what it must assume
+# (assemble/decisions.py). Text is for Spec, in plain words; no number, name or date.
+decisions:
+  blueprint:
+    - {id: BP-FEATURES, text: "Which features are in the first release, which come later, and which comparable apps set the norm", kinds: [competitor, reference_check, trend]}
+    - {id: BP-STRUCTURE, text: "Which screens and which navigation structure each app and role needs", kinds: [screen_pattern, navigation_pattern]}
+    - {id: BP-ROLES, text: "What each role can see and do", kinds: [role_pattern]}
+    - {id: BP-JOURNEYS, text: "The steps, alternatives and exceptions of each main journey", kinds: [workflow]}
+    - {id: BP-DATA, text: "The records, their fields, statuses and relations", kinds: [entity_pattern, lifecycle]}
+    - {id: BP-RULES, text: "The business rules, limits and formulas the app must apply", kinds: [rule, compliance_note]}
+  integrations:
+    - {id: IN-PROVIDERS, text: "Which provider serves each integration, in which countries and with which products", kinds: [provider_fact, service_option]}
+    - {id: IN-CONTRACT, text: "How each provider is authenticated, which events it sends and how it is tested", kinds: [provider_fact], fields: [auth_method, endpoints, webhooks_events, sandbox]}
+    - {id: IN-TERMS, text: "What each provider charges and limits", kinds: [provider_fact], fields: [fees, limits]}
+    - {id: IN-GO-LIVE, text: "What each provider requires before going live and how fast it pays out", kinds: [provider_fact], fields: [onboarding_kyc, onboarding_lead_time, settlement, compliance]}
+    - {id: IN-BUILD, text: "Whether each SDK works in the Expo toolchain or needs a development build", kinds: [provider_fact], fields: [sdk_support, react_native_support, expo_build]}
+    - {id: IN-PLATFORM, text: "Which platform rules, permissions and build setup each capability needs", kinds: [platform_constraint]}
+  design:
+    - {id: DS-LOOK, text: "The look and feel conventions: layout, components, tone, density", kinds: [design_convention]}
+    - {id: DS-SCRIPT, text: "Fonts, direction and text expansion for each language", kinds: [script_need]}
+    - {id: DS-CHANGES, text: "Recent changes in design that affect the first release", kinds: [trend]}
+  screens:
+    - {id: SC-CONTENT, text: "The sections, components, actions and states of the key screens", kinds: [screen_pattern]}
+    - {id: SC-EXCEPTIONS, text: "What a screen shows when data is missing, a step fails or the network drops", kinds: [workflow]}
+    - {id: SC-INPUTS, text: "The input formats and validations of forms", kinds: [local_format, rule]}
+    - {id: SC-PERMISSIONS, text: "Permission prompts and store disclosures the screens must carry", kinds: [platform_constraint, compliance_note]}
+  mock:
+    - {id: MK-FORMATS, text: "The formats and identifiers realistic data must follow", kinds: [local_format]}
+    - {id: MK-SAMPLES, text: "Realistic names, prices, units and edge cases", kinds: [data_hint]}
+    - {id: MK-SHAPES, text: "The shape of each record for fixtures", kinds: [entity_pattern]}
+  verify:
+    - {id: VF-CONFIRM, text: "The numbers and legal facts the owner confirms before the build", kinds: [rule, compliance_note, provider_fact, platform_constraint, service_option], flags_any: [needs-confirm]}
+# The note Spec reads next to a decision that has no usable item (the reason is computed by code).
+decision_gaps:
+  unverified_only: "Research found only statements it could not verify: assume this from the module library and mark it assumed."
+  not_found: "The topics ran and found nothing usable: assume this from the module library and mark it assumed."
+  not_run: "The topics for this did not run within the budget: assume this from the module library and mark it assumed."
+  not_planned: "No topic of this run could inform it: assume this from the module library and mark it assumed."

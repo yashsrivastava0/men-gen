@@ -13,12 +13,15 @@ import hashlib
 import json
 from dataclasses import dataclass, field
 from datetime import date
+from decimal import Decimal, InvalidOperation
 from typing import Any
 
+from mde_research_agent.assemble.capability import need_key_of
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.applies import BriefIndex, retag
 from mde_research_agent.core.norm_keys import clean_key, match_brief, reconcile
+from mde_research_agent.core.numbers import figures
 from mde_research_agent.core.prevalence import is_fee_text, is_stale, recency_of
 from mde_research_agent.core.sources import can_support_high_impact, independent_count
 from mde_research_agent.core.text import stem_set
@@ -32,7 +35,8 @@ from mde_research_agent.engine.state import AtomRecord, PageRecord
 
 CLASS_RANK = {"official": 0, "help": 1, "press": 2, "store": 3, "blog": 4, "forum": 5, "seo": 6}
 RELATION = {
-    "rule": "constrains", "compliance_note": "constrains", "entity_pattern": "refines", "lifecycle": "refines",
+    "rule": "constrains", "compliance_note": "constrains", "platform_constraint": "constrains",
+    "entity_pattern": "refines", "lifecycle": "refines",
     "screen_pattern": "refines", "workflow": "refines", "role_pattern": "refines", "navigation_pattern": "refines",
 }  # fmt: skip
 
@@ -61,9 +65,48 @@ def _canon(value: Any) -> str:
     return clean_key(str(value or ""))
 
 
+def typed_slot(typed: dict[str, Any] | None) -> tuple[str, str, str]:
+    """What a typed value is ABOUT, without its amount: (unit, period, condition), canonical. Two typed values of one
+    provider and field with the same slot and different amounts disagree (a conflict); a different slot is another fact."""
+    t = typed or {}
+    return (_canon(t.get("unit")), _canon(t.get("period")), _canon(t.get("condition")))
+
+
+def canonical_amount(typed: dict[str, Any] | None) -> str:
+    """``amount`` and ``currency`` as one comparable string ("2.5 usd"), "" when there is no amount."""
+    t = typed or {}
+    raw = str(t.get("amount") or "").strip()
+    if not raw:
+        return ""
+    try:
+        amount = format(Decimal(raw).normalize(), "f")
+    except InvalidOperation:
+        amount = raw
+    return f"{amount} {_canon(t.get('currency'))}".strip()
+
+
+def provider_fact_value(d: dict[str, Any]) -> str:
+    """The canonical value of a provider fact: its typed figure with its slot, else its words."""
+    amount = canonical_amount(d.get("typed"))
+    if amount:
+        return " | ".join([amount, *typed_slot(d.get("typed"))])
+    return _canon(d.get("value"))
+
+
 def _group_key(a: AtomRecord, mapping: dict[tuple[str, str], str], area: str) -> tuple[str, ...]:
     d = a.data
     k = a.kind
+    if (
+        k == "provider_fact"
+    ):  # (provider, field, canonical value): two different fees stay two items (D-159)
+        return (k, _canon(d.get("provider")), _canon(d.get("field")), provider_fact_value(d))
+    if k == "platform_constraint":
+        return (
+            k,
+            _canon(d.get("capability")),
+            str(d.get("platform")),
+            mapping.get((area, a.norm_key), a.norm_key),
+        )
     if k in ("competitor", "reference_check"):
         return (k, _canon(d.get("name")))
     if k == "service_option":
@@ -147,6 +190,29 @@ def merge_payloads(
     return out
 
 
+def scalar_variants(primary: dict[str, Any], others: list[dict[str, Any]]) -> dict[str, list[str]]:
+    """Figure-bearing text fields on which a merged source DISAGREES with the primary (a different fee, limit or value).
+
+    ``merge_payloads`` keeps the primary's scalar and used to drop the others silently. A figure is a fact, so a
+    different figure is kept here, per field, as the other sources' text (at most three), and the item is flagged
+    ``conflict``. Wording differences without a different figure are not disagreements and are not recorded."""
+    out: dict[str, list[str]] = {}
+    for key, mine in primary.items():
+        if not isinstance(mine, str) or not mine.strip():
+            continue
+        mine_figs = {f.key for f in figures(mine)}
+        for o in others:
+            theirs = o.get(key)
+            if not isinstance(theirs, str) or not theirs.strip() or theirs.strip() == mine.strip():
+                continue
+            their_figs = {f.key for f in figures(theirs)}
+            if (mine_figs or their_figs) and mine_figs != their_figs:
+                bucket = out.setdefault(key, [])
+                if theirs not in bucket and len(bucket) < 3:
+                    bucket.append(theirs)
+    return out
+
+
 def _source_ref(page: PageRecord, ids: dict[str, str]) -> SourceRef:
     return SourceRef(
         id=ids[page.url],
@@ -165,6 +231,7 @@ def _applies(
     inp: ResearchInput,
     area: str | None,
     index: BriefIndex,
+    need_key: str | None = None,
 ) -> list[AppliesTo]:
     rel = RELATION.get(kind, "expects")
     out: list[AppliesTo] = []
@@ -199,6 +266,8 @@ def _applies(
         hit = match_brief(norm_key, names, generic=generic)
         if hit:
             out.append(AppliesTo(kind="FLW", id=hit, relation="refines"))
+    if need_key:  # a provider fact belongs to the integration need it serves ("payments")
+        out.append(AppliesTo(kind="INT", id=need_key, relation=rel))  # type: ignore[arg-type]
     if not out:
         out.append(AppliesTo(kind="NEW", id=None, relation="suggests"))
     fixed, _ = retag(out, index)
@@ -326,7 +395,12 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
         independent_non_low = independent_count(
             [u for u, _ in non_low], texts=[w for _, w in non_low]
         )
-        impact = "high" if any(a.impact == "high" for a in members) else "normal"
+        variants = scalar_variants(primary.data, [m.data for m in src_members[1:]])
+        impact = (
+            "high"
+            if any(a.impact == "high" for a in members) or _money_fact(kind, data)
+            else "normal"
+        )
         dates = [p.published for p in pages] + [a.published_on for a in src_members]
         newest = max((d for d in dates if d), default=None)
         age = recency_of(dates, ctx.as_of).age_months
@@ -340,6 +414,8 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
             flags.add("number_widened")
         if all("figures_dropped" in m.flags for m in src_members):
             flags.add("figures_dropped")
+        if variants:  # sources state a different figure for the same thing: both are kept, the item is a conflict
+            flags.add("conflict")
         if any(a.seed for a in members):
             flags.add("entity_from_model")
         if kind in lanes.legal_adjacent_kinds or primary.job == "trust":
@@ -409,6 +485,9 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
                 ctx.input,
                 area if area in ("feature", "entity", "flow") else None,
                 index,
+                need_key_of(str(data.get("need", "")), cat.needs)
+                if kind == "provider_fact"
+                else None,
             ),
             sources=[_source_ref(p, src_ids) for p in pages],
             independent_domains=independent,
@@ -425,6 +504,7 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
             request_ids=sorted({r for m in members for r in targets[m.target_id].links.requests}),
             target_id=primary.target_id,
             data=data,
+            variants=variants,
         )
         ba = (
             (area, mapping.get((area, primary.norm_key), primary.norm_key))
@@ -456,6 +536,11 @@ def primary_page_language(
     return (p.language if p is not None else None) or next(
         (q.language for q in pages if q.language), None
     )
+
+
+def _money_fact(kind: str, data: dict[str, Any]) -> bool:
+    """A provider fact with a typed amount (a fee, a limit, a time) is high impact whatever the model said."""
+    return kind == "provider_fact" and bool(canonical_amount(data.get("typed")))
 
 
 def _slot_of(t: Target, kind: str) -> str | None:

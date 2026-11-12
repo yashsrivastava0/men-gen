@@ -208,6 +208,35 @@ def integrations_digest(items: list[BuiltItem], norms: list[Norm], cap: int) -> 
             for b in sorted(by_need[need], key=lambda x: x.item.id)
         ]
         d.section(f"PROVIDERS FOR {need.upper()}", rows)
+    facts: dict[str, list[BuiltItem]] = defaultdict(list)
+    for b in _by_kind(items, "provider_fact"):
+        facts[str(b.item.data.get("need", "")).casefold()].append(b)
+    for need in sorted(facts):
+        d.section(
+            f"FACTS ABOUT PROVIDERS FOR {need.upper()} (provider | field | value | evidence)",
+            [
+                f"{b.item.data.get('provider')} | {b.item.data.get('field')} | {b.item.data.get('value')} | {b.item.evidence}{_flags(b)}"
+                for b in sorted(
+                    facts[need],
+                    key=lambda x: (
+                        str(x.item.data.get("provider")),
+                        str(x.item.data.get("field")),
+                        x.item.id,
+                    ),
+                )
+            ],
+        )
+    d.section(
+        "PLATFORM RULES (capability | platform | rule | effect on the build | evidence)",
+        [
+            f"{b.item.data.get('capability')} | {b.item.data.get('platform') or 'platform not stated'} | {b.item.data.get('rule')} | "
+            f"{b.item.data.get('effect_on_build') or 'effect not stated'} | {b.item.evidence}{_flags(b)}"
+            for b in sorted(
+                _by_kind(items, "platform_constraint"),
+                key=lambda x: (str(x.item.data.get("capability")), x.item.id),
+            )
+        ],
+    )
     d.section(
         "PORTALS AND COMPLIANCE",
         [
@@ -277,6 +306,13 @@ def screens_digest(items: list[BuiltItem], norms: list[Norm], cap: int) -> str:
         [
             f"{b.item.data.get('name')}: exc {_join(b.item.data.get('exceptions', []), 3)} | cases {_join(b.item.data.get('empty_error_offline_cases', []), 3)}"
             for b in _by_kind(items, "workflow")[:12]
+        ],
+    )
+    d.section(
+        "PERMISSIONS AND STORE RULES THE SCREENS MUST CARRY",
+        [
+            f"{b.item.data.get('capability')} | {b.item.data.get('rule')} | {b.item.data.get('effect_on_build') or 'effect not stated'}"
+            for b in _by_kind(items, "platform_constraint")[:12]
         ],
     )
     d.section(

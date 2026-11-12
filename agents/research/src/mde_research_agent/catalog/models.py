@@ -12,8 +12,26 @@ from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
+from mde_research_agent.catalog.content import (
+    CapabilitiesConfig,
+    ConfirmConfig,
+    DepthConfig,
+    DossiersConfig,
+    LaneDecision,
+    TypedValuesConfig,
+)
+
 JobName = Literal[
-    "features", "structure", "flows", "data", "services", "design", "screens", "local", "trust"
+    "features",
+    "structure",
+    "flows",
+    "data",
+    "services",
+    "design",
+    "screens",
+    "local",
+    "trust",
+    "platform",
 ]
 LaneName = Literal["blueprint", "integrations", "design", "screens", "mock", "verify"]
 LoadClass = Literal["focused", "standard", "deep"]
@@ -30,6 +48,7 @@ Foreach = Literal[
     "format_topic",
     "platform",
     "script_locale",
+    "capability",
 ]
 Condition = Literal[
     "non_latin_locale",
@@ -323,6 +342,12 @@ class LanesConfig(Frozen):
     high_impact_kinds: tuple[str, ...]
     legal_adjacent_kinds: tuple[str, ...]
     norm_areas: tuple[str, ...]
+    decisions: dict[
+        str, tuple[LaneDecision, ...]
+    ] = {}  # what each Spec lane must decide (assemble/decisions.py)
+    decision_gaps: dict[
+        str, str
+    ] = {}  # reason -> the note Spec reads next to a decision without items
 
 
 class NeedKeywords(Frozen):
@@ -398,6 +423,11 @@ class Catalog(Frozen):
     plan: PlanConfig
     signals: SignalsConfig
     figure_drop: FigureDrop
+    dossiers: DossiersConfig
+    capabilities: CapabilitiesConfig
+    depth: DepthConfig
+    typed_values: TypedValuesConfig
+    confirm: ConfirmConfig
     languages: dict[str, LanguageInfo]
     labels: dict[str, Labels]
     catalog_hash: str

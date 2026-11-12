@@ -221,6 +221,7 @@ def services(quote: str, claim: str, label: str, **payload: Any) -> Candidate | 
                         **payload,
                     )[1]
                 ],
+                "provider_fact": [],
                 "compliance_note": [],
             }
         ),
