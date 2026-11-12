@@ -270,7 +270,14 @@ class ResearchOutput(Model):
     brief_hash: str
     status: Status
     profile: Profile
-    input_quality: dict[str, Any]
+    input_quality: dict[str, Any] = Field(
+        description=(
+            "How far the Brief could be trusted. Keys include `input_binding` (verified | unverified_no_baseline | "
+            "unverified_hash_mismatch: whether the export's own approval seal could be checked), `compass_format` "
+            "(the export's format version, or null), `plan_source`, `requests`, `failures` and `flags`. An unverified "
+            "Brief is researched, never refused; this says so."
+        )
+    )
     budget: Budget = Field(default_factory=Budget)
     coverage: Coverage = Field(default_factory=Coverage)
     by_feature: dict[str, list[str]] = Field(default_factory=dict)

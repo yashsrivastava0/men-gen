@@ -63,18 +63,46 @@ def test_the_interview_tier_is_not_an_input(name: str) -> None:
 
 
 @pytest.mark.parametrize(
-    ("mutate", "code"),
+    ("mutate", "binding"),
     [
-        (lambda d: d["brief"].update(_hash="0" * 64), "hash_mismatch"),
-        (lambda d: d["export"].update(brief_hash="f" * 64), "hash_mismatch"),
-        (lambda d: d["export"].pop("approved_baseline"), "not_approved"),
-        (lambda d: d["export"].update(format_version=1), "not_format_2"),
-        (lambda d: d.pop("brief"), "not_an_export"),
-        (lambda d: d["consumer_views"].pop("research"), "missing_research_view"),
+        (lambda d: d["brief"].update(_hash="0" * 64), "unverified_hash_mismatch"),
+        (lambda d: d["export"].update(brief_hash="f" * 64), "unverified_hash_mismatch"),
+        (lambda d: d["export"].pop("approved_baseline"), "unverified_no_baseline"),
+        (lambda d: d["export"].update(approved_baseline=None), "unverified_no_baseline"),
+        (lambda d: d["export"].update(format_version=1), "verified"),
+        (lambda d: d["consumer_views"].pop("research"), "verified"),
+        (lambda d: d.pop("consumer_views"), "verified"),
     ],
 )
-def test_a_changed_or_unapproved_export_is_refused(mutate: Any, code: str) -> None:
+def test_a_changed_or_unapproved_export_is_read_and_flagged_never_refused(
+    mutate: Any, binding: str
+) -> None:
     data = copy.deepcopy(load("quick-yoga-studio-bengaluru"))
+    mutate(data)
+    inp = read_export(data, CAT)
+    assert inp.quality.input_binding == binding
+    assert (binding in inp.quality.flags) == (binding != "verified")
+    assert inp.idea.summary and inp.requests and inp.load is not None
+
+
+def test_a_verified_export_says_verified() -> None:
+    assert read_export(load("quick-yoga-studio-bengaluru"), CAT).quality.input_binding == "verified"
+
+
+@pytest.mark.parametrize(
+    ("mutate", "code"),
+    [
+        (lambda d: d.pop("brief"), "not_an_export"),
+        (lambda d: d.update(brief=["not", "a", "mapping"]), "not_an_export"),
+        (
+            lambda d: d["brief"].update(research_requests=[], domain_facts=[], idea={}, summary=""),
+            "unusable_brief",
+        ),
+    ],
+)
+def test_only_an_unusable_brief_is_refused(mutate: Any, code: str) -> None:
+    data = copy.deepcopy(load("quick-yoga-studio-bengaluru"))
+    data.pop("consumer_views")  # the view could still carry an idea
     mutate(data)
     with pytest.raises(ExportRefused) as err:
         read_export(data, CAT)

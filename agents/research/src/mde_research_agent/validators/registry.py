@@ -2,7 +2,8 @@
 
 What each does when it fails is decided by the caller (``commit_gate``): item-level problems are repaired or the
 item dropped BEFORE commit (the assembler already enforces most of them, so a violation here is a bug signal);
-RV-04 (a Locked tier) and RV-13 (hash binding) refuse the commit outright.
+RV-04 (a Locked tier) and RV-13 (hash binding) refuse the commit outright. RV-11 (no private term in a query) runs
+again by the owner's instruction of 2026-11-13, which overrides AD-54.
 """
 
 from __future__ import annotations
@@ -26,6 +27,7 @@ from mde_research_agent.core.applies import BriefIndex
 from mde_research_agent.core.applies import problem as applies_problem
 from mde_research_agent.core.novelty import novel_tokens
 from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
+from mde_research_agent.core.privacy import find_private
 from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
 from mde_research_agent.core.slots import evaluate_target
 from mde_research_agent.core.sources import can_support_high_impact, independent_count
@@ -294,8 +296,20 @@ def rv10_coverage(v: ValidationContext) -> list[Violation]:
     return out
 
 
-def rv11_reserved(v: ValidationContext) -> list[Violation]:
-    return []  # personal-data filtering was removed by owner decision (AD-54); nothing runs here
+def rv11_private_terms(v: ValidationContext) -> list[Violation]:
+    """No recorded query names something private from the Brief (the brand, phones, e-mails, addresses; core/privacy.py).
+
+    Owner instruction of 2026-11-13: the client's own name and private facts never leave in a query to a search provider.
+    It overrides AD-54 (2026-11-11), which had removed name and personal-data filtering and left this id reserved. The
+    violation names the query, never the private term."""
+    terms = v.inp.private
+    if not terms:
+        return []
+    return [
+        Violation("RV-11", f"query {q['id']} names something private from the Brief")
+        for q in v.evidence.get("queries", [])
+        if find_private(q["text"], terms)
+    ]
 
 
 def rv12_budget(v: ValidationContext) -> list[Violation]:
@@ -313,9 +327,23 @@ def rv12_budget(v: ValidationContext) -> list[Violation]:
 
 
 def rv13_binding(v: ValidationContext) -> list[Violation]:
+    """The output is for the Brief that went in (an error, and it refuses the commit); and the report says when that Brief
+    could not be verified against its approval seal (a warning: an unverified Brief is researched, never refused)."""
+    out: list[Violation] = []
     if v.output.get("brief_hash") != v.inp.brief_hash:
-        return [Violation("RV-13", "brief_hash does not equal the approved Brief hash")]
-    return []
+        out.append(Violation("RV-13", "brief_hash does not equal the approved Brief hash"))
+    quality = v.output.get("input_quality") or {}
+    binding = quality.get("input_binding") or v.inp.quality.input_binding
+    if binding != "verified":
+        out.append(
+            Violation(
+                "RV-13",
+                f"the Brief could not be verified against its approval seal ({binding})",
+                None,
+                "warn",
+            )
+        )
+    return out
 
 
 def rv14_anatomy(v: ValidationContext) -> list[Violation]:
@@ -686,7 +714,7 @@ def rv23_recomputed(v: ValidationContext) -> list[Violation]:
 REGISTRY: dict[str, Validator] = {
     "RV-01": rv01_schema, "RV-02": rv02_quotes, "RV-03": rv03_sources, "RV-04": rv04_tier, "RV-05": rv05_no_new_facts,
     "RV-06": rv06_query_hygiene, "RV-07": rv07_corroboration, "RV-08": rv08_support, "RV-09": rv09_caps, "RV-10": rv10_coverage,
-    "RV-11": rv11_reserved, "RV-12": rv12_budget, "RV-13": rv13_binding, "RV-14": rv14_anatomy, "RV-15": rv15_slots,
+    "RV-11": rv11_private_terms, "RV-12": rv12_budget, "RV-13": rv13_binding, "RV-14": rv14_anatomy, "RV-15": rv15_slots,
     "RV-16": rv16_applies, "RV-17": rv17_events, "RV-18": rv18_numbers, "RV-19": rv19_independence,
     "RV-20": rv20_region_entity, "RV-21": rv21_checked, "RV-22": rv22_store, "RV-23": rv23_recomputed,
 }  # fmt: skip

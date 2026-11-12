@@ -95,9 +95,10 @@ async def test_a_dropped_in_file_appears_without_a_restart_and_a_bad_one_gets_a_
     await svc.aclose()
 
 
-async def test_format_hash_and_approval_failures_are_listed_with_their_reason(
+async def test_format_hash_and_approval_problems_are_listed_with_their_binding(
     tmp_path: Path,
 ) -> None:
+    """An older format, a changed Brief and a missing approval are inputs with a flag, not skipped files (D-156)."""
     inputs = tmp_path / "inputs"
     data = json.loads((FIX / f"{YOGA}.json").read_text(encoding="utf-8"))
     v1 = json.loads(json.dumps(data))
@@ -116,12 +117,20 @@ async def test_format_hash_and_approval_failures_are_listed_with_their_reason(
     svc = build_app_test_service(tmp_path, inputs_dir=inputs)
     async with client(make_app(svc, tmp_path)) as c:
         body = (await c.get("/api/inputs")).json()
-    assert body["inputs"] == []
-    assert {s["name"]: s["reason"] for s in body["skipped"]} == {
-        "v1.json": "format_not_supported",
-        "mismatch.json": "hash_mismatch",
-        "unapproved.json": "not_approved",
+    assert body["skipped"] == []
+    previews = {i["name"]: i["preview"] for i in body["inputs"]}
+    assert {n: p["input_binding"] for n, p in previews.items()} == {
+        "v1.json": "verified",
+        "mismatch.json": "unverified_hash_mismatch",
+        "unapproved.json": "unverified_no_baseline",
     }
+    assert previews["v1.json"]["compass"]["format"] == 1
+    for name in ("mismatch.json", "unapproved.json"):
+        warning = next(
+            w for w in previews[name]["warnings"] if w["code"] == previews[name]["input_binding"]
+        )
+        assert warning["text"]  # a plain sentence for the person
+    assert not [w for w in previews["v1.json"]["warnings"] if w["code"].startswith("unverified")]
     await svc.aclose()
 
 

@@ -1,4 +1,4 @@
-"""The validator registry for Research (RV-01 to RV-17; RV-11 is reserved and does nothing).
+"""The validator registry for Research (RV-01 to RV-23; RV-11 is the private-term check, back by the owner's instruction of 2026-11-13).
 
 An internal registry that the Backbone's shared validator framework can adopt later: each validator is a function
 ``(ValidationContext) -> list[Violation]`` registered under its id.

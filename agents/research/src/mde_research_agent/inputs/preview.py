@@ -8,12 +8,97 @@ why, the planned topics by job, the warnings about the input, and the estimate.
 from __future__ import annotations
 
 from collections import Counter
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
+
+import yaml
 
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.domain.input import ResearchInput
+from mde_research_agent.domain.plan import Plan
 from mde_research_agent.plan.build import build_plan
+from mde_research_agent.plan.candidates import trusted_requests
 from mde_research_agent.plan.signals import compute_signals, trust_decision
+
+TEXTS_FILE = Path(__file__).resolve().parent.parent / "data" / "preview.yaml"
+
+
+@lru_cache(maxsize=1)
+def texts() -> dict[str, Any]:
+    """The one-line reasons of the preview (``data/preview.yaml``)."""
+    raw = yaml.safe_load(TEXTS_FILE.read_text(encoding="utf-8")) or {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def _text(group: str, key: str = "", **fill: object) -> str:
+    """One line from ``data/preview.yaml``: ``group.key`` (or the plain string at ``group``), filled in."""
+    entry: Any = texts().get(group)
+    if isinstance(entry, dict):
+        entry = entry.get(key)
+    return str(entry).format(**fill) if isinstance(entry, str) else ""
+
+
+def request_rows(inp: ResearchInput, plan: Plan) -> list[dict[str, Any]]:
+    """Every Brief research request with the topic(s) that carry it, or why none does.
+
+    ``status`` is ``mapped`` (a topic that runs carries it), ``not_run`` (its topic is planned but ranked below what this
+    size runs), ``dropped`` (its topic was left out, ``why`` says why), ``unmapped`` (no planned topic fits it) or
+    ``ignored`` (the request is filler or too thin, so the planner did not use it)."""
+    usable = {r.id for r in trusted_requests(inp)}
+    rows: list[dict[str, Any]] = []
+    for r in inp.requests:
+        running = [t for t in plan.targets if r.id in t.links.requests]
+        waiting = [t for t in plan.unrun if r.id in t.links.requests]
+        dropped = [d for d in plan.dropped if r.id in d.links.requests]
+        if r.id not in usable:
+            status, reason = "ignored", "thin" if r.thin and r.origin != "template" else "template"
+            text = _text("request", reason)
+        elif running:
+            status, reason, text = "mapped", "mapped", _text("request", "mapped")
+        elif waiting:
+            status, reason, text = "not_run", "not_run", _text("request", "not_run")
+        elif dropped:
+            why = _text("dropped", dropped[0].reason)
+            status, reason, text = (
+                "dropped",
+                dropped[0].reason,
+                _text("request", "dropped", why=why),
+            )
+        else:
+            status, reason, text = "unmapped", "unmapped", _text("request", "unmapped")
+        rows.append(
+            {
+                "id": r.id,
+                "topic": r.topic,
+                "status": status,
+                "reason": reason,
+                "text": text,
+                "topics": [
+                    {"id": t.id, "label": t.label, "job": t.job} for t in (running or waiting)
+                ],
+            }
+        )
+    return rows
+
+
+def not_run_rows(plan: Plan) -> list[dict[str, Any]]:
+    """Topics that were planned but are not run at this size, each with its rank and a one-line reason."""
+    total = len(plan.targets) + len(plan.unrun)
+    return [
+        {
+            "id": t.id,
+            "label": t.label,
+            "job": t.job,
+            "priority": t.priority,
+            "requests": list(t.links.requests),
+            "reason": "over_cap",
+            "text": _text(
+                "not_run", "", rank=len(plan.targets) + i, total=total, cap=len(plan.targets)
+            ),
+        }
+        for i, t in enumerate(plan.unrun, start=1)
+    ]
 
 
 def compass_info(data: dict[str, Any]) -> dict[str, Any]:
@@ -62,7 +147,12 @@ def build_preview(
                 "text": "Compass finished this Brief with some model steps degraded.",
             }
         )
+    binding = q.input_binding
+    if binding != "verified":
+        warnings.append({"code": binding, "text": _text("binding", binding)})
     cats = Counter((f.kind or "other") for f in inp.facts)
+    rows = request_rows(inp, plan)
+    by_status = Counter(r["status"] for r in rows)
     live_features = [f for f in inp.features if not f.duplicate_of and f.scope_status != "out"]
     info = compass_info(data)
     return {
@@ -73,6 +163,7 @@ def build_preview(
         },
         "place": {
             "country": inp.geography.country,
+            "countries": [{"name": c.name, "code": c.code} for c in inp.geography.countries],
             "cities": list(inp.geography.cities),
             "uncertain": bool(inp.geography.uncertain),
         },
@@ -85,7 +176,8 @@ def build_preview(
             "references": len(inp.references),
             "facts": dict(sorted(cats.items())),
         },
-        "compass": info,
+        "compass": {**info, "format": q.compass_format},
+        "input_binding": binding,
         "load": {
             "score": load.score if load else 0,
             "class": klass,
@@ -106,12 +198,27 @@ def build_preview(
             "not_run": [t.label for t in plan.unrun],
         },
         "declined": list(inp.declined),
-        "dropped": [{"label": d.label, "reason": d.reason} for d in plan.dropped],
+        "not_run": not_run_rows(plan),
+        "dropped": [
+            {
+                "label": d.label,
+                "reason": d.reason,
+                "text": _text("dropped", d.reason),
+                "job": d.job,
+                "requests": list(d.links.requests),
+            }
+            for d in plan.dropped
+        ],
         "warnings": warnings,
         "requests": {
             "trusted": q.requests.trusted,
             "template": q.requests.template,
             "thin": q.requests.thin,
+            "mapped": by_status.get("mapped", 0),
+            "not_run": by_status.get("not_run", 0),
+            "dropped": by_status.get("dropped", 0),
+            "unmapped": by_status.get("unmapped", 0),
+            "items": rows,
         },
         "estimate": estimates.for_class(size),
         "program_id": inp.program_id,

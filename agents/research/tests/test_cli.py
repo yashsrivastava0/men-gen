@@ -39,11 +39,11 @@ async def test_mock_run_writes_the_three_files(tmp_path: Path) -> None:
     assert len((tmp_path / "out" / "events.jsonl").read_text().splitlines()) == len(events) > 20
 
 
-def test_a_changed_export_is_refused_with_exit_code_2(
+def test_an_export_without_a_usable_brief_is_refused_with_exit_code_2(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     data = load_fixture("quick-yoga-studio-bengaluru")
-    data["brief"]["_hash"] = "0" * 64
+    del data["brief"]
     p = tmp_path / "bad.json"
     p.write_text(json.dumps(data))
     assert main(["--export", str(p), "--mock"]) == 2
