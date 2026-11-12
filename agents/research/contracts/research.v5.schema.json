@@ -1538,6 +1538,11 @@
           "title": "Digest Tokens Cap Per Lane",
           "type": "integer"
         },
+        "digest_tokens_total": {
+          "default": 0,
+          "title": "Digest Tokens Total",
+          "type": "integer"
+        },
         "light": {
           "default": false,
           "title": "Light",

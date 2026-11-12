@@ -20,6 +20,7 @@ import yaml
 from mde_core.money import micros_to_usd
 from mde_research_agent import SCHEMA_VERSION
 from mde_research_agent.assemble import digest as dg
+from mde_research_agent.assemble.confirm import rank_confirm
 from mde_research_agent.assemble.decisions import build_decisions
 from mde_research_agent.assemble.dossier import build_dossiers
 from mde_research_agent.assemble.items import BuiltItem, build_items, canonical_amount
@@ -39,7 +40,7 @@ from mde_research_agent.assemble.quality import (
 )
 from mde_research_agent.assemble.quality import lane_items as lane_items_of
 from mde_research_agent.assemble.register import build_register
-from mde_research_agent.assemble.store import assign_store, compact_item, tokens_of
+from mde_research_agent.assemble.store import assign_store, chunk_ids, compact_item, tokens_of
 from mde_research_agent.calls import assemble as asm_call
 from mde_research_agent.catalog.loader import DATA_DIR
 from mde_research_agent.core.applies import BriefIndex
@@ -319,7 +320,9 @@ async def assemble_output(
     norms = compute_norms(built, ctx.input, cat.prevalence, ctx.as_of)
     built = apply_norms(built, norms)
     conflicts = detect_conflicts(built, ctx.input)
-    confirm = _confirm(built, defaults["confirm_reasons"])
+    confirm = rank_confirm(
+        _confirm(built, defaults["confirm_reasons"]), [b.item for b in built], cat.confirm
+    )
     suggestions = build_suggestions(built, norms)
     default_notes = asm_call.default_notes()
 
@@ -405,7 +408,7 @@ async def assemble_output(
         ids = [b.item.id for b in ordered.get(lane, [])]
         slices[lane] = Slice(
             item_ids=ids,
-            chunks=[ids[i : i + cs.chunk_items] for i in range(0, len(ids), cs.chunk_items)],
+            chunks=chunk_ids(ids, cs.chunk_items),
             digest=digests.get(lane, ""),
         )
     final_items = [b.item for b in built]
@@ -438,6 +441,7 @@ async def assemble_output(
             appendix_items=sum(1 for b in built if b.item.store == "appendix"),
             store_over_limit=splan.protected_over_limit,
             digest_tokens=sum(tokens_of(s.digest) for s in slices.values()),
+            digest_tokens_total=sum(tokens_of(s.digest) for s in slices.values()),
             digest_tokens_cap_per_lane=cs.digest_tokens,
         ),
         input_quality=iq,

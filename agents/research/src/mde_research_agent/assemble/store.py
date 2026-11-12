@@ -4,11 +4,12 @@ Every item gets a ``rank`` (1 is best), ``tokens_est`` (characters over 4 of its
 (what Spec reads, up to ``store_tokens``) or ``appendix`` (everything else, with a reason). The rules, in order:
 
 * **Protected, always main:** an item linked to a Brief id (not ``NEW``) with ``impact: high`` or of kind ``rule``,
-  ``compliance_note`` or ``service_option``; items flagged ``conflict`` or ``needs-confirm``; the best two of every kind.
-  When the protected set alone is over the limit it all stays and the caller warns.
-* **The rest in rank order, best first:** Brief-linked, high impact, evidence (official, corroborated, single_source,
-  unverified), the norm level as a tie-break only, job priority, then id. The first one that would pass the limit and
-  everything after it go to the appendix.
+  ``compliance_note`` or ``service_option`` (a provider fact with a figure is high impact); items flagged ``conflict`` or ``needs-confirm``; the best two of
+  every kind. An ``unverified`` item is NOT protected (Spec never uses it): only a conflict or a need to confirm keeps it in the
+  main pack. When the protected set alone is over the limit it all stays and the caller warns.
+* **The rest in rank order, best first:** every verified item before any ``unverified`` one (the appendix takes unverified items
+  first), then Brief-linked, high impact, evidence (official, corroborated, single_source), the norm level as a tie-break only,
+  job priority, then id. The first one that would pass the limit and everything after it go to the appendix.
 
 ``compact_view`` is the deterministic projection Spec reads (and ``GET .../latest?view=compact`` serves): main-store items,
 norms, gaps, confirm, suggestions and defaults, with sources in ONE table and ``use_note`` only when it differs from the
@@ -18,6 +19,7 @@ kind's default. It is not a second stored file. Pure functions, no I/O.
 from __future__ import annotations
 
 import json
+from collections.abc import Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -39,16 +41,26 @@ def brief_linked(item: dict[str, Any]) -> bool:
     return any(a.get("id") and a.get("kind") != "NEW" for a in item.get("applies_to", []))
 
 
+def unverified(item: dict[str, Any]) -> bool:
+    return item.get("evidence", "unverified") == "unverified"
+
+
 def is_protected(item: dict[str, Any]) -> bool:
-    flags = set(item.get("flags", []))
-    return (
-        brief_linked(item) and (item.get("impact") == "high" or item.get("kind") in PROTECTED_KINDS)
-    ) or bool(flags & {"conflict", "needs-confirm"})
+    """Always in the main store. A conflict or an item to confirm is always protected; an unverified item never is otherwise
+    (D-159: Spec never defaults from it, so it must not crowd out a verified one)."""
+    if set(item.get("flags", [])) & {"conflict", "needs-confirm"}:
+        return True
+    if unverified(item):
+        return False
+    return brief_linked(item) and (
+        item.get("impact") == "high" or item.get("kind") in PROTECTED_KINDS
+    )
 
 
-def rank_key(item: dict[str, Any]) -> tuple[int, int, int, int, int, str]:
+def rank_key(item: dict[str, Any]) -> tuple[int, int, int, int, int, int, str]:
     level = (item.get("prevalence") or {}).get("level", "limited_evidence")
     return (
+        1 if unverified(item) else 0,  # unverified last: the appendix takes them first
         0 if brief_linked(item) else 1,
         0 if item.get("impact") == "high" else 1,
         EVIDENCE_RANK.get(item.get("evidence", "unverified"), 3),
@@ -103,6 +115,14 @@ def compact_item(item: dict[str, Any], default_notes: dict[str, str]) -> dict[st
     return out
 
 
+def chunk_ids(ids: Sequence[str], size: int) -> list[list[str]]:
+    """``ids`` in order, split into chunks of at most ``size``. NEVER truncates: every id is in exactly one chunk, and the
+    chunks joined give ``ids`` back (RV-09). A lane slice is chunked with this (``chunk_items`` of the size class)."""
+    if size < 1:
+        raise ValueError("chunk size must be at least 1")
+    return [list(ids[i : i + size]) for i in range(0, len(ids), size)]
+
+
 @dataclass(frozen=True)
 class StoreDecision:
     rank: int
@@ -138,7 +158,9 @@ def assign_store(
     rank = {i["id"]: n for n, i in enumerate(ordered, start=1)}
     protected = {i["id"] for i in ordered if is_protected(i)}
     best: dict[str, int] = {}
-    for i in ordered:  # the best two of every kind always stay
+    for i in ordered:  # the best two VERIFIED items of every kind always stay
+        if unverified(i):
+            continue
         k = str(i.get("kind"))
         if best.get(k, 0) < 2:
             best[k] = best.get(k, 0) + 1

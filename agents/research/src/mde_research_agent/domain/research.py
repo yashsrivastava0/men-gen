@@ -322,7 +322,8 @@ class Profile(Model):
     signals: list[str] = Field(default_factory=list)
     store_tokens: int = 0  # main store, measured on the compact view
     appendix_items: int = 0
-    digest_tokens: int = 0  # all lane digests together (kept for compatibility)
+    digest_tokens: int = 0  # kept for compatibility: the same number as digest_tokens_total
+    digest_tokens_total: int = 0  # the six lane digests together, as measured
     digest_tokens_cap_per_lane: int = (
         0  # the cap of ONE lane digest; the six lanes can together use up to six times it
     )
