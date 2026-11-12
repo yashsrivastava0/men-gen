@@ -144,7 +144,7 @@ a { color: var(--primary); }
 .budget-off .meter-fill { background: var(--muted); }
 /* search credits: the chip in the bar and the Budget page section (advice only; the word is always there, colour is a help) */
 .credits-row { margin: 0 0 4px; }
-.credits-chip { display: inline-block; font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 2px 12px; background: var(--surface-2); color: var(--text); }
+.credits-chip { display: inline-block; max-width: 100%; font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid var(--border); border-radius: 14px; padding: 2px 12px; background: var(--surface-2); color: var(--text); overflow-wrap: anywhere; }
 .credits-chip:hover { background: var(--surface); }
 .credits-chip.credits-ok { border-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
 .credits-chip.credits-amber { border-color: var(--warn); color: var(--warn); background: var(--warn-bg); }

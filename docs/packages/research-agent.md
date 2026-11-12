@@ -45,6 +45,7 @@ RV-01..RV-17 (RV-11 reserved) in `validators/registry.py`, one pass test and one
 - **App:** `python -m mde_research_agent` serves the API and `apps/research-console/` on 127.0.0.1:8120; `scripts/research_app.py` starts it detached. Live only (see D-132); the composition is `mde_research_agent.compose.compose_app`.
 - **Inputs, preview, queue:** `inputs/` (discovery by content hash, preview with no model or web call), one run at a time by default with a queue, the file store (`store/files.py`) or PostgreSQL.
 - **Money:** `spend/` (period ledgers, `spend-record.json`, the budget control).
+- **Provider credits (advisory):** `spend/credits.py` (the global credit ledger, `provider-credits.json`), `adapters/search/metered.py` (books each call's credits), `adapters/search/usage.py` (Tavily's own count, `GET /usage`). Runbook section "Search credits".
 - **Truth layer:** `engine/checking.py`, `core/numbers.py`, `engine/verify.py`, evidence and independence in `assemble/items.py`, RV-18..23.
 - **Reading a result:** `review.py`, `report.py`, `metrics.py`, `spotcheck.py`, endpoints in `api/results_routes.py`.
 - **Operations:** `adapters/search/failover.py`, `tools.py` (bake-off), `eval/` (planted errors, consumer probe).
