@@ -239,12 +239,18 @@ def create_app(
             app.state.service = compose_app(cfg, the_core)
         await app.state.service.recover()
         sweeper = asyncio.create_task(_sweep_loop(app, sweep_seconds))
+        # Provider credits: ask Tavily for its own count once at start (a no-op without a key or a client). Never
+        # raises and never delays the start.
+        credit_check = asyncio.create_task(app.state.service.refresh_credits())
         try:
             yield
         finally:
             sweeper.cancel()
+            credit_check.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await sweeper
+            with contextlib.suppress(asyncio.CancelledError):
+                await credit_check
             await app.state.service.aclose()
 
     app = FastAPI(

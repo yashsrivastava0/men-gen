@@ -19,6 +19,8 @@ How a ``SearchRequest`` maps:
   date are kept (``filter_by_published_date`` is not set).
 * want_content: ``include_raw_content`` "text" and the text comes back as ``SearchHit.content``.
 * max_results: clamped to 1..20.
+* include_usage: always sent; the answer's ``usage.credits`` becomes ``SearchResult.credits`` (the credit ledger books
+  it). ``GET /usage`` (the account's own count) is read by ``usage.py``, not here.
 """
 
 from __future__ import annotations
@@ -129,6 +131,7 @@ class TavilyAdapter(JsonSearchAdapter):
             "topic": "general",  # `country` is only valid for the general topic
             "max_results": max_results,
             "include_published_date": True,
+            "include_usage": True,  # the answer then says how many credits the call was billed (credit ledger)
         }
         if request.exact:
             body["query"] = quote_phrase(query)
@@ -206,6 +209,19 @@ class TavilyAdapter(JsonSearchAdapter):
                 break
         return tuple(hits)
 
+    @staticmethod
+    def _credits(data: object) -> int | None:
+        """The credits the answer says it billed (``usage.credits``); None when it carries no whole count."""
+        usage = data.get("usage") if isinstance(data, dict) else None
+        credits = usage.get("credits") if isinstance(usage, dict) else None
+        if isinstance(credits, float) and credits.is_integer():
+            credits = int(credits)
+        return (
+            credits
+            if isinstance(credits, int) and not isinstance(credits, bool) and credits >= 0
+            else None
+        )
+
     async def _search(self, request: SearchRequest) -> SearchResult:
         plan = self._plan(request)
         data, latency_ms = await self._post_json("/search", plan.body)
@@ -217,4 +233,5 @@ class TavilyAdapter(JsonSearchAdapter):
             applied=plan.applied,
             locale_weak=plan.locale_weak,
             latency_ms=latency_ms,
+            credits=self._credits(data),
         )

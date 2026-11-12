@@ -4,6 +4,7 @@ import { createApi } from "./lib/api.js";
 import { createStore } from "./lib/store.js";
 import { createScheduler, h, clear } from "./lib/dom.js";
 import { budgetLevel, budgetText, budgetPercents } from "./lib/budget.js";
+import { creditsChipText, creditsLevel } from "./lib/credits.js";
 import { openPreflight } from "./views/preflight.js";
 
 const api = createApi();
@@ -15,8 +16,8 @@ const ctx = {
   api: api,
   store: store,
   schedule: createScheduler(),
-  state: { budget: null, preflight: null, online: true, fake: false },
-  /** Subscribe to "budget" or "preflight" changes; returns the function that unsubscribes. */
+  state: { budget: null, credits: null, preflight: null, online: true, fake: false },
+  /** Subscribe to "budget", "credits" or "preflight" changes; returns the function that unsubscribes. */
   on(topic, fn) {
     (listeners[topic] = listeners[topic] || new Set()).add(fn);
     return () => listeners[topic].delete(fn);
@@ -36,6 +37,7 @@ const ctx = {
     else window.location.hash = route;
   },
   refreshBudget: refreshBudget,
+  refreshCredits: refreshCredits,
   refreshPreflight: refreshPreflight,
 };
 
@@ -64,6 +66,14 @@ function drawBudget() {
   const meter = $("budget-meter");
   meter.setAttribute("aria-valuenow", String(Math.round(p.used)));
   meter.setAttribute("aria-valuetext", budgetText(b));
+}
+/** The credits chip (advice only): hidden until there is something to say about a provider with a key. */
+function drawCredits() {
+  const text = ctx.state.online ? creditsChipText(ctx.state.credits) : "";
+  $("credits-row").hidden = !text;
+  if (!text) return;
+  $("credits-chip").className = "credits-chip credits-" + creditsLevel(ctx.state.credits);
+  $("credits-chip").textContent = text;
 }
 function drawPreflight() {
   const pre = ctx.state.preflight;
@@ -119,11 +129,27 @@ async function refreshBudget() {
     budgetAt = Date.now();
     budgetBusy = null;
     drawBudget();
+    drawCredits();
     drawPreflight();
     drawNotices();
     ctx.emit("budget");
   })();
   return budgetBusy;
+}
+let creditsBusy = null;
+async function refreshCredits() {
+  if (creditsBusy) return creditsBusy;
+  creditsBusy = (async () => {
+    try {
+      ctx.state.credits = await api.get("/api/credits");
+    } catch (e) {
+      // credits are advice: a failed read keeps the last figures and raises no alarm of its own
+    }
+    creditsBusy = null;
+    drawCredits();
+    ctx.emit("credits");
+  })();
+  return creditsBusy;
 }
 async function refreshPreflight() {
   try {
@@ -138,7 +164,7 @@ async function refreshPreflight() {
 }
 function refreshAll() {
   budgetAt = 0;
-  return Promise.all([refreshBudget(), refreshPreflight()]);
+  return Promise.all([refreshBudget(), refreshCredits(), refreshPreflight()]);
 }
 
 // ---- theme ----------------------------------------------------------------------------------------------------------------
@@ -225,7 +251,10 @@ function start() {
     if (!document.hidden) refreshAll();
   });
   setInterval(() => {
-    if (!document.hidden) refreshBudget();
+    if (!document.hidden) {
+      refreshBudget();
+      refreshCredits();
+    }
   }, 15000);
   setInterval(() => {
     if (!document.hidden) refreshPreflight();

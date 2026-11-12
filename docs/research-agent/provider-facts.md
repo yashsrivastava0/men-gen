@@ -43,7 +43,7 @@ Sources (all **[O]**):
 | `filter_by_published_date` | boolean; also removes undated results | O | never sent (undated sources are kept) |
 | `include_raw_content` | `false`, `true`/`markdown`, or `text` ("plain text ... may increase latency") | O | `text` when `want_content` |
 | `max_age_hours` | -1..720; "no extra credits"; non-paying plans may get 434 under load | O | never sent |
-| `include_usage` | boolean; adds `usage: {credits: N}` to the answer | O | not used |
+| `include_usage` | boolean; adds `usage: {credits: N}` to the answer | O | always `true`; `usage.credits` is booked in the credit ledger |
 | `auto_parameters` | may silently switch to `advanced` (2 credits) | O | never sent |
 
 ### Response

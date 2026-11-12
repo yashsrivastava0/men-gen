@@ -12,3 +12,16 @@ from pathlib import Path
 TESTS = str(Path(__file__).resolve().parent)
 if TESTS not in sys.path:
     sys.path.insert(0, TESTS)
+
+
+import pytest  # noqa: E402
+
+
+@pytest.fixture(autouse=True)
+def _research_data_dir_is_private(
+    tmp_path_factory: pytest.TempPathFactory, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Every test gets its own ``RESEARCH_DATA_DIR``: the provider-credit ledger (``provider-credits.json``) and the
+    other runtime files of a service or an adapter built from the default settings land in a temporary folder, never
+    in the owner's ``agents/research/.runtime``."""
+    monkeypatch.setenv("RESEARCH_DATA_DIR", str(tmp_path_factory.mktemp("research-data")))

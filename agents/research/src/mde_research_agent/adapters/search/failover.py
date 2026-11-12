@@ -124,4 +124,7 @@ def _merge(first: SearchResult, other: SearchResult, *, paid: str) -> SearchResu
         hits=(*first.hits, *extra),
         cost_micros=first.cost_micros + other.cost_micros,
         provider="+".join(providers),
+        # Credits are not a sum across providers: each real adapter is metered below this class and the ledger holds
+        # what each one billed, so the merged answer carries no single count.
+        credits=None,
     )

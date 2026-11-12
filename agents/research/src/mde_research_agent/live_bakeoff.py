@@ -450,21 +450,34 @@ async def run(args: argparse.Namespace) -> int:
         if problems:
             sys.stderr.write("cannot run the bake-off: " + "; ".join(problems) + "\n")
             return 2
+        from mde_research_agent.adapters.search.metered import MeteredSearch
         from mde_research_agent.adapters.search.serper import SerperAdapter
         from mde_research_agent.adapters.search.tavily import TavilyAdapter
+        from mde_research_agent.compose import credit_ledger
 
+        # The bake-off spends real provider credits, so each adapter is metered into the app's global credit ledger
+        # (outside any run: counted as "outside runs").
+        ledger = credit_ledger(cfg)
         for name in providers:
             if name == "tavily" and cfg.tavily_api_key:
                 ports.append(
                     RecordingSearch(
-                        TavilyAdapter(cfg.tavily_api_key.get_secret_value(), client=client),
+                        MeteredSearch(
+                            TavilyAdapter(cfg.tavily_api_key.get_secret_value(), client=client),
+                            ledger,
+                            "tavily",
+                        ),
                         cassettes,
                     )
                 )
             elif name == "serper" and cfg.serper_api_key:
                 ports.append(
                     RecordingSearch(
-                        SerperAdapter(cfg.serper_api_key.get_secret_value(), client=client),
+                        MeteredSearch(
+                            SerperAdapter(cfg.serper_api_key.get_secret_value(), client=client),
+                            ledger,
+                            "serper",
+                        ),
                         cassettes,
                     )
                 )

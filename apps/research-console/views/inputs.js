@@ -5,6 +5,7 @@ import { modal } from "./dialogs.js";
 import { statusChip, sizeBadge, estimateParts, placeText, countsText, row, problemBanner } from "./shared.js";
 import { usd, usdNum, ago, formatDateTime, bytesText, jobTitle, plural, humanize, sizeWord } from "../lib/format.js";
 import { startBlock, estimateAdvice } from "../lib/budget.js";
+import { creditAdvice } from "../lib/credits.js";
 import { filterInputs, sizeCounts } from "../lib/filters.js";
 import { ApiError } from "../lib/api.js";
 import { isActiveStatus } from "../lib/reducer.js";
@@ -317,7 +318,7 @@ export function mount(root, ctx) {
 
   // ---- the confirm dialog ---------------------------------------------------------------------------------------------------
   async function confirmRun(input) {
-    await ctx.refreshBudget();
+    await Promise.all([ctx.refreshBudget(), ctx.refreshCredits()]);
     const p = input.preview || {};
     const b = ctx.state.budget;
     const est = estimateParts(p.estimate);
@@ -339,6 +340,9 @@ export function mount(root, ctx) {
     if (advice) {
       for (const line of advice.lines) m.body.appendChild(h("p", { class: "dlg-line " + (advice.partial || advice.strong ? "tone-" + (advice.strong ? "bad" : "warn") : "") }, line));
     }
+    // Search credits: advice only. The Start button below is never disabled because of them.
+    const credit = creditAdvice(p.estimate, ctx.state.credits);
+    for (const line of credit.lines) m.body.appendChild(h("p", { class: "dlg-line credit-advice" + (credit.partial ? " tone-warn" : "") }, line));
     m.body.appendChild(errorBox);
     const cancel = h("button", { type: "button", class: "btn", "data-autofocus": "1", onclick: () => m.close("no") }, "Cancel");
     const go = h("button", { type: "button", class: "btn btn-primary" }, "Start research (costs money)");

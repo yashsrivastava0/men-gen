@@ -31,6 +31,25 @@ USD 5.00 in total for the app, every cent recorded, never exceeded. There is no 
 
 "Restart budget" on the Budget page closes the period (history is kept), opens the next at 0.00 with its own ledger file, and is refused while a run is active.
 
+## Search credits (Tavily and Serper)
+
+Searches also use up **credits**, which the providers count, not dollars. Tavily's free plan gives a monthly allowance of credits (the owner's account: 1,000); Serper's credits were bought or given once and run down. The credits are a second budget next to the USD one, and they are **advice only**: the app warns, it never stops a run (a provider that runs out ends the run honestly as `partial`).
+
+- **Where you see them.** A chip in the bar on every page ("Credits: Tavily 93 of 1,000 used · Serper 2,389 left"; amber with "running low" at 80% used or when fewer than about three Small runs' worth are left, red with "almost out" at 95% or when less than one run's worst case is left), a **Search credits** section on the Budget page, and one line in the confirm dialog ("This run needs about 33 Tavily credits; 907 left", or "This may stop early (partial)...").
+- **How to read the Budget section.** Each provider has a card. **Source** says where the figure comes from: *from Tavily* (Tavily itself reported it and nothing has been counted since), *counted by this app* (the number you entered, or Tavily's last answer, plus what the app has counted since) or *no count yet*. **Checked with Tavily ... ago** is when Tavily was last asked (at app start, after each run, and when you press **Ask Tavily now**; never more than once a minute). Serper has no way to ask for its balance, so it is always counted. **Credits used by each run** lists what each run was billed (a search that is billed twice counts twice; a repeated search answered from the cache counts nothing).
+- **Set the starting numbers.** On the Budget page open **Enter or correct a balance**, or from the repository folder:
+
+  ```
+  uv run python scripts/research_app.py credits set tavily --used 93 --limit 1000
+  uv run python scripts/research_app.py credits set serper --remaining 2389
+  uv run python scripts/research_app.py credits show
+  ```
+
+  The numbers are what your account pages show on that day (Tavily: credits used this month; Serper: credits left). They live in the git-ignored data folder (`agents/research/.runtime/provider-credits.json`), so **a fresh clone must enter them again**. `Restart budget` never touches them.
+- **Monthly reset of the free Tavily allowance.** When your Tavily month turns over its "used" count goes back to 0. Press **Ask Tavily now** (the app also asks at start and after every run): Tavily's own figure replaces the old one. If it cannot be asked, enter the new "used" number yourself.
+- **Changing a key.** A different key is a different account: the old numbers are kept aside, the new key starts with no count, and the card says so. Enter its balance.
+- **Not part of "ready".** The Preflight panel lists a `credits:` line per provider for information; it never makes the app "not ready".
+
 ## Test it from the front end (the owner's checklist)
 
 1. Open `http://127.0.0.1:8120/`. The Preflight pill says **Ready**. If it says Not ready, click it: each failing check says what to set. "Test the connection" (about USD 0.01) does one search and one tiny model call.
@@ -51,7 +70,7 @@ USD 5.00 in total for the app, every cent recorded, never exceeded. There is no 
 | What | Where |
 | --- | --- |
 | Inputs (read-only for the app) | `docs/compass/research-inputs/` (`RESEARCH_INPUTS_DIR`) |
-| Data | `agents/research/.runtime/` (`RESEARCH_DATA_DIR`, git-ignored): `runs/<run_id>/{research.json, evidence.json.gz, events.jsonl, input.json.gz, cassettes/}`, `spend-record.json`, `uploads/`, `spot-checks/`, `settings.json`, `bakeoff.json`, `logs/` |
+| Data | `agents/research/.runtime/` (`RESEARCH_DATA_DIR`, git-ignored): `runs/<run_id>/{research.json, evidence.json.gz, events.jsonl, input.json.gz, cassettes/}`, `spend-record.json`, `provider-credits.json`, `uploads/`, `spot-checks/`, `settings.json`, `bakeoff.json`, `logs/` |
 | Logs | `logs/app.log` (rotating, structured) and `logs/process.log` |
 | Front end | `apps/research-console/` (plain JavaScript, no build step) |
 | PID file | `agents/research/.runtime/app.pid` |

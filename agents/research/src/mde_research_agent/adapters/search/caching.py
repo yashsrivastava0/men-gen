@@ -1,7 +1,7 @@
 """An in-process search cache: the same search is not paid for twice.
 
 Keyed by normalised query + country + language + domain mode/domains + exact + a freshness bucket; a hit is returned
-with ``cached=True`` and ``cost_micros=0``. TTL: 14 days for general facts, 2 days when the query is about prices or fees
+with ``cached=True``, ``cost_micros=0`` and ``credits=0``. TTL: 14 days for general facts, 2 days when the query is about prices or fees
 (``prevalence.yaml`` fee words). Shared across programs on purpose (owner decision: baseline privacy only). Failures are
 never cached. Bounded size (oldest entries dropped).
 """
@@ -63,7 +63,7 @@ class CachingSearch:
         if got is not None and now - got[0] < self._ttl(request):
             self.hits += 1
             self._store.move_to_end(key)
-            return replace(got[1], cached=True, cost_micros=0)
+            return replace(got[1], cached=True, cost_micros=0, credits=0)  # a hit bills nothing
         self.misses += 1
         result = await self.inner.search(request)  # a failure raises SearchError and is not cached
         self._store[key] = (now, result)

@@ -11,10 +11,10 @@ import hashlib
 import json
 from datetime import UTC, datetime
 from pathlib import Path
-from typing import Any
+from typing import Annotated, Any, Literal
 
-from fastapi import APIRouter, Request, Response
-from pydantic import BaseModel, ConfigDict
+from fastapi import APIRouter, Query, Request, Response
+from pydantic import BaseModel, ConfigDict, Field
 
 from mde_core.errors import Conflict, NotFound
 from mde_research_agent import AGENT_NAME
@@ -48,6 +48,17 @@ class SettingsBody(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     primary_provider: str
+
+
+class CreditBaselineBody(BaseModel):
+    """The owner's reading of a provider balance. Whole numbers only (strict: no 93.5, no "93", no true)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    provider: Literal["tavily", "serper"]
+    kind: Literal["used", "remaining"]
+    amount: int = Field(strict=True, ge=0, le=1_000_000_000)
+    limit: int | None = Field(default=None, strict=True, ge=0, le=1_000_000_000)
 
 
 def settings_path(request: Request) -> Path:
@@ -209,6 +220,31 @@ def make_api_router() -> APIRouter:
         if svc.record is None:
             return {"enabled": False}
         return {"enabled": True, "budget": svc.budget_status(), "record": svc.record.snapshot()}
+
+    # ---- provider credits (advisory: they warn, they never block a run) ------------------------------------------
+    @router.get("/credits")
+    async def credits(
+        _: Auth, svc: Svc, refresh: Annotated[int, Query(ge=0, le=1)] = 0
+    ) -> dict[str, Any]:
+        """Credits per provider (what the provider counts, not money), what each run booked, and the expected need per
+        size class. ``refresh=1`` first asks Tavily for its own count (at most once a minute)."""
+        if refresh:
+            await svc.refresh_credits()
+        return svc.credits_status()
+
+    @router.post("/credits/refresh")
+    async def credits_refresh(_: Auth, svc: Svc) -> dict[str, Any]:
+        """Ask Tavily for its own count now (throttled to one call a minute; it never fails the request)."""
+        outcome = await svc.refresh_credits()
+        return {**svc.credits_status(), "refresh": outcome}
+
+    @router.post("/credits/baseline")
+    async def credits_baseline(body: CreditBaselineBody, _: Auth, svc: Svc) -> dict[str, Any]:
+        """Enter what a provider account shows: ``used`` (Tavily "93 of 1,000") or ``remaining`` (Serper "2,389")."""
+        try:
+            return await svc.set_credit_baseline(body.provider, body.kind, body.amount, body.limit)
+        except ValueError as exc:
+            raise Conflict(str(exc).capitalize() + ".") from exc
 
     @router.post("/budget/restart")
     async def restart(body: RestartBody, _: Auth, svc: Svc) -> dict[str, Any]:

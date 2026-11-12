@@ -1,7 +1,9 @@
 """The cost and time estimate shown before a run (``data/estimates.yaml``), calibrated from measured runs.
 
 Always labelled "estimate, not measured" until the spend record holds a real run of the same size class; then the
-middle value is the median of the measured runs (the range stays).
+middle value is the median of the measured runs (the range stays). The same holds for the expected provider credits
+(``credits``: Tavily and Serper, integers): the measured median of what each provider billed, from the entry's
+``meta.credits``.
 """
 
 from __future__ import annotations
@@ -51,12 +53,15 @@ class Estimates:
             usd["mid"] = int(statistics.median(measured))
             usd["low"] = min(usd["low"], min(measured))
             usd["high"] = max(usd["high"], max(measured))
+        credits, credit_runs = self._credits(base, size_class, spend_entries)
         return {
             "size_class": size_class,
             "searches": dict(base["searches"]),
             "pages": dict(base["pages"]),
             "minutes": dict(base["minutes"]),
             "usd_micros": usd,
+            "credits": credits,
+            "credits_measured_runs": credit_runs,
             "basis": "measured" if measured else "estimate",
             "measured_runs": len(measured),
             "note": (
@@ -65,3 +70,33 @@ class Estimates:
                 else "estimate, not measured"
             ),
         }
+
+    @staticmethod
+    def _credits(
+        base: dict[str, Any], size_class: str, spend_entries: list[dict[str, Any]] | None
+    ) -> tuple[dict[str, dict[str, int]], dict[str, int]]:
+        """Expected credits per provider ``{low, mid, high}``; the measured median replaces ``mid`` (range kept)."""
+        credits = {
+            p: {k: int(v) for k, v in c.items()} for p, c in (base.get("credits") or {}).items()
+        }
+        runs: dict[str, int] = dict.fromkeys(credits, 0)
+        for provider, values in credits.items():
+            measured: list[int] = []
+            for e in spend_entries or []:
+                meta = e.get("meta") or {}
+                booked = (meta.get("credits") or {}).get(provider)
+                if (
+                    e.get("kind") == "run"
+                    and e.get("status") in ("complete", "partial")
+                    and meta.get("size_class") == size_class
+                    and isinstance(booked, int)
+                    and not isinstance(booked, bool)
+                    and booked > 0
+                ):
+                    measured.append(booked)
+            if measured:
+                values["mid"] = int(statistics.median(measured))
+                values["low"] = min(values["low"], min(measured))
+                values["high"] = max(values["high"], max(measured))
+                runs[provider] = len(measured)
+        return credits, runs

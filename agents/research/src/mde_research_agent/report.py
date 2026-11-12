@@ -45,6 +45,20 @@ def _usd(micros: int) -> str:
     return f"USD {micros / 1_000_000:.2f}"
 
 
+def _credit_line(evidence: dict[str, Any]) -> list[str]:
+    """One header line with the provider credits the run was billed (kept in the run's evidence file, not in
+    ``research.json``). No line when the run recorded none, so older runs read exactly as before."""
+    credits = evidence.get("credits")
+    if not isinstance(credits, dict) or not credits:
+        return []
+    parts = [
+        f"{name.title()} {n}"
+        for name, n in sorted(credits.items())
+        if isinstance(n, int) and not isinstance(n, bool)
+    ]
+    return [f"- Search credits billed: {', '.join(parts)}"] if parts else []
+
+
 def _data_lines(data: dict[str, Any]) -> list[str]:
     out: list[str] = []
     for k, v in data.items():
@@ -131,6 +145,7 @@ def render_report(
         + (" · light mode" if prof.get("light") else ""),
         f"- Signals: {', '.join(prof.get('signals', [])) or 'none'}",
         f"- Work: {bud.get('searches_used', 0)} searches, {bud.get('pages_read', 0)} pages, {bud.get('seconds', 0)} s, {_usd(bud.get('usd_micros', 0))}",
+        *_credit_line(evidence),
         f"- Topics: {cov.get('covered', 0)} covered, {cov.get('not_found', 0)} not found, of {cov.get('targets', 0)}; "
         f"required slots {cov.get('slots_filled', 0)} of {cov.get('slots_required', 0)}",
         f"- Items: {len(research.get('items', []))} (main store about {prof.get('store_tokens', 0)} tokens, appendix {prof.get('appendix_items', 0)})",

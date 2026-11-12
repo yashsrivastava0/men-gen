@@ -64,6 +64,9 @@ class SearchResult:
     locale_weak: bool = False  # a requested country or language could not be applied
     latency_ms: int = 0
     cached: bool = False
+    # Credits the provider billed for this call, when it said so (Tavily ``usage.credits``, Serper ``credits``); None
+    # when the answer carried no count. A cache hit is 0. Integer credits, never money (``cost_micros`` is the money).
+    credits: int | None = None
 
 
 class SearchError(Exception):
