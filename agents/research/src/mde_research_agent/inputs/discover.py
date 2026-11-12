@@ -5,14 +5,17 @@
 * Identity is the first 12 hex characters of the SHA-256 of the file bytes. The API maps an id to a path HERE; no
   path ever comes from a client. Symlinks that leave the folder are refused, non-UTF-8 files and files over 25 MB
   are skipped with a reason, and the same content under two names is listed once.
-* A valid input is a Compass format-2 export whose three hashes agree (RV-13); anything else is listed under
-  ``skipped`` with a plain reason.
+* A valid input is any export with a usable Brief (any Compass format; a missing approval or a changed hash is not a
+  reason to skip, the preview says ``input_binding`` instead, D-156); anything else is listed under ``skipped`` with a
+  plain reason. A file that makes the reader fail unexpectedly is skipped as ``unreadable_export`` with the error's
+  class name, so a real bug is not reported as "not a Compass export".
 """
 
 from __future__ import annotations
 
 import hashlib
 import json
+import logging
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
@@ -24,22 +27,20 @@ from mde_research_agent.intake import ExportRefused, read_export
 MAX_BYTES = 25 * 1024 * 1024
 MAX_DEPTH = 2
 
+log = logging.getLogger(__name__)
+
 REASON_TEXT = {
     "not_json": "This file is not JSON.",
-    "not_a_compass_export": "This JSON is not a Compass export.",
-    "format_not_supported": "Only Compass export format 2 can be researched.",
-    "hash_mismatch": "The Brief changed after it was approved (the hashes do not match).",
-    "not_approved": "The Brief was never approved (no approved baseline).",
+    "not_a_compass_export": "This JSON is not a Compass export (it has no Brief).",
+    "unusable_brief": "The Brief has no idea, no facts and no research requests, so there is nothing to research.",
+    "unreadable_export": "This export could not be read (an unexpected error, see the log).",
     "too_large": "This file is over 25 MB.",
     "unreadable": "This file could not be read (it may not be UTF-8 text).",
     "unsafe_path": "This file is a link that leaves the inputs folder.",
 }
 CODE_TO_REASON = {
     "not_an_export": "not_a_compass_export",
-    "missing_research_view": "not_a_compass_export",
-    "not_format_2": "format_not_supported",
-    "not_approved": "not_approved",
-    "hash_mismatch": "hash_mismatch",
+    "unusable_brief": "unusable_brief",
 }
 
 
@@ -172,8 +173,9 @@ class InputsStore:
     def _classify(
         self, real: Path, name: str, size: int, mtime_ns: int
     ) -> tuple[InputEntry | None, SkippedFile | None]:
-        def skip(reason: str) -> tuple[None, SkippedFile]:
-            return None, SkippedFile(name, reason, REASON_TEXT[reason], size)
+        def skip(reason: str, detail: str = "") -> tuple[None, SkippedFile]:
+            text = REASON_TEXT[reason] + (f" ({detail})" if detail else "")
+            return None, SkippedFile(name, reason, text, size)
 
         if size > MAX_BYTES:
             return skip("too_large")
@@ -195,8 +197,12 @@ class InputsStore:
             inp = read_export(data, self.catalog)
         except ExportRefused as exc:
             return skip(CODE_TO_REASON.get(exc.code, "not_a_compass_export"))
-        except Exception:  # an odd file must be a reason, never a crash
-            return skip("not_a_compass_export")
+        except Exception as exc:
+            # An odd file must be a reason, never a crash, and never a WRONG reason: the reader refuses only an
+            # unusable Brief (ExportRefused above), so anything else is a bug or a shape we do not know yet. The
+            # error's class name goes to the log and to the reason text (never the file's content).
+            log.warning("input %s could not be read: %s", name, type(exc).__name__)
+            return skip("unreadable_export", detail=type(exc).__name__)
         digest = hashlib.sha256(raw).hexdigest()[:12]
         from datetime import UTC, datetime
 

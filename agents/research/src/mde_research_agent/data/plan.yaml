@@ -26,15 +26,24 @@ priority_bonus:
 platforms:
   - {name: "Apple Human Interface Guidelines", domain: developer.apple.com}
   - {name: "Material Design", domain: m3.material.io}
-# Words in a trusted request's topic or question that say which job it belongs to (en first; other languages extend this list).
+# Which job a trusted request belongs to (plan/routing.py). Words, and two-word phrases for stronger cues, in the languages
+# Compass writes requests in (en first; other languages extend a list). A word in the request's TOPIC line counts three
+# times as much as one in its question or decision; the words of the app's own category are ignored; the highest score
+# wins, a tie goes to the job whose word comes first in the topic line (then to the job listed first in JOB_NAMES), and a request none of these words matches is placed by the words
+# its topic shares with a planned topic (or reported as unmapped). Generic vocabulary only: never a company, place or
+# product. To change where a request goes, change a list here.
 request_jobs:
-  services: [api, provider, providers, gateway, integration, integrations, sms, otp, messaging, whatsapp, payment, payments, telematics, gps, tracking, fastag, webhook, sandbox, portal]
-  data: [rules, rule, compliance, regulation, regulations, requirements, tax, gst, invoice, invoicing, fees, fee, commission, commissions, legal, permit, permits, licence, license, penalty, audit]
-  features: [features, comparable, competitors, differentiation, alternatives, demand, landscape, marketplaces, platforms]
-  flows: [flow, flows, journey, process, workflow, onboarding, booking, dispatch, delivery]
-  structure: [roles, access, accounts, staff, permissions, sign-in, signin, login]
-  local: [format, formats, id, numbers, local, terms]
-  design: [design, look, ux, ui, brand, style]
+  features: [feature, features, comparable, competitor, competitors, competing, differentiation, differentiate, alternative, alternatives, demand, landscape, platforms, tools, software, solutions, offer, offers, offerings, used, market, players, "local providers", "local players", "local services", "company profiles", "company profile", pricing, trends]
+  structure: [roles, role, access, accounts, account, staff, permissions, permission, sign-in, signin, login, approval, approvals, approve, approver, authorisation, authorization, authorise, authorize, administration, admin, hierarchy, navigation, menus, onboarding]
+  flows: [flow, flows, journey, journeys, process, workflow, workflows, lifecycle, handover, offline, sync, exceptions, exception, cancellation, rescheduling, dispatch, assignment, escalation]
+  data: [rules, rule, compliance, regulation, regulations, regulator, regulatory, requirements, tax, gst, invoice, invoicing, fees, fee, commission, commissions, legal, law, laws, statutory, mandatory, obligation, obligations, duties, duty, deadline, deadlines, retention, residency, consent, privacy, permit, permits, licence, license, penalty, penalties, audit, inspection, inspections, expiry, validity, renewal, revision, versioning, reports, reporting, records, "record keeping"]
+  services: [api, apis, sdk, provider, providers, gateway, gateways, integration, integrations, sms, otp, messaging, message, messages, text, push, alert, alerts, reminder, reminders, notification, notifications, email, whatsapp, payment, payments, "mobile money", wallet, card, cards, telematics, gps, tracking, fastag, toll, geocoding, maps, webhook, sandbox, portal, portals, export, exports, import, imports, csv, kyc]
+  design: [design, look, ux, ui, brand, style, colour, color, typography, font, fonts, icon, icons, theme, accessibility]
+  screens: [screen, screens, layout, layouts, dashboard, dashboards, page, pages, views]
+  local: [format, formats, numbers, terminology, vocabulary, wording, words, translation, translations, language, languages, locale, terms, glossary]
+# Topics about the app as a whole ("job:template"): a request of that job that shares no word with a more specific topic is
+# carried by one of these. A job not listed here leaves such a request unmapped (the preview says so).
+request_catch_all: ["features:landscape", "structure:screen_inventory", "screens:key_screens", "design:conventions"]
 # Maximum number of model-proposed extra topics accepted per run (the code validates every one).
 max_extra_targets: 6
 # Discovery names from model memory (competitors, providers): only used in discovery queries, labelled entity_from_model.

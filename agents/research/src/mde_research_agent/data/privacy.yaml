@@ -1,0 +1,24 @@
+# What a search query may never contain (core/privacy.py reads this file; the owner's rule of 2026-11-13).
+# Generic words only: no company, place or product from any one example may appear here.
+
+# A term shorter than this (after folding to word tokens) is never a private term: it would block innocent queries.
+min_term_chars: 3
+
+# Fact types whose entities are people's names (never searched). Compass has no such type today; the list is
+# data so a new type is one line.
+person_fact_types: [person, contact]
+
+# Fact types whose own words are private values (the entities and the statement itself are never searched).
+sensitive_fact_types: [sensitive, personal, credential, secret, private]
+
+# Words that make a number-and-name string a street-level address ("12 Main Street", "Calle Mayor 12").
+street_words: [street, st, road, rd, lane, ln, avenue, ave, boulevard, blvd, drive, dr, highway, hwy, marg, path, chowk, gali, rua, avenida, travessa, calle, carrera, avenida, rue, chemin, via, strasse, straße, weg, platz, plaza, piazza]
+
+# Words that make a unit number a precise address ("Shop 12", "Plot No. 15", "Flat 4B").
+unit_words: [plot, flat, door, house, shop, suite, unit, floor, room, gala, building, bldg, apartment, apt]
+
+# Skipped when walking a Brief for phones, e-mails and addresses: bookkeeping, not what the person said.
+skip_keys: [_hash, _section_hashes, hash, section_hashes, date, at, id, ref, turn_id, created_at, updated_at, exported_at, session_id, source]
+
+# Upper bound on how many terms one Brief may produce (a very large Brief must not slow every query check).
+max_terms: 300

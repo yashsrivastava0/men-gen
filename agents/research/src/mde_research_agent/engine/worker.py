@@ -35,6 +35,7 @@ from mde_research_agent.core.hashing import text_hash
 from mde_research_agent.core.language import guess_language
 from mde_research_agent.core.norm_keys import clean_key
 from mde_research_agent.core.passages import bm25_scores, render, select_passages
+from mde_research_agent.core.privacy import find_private
 from mde_research_agent.core.rrf import FusedHit, fuse
 from mde_research_agent.core.slots import Coverage, evaluate_target
 from mde_research_agent.core.sources import classify_source, own_site
@@ -149,6 +150,11 @@ def _check(
     require_place: bool | None = None,
     named: Sequence[str] = (),
 ) -> bool:
+    if find_private(text, ctx.input.private):
+        # The person's brand, phones, e-mails and addresses never leave in a query (core/privacy.py). The query fails like
+        # any other anatomy failure, so the deterministic variant (or no query) takes its place; only the COUNT is kept.
+        ctx.failures.count_private()
+        return False
     intent = [*_intent_words(ctx), *t.intent]
     res = check_query(
         text,
@@ -204,6 +210,7 @@ async def write_variants(
     t = ts.target
     inp = build_query_in(ctx, ts, round_no, cov, want)
     valid: list[FollowupQuery] = []
+    blocked_before = ctx.failures.private_blocked
     async with ctx.llm_sem:
         with ctx.stage("queries"):
             res = await ctx.runner.run(q_calls.SPEC, inp)
@@ -226,6 +233,8 @@ async def write_variants(
                 ctx, t, v.text, extra_anchors=extra, named=inp.seed_names if v.seed else ()
             ):
                 valid.append(FollowupQuery(v.text, v.language, v.exact, None, v.seed, v.style))
+    if ctx.failures.private_blocked > blocked_before:
+        await ctx.warn("private_term", target_id=t.id)
     return valid[: want + 1]
 
 
@@ -764,6 +773,7 @@ async def run_topic(
         want = quota or ctx.catalog.ceilings.variants_per_topic
         if followups is not None:
             names = [e.name for e in ctx.entities.values()]
+            blocked_before = ctx.failures.private_blocked
             variants = [
                 f
                 for f in followups
@@ -777,6 +787,8 @@ async def run_topic(
                     require_place=False if f.domain else None,
                 )
             ]
+            if ctx.failures.private_blocked > blocked_before:
+                await ctx.warn("private_term", target_id=t.id)
         else:
             variants = await write_variants(ctx, ts, round_no, cov, want)
         if not variants:

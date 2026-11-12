@@ -150,8 +150,14 @@ def render_report(
         f"required slots {cov.get('slots_filled', 0)} of {cov.get('slots_required', 0)}",
         f"- Items: {len(research.get('items', []))} (main store about {prof.get('store_tokens', 0)} tokens, appendix {prof.get('appendix_items', 0)})",
         f"- Provider: {run.get('search_provider') or 'n/a'}; models: {run.get('writer_model') or 'n/a'} / checker {run.get('checker_model') or 'n/a'} ({run.get('checker_vendor')})",
-        "",
     ]
+    binding = (research.get("input_quality") or {}).get("input_binding", "verified")
+    if binding != "verified":
+        # the Brief was researched as it came; the reader should know it was not sealed
+        out.append(
+            f"- Input: the Brief could not be verified against its approval seal ({binding})"
+        )
+    out.append("")
     out += [
         "## Lane quality",
         "",

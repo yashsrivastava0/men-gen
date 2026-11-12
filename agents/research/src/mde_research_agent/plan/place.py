@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.countries import code_for_name, country_name
-from mde_research_agent.domain.input import ResearchInput
+from mde_research_agent.domain.input import Country, ResearchInput
 from mde_research_agent.domain.plan import Place
 from mde_research_agent.plan.proposal import PlanProposal
 
@@ -14,7 +14,11 @@ def _title(name: str | None) -> str | None:
 
 
 def build_place(inp: ResearchInput, cat: Catalog, proposal: PlanProposal | None = None) -> Place:
-    """The place for queries. Uncertain geography means the country plus every stated city."""
+    """The place for queries. Uncertain geography means the country plus every stated city.
+
+    A Brief that names several countries ("Mexico, Guatemala and Costa Rica") keeps them all in ``countries``; the
+    primary one (the first) carries the query words and the search filter, and the per-country topics are a later
+    step of the plan."""
     geo = inp.geography
     code = geo.country_code
     inferred = False
@@ -23,6 +27,9 @@ def build_place(inp: ResearchInput, cat: Catalog, proposal: PlanProposal | None 
         code = guess if country_name(guess) else code_for_name(proposal.country_name)
         inferred = code is not None
     country = _title(geo.country) or _title(country_name(code))
+    countries = tuple(geo.countries) or (
+        (Country(name=country, code=code),) if country and inferred else ()
+    )
     cities = list(geo.cities)
     if proposal:
         cities += [
@@ -49,6 +56,7 @@ def build_place(inp: ResearchInput, cat: Catalog, proposal: PlanProposal | None 
         phrases=tuple(phrases),
         country_code=code,
         country_name=country,
+        countries=countries,
         languages=langs,
         unknown=not phrases,
         uncertain=geo.uncertain,

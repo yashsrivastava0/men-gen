@@ -16,6 +16,9 @@ Tier = Literal["locked", "default", "open"]
 LoadClass = Literal["focused", "standard", "deep"]
 PlanSource = Literal["from_request", "rebuilt", "mixed"]
 Origin = Literal["model", "template", "unknown"]
+# How far the export's own hash seal could be checked. Never a refusal: a missing baseline or a changed Brief is
+# researched anyway and the report says so (D-156).
+InputBinding = Literal["verified", "unverified_no_baseline", "unverified_hash_mismatch"]
 
 
 class Frozen(BaseModel):
@@ -29,11 +32,22 @@ class Idea(Frozen):
     business_model: str = ""
 
 
+class Country(Frozen):
+    """One country the app is used in, as the person named it. ``code`` is lowercase alpha-2 when known."""
+
+    name: str
+    code: str | None = None
+
+
 class Geography(Frozen):
-    """Where the app is used. ``cities`` and ``region`` are as stated; ``country_code`` may be inferred."""
+    """Where the app is used. ``cities`` and ``region`` are as stated; ``country_code`` may be inferred.
+
+    ``country`` and ``country_code`` are the PRIMARY country (the first one named); ``countries`` lists every country
+    the Brief names ("Mexico, Guatemala and Costa Rica" is three), so a single-country input is a list of one."""
 
     country: str | None = None
     country_code: str | None = None  # lowercase ISO 3166-1 alpha-2, when known
+    countries: tuple[Country, ...] = ()
     cities: tuple[str, ...] = ()
     region: str | None = None
     uncertain: bool = (
@@ -176,6 +190,10 @@ class InputQuality(Frozen):
     flags: tuple[
         str, ...
     ] = ()  # derived-and-flagged notes (missing trust fields, junk tokens, ...)
+    input_binding: InputBinding = (
+        "verified"  # the hash seal of the export; shown in the preview and the report
+    )
+    compass_format: int | None = None  # the export's own format version, when it said one
 
 
 class LoadComponents(Frozen):
@@ -204,6 +222,21 @@ class FocusTopic(Frozen):
     about: tuple[str, ...] = ()
 
 
+class PrivateTerm(Frozen):
+    """Something that must never be sent to a search provider. ``kind`` says why (brand, entity, phone, email,
+    address, sensitive, person); ``text`` is the value as the Brief wrote it. Never logged, never shown."""
+
+    kind: str
+    text: str
+
+
+class PrivateTerms(Frozen):
+    terms: tuple[PrivateTerm, ...] = ()
+
+    def __bool__(self) -> bool:
+        return bool(self.terms)
+
+
 class ResearchInput(Frozen):
     program_id: str
     session_id: str
@@ -229,6 +262,7 @@ class ResearchInput(Frozen):
     focus: tuple[FocusTopic, ...] = ()
     sensitive_flags: tuple[str, ...] = ()
     own_brand_terms: tuple[str, ...] = ()
+    private: PrivateTerms = PrivateTerms()  # what a query may never contain (core/privacy.py)
     quality: InputQuality = InputQuality()
     load: LoadInfo | None = None
 

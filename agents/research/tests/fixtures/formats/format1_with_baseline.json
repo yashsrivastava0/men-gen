@@ -1,0 +1,2372 @@
+{
+ "export": {
+  "format": "compass-full-output",
+  "format_version": 1,
+  "exported_at": "2026-11-10T06:37:19.522430+00:00",
+  "session_id": "ses_01M722GF74VDFK233570J22H3B",
+  "brief_version": 10,
+  "brief_hash": "8c4f7ec160d5b147e22e63d2cae66ac9dee5aec3469668b00434346e3b31f224",
+  "approved_baseline": {
+   "session_id": "ses_01M722GF74VDFK233570J22H3B",
+   "version": 10,
+   "hash": "8c4f7ec160d5b147e22e63d2cae66ac9dee5aec3469668b00434346e3b31f224",
+   "baseline_label": "B-G1",
+   "change_set_id": "CHG-001",
+   "created_at": "2026-11-10T06:37:13.729332Z"
+  }
+ },
+ "brief": {
+  "version": 10,
+  "meta": {
+   "session_id": "ses_01M722GF74VDFK233570J22H3B",
+   "program_id": "",
+   "mode": "guided",
+   "situation_profile": {
+    "input_richness": "rich",
+    "clarity": "knows_everything",
+    "expertise": "non_technical",
+    "size_stakes": "enterprise",
+    "reference_driven": false,
+    "collaboration": "several",
+    "language": "en",
+    "input_mode": "text",
+    "urgency": "thorough",
+    "formality": "professional"
+   },
+   "plan": {
+    "depth": "large",
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 10,
+    "minimum_viable": false,
+    "interview_budget": "standard"
+   },
+   "hypothesis": {
+    "label": "hypothesis",
+    "category": "Healthcare practice-management app",
+    "subcategory": "A multi-branch clinic chain app for managing appointments, schedules, consultations, and patient records",
+    "business_model_candidates": [
+     "Clinics pay a recurring fee to use the app",
+     "The chain pays for the app across its branches",
+     "Clinics pay for setup or selected services"
+    ],
+    "likely_families": [
+     "health_wellness",
+     "booking_scheduling",
+     "identity_access",
+     "dashboards_admin"
+    ],
+    "likely_roles": [
+     "patient",
+     "doctor",
+     "receptionist",
+     "administrator",
+     "Patients",
+     "Doctors",
+     "Receptionists",
+     "Chain administrators",
+     "Patient",
+     "Doctor",
+     "Receptionist",
+     "Clinic or chain administrator"
+    ],
+    "likely_features": [
+     {
+      "family": "booking_scheduling",
+      "name": "Available times",
+      "intent": "Let patients find appointment slots with doctors.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Book a time",
+      "intent": "Let patients book appointments.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Calendar view",
+      "intent": "Help receptionists manage daily schedules.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Reminders",
+      "intent": "Remind patients about appointments.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Personal records",
+      "intent": "Make prescriptions and lab reports available to patients, and support doctors' patient notes.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Book a visit",
+      "intent": "Support patients arranging care with doctors.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Video consultations",
+      "intent": "Enable remote consultations between patients and doctors.",
+      "custom": true
+     },
+     {
+      "family": "identity_access",
+      "name": "Roles and permissions",
+      "intent": "Restrict access to patient data according to staff roles.",
+      "custom": false
+     },
+     {
+      "family": "dashboards_admin",
+      "name": "Reports with filters",
+      "intent": "Give administrators reports across clinic branches.",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Appointments and schedules",
+      "intent": "Let patients book and clinics manage doctors' availability",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Patient records and consultation notes",
+      "intent": "Help doctors keep relevant information about consultations",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Prescriptions",
+      "intent": "Let doctors record or share prescriptions",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Branch and chain administration",
+      "intent": "Manage multiple clinics and review reports across them",
+      "custom": true
+     },
+     {
+      "family": "",
+      "name": "Patient records",
+      "intent": "Keep consultation notes and prescriptions for patients.",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Branch and doctor management",
+      "intent": "Help an administrator manage a clinic chain's branches and doctors.",
+      "custom": false
+     }
+    ],
+    "hard_parts": [
+     "Real-time video consultations",
+     "Protecting sensitive patient data with secure access and storage",
+     "Combining reports across multiple clinic branches",
+     "Keeping private patient information appropriately protected",
+     "Handling schedules across doctors, specialities, and branches",
+     "Clarifying which tasks belong to patients, receptionists, doctors, and administrators"
+    ],
+    "glossary_candidates": [
+     {
+      "term": "video consultations",
+      "synonyms": [
+       "teleconsultations",
+       "virtual visits"
+      ]
+     },
+     {
+      "term": "digital prescriptions",
+      "synonyms": [
+       "electronic prescriptions",
+       "e-prescriptions"
+      ]
+     },
+     {
+      "term": "lab reports",
+      "synonyms": [
+       "laboratory results",
+       "test results"
+      ]
+     },
+     {
+      "term": "branches",
+      "synonyms": [
+       "clinic locations",
+       "sites"
+      ]
+     }
+    ],
+    "confidence": 0.94
+   },
+   "locales": [
+    "en",
+    "hi"
+   ],
+   "schema_version": 1,
+   "depth_profile": "large",
+   "degraded": false,
+   "probes": {
+    "design": true,
+    "research": true,
+    "blueprint": true
+   },
+   "probe_rounds": 0,
+   "approvals": {},
+   "interview": {
+    "budget": "standard",
+    "ui_mode": "answer_all",
+    "ui_mode_set": false,
+    "questions_asked": 14,
+    "followups": 2,
+    "answered": 14,
+    "skipped": 0,
+    "assumed": 0,
+    "batches": 6,
+    "facts_active": 72,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "coverage": 1,
+    "fallback_count": 0,
+    "question_ids": [
+     "Q-002",
+     "Q-003",
+     "Q-004",
+     "Q-006",
+     "Q-007",
+     "Q-008",
+     "Q-005",
+     "Q-011",
+     "Q-013",
+     "Q-014",
+     "Q-015",
+     "Q-017",
+     "Q-018",
+     "Q-019"
+    ],
+    "stop_reason": "budget_reached",
+    "target": 12,
+    "hard_cap": 15,
+    "tier_set": true,
+    "closing": "answered",
+    "followup_candidates": [],
+    "reopened": 0
+   },
+   "compile_digests": {
+    "text": "1b33fddf0fbcfd4f4f81fe43",
+    "typical": "ea5738360760ff5dc8125636",
+    "fill:idea:0": "891043828a62e587e1c45683",
+    "fill:people_and_scope:0": "70ded8a61909907bb13dc270",
+    "fill:experience_and_systems:0": "caee9605ba5cbe44c3816116"
+   }
+  },
+  "idea": {
+   "summary": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "An app for patients to book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders."
+   },
+   "category": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "multi-speciality clinic app"
+   },
+   "subcategory": {
+    "tier": "Default",
+    "confidence": 0.94,
+    "status": "assumed",
+    "value": "multi-speciality clinic management"
+   },
+   "problem_value": {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "value": "Help patients at the Pune clinics book appointments, consult doctors by video, and access prescriptions and lab reports, while giving clinic staff tools to manage schedules and care."
+   },
+   "business_model": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "value": "Chain pays a recurring fee"
+   }
+  },
+  "context": {
+   "geo": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": {
+     "city": "Pune"
+    }
+   },
+   "scale_launch": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "pilot_small"
+   }
+  },
+  "audience": {
+   "segments": {
+    "tier": "Locked",
+    "confidence": 1,
+    "status": "volunteered",
+    "value": [
+     "patients"
+    ]
+   }
+  },
+  "apps": [
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "APP-001",
+    "name": "Patient mobile app",
+    "purpose": "",
+    "surface": "mobile",
+    "audience": "",
+    "roles": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "APP-002",
+    "name": "Doctor mobile app",
+    "purpose": "",
+    "surface": "mobile",
+    "audience": "",
+    "roles": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "APP-003",
+    "name": "Doctor web screen",
+    "purpose": "",
+    "surface": "mobile",
+    "audience": "",
+    "roles": []
+   }
+  ],
+  "roles": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "ROL-001",
+    "name_in_user_words": "admin",
+    "goal": "see reports for all branches",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.98,
+    "status": "volunteered",
+    "id": "ROL-002",
+    "name_in_user_words": "Patients",
+    "goal": "Book appointments with doctors, consult by video, get digital prescriptions and lab reports, and receive reminders",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "ROL-003",
+    "name_in_user_words": "Doctors",
+    "goal": "See their patients and notes; write notes and prescriptions",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "ROL-004",
+    "name_in_user_words": "Receptionists",
+    "goal": "Manage the daily schedule",
+    "rough_permissions": []
+   }
+  ],
+  "scope": [
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FTR-002",
+    "name": "Appointments and schedules",
+    "intent": "Let patients book and clinics manage doctors' availability",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FTR-003",
+    "name": "Video consultations",
+    "intent": "Enable remote consultations between patients and doctors.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FTR-004",
+    "name": "Prescriptions and lab reports",
+    "intent": "",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-005",
+    "name": "Reminders",
+    "intent": "Send patients reminders by SMS and WhatsApp",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-006",
+    "name": "Payments",
+    "intent": "Let patients pay online or at the clinic",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-007",
+    "name": "Doctors write notes",
+    "intent": "Let doctors write notes and prescriptions",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-008",
+    "name": "Admin reports",
+    "intent": "Let the admin see reports for all branches",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-009",
+    "name": "Receptionist schedule management",
+    "intent": "Let receptionists manage the daily schedule",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-010",
+    "name": "Doctors see patients and notes",
+    "intent": "Let doctors see their patients and notes",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   }
+  ],
+  "references": [],
+  "experience": {
+   "devices": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "phones"
+   },
+   "locales": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": [
+     "en",
+     "hi"
+    ]
+   },
+   "tone_words": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "calm_simple"
+    ]
+   },
+   "density_mode": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "balanced"
+   }
+  },
+  "access": {
+   "auth_methods": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "phone_otp"
+    ]
+   },
+   "account_model": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "value": "individual"
+   },
+   "onboarding_approvals": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "open_join"
+   }
+  },
+  "integrations": [],
+  "data": {
+   "sensitive": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "value": [
+     "health"
+    ]
+   }
+  },
+  "constraints": {
+   "scope_must_not": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": [
+     "Patient data must not be exposed; it must stay private"
+    ]
+   },
+   "scope_priority": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "must"
+   }
+  },
+  "glossary": [],
+  "domain_facts": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-001",
+    "type": "context",
+    "statement": "I run a chain of multi-speciality clinics",
+    "topics": [
+     "organization,clinics"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "I run a chain of 6 multi-speciality clinics",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-002",
+    "type": "number",
+    "statement": "The chain has 6 clinics",
+    "topics": [
+     "organization,clinics"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "6 multi-speciality clinics",
+    "kind": "number"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-003",
+    "type": "context",
+    "statement": "The clinics are in Pune",
+    "topics": [
+     "location,clinics"
+    ],
+    "entities": [
+     "Pune"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "in Pune",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-004",
+    "type": "goal",
+    "statement": "Patients book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders",
+    "topics": [
+     "patients,appointments,consultations"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "patients book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders",
+    "kind": "flow",
+    "refs": [
+     "FTR-002",
+     "FTR-003",
+     "FTR-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.98,
+    "status": "volunteered",
+    "id": "FCT-005",
+    "type": "role",
+    "statement": "Patients use the app to book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders",
+    "topics": [
+     "users,patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "patients book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders",
+    "kind": "flow",
+    "refs": [
+     "FTR-002",
+     "FTR-003",
+     "FTR-004",
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-006",
+    "type": "requirement",
+    "statement": "Receptionists manage the daily schedule",
+    "topics": [
+     "staff,scheduling"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control",
+     "frontend"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "Receptionists manage the daily schedule",
+    "kind": "flow",
+    "refs": [
+     "FTR-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-007",
+    "type": "requirement",
+    "statement": "Doctors see their patients and notes",
+    "topics": [
+     "staff,patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control",
+     "frontend"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "doctors see their patients and notes",
+    "kind": "screen",
+    "refs": [
+     "APP-002",
+     "APP-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-008",
+    "type": "requirement",
+    "statement": "The admin sees reports for all branches",
+    "topics": [
+     "admin,reports"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control",
+     "frontend"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "the admin sees reports for all branches",
+    "kind": "screen",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-009",
+    "type": "constraint",
+    "statement": "Patient data must stay private",
+    "topics": [
+     "privacy,patient-data"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "ui-8a1310e13c23f8dd",
+    "quote": "Patient data must stay private",
+    "kind": "compliance",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "FCT-010",
+    "type": "preference",
+    "statement": "Understand the idea in the user's own words: Help patients at the Pune clinics book appointments, consult doctors by video, and access prescriptions and lab reports, while giving clinic staff tools to manage schedules and care.",
+    "topics": [
+     "general"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-002",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "FTR-004",
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "FCT-011",
+    "type": "preference",
+    "statement": "Identify the main users and their roles: Patients, Doctors, Receptionists, Chain administrators",
+    "topics": [
+     "general"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-003",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "ROL-004",
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "id": "FCT-012",
+    "type": "rule",
+    "statement": "Chain pays a recurring fee",
+    "topics": [
+     "pricing"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "Q-004",
+    "quote": "Chain pays a recurring fee",
+    "kind": "rule"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-013",
+    "type": "number",
+    "statement": "Six clinics in Pune",
+    "topics": [
+     "clinics,location"
+    ],
+    "entities": [
+     "Pune"
+    ],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "Q-006",
+    "quote": "Six clinics in Pune",
+    "kind": "number"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-014",
+    "type": "number",
+    "statement": "About 45 doctors",
+    "topics": [
+     "staff"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "Q-006",
+    "quote": "about 45 doctors",
+    "kind": "number",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-015",
+    "type": "context",
+    "statement": "Doctors across general medicine, paediatrics, dermatology and gynaecology",
+    "topics": [
+     "clinics,medical specialties"
+    ],
+    "entities": [
+     "general medicine",
+     "paediatrics",
+     "dermatology",
+     "gynaecology"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-006",
+    "quote": "across general medicine, paediatrics, dermatology and gynaecology",
+    "kind": "context",
+    "refs": [
+     "APP-002",
+     "APP-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-016",
+    "type": "requirement",
+    "statement": "Patients book slots",
+    "topics": [
+     "appointments"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-006",
+    "quote": "Patients book slots",
+    "kind": "flow",
+    "refs": [
+     "FTR-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-017",
+    "type": "requirement",
+    "statement": "Patients pay online or at the clinic",
+    "topics": [
+     "payments"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-006",
+    "quote": "pay online or at the clinic",
+    "kind": "flow",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-018",
+    "type": "requirement",
+    "statement": "Patients get reminders by SMS and WhatsApp",
+    "topics": [
+     "reminders,communications"
+    ],
+    "entities": [
+     "SMS",
+     "WhatsApp"
+    ],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-006",
+    "quote": "get reminders by SMS and WhatsApp",
+    "kind": "integration_detail",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-019",
+    "type": "requirement",
+    "statement": "Doctors write notes and prescriptions",
+    "topics": [
+     "doctors,medical records"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-006",
+    "quote": "Doctors write notes and prescriptions",
+    "kind": "flow",
+    "refs": [
+     "FTR-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-020",
+    "type": "context",
+    "statement": "English, Hindi and Marathi",
+    "topics": [
+     "languages"
+    ],
+    "entities": [],
+    "consumers": [
+     "design",
+     "screens",
+     "frontend",
+     "qa"
+    ],
+    "source": "Q-006",
+    "quote": "English, Hindi and Marathi",
+    "kind": "context",
+    "refs": [
+     "APP-001",
+     "APP-002",
+     "APP-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-021",
+    "type": "constraint",
+    "statement": "Medical data privacy is critical",
+    "topics": [
+     "privacy,medical data"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "Q-006",
+    "quote": "Medical data privacy is critical",
+    "kind": "compliance"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-022",
+    "type": "context",
+    "statement": "Launch in 4 months",
+    "topics": [
+     "launch"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify"
+    ],
+    "source": "Q-006",
+    "quote": "launch in 4 months",
+    "kind": "constraint"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-023",
+    "type": "preference",
+    "statement": "Which screens do patients, doctors, receptionists, and chain administrators need?: Patient mobile app / Doctor mobile app / Doctor web screen",
+    "topics": [
+     "apps"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-007",
+    "quote": "Patient mobile app / Doctor mobile app / Doctor web screen",
+    "kind": "preference",
+    "refs": [
+     "APP-001",
+     "APP-002",
+     "APP-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "id": "FCT-024",
+    "type": "context",
+    "statement": "The app will keep consultation notes.",
+    "topics": [
+     "patient-data,health"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-008",
+    "quote": "Consultation notes",
+    "kind": "entity",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "id": "FCT-025",
+    "type": "context",
+    "statement": "The app will keep medical history.",
+    "topics": [
+     "patient-data,health"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-008",
+    "quote": "Medical history",
+    "kind": "entity",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "id": "FCT-026",
+    "type": "context",
+    "statement": "The app will keep patient contact details.",
+    "topics": [
+     "patient-data"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-008",
+    "quote": "Patient contact details",
+    "kind": "entity",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-027",
+    "type": "rule",
+    "statement": "Which parts of the clinic app must be ready for its first release?: Appointments and schedules / Video consultations / Prescriptions and lab reports",
+    "topics": [
+     "scope"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-005",
+    "quote": "Appointments and schedules / Video consultations / Prescriptions and lab reports",
+    "kind": "context",
+    "refs": [
+     "FTR-002",
+     "FTR-003",
+     "FTR-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-028",
+    "type": "number",
+    "statement": "Six clinics in Pune",
+    "topics": [
+     "clinics,location"
+    ],
+    "entities": [
+     "Pune"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "Q-011",
+    "quote": "Six clinics in Pune",
+    "kind": "number"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-029",
+    "type": "number",
+    "statement": "About 45 doctors",
+    "topics": [
+     "staff"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "Q-011",
+    "quote": "about 45 doctors",
+    "kind": "number",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-030",
+    "type": "context",
+    "statement": "Doctors across general medicine, paediatrics, dermatology and gynaecology",
+    "topics": [
+     "doctors,medical specialties"
+    ],
+    "entities": [
+     "general medicine",
+     "paediatrics",
+     "dermatology",
+     "gynaecology"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "Q-011",
+    "quote": "across general medicine, paediatrics, dermatology and gynaecology",
+    "kind": "context",
+    "refs": [
+     "APP-002",
+     "APP-003"
+    ]
+   }
+  ],
+  "assumptions": [],
+  "open_questions": [],
+  "research_requests": [
+   {
+    "id": "RR-001",
+    "topic": "Features of multi-speciality clinic management apps",
+    "question": "Which features do multi-speciality clinic management apps in Pune commonly offer to patients and clinic teams, especially for appointments and schedules, video consultations, prescriptions and lab reports, reminders, payments, doctors’ notes, admin reports across branches, and receptionist schedule management? What differentiates these apps?",
+    "decision_unlocked": "Which features and differentiators to prioritize for the first release across six clinics and about 45 doctors",
+    "consumer": "research",
+    "entity": "multi-speciality clinic management apps",
+    "geography": "Pune, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr"
+    ],
+    "terms": [
+     "multi-speciality clinic app",
+     "multi-speciality clinic management",
+     "patients",
+     "appointments and schedules",
+     "video consultations",
+     "prescriptions and lab reports",
+     "reminders",
+     "payments",
+     "doctors write notes",
+     "admin reports",
+     "receptionist schedule management",
+     "मल्टी-स्पेशलिटी क्लिनिक ऐप",
+     "क्लिनिक प्रबंधन"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official product websites",
+     "app store listings",
+     "clinic software documentation"
+    ],
+    "avoid": [
+     "Patient data must not be exposed; it must stay private"
+    ],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "What similar clinic apps offer in Pune",
+    "user_added": false
+   },
+   {
+    "id": "RR-002",
+    "topic": "Clinic management apps serving Pune",
+    "question": "Which clinic management apps or services are available to multi-speciality clinics in Pune, and how do their patient-facing and clinic-management capabilities compare?",
+    "decision_unlocked": "Which local alternatives to benchmark and how to differentiate the app",
+    "consumer": "research",
+    "entity": "clinic management apps and services",
+    "geography": "Pune, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr"
+    ],
+    "terms": [
+     "multi-speciality clinic management",
+     "clinic management app",
+     "clinic software",
+     "क्लिनिक प्रबंधन ऐप",
+     "क्लिनिक सॉफ्टवेयर"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official product websites",
+     "app store listings",
+     "local clinic websites"
+    ],
+    "avoid": [
+     "Patient data must not be exposed; it must stay private"
+    ],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "Clinic apps available in Pune",
+    "user_added": false
+   },
+   {
+    "id": "RR-003",
+    "topic": "Payments and accounts in clinic apps",
+    "question": "In Pune, how do patient-facing clinic apps commonly handle online or at-clinic payments and individual accounts, and how do clinic chains typically buy and approve recurring-fee software?",
+    "decision_unlocked": "Which payment and account options to support, and who the chain-side buyer or approver may be",
+    "consumer": "research",
+    "entity": "patient-facing clinic apps and clinic management services",
+    "geography": "Pune, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr"
+    ],
+    "terms": [
+     "patients pay online or at the clinic",
+     "each person has an account",
+     "chain pays a recurring fee",
+     "clinic app payments",
+     "recurring fee",
+     "मरीज भुगतान",
+     "व्यक्तिगत खाता"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official product websites",
+     "payment and account help pages",
+     "clinic software pricing pages"
+    ],
+    "avoid": [
+     "Patient data must not be exposed; it must stay private"
+    ],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "Payments, accounts and clinic approvals",
+    "user_added": false
+   },
+   {
+    "id": "RR-004",
+    "topic": "SMS and WhatsApp appointment reminders",
+    "question": "How do clinic management apps in Pune send patient reminders by SMS and WhatsApp, including the usual setup, consent, delivery and messaging-provider arrangements?",
+    "decision_unlocked": "How to scope and configure appointment reminders through SMS and WhatsApp",
+    "consumer": "research",
+    "entity": "clinic management apps with patient reminders",
+    "geography": "Pune, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr"
+    ],
+    "terms": [
+     "patients get reminders by SMS and WhatsApp",
+     "reminders",
+     "SMS",
+     "WhatsApp",
+     "appointment reminders",
+     "एसएमएस रिमाइंडर",
+     "व्हाट्सऐप रिमाइंडर"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official product documentation",
+     "official messaging platform documentation",
+     "clinic app help pages"
+    ],
+    "avoid": [
+     "Patient data must not be exposed; it must stay private"
+    ],
+    "depth": "standard",
+    "priority": "medium",
+    "shown_to_user_as": "How clinic apps send SMS and WhatsApp reminders",
+    "user_added": false
+   },
+   {
+    "id": "RR-005",
+    "topic": "Medical data privacy rules for clinic apps",
+    "question": "What medical-data privacy and security rules apply to a multi-speciality clinic app operating in Pune, and what duties affect patient records, doctors’ notes, prescriptions, lab reports, accounts and access across clinic branches?",
+    "decision_unlocked": "Privacy and security requirements to account for before defining data access and record workflows",
+    "consumer": "research",
+    "entity": "multi-speciality clinic management app handling patient medical data",
+    "geography": "Pune, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr"
+    ],
+    "terms": [
+     "patient data must stay private",
+     "medical data privacy is critical",
+     "medical data privacy",
+     "patient records",
+     "doctors’ notes",
+     "prescriptions and lab reports",
+     "मरीजों का डेटा निजी",
+     "चिकित्सा डेटा गोपनीयता"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official government sources",
+     "official healthcare and data-protection guidance"
+    ],
+    "avoid": [
+     "Patient data must not be exposed; it must stay private"
+    ],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "Privacy rules for clinic apps in Pune",
+    "user_added": false
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "synonyms": [
+    "clinic management software",
+    "clinic scheduling app",
+    "multi-speciality clinic app",
+    "क्लिनिक प्रबंधन ऐप",
+    "क्लिनिक सॉफ्टवेयर"
+   ],
+   "local_competitors": [],
+   "languages": [
+    "en",
+    "hi",
+    "mr"
+   ]
+  },
+  "assets": [],
+  "sources": [],
+  "declined": [],
+  "readiness": {},
+  "ids": {},
+  "summary": "A multi-speciality clinic app for patients in Pune to book appointments, consult doctors by video, and get digital prescriptions and lab reports.",
+  "pitch": "This app is for patients at a chain's 6 clinics in Pune. Patients can book appointments, consult doctors by video, access digital prescriptions and lab reports, and get reminders. The chain pays a recurring fee, and patient data must stay private.",
+  "_hash": "8c4f7ec160d5b147e22e63d2cae66ac9dee5aec3469668b00434346e3b31f224"
+ },
+ "consumer_views": {
+  "research": {
+   "idea": {
+    "summary": "A multi-speciality clinic app for patients in Pune to book appointments, consult doctors by video, and get digital prescriptions and lab reports.",
+    "pitch": "This app is for patients at a chain's 6 clinics in Pune. Patients can book appointments, consult doctors by video, access digital prescriptions and lab reports, and get reminders. The chain pays a recurring fee, and patient data must stay private.",
+    "category": "multi-speciality clinic app",
+    "subcategory": "multi-speciality clinic management",
+    "business_model": "Chain pays a recurring fee",
+    "problem_value": "Help patients at the Pune clinics book appointments, consult doctors by video, and access prescriptions and lab reports, while giving clinic staff tools to manage schedules and care."
+   },
+   "geography": {
+    "city": "Pune"
+   },
+   "languages": {
+    "locales": [
+     "en",
+     "hi"
+    ],
+    "meta_locales": [
+     "en",
+     "hi"
+    ],
+    "search_languages": [
+     "en",
+     "hi",
+     "mr"
+    ]
+   },
+   "audience": {
+    "segments": [
+     "patients"
+    ]
+   },
+   "references": [],
+   "feature_intents": [
+    {
+     "name": "Appointments and schedules",
+     "intent": "Let patients book and clinics manage doctors' availability",
+     "family": null
+    },
+    {
+     "name": "Video consultations",
+     "intent": "Enable remote consultations between patients and doctors.",
+     "family": null
+    },
+    {
+     "name": "Prescriptions and lab reports",
+     "intent": "",
+     "family": null
+    },
+    {
+     "name": "Reminders",
+     "intent": "Send patients reminders by SMS and WhatsApp",
+     "family": null
+    },
+    {
+     "name": "Payments",
+     "intent": "Let patients pay online or at the clinic",
+     "family": null
+    },
+    {
+     "name": "Doctors write notes",
+     "intent": "Let doctors write notes and prescriptions",
+     "family": null
+    },
+    {
+     "name": "Admin reports",
+     "intent": "Let the admin see reports for all branches",
+     "family": null
+    },
+    {
+     "name": "Receptionist schedule management",
+     "intent": "Let receptionists manage the daily schedule",
+     "family": null
+    }
+   ],
+   "glossary": [],
+   "research_requests": [
+    {
+     "id": "RR-001",
+     "topic": "Features of multi-speciality clinic management apps",
+     "question": "Which features do multi-speciality clinic management apps in Pune commonly offer to patients and clinic teams, especially for appointments and schedules, video consultations, prescriptions and lab reports, reminders, payments, doctors’ notes, admin reports across branches, and receptionist schedule management? What differentiates these apps?",
+     "decision_unlocked": "Which features and differentiators to prioritize for the first release across six clinics and about 45 doctors",
+     "consumer": "research",
+     "entity": "multi-speciality clinic management apps",
+     "geography": "Pune, India",
+     "source_languages": [
+      "en",
+      "hi",
+      "mr"
+     ],
+     "terms": [
+      "multi-speciality clinic app",
+      "multi-speciality clinic management",
+      "patients",
+      "appointments and schedules",
+      "video consultations",
+      "prescriptions and lab reports",
+      "reminders",
+      "payments",
+      "doctors write notes",
+      "admin reports",
+      "receptionist schedule management",
+      "मल्टी-स्पेशलिटी क्लिनिक ऐप",
+      "क्लिनिक प्रबंधन"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official product websites",
+      "app store listings",
+      "clinic software documentation"
+     ],
+     "avoid": [
+      "Patient data must not be exposed; it must stay private"
+     ],
+     "depth": "deep",
+     "priority": "high",
+     "shown_to_user_as": "What similar clinic apps offer in Pune",
+     "user_added": false
+    },
+    {
+     "id": "RR-002",
+     "topic": "Clinic management apps serving Pune",
+     "question": "Which clinic management apps or services are available to multi-speciality clinics in Pune, and how do their patient-facing and clinic-management capabilities compare?",
+     "decision_unlocked": "Which local alternatives to benchmark and how to differentiate the app",
+     "consumer": "research",
+     "entity": "clinic management apps and services",
+     "geography": "Pune, India",
+     "source_languages": [
+      "en",
+      "hi",
+      "mr"
+     ],
+     "terms": [
+      "multi-speciality clinic management",
+      "clinic management app",
+      "clinic software",
+      "क्लिनिक प्रबंधन ऐप",
+      "क्लिनिक सॉफ्टवेयर"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official product websites",
+      "app store listings",
+      "local clinic websites"
+     ],
+     "avoid": [
+      "Patient data must not be exposed; it must stay private"
+     ],
+     "depth": "standard",
+     "priority": "high",
+     "shown_to_user_as": "Clinic apps available in Pune",
+     "user_added": false
+    },
+    {
+     "id": "RR-003",
+     "topic": "Payments and accounts in clinic apps",
+     "question": "In Pune, how do patient-facing clinic apps commonly handle online or at-clinic payments and individual accounts, and how do clinic chains typically buy and approve recurring-fee software?",
+     "decision_unlocked": "Which payment and account options to support, and who the chain-side buyer or approver may be",
+     "consumer": "research",
+     "entity": "patient-facing clinic apps and clinic management services",
+     "geography": "Pune, India",
+     "source_languages": [
+      "en",
+      "hi",
+      "mr"
+     ],
+     "terms": [
+      "patients pay online or at the clinic",
+      "each person has an account",
+      "chain pays a recurring fee",
+      "clinic app payments",
+      "recurring fee",
+      "मरीज भुगतान",
+      "व्यक्तिगत खाता"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official product websites",
+      "payment and account help pages",
+      "clinic software pricing pages"
+     ],
+     "avoid": [
+      "Patient data must not be exposed; it must stay private"
+     ],
+     "depth": "standard",
+     "priority": "high",
+     "shown_to_user_as": "Payments, accounts and clinic approvals",
+     "user_added": false
+    },
+    {
+     "id": "RR-004",
+     "topic": "SMS and WhatsApp appointment reminders",
+     "question": "How do clinic management apps in Pune send patient reminders by SMS and WhatsApp, including the usual setup, consent, delivery and messaging-provider arrangements?",
+     "decision_unlocked": "How to scope and configure appointment reminders through SMS and WhatsApp",
+     "consumer": "research",
+     "entity": "clinic management apps with patient reminders",
+     "geography": "Pune, India",
+     "source_languages": [
+      "en",
+      "hi",
+      "mr"
+     ],
+     "terms": [
+      "patients get reminders by SMS and WhatsApp",
+      "reminders",
+      "SMS",
+      "WhatsApp",
+      "appointment reminders",
+      "एसएमएस रिमाइंडर",
+      "व्हाट्सऐप रिमाइंडर"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official product documentation",
+      "official messaging platform documentation",
+      "clinic app help pages"
+     ],
+     "avoid": [
+      "Patient data must not be exposed; it must stay private"
+     ],
+     "depth": "standard",
+     "priority": "medium",
+     "shown_to_user_as": "How clinic apps send SMS and WhatsApp reminders",
+     "user_added": false
+    },
+    {
+     "id": "RR-005",
+     "topic": "Medical data privacy rules for clinic apps",
+     "question": "What medical-data privacy and security rules apply to a multi-speciality clinic app operating in Pune, and what duties affect patient records, doctors’ notes, prescriptions, lab reports, accounts and access across clinic branches?",
+     "decision_unlocked": "Privacy and security requirements to account for before defining data access and record workflows",
+     "consumer": "research",
+     "entity": "multi-speciality clinic management app handling patient medical data",
+     "geography": "Pune, India",
+     "source_languages": [
+      "en",
+      "hi",
+      "mr"
+     ],
+     "terms": [
+      "patient data must stay private",
+      "medical data privacy is critical",
+      "medical data privacy",
+      "patient records",
+      "doctors’ notes",
+      "prescriptions and lab reports",
+      "मरीजों का डेटा निजी",
+      "चिकित्सा डेटा गोपनीयता"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official government sources",
+      "official healthcare and data-protection guidance"
+     ],
+     "avoid": [
+      "Patient data must not be exposed; it must stay private"
+     ],
+     "depth": "standard",
+     "priority": "high",
+     "shown_to_user_as": "Privacy rules for clinic apps in Pune",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [],
+    "synonyms": [
+     "clinic management software",
+     "clinic scheduling app",
+     "multi-speciality clinic app",
+     "क्लिनिक प्रबंधन ऐप",
+     "क्लिनिक सॉफ्टवेयर"
+    ],
+    "local_competitors": [],
+    "languages": [
+     "en",
+     "hi",
+     "mr"
+    ]
+   },
+   "declined": [],
+   "domain_facts": [
+    {
+     "id": "FCT-001",
+     "type": "context",
+     "statement": "I run a chain of multi-speciality clinics",
+     "topics": [
+      "organization,clinics"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-002",
+     "type": "number",
+     "statement": "The chain has 6 clinics",
+     "topics": [
+      "organization,clinics"
+     ],
+     "entities": [],
+     "kind": "number"
+    },
+    {
+     "id": "FCT-003",
+     "type": "context",
+     "statement": "The clinics are in Pune",
+     "topics": [
+      "location,clinics"
+     ],
+     "entities": [
+      "Pune"
+     ],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-004",
+     "type": "goal",
+     "statement": "Patients book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders",
+     "topics": [
+      "patients,appointments,consultations"
+     ],
+     "entities": [],
+     "kind": "flow",
+     "refs": [
+      "FTR-002",
+      "FTR-003",
+      "FTR-004"
+     ]
+    },
+    {
+     "id": "FCT-005",
+     "type": "role",
+     "statement": "Patients use the app to book appointments with doctors, do video consultations, get digital prescriptions and lab reports, and receive reminders",
+     "topics": [
+      "users,patients"
+     ],
+     "entities": [],
+     "kind": "flow",
+     "refs": [
+      "FTR-002",
+      "FTR-003",
+      "FTR-004",
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-009",
+     "type": "constraint",
+     "statement": "Patient data must stay private",
+     "topics": [
+      "privacy,patient-data"
+     ],
+     "entities": [],
+     "kind": "compliance",
+     "refs": [
+      "ROL-002"
+     ]
+    },
+    {
+     "id": "FCT-010",
+     "type": "preference",
+     "statement": "Understand the idea in the user's own words: Help patients at the Pune clinics book appointments, consult doctors by video, and access prescriptions and lab reports, while giving clinic staff tools to manage schedules and care.",
+     "topics": [
+      "general"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "FTR-004",
+      "ROL-002"
+     ]
+    },
+    {
+     "id": "FCT-011",
+     "type": "preference",
+     "statement": "Identify the main users and their roles: Patients, Doctors, Receptionists, Chain administrators",
+     "topics": [
+      "general"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "ROL-004",
+      "ROL-002"
+     ]
+    },
+    {
+     "id": "FCT-012",
+     "type": "rule",
+     "statement": "Chain pays a recurring fee",
+     "topics": [
+      "pricing"
+     ],
+     "entities": [],
+     "kind": "rule"
+    },
+    {
+     "id": "FCT-013",
+     "type": "number",
+     "statement": "Six clinics in Pune",
+     "topics": [
+      "clinics,location"
+     ],
+     "entities": [
+      "Pune"
+     ],
+     "kind": "number"
+    },
+    {
+     "id": "FCT-014",
+     "type": "number",
+     "statement": "About 45 doctors",
+     "topics": [
+      "staff"
+     ],
+     "entities": [],
+     "kind": "number",
+     "refs": [
+      "ROL-003"
+     ]
+    },
+    {
+     "id": "FCT-015",
+     "type": "context",
+     "statement": "Doctors across general medicine, paediatrics, dermatology and gynaecology",
+     "topics": [
+      "clinics,medical specialties"
+     ],
+     "entities": [
+      "general medicine",
+      "paediatrics",
+      "dermatology",
+      "gynaecology"
+     ],
+     "kind": "context",
+     "refs": [
+      "APP-002",
+      "APP-003"
+     ]
+    },
+    {
+     "id": "FCT-017",
+     "type": "requirement",
+     "statement": "Patients pay online or at the clinic",
+     "topics": [
+      "payments"
+     ],
+     "entities": [],
+     "kind": "flow",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-021",
+     "type": "constraint",
+     "statement": "Medical data privacy is critical",
+     "topics": [
+      "privacy,medical data"
+     ],
+     "entities": [],
+     "kind": "compliance"
+    },
+    {
+     "id": "FCT-022",
+     "type": "context",
+     "statement": "Launch in 4 months",
+     "topics": [
+      "launch"
+     ],
+     "entities": [],
+     "kind": "constraint"
+    },
+    {
+     "id": "FCT-023",
+     "type": "preference",
+     "statement": "Which screens do patients, doctors, receptionists, and chain administrators need?: Patient mobile app / Doctor mobile app / Doctor web screen",
+     "topics": [
+      "apps"
+     ],
+     "entities": [],
+     "kind": "preference",
+     "refs": [
+      "APP-001",
+      "APP-002",
+      "APP-003"
+     ]
+    },
+    {
+     "id": "FCT-027",
+     "type": "rule",
+     "statement": "Which parts of the clinic app must be ready for its first release?: Appointments and schedules / Video consultations / Prescriptions and lab reports",
+     "topics": [
+      "scope"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "FTR-002",
+      "FTR-003",
+      "FTR-004"
+     ]
+    },
+    {
+     "id": "FCT-028",
+     "type": "number",
+     "statement": "Six clinics in Pune",
+     "topics": [
+      "clinics,location"
+     ],
+     "entities": [
+      "Pune"
+     ],
+     "kind": "number"
+    },
+    {
+     "id": "FCT-029",
+     "type": "number",
+     "statement": "About 45 doctors",
+     "topics": [
+      "staff"
+     ],
+     "entities": [],
+     "kind": "number",
+     "refs": [
+      "ROL-003"
+     ]
+    },
+    {
+     "id": "FCT-030",
+     "type": "context",
+     "statement": "Doctors across general medicine, paediatrics, dermatology and gynaecology",
+     "topics": [
+      "doctors,medical specialties"
+     ],
+     "entities": [
+      "general medicine",
+      "paediatrics",
+      "dermatology",
+      "gynaecology"
+     ],
+     "kind": "context",
+     "refs": [
+      "APP-002",
+      "APP-003"
+     ]
+    },
+    {
+     "id": "FCT-032",
+     "type": "rule",
+     "statement": "Patients pay online or at the clinic",
+     "topics": [
+      "payments"
+     ],
+     "entities": [],
+     "kind": "rule",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-035",
+     "type": "context",
+     "statement": "English, Hindi and Marathi",
+     "topics": [
+      "languages"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "APP-001",
+      "APP-002",
+      "APP-003"
+     ]
+    },
+    {
+     "id": "FCT-036",
+     "type": "constraint",
+     "statement": "Medical data privacy is critical",
+     "topics": [
+      "privacy,medical data"
+     ],
+     "entities": [],
+     "kind": "compliance"
+    },
+    {
+     "id": "FCT-037",
+     "type": "context",
+     "statement": "Launch in 4 months",
+     "topics": [
+      "launch"
+     ],
+     "entities": [],
+     "kind": "constraint"
+    },
+    {
+     "id": "FCT-038",
+     "type": "number",
+     "statement": "Six clinics in Pune",
+     "topics": [
+      "clinics,location"
+     ],
+     "entities": [
+      "Pune"
+     ],
+     "kind": "number"
+    },
+    {
+     "id": "FCT-039",
+     "type": "number",
+     "statement": "About 45 doctors",
+     "topics": [
+      "staff"
+     ],
+     "entities": [],
+     "kind": "number",
+     "refs": [
+      "ROL-003"
+     ]
+    },
+    {
+     "id": "FCT-040",
+     "type": "context",
+     "statement": "Doctors across general medicine, paediatrics, dermatology and gynaecology",
+     "topics": [
+      "doctors,medical specialties"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "APP-002",
+      "APP-003"
+     ]
+    },
+    {
+     "id": "FCT-041",
+     "type": "role",
+     "statement": "Patients",
+     "topics": [
+      "users,patients"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-043",
+     "type": "rule",
+     "statement": "Patients pay online or at the clinic",
+     "topics": [
+      "payments"
+     ],
+     "entities": [],
+     "kind": "rule",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-046",
+     "type": "context",
+     "statement": "English, Hindi and Marathi",
+     "topics": [
+      "languages"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "APP-001",
+      "APP-002",
+      "APP-003"
+     ]
+    }
+   ]
+  }
+ },
+ "spend": {
+  "by_call": {
+   "cmp.probe_handoff": {
+    "calls": 3,
+    "latency_ms": 17157,
+    "tokens_in": 7889,
+    "tokens_out": 1422,
+    "cost_micros": 1502
+   },
+   "cmp.seed_research": {
+    "calls": 1,
+    "latency_ms": 13136,
+    "tokens_in": 5252,
+    "tokens_out": 1324,
+    "cost_micros": 1072
+   },
+   "cmp.scan_ambiguity": {
+    "calls": 1,
+    "latency_ms": 11919,
+    "tokens_in": 11290,
+    "tokens_out": 1223,
+    "cost_micros": 1741
+   },
+   "cmp.compile_text": {
+    "calls": 1,
+    "latency_ms": 12431,
+    "tokens_in": 5027,
+    "tokens_out": 1535,
+    "cost_micros": 1271
+   },
+   "cmp.compile_brief": {
+    "calls": 4,
+    "latency_ms": 46490,
+    "tokens_in": 25704,
+    "tokens_out": 5907,
+    "cost_micros": 4644
+   },
+   "cmp.understand_turn": {
+    "calls": 12,
+    "latency_ms": 93111,
+    "tokens_in": 99593,
+    "tokens_out": 10508,
+    "cost_micros": 12248
+   },
+   "cmp.audit_questions": {
+    "calls": 12,
+    "latency_ms": 43127,
+    "tokens_in": 31585,
+    "tokens_out": 3140,
+    "cost_micros": 3105
+   },
+   "cmp.plan_questions": {
+    "calls": 13,
+    "latency_ms": 161148,
+    "tokens_in": 76909,
+    "tokens_out": 19829,
+    "cost_micros": 14615
+   },
+   "cmp.update_summary": {
+    "calls": 2,
+    "latency_ms": 21894,
+    "tokens_in": 8241,
+    "tokens_out": 3098,
+    "cost_micros": 2374
+   },
+   "cmp.situate": {
+    "calls": 1,
+    "latency_ms": 12641,
+    "tokens_in": 2342,
+    "tokens_out": 1500,
+    "cost_micros": 885
+   }
+  }
+ }
+}

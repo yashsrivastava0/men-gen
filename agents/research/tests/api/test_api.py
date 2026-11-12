@@ -111,23 +111,47 @@ async def test_auth_tenant_isolation_and_error_shapes() -> None:
 
 
 @pytest.mark.parametrize(
-    ("mutate", "code"),
+    ("mutate", "binding"),
     [
-        (lambda d: d["brief"].update(_hash="0" * 64), "hash_mismatch"),
-        (lambda d: d["export"].pop("approved_baseline"), "not_approved"),
-        (lambda d: d["export"].update(format_version=1), "not_format_2"),
-        (lambda d: d["consumer_views"].pop("research"), "missing_research_view"),
+        (lambda d: d["brief"].update(_hash="0" * 64), "unverified_hash_mismatch"),
+        (lambda d: d["export"].pop("approved_baseline"), "unverified_no_baseline"),
+        (lambda d: d["export"].update(format_version=1), "verified"),
+        (lambda d: d["consumer_views"].pop("research"), "verified"),
     ],
 )
-async def test_a_changed_or_unapproved_export_is_refused_with_a_plain_message(
-    mutate: Any, code: str
+async def test_an_unverified_or_older_export_is_researched_and_says_so(
+    mutate: Any, binding: str
 ) -> None:
-    _, _, app = make()
+    """A missing approval or a changed hash is a flag in the result (``input_binding``), never a refusal (D-156)."""
+    _, svc, app = make()
     data = export()
     mutate(data)
     async with client(app) as c:
         r = await c.post("/v1/research/runs", json={"brief_export": data})
-    assert r.status_code == 422 and r.json()["code"] == code and r.json()["message"]
+        assert r.status_code == 201, r.text
+        run = r.json()
+        await finish(svc, run["run_id"])
+        res = (await c.get(f"/v1/research/runs/{run['run_id']}/result")).json()
+    assert res["input_quality"]["input_binding"] == binding
+    assert res["items"]
+
+
+@pytest.mark.parametrize(
+    "mutate",
+    [
+        lambda d: d.pop("brief"),
+        lambda d: d["brief"].update(research_requests=[], domain_facts=[], idea={}, summary=""),
+    ],
+)
+async def test_an_export_with_no_usable_brief_is_refused_with_a_plain_message(mutate: Any) -> None:
+    _, _, app = make()
+    data = export()
+    data.pop("consumer_views")
+    mutate(data)
+    async with client(app) as c:
+        r = await c.post("/v1/research/runs", json={"brief_export": data})
+    assert r.status_code == 422 and r.json()["code"] in ("not_an_export", "unusable_brief")
+    assert r.json()["message"]
 
 
 async def test_one_run_per_program_at_a_time_then_the_next_is_allowed() -> None:

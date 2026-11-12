@@ -1,5 +1,6 @@
-"""Intake: an approved Compass export in, a trusted ``ResearchInput`` out."""
+"""Intake: a Compass export in, a ``ResearchInput`` out. ``formats.py`` is the one module that knows the export layout."""
 
-from mde_research_agent.intake.reader import ExportRefused, check_binding, read_export
+from mde_research_agent.intake.formats import ExportRefused, Normalised, normalise
+from mde_research_agent.intake.reader import read_export
 
-__all__ = ["ExportRefused", "check_binding", "read_export"]
+__all__ = ["ExportRefused", "Normalised", "normalise", "read_export"]

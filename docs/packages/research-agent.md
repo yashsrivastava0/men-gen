@@ -34,7 +34,7 @@ In-memory and PostgreSQL behind one Protocol with a shared contract suite (ADR 0
 
 ## Validators
 
-RV-01..RV-17 (RV-11 reserved) in `validators/registry.py`, one pass test and one fail test each. They cover the schema (RV-01), quotes (RV-02), sources (RV-03), the tier never being an input (RV-04), no new facts in assembly (RV-05), query hygiene (RV-06), corroboration (RV-07), support (RV-08), caps (RV-09), coverage (RV-10), budget ceilings (RV-12), the Brief binding (RV-13), query anatomy (RV-14), slots (RV-15), `applies_to` (RV-16) and the event allowlist (RV-17). Two refuse a commit (`must_refuse`): RV-04 and RV-13. The others run on every run and must report nothing on every fixture in the offline suite.
+RV-01..RV-23 in `validators/registry.py`, one pass test and one fail test each. They cover the schema (RV-01), quotes (RV-02), sources (RV-03), the tier never being an input (RV-04), no new facts in assembly (RV-05), query hygiene (RV-06), corroboration (RV-07), support (RV-08), caps (RV-09), coverage (RV-10), no private term in a recorded query (RV-11, back by the owner's instruction of 2026-11-13, which replaces AD-54), budget ceilings (RV-12), the Brief binding (RV-13: an error when the output's hash is not the input's; a warning when the input's own approval seal could not be verified), query anatomy (RV-14), slots (RV-15), `applies_to` (RV-16) and the event allowlist (RV-17). Two refuse a commit (`must_refuse`): RV-04 and RV-13. The others run on every run and must report nothing on every fixture in the offline suite.
 
 ## Tests
 

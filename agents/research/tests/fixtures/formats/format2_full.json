@@ -1,0 +1,1790 @@
+{
+ "export": {
+  "format": "compass-full-output",
+  "format_version": 2,
+  "exported_at": "2026-11-12T21:37:14.029676+00:00",
+  "session_id": "ses_0165KG1HZT4264WYDZKHC17ZZM",
+  "brief_version": 1,
+  "brief_hash": "b1444280e8ab7e8afea1532aa655f4815930a506267e40150a86acf4e6f25b49",
+  "approved_baseline": {
+   "session_id": "ses_0165KG1HZT4264WYDZKHC17ZZM",
+   "version": 1,
+   "hash": "b1444280e8ab7e8afea1532aa655f4815930a506267e40150a86acf4e6f25b49",
+   "baseline_label": "B-G1",
+   "change_set_id": "CHG-001",
+   "created_at": "2026-11-11T09:40:00Z"
+  }
+ },
+ "brief": {
+  "version": 1,
+  "meta": {
+   "session_id": "ses_0165KG1HZT4264WYDZKHC17ZZM",
+   "program_id": "",
+   "mode": "guided",
+   "situation_profile": {
+    "input_richness": "rich",
+    "clarity": "knows_features",
+    "expertise": "non_technical",
+    "size_stakes": "startup",
+    "reference_driven": false,
+    "collaboration": "one",
+    "language": "en",
+    "input_mode": "text",
+    "urgency": "just_build",
+    "formality": "casual"
+   },
+   "plan": {
+    "depth": "standard",
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 7,
+    "minimum_viable": false,
+    "interview_budget": "quick"
+   },
+   "hypothesis": {
+    "label": "hypothesis",
+    "category": "Guess: repair booking app",
+    "subcategory": "Guess: a small bike workshop taking bookings and payments online",
+    "business_model_candidates": [
+     "Pay per repair",
+     "Deposit to book"
+    ],
+    "likely_families": [
+     "booking_scheduling",
+     "payments_wallet"
+    ],
+    "likely_roles": [
+     "Customer",
+     "Mechanic",
+     "Shop owner"
+    ],
+    "likely_features": [
+     {
+      "family": "booking_scheduling",
+      "name": "Book a time",
+      "intent": "Let customers reserve a workshop slot.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Workshop calendar",
+      "intent": "Show the day's bookings and free slots.",
+      "custom": false
+     },
+     {
+      "family": "payments_wallet",
+      "name": "Pay online",
+      "intent": "Take payment for the repair in the app.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Ready reminder",
+      "intent": "Tell the customer the bike is ready.",
+      "custom": true
+     }
+    ],
+    "hard_parts": [
+     "Slots when the shop has one mechanic",
+     "A quote that changes once the bike is open"
+    ],
+    "glossary_candidates": [
+     {
+      "term": "repair order",
+      "synonyms": [
+       "job card"
+      ]
+     }
+    ],
+    "confidence": 0.7
+   },
+   "locales": [
+    "pt-PT",
+    "en"
+   ],
+   "schema_version": 1,
+   "depth_profile": "standard",
+   "degraded": false,
+   "probes": {},
+   "probe_rounds": 0,
+   "approvals": {},
+   "interview": {
+    "budget": "quick",
+    "ui_mode": "answer_all",
+    "ui_mode_set": false,
+    "questions_asked": 9,
+    "followups": 1,
+    "answered": 10,
+    "skipped": 0,
+    "assumed": 0,
+    "batches": 4,
+    "facts_active": 17,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "coverage": 1.0,
+    "fallback_count": 0,
+    "question_ids": [
+     "Q-001",
+     "Q-002",
+     "Q-003",
+     "Q-004",
+     "Q-005",
+     "Q-006",
+     "Q-007",
+     "Q-008",
+     "Q-009"
+    ],
+    "stop_reason": "budget_reached",
+    "target": 7,
+    "hard_cap": 10,
+    "tier_set": true,
+    "closing": "answered",
+    "followup_candidates": [],
+    "reopened": 0,
+    "size_band": "small",
+    "size_source": "tier",
+    "size_suggested": "",
+    "structure_modules": 4,
+    "structure_screens": 15,
+    "structure_flows": 3,
+    "structure_entities": 5,
+    "structure_issues": 0
+   },
+   "compile_digests": {}
+  },
+  "idea": {
+   "summary": {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "value": "A repair booking app for a small bike workshop in Porto: customers book a slot, follow the repair, approve the quote and pay online, and the shop runs the day from one calendar."
+   },
+   "category": {
+    "tier": "Locked",
+    "confidence": 0.97,
+    "status": "volunteered",
+    "value": "bike repair workshop app"
+   },
+   "subcategory": {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "value": "booking, repair status, quote approval and online payment for a bike workshop"
+   },
+   "business_model": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "value": "Pay per repair"
+   }
+  },
+  "context": {
+   "geo": {
+    "tier": "Locked",
+    "confidence": 0.97,
+    "status": "volunteered",
+    "value": {
+     "city": "Porto",
+     "country": "Portugal"
+    }
+   },
+   "scale_launch": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "single_shop"
+   }
+  },
+  "audience": {
+   "segments": {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "value": [
+     "Customers",
+     "Mechanics",
+     "Shop owner"
+    ]
+   },
+   "usage_context": {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "value": [
+     "on_the_go"
+    ]
+   }
+  },
+  "apps": [
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "APP-001",
+    "name": "Roda Viva app",
+    "purpose": "The customer app for booking, repair status, quote approval and payment, with the same app for the shop's staff.",
+    "surface": "mobile",
+    "audience": "customers and shop staff",
+    "roles": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-003"
+    ]
+   }
+  ],
+  "roles": [
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-001",
+    "name_in_user_words": "Customers",
+    "goal": "Book a repair, follow it and approve the quote",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-002",
+    "name_in_user_words": "Mechanics",
+    "goal": "See the day's repair orders and update each one",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-003",
+    "name_in_user_words": "Shop owner",
+    "goal": "Run the calendar, the prices and the payments",
+    "rough_permissions": []
+   }
+  ],
+  "scope": [
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-001",
+    "name": "Book a repair slot",
+    "intent": "Customers choose a free time for a repair in the workshop calendar.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-002",
+    "name": "Repair status",
+    "intent": "Customers see whether the bike is waiting, being repaired or ready.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-003",
+    "name": "Quote approval",
+    "intent": "Customers approve or decline the quote before any work starts.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-004",
+    "name": "Pay online",
+    "intent": "Customers pay the full repair in the app after approval, by card or MB WAY.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-005",
+    "name": "Ready text message",
+    "intent": "Customers get a text message when the bike is ready to collect.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-006",
+    "name": "Workshop calendar",
+    "intent": "The owner and the mechanic see the day's bookings and free slots.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.8,
+    "status": "volunteered",
+    "id": "FTR-007",
+    "name": "Bike sales catalogue",
+    "intent": "Browse second-hand bikes for sale in the shop.",
+    "apps": [
+     "APP-001"
+    ],
+    "family": null,
+    "scope_status": "later",
+    "priority": "later",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   }
+  ],
+  "modules": [
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "MOD-001",
+    "name": "Account",
+    "kind": "account",
+    "purpose": "Customers and staff sign in with a phone number and a one-time code.",
+    "apps": [
+     "APP-001"
+    ],
+    "features": [],
+    "roles": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-003"
+    ],
+    "entry": "SCR-001",
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "MOD-002",
+    "name": "Repair bookings",
+    "kind": "",
+    "purpose": "Customers pick a free slot, and the shop sees the calendar.",
+    "apps": [
+     "APP-001"
+    ],
+    "features": [
+     "FTR-001",
+     "FTR-006"
+    ],
+    "roles": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-003"
+    ],
+    "entry": "SCR-002",
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "MOD-003",
+    "name": "Repair progress",
+    "kind": "",
+    "purpose": "Customers follow the repair, approve the quote and get the ready message; mechanics update each order.",
+    "apps": [
+     "APP-001"
+    ],
+    "features": [
+     "FTR-002",
+     "FTR-003",
+     "FTR-005"
+    ],
+    "roles": [
+     "ROL-001",
+     "ROL-002"
+    ],
+    "entry": "SCR-005",
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "MOD-004",
+    "name": "Payments and receipts",
+    "kind": "",
+    "purpose": "Customers pay the approved amount and keep the receipt.",
+    "apps": [
+     "APP-001"
+    ],
+    "features": [
+     "FTR-004"
+    ],
+    "roles": [
+     "ROL-001",
+     "ROL-003"
+    ],
+    "entry": "SCR-008",
+    "decision": "accepted"
+   }
+  ],
+  "screens": [],
+  "flows": [],
+  "entities": [
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "ENT-001",
+    "key": "repair_type",
+    "name": "Repair type",
+    "purpose": "A kind of repair the shop offers, with its price.",
+    "module": "MOD-002",
+    "fields": [
+     {
+      "key": "name",
+      "name": "Name",
+      "type": "text",
+      "required": true,
+      "ref": "",
+      "values": []
+     },
+     {
+      "key": "price",
+      "name": "Price",
+      "type": "money",
+      "required": true,
+      "ref": "",
+      "values": []
+     }
+    ],
+    "states": [],
+    "access": {
+     "ROL-001": "view",
+     "ROL-002": "view",
+     "ROL-003": "manage"
+    },
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "ENT-002",
+    "key": "repair_order",
+    "name": "Repair order",
+    "purpose": "One bike's repair from booking to collection.",
+    "module": "MOD-003",
+    "fields": [
+     {
+      "key": "bike",
+      "name": "Bike",
+      "type": "ref",
+      "required": true,
+      "ref": "ENT-003",
+      "values": []
+     },
+     {
+      "key": "slot",
+      "name": "Slot",
+      "type": "ref",
+      "required": true,
+      "ref": "ENT-005",
+      "values": []
+     },
+     {
+      "key": "quote_total",
+      "name": "Quote total",
+      "type": "money",
+      "required": false,
+      "ref": "",
+      "values": []
+     },
+     {
+      "key": "notes",
+      "name": "Notes",
+      "type": "text",
+      "required": false,
+      "ref": "",
+      "values": []
+     }
+    ],
+    "states": [
+     "waiting",
+     "quoted",
+     "approved",
+     "in_repair",
+     "ready",
+     "collected"
+    ],
+    "access": {
+     "ROL-001": "edit",
+     "ROL-002": "edit",
+     "ROL-003": "manage"
+    },
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "ENT-003",
+    "key": "bike",
+    "name": "Bike",
+    "purpose": "The customer's bike.",
+    "module": "MOD-003",
+    "fields": [
+     {
+      "key": "brand",
+      "name": "Brand",
+      "type": "text",
+      "required": false,
+      "ref": "",
+      "values": []
+     },
+     {
+      "key": "frame_size",
+      "name": "Frame size",
+      "type": "text",
+      "required": false,
+      "ref": "",
+      "values": []
+     }
+    ],
+    "states": [],
+    "access": {
+     "ROL-001": "view",
+     "ROL-002": "view",
+     "ROL-003": "view"
+    },
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "ENT-004",
+    "key": "payment",
+    "name": "Payment",
+    "purpose": "A payment for an approved repair.",
+    "module": "MOD-004",
+    "fields": [
+     {
+      "key": "amount",
+      "name": "Amount",
+      "type": "money",
+      "required": true,
+      "ref": "",
+      "values": []
+     },
+     {
+      "key": "method",
+      "name": "Method",
+      "type": "enum",
+      "required": true,
+      "ref": "",
+      "values": [
+       "card",
+       "mb_way"
+      ]
+     },
+     {
+      "key": "paid_at",
+      "name": "Paid at",
+      "type": "datetime",
+      "required": false,
+      "ref": "",
+      "values": []
+     }
+    ],
+    "states": [
+     "pending",
+     "paid",
+     "refunded"
+    ],
+    "access": {
+     "ROL-001": "create",
+     "ROL-003": "view"
+    },
+    "decision": "accepted"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "confirmed",
+    "id": "ENT-005",
+    "key": "time_slot",
+    "name": "Time slot",
+    "purpose": "A bookable time in the workshop calendar.",
+    "module": "MOD-002",
+    "fields": [
+     {
+      "key": "starts_at",
+      "name": "Starts at",
+      "type": "datetime",
+      "required": true,
+      "ref": "",
+      "values": []
+     },
+     {
+      "key": "ends_at",
+      "name": "Ends at",
+      "type": "datetime",
+      "required": true,
+      "ref": "",
+      "values": []
+     }
+    ],
+    "states": [
+     "free",
+     "booked"
+    ],
+    "access": {
+     "ROL-001": "view",
+     "ROL-002": "view",
+     "ROL-003": "manage"
+    },
+    "decision": "accepted"
+   }
+  ],
+  "references": [],
+  "experience": {
+   "locales": {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "value": [
+     "pt-PT",
+     "en"
+    ]
+   },
+   "density_mode": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "simple"
+   },
+   "devices": {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "value": [
+     "phone"
+    ]
+   },
+   "tone_words": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "friendly",
+     "plain"
+    ]
+   }
+  },
+  "access": {
+   "account_model": {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "value": "phone number"
+   },
+   "auth_methods": {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "value": [
+     "phone_otp"
+    ]
+   },
+   "onboarding_approvals": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "none"
+   }
+  },
+  "integrations": [
+   {
+    "tier": "Locked",
+    "confidence": 0.8,
+    "status": "confirmed",
+    "name": "Card and MB WAY payments",
+    "preference": "real_later",
+    "notes": "The shop takes card payments on a terminal today; the app needs an online provider."
+   }
+  ],
+  "data": {},
+  "constraints": {
+   "scope_priority": {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "value": "repairs first"
+   }
+  },
+  "glossary": [
+   {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "term": "repair order",
+    "synonyms": [
+     "job card",
+     "service ticket"
+    ],
+    "avoid": []
+   }
+  ],
+  "domain_facts": [
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-001",
+    "type": "context",
+    "statement": "The owner runs a small bike repair workshop in Porto.",
+    "topics": [
+     "business",
+     "bike repair"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-001",
+    "quote": "I run a small bike repair workshop in Porto."
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-002",
+    "type": "requirement",
+    "statement": "Customers book a repair slot in the app.",
+    "topics": [
+     "booking"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-001",
+    "quote": "Customers should be able to book a repair slot"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-003",
+    "type": "requirement",
+    "statement": "Customers see when their bike is ready.",
+    "topics": [
+     "status"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-001",
+    "quote": "see when their bike is ready"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-004",
+    "type": "requirement",
+    "statement": "Customers approve the quote and pay online.",
+    "topics": [
+     "quote",
+     "payment"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-001",
+    "quote": "approve the quote and pay online"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-005",
+    "type": "requirement",
+    "statement": "The owner and the mechanic need a calendar of the day.",
+    "topics": [
+     "calendar"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-001",
+    "quote": "I also need a calendar so my mechanic and I can see the day."
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-006",
+    "type": "role",
+    "statement": "There are three kinds of users: customers, mechanics and the shop owner.",
+    "topics": [
+     "users"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-002",
+    "quote": "Customers, mechanics and the shop owner"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-007",
+    "type": "context",
+    "statement": "The workshop is in Porto, Portugal.",
+    "topics": [
+     "place"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-003",
+    "quote": "The workshop is in Porto, Portugal."
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-008",
+    "type": "preference",
+    "statement": "The app is shown in Portuguese (pt-PT) and English.",
+    "topics": [
+     "language"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-003",
+    "quote": "The app should be in Portuguese and English."
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-009",
+    "type": "rule",
+    "statement": "Customers pay the full repair online after the quote is approved.",
+    "topics": [
+     "payment"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-004",
+    "quote": "Pay the full repair online",
+    "kind": "rule"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-010",
+    "type": "rule",
+    "statement": "No work starts on a bike before the customer approves the quote in the app.",
+    "topics": [
+     "quote"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-005",
+    "quote": "Customer approves the quote in the app",
+    "kind": "rule"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-011",
+    "type": "number",
+    "statement": "A ready bike not collected after 14 days pays a storage fee of 2 euros a day.",
+    "topics": [
+     "storage"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-006",
+    "quote": "A bike that is ready but not collected after 14 days gets a storage fee of 2 euros a day.",
+    "kind": "rule"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-012",
+    "type": "requirement",
+    "statement": "Customers get a text message when the bike is ready to collect.",
+    "topics": [
+     "notification"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-007",
+    "quote": "A text message"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-013",
+    "type": "constraint",
+    "statement": "Invoices carry the shop's NIF and follow the Portuguese tax format.",
+    "topics": [
+     "invoice"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-008",
+    "quote": "Invoices need the shop's NIF and must follow the Portuguese tax format.",
+    "kind": "compliance"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-014",
+    "type": "context",
+    "statement": "The shop is open Monday to Saturday, 9:00 to 19:00.",
+    "topics": [
+     "hours"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-008",
+    "quote": "The shop is open Monday to Saturday, 9:00 to 19:00."
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-015",
+    "type": "requirement",
+    "statement": "The app takes card and MB WAY payments.",
+    "topics": [
+     "payment"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-009",
+    "quote": "Card and MB WAY",
+    "kind": "integration_detail"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-016",
+    "type": "preference",
+    "statement": "The bike sales catalogue can wait until a later version.",
+    "topics": [
+     "catalogue"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-010",
+    "quote": "The bike sales catalogue can wait until later."
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "volunteered",
+    "id": "FCT-017",
+    "type": "goal",
+    "statement": "The first version is for repairs only.",
+    "topics": [
+     "scope"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-010",
+    "quote": "Keep the first version to repairs."
+   }
+  ],
+  "assumptions": [],
+  "open_questions": [],
+  "research_requests": [
+   {
+    "id": "RR-001",
+    "topic": "Booking apps for independent bike workshops",
+    "question": "Which booking, status and quote features do independent bike workshops offer their customers?",
+    "decision_unlocked": "Which features are must-have in the first version",
+    "consumer": "research",
+    "entity": "bike repair booking apps",
+    "geography": "Portugal",
+    "source_languages": [
+     "pt",
+     "en"
+    ],
+    "terms": [
+     "bike repair booking",
+     "workshop booking app",
+     "repair status",
+     "quote approval"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official product websites",
+     "app store listings"
+    ],
+    "avoid": [],
+    "depth": "quick",
+    "priority": "high",
+    "shown_to_user_as": "What similar workshop apps offer",
+    "user_added": false
+   },
+   {
+    "id": "RR-002",
+    "topic": "Card and MB WAY payments for small shops",
+    "question": "Which card and MB WAY rules apply to a small repair shop taking online payments?",
+    "decision_unlocked": "How payments and receipts are built",
+    "consumer": "research",
+    "entity": "MB WAY and card payments for small shops",
+    "geography": "Portugal",
+    "source_languages": [
+     "pt",
+     "en"
+    ],
+    "terms": [
+     "MB WAY",
+     "card payments",
+     "small merchant"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "payment provider pages"
+    ],
+    "avoid": [],
+    "depth": "quick",
+    "priority": "high",
+    "shown_to_user_as": "How online payment works for a small shop",
+    "user_added": false
+   },
+   {
+    "id": "RR-003",
+    "topic": "Invoice rules in Portugal",
+    "question": "What must a simple invoice from a small Portuguese shop show?",
+    "decision_unlocked": "What the receipt screen must contain",
+    "consumer": "research",
+    "entity": "Portuguese simplified invoice rules",
+    "geography": "Portugal",
+    "source_languages": [
+     "pt",
+     "en"
+    ],
+    "terms": [
+     "invoice NIF",
+     "simplified invoice",
+     "Portugal tax"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official tax authority pages"
+    ],
+    "avoid": [],
+    "depth": "quick",
+    "priority": "medium",
+    "shown_to_user_as": "What an invoice must show",
+    "user_added": false
+   },
+   {
+    "id": "RR-004",
+    "topic": "Ready-for-collection messages",
+    "question": "How do repair workshops word ready-for-collection text messages and storage fees?",
+    "decision_unlocked": "Which message templates ship in the first version",
+    "consumer": "research",
+    "entity": "text message reminders for repair workshops",
+    "geography": "Portugal",
+    "source_languages": [
+     "pt",
+     "en"
+    ],
+    "terms": [
+     "ready for collection",
+     "text message reminder",
+     "storage fee"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "workshop websites"
+    ],
+    "avoid": [],
+    "depth": "quick",
+    "priority": "low",
+    "shown_to_user_as": "How workshops tell customers a bike is ready",
+    "user_added": false
+   },
+   {
+    "id": "RR-005",
+    "topic": "Second-hand bike listings",
+    "question": "How do second-hand bike listings work on small workshop platforms?",
+    "decision_unlocked": "Whether the catalogue is a later release",
+    "consumer": "research",
+    "entity": "second-hand bike listings",
+    "geography": "Portugal",
+    "source_languages": [
+     "pt",
+     "en"
+    ],
+    "terms": [
+     "second-hand bikes",
+     "bike listings"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "marketplace listings"
+    ],
+    "avoid": [],
+    "depth": "quick",
+    "priority": "low",
+    "shown_to_user_as": "How second-hand bike listings work",
+    "user_added": false
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "synonyms": [
+    "job card",
+    "service ticket"
+   ],
+   "local_competitors": [],
+   "languages": [
+    "pt",
+    "en"
+   ]
+  },
+  "assets": [],
+  "sources": [],
+  "declined": [],
+  "readiness": {},
+  "ids": {},
+  "summary": "A repair booking app for a small bike workshop in Porto: customers book a slot, follow the repair, approve the quote and pay online, and the shop runs the day from one calendar.",
+  "pitch": "The app is for the customers of a small bike repair workshop in Porto, Portugal. Customers book a repair slot, see when the bike is ready, approve the quote and pay online. The owner and the mechanic run the day from a calendar. The first version is for repairs only; the bike sales catalogue waits for a later version.",
+  "_hash": "b1444280e8ab7e8afea1532aa655f4815930a506267e40150a86acf4e6f25b49"
+ },
+ "consumer_views": {
+  "research": {
+   "idea": {
+    "summary": "A repair booking app for a small bike workshop in Porto: customers book a slot, follow the repair, approve the quote and pay online, and the shop runs the day from one calendar.",
+    "pitch": "The app is for the customers of a small bike repair workshop in Porto, Portugal. Customers book a repair slot, see when the bike is ready, approve the quote and pay online. The owner and the mechanic run the day from a calendar. The first version is for repairs only; the bike sales catalogue waits for a later version.",
+    "category": "bike repair workshop app",
+    "subcategory": "booking, repair status, quote approval and online payment for a bike workshop",
+    "business_model": "Pay per repair"
+   },
+   "geography": {
+    "city": "Porto",
+    "country": "Portugal"
+   },
+   "languages": {
+    "locales": [
+     "pt-PT",
+     "en"
+    ],
+    "meta_locales": [
+     "pt-PT",
+     "en"
+    ],
+    "search_languages": [
+     "pt",
+     "en"
+    ]
+   },
+   "audience": {
+    "segments": [
+     "Customers",
+     "Mechanics",
+     "Shop owner"
+    ],
+    "usage_context": [
+     "on_the_go"
+    ]
+   },
+   "references": [],
+   "feature_intents": [
+    {
+     "name": "Book a repair slot",
+     "intent": "Customers choose a free time for a repair in the workshop calendar.",
+     "family": null
+    },
+    {
+     "name": "Repair status",
+     "intent": "Customers see whether the bike is waiting, being repaired or ready.",
+     "family": null
+    },
+    {
+     "name": "Quote approval",
+     "intent": "Customers approve or decline the quote before any work starts.",
+     "family": null
+    },
+    {
+     "name": "Pay online",
+     "intent": "Customers pay the full repair in the app after approval, by card or MB WAY.",
+     "family": null
+    },
+    {
+     "name": "Ready text message",
+     "intent": "Customers get a text message when the bike is ready to collect.",
+     "family": null
+    },
+    {
+     "name": "Workshop calendar",
+     "intent": "The owner and the mechanic see the day's bookings and free slots.",
+     "family": null
+    }
+   ],
+   "glossary": [
+    {
+     "term": "repair order",
+     "synonyms": [
+      "job card",
+      "service ticket"
+     ],
+     "avoid": []
+    }
+   ],
+   "research_requests": [
+    {
+     "id": "RR-001",
+     "topic": "Booking apps for independent bike workshops",
+     "question": "Which booking, status and quote features do independent bike workshops offer their customers?",
+     "decision_unlocked": "Which features are must-have in the first version",
+     "consumer": "research",
+     "entity": "bike repair booking apps",
+     "geography": "Portugal",
+     "source_languages": [
+      "pt",
+      "en"
+     ],
+     "terms": [
+      "bike repair booking",
+      "workshop booking app",
+      "repair status",
+      "quote approval"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official product websites",
+      "app store listings"
+     ],
+     "avoid": [],
+     "depth": "quick",
+     "priority": "high",
+     "shown_to_user_as": "What similar workshop apps offer",
+     "user_added": false
+    },
+    {
+     "id": "RR-002",
+     "topic": "Card and MB WAY payments for small shops",
+     "question": "Which card and MB WAY rules apply to a small repair shop taking online payments?",
+     "decision_unlocked": "How payments and receipts are built",
+     "consumer": "research",
+     "entity": "MB WAY and card payments for small shops",
+     "geography": "Portugal",
+     "source_languages": [
+      "pt",
+      "en"
+     ],
+     "terms": [
+      "MB WAY",
+      "card payments",
+      "small merchant"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "payment provider pages"
+     ],
+     "avoid": [],
+     "depth": "quick",
+     "priority": "high",
+     "shown_to_user_as": "How online payment works for a small shop",
+     "user_added": false
+    },
+    {
+     "id": "RR-003",
+     "topic": "Invoice rules in Portugal",
+     "question": "What must a simple invoice from a small Portuguese shop show?",
+     "decision_unlocked": "What the receipt screen must contain",
+     "consumer": "research",
+     "entity": "Portuguese simplified invoice rules",
+     "geography": "Portugal",
+     "source_languages": [
+      "pt",
+      "en"
+     ],
+     "terms": [
+      "invoice NIF",
+      "simplified invoice",
+      "Portugal tax"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "official tax authority pages"
+     ],
+     "avoid": [],
+     "depth": "quick",
+     "priority": "medium",
+     "shown_to_user_as": "What an invoice must show",
+     "user_added": false
+    },
+    {
+     "id": "RR-004",
+     "topic": "Ready-for-collection messages",
+     "question": "How do repair workshops word ready-for-collection text messages and storage fees?",
+     "decision_unlocked": "Which message templates ship in the first version",
+     "consumer": "research",
+     "entity": "text message reminders for repair workshops",
+     "geography": "Portugal",
+     "source_languages": [
+      "pt",
+      "en"
+     ],
+     "terms": [
+      "ready for collection",
+      "text message reminder",
+      "storage fee"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "workshop websites"
+     ],
+     "avoid": [],
+     "depth": "quick",
+     "priority": "low",
+     "shown_to_user_as": "How workshops tell customers a bike is ready",
+     "user_added": false
+    },
+    {
+     "id": "RR-005",
+     "topic": "Second-hand bike listings",
+     "question": "How do second-hand bike listings work on small workshop platforms?",
+     "decision_unlocked": "Whether the catalogue is a later release",
+     "consumer": "research",
+     "entity": "second-hand bike listings",
+     "geography": "Portugal",
+     "source_languages": [
+      "pt",
+      "en"
+     ],
+     "terms": [
+      "second-hand bikes",
+      "bike listings"
+     ],
+     "references": [],
+     "prefer_sources": [
+      "marketplace listings"
+     ],
+     "avoid": [],
+     "depth": "quick",
+     "priority": "low",
+     "shown_to_user_as": "How second-hand bike listings work",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [],
+    "synonyms": [
+     "job card",
+     "service ticket"
+    ],
+    "local_competitors": [],
+    "languages": [
+     "pt",
+     "en"
+    ]
+   },
+   "declined": [],
+   "guidance": {
+    "size_band": "small",
+    "depth": "light",
+    "search_budget": 6,
+    "gap_fill": false,
+    "max_requests": 6,
+    "category": "bike repair workshop app",
+    "subcategory": "booking, repair status, quote approval and online payment for a bike workshop",
+    "business_model": "Pay per repair",
+    "families": [
+     "booking_scheduling",
+     "payments_wallet"
+    ],
+    "focus": [
+     {
+      "topic": "landscape",
+      "about": [
+       "Account",
+       "Repair bookings",
+       "Repair progress",
+       "Payments and receipts"
+      ]
+     },
+     {
+      "topic": "domain",
+      "about": [
+       "Repair type",
+       "Repair order",
+       "Bike",
+       "Payment",
+       "Time slot"
+      ]
+     },
+     {
+      "topic": "integrations",
+      "about": [
+       "Card and MB WAY payments"
+      ]
+     },
+     {
+      "topic": "compliance",
+      "about": [
+       "Invoices carry the shop's NIF and follow the Portuguese tax format."
+      ]
+     },
+     {
+      "topic": "locales",
+      "about": [
+       "pt-PT",
+       "en"
+      ]
+     }
+    ]
+   },
+   "modules": [
+    "Account",
+    "Repair bookings",
+    "Repair progress",
+    "Payments and receipts"
+   ],
+   "entities": [
+    "Repair type",
+    "Repair order",
+    "Bike",
+    "Payment",
+    "Time slot"
+   ],
+   "domain_facts": [
+    {
+     "id": "FCT-001",
+     "type": "context",
+     "statement": "The owner runs a small bike repair workshop in Porto.",
+     "topics": [
+      "business",
+      "bike repair"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-002",
+     "type": "requirement",
+     "statement": "Customers book a repair slot in the app.",
+     "topics": [
+      "booking"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-003",
+     "type": "requirement",
+     "statement": "Customers see when their bike is ready.",
+     "topics": [
+      "status"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-004",
+     "type": "requirement",
+     "statement": "Customers approve the quote and pay online.",
+     "topics": [
+      "quote",
+      "payment"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-005",
+     "type": "requirement",
+     "statement": "The owner and the mechanic need a calendar of the day.",
+     "topics": [
+      "calendar"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-006",
+     "type": "role",
+     "statement": "There are three kinds of users: customers, mechanics and the shop owner.",
+     "topics": [
+      "users"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-007",
+     "type": "context",
+     "statement": "The workshop is in Porto, Portugal.",
+     "topics": [
+      "place"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-008",
+     "type": "preference",
+     "statement": "The app is shown in Portuguese (pt-PT) and English.",
+     "topics": [
+      "language"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-009",
+     "type": "rule",
+     "statement": "Customers pay the full repair online after the quote is approved.",
+     "topics": [
+      "payment"
+     ],
+     "entities": [],
+     "kind": "rule"
+    },
+    {
+     "id": "FCT-010",
+     "type": "rule",
+     "statement": "No work starts on a bike before the customer approves the quote in the app.",
+     "topics": [
+      "quote"
+     ],
+     "entities": [],
+     "kind": "rule"
+    },
+    {
+     "id": "FCT-011",
+     "type": "number",
+     "statement": "A ready bike not collected after 14 days pays a storage fee of 2 euros a day.",
+     "topics": [
+      "storage"
+     ],
+     "entities": [],
+     "kind": "rule"
+    },
+    {
+     "id": "FCT-012",
+     "type": "requirement",
+     "statement": "Customers get a text message when the bike is ready to collect.",
+     "topics": [
+      "notification"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-013",
+     "type": "constraint",
+     "statement": "Invoices carry the shop's NIF and follow the Portuguese tax format.",
+     "topics": [
+      "invoice"
+     ],
+     "entities": [],
+     "kind": "compliance"
+    },
+    {
+     "id": "FCT-014",
+     "type": "context",
+     "statement": "The shop is open Monday to Saturday, 9:00 to 19:00.",
+     "topics": [
+      "hours"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-015",
+     "type": "requirement",
+     "statement": "The app takes card and MB WAY payments.",
+     "topics": [
+      "payment"
+     ],
+     "entities": [],
+     "kind": "integration_detail"
+    },
+    {
+     "id": "FCT-016",
+     "type": "preference",
+     "statement": "The bike sales catalogue can wait until a later version.",
+     "topics": [
+      "catalogue"
+     ],
+     "entities": []
+    },
+    {
+     "id": "FCT-017",
+     "type": "goal",
+     "statement": "The first version is for repairs only.",
+     "topics": [
+      "scope"
+     ],
+     "entities": []
+    }
+   ]
+  }
+ },
+ "structure": {
+  "counts": {
+   "modules": 4,
+   "screens": 15,
+   "flows": 3,
+   "entities": 5
+  },
+  "band": "small"
+ },
+ "spend": {
+  "by_call": {}
+ }
+}

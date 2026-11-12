@@ -40,6 +40,7 @@ warnings:
   provider_failover: "The first search service failed, so the other one was used."
   store_over_limit: "The required findings alone are longer than the usual limit, so the file is larger than usual."
   validation_failed: "A final self-check found a problem, so the result is marked partial."
+  private_term: "A search was held back because it named something private from the Brief (a business name, number or address). Other wording was used."
 reasons:
   no_content: "no readable text"
   paywall: "behind a login or paywall"

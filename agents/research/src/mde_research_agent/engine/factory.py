@@ -7,6 +7,7 @@ from datetime import date
 
 from mde_core.cancel import CancellationToken
 from mde_core.clock import Clock
+from mde_research_agent.adapters.search.guarded import GuardedSearch
 from mde_research_agent.calls.base import CallRunner
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.domain.input import ResearchInput
@@ -54,6 +55,11 @@ def new_context(
         cancel=run_cancel,
         extra_scopes=(period_scope,) if period_scope else (),
     )
+    failures = FailureLedger()
+    if (
+        inp.private
+    ):  # the last line of the privacy guard (the first is the query gate in engine/worker.py)
+        search = GuardedSearch(search, inp.private, on_block=failures.count_private)
     holder: dict[str, RunContext] = {}
     writer = EventWriter(
         rid,
@@ -74,7 +80,7 @@ def new_context(
         runner=runner,
         events=writer,
         budget=RunBudget(soft, hard, clock, run_cap_micros=run_cap_micros),
-        failures=FailureLedger(),
+        failures=failures,
         clock=clock,
         ids=ids,
         as_of=as_of,

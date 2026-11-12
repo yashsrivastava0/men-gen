@@ -43,6 +43,12 @@ REPO = HERE.parents[3]
 sys.path.insert(0, str(TESTS))  # the doubles import as ``support.*``
 
 REAL_EXPORTS = REPO / "docs" / "compass" / "research-inputs"
+# the three real runs the fake app has always shown (the folder also holds six more test inputs now)
+FAKE_BASE = (
+    "quick-yoga-studio-bengaluru",
+    "standard-produce-marketplace-nashik",
+    "thorough-freight-fleet-india",
+)
 UI = REPO / "apps" / "research-console"
 XSS_SUMMARY = (
     "<img src=x onerror=alert(1)> Book classes <script>alert(2)</script> "
@@ -61,8 +67,8 @@ def _dump(path: Path, obj: Any) -> None:
 def write_inputs(folder: Path) -> None:
     """The three real exports plus the edge cases the front end must show as skipped files or handle inertly."""
     folder.mkdir(parents=True, exist_ok=True)
-    for src in REAL_EXPORTS.glob("*.json"):
-        shutil.copy(src, folder / src.name)
+    for name in FAKE_BASE:
+        shutil.copy(REAL_EXPORTS / f"{name}.json", folder / f"{name}.json")
     yoga = _load("quick-yoga-studio-bengaluru")
     shutil.copy(
         folder / "quick-yoga-studio-bengaluru.json", folder / "zz-copy-of-yoga-studio.json"
@@ -71,6 +77,7 @@ def write_inputs(folder: Path) -> None:
     (folder / "binary.json").write_bytes(b"\xff\xfe\x00\x80")  # not UTF-8
     (folder / "README.md").write_text("A readme is not an export.", encoding="utf-8")
     _dump(folder / "unrelated.json", {"hello": "world", "items": [1, 2, 3]})
+    # An older format, a changed Brief and a missing approval are researched and flagged (input_binding), not skipped.
     v1 = json.loads(json.dumps(yoga))
     v1["export"]["format_version"] = 1
     _dump(folder / "old-format-1.json", v1)
@@ -80,6 +87,11 @@ def write_inputs(folder: Path) -> None:
     unapproved = json.loads(json.dumps(yoga))
     unapproved["export"].pop("approved_baseline")
     _dump(folder / "not-approved.json", unapproved)
+    # A Brief with nothing to research is the one export that is still refused.
+    empty = json.loads(json.dumps(yoga))
+    empty.pop("consumer_views")
+    empty["brief"].update(research_requests=[], domain_facts=[], idea={}, summary="")
+    _dump(folder / "empty-brief.json", empty)
     # An approved export whose text is hostile: it must render as plain text and do nothing.
     xss = json.loads(json.dumps(yoga))
     idea = xss["consumer_views"]["research"]["idea"]

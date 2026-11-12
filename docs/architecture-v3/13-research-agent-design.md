@@ -448,7 +448,7 @@ Spec may turn a finding into a **Default** only when its `evidence` is `official
 | RS-47 | A run stops producing events (a hung call, a killed process) and blocks its program | A stale-run expiry marks it `failed: stalled` with a terminal event after a period with no events (default 10 minutes), so the program can start a new run (§20) |
 Stale items are flagged by RV-07: older than 2 years for prices and fees, older than 5 years for general facts [J].
 
-## 13. Validators (RV-01 to RV-23; RV-11 reserved)
+## 13. Validators (RV-01 to RV-23)
 Run on the Backbone's validator framework (doc 07 §2).
 **As built:** only RV-04 (item tiers are `default` or `open`) and RV-13 refuse a commit; every other validator records its result in `evidence.validation`, which no API serves, and RV-09's size check is recorded, not enforced (§20). **v5:** the results are summarized in `research.json.validation` and shown in the report and the console, and the truth rules (RV-02, RV-03, RV-18, RV-21) act **before** an item enters the output; RV-22 is enforced.
 | ID | Check | On failure |
@@ -463,9 +463,9 @@ Run on the Backbone's validator framework (doc 07 §2).
 | RV-08 | Support check on **every** item: `supported` required for high-impact; `partial` makes the item `unverified`; `not_supported` drops; unsupported fields are nulled; no verdict means `unchecked` | Dropped, nulled or downgraded |
 | RV-09 | **Completeness:** every verified atom is in an item (main store or appendix) or merged into one; slices contain every main-store item of their lane (split into `chunks[]`, never cut); the report lists every item; **no item is deleted for size** | Missing items restored; a mismatch is a bug and the commit is marked `partial` |
 | RV-10 | Coverage: every target and request appears in items or gaps | Added to gaps with a reason |
-| RV-11 | Reserved (personal-data filtering removed, AD-54) | none |
+| RV-11 | **Private terms (owner, 2026-11-13, replaces AD-54):** no recorded query names the brand or own-business names, a telephone number, an e-mail address, a street-level address or a person or sensitive value from the Brief (`core/privacy.py`, `data/privacy.yaml`); the query gate in the worker refuses such a query first, `GuardedSearch` repeats the check before the provider | Query refused (counted as `private_term`, never logged); a recorded one is an error |
 | RV-12 | Budget: searches, pages and seconds within the ceilings | Run stops (`budget_stop`) |
-| RV-13 | Binding: `brief_hash` equals the approved Brief hash; trust flags present or recomputed | Run refused |
+| RV-13 | Binding: the output's `brief_hash` equals the input's (an error, the commit is refused); `input_quality.input_binding` says whether the export's own approval seal could be verified (`verified`, `unverified_no_baseline`, `unverified_hash_mismatch`: a warning, never a refusal, D-156) | Run refused on a hash mismatch; warning when unverified |
 | RV-14 | Anatomy and worthiness: every query has a target with `decision_unlocked`, an anchor, a place and an intent word; category-only queries rejected | Query dropped |
 | RV-15 | Slot consistency: `coverage` counts match the filled slots; a target marked covered has all required slots verified | Recomputed; mismatch is a bug |
 | RV-16 | Every `applies_to` id exists in the approved Brief (or is `NEW`) | Item re-tagged `NEW` or dropped |

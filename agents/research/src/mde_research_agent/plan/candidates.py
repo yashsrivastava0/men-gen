@@ -14,6 +14,13 @@ from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.text import same_thing, stem_set, tokens
 from mde_research_agent.domain.input import Request, ResearchInput
 from mde_research_agent.domain.plan import Links
+from mde_research_agent.plan.routing import (
+    best_by_words,
+    category_stems,
+    job_of_request,
+    read_request,
+    specific_entity,
+)
 from mde_research_agent.plan.signals import compute_signals
 
 PRIORITY_RANK = {"must": 0, "nice": 1, "later": 2}
@@ -192,15 +199,22 @@ def need_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
     """
     corpus = [(stem_set(text), links) for text, links, _ in _corpus(inp)]
     signals = set(compute_signals(inp, cat.signals))
-    service_words = {
-        w for word in cat.plan.request_jobs.get("services", ()) for w in stem_set(word)
-    }
-    requests = [(stem_set(f"{r.topic} {r.question}"), r) for r in trusted_requests(inp)]
+    # A request is linked to ONE need: the best match for its topic line, and only when the request is about services.
+    ignore = category_stems(inp)
+    need_words = {key: need.words for key, need in cat.needs.needs.items()}
+    request_need: dict[str, str] = {}
+    for r in trusted_requests(inp):
+        reading = read_request(r, ignore)
+        if job_of_request(reading, cat) == "services":
+            key = best_by_words(reading, need_words)
+            if key is not None:
+                request_need[r.id] = key
     scored: list[tuple[int, int, Candidate]] = []
     for order, (key, need) in enumerate(cat.needs.needs.items()):
+        rids = tuple(rid for rid, need_key in request_need.items() if need_key == key)
         wanted = cat.signals.need_signal.get(key)
-        if wanted is not None and wanted not in signals:
-            continue  # a need is researched when its capability signal fires, not on one loose word ("id", "buy")
+        if wanted is not None and wanted not in signals and not rids:
+            continue  # a need is researched when its capability signal fires (or a request asks for it), not on one loose word ("id", "buy")
         words = {w for word in need.words for w in stem_set(word)}
         hits = 0
         links = Links()
@@ -208,7 +222,6 @@ def need_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
             if stems & words:
                 hits += 1
                 links = _merge_links(links, ln)
-        rids = tuple(r.id for stems, r in requests if stems & words and stems & service_words)
         if hits or rids or wanted in signals:
             links = _merge_links(links, Links(requests=rids))
             bonus = min(5, hits) + (3 if rids else 0)
@@ -269,12 +282,12 @@ def rule_topic_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
         )
         for tag, stmts in groups.items()
     ]
-    job_words = {w for word in cat.plan.request_jobs.get("data", ()) for w in stem_set(word)}
+    ignore = category_stems(inp)
     for r in trusted_requests(inp):
-        if stem_set(f"{r.topic} {r.question}") & job_words:
+        if job_of_request(read_request(r, ignore), cat) == "data":
             cands.append(
                 Candidate(
-                    short_phrase(r.entity or r.topic, 5) or r.topic,
+                    short_phrase(r.topic or specific_entity(r, ignore), 5) or r.topic,
                     links=Links(requests=(r.id,)),
                     bonus=_bonus(cat, "request_high" if r.priority == "high" else "request_medium"),
                     anchors=(short_phrase(r.topic, 5),),

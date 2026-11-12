@@ -51,7 +51,11 @@ async def test_the_fake_answers_its_flag_and_lists_the_edge_cases(tmp_path: Path
         assert (await c.get("/api/fake")).json()["fake"] is True
         body = (await c.get("/api/inputs", headers=H)).json()
         pre = (await c.get("/api/preflight", headers=H)).json()
+    # yoga, its three "older or unverified" copies and the hostile-text one are small; then nashik and freight
     assert [i["preview"]["size_class"] for i in body["inputs"]] == [
+        "small",
+        "small",
+        "small",
         "small",
         "small",
         "medium",
@@ -62,10 +66,13 @@ async def test_the_fake_answers_its_flag_and_lists_the_edge_cases(tmp_path: Path
         reasons["notes.json"] == "not_json" and reasons["unrelated.json"] == "not_a_compass_export"
     )
     assert (
-        reasons["old-format-1.json"] == "format_not_supported"
-        and reasons["hash-mismatch.json"] == "hash_mismatch"
+        reasons["empty-brief.json"] == "unusable_brief" and reasons["binary.json"] == "unreadable"
     )
-    assert reasons["not-approved.json"] == "not_approved" and reasons["binary.json"] == "unreadable"
+    assert set(reasons) == {"notes.json", "unrelated.json", "empty-brief.json", "binary.json"}
+    bindings = {i["name"]: i["preview"]["input_binding"] for i in body["inputs"]}
+    assert bindings["old-format-1.json"] == "verified"  # an older format with a good seal
+    assert bindings["hash-mismatch.json"] == "unverified_hash_mismatch"
+    assert bindings["not-approved.json"] == "unverified_no_baseline"
     assert any(
         "<img src=x onerror=alert(1)>" in i["preview"]["idea"]["summary"] for i in body["inputs"]
     )

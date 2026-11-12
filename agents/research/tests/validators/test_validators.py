@@ -1,7 +1,8 @@
-"""Every validator RV-01..RV-23 has a passing and a failing test (RV-11 is reserved and does nothing)."""
+"""Every validator RV-01..RV-23 has a passing and a failing test."""
 
 import asyncio
 import copy
+import dataclasses
 from collections.abc import Callable
 from typing import Any
 
@@ -10,6 +11,7 @@ from support.testing import load_fixture, rule_extractor, run_engine
 
 from mde_research_agent.catalog import load_catalog
 from mde_research_agent.domain.events import Event
+from mde_research_agent.domain.input import PrivateTerm, PrivateTerms
 from mde_research_agent.validators import REGISTRY, ValidationContext, run_all
 from mde_research_agent.validators.registry import must_refuse
 
@@ -221,8 +223,45 @@ def test_rv17_catches_page_text_in_an_event(good) -> None:
     assert "RV-17" in rules_of(run_all(vctx(good, mutate), only=["RV-17"]))
 
 
-def test_rv11_is_reserved_and_never_fires(good) -> None:
-    assert run_all(vctx(good), only=["RV-11"]) == []
+def with_private(good, *terms: PrivateTerm, mutate=None) -> ValidationContext:
+    v = vctx(good, mutate)
+    return dataclasses.replace(
+        v, inp=v.inp.model_copy(update={"private": PrivateTerms(terms=tuple(terms))})
+    )
+
+
+def test_rv11_passes_when_no_query_names_a_private_term(good) -> None:
+    brand = PrivateTerm(kind="brand", text="Zzyzx Kraal")  # a name no query holds
+    assert run_all(with_private(good, brand), only=["RV-11"]) == []
+    assert run_all(vctx(good), only=["RV-11"]) == []  # no terms at all: nothing to check
+
+
+def test_rv11_fails_for_a_recorded_query_that_names_a_private_term(good) -> None:
+    brand = PrivateTerm(kind="brand", text="Zzyzx Kraal")
+    phone = PrivateTerm(kind="phone", text="+91 98765 43210")
+
+    def leak(o, e, ev) -> None:
+        e["queries"][0]["text"] += " zzyzx kraal pricing"
+        e["queries"][1]["text"] += " call 98765 43210"
+
+    found = run_all(with_private(good, brand, phone, mutate=leak), only=["RV-11"])
+    assert [v.rule for v in found] == ["RV-11", "RV-11"] and all(
+        v.severity == "error" for v in found
+    )
+    assert not any(
+        "zzyzx" in v.message.lower() or "98765" in v.message for v in found
+    )  # never the term itself
+
+
+def test_rv13_says_so_when_the_brief_could_not_be_verified_but_never_refuses(good) -> None:
+    assert run_all(vctx(good), only=["RV-13"]) == []
+
+    def unverified(o, e, ev) -> None:
+        o["input_quality"]["input_binding"] = "unverified_hash_mismatch"
+
+    found = run_all(vctx(good, unverified), only=["RV-13"])
+    assert [(v.rule, v.severity) for v in found] == [("RV-13", "warn")]
+    assert "unverified_hash_mismatch" in found[0].message and must_refuse(found) == []
 
 
 def test_only_binding_and_tier_failures_refuse_the_commit(good) -> None:
