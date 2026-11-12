@@ -259,7 +259,7 @@ export function mount(root, ctx) {
     put(
       box,
       h("h4", null, "Brief summary"),
-      h("dl", { class: "facts" }, ...row("Idea", idea.summary || "", true), ...row("Category", [idea.category, idea.subcategory].filter(Boolean).join(" — "), true), ...row("Compass interview", p.compass ? "size " + p.compass.tier + (p.compass.degraded ? ", some steps degraded" : "") : "")),
+      h("dl", { class: "facts" }, ...row("Idea", idea.summary || "", true), ...row("Category", [idea.category, idea.subcategory].filter(Boolean).join(" — "), true), ...row("Compass interview", p.compass ? "size " + p.compass.tier + (p.compass.degraded ? ", some steps degraded" : "") : ""), ...row("Link to the approved Brief", bindingText(p.input_binding))),
       h("h4", null, "Topics we would research"),
       Object.keys(topics.by_job || {}).length
         ? h(
@@ -270,7 +270,8 @@ export function mount(root, ctx) {
             )
           )
         : h("p", { class: "muted" }, "Nothing to research."),
-      (topics.not_run || []).length
+      requestsBlock(p.requests),
+      (p.not_run || []).length ? notRunBlock(p.not_run) : (topics.not_run || []).length
         ? h("p", { class: "muted small" }, plural(topics.not_run.length, "more topic") + " were considered but would not run in this size of study.")
         : null,
       (p.dropped || []).length ? h("div", null, h("h4", null, "Left out"), h("ul", null, p.dropped.map((d) => h("li", null, untrusted(d.label), " — ", untrusted(humanize(d.reason)))))) : null,
@@ -279,6 +280,50 @@ export function mount(root, ctx) {
       p.requests ? h("p", { class: "muted small" }, "Research requests in the Brief: " + p.requests.trusted + " usable, " + p.requests.template + " look like filler, " + p.requests.thin + " too thin.") : null
     );
     return box;
+  }
+  /** Plain words for the approval seal of the file (input_binding in the preview). */
+  function bindingText(b) {
+    if (b === "verified") return "checked: the file matches the Brief the person approved";
+    if (b === "unverified_no_baseline") return "not checked: the file carries no approval record (an older or hand-made file)";
+    if (b === "unverified_hash_mismatch") return "not checked: the file does not match the approval record";
+    return "";
+  }
+  /** Which topic carries each Brief request, so nothing the person asked for goes missing unseen. */
+  function requestsBlock(r) {
+    const items = (r && r.items) || [];
+    if (!items.length) return null;
+    return h(
+      "div",
+      null,
+      h("h4", null, "Which topic carries each request"),
+      h("p", { class: "muted small" }, (r.mapped || 0) + " carried by a topic that runs, " + (r.not_run || 0) + " by a topic that would not run at this size, " + (r.unmapped || 0) + " by none."),
+      h(
+        "ul",
+        { class: "requests" },
+        items.map((it) =>
+          h(
+            "li",
+            null,
+            h("span", { class: "chip " + (it.status === "mapped" ? "chip-plain" : "chip-warn") }, humanize(it.status)),
+            " ",
+            untrusted(it.topic || it.id),
+            " → ",
+            (it.topics || []).length ? (it.topics || []).map((t, i) => [i ? ", " : "", untrusted(t.label)]) : h("em", null, untrusted(it.text || "no topic"))
+          )
+        )
+      )
+    );
+  }
+  /** Topics that were planned and would not run at this size, with why. */
+  function notRunBlock(list) {
+    const shown = list.slice(0, 12);
+    return h(
+      "div",
+      null,
+      h("h4", null, "Planned but not run at this size (" + list.length + ")"),
+      h("ul", null, shown.map((t) => h("li", null, untrusted(t.label), " — ", untrusted(t.text || humanize(t.reason))))),
+      list.length > shown.length ? h("p", { class: "muted small" }, "and " + (list.length - shown.length) + " more.") : null
+    );
   }
   function pastRuns(input) {
     const runs = input.runs || [];
