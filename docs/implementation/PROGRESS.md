@@ -231,7 +231,7 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 ## Research depth: overhaul of the Research agent (owner prompt 11 v3, 2026-11-13; branch `feat/research-depth`; safe-point tag `pre/research-depth-20261112-2220`; decisions D-156..D-160)
 
 - [x] P0 Checkpoint (9efd933), tag, branch cut and pushed; decisions D-156..D-160
-- [ ] P1 Intake adapter (any Compass format), nine inputs previewed at zero cost, privacy guard, `compass-contract.md`
+- [x] P1 Intake adapter (any Compass format), nine inputs previewed at zero cost, privacy guard, `compass-contract.md` (merged 17a6998; all nine inputs load: delhi unverified_no_baseline, the rest verified)
 - [x] P2 Global provider-credit tracker (Tavily, Serper) and its panel in the console (merged 0ac0b11; the real `/usage` call and the browser check are still to do)
 - [ ] P3 Evidence quality: measuring tools fixed, quote-first atomic extraction, tighten and re-check, slots fixed, corroboration, recency
 - [ ] P4 Discovery: official-first, entity follow-up, both engines on vendor topics, registries, languages and numbers, multi-country, planner and ceilings

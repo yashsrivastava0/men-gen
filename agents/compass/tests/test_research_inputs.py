@@ -38,8 +38,10 @@ def brief_of(data: dict[str, Any]) -> Brief:
     return Brief.model_validate({k: v for k, v in data["brief"].items() if not k.startswith("_")})
 
 
-def test_the_folder_holds_exactly_the_three_runs_and_a_readme() -> None:
-    assert {p.stem for p in FOLDER.glob("*.json")} == set(RUNS)
+def test_the_folder_holds_the_three_runs_and_a_readme() -> None:
+    # The folder also holds the six test inputs the Research agent reads (older formats and hand-made fixtures, see its
+    # README); they are not Compass-built full outputs of the current format, so only the three runs are held to it.
+    assert set(RUNS) <= {p.stem for p in FOLDER.glob("*.json")}
     assert (FOLDER / "README.md").is_file()
 
 

@@ -250,7 +250,7 @@ class ResearchService:
             load_score=inp.load.score if inp.load else None,
             plan_source=inp.quality.plan_source,
             export_sha256=hash_json(export),
-            input_json=inp.model_dump(mode="json"),
+            input_json=inp.model_dump(mode="json", exclude={"private"}),
             meta={
                 "input_id": input_id,
                 "input_name": input_name,
