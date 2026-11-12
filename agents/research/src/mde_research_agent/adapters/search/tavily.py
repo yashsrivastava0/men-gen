@@ -136,8 +136,8 @@ class TavilyAdapter(JsonSearchAdapter):
             applied["exact"] = "true"
         if request.country:
             info = country_info(request.country)
-            if info is None:
-                locale_weak = True
+            if info is None or info.name is None:
+                locale_weak = True  # unknown, or a country Tavily's enum does not list
             else:
                 body["country"] = info.name
                 applied["country"] = info.name

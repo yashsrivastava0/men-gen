@@ -89,13 +89,13 @@ def test_countries_file_shape_and_coverage() -> None:
     for code, info in countries.items():
         assert code == code.lower() and len(code) == 2
         assert info.code == code
-        assert info.name == info.name.lower()
+        assert info.name is None or info.name == info.name.lower()  # None: not in Tavily's enum
         assert info.tld and "." not in info.tld
         assert len(info.language) == 2
 
 
 def test_every_country_name_is_in_the_tavily_enum() -> None:
-    unknown = {c.name for c in load_countries().values()} - TAVILY_COUNTRY_ENUM
+    unknown = {c.name for c in load_countries().values() if c.name} - TAVILY_COUNTRY_ENUM
     assert not unknown
 
 

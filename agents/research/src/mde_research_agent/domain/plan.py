@@ -13,7 +13,7 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict
 
 from mde_research_agent.catalog.models import SlotSpec
-from mde_research_agent.domain.input import PlanSource
+from mde_research_agent.domain.input import Country, PlanSource
 
 Origin = Literal["template", "request", "fact", "model", "discovery"]
 DropReason = Literal["declined", "trivia", "own_brand", "not_worthwhile", "over_budget"]
@@ -28,8 +28,11 @@ class Place(Frozen):
     geography is uncertain); ``unknown`` means nothing was stated and no place is required in queries."""
 
     phrases: tuple[str, ...] = ()
-    country_code: str | None = None
+    country_code: str | None = None  # the PRIMARY country (the first one named)
     country_name: str | None = None
+    countries: tuple[
+        Country, ...
+    ] = ()  # every country the Brief names (one for a single-country app)
     languages: tuple[str, ...] = ()  # search languages other than English
     unknown: bool = False
     uncertain: bool = False

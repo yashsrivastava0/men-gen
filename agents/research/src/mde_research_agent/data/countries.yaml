@@ -1,9 +1,11 @@
 # Countries the Research agent can target. Key: ISO 3166-1 alpha-2 code, lowercase (the form SearchRequest.country
 # carries).
-#   name:     lowercase English name exactly as Tavily's `country` parameter expects it. Every name below is in the
-#             `country` enum of the official Tavily Search OpenAPI spec (checked 2026-11-11); a country that is not
-#             in that enum is NOT listed here (for example Hong Kong, Cote d'Ivoire), so the adapter reports it as
-#             a weak locale instead of sending a value Tavily would reject with a 400.
+#   name:     lowercase English name exactly as Tavily's `country` parameter expects it. Every non-null name below is
+#             in the `country` enum of the official Tavily Search OpenAPI spec (checked 2026-11-11). `name: null`
+#             means "not in that enum (or not checked yet)": the country is still known (parsing a Brief, the TLD,
+#             the default language) but the Tavily adapter sends no `country` and reports a weak locale instead of
+#             sending a value Tavily would reject with a 400. Fill `name` in once it is checked against the spec.
+#   label:    the display name when `name` is null (English, lowercase). Defaults to `name`.
 #   tld:      the country-code top-level domain, without the dot (used to prefer local sites).
 #   language: ISO 639-1 code of the main language of the country's consumer web, used only when nothing else
 #             says which language to search in (a language chosen in the session always wins). English where
@@ -75,3 +77,5 @@ zm: {name: zambia, tld: zm, language: en}
 zw: {name: zimbabwe, tld: zw, language: en}
 et: {name: ethiopia, tld: et, language: am}
 sn: {name: senegal, tld: sn, language: fr}
+gt: {name: guatemala, tld: gt, language: es}
+cr: {name: costa rica, tld: cr, language: es}

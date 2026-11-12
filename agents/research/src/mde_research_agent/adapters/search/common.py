@@ -93,7 +93,7 @@ def check_key(secret: Secret) -> str:
 @dataclass(frozen=True)
 class CountryInfo:
     code: str  # lowercase ISO 3166-1 alpha-2
-    name: str  # lowercase English name, as Tavily's `country` parameter expects
+    name: str | None  # lowercase English name for Tavily's `country`; None when Tavily lists none
     tld: str  # country-code top-level domain, no dot
     language: str  # ISO 639-1 default language of the country's consumer web
 
@@ -115,12 +115,16 @@ def load_countries() -> Mapping[str, CountryInfo]:
             raise ValueError(f"countries.yaml: bad alpha-2 key {code!r}")
         if not isinstance(entry, dict):
             raise ValueError(f"countries.yaml: {code} must be a mapping")
-        fields = {k: entry.get(k) for k in ("name", "tld", "language")}
+        fields = {k: entry.get(k) for k in ("tld", "language")}
         if not all(isinstance(v, str) and v for v in fields.values()):
-            raise ValueError(f"countries.yaml: {code} needs name, tld and language strings")
-        name = str(fields["name"])
-        if name != name.lower():
-            raise ValueError(f"countries.yaml: {code} name must be lowercase")
+            raise ValueError(f"countries.yaml: {code} needs tld and language strings")
+        name = entry.get("name")
+        if name is None:
+            # a country Tavily's enum does not list: known, but sent without a `country`
+            if not (isinstance(entry.get("label"), str) and entry["label"]):
+                raise ValueError(f"countries.yaml: {code} has no name, so it needs a label")
+        elif not isinstance(name, str) or not name or name != name.lower():
+            raise ValueError(f"countries.yaml: {code} name must be a lowercase string or null")
         out[code] = CountryInfo(code, name, str(fields["tld"]), str(fields["language"]))
     return MappingProxyType(out)
 
