@@ -227,3 +227,16 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] History scanned for secrets, then pushed (branches and tags, no force)
 - [ ] Typecheck is red (486 pyright errors, mostly `agents/compass` tests): separate task, owner decides
 - [ ] `main` on `origin` is still the older tip; advancing it is the owner's call
+
+## Research depth: overhaul of the Research agent (owner prompt 11 v3, 2026-11-13; branch `feat/research-depth`; safe-point tag `pre/research-depth-20261112-2220`; decisions D-156..D-160)
+
+- [x] P0 Checkpoint (9efd933), tag, branch cut and pushed; decisions D-156..D-160
+- [ ] P1 Intake adapter (any Compass format), nine inputs previewed at zero cost, privacy guard, `compass-contract.md`
+- [ ] P2 Global provider-credit tracker (Tavily, Serper) and its panel in the console
+- [ ] P3 Evidence quality: measuring tools fixed, quote-first atomic extraction, tighten and re-check, slots fixed, corroboration, recency
+- [ ] P4 Discovery: official-first, entity follow-up, both engines on vendor topics, registries, languages and numbers, multi-country, planner and ceilings
+- [ ] P5 Build-grade content: provider dossiers, platform constraints, compliance register, typed values, lane decisions, depth by size, `research.v6`
+- [ ] P6 Output shaping: ranking, digests, reference `pack(need_card)`, ranked confirm list
+- [ ] P7 Robustness: fetch retries, outage handling, resume, Serper retest
+- [ ] P8 Docs, as-built note, `CURRENT_STATE.md`, owner's final note
+- [ ] Live proof, staged (plan "Live proof"): planted-error test, harness, first-round queries, Small, Serper retest, Porto, Medium, probe, Big

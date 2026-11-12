@@ -1,6 +1,8 @@
 # Current state (read this first)
 
-Written 2026-11-11 (evening) on branch `feat/research-yield`. Keep it current: when the branch, the focus or what is open changes, update this page in the same commit (CLAUDE.md, resume protocol). Everything here was checked against the repository on that date; where something was **not** checked it says so. `git log -1` tells you how far the branch has moved since.
+Written 2026-11-11 (evening) on branch `feat/research-yield`; updated 2026-11-13 (see the banner just below). Keep it current: when the branch, the focus or what is open changes, update this page in the same commit (CLAUDE.md, resume protocol). Everything here was checked against the repository on that date; where something was **not** checked it says so. `git log -1` tells you how far the branch has moved since.
+
+> **2026-11-13: the active branch is now `feat/research-depth`** (cut from tag `pre/research-depth-20261112-2220` after the owner approved the Research overhaul, D-156). Work list and status: `PROGRESS.md`, section "Research depth". The money rule for this task is D-157, the provider-credit tracker is D-158. Everything below that says `feat/research-yield` is the state at the start of this task.
 
 If you are a fresh AI session with no memory of this project: this page, then the reading order in section 7, is all you need. Nothing important lives only in someone's private notes.
 
