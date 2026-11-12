@@ -17,6 +17,7 @@ from decimal import Decimal, InvalidOperation
 from typing import Any
 
 from mde_research_agent.assemble.capability import need_key_of
+from mde_research_agent.catalog.content import typed_values
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.applies import BriefIndex, retag
@@ -69,7 +70,12 @@ def typed_slot(typed: dict[str, Any] | None) -> tuple[str, str, str]:
     """What a typed value is ABOUT, without its amount: (unit, period, condition), canonical. Two typed values of one
     provider and field with the same slot and different amounts disagree (a conflict); a different slot is another fact."""
     t = typed or {}
-    return (_canon(t.get("unit")), _canon(t.get("period")), _canon(t.get("condition")))
+    unit = str(t.get("unit") or "").strip().casefold()
+    if unit in {
+        u.casefold() for u in typed_values().percent_units
+    }:  # "%", "percent", "per cent" are one unit
+        unit = "percent"
+    return (_canon(unit), _canon(t.get("period")), _canon(t.get("condition")))
 
 
 def canonical_amount(typed: dict[str, Any] | None) -> str:

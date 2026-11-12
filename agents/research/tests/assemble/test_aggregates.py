@@ -46,6 +46,17 @@ def test_the_canonical_value_of_a_fee_is_its_amount_and_slot_not_its_wording() -
     assert len({a, c, d}) == 3, "a different amount or a different unit is a different fact"
 
 
+def test_the_percent_sign_and_the_word_are_one_unit() -> None:
+    assert (
+        typed_slot(typed("2.9", unit="%"))
+        == typed_slot(typed("2.9", unit="percent"))
+        == typed_slot(typed("2.9", unit="per cent"))
+    )
+    a = provider_fact_value({"value": "2.9%", "typed": typed("2.9", unit="%")})
+    b = provider_fact_value({"value": "2.9 percent", "typed": typed("2.9", unit="percent")})
+    assert a == b, "the same fee from two pages merges into one item"
+
+
 def test_a_value_without_a_typed_amount_is_compared_by_its_words() -> None:
     assert provider_fact_value({"value": "Test Keys!", "typed": None}) == provider_fact_value(
         {"value": "test keys", "typed": None}
