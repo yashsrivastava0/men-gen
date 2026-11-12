@@ -359,6 +359,9 @@ class PlanConfig(Frozen):
     priority_bonus: dict[str, int]
     platforms: tuple[PlatformSource, ...]
     request_jobs: dict[str, tuple[str, ...]]
+    # "job:template" ids of topics about the app as a whole: a request of that job that shares no word with a more
+    # specific topic is carried by one of these (plan/routing.py); other jobs leave such a request unmapped.
+    request_catch_all: tuple[str, ...] = ()
     max_extra_targets: int
     max_discovery_names: int
     base_terms_max: int

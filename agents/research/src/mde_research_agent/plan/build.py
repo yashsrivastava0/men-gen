@@ -16,7 +16,7 @@ from collections.abc import Iterable
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.catalog.models import Catalog, JobSpec, TargetTemplate
 from mde_research_agent.core.text import same_thing, stem_set, tokens
-from mde_research_agent.domain.input import ResearchInput
+from mde_research_agent.domain.input import Request, ResearchInput
 from mde_research_agent.domain.plan import Dropped, Links, Place, Plan, Target
 from mde_research_agent.plan.candidates import (
     Candidate,
@@ -26,6 +26,14 @@ from mde_research_agent.plan.candidates import (
 )
 from mde_research_agent.plan.place import build_place, scoped_place
 from mde_research_agent.plan.proposal import PlanProposal, ProposedTarget
+from mde_research_agent.plan.routing import (
+    category_stems,
+    job_of_request,
+    names_same_thing,
+    overlap,
+    read_request,
+    specific_entity,
+)
 from mde_research_agent.plan.signals import compute_signals, light_mode, trust_decision
 
 RECENCY_MONTHS = 24
@@ -202,46 +210,74 @@ def _expand(
     ]
 
 
-def _job_of_request(text: str, cat: Catalog) -> str | None:
-    """The job a request topic belongs to, by word overlap with ``plan.request_jobs`` (ties: job order)."""
-    stems = stem_set(text)
-    best: tuple[int, int, str] | None = None
-    for order, job in enumerate(JOB_NAMES):
-        words = {w for word in cat.plan.request_jobs.get(job, ()) for w in stem_set(word)}
-        score = len(stems & words)
-        if score and (best is None or (score, -order) > (best[0], -best[1])):
-            best = (score, order, job)
-    return best[2] if best else None
+MIN_FALLBACK_OVERLAP = (
+    2  # stems a request's topic must share with a topic's label when no job word matched
+)
+
+
+def _target_for_request(
+    req: Request, targets: list[Target], inp: ResearchInput, cat: Catalog
+) -> int | None:
+    """The index of the ONE topic that carries a request, or None when no topic does.
+
+    1. a named reference ("how does <app> handle ...") goes to that app's own topic;
+    2. otherwise the request's job is decided by ``routing`` (data words in ``plan.request_jobs``), and inside the job
+       the topic whose anchors mean the same thing, then the one whose label shares most words with the request's topic
+       line, then the highest-ranked topic of the job (so several requests share the job's main topic);
+    3. a request with no job word is given to the topic with the most shared words (at least two), else it is unmapped.
+    """
+    ignore = category_stems(inp)
+    reading = read_request(req, ignore)
+    entity = specific_entity(req, ignore)
+    topic_stems = stem_set(f"{req.topic} {entity}")
+    for i, t in enumerate(targets):
+        if not t.entity:
+            continue
+        named = stem_set(t.entity)
+        if (entity and names_same_thing(entity, t.entity)) or (named and named <= topic_stems):
+            return i
+    job = job_of_request(reading, cat)
+    pool = [i for i, t in enumerate(targets) if t.job == job and not t.entity] if job else []
+    if not pool:
+        scored = [
+            (overlap(reading, " ".join([t.label, *t.anchors])), -i, i)
+            for i, t in enumerate(targets)
+            if not t.entity
+        ]
+        best = max(scored, default=None)
+        return best[2] if best and best[0] >= MIN_FALLBACK_OVERLAP else None
+    subject = short_phrase(entity or req.topic, 5)
+    same = next(
+        (i for i in pool if any(names_same_thing(subject, a) for a in targets[i].anchors)), None
+    )
+    if same is not None:
+        return same
+
+    def words_of(t: Target) -> str:
+        """What a topic is about: its label, anchors and the words of its own subject (not its job's shared words)."""
+        shared = {w for x in cat.jobs[t.job].intent for w in tokens(x)}
+        return " ".join([t.label, *t.anchors, *(w for w in t.terms if w not in shared)])
+
+    best_i = max(
+        pool, key=lambda i: (overlap(reading, words_of(targets[i])), targets[i].priority, -i)
+    )
+    if overlap(reading, words_of(targets[best_i])) > 0:
+        return best_i
+    # nothing shares a word: only a topic about the app as a whole may carry the request
+    whole = [i for i in pool if f"{job}:{targets[i].template_id}" in cat.plan.request_catch_all]
+    return max(whole, key=lambda i: (targets[i].priority, -i), default=None)
 
 
 def _attach_requests(targets: list[Target], inp: ResearchInput, cat: Catalog) -> list[Target]:
-    """Link trusted requests to the targets they inform (merge by entity and job); add their words and rank."""
+    """Link each trusted request to the ONE topic it informs; add its words and rank (a request is never spread)."""
     out = list(targets)
     for req in trusted_requests(inp):
-        job = _job_of_request(f"{req.topic} {req.question}", cat)
-        if job is None:
-            continue
-        subject = short_phrase(req.entity or req.topic, 5)
-        pool = [i for i, t in enumerate(out) if t.job == job]
-        pick = next(
-            (
-                i
-                for i in pool
-                if any(same_thing(subject, a) for a in out[i].anchors)
-                or req.id in out[i].links.requests
-            ),
-            None,
-        )
-        if pick is None:
-            pick = next(
-                (i for i in pool if out[i].template_id and not out[i].links.requests),
-                pool[0] if pool else None,
-            )
+        if any(req.id in t.links.requests for t in out):
+            continue  # a topic built for this request (a rule or provider topic) already carries it
+        pick = _target_for_request(req, out, inp, cat)
         if pick is None:
             continue
         t = out[pick]
-        if req.id in t.links.requests:
-            continue
         bonus = cat.plan.priority_bonus.get(
             "request_high" if req.priority == "high" else "request_medium", 0
         )
