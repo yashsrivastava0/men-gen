@@ -80,9 +80,13 @@ def condition_flipped(item: dict[str, Any], seed: int) -> dict[str, Any]:
     return {**item, "claim": claim.rstrip(".") + ", excluding tax and only on request."}
 
 
-def region_swapped(item: dict[str, Any], seed: int) -> dict[str, Any]:
+def region_swapped(
+    item: dict[str, Any], seed: int, avoid_region: str | None = None
+) -> dict[str, Any]:
+    """The item is moved to another country. ``avoid_region`` is the country the topic is about: moving an item there
+    would plant no error (it would be right), so that country is never chosen."""
     now = item.get("about_region") or "unknown"
-    choices = [r for r in REGIONS if r != now]
+    choices = [r for r in REGIONS if r not in (now, (avoid_region or "").lower())]
     return {**item, "about_region": choices[_pick(seed, item["id"] + "r", len(choices))]}
 
 
@@ -185,9 +189,15 @@ MAKERS = {
 }
 
 
-def corrupt(item: dict[str, Any], kind: str, seed: int) -> dict[str, Any] | None:
+def corrupt(
+    item: dict[str, Any], kind: str, seed: int, *, avoid_region: str | None = None
+) -> dict[str, Any] | None:
     """One corrupted copy of ``item`` (None when the kind does not apply, e.g. no number to change)."""
-    out = MAKERS[kind](item, seed)
+    out = (
+        region_swapped(item, seed, avoid_region)
+        if kind == "region_swapped"
+        else MAKERS[kind](item, seed)
+    )
     if out is None:
         return None
     return {**out, "planted": kind, "origin_id": item["id"], "id": f"{item['id']}~{kind}"}

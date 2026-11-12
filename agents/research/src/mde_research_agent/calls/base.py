@@ -14,6 +14,7 @@ Same shape as Compass's runner with Research's failure rules:
 from __future__ import annotations
 
 import asyncio
+import copy
 import time
 from collections.abc import Callable
 from dataclasses import dataclass, field
@@ -108,6 +109,13 @@ class CallRunner:
         self._ids = ids or UlidIds()
         self._cancel = cancel or NeverCancelled()
         self.calls: list[tuple[str, RunResult[Any]]] = []
+
+    def for_tenant(self, tenant_id: str) -> CallRunner:
+        """A runner on the same gateway, scope and call list under another tenant id. The gateway's cache is keyed by
+        tenant, so an experiment that repeats a question for independent answers gives each repeat its own."""
+        other = copy.copy(self)
+        other._tenant = tenant_id
+        return other
 
     def context(self, cs: ResearchCallSpec[Any, Any]) -> CallContext:
         return CallContext(

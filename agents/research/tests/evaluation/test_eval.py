@@ -319,3 +319,12 @@ def test_top_up_adds_items_with_a_price_a_period_or_a_qualifier_and_nothing_else
     already = priced[:5]
     again = top_up(research, evidence, already, seed=1)
     assert not ({a["id"] for a in already} & {a["id"] for a in again})
+
+
+def test_a_region_swap_never_lands_on_the_topics_own_country() -> None:
+    item = {**ITEM, "about_region": "unknown"}
+    for seed in range(40):
+        moved = corrupt(item, "region_swapped", seed, avoid_region="in")
+        assert moved is not None and moved["about_region"] not in ("in", "unknown")
+        # a swap to the topic's own country would plant no error: code could not (and should not) catch it
+        assert code_catches(moved, {"place": "in"}) == ["other_region"]

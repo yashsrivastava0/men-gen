@@ -160,9 +160,14 @@ def code_catches(a: dict[str, Any], target: dict[str, Any] | None) -> list[str]:
     return why
 
 
-def _check_item(n_: int, a: dict[str, Any], pages: dict[str, PageRecord]) -> check_call.CheckItem:
+def _check_item(
+    n_: int, a: dict[str, Any], pages: dict[str, PageRecord], *, legacy: bool = False
+) -> check_call.CheckItem:
     page = pages.get(a.get("page_id", ""))
+    region = a.get("about_region") or ""
     return check_call.CheckItem(
+        about_region="" if legacy or region == "unknown" else region,
+        about_entity="" if legacy else (a.get("about_entity") or ""),
         id=f"E{n_}",
         claim=a["claim"],
         quote=a["quote"],
@@ -174,15 +179,22 @@ def _check_item(n_: int, a: dict[str, Any], pages: dict[str, PageRecord]) -> che
 
 
 async def _ask_checker(
-    runner: Any, pending: list[dict[str, Any]], pages: dict[str, PageRecord]
+    runner: Any,
+    pending: list[dict[str, Any]],
+    pages: dict[str, PageRecord],
+    *,
+    legacy: bool = False,
 ) -> tuple[dict[str, check_call.CheckVerdict], int]:
     """The checker's verdict for each atom (by atom id), in batches of ``CHECK_BATCH``, and what it cost."""
     verdicts: dict[str, check_call.CheckVerdict] = {}
     cost = 0
     for i in range(0, len(pending), CHECK_BATCH):
         batch = pending[i : i + CHECK_BATCH]
-        items = [_check_item(i + n_, a, pages) for n_, a in enumerate(batch)]
-        res = await runner.run(check_call.SPEC, check_call.CheckIn(items=items))
+        items = [_check_item(i + n_, a, pages, legacy=legacy) for n_, a in enumerate(batch)]
+        res = await runner.run(
+            check_call.SPEC_V2 if legacy else check_call.SPEC,
+            check_call.CheckIn(items=items, legacy=legacy),
+        )
         cost += res.cost_micros
         for it, a in zip(items, batch, strict=True):
             for v in res.output.verdicts:
@@ -282,7 +294,13 @@ def score(
 
 
 async def run_planted(
-    runner: Any, research: dict[str, Any], evidence: dict[str, Any], *, n: int = 40, seed: int = 1
+    runner: Any,
+    research: dict[str, Any],
+    evidence: dict[str, Any],
+    *,
+    n: int = 40,
+    seed: int = 1,
+    checker: str = "v3",
 ) -> dict[str, Any]:
     """Run the whole test through ``runner`` (a ``CallRunner``); returns the report as a dict."""
     pages = {p["id"]: _page(p) for p in evidence.get("pages", [])}
@@ -293,7 +311,8 @@ async def run_planted(
     variants: list[dict[str, Any]] = []
     for a in clean:
         for kind in KINDS:
-            c = corrupt(a, kind, seed)
+            place = (targets.get(a.get("target_id", "")) or {}).get("place")
+            c = corrupt(a, kind, seed, avoid_region=place)
             if c is not None:
                 variants.append(c)
     caught_by_code: dict[str, set[str]] = {}
@@ -303,8 +322,9 @@ async def run_planted(
             caught_by_code.setdefault(v["planted"], set()).add(v["id"])
         else:
             pending.append(v)
-    verdicts, cost = await _ask_checker(runner, pending, pages)
+    verdicts, cost = await _ask_checker(runner, pending, pages, legacy=checker == "v2")
     report = score(clean, variants, caught_by_code, verdicts, recheck)
+    report["checker"] = checker
     report["cost_micros"] = cost
     return report
 

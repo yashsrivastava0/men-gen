@@ -16,7 +16,7 @@ import asyncio
 import hashlib
 import json
 import re
-from collections.abc import Callable
+from collections.abc import Awaitable, Callable
 from typing import Any
 
 from mde_core.errors import BudgetExceeded, CallCancelled, CassetteMissing, LiveCallForbidden
@@ -228,13 +228,18 @@ def tightened_claim(claim: str, numbers: list[int]) -> tuple[str, list[str]] | N
     return " ".join(kept), [sentences[n - 1] for n in drop]
 
 
-async def _tighten(ctx: RunContext, ts: TargetState, atoms: list[AtomRecord]) -> None:
+async def tighten_and_recheck(
+    atoms: list[AtomRecord],
+    ask: Callable[[list[AtomRecord]], Awaitable[dict[str, check_call.CheckVerdict | None]]],
+) -> list[AtomRecord]:
     """Partial items whose checker named unsupported sentences: drop those sentences and ask the same checker once more.
 
-    The item climbs to ``supported`` only if the checker then says so with nothing left to null, and every figure of the
-    shorter claim is still in the quote (it cannot be otherwise: words were only removed). Otherwise the original claim
-    is restored and the item stays partial. A bare second question about an unchanged claim is never asked: it would only
-    resample a noisy answer (7 of 20 partials came back supported on a plain re-ask, D-159).
+    ``ask`` puts a list of items to the checker and returns ``{pair_key: verdict or None}``; the engine and the experiment
+    harness each bring their own. The item climbs to ``supported`` only if the checker then says so with nothing left to
+    null, and every figure of the shorter claim is still in the quote (it cannot be otherwise: words were only removed).
+    Otherwise the original claim is restored and the item stays partial. A bare second question about an unchanged
+    claim is never asked: it would only resample a noisy answer (7 of 20 partials came back supported on a plain re-ask,
+    D-159). Returns the items that were tried; those that climbed carry the flag ``tightened``.
     """
     tried: list[AtomRecord] = []
     for a in atoms:
@@ -245,20 +250,13 @@ async def _tighten(ctx: RunContext, ts: TargetState, atoms: list[AtomRecord]) ->
             continue
         a.claim_original, (a.claim, a.dropped_sentences) = a.claim, cut
         tried.append(a)
-    if not tried or _stopped(ctx, ts):
-        for a in tried:
-            _restore(a)
-        return
+    if not tried:
+        return tried
     unique: dict[str, AtomRecord] = {}
     for a in tried:
         unique.setdefault(pair_key(a), a)
-    to_run = list(unique.items())
-    results: dict[str, check_call.CheckVerdict | None] = {}
-    batches = [to_run[i : i + CHECK_BATCH] for i in range(0, len(to_run), CHECK_BATCH)]
-    for got in await asyncio.gather(*[_run_batch(ctx, ts, b) for b in batches]):
-        results.update(got)
+    results = await ask(list(unique.values()))
     for a in tried:
-        ctx.count("tightened")
         v = results.get(pair_key(a))
         ok = (
             v is not None
@@ -269,11 +267,28 @@ async def _tighten(ctx: RunContext, ts: TargetState, atoms: list[AtomRecord]) ->
         if not ok:
             _restore(a)
             continue
-        ctx.count("tightened_supported")
         a.verdict = "supported"
         a.flags.discard("partial_support")
         a.flags.add("tightened")
-        await _announce(ctx, ts, a, "supported")
+    return tried
+
+
+async def _tighten(ctx: RunContext, ts: TargetState, atoms: list[AtomRecord]) -> None:
+    async def ask(items: list[AtomRecord]) -> dict[str, check_call.CheckVerdict | None]:
+        keyed = [(pair_key(a), a) for a in items]
+        if _stopped(ctx, ts):
+            return {}
+        out: dict[str, check_call.CheckVerdict | None] = {}
+        batches = [keyed[i : i + CHECK_BATCH] for i in range(0, len(keyed), CHECK_BATCH)]
+        for got in await asyncio.gather(*[_run_batch(ctx, ts, b) for b in batches]):
+            out.update(got)
+        return out
+
+    for a in await tighten_and_recheck(atoms, ask):
+        ctx.count("tightened")
+        if "tightened" in a.flags:
+            ctx.count("tightened_supported")
+            await _announce(ctx, ts, a, "supported")
 
 
 def _restore(a: AtomRecord) -> None:
