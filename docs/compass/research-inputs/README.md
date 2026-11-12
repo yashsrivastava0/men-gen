@@ -1,4 +1,9 @@
-# Research inputs: three approved Compass runs
+# Research inputs: nine Compass exports
+
+Three complete real runs (below) and six more test inputs (a second table further down). All nine load and preview at
+zero cost in the Research agent; `agents/research/tests/plan/test_nine_inputs.py` keeps that true.
+
+## The three real runs
 
 Three complete outputs of the Compass Context Engine, one per interview tier, for three unrelated ideas. They are the
 input the research agent will be built and tested against: each is the **full output of a real session** with the live
@@ -13,6 +18,27 @@ found in them are in [Known limits](#known-limits).
 | [quick-yoga-studio-bengaluru.json](quick-yoga-studio-bengaluru.json) | Quick, small (research depth light, 6 searches) | A neighbourhood yoga studio in Indiranagar, Bengaluru: members book classes and buy packs | v8, hash `a621e7b393ac`, 6 features (4 must), 4 roles, 33 facts, 5 research requests | 8 questions | 4 modules, 13 screens, 4 flows, 5 data kinds |
 | [standard-produce-marketplace-nashik.json](standard-produce-marketplace-nashik.json) | Standard, medium (standard, 12 searches) | A farm-to-buyer marketplace around Nashik: farmers and farmer groups sell vegetables and grapes in bulk to restaurants and shops, with a local transport partner | v10, hash `aaf318ac34c2`, 9 features (6 must), 9 roles, 4 apps, 45 facts, 7 research requests | 13 questions | 5 modules, 28 screens, 7 flows, 10 data kinds |
 | [thorough-freight-fleet-india.json](thorough-freight-fleet-india.json) | Thorough with a requirements document, large (deep, 20 searches plus a gap-fill round) | A freight and fleet company with 400 trucks and branches in six cities: customers book and track loads, dispatchers assign trucks and drivers, drivers update trips, fleet, finance and compliance teams | v13, hash `0e29e718c91b`, 30 features, 18 roles, 152 facts, 20 research requests | 30 questions plus a 56-statement document | 11 modules, 132 screens, 20 flows, 22 data kinds (partly fallback, see limits) |
+
+## Six more test inputs
+
+Added for the Research overhaul (D-154, D-156) to check that intake survives Compass format changes. **They are test
+inputs, not product output:** three are real but older exports (format 1, or a trimmed export with no consumer views)
+and three are synthetic, hand-made files in format 2 that a person wrote to cover a small, a medium and a big app in
+countries the first three do not. The originals stay in [../outputs/](../outputs/); these are copies and must not be
+edited by hand. `agents/compass/tests/test_research_inputs.py` checks only the first three runs. What Research does
+with each is shown by the zero-cost preview (`GET /api/inputs`, or `uv run pytest agents/research/tests/plan/test_nine_inputs.py`).
+
+| File | Origin and format | Seal (`input_binding`) | Views and structure | Brief | What Research makes of it |
+| --- | --- | --- | --- | --- | --- |
+| [delhi-restaurant-delivery.json](delhi-restaurant-delivery.json) | real, older, **format 1** | **no approved baseline**: `unverified_no_baseline` (the Brief carries a hash, nobody approved it) | all four consumer views; no structure block | v10, 3 features, 4 roles, 1 app, 53 facts, 12 requests, 2 named references | Small (focused, load 14); 10 topics run, 22 planned and not run; 10 of 12 requests carried by a topic that runs (one planned and not run, one with no topic); English and Hindi; a city and no country; the preview warns that the approval cannot be checked |
+| [pune-clinic-appointments.json](pune-clinic-appointments.json) | real, older, **format 1** | approved baseline, hashes agree: `verified` | all four consumer views; no structure block | v10, 9 features, 4 roles, 3 apps, 72 facts, 5 requests | Medium (standard, load 29); 16 topics run; health data and sensitive data turn the trust checks on; English and Hindi; a city and no country |
+| [hospital-chain-enterprise.json](hospital-chain-enterprise.json) | real, **format 2, trimmed**: only `export`, `session`, `brief`, `interview` | approved baseline, hashes agree: `verified` | **no consumer views, no structure**; `meta.locales` is a sentence, not codes | v7, 13 features, 10 roles, 1 app, 39 facts, 14 requests, no integrations | Medium (standard, load 27, computed from the Brief); the idea, languages (Marathi, Gujarati, Hindi, English) and geography are built from the Brief; India with a region; health data turns the trust checks on |
+| [synthetic-small-bike-repair-porto.json](synthetic-small-bike-repair-porto.json) | synthetic, format 2 | approved baseline: `verified` | views and structure | v1, 7 features, 3 roles, 1 app, 17 facts, 5 requests, 1 integration | Small (focused, load 15); Portugal, `pt-PT` and English |
+| [synthetic-medium-school-parents-dakar.json](synthetic-medium-school-parents-dakar.json) | synthetic, format 2 | approved baseline: `verified` | views and structure | v1, 13 features, 3 roles, 2 apps, 19 facts, 8 requests, 2 integrations | Medium (standard, load 28); Senegal, French and English; children's data turns the trust checks on |
+| [synthetic-big-site-safety-central-america.json](synthetic-big-site-safety-central-america.json) | synthetic, format 2 | approved baseline: `verified` | views and structure | v1, 29 features, 11 roles, 3 apps, 39 facts, 12 requests, 3 integrations | Big (deep, load 71); **three countries** in one text ("Mexico, Guatemala and Costa Rica": the list is read, Mexico is the primary); Spanish and English |
+
+The three older exports are why Research no longer refuses an export for its format, its approval or its hashes: see
+[the Compass contract](../../research-agent/compass-contract.md) for the fields Research reads and what each missing field costs.
 
 ## What is in each file
 
@@ -31,7 +57,7 @@ One JSON object with these keys (the reading guide is also inside as `export.rea
 
 ## Reading order that works
 
-1. Check `export.approved_baseline.hash == brief._hash` (recompute with `mde_compass.domain.hashing.brief_hash`).
+1. Check `export.approved_baseline.hash == brief._hash` (recompute with `mde_compass.domain.hashing.brief_hash`). Research itself reads the result as `input_binding` and researches an unverified Brief anyway.
 2. Read `consumer_views.research.guidance`, then the rest of that view.
 3. Go to `brief.domain_facts` and `interview.facts` when a statement needs its quote.
 4. Use `structure.slices` for per-module detail, and `structure.issues` to see what the checks left.
