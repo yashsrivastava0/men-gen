@@ -154,3 +154,27 @@ async def test_relaxing_has_nothing_to_do_for_a_plain_request() -> None:
 
     assert relax(SearchRequest(query="plain words")) is None
     assert relax(NARROW).query == "Acme features pricing"  # type: ignore[union-attr]
+
+
+async def test_a_primary_out_of_quota_or_key_is_skipped_until_the_cool_down_ends() -> None:
+    now = [100.0]
+    a, b = Stub("a", error=SearchError("quota")), Stub("b")
+    f = FailoverSearch(a, b, down_cooldown_s=600, clock=lambda: now[0])
+    assert (await f.search(REQ)).provider == "b" and a.calls == 1 and f.primary_down
+    for _ in range(3):
+        assert (await f.search(REQ)).provider == "b"
+    assert a.calls == 1 and f.skipped_while_down == 3  # not asked first again
+    assert f.drain_notes() == ["provider_failover"]  # told once, not on every call
+    now[0] += 601  # the cool-down is over: one call asks the primary again
+    a.error = None
+    assert (await f.search(REQ)).provider == "a" and a.calls == 2 and not f.primary_down
+
+
+async def test_a_slow_or_rate_limited_primary_is_not_taken_out_of_service() -> None:
+    a, b = Stub("a", error=SearchError("rate_limited", retry_after=2)), Stub("b")
+    f = FailoverSearch(a, b)
+    await f.search(REQ)
+    await f.search(REQ)
+    assert (
+        a.calls == 2 and f.skipped_while_down == 0
+    )  # only a wrong key or a used-up plan stays down

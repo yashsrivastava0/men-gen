@@ -232,7 +232,8 @@ async def tighten_and_recheck(
     atoms: list[AtomRecord],
     ask: Callable[[list[AtomRecord]], Awaitable[dict[str, check_call.CheckVerdict | None]]],
 ) -> list[AtomRecord]:
-    """Partial items whose checker named unsupported sentences: drop those sentences and ask the same checker once more.
+    """Partial items that lost something: unsupported sentences dropped, and/or data fields nulled (the checker named
+    them and ``_apply`` removed them). The same checker is asked once more about what is left.
 
     ``ask`` puts a list of items to the checker and returns ``{pair_key: verdict or None}``; the engine and the experiment
     harness each bring their own. The item climbs to ``supported`` only if the checker then says so with nothing left to
@@ -243,12 +244,13 @@ async def tighten_and_recheck(
     """
     tried: list[AtomRecord] = []
     for a in atoms:
-        if a.status != "verified" or a.verdict != "partial" or not a.unsupported_sentences:
+        if a.status != "verified" or a.verdict != "partial":
             continue
-        cut = tightened_claim(a.claim, a.unsupported_sentences)
-        if cut is None:
-            continue
-        a.claim_original, (a.claim, a.dropped_sentences) = a.claim, cut
+        cut = tightened_claim(a.claim, a.unsupported_sentences) if a.unsupported_sentences else None
+        if cut is None and not a.unsupported_fields:
+            continue  # nothing was removed: a bare second question would only resample a noisy answer
+        if cut is not None:
+            a.claim_original, (a.claim, a.dropped_sentences) = a.claim, cut
         tried.append(a)
     if not tried:
         return tried

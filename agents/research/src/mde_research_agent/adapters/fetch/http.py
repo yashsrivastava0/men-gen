@@ -26,8 +26,9 @@ import contextlib
 import ipaddress
 import socket
 from collections.abc import AsyncIterator, Awaitable, Callable, Mapping
-from dataclasses import dataclass
-from datetime import date
+from dataclasses import dataclass, replace
+from datetime import UTC, date, datetime
+from email.utils import parsedate_to_datetime
 from http.cookiejar import DefaultCookiePolicy
 from typing import Final, TypeVar
 from urllib.parse import urljoin, urlsplit
@@ -71,6 +72,7 @@ _PROBLEM_REASONS: Final[Mapping[str, SkipReason]] = {
     "scheme": "error",
     "no_host": "error",
 }
+_TRANSIENT_STATUSES: Final = frozenset({500, 502, 503, 504})
 _SNIFF_TYPES: Final = frozenset({"", "application/octet-stream", "binary/octet-stream"})
 _SNIFF_BYTES: Final = 1024
 _MAX_URL_CHARS: Final = 4096
@@ -129,6 +131,7 @@ class _State:
     title: str = ""
     published: date | None = None
     bytes_read: int = 0
+    retry_after: float | None = None
 
     def failed(self, reason: SkipReason) -> FetchedPage:
         return FetchedPage(
@@ -141,7 +144,24 @@ class _State:
             published=self.published,
             reason=reason,
             bytes_read=self.bytes_read,
+            retry_after=self.retry_after,
         )
+
+
+def retry_after_seconds(raw: str | None, *, now: datetime | None = None) -> float | None:
+    """A Retry-After header as seconds: a number of seconds, or an HTTP date; None when absent or unreadable."""
+    if not raw or not raw.strip():
+        return None
+    text = raw.strip()
+    if text.isascii() and text.isdigit():
+        return float(int(text)) if len(text) <= 9 else None
+    try:
+        when = parsedate_to_datetime(text)
+    except (TypeError, ValueError):
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=UTC)
+    return max(0.0, (when - (now or datetime.now(UTC))).total_seconds())
 
 
 class HttpFetcher:
@@ -164,6 +184,10 @@ class HttpFetcher:
         min_text_chars: int = 200,
         max_redirects: int = 5,
         per_host_concurrency: int = 2,
+        retries: int = 1,
+        retry_backoff_s: float = 0.5,
+        retry_after_cap_s: float = 10.0,
+        sleeper: Callable[[float], Awaitable[None]] | None = None,
     ) -> None:
         self._owns_client = client is None
         if client is None:
@@ -181,6 +205,10 @@ class HttpFetcher:
         self._min_text_chars = min_text_chars
         self._max_redirects = max(max_redirects, 0)
         self._per_host = per_host_concurrency
+        self._retries = max(0, retries)
+        self._backoff = retry_backoff_s
+        self._retry_after_cap = retry_after_cap_s
+        self._sleep: Callable[[float], Awaitable[None]] = sleeper or asyncio.sleep
         self._semaphores: dict[str, asyncio.Semaphore] = {}
         self._headers = {"User-Agent": user_agent, "Accept": _ACCEPT}
         language = "".join(ch for ch in (accept_language or "") if " " <= ch <= "~").strip()
@@ -210,7 +238,39 @@ class HttpFetcher:
         await self.aclose()
 
     async def fetch(self, url: str) -> FetchedPage:
-        """Read ``url``. Never raises; see the module docstring for the reasons a page can fail."""
+        """Read ``url``. Never raises; see the module docstring for the reasons a page can fail.
+
+        One more try (``retries``) after a failure that is probably temporary: a timeout, a 500, 502, 503 or 504, a
+        connection problem, or a 429 whose Retry-After is within ``retry_after_cap_s``. A login, a paywall, robots, a
+        missing page, a page with no text and a page that is too large are never retried.
+        """
+        page = await self._fetch_once(url)
+        attempts = 1
+        while (
+            attempts <= self._retries
+            and (wait := self._wait_before_retry(page, attempts)) is not None
+        ):
+            await self._sleep(wait)
+            page = await self._fetch_once(url)
+            attempts += 1
+        return page if attempts == 1 else replace(page, attempts=attempts)
+
+    def _wait_before_retry(self, page: FetchedPage, attempt: int) -> float | None:
+        """Seconds to wait before another try, or None when the failure is not worth one."""
+        if page.ok:
+            return None
+        if page.reason == "blocked" and page.status == 429:
+            asked = page.retry_after
+            if asked is None:
+                return self._backoff * attempt
+            return asked if asked <= self._retry_after_cap else None
+        if page.reason == "timeout" or (
+            page.reason == "error" and (page.status is None or page.status in _TRANSIENT_STATUSES)
+        ):
+            return self._backoff * attempt
+        return None
+
+    async def _fetch_once(self, url: str) -> FetchedPage:
         state = _State(url=url, final_url=url)
         try:
             async with self._host_slot(url), asyncio.timeout(self._timeout):
@@ -261,6 +321,8 @@ class HttpFetcher:
         media, charset = split_content_type(response.headers.get("content-type", ""))
         state.content_type = media
         reason = _STATUS_REASONS.get(status)
+        if status == 429:
+            state.retry_after = retry_after_seconds(response.headers.get("retry-after"))
         if reason is not None:
             raise _Skip(reason)  # a login or paywall is labelled, never worked around
         if not 200 <= status < 300:

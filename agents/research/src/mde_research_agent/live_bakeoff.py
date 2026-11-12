@@ -204,7 +204,7 @@ async def measure_page_text(stats: ProviderStats, client: httpx.AsyncClient) -> 
     """Page-text availability: the provider's own raw content, else the page fetcher on its top links."""
     from mde_research_agent.adapters.fetch.http import HttpFetcher
 
-    fetcher = HttpFetcher(client=client)
+    fetcher = HttpFetcher(client=client, retries=0)  # the bake-off measures one honest try per page
     for res in stats.results.values():
         if res is None:
             continue

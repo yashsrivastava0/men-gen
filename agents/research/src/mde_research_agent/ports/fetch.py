@@ -43,6 +43,10 @@ class FetchedPage:
     content_hash: str = ""  # sha256 of ``text`` (NFC) once non-empty
     reason: SkipReason | None = None  # why ``text`` is empty
     bytes_read: int = 0
+    retry_after: float | None = (
+        None  # seconds a 429 asked us to wait (its Retry-After), when it said
+    )
+    attempts: int = 1  # how many times the page was asked for (1 = no retry was needed or allowed)
 
     @property
     def ok(self) -> bool:

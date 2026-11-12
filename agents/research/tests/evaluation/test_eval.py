@@ -328,3 +328,70 @@ def test_a_region_swap_never_lands_on_the_topics_own_country() -> None:
         assert moved is not None and moved["about_region"] not in ("in", "unknown")
         # a swap to the topic's own country would plant no error: code could not (and should not) catch it
         assert code_catches(moved, {"place": "in"}) == ["other_region"]
+
+
+class _Runner:
+    """A checker stand-in: says what ``decide(claim, data_json)`` says; counts the questions asked."""
+
+    def __init__(self, decide):  # type: ignore[no-untyped-def]
+        self.decide, self.asked = decide, 0
+
+    async def run(self, spec, inp):  # type: ignore[no-untyped-def]
+        from types import SimpleNamespace
+
+        out = []
+        for i in inp.items:
+            self.asked += 1
+            verdict, fields = self.decide(i.claim, i.data)
+            out.append(check_call.CheckVerdict(id=i.id, verdict=verdict, unsupported_fields=fields))
+        return SimpleNamespace(output=check_call.CheckOut(verdicts=out), cost_micros=0)
+
+
+async def test_the_protocol_counts_an_error_that_climbs_with_the_change_still_in_the_claim() -> (
+    None
+):
+    from mde_research_agent.eval.planted import apply_protocol
+
+    def variant(i: str, claim: str, data: dict) -> dict:
+        return {
+            "id": f"{i}~condition_flipped",
+            "kind": "rule",
+            "job": "data",
+            "claim": claim,
+            "quote": "A is x.",
+            "data": data,
+            "page_id": "p",
+        }
+
+    clean = {"a": "A is x.", "b": "A is x.", "c": "A is x."}
+    variants = [
+        variant(
+            "a", "A is x. Planted extra.", {}
+        ),  # the checker names sentence 2: dropped, the error is gone
+        variant(
+            "b", "A is not x. Planted b", {"f": "1"}
+        ),  # field nulled, still partial on the second look
+        variant(
+            "c", "A is not x. Planted c", {"f": "1"}
+        ),  # field nulled, accepted on the second look, change stays
+    ]
+    first = {
+        variants[0]["id"]: check_call.CheckVerdict(
+            id="x", verdict="partial", unsupported_sentences=[2]
+        ),
+        variants[1]["id"]: check_call.CheckVerdict(
+            id="x", verdict="partial", unsupported_fields=["f"]
+        ),
+        variants[2]["id"]: check_call.CheckVerdict(
+            id="x", verdict="partial", unsupported_fields=["f"]
+        ),
+    }
+    runner = _Runner(
+        lambda claim, data: (
+            ("supported", []) if claim == "A is x." or claim.endswith("c") else ("partial", [])
+        )
+    )
+    rep = await apply_protocol(runner, variants, clean, first, {}, legacy=False)  # type: ignore[arg-type]
+    assert rep["flagged_partial"] == 3 and rep["tried"] == 3 and runner.asked == 3
+    assert rep["climbed"] == 2 and rep["climbed_with_error_still_in_claim"] == 1
+    assert rep["through_ids"] == [variants[2]["id"]]

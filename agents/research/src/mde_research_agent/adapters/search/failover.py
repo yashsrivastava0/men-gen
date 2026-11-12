@@ -17,6 +17,8 @@ elsewhere.
 
 from __future__ import annotations
 
+import time
+from collections.abc import Callable
 from dataclasses import replace
 from typing import Final
 
@@ -34,6 +36,10 @@ FAILOVER_KINDS: Final = frozenset(
 )
 OPINION_SHARE: Final = 0.15
 THIN_BELOW: Final = 3
+# A primary that says its key is wrong or its plan is used up will say so again at once: it is skipped for a while
+# instead of being tried first on every call (it is tried again after the cool-down, one call is the probe).
+DOWN_KINDS: Final = frozenset({"quota", "auth"})
+DOWN_COOLDOWN_S: Final = 600.0
 
 
 class FailoverSearch:
@@ -44,6 +50,8 @@ class FailoverSearch:
         *,
         opinion_share: float = OPINION_SHARE,
         thin_below: int = THIN_BELOW,
+        down_cooldown_s: float = DOWN_COOLDOWN_S,
+        clock: Callable[[], float] = time.monotonic,
     ) -> None:
         self.primary = primary
         self.secondary = secondary
@@ -57,6 +65,10 @@ class FailoverSearch:
         )
         self.relaxed_retries = 0
         self.failovers = 0
+        self.skipped_while_down = 0
+        self._cooldown = down_cooldown_s
+        self._clock = clock
+        self._down_until = 0.0
         self._notes: list[str] = []
 
     def drain_notes(self) -> list[str]:
@@ -64,8 +76,17 @@ class FailoverSearch:
         notes, self._notes = self._notes, []
         return notes
 
+    @property
+    def primary_down(self) -> bool:
+        return self._clock() < self._down_until
+
     async def search(self, request: SearchRequest) -> SearchResult:
         self.calls += 1
+        if (
+            self.primary_down
+        ):  # its quota or key just failed: do not ask it first again before the cool-down
+            self.skipped_while_down += 1
+            return await self.secondary.search(request)
         try:
             first = await self.primary.search(request)
         except SearchError as err:
@@ -73,6 +94,10 @@ class FailoverSearch:
                 raise
             self.failovers += 1
             self._notes.append("provider_failover")
+            if err.kind in DOWN_KINDS:
+                self._down_until = (
+                    self._clock() + self._cooldown
+                )  # the run was told at the first failover
             return await self.secondary.search(request)  # both failing raises the secondary's error
         if len(first.hits) >= self._thin or self.opinions >= max(1, int(self._share * self.calls)):
             return first

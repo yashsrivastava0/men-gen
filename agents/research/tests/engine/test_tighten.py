@@ -131,3 +131,60 @@ async def test_a_partial_item_with_no_named_sentence_is_never_asked_again() -> N
     verified = [a for a in run.evidence["atoms"] if a["status"] == "verified" and a["checked"]]
     unique = {(a["claim"], a["quote"], json.dumps(a["data"], sort_keys=True)) for a in verified}
     assert asked and len(sent) == len(unique)  # every item was put to the checker once and no more
+
+
+async def test_a_partial_item_whose_unsupported_fields_were_nulled_is_asked_again_about_what_is_left() -> (
+    None
+):
+    seen: list[str] = []  # the data each ask saw
+
+    def check(inp: CheckIn) -> CheckOut:
+        verdicts = []
+        for i in inp.items:
+            seen.append(i.data)
+            if '"unit":"percent"' in i.data.replace(" ", ""):
+                verdicts.append(
+                    CheckVerdict(id=i.id, verdict="partial", unsupported_fields=["unit"])
+                )
+            else:  # the unit was nulled: what is left is stated
+                verdicts.append(CheckVerdict(id=i.id, verdict="supported"))
+        return CheckOut(verdicts=verdicts)
+
+    run = await run_engine(
+        load_fixture(STANDARD),
+        overrides={"rsch.extract.data": padded_rule_extractor(), "rsch.check": check},
+    )
+    atoms = [a for a in run.evidence["atoms"] if a["kind"] == "rule" and a["status"] == "verified"]
+    assert atoms
+    for a in atoms:
+        assert a["verdict"] == "supported" and "tightened" in a["flags"]
+        assert a["data"]["unit"] is None and a["unsupported_fields"] == ["unit"]
+        assert a["claim_original"] is None  # no sentence was dropped, only a field
+    assert any(
+        '"unit":"percent"' in d.replace(" ", "") for d in seen
+    )  # the first ask had the field
+    assert any('"unit":null' in d.replace(" ", "") for d in seen)  # the second ask did not
+    items = [i for i in run.research["items"] if i["kind"] == "rule"]
+    assert items and all("partial_support" not in i["flags"] for i in items)
+
+
+async def test_a_nulled_field_does_not_climb_when_the_checker_still_says_partial() -> None:
+    def check(inp: CheckIn) -> CheckOut:
+        return CheckOut(
+            verdicts=[
+                CheckVerdict(
+                    id=i.id,
+                    verdict="partial",
+                    unsupported_fields=["unit"] if "percent" in i.data else [],
+                )
+                for i in inp.items
+            ]
+        )
+
+    run = await run_engine(
+        load_fixture(STANDARD),
+        overrides={"rsch.extract.data": padded_rule_extractor(), "rsch.check": check},
+    )
+    atoms = [a for a in run.evidence["atoms"] if a["kind"] == "rule" and a["status"] == "verified"]
+    assert atoms and all(a["verdict"] == "partial" and "tightened" not in a["flags"] for a in atoms)
+    assert all(a["data"]["unit"] is None for a in atoms)  # the field stays removed either way

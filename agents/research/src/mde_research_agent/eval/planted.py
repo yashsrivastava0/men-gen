@@ -26,8 +26,14 @@ from typing import Any
 from mde_research_agent.calls import check as check_call
 from mde_research_agent.core.numbers import claim_figures, figures, missing_figures
 from mde_research_agent.core.text import stem_set
-from mde_research_agent.engine.checking import CHECK_BATCH, null_paths, passage_window
-from mde_research_agent.engine.state import PageRecord
+from mde_research_agent.engine.checking import (
+    CHECK_BATCH,
+    null_paths,
+    pair_key,
+    passage_window,
+    tighten_and_recheck,
+)
+from mde_research_agent.engine.state import AtomRecord, PageRecord
 from mde_research_agent.eval.corrupt import KINDS, corrupt
 from mde_research_agent.spotcheck import draw
 
@@ -293,6 +299,86 @@ def score(
     }
 
 
+async def apply_protocol(
+    runner: Any,
+    variants: list[dict[str, Any]],
+    clean_claims: dict[str, str],
+    verdicts: dict[str, check_call.CheckVerdict],
+    pages: dict[str, PageRecord],
+    *,
+    legacy: bool,
+) -> dict[str, Any]:
+    """What the tighten step does to planted errors the checker flagged as partial (D-159).
+
+    The engine nulls the data fields the checker named, drops the claim sentences it named, and asks once more. A variant
+    that climbs to supported with its planted change still in the claim is an error that got through: it counts against
+    the catch rate. A variant whose error was removed (an added sentence dropped, an added field nulled) is fine.
+    """
+    atoms: list[AtomRecord] = []
+    for v in variants:
+        ver = verdicts.get(v["id"])
+        if ver is None or ver.verdict != "partial":
+            continue
+        data, applied = null_paths(v.get("data") or {}, ver.unsupported_fields)
+        atoms.append(
+            AtomRecord(
+                id=v["id"],
+                kind=v["kind"],
+                job=v["job"],
+                target_id=v.get("target_id", ""),
+                norm_key=v.get("norm_key", ""),
+                label=v.get("label", ""),
+                claim=v["claim"],
+                quote=v["quote"],
+                impact=v.get("impact", "normal"),
+                published_on=None,
+                data=data,
+                page_id=v.get("page_id", ""),
+                round=1,
+                verdict="partial",
+                about_region=v.get("about_region") or "unknown",
+                about_entity=v.get("about_entity"),
+                unsupported_fields=applied,
+                unsupported_sentences=list(ver.unsupported_sentences),
+            )
+        )
+
+    async def ask(items: list[AtomRecord]) -> dict[str, check_call.CheckVerdict | None]:
+        rows = [
+            {
+                "id": pair_key(a),
+                "claim": a.claim,
+                "quote": a.quote,
+                "data": a.data,
+                "page_id": a.page_id,
+                "about_region": a.about_region,
+                "about_entity": a.about_entity,
+            }
+            for a in items
+        ]
+        got, _cost = await _ask_checker(runner, rows, pages, legacy=legacy)
+        return dict(got)
+
+    tried = await tighten_and_recheck(atoms, ask)
+    climbed = [a for a in tried if "tightened" in a.flags]
+    through = [
+        a
+        for a in climbed
+        if _norm_claim(a.claim) != _norm_claim(clean_claims.get(a.id.split("~")[0], a.claim))
+    ]
+    return {
+        "flagged_partial": len(atoms),
+        "tried": len(tried),
+        "climbed": len(climbed),
+        "climbed_with_error_still_in_claim": len(through),
+        "through_ids": [a.id for a in through],
+    }
+
+
+def _norm_claim(text: str) -> str:
+    return " ".join(text.lower().split())
+
+
 async def run_planted(
     runner: Any,
     research: dict[str, Any],
@@ -312,6 +398,8 @@ async def run_planted(
     for a in clean:
         for kind in KINDS:
             place = (targets.get(a.get("target_id", "")) or {}).get("place")
+            if kind == "region_swapped" and not place:
+                continue  # a topic with no country (design, structure): a country on its items is no error to catch
             c = corrupt(a, kind, seed, avoid_region=place)
             if c is not None:
                 variants.append(c)
@@ -324,6 +412,25 @@ async def run_planted(
             pending.append(v)
     verdicts, cost = await _ask_checker(runner, pending, pages, legacy=checker == "v2")
     report = score(clean, variants, caught_by_code, verdicts, recheck)
+    if checker == "v3":
+        proto = await apply_protocol(
+            runner,
+            [
+                v
+                for v in variants
+                if v["id"] not in {i for s_ in caught_by_code.values() for i in s_}
+            ],
+            {a["id"]: a["claim"] for a in clean},
+            verdicts,
+            pages,
+            legacy=False,
+        )
+        through = proto["climbed_with_error_still_in_claim"]
+        planted_n = report["planted"] or 1
+        after = round((report["caught_overall"] or 0) - through / planted_n, 4)
+        proto["caught_overall_after_protocol"] = after
+        report["protocol"] = proto
+        report["passed"] = bool(report["passed"] and after >= PASS["overall"])
     report["checker"] = checker
     report["cost_micros"] = cost
     return report
