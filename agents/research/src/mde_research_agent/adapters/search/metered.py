@@ -53,9 +53,11 @@ class MeteredSearch:
     ) -> None:
         self.inner = inner
         self.ledger = ledger
-        self.name = inner.name
-        self.capabilities: Capabilities = inner.capabilities
         self.provider = provider or inner.name
+        self.name = (
+            self.provider
+        )  # the ledger's provider: for a real adapter the same as its own name
+        self.capabilities: Capabilities = inner.capabilities
         self._run_id = run_id_getter or current_run_id
         getter = getattr(inner, "key_fingerprint", None)
         found = getter() if callable(getter) else None

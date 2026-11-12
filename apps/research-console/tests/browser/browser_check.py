@@ -919,7 +919,10 @@ def main_flow(browser, f: Fake) -> None:
     rows = pb.locator("tbody tr").count()
     check(
         "budget: the spend record table lists every run with cost by step and running total",
-        (rows >= 2 and "Running total" in pb.locator("thead").first.inner_text())
+        (
+            rows >= 2
+            and "Running total" in pb.locator("main section:not(#credits) thead").first.inner_text()
+        )
         or pb.locator("table").first.count() > 0,
         f"{rows} rows",
     )
@@ -1123,6 +1126,81 @@ def scenario_tools(browser) -> None:
         f.kill()
 
 
+def scenario_search_credits(browser) -> None:
+    """The credit chip in the bar, the line in the confirm dialog and the Budget section, over the fake's seeded ledger
+    (Tavily 93 of 1,000 used, Serper 2,389 left) and a low one (962 used). Advice only: Start is never disabled."""
+    f = Fake(8148).start()
+    try:
+        page = new_page(browser)
+        page.goto(f.base + "/")
+        page.wait_for_selector(".input-card")
+        page.wait_for_selector("#credits-chip")
+        chip = text(page, "#credits-chip")
+        check(
+            "credits chip: shows both numbers in the bar",
+            "Tavily 93 of 1,000 used" in chip and "Serper 2,389 left" in chip,
+            chip,
+        )
+        cls = page.locator("#credits-chip").get_attribute("class")
+        check("credits chip: calm colour when plenty is left", "credits-ok" in cls, cls)
+        card(page, "quick-yoga").get_by_role("button", name="Run research").click()
+        page.wait_for_selector("dialog[open]")
+        d = page.locator("dialog[open]").inner_text()
+        check(
+            "confirm dialog: says what the run needs in credits and what is left",
+            "credits" in d and "left" in d,
+            d[:400],
+        )
+        go = page.locator("dialog[open]").get_by_role("button", name="Start research (costs money)")
+        check("confirm dialog: credits never disable Start", go.is_enabled())
+        page.keyboard.press("Escape")
+        page.goto(f.base + "/#/budget")
+        page.wait_for_selector("#credits .credit-card")
+        body = text(page, "#credits")
+        check(
+            "budget: the Search credits section shows both providers, the source and the form",
+            "Tavily" in body
+            and "Serper" in body
+            and "from Tavily" in body
+            and "Enter or correct a balance" in body,
+            body[:400],
+        )
+        page.get_by_role("button", name="Ask Tavily now").click()
+        page.wait_for_selector("#credits .banner")
+        check(
+            "budget: asking Tavily says what happened",
+            "up to date" in text(page, "#credits .banner"),
+            text(page, "#credits .banner"),
+        )
+        problems = four_shots(
+            browser, f.base + "/#/budget", "budget-credits", "#credits .credit-card"
+        )
+        check("budget credits: no sideways scroll at 360 px", not problems, "; ".join(problems))
+        page.context.close()
+    finally:
+        f.kill()
+    f = Fake(8149, "--credits", "low").start()
+    try:
+        page = new_page(browser)
+        page.goto(f.base + "/")
+        page.wait_for_selector("#credits-chip")
+        cls = page.locator("#credits-chip").get_attribute("class")
+        check(
+            "credits chip: red and worded when credits are almost out",
+            "credits-red" in cls and "almost out" in text(page, "#credits-chip"),
+            cls,
+        )
+        card(page, "standard-produce").get_by_role("button", name="Run research").click()
+        page.wait_for_selector("dialog[open]")
+        d = page.locator("dialog[open]").inner_text()
+        check("confirm dialog: warns the run may stop early", "may stop early" in d, d[:400])
+        go = page.locator("dialog[open]").get_by_role("button", name="Start research (costs money)")
+        check("confirm dialog: still not blocked", go.is_enabled())
+        page.context.close()
+    finally:
+        f.kill()
+
+
 def main() -> int:
     global SHOTS
     ap = argparse.ArgumentParser()
@@ -1135,6 +1213,7 @@ def main() -> int:
         "empty": scenario_empty,
         "notready": scenario_not_ready,
         "budget": scenario_budget_colours_and_estimates,
+        "credits": scenario_search_credits,
         "main": scenario_main,
         "interrupted": scenario_interrupted_and_unreachable,
         "tools": scenario_tools,

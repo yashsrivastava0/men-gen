@@ -354,6 +354,180 @@ out({
     assert r["reasons"][4] == 240
 
 
+# ------------------------------------------------------------------------------------------------ search credits
+CREDITS_BODY = """
+const C = await load("credits");
+const prov = (o) => Object.assign({ provider: "tavily", label: "Tavily", unit: "credit", used: null, limit: null, remaining: null, level: "unknown", source: "counted", as_of: null, read_at: null, plan: null, note: "", key_present: true, can_check: true, baseline: null }, o);
+const tavily = (o) => prov(Object.assign({ used: 93, limit: 1000, remaining: 907, level: "ok" }, o || {}));
+const serper = (o) => prov(Object.assign({ provider: "serper", label: "Serper", remaining: 2389, level: "ok", can_check: false }, o || {}));
+const snap = (providers, extra) => Object.assign({ enabled: true, providers, per_run: [], estimate_hint: {}, primary: "tavily" }, extra || {});
+const need = (mid, high) => ({ credits: { tavily: { low: 1, mid, high }, serper: { low: 1, mid: mid - 6, high } } });
+"""
+
+
+def test_credit_text_chip_levels_and_percent() -> None:
+    r = js(
+        CREDITS_BODY
+        + """
+const both = snap([tavily(), serper()]);
+out({
+  grouped: [C.grouped(0), C.grouped(93), C.grouped(1000), C.grouped(2389), C.grouped(1234567), C.grouped(-1), C.grouped(null), C.grouped("x")],
+  figure: [C.figureText(tavily()), C.figureText(serper()), C.figureText(tavily({ limit: null, remaining: null })), C.figureText(prov({})), C.figureText(null)],
+  text: [C.creditText(tavily()), C.creditText(serper()), C.creditText(prov({})), C.creditText(null)],
+  chip: C.creditsChipText(both),
+  chipLow: [C.creditsChipText(snap([tavily({ used: 850, remaining: 150, level: "amber" }), serper()])), C.creditsChipText(snap([tavily({ used: 990, remaining: 10, level: "red" }), serper()]))],
+  chipOnlyConfigured: C.creditsChipText(snap([tavily(), serper({ key_present: false })])),
+  chipNone: [C.creditsChipText(null), C.creditsChipText({ enabled: false }), C.creditsChipText(snap([serper({ key_present: false })]))],
+  level: [C.creditsLevel(both), C.creditsLevel(snap([tavily({ level: "amber" }), serper({ level: "red" })])), C.creditsLevel(snap([prov({}), serper()])), C.creditsLevel(snap([prov({})])), C.creditsLevel(snap([tavily({ level: "weird" })])), C.creditsLevel(null)],
+  pct: [C.creditPercent(tavily()), C.creditPercent(tavily({ used: 2000 })), C.creditPercent(serper()), C.creditPercent(tavily({ limit: 0 })), C.creditPercent(null)],
+  words: [C.levelWords("ok"), C.levelWords("amber"), C.levelWords("red"), C.levelWords("unknown"), C.levelWords("???")],
+});
+"""
+    )
+    assert r["grouped"] == ["0", "93", "1,000", "2,389", "1,234,567", "", "", ""]
+    assert r["figure"] == ["93 of 1,000 used", "2,389 left", "93 used", "", ""]
+    assert r["text"] == [
+        "Tavily 93 of 1,000 used",
+        "Serper 2,389 left",
+        "Tavily: no count yet",
+        "",
+    ]
+    assert r["chip"] == "Credits: Tavily 93 of 1,000 used · Serper 2,389 left"
+    assert r["chipLow"][0].endswith("running low") and r["chipLow"][1].endswith("almost out")
+    assert r["chipOnlyConfigured"] == "Credits: Tavily 93 of 1,000 used"
+    assert r["chipNone"] == ["", "", ""]
+    assert r["level"] == ["ok", "red", "ok", "unknown", "unknown", "unknown"]
+    assert r["pct"] == [9.3, 100, None, None, None]
+    assert r["words"] == [
+        "Plenty left",
+        "Running low",
+        "Almost out",
+        "Not known yet",
+        "Not known yet",
+    ]
+
+
+def test_credit_source_and_checked_words() -> None:
+    r = js(
+        CREDITS_BODY
+        + """
+const now = Date.parse("2026-11-13T10:00:00Z");
+const at = (secs) => new Date(now - secs * 1000).toISOString();
+out({
+  source: [C.sourceWords(tavily({ source: "provider" })), C.sourceWords(tavily()), C.sourceWords(serper()), C.sourceWords(tavily({ source: "unverified_endpoint" })), C.sourceWords(prov({}))],
+  checked: [C.checkedText(tavily({ read_at: at(10) }), now), C.checkedText(tavily({ read_at: at(180) }), now), C.checkedText(tavily({ read_at: at(7200) }), now), C.checkedText(tavily({ read_at: at(3 * 86400) }), now), C.checkedText(tavily(), now), C.checkedText(serper(), now), C.checkedText(tavily({ read_at: "garbage" }), now)],
+  runs: [C.runCreditsText({ credits: { tavily: 33, serper: 2 } }), C.runCreditsText({ credits: { tavily: 1200 } }), C.runCreditsText({ credits: {} }), C.runCreditsText(null)],
+  need: [C.needText({ tavily: { low: 28, mid: 32, high: 41 }, serper: { low: 22, mid: 26, high: 41 } }), C.needText(null), C.needText({ tavily: { mid: "x" } })],
+});
+"""
+    )
+    assert r["source"] == [
+        "from Tavily",
+        "counted by this app",
+        "counted by this app",
+        "unverified",
+        "no count yet",
+    ]
+    assert r["checked"] == [
+        "Checked with Tavily just now.",
+        "Checked with Tavily 3 min ago.",
+        "Checked with Tavily 2 h ago.",
+        "Checked with Tavily 3 days ago.",
+        "Tavily has not been asked yet.",
+        "Serper does not report its balance, so this app counts it.",
+        "",
+    ]
+    assert r["runs"] == ["Tavily 33 · Serper 2", "Tavily 1,200", "", ""]
+    assert r["need"] == [
+        "Tavily about 32 (up to 41) · Serper about 26 (up to 41)",
+        "",
+        "",
+    ]
+
+
+def test_run_need_advice_is_advisory_and_says_what_is_left() -> None:
+    r = js(
+        CREDITS_BODY
+        + """
+const small = need(33, 41);
+const plenty = C.creditAdvice(small, snap([tavily(), serper()]));
+const tight = C.creditAdvice(small, snap([tavily({ used: 970, remaining: 30, level: "red" }), serper()]));
+const roomy = C.creditAdvice(small, snap([tavily({ used: 800, remaining: 200, level: "amber" }), serper()]));
+const unknown = C.creditAdvice(small, snap([prov({}), serper()]));
+const onSerper = C.creditAdvice(small, snap([tavily(), serper()], { primary: "serper" }));
+const exact = C.creditAdvice(small, snap([tavily({ used: 959, remaining: 41, level: "amber" }), serper()]));
+out({
+  plenty, tight, roomy, unknown, onSerper, exact,
+  nothing: [C.creditAdvice(null, snap([tavily()])), C.creditAdvice(small, null), C.creditAdvice(small, { enabled: false }), C.creditAdvice({}, snap([tavily()])), C.creditAdvice(small, snap([tavily()], { primary: null })), C.creditAdvice(small, snap([serper()], { primary: "tavily" }))],
+});
+"""
+    )
+    assert r["plenty"]["lines"] == ["This run needs about 33 Tavily credits; 907 left."]
+    assert r["plenty"]["partial"] is False and r["plenty"]["low"] is False
+    assert r["tight"]["partial"] is True and "stop early (partial)" in r["tight"]["lines"][0]
+    assert "30 are left" in r["tight"]["lines"][0]
+    assert "Nothing stops you" in r["tight"]["lines"][0]
+    assert r["roomy"]["partial"] is False and r["roomy"]["low"] is True  # fits, but running low
+    assert r["unknown"]["unknown"] is True and "Budget page" in r["unknown"]["lines"][0]
+    assert r["onSerper"]["lines"] == ["This run needs about 27 Serper credits; 2,389 left."]
+    assert r["exact"]["partial"] is False  # exactly one high-estimate run left still fits
+    keys = {"advisory", "provider", "partial", "low", "unknown", "lines"}
+    for a in (r["plenty"], r["tight"], r["roomy"], r["unknown"], r["onSerper"], r["exact"]):
+        assert a["advisory"] is True and set(a) == keys
+    assert all(n["lines"] == [] and n["advisory"] is True for n in r["nothing"])
+
+
+def test_the_baseline_form_accepts_whole_numbers_only() -> None:
+    r = js(
+        CREDITS_BODY
+        + """
+const f = (o) => C.baselineForm(Object.assign({ provider: "tavily", kind: "used", amount: "93", limit: "1000" }, o));
+out({
+  good: [f(), f({ limit: "" }), f({ provider: "serper", kind: "remaining", amount: " 2389 ", limit: "" }), f({ amount: "0" })],
+  bad: [f({ provider: "bing" }), f({ kind: "balance" }), f({ amount: "" }), f({ amount: "-1" }), f({ amount: "9.5" }), f({ amount: "1e3" }), f({ amount: "93a" }), f({ limit: "x" }), f({ limit: "-5" }), f({ amount: "2000" }), f({ amount: "1234567890" }), C.baselineForm(null)],
+});
+"""
+    )
+    assert r["good"][0] == {
+        "ok": True,
+        "error": "",
+        "body": {"provider": "tavily", "kind": "used", "amount": 93, "limit": 1000},
+    }
+    assert r["good"][1]["body"] == {"provider": "tavily", "kind": "used", "amount": 93}
+    assert r["good"][2]["body"] == {"provider": "serper", "kind": "remaining", "amount": 2389}
+    assert r["good"][3]["body"]["amount"] == 0
+    assert all(b["ok"] is False and b["body"] is None and b["error"] for b in r["bad"])
+    assert "bigger than the allowance" in r["bad"][9]["error"]
+
+
+def test_refresh_outcomes_in_plain_words() -> None:
+    r = js(
+        CREDITS_BODY
+        + """
+out([C.refreshWords({ done: true }), C.refreshWords({ done: false, throttled: true, wait_s: 42 }), C.refreshWords({ done: false, error: "auth" }), C.refreshWords({ done: false, error: "rate_limited" }), C.refreshWords({ done: false, error: "not_available" }), C.refreshWords({ done: false, error: "new_thing" }), C.refreshWords(null)]);
+"""
+    )
+    assert r[0] == {"tone": "ok", "text": "Tavily answered: the figures are up to date."}
+    assert r[1]["tone"] == "ok" and "42 s" in r[1]["text"]
+    assert r[2]["tone"] == "warn" and "did not accept the key" in r[2]["text"]
+    assert "wait a little" in r[3]["text"] and "no Tavily key" in r[4]["text"]
+    assert r[5]["tone"] == "warn" and "could not be asked" in r[5]["text"]
+    assert r[6] == {"tone": "ok", "text": ""}
+    assert all("counted" in x["text"] for x in r[2:6])  # a failed check says what is shown instead
+
+
+def test_credit_helpers_never_use_money_words() -> None:
+    """Credits are not dollars: nothing the helpers say mentions USD."""
+    r = js(
+        CREDITS_BODY
+        + """
+const low = tavily({ remaining: 3, used: 997, level: "red" });
+out([C.creditsChipText(snap([tavily(), serper()])), C.creditAdvice(need(33, 41), snap([low])).lines.join(" "), C.refreshWords({ error: "auth" }).text, C.needText(need(33, 41).credits)]);
+"""
+    )
+    assert not any("usd" in text.lower() or "$" in text for text in r)
+
+
 # ------------------------------------------------------------------------------------------------ budget
 def test_budget_levels_text_and_advice_before_a_run() -> None:
     r = js(

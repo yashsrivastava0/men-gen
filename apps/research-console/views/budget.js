@@ -1,5 +1,6 @@
 /* Budget (#/budget): the spend record as a table (date, what, run, cost by step, running total), the periods
-   including the history of restarts, and "Restart budget" behind a dialog that needs the word RESTART. */
+   including the history of restarts, "Restart budget" behind a dialog that needs the word RESTART, and the search
+   credits of the providers (views/credits.js; a separate count that a restart never touches). */
 import { h, clear, setKids, untrusted, navLink, put } from "../lib/dom.js";
 import { modal } from "./dialogs.js";
 import { problemBanner } from "./shared.js";
@@ -7,6 +8,7 @@ import { usd, usdNum, formatDateTime, kindWord, stepWord } from "../lib/format.j
 import { budgetLevel, budgetText } from "../lib/budget.js";
 import { ApiError } from "../lib/api.js";
 import { isActiveStatus } from "../lib/reducer.js";
+import { mountCredits } from "./credits.js";
 
 export function mount(root, ctx) {
   let spend = null;
@@ -14,9 +16,11 @@ export function mount(root, ctx) {
   let failure = null;
   let gone = false;
   const summary = h("section", { class: "card budget-card" });
+  const creditsBox = h("section", { class: "card", id: "credits" });
   const current = h("section", { class: "card" });
   const history = h("section", { class: "card" });
-  root.append(h("div", { class: "page-head" }, h("h2", null, "Budget")), h("p", { class: "lead" }, "Everything the Research app spends on live models and live searches is written down here, as it happens."), summary, current, history);
+  root.append(h("div", { class: "page-head" }, h("h2", null, "Budget")), h("p", { class: "lead" }, "Everything the Research app spends on live models and live searches is written down here, as it happens."), summary, creditsBox, current, history);
+  const credits = mountCredits(creditsBox, ctx);
 
   async function load() {
     try {
@@ -154,6 +158,7 @@ export function mount(root, ctx) {
     unmount() {
       gone = true;
       off();
+      credits.unmount();
     },
   };
 }

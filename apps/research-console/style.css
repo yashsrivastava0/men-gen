@@ -142,6 +142,27 @@ a { color: var(--primary); }
 .budget-red .meter-fill { background: var(--bad); }
 .budget-red .budget-text { color: var(--bad); }
 .budget-off .meter-fill { background: var(--muted); }
+/* search credits: the chip in the bar and the Budget page section (advice only; the word is always there, colour is a help) */
+.credits-row { margin: 0 0 4px; }
+.credits-chip { display: inline-block; font-size: 0.85rem; font-weight: 600; text-decoration: none; border: 1px solid var(--border); border-radius: 999px; padding: 2px 12px; background: var(--surface-2); color: var(--text); }
+.credits-chip:hover { background: var(--surface); }
+.credits-chip.credits-ok { border-color: var(--ok); color: var(--ok); background: var(--ok-bg); }
+.credits-chip.credits-amber { border-color: var(--warn); color: var(--warn); background: var(--warn-bg); }
+.credits-chip.credits-red { border-color: var(--bad); color: var(--bad); background: var(--bad-bg); }
+.credits-chip.credits-unknown { color: var(--muted); }
+.credit-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(17rem, 1fr)); gap: var(--gap); margin: 10px 0; }
+.credit-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; background: var(--surface-2); }
+.credit-card h4 { margin: 0 0 4px; }
+.credit-card p { margin: 4px 0; }
+.credit-card .big { margin-bottom: 4px; }
+.credit-card.credits-amber .big { color: var(--warn); }
+.credit-card.credits-red .big { color: var(--bad); }
+.credit-meter { margin: 6px 0; }
+.credit-meter .meter-fill { background: var(--ok); }
+.credit-card.credits-amber .meter-fill { background: #d98e04; }
+.credit-card.credits-red .meter-fill { background: var(--bad); }
+.credit-form { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: flex-end; margin: 8px 0; }
+.credit-form label { display: flex; flex-direction: column; gap: 2px; font-size: 0.9rem; font-weight: 600; }
 .nav { display: flex; flex-wrap: wrap; gap: 0 4px; margin: 0 -8px; }
 .nav a, .nav-off { padding: 8px 10px; text-decoration: none; color: var(--text); border-bottom: 3px solid transparent; font-weight: 600; font-size: 0.95rem; }
 .nav a:hover { background: var(--surface-2); }

@@ -17,6 +17,9 @@ Flags
     --total USD         the budget total (default 5.00); --tripwire USD (default 4.50)
     --spent USD         book this much spend before starting (a fresh data folder only)
     --seed N            commit extra runs at startup: one with N synthetic items (hostile text in the first three), one partial
+    --credits MODE      the search-credit ledger the console shows: seeded (default: Tavily 93 of 1,000 used, Serper 2,389
+                        left), low (Tavily 962 of 1,000 used: amber/red advice) or empty (no count yet). Tavily's own count
+                        (GET /usage) is answered by a local stand-in; a run books one credit per search to Tavily.
     --data-dir PATH     keep everything here (a restart with the same folder finds the old runs, which show as
                         interrupted if the process was killed mid-run); default is a new temporary folder
 
@@ -121,7 +124,42 @@ def build(args: argparse.Namespace, root: Path) -> Any:
         svc.record.add_cost(eid, "plan", usd_to_micros(args.spent))
         svc.record.finish_entry(eid, "complete")
     svc._fake_world = world_ref  # type: ignore[attr-defined]
+    seed_credits(svc, str(getattr(args, "credits", "seeded") or "seeded"))
     return svc
+
+
+def seed_credits(svc: Any, mode: str) -> None:
+    """The credit ledger of the fake app: baselines, a stand-in for Tavily's own count, and metered fake searches.
+
+    The ledger lives in the fake's own data folder (never the owner's). Keys are fake and never leave the process.
+    """
+    import httpx
+    from pydantic import SecretStr
+
+    from mde_research_agent.adapters.search.metered import MeteredSearch
+    from mde_research_agent.config import ResearchSettings
+
+    svc.settings = ResearchSettings(
+        tavily_api_key=SecretStr("tvly-FAKE-NOT-A-KEY"),  # secret-scan: allow
+        serper_api_key=SecretStr("serper-FAKE-NOT-A-KEY"),  # secret-scan: allow
+    )
+    snap = svc.credits.snapshot()["providers"]
+    if (
+        mode != "empty"
+        and snap["tavily"]["baseline"] is None
+        and snap["serper"]["baseline"] is None
+    ):
+        svc.credits.set_baseline("tavily", "used", 962 if mode == "low" else 93, 1000)
+        svc.credits.set_baseline("serper", "remaining", 2389)
+
+    def usage(_request: httpx.Request) -> httpx.Response:
+        used = svc.credits.snapshot()["providers"]["tavily"]["view"]["used"] or 0
+        account = {"current_plan": "Free (test fake)", "plan_usage": used, "plan_limit": 1000}
+        return httpx.Response(200, json={"account": account})
+
+    svc.credits_http = httpx.AsyncClient(transport=httpx.MockTransport(usage))
+    if svc.search is not None:
+        svc.search = MeteredSearch(svc.search, svc.credits, "tavily")
 
 
 HOSTILE = {
@@ -382,6 +420,7 @@ def main() -> None:
     p.add_argument("--total", default="5.00")
     p.add_argument("--tripwire", default="4.50")
     p.add_argument("--spent", type=float, default=0.0)
+    p.add_argument("--credits", choices=["seeded", "low", "empty"], default="seeded")
     p.add_argument("--data-dir", default="")
     p.add_argument(
         "--seed",
