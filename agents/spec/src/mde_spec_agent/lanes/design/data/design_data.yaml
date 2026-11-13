@@ -1,0 +1,127 @@
+# Design lane data (hard rule 8: content lives in data files). Nothing here names a company or an app type.
+# Free texts in this file are lint-clean: no position, widget, unit, motion or colour words (V-25).
+version: 1
+
+# A brand colour the user gave is found by this pattern in the Brief's brand setting; only a Locked setting counts.
+brand_colour_pattern: "#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})\\b"
+
+# The audience class of an app follows its surface; the ambition hint follows the class (vocab ambition_defaults).
+audience_class_by_surface: {phone: consumer, tablet: consumer, web: enterprise}
+
+delight_budget: {min: 0, max: 3}
+
+# Deep apps need dark mode designed as seriously as light (doc 19 2.2): these stances are accepted for deep.
+deep_dark_stances: [parity, dark_first, follows_time_of_day]
+deep_default_dark_stance: parity
+default_dark_stance: supported
+
+# Asset needs the model may write (the brand needs are code-made baseline, assets.unbound_asset_needs).
+model_asset_kinds: [illustration, icon, animation_clip, audio_cue, haptic_cue, texture]
+model_asset_purposes: [empty_state, celebration, decorative, supporting, primary_visual]
+max_model_assets: {compact: 4, standard: 8, deep: 12}
+max_avoid_items: 6
+
+# Capabilities a choice implies (capability sheet ids). Only tier B, tier C and not-production-recommended ones are flagged.
+capability_implications:
+  asset_kind:
+    animation_clip: vector_animation_clips
+    haptic_cue: haptics
+  ambition:
+    immersive: [shared_element_transitions, canvas_2d_graphics]
+  depth:
+    glass: glass_materials
+  dark_stance: {}
+
+# Deterministic copy for the fallback and the mock, by mood family. Ordinals separate two directions of one mood.
+ordinals: [One, Two, Three, Four]
+stages: [Discover, Decide, Act, Return]
+moods:
+  calm_trust:
+    name: Quiet Assurance
+    personality: Dependable and unhurried; it never rushes the person or hides what happens next.
+    voice_line: Clear, steady and kind. Say what will happen, then do it.
+    goals: ["Discover: feel oriented within seconds", "Decide: feel sure nothing is hidden", "Act: feel safe to commit", "Return: feel looked after"]
+    avoid: [a generic template with a hero and three feature cards, alarming urgency, a component library used in its default look]
+  warm_friendly:
+    name: Open Door
+    personality: Welcoming and human; it talks like a helpful neighbour.
+    voice_line: Friendly and plain. Use everyday words and short sentences.
+    goals: ["Discover: feel welcome", "Decide: feel guided, never judged", "Act: feel glad it was easy", "Return: feel recognised"]
+    avoid: [cold corporate wording, a generic template with a hero and three feature cards, stock gradients]
+  bold_energetic:
+    name: Full Tilt
+    personality: Confident and fast; it rewards momentum.
+    voice_line: Direct and upbeat. Short verbs, no filler.
+    goals: ["Discover: feel the pace", "Decide: feel in control", "Act: feel a win", "Return: feel streak and progress"]
+    avoid: [timid wording, a generic template with a hero and three feature cards, flat stock gradients]
+  crisp_professional:
+    name: Clear Desk
+    personality: Efficient and businesslike; it respects the person's time.
+    voice_line: Precise and neutral. State the fact, the next step and who owns it.
+    goals: ["Discover: find the work quickly", "Decide: see all the facts at once", "Act: finish without rework", "Return: pick up where they stopped"]
+    avoid: [decoration that slows a task, a generic template with a hero and three feature cards, a component library used in its default look]
+  playful_bright:
+    name: Little Surprises
+    personality: Light-hearted and curious; it likes a small surprise.
+    voice_line: Cheerful and curious. A little wit is welcome, never at the person's expense.
+    goals: ["Discover: feel curious", "Decide: feel it is a game, not a chore", "Act: feel delight", "Return: feel a reason to come back"]
+    avoid: [childish wording for adult tasks, a generic template with a hero and three feature cards, stock gradients]
+  premium_quiet:
+    name: Considered Space
+    personality: Restrained and refined; every detail is deliberate.
+    voice_line: Calm and precise. Fewer words, chosen with care.
+    goals: ["Discover: feel the quality", "Decide: feel unhurried", "Act: feel taken care of", "Return: feel known"]
+    avoid: [loud promotions, a generic template with a hero and three feature cards, crowded decoration]
+  earthy_natural:
+    name: Honest Ground
+    personality: Grounded and organic; it shows things as they are.
+    voice_line: Honest and warm. Say how it really is, with no gloss.
+    goals: ["Discover: feel trust in the source", "Decide: feel informed", "Act: feel good about the choice", "Return: feel part of a community"]
+    avoid: [glossy stock imagery, a generic template with a hero and three feature cards, synthetic gradients]
+  technical_precise:
+    name: Exact Instrument
+    personality: Exact and information-rich; it behaves like a good tool.
+    voice_line: Exact and unfussy. Use the real term, the real number and the real unit.
+    goals: ["Discover: find the proper tool fast", "Decide: see every number that matters", "Act: act with no doubt", "Return: resume with state intact"]
+    avoid: [decorative flourishes, a generic template with a hero and three feature cards, vague wording]
+
+# Variants for deep apps: the admin and operations side differs from the consumer side.
+admin_variant:
+  default_density: dense
+  default_motion: minimal
+  default_ambition: refined
+  note: Work screens favour density and scanning speed; motion only where it carries meaning.
+
+# Unbound need templates for the fallback and the mock ({entity} is a primary entity name).
+asset_templates:
+  empty_state:
+    kind: illustration
+    purpose: empty_state
+    subject: "A friendly picture for when there are no {entity} yet"
+    avoid: [readable text, other companies' logos]
+  celebration:
+    kind: animation_clip
+    purpose: celebration
+    subject: "A short moment of success after the person completes their main task"
+    avoid: [readable text, flashing]
+  confirm_cue:
+    kind: haptic_cue
+    purpose: supporting
+    subject: "A gentle confirmation touch when an important action succeeds"
+    avoid: [strong vibration]
+  sound_cue:
+    kind: audio_cue
+    purpose: supporting
+    subject: "A soft confirmation sound when an important action succeeds"
+    avoid: [loud sounds, music]
+  background_material:
+    kind: texture
+    purpose: decorative
+    subject: "A quiet surface pattern for large empty areas"
+    avoid: [busy patterns, readable text]
+# Which templates each profile uses, in order (the empty-state template repeats per primary entity up to the cap).
+asset_template_order:
+  compact: [empty_state, celebration]
+  standard: [empty_state, celebration, confirm_cue, background_material]
+  deep: [empty_state, celebration, confirm_cue, sound_cue, background_material]
+empty_state_entities_max: {compact: 1, standard: 2, deep: 4}

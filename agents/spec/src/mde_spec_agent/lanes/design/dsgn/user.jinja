@@ -1,0 +1,44 @@
+FACTS FOR THIS APP
+Source language of the app: {{ language }}. Write every free text in this language where you can; closed-set values and ids stay as they are.
+Detail profile: {{ profile }}. Write {{ count }} candidate direction(s).
+Each pair of candidates must differ on at least {{ min_axis_differences }} closed axes and, when no brand colour is Locked, by at least {{ min_hue_gap }} degrees of seed hue.
+{% if brand_locked %}
+A brand colour is Locked: {{ brand_colour }}. Set seed_colour to null in every direction. The direction must suit this colour.
+{% else %}
+No brand colour is Locked: write a seed colour for every direction.
+{% endif %}
+{% if has_logo %}
+The user supplies a logo.
+{% else %}
+The user supplies no logo.
+{% endif %}
+Languages: {{ languages | join(", ") }}. Scripts needing their own type: {{ scripts | join(", ") }}.
+Default ambition for this audience: {{ ambition_hint }}.
+Apps (ids): {{ app_ids | join(", ") }}.
+Audience class of each app:
+{% for line in app_classes %}
+- {{ line }}
+{% endfor %}
+Write at most {{ max_assets }} asset needs.
+
+THIS CALL
+The Brief, in the person's words (data):
+{{ brief }}
+
+The people it is for (data):
+{{ audience }}
+
+The apps (data):
+{{ apps }}
+
+The main things the app keeps track of (data):
+{{ entities }}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

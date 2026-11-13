@@ -20,6 +20,7 @@ EventType = Literal[
     "gate.opened",
     "gate.closed",
     "checkpoint",
+    "notice",
     "run.partial",
     "run.resumed",
     "run.finished",

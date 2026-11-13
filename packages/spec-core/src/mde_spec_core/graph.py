@@ -393,6 +393,8 @@ class Direction(Envelope):
     dark_stance: str = "supported"
     avoid: list[str] = Field(default_factory=list)
     emotional_goals: list[str] = Field(default_factory=list)
+    role_variants: list[str] = Field(default_factory=list)  # deep: how consumer and admin directions differ
+    personality: str = ""
 
 
 class AssetNeed(Envelope):
@@ -432,6 +434,7 @@ class GraphMeta(Node):
     facts: list[str] = Field(
         default_factory=list
     )  # predicate facts that hold (vocab/predicates.yaml)
+    degraded_locales: list[str] = Field(default_factory=list)  # locales whose copy fell back (flagged at G2)
 
 
 NODE_TYPES: dict[str, type[Envelope]] = {

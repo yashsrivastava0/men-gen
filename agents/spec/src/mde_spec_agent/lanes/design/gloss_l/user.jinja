@@ -1,0 +1,18 @@
+FACTS FOR THIS APP
+Source language: {{ source_language }}.
+Extra languages: {{ languages | join(", ") }}.
+
+THIS CALL
+The items (data):
+{% for it in items %}
+{{ it }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text
