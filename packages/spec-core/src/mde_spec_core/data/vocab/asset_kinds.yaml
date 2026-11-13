@@ -1,0 +1,17 @@
+# Asset needs (doc 17 2.7): a need states kind, purpose, subject, count and an avoid-list.
+# No lighting, placement, size, crop or variant: those are the front end's.
+version: 1
+purposes: [primary_visual, supporting, decorative, empty_state, celebration]
+source_policies: [user_upload, generate, licensed_stock, none]
+asset_kinds:
+  - {name: photo, what: "a photograph", source_policies: [user_upload, generate, licensed_stock], needs_alt_text: true, needs_license_rule: true, data_bound_capable: true, fallback: "a neutral placeholder that keeps the item's place"}
+  - {name: illustration, what: "a drawn picture", source_policies: [generate, licensed_stock, user_upload], needs_alt_text: true, needs_license_rule: true, data_bound_capable: false, fallback: "a neutral placeholder; the text still carries the meaning"}
+  - {name: icon, what: "a small symbol that names an action or a thing", source_policies: [generate, licensed_stock, none], needs_alt_text: false, needs_license_rule: true, data_bound_capable: false, fallback: "a text label alone"}
+  - {name: avatar, what: "a picture or mark that stands for a person or an account", source_policies: [user_upload, generate], needs_alt_text: true, needs_license_rule: false, data_bound_capable: true, fallback: "the person's initials"}
+  - {name: brand_mark, what: "the logo, app icon, adaptive icon or launch image", source_policies: [user_upload, generate], needs_alt_text: true, needs_license_rule: true, data_bound_capable: false, fallback: "the app's name set in the brand typeface"}
+  - {name: animation_clip, what: "a short moving graphic", source_policies: [generate, licensed_stock, none], needs_alt_text: true, needs_license_rule: true, data_bound_capable: false, fallback: "a still picture of the final frame"}
+  - {name: video, what: "recorded video", source_policies: [user_upload, generate, licensed_stock], needs_alt_text: true, needs_license_rule: true, data_bound_capable: true, fallback: "a still picture with a caption"}
+  - {name: audio_cue, what: "a short sound that confirms or signals", source_policies: [generate, licensed_stock, none], needs_alt_text: false, needs_license_rule: true, data_bound_capable: false, fallback: "no sound; the visible result still shows"}
+  - {name: haptic_cue, what: "a short touch feedback pattern", source_policies: [generate, none], needs_alt_text: false, needs_license_rule: false, data_bound_capable: false, fallback: "no feedback; the visible result still shows"}
+  - {name: texture, what: "a surface pattern used as background material", source_policies: [generate, licensed_stock, none], needs_alt_text: false, needs_license_rule: true, data_bound_capable: false, fallback: "a plain surface from the tokens"}
+  - {name: map_style, what: "the look of a map's base layer", source_policies: [generate, none], needs_alt_text: false, needs_license_rule: true, data_bound_capable: false, fallback: "the platform's default map look"}

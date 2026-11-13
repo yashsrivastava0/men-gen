@@ -1,0 +1,22 @@
+# Semantic input types (doc 15 5.7a, doc 17 2.3): what a value IS, never which widget collects it.
+version: 1
+input_types:
+  - {name: text, what: "free text", sensitive: false, needs_permission: null}
+  - {name: number, what: "a plain number", sensitive: false, needs_permission: null}
+  - {name: money, what: "an amount with a currency", sensitive: false, needs_permission: null}
+  - {name: date, what: "a day, a time or a range of them", sensitive: false, needs_permission: null}
+  - {name: phone, what: "a phone number", sensitive: true, needs_permission: null}
+  - {name: email, what: "an email address", sensitive: true, needs_permission: null}
+  - {name: choice, what: "one or several of a known set of values", sensitive: false, needs_permission: null}
+  - {name: file, what: "a photo, video, document or other file", sensitive: false, needs_permission: media}
+  - {name: location, what: "a place or an address", sensitive: true, needs_permission: location}
+  - {name: code, what: "a short code such as a one-time code or a scanned code", sensitive: true, needs_permission: null}
+  - {name: secret, what: "a secret such as a password; never shown back, never logged", sensitive: true, needs_permission: null}
+  - {name: quantity, what: "a whole count of something", sensitive: false, needs_permission: null}
+  - {name: toggle, what: "a yes or no setting", sensitive: false, needs_permission: null}
+# Types that only data fields use (graph FieldDef.type), never form inputs.
+field_only_types:
+  - {name: id, what: "an identifier"}
+  - {name: enum, what: "one of a closed set declared on the field"}
+  - {name: list, what: "an ordered list of values"}
+  - {name: ref, what: "a reference to another entity"}

@@ -1,0 +1,22 @@
+# Form-vocabulary lint (V-25, doc 15 2.2): words that describe how something looks or where it sits, not what it means.
+# A trailing `*` matches any ending (`animat*`). Matching is whole-word and case-insensitive.
+# It is a warning in v1 (tuned on the corpus). The lint reads free text: card text, usually, COULD text,
+# and the library texts of this directory (not the error catalogue, the synonyms or this file, which must name the words).
+# Widget key suffixes for identifiers live in spec-config.yaml (checks.widget_key_suffixes), not here.
+version: 1
+deny:
+  position: [top, bottom, left, right, above, below, beside, sticky, fixed, floating, sidebar]
+  widget: [button, buttons, "tab bar", drawer, carousel, modal, "bottom sheet", toast, snackbar, banner, chip, chips, badge, skeleton, spinner, accordion, dropdown, toggle, slider, popup, popover, tooltip, hamburger, checkbox, "radio button"]
+  unit: [px, pt, dp, rem, columns, pixels]
+  motion: [fade, fades, fading, slide, slides, sliding, bounce, bounces, bouncing, "animat*"]
+  colour: [red, orange, yellow, green, blue, purple, pink, brown, black, white, grey, gray, teal, cyan, magenta, indigo, violet, gold, silver, navy, beige, maroon]
+hex_pattern: "#[0-9a-fA-F]{3,8}\\b"
+# Content uses that are allowed (doc 15 2.2): the phrase is removed before scanning.
+allow:
+  phrases: ["right-to-left", "left-to-right", "right to left", "top 20", "top 10", "top 5", "top 3", "top rated", "top-rated"]
+  # Subject words allowed on the named screen types, where they name the content itself.
+  by_screen_type:
+    map: [map, maps, marker, markers]
+    media: [slide, slides]
+    onboarding: [slide, slides]
+    chat: [badge]

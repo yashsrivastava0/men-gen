@@ -1,0 +1,59 @@
+# Interaction intents (doc 17 2.3): what the user means to do, never the trigger.
+# Flags are the DEFAULT an action with this intent carries; a card may raise any flag on an action.
+# `input_type` links an intent to the input type it implies (null when none).
+# No hover, right-click, tooltip or breadcrumb intent exists (doc 17 5.6); see `forbidden_on_phone`.
+version: 1
+groups:
+  view: look at information without changing it
+  choose: pick among alternatives
+  enter: provide a value
+  capture: bring something in from the device or the world
+  access: identity and permissions
+  decide: confirm, cancel or take back
+  collection: work on a set of items
+  move: leave this screen or reach outside the app
+  commerce: money and opinions
+forbidden_on_phone:
+  - {name: hover, why: "a phone has no pointer that rests on an item"}
+  - {name: right_click, why: "a phone has no secondary pointer button"}
+  - {name: tooltip, why: "a tooltip needs hover; the information belongs in the content or a help message"}
+  - {name: breadcrumb, why: "navigation on a phone is a stack and a back path, not a trail"}
+intents:
+  - {name: view, group: view, what: "look at an item or a screen's information", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: select_one, group: choose, what: "pick exactly one of several", input_type: choice, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: select_many, group: choose, what: "pick any number of several", input_type: choice, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: enter_text, group: enter, what: "write free text", input_type: text, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: enter_number, group: enter, what: "give a number", input_type: number, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: enter_money, group: enter, what: "give an amount of money with its currency", input_type: money, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: enter_code, group: enter, what: "give a short code such as a one-time code", input_type: code, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: enter_secret, group: enter, what: "give a secret such as a password; never shown back", input_type: secret, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: adjust_quantity, group: enter, what: "raise or lower a count of something", input_type: quantity, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: toggle, group: enter, what: "turn a setting on or off", input_type: toggle, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: choose_date, group: choose, what: "pick a day", input_type: date, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: choose_time, group: choose, what: "pick a time of day", input_type: date, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: choose_range, group: choose, what: "pick a start and an end, of dates or numbers", input_type: date, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: pick_place, group: choose, what: "pick a location or address", input_type: location, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: capture_media, group: capture, what: "take a photo, record a video or record sound now", input_type: file, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: pick_media, group: capture, what: "pick an existing photo, video or file from the device", input_type: file, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: scan_code, group: capture, what: "read a barcode or a two-dimensional code with the camera", input_type: code, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: authenticate, group: access, what: "prove it is the user, including with the device's own check", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: confirm, group: decide, what: "agree to go ahead with what was shown", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: cancel, group: decide, what: "stop and leave things as they were", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: undo, group: decide, what: "take back the last change while that is still possible", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: reorder, group: collection, what: "change the order of items", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: filter, group: collection, what: "narrow a set of items by a field", input_type: choice, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: sort, group: collection, what: "choose the order a set of items is shown in", input_type: choice, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: search, group: collection, what: "find items by a typed query", input_type: text, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: refresh, group: collection, what: "ask for the latest data", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: load_more, group: collection, what: "ask for the next part of a long set", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: expand_detail, group: view, what: "see more about an item without leaving the screen", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: act_on_item, group: collection, what: "do something to one item, such as archive or delete (the card raises the flags)", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: share, group: move, what: "send something to another person or app", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: navigate, group: move, what: "go to another screen", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: pay, group: commerce, what: "hand over money for something", input_type: money, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: true}
+  - {name: rate, group: commerce, what: "give a score or an opinion", input_type: number, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: report, group: commerce, what: "tell the owner about a problem or an abuse", input_type: text, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: true}
+  - {name: call_contact, group: move, what: "start a phone call or a message to a contact", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: sign_in, group: access, what: "start a session", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: sign_out, group: access, what: "end the session", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}
+  - {name: grant_permission, group: access, what: "allow the app to use a device ability such as the camera", input_type: null, phone_ok: true, destructive: false, irreversible: false, needs_confirmation: false}

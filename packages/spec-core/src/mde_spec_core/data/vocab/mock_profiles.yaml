@@ -1,0 +1,37 @@
+# Mock profiles (doc 17 4.1): a closed set; scenarios and journeys name the one they run on.
+# Which profiles each size ships is configuration (spec-config.yaml profiles.mock_profiles).
+# `demonstrates` lists the state kinds a profile can show (V-41: every state is demonstrable on some profile).
+version: 1
+mock_profiles:
+  - name: empty
+    what: "a new account with nothing yet"
+    list_size: "0 items"
+    errors: none
+    demonstrates: [empty]
+  - name: typical
+    what: "a normal user with a believable amount of data"
+    list_size: "a few to a couple of dozen items"
+    errors: none
+    demonstrates: [loading, success]
+  - name: busy
+    what: "a heavy user with long lists and many notifications"
+    list_size: "dozens to hundreds of items"
+    errors: none
+    demonstrates: [partial, success]
+  - name: extreme
+    what: "very long text, huge numbers, zero, one and many, emoji, right-to-left and mixed scripts"
+    list_size: "0, 1 and very large"
+    errors: none
+    demonstrates: [success, partial]
+  - name: broken
+    what: "failures by code: server errors, timeouts, an expired session, a conflict, a denied permission"
+    list_size: "as typical"
+    errors: injected
+    demonstrates: [error, forbidden, not_found, partial]
+  - name: offline
+    what: "no network: cached data and queued actions"
+    list_size: "as typical, from the cache"
+    errors: network_down
+    demonstrates: [offline, stale]
+# `domain:<x>` states are demonstrated on the profile named here.
+domain_state_profile: broken

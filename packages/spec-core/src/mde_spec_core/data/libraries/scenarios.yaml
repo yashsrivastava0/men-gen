@@ -1,0 +1,185 @@
+# Scenario library (doc 15 7.2): standard GIVEN / WHEN / THEN scenarios, written as meaning only.
+# `{screen}` is replaced with the screen's name by code. `applies_to` is `any` or a list of screen types.
+# `mock_profile` is the profile it runs on (vocab/mock_profiles.yaml); `states` are the state kinds it exercises.
+# The doc 15 7.2 set is here, plus a few generic ones the state library needs (marked `extra: true`).
+version: 1
+scenarios:
+  - id: first_launch
+    name: First launch
+    applies_to: [onboarding, auth, dashboard, list]
+    mock_profile: empty
+    states: [empty]
+    given: the app is opened for the first time on this device
+    when: the first screen has loaded
+    then: the user sees what the app is for and the one next step, and no data from another account
+  - id: sign_in
+    name: Sign-in
+    applies_to: [auth]
+    mock_profile: typical
+    states: [success]
+    given: the user has an account and is signed out
+    when: the user gives valid credentials
+    then: the user is signed in and lands on their home screen, and the credentials are not kept anywhere visible
+  - id: expired_session
+    name: Expired session
+    applies_to: any
+    mock_profile: broken
+    states: [forbidden]
+    given: the user's session ended while {screen} was open
+    when: the user does something that needs the session
+    then: the user is asked to sign in again, comes back to {screen} afterwards, and keeps any unsent input
+  - id: permission_denied
+    name: Access denied
+    applies_to: any
+    mock_profile: broken
+    states: [forbidden]
+    given: the user's role may not see or do what {screen} offers
+    when: the user reaches {screen} or tries the action
+    then: the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown
+  - id: device_permission_denied
+    name: Device permission denied
+    applies_to: [map, media, chat, onboarding, permission, notifications]
+    mock_profile: broken
+    states: ["domain:permission_denied"]
+    extra: true
+    given: "{screen} needs a device ability and the user refuses it"
+    when: the refusal is received
+    then: the rest of {screen} still works, the missing ability is explained once, and the way to the system settings is offered
+  - id: no_network
+    name: No network
+    applies_to: any
+    mock_profile: offline
+    states: [offline, stale]
+    given: the device has no network while the user is on {screen}
+    when: the user opens {screen} or acts on it
+    then: saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns
+  - id: slow_network
+    name: Slow network
+    applies_to: any
+    mock_profile: typical
+    states: [loading]
+    given: the network is slow while {screen} loads
+    when: the wait passes the moment the user expects
+    then: the user can see that content is coming, and a wait past the timeout becomes an error with a retry
+  - id: server_error
+    name: Server error
+    applies_to: any
+    mock_profile: broken
+    states: [error]
+    given: the server fails when {screen} asks for data or sends a change
+    when: the failure is received
+    then: the user is told in plain words that something went wrong, nothing is lost, and a retry is offered
+  - id: empty_data
+    name: Empty data
+    applies_to: [list, search, dashboard, calendar, map, chat, notifications, report, media]
+    mock_profile: empty
+    states: [empty]
+    given: the user has no data for {screen} yet
+    when: "{screen} loads"
+    then: the empty state says why there is nothing and what the user can do next
+  - id: last_page
+    name: Last page
+    applies_to: [list, search, notifications, report, chat]
+    mock_profile: busy
+    states: [success]
+    given: the user has reached the end of a long set on {screen}
+    when: the user asks for more
+    then: the user is told there is no more, and no empty request is sent again
+  - id: validation_error
+    name: Validation error
+    applies_to: [form, wizard, auth, profile, settings, checkout]
+    mock_profile: typical
+    states: ["domain:validation_failed"]
+    given: the user gave a value that breaks a rule on {screen}
+    when: the user submits or leaves the input
+    then: the problem is named next to the input in plain words, the input is kept, and nothing is sent
+  - id: deep_link_signed_out
+    name: Deep link while signed out
+    applies_to: any
+    mock_profile: typical
+    states: [forbidden]
+    given: the user opens a link to {screen} and is signed out
+    when: the app starts from the link
+    then: the user signs in first and then arrives at {screen}, not at the home screen
+  - id: push_signed_out
+    name: Push while signed out
+    applies_to: any
+    mock_profile: typical
+    states: [forbidden]
+    given: the user receives a notification about something on {screen} and is signed out
+    when: the user opens the notification
+    then: the notification shows no private content before sign-in, and after sign-in the user arrives at {screen}
+  - id: forced_update
+    name: Forced update
+    applies_to: any
+    mock_profile: broken
+    states: [error]
+    given: the installed version is no longer supported
+    when: the app starts or returns to the foreground
+    then: the user is told an update is required and can reach the store, and nothing else is usable
+  - id: language_switch
+    name: Language switch
+    applies_to: any
+    mock_profile: typical
+    states: [success]
+    given: the user changes the app language while {screen} is open
+    when: the change is applied
+    then: all text on {screen} follows the new language, numbers and dates follow its formats, and the user's place and input are kept
+  - id: account_deletion
+    name: Account deletion
+    applies_to: [profile, settings]
+    mock_profile: typical
+    states: [success]
+    given: the user asks to delete their account from {screen}
+    when: the user confirms
+    then: the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again
+  - id: payment_declined
+    name: Payment declined
+    applies_to: [checkout]
+    mock_profile: broken
+    states: ["domain:payment_declined"]
+    given: the user pays and the payment is declined
+    when: the decline is received
+    then: the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried
+  - id: pending
+    name: Pending result
+    applies_to: [checkout, status, form, wizard]
+    mock_profile: typical
+    states: ["domain:pending"]
+    given: the result of what the user did is not known yet
+    when: the user is on {screen}
+    then: the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known
+  - id: duplicate
+    name: Duplicate
+    applies_to: [form, wizard, checkout, media]
+    mock_profile: broken
+    states: [error]
+    given: the user sends the same thing twice, by repeating it or by a slow connection
+    when: the second request arrives
+    then: the thing is created once, and the user sees one clear result
+  - id: edit_conflict
+    name: Conflict
+    applies_to: any
+    mock_profile: broken
+    states: ["domain:conflict"]
+    given: the data on {screen} was changed elsewhere after it was loaded
+    when: the user acts on the older data
+    then: the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice
+  - id: happy_path
+    name: Normal use
+    applies_to: any
+    mock_profile: typical
+    states: [loading, success]
+    extra: true
+    given: the user has typical data and a working network
+    when: the user uses {screen} for its main purpose
+    then: the main purpose is achieved and the result is confirmed in plain words
+  - id: extreme_content
+    name: Extreme content
+    applies_to: any
+    mock_profile: extreme
+    states: [success, partial]
+    extra: true
+    given: the data on {screen} has very long text, very large numbers, emoji and right-to-left text
+    when: "{screen} shows it"
+    then: nothing is cut off in a way that hides its meaning, and the screen stays usable

@@ -1,0 +1,235 @@
+# Exact-synonym table for closed vocabularies (doc 18 3.2, code fix 4): a word that is truly another
+# name for a vocabulary value maps to it; anything else is asked again (R-ask). Lookup is exact after
+# lowercasing and turning spaces and hyphens into underscores. A value is a name, or {to, attrs} when the
+# synonym also implies shape attributes ("name=value"). Never map a widget or a trigger word (see not_synonyms).
+version: 1
+not_synonyms:
+  - {word: btn, why: "a widget, not a meaning"}
+  - {word: button, why: "a widget, not a meaning"}
+  - {word: cta, why: "a trigger, not a meaning"}
+  - {word: modal, why: "a widget; the meaning is an action or a state"}
+  - {word: sheet, why: "a widget; the meaning is an action or a state"}
+  - {word: tab, why: "a widget; the meaning is a destination"}
+  - {word: toast, why: "a widget; the meaning is a notice or a state"}
+  - {word: banner, why: "a widget; the meaning is a notice"}
+  - {word: chip, why: "a widget; the meaning is a choice or a filter"}
+  - {word: card, why: "a presentation of an item, not a shape"}
+  - {word: home, why: "a place in navigation, not a screen type"}
+  - {word: page, why: "ambiguous: a screen, a web page or a page of content"}
+vocabs:
+  screen_type:
+    login: auth
+    signin: auth
+    sign_in: auth
+    signup: auth
+    sign_up: auth
+    register: auth
+    registration: auth
+    list_view: list
+    listing: list
+    details: detail
+    detail_view: detail
+    item_detail: detail
+    overview: dashboard
+    summary_dashboard: dashboard
+    multi_step: wizard
+    stepper_flow: wizard
+    search_results: search
+    maps: map
+    conversation: chat
+    messaging: chat
+    gallery: media
+    payment: checkout
+    order_confirmation: confirmation
+    tracking: status
+    inbox: notifications
+    preferences: settings
+    terms: legal
+    privacy: legal
+    permissions: permission
+    reports: report
+    intro: onboarding
+    welcome: onboarding
+    walkthrough: onboarding
+  intent:
+    select: select_one
+    choose: select_one
+    pick_one: select_one
+    multi_select: select_many
+    pick_many: select_many
+    input_text: enter_text
+    type_text: enter_text
+    enter_pin: enter_code
+    enter_otp: enter_code
+    enter_password: enter_secret
+    increment: adjust_quantity
+    decrement: adjust_quantity
+    switch: toggle
+    pick_date: choose_date
+    pick_time: choose_time
+    pick_range: choose_range
+    pick_location: pick_place
+    choose_location: pick_place
+    take_photo: capture_media
+    record: capture_media
+    scan: scan_code
+    login: sign_in
+    logout: sign_out
+    signout: sign_out
+    reload: refresh
+    pull_to_refresh: refresh
+    paginate: load_more
+    infinite_scroll: load_more
+    find: search
+    query: search
+    sort_by: sort
+    revert: undo
+    abort: cancel
+    star: rate
+    report_abuse: report
+    call: call_contact
+    dial: call_contact
+    allow: grant_permission
+    request_permission: grant_permission
+    open_screen: navigate
+    go_to: navigate
+    share_item: share
+  shape:
+    list: collection
+    grid: collection
+    table: {to: collection, attrs: ["columns=2"]}
+    feed: {to: collection, attrs: ["stream=true"]}
+    gallery: {to: media, attrs: ["count=set"]}
+    photos: {to: media, attrs: ["count=set"]}
+    timeline: {to: sequence, attrs: ["kind=events"]}
+    history: {to: sequence, attrs: ["kind=events"]}
+    stepper: {to: sequence, attrs: ["kind=stages"]}
+    progress_steps: {to: sequence, attrs: ["kind=stages"]}
+    chart: series
+    graph: series
+    locations: places
+    metric: {to: value, attrs: ["kind=metric"]}
+    kpi: {to: value, attrs: ["kind=metric"]}
+    rating: {to: value, attrs: ["kind=rating"]}
+    progress: {to: value, attrs: ["kind=progress"]}
+    tree: hierarchy
+    messages: conversation
+    thread: conversation
+    form: inputs
+    fields: inputs
+    calendar: schedule
+    timetable: schedule
+    alert: notice
+    announcement: notice
+    plans: options
+    autocomplete: suggestions
+    paragraph: text
+    description: text
+    settings_rows: key_values
+    details: key_values
+    attachment: document
+    slides: pages
+  state_kind:
+    empty_state: empty
+    no_data: empty
+    no_results: empty
+    failed: error
+    failure: error
+    loading_state: loading
+    fetching: loading
+    denied: forbidden
+    no_access: forbidden
+    unauthorized: forbidden
+    missing: not_found
+    "404": not_found
+    no_network: offline
+    outdated: stale
+    incomplete: partial
+    ok: success
+    done: success
+  importance:
+    high: primary
+    main: primary
+    medium: supporting
+    secondary_info: supporting
+    low: optional
+    nice_to_have: optional
+  input_type:
+    string: text
+    integer: number
+    decimal: number
+    amount: money
+    currency: money
+    tel: phone
+    mobile: phone
+    e_mail: email
+    select: choice
+    radio: choice
+    upload: file
+    address: location
+    otp: code
+    pin: code
+    password: secret
+    boolean: toggle
+    switch: toggle
+    qty: quantity
+  mock_profile:
+    new: empty
+    new_user: empty
+    normal: typical
+    default: typical
+    heavy: busy
+    large: busy
+    stress: extreme
+    edge: extreme
+    errors: broken
+    failing: broken
+    no_network: offline
+  asset_kind:
+    image: photo
+    picture: photo
+    logo: brand_mark
+    app_icon: brand_mark
+    splash: brand_mark
+    animation: animation_clip
+    sound: audio_cue
+    haptic: haptic_cue
+    vibration: haptic_cue
+    map_theme: map_style
+    profile_picture: avatar
+  motion_intent:
+    success: confirm_success
+    error: signal_error
+    loading: show_progress
+    progress: show_progress
+    attention: draw_attention
+    celebrate: reward
+    push: enter_deeper
+    pop: return_back
+    back: return_back
+    peer_switch: switch_peer
+    modal_in: overlay_in
+    modal_out: overlay_out
+    shared_element: identity_continuity
+    expand: reveal_more
+  behavior_category:
+    auth: session
+    sessions: session
+    sync: offline
+    offline_sync: offline
+    error: errors
+    error_handling: errors
+    spinners: loading
+    permission: permissions
+    push: notifications
+    localization: i18n
+    translation: i18n
+    rtl: i18n
+    telemetry: analytics
+    restoration: lifecycle
+    app_lifecycle: lifecycle
+    background: background_work
+    external_flow: interrupted_external_flow
+    timeouts: pending_timeouts
+    slices: state
+    media_fallbacks: media

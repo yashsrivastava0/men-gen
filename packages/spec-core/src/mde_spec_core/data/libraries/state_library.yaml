@@ -1,0 +1,449 @@
+# State library (doc 15 7.2): per screen_type the required states, standard behaviours and default
+# acceptance scenarios. Code instantiates these (provenance `library`, tier Default) so a model never
+# writes them. Meaning only; no layout, widget or motion words (the lint in form_words.yaml checks this file).
+#
+# states: `kind` is a base state kind (vocab/state_kinds.yaml) or `domain:<name>`. `message` is the single
+#   sentence the card's state carries (what the state means); `copy` is the user-facing source-language
+#   English text. A base kind without message or copy takes `common.states` below. A domain state needs both.
+# copy keys, derived by code: lib.common.<kind> | lib.common.<name> | lib.<screen_type>.<kind or name>
+#   (a `:` in a domain kind becomes `.`). Placeholders in copy: {items}, {query}, {name} are filled by code.
+# acceptance: scenario ids from scenarios.yaml, cumulative by detail profile: compact has `compact`;
+#   standard has compact + standard; deep has all three. Deep always holds permission_denied and edit_conflict.
+#   `acceptance_overrides` replaces the generic wording of a scenario for that type.
+version: 1
+common:
+  states:
+    loading: {message: "Nothing to show yet; the user must still see that content is coming.", copy: "Loading, one moment."}
+    empty: {message: "There is nothing to show; say why and what the user can do next.", copy: "Nothing here yet."}
+    error: {message: "Something failed; say what happened in plain words and offer a retry.", copy: "Something went wrong. Please try again."}
+    offline: {message: "There is no network; show saved data, and say which actions are unavailable and why.", copy: "You are offline. Showing what was saved last."}
+    forbidden: {message: "The user's role may not see or do this; say so and where to go instead.", copy: "You do not have access to this."}
+    not_found: {message: "The item does not exist or was removed; offer a way back.", copy: "We could not find this. It may have been removed."}
+    stale: {message: "The data shown may be out of date; the user can ask for the latest.", copy: "This may be out of date."}
+    partial: {message: "Some of the data arrived and some did not; say which is missing and offer a retry.", copy: "Some of this could not be loaded."}
+    success: {message: "What the user did worked; say what changed.", copy: "Done."}
+  copy:
+    retry: "Try again"
+    reload: "Reload"
+    cancel: "Cancel"
+    go_back: "Go back"
+    continue: "Continue"
+    save: "Save"
+    close: "Close"
+    sign_in_again: "Sign in again"
+    open_settings: "Open settings"
+    contact_support: "Contact support"
+screen_types:
+  list:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "There are no items; say why the list is empty and what the user can do to add or find some.", copy: "No {items} yet."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: stale}
+      - {kind: partial}
+    copy:
+      no_more: "That is everything."
+      clear_filters: "Clear filters"
+    behaviors:
+      - {id: reload_keeps_context, text: "Reloading keeps the current filters, sort and search."}
+      - {id: paging_continues, text: "More items are requested as the user nears the end of what is loaded, the user can see that more is coming, and is told when there is no more.", copy_keys: [lib.list.no_more]}
+      - {id: empty_by_filter, text: "When filters hide every item, the empty state names the filter and offers to clear it.", copy_keys: [lib.list.clear_filters]}
+      - {id: failure_stays_local, text: "A failed action on one item reports on that item and leaves the others alone."}
+      - {id: place_kept, text: "Coming back from an item's detail keeps the user's place in the list."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, last_page]
+      deep: [permission_denied, edit_conflict, deep_link_signed_out]
+  detail:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: not_found}
+      - {kind: stale}
+    behaviors:
+      - {id: changes_need_network, text: "Actions that change the item are unavailable offline, and the reason is given."}
+      - {id: removed_while_open, text: "If the item is removed while the user views it, the not-found state replaces it with a way back.", copy_keys: [lib.common.go_back]}
+      - {id: refresh_when_stale, text: "Returning to an item whose data went stale refreshes it."}
+    acceptance:
+      compact: [happy_path, server_error, no_network]
+      standard: [slow_network, deep_link_signed_out]
+      deep: [permission_denied, edit_conflict, extreme_content]
+  form:
+    states:
+      - {kind: loading}
+      - {kind: offline}
+      - {kind: error}
+      - {kind: forbidden}
+      - {kind: success}
+      - {kind: "domain:validating", message: "The input is being checked; the user can keep typing.", copy: "Checking."}
+      - {kind: "domain:submitting", message: "The form is being sent; it cannot be sent again meanwhile.", copy: "Sending."}
+      - {kind: "domain:validation_failed", message: "A value breaks a rule; the message names the input and the rule.", copy: "Please check the highlighted input."}
+      - {kind: "domain:conflict", message: "The data changed elsewhere since it was loaded; show what changed and let the user choose.", copy: "This was changed by someone else. Review the latest version."}
+    copy:
+      discard_title: "Discard your changes?"
+      discard: "Discard"
+      keep_editing: "Keep editing"
+    behaviors:
+      - {id: validation_timing, text: "Each input is checked when the user leaves it and again on submit, and the message names the rule that was broken."}
+      - {id: unsaved_input, text: "Leaving with unsaved input asks first, unless the form keeps a draft.", copy_keys: [lib.form.discard_title, lib.form.discard, lib.form.keep_editing]}
+      - {id: no_double_submit, text: "While a submission is in progress it cannot be sent again."}
+      - {id: failure_keeps_input, text: "A failed submission keeps everything the user entered."}
+      - {id: conflict_choice, text: "A conflict shows what changed and lets the user keep their version or take the newer one."}
+    acceptance:
+      compact: [happy_path, validation_error, server_error]
+      standard: [no_network, duplicate]
+      deep: [permission_denied, edit_conflict, expired_session]
+  wizard:
+    states:
+      - {kind: loading}
+      - {kind: offline}
+      - {kind: error}
+      - {kind: forbidden}
+      - {kind: success}
+      - {kind: "domain:step_invalid", message: "The current step has a problem; the user cannot continue until the problem is corrected.", copy: "Please fix this step to continue."}
+      - {kind: "domain:submitting", message: "The last step is being sent; it cannot be sent again meanwhile.", copy: "Sending."}
+      - {kind: "domain:resumed", message: "The user returns to a flow they started earlier and continues where they stopped.", copy: "Welcome back. You can continue where you stopped."}
+      - {kind: "domain:conflict", message: "The data changed elsewhere since the flow began; show what changed and let the user choose.", copy: "Something changed while you were working. Review the latest version."}
+    behaviors:
+      - {id: progress_kept, text: "Progress is kept if the user leaves, for the time the card states."}
+      - {id: back_keeps_entries, text: "Going back to an earlier step keeps what was entered there and in later steps."}
+      - {id: exit_asks, text: "Leaving before the last step asks whether to keep or discard what was entered.", copy_keys: [lib.common.cancel]}
+      - {id: steps_shown, text: "The user can always see which step they are on and how many remain."}
+    acceptance:
+      compact: [happy_path, validation_error, server_error]
+      standard: [no_network, expired_session]
+      deep: [permission_denied, edit_conflict, duplicate]
+  search:
+    states:
+      - {kind: "domain:before_query", message: "No query has been given yet; show suggestions or recent searches if the card has them.", copy: "Search for {items}."}
+      - {kind: loading}
+      - {kind: empty, message: "Nothing matches the query; say so and suggest changing it.", copy: "No results for {query}."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: partial}
+    behaviors:
+      - {id: results_follow_query, text: "Results follow the query as it changes, and an older answer never replaces a newer one."}
+      - {id: no_results_help, text: "No results suggests a change to the query or the filters."}
+      - {id: history_clearable, text: "If recent searches are kept, the user can remove them."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, slow_network]
+      deep: [permission_denied, edit_conflict, language_switch]
+  dashboard:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "There is no data to summarise yet; say what will appear and how to get it.", copy: "No figures yet. They will appear as activity comes in."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: stale}
+      - {kind: partial}
+    behaviors:
+      - {id: figures_fail_alone, text: "Each figure loads and fails on its own, so one failure does not hide the others."}
+      - {id: freshness_shown, text: "Each figure says when it was last updated."}
+      - {id: no_data_is_not_zero, text: "A figure with no data says it has none, and is never shown as zero."}
+      - {id: range_change_local, text: "Changing the range updates the figures and keeps the user's place."}
+    acceptance:
+      compact: [happy_path, server_error, no_network]
+      standard: [empty_data, slow_network]
+      deep: [permission_denied, edit_conflict, extreme_content]
+    acceptance_overrides:
+      edit_conflict:
+        given: "the figures on {screen} changed after they were loaded"
+        when: "the user refreshes or opens the detail behind a figure"
+        then: "the new figures replace the old ones together, and the detail matches the figure it came from"
+  calendar:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "Nothing is scheduled in the range; say so and how to add something.", copy: "Nothing scheduled."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: stale}
+      - {kind: "domain:no_availability", message: "Nothing can be chosen in this range; say why and suggest another range.", copy: "Nothing is available in this range."}
+    behaviors:
+      - {id: time_zone_rule, text: "Times are shown in the time zone the card states, and a different zone is named when it matters."}
+      - {id: unavailable_explained, text: "Choosing something unavailable explains why and offers the nearest alternative."}
+      - {id: range_change_keeps_selection, text: "Changing the range keeps the user's selection where it is still valid."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, slow_network]
+      deep: [permission_denied, edit_conflict, language_switch]
+  map:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "No places match; say so and how to widen the search.", copy: "No places found here."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: "domain:location_denied", message: "The user refused location access; the screen still works without it.", copy: "Location is off. You can still search for a place by name."}
+      - {kind: "domain:location_unavailable", message: "The device cannot find the user's location at the moment.", copy: "We cannot find your location at the moment."}
+    behaviors:
+      - {id: works_without_location, text: "Without the user's location, places can still be found by name or area."}
+      - {id: selection_leads_on, text: "Choosing a place leads to its detail, as the card states."}
+      - {id: offline_saved_places, text: "Offline, only saved places are shown, and the user is told others are missing."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, device_permission_denied]
+      deep: [permission_denied, edit_conflict, extreme_content]
+  chat:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "The conversation has no messages; say how to start it.", copy: "No messages yet. Say hello."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: "domain:sending", message: "A message is on its way and has not been delivered yet.", copy: "Sending."}
+      - {kind: "domain:send_failed", message: "A message was not delivered; the user can try again or remove it.", copy: "Not delivered. Try again."}
+      - {kind: "domain:reconnecting", message: "The live connection dropped and is being restored.", copy: "Reconnecting."}
+    behaviors:
+      - {id: message_states, text: "Each message shows whether it is sending, failed, delivered or read."}
+      - {id: failed_message_choice, text: "A message that failed can be sent again or removed.", copy_keys: [lib.common.retry]}
+      - {id: unread_marker, text: "Messages the user has not seen are marked from the first unread one."}
+      - {id: report_available, text: "Messages from other people can be reported, and the person can be blocked where the card allows it."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, extreme_content]
+      deep: [permission_denied, edit_conflict, expired_session]
+  media:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "There is no media yet; say how to add some.", copy: "No photos or files yet."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: "domain:uploading", message: "A file is being uploaded; show progress and let the user keep using the screen.", copy: "Uploading."}
+      - {kind: "domain:upload_failed", message: "An upload failed; the user can try it again without choosing the file again.", copy: "Upload failed. Try again."}
+      - {kind: "domain:permission_denied", message: "The user refused access to the camera or files; the rest of the screen still works.", copy: "Access was not allowed. You can change this in settings."}
+    behaviors:
+      - {id: limits_before_choice, text: "File kinds and size limits are stated before the user chooses, and a file that breaks them is refused with the reason."}
+      - {id: upload_resumes, text: "An interrupted upload resumes where it stopped when it can, and otherwise restarts without asking for the file again."}
+      - {id: missing_media_fallback, text: "A missing or slow file shows its fallback and does not move the content around it."}
+    acceptance:
+      compact: [happy_path, server_error, device_permission_denied]
+      standard: [no_network, slow_network]
+      deep: [permission_denied, edit_conflict, duplicate]
+  checkout:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: success}
+      - {kind: "domain:payment_pending", message: "The payment result is not known yet; the user cannot pay again meanwhile.", copy: "Waiting for your payment to be confirmed."}
+      - {kind: "domain:payment_declined", message: "The payment was declined; no order is placed and another method can be tried.", copy: "Your payment was not accepted. No order was placed."}
+      - {kind: "domain:conflict", message: "Something in the order changed, such as a price or availability; the user must agree to the change before paying.", copy: "Something in your order changed. Please review it."}
+    behaviors:
+      - {id: total_before_pay, text: "The total and what it is made of are shown before the user pays."}
+      - {id: no_double_charge, text: "A payment cannot be sent twice, even if the connection drops and the user tries again."}
+      - {id: change_needs_consent, text: "If a price or availability changes after the user reviewed the order, the user agrees to the new terms before paying."}
+      - {id: provider_return, text: "If the user leaves for a provider's own flow and returns or never returns, the result is looked up and shown; it is never assumed."}
+    acceptance:
+      compact: [happy_path, payment_declined, pending]
+      standard: [no_network, duplicate]
+      deep: [permission_denied, edit_conflict, expired_session]
+  confirmation:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: not_found}
+      - {kind: success}
+    behaviors:
+      - {id: shows_reference, text: "What was confirmed is shown with its reference, so the user can find it again."}
+      - {id: next_actions, text: "The next actions the card names are offered, and going back does not repeat what was confirmed."}
+      - {id: reachable_from_link, text: "The confirmation can be opened later from a link or a notification."}
+    acceptance:
+      compact: [happy_path, server_error, no_network]
+      standard: [deep_link_signed_out, language_switch]
+      deep: [permission_denied, edit_conflict, extreme_content]
+    acceptance_overrides:
+      edit_conflict:
+        given: "what {screen} confirmed was changed elsewhere after the confirmation"
+        when: "the user opens {screen} again"
+        then: "the user sees the current state of the thing with a note that it changed since the confirmation"
+  status:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: not_found}
+      - {kind: stale}
+      - {kind: "domain:delayed", message: "The next stage is taking longer than expected; say so and what the user can do.", copy: "This is taking longer than expected."}
+      - {kind: "domain:finished", message: "The last stage has been reached; nothing will change any more.", copy: "All done."}
+    behaviors:
+      - {id: current_and_next, text: "The current stage and what comes next are always stated."}
+      - {id: freshness_shown, text: "The status says when it was last updated, and is refreshed live or at the interval the card states."}
+      - {id: finished_stops_updates, text: "When the last stage is reached the screen stops asking for updates."}
+    acceptance:
+      compact: [happy_path, server_error, no_network]
+      standard: [slow_network, pending]
+      deep: [permission_denied, edit_conflict, push_signed_out]
+  notifications:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "There are no notifications; say what kinds will appear here.", copy: "No notifications yet."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: "domain:push_disabled", message: "Push notifications are off for this app; say what the user misses and how to turn them on.", copy: "Notifications are off. Turn them on to get updates as they happen."}
+    behaviors:
+      - {id: read_and_unread, text: "Unread notifications are told apart from read ones, and the count follows what the user has seen."}
+      - {id: opens_target, text: "Opening a notification marks it read and goes to the screen it is about."}
+      - {id: missing_target, text: "If what a notification is about no longer exists, the user is told so instead of reaching an empty screen."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, push_signed_out]
+      deep: [permission_denied, edit_conflict, device_permission_denied]
+  profile:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: success}
+      - {kind: "domain:save_failed", message: "The change was not saved; the user's entry is kept and a retry is offered.", copy: "Your changes were not saved. Try again."}
+    behaviors:
+      - {id: explicit_save, text: "Changes to the profile are saved explicitly, and the user is told when they are saved."}
+      - {id: destructive_confirmed, text: "Destructive actions, such as deleting the account, say what will be removed and ask the user to confirm."}
+      - {id: sign_out_ends_session, text: "Signing out ends the session and removes private data from the device."}
+    acceptance:
+      compact: [happy_path, validation_error, server_error]
+      standard: [no_network, expired_session]
+      deep: [permission_denied, edit_conflict, account_deletion]
+  settings:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: success}
+      - {kind: "domain:save_failed", message: "The change was not saved; the previous value is restored and the reason is given.", copy: "That setting could not be changed. Try again."}
+    behaviors:
+      - {id: change_applies, text: "A change applies at once, or the screen says when it will."}
+      - {id: needs_network, text: "A setting that needs the network is unavailable offline, with the reason."}
+      - {id: destructive_apart, text: "Destructive account actions are kept apart from ordinary settings and always confirmed."}
+    acceptance:
+      compact: [happy_path, server_error, no_network]
+      standard: [expired_session, language_switch]
+      deep: [permission_denied, edit_conflict, account_deletion]
+  report:
+    states:
+      - {kind: loading}
+      - {kind: empty, message: "No data matches the filters; say so and which filter to change.", copy: "No data for these filters."}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: forbidden}
+      - {kind: stale}
+      - {kind: partial}
+      - {kind: "domain:export_pending", message: "An export is being prepared; say when it will be ready and where to find it.", copy: "Your export is being prepared."}
+    behaviors:
+      - {id: filters_with_results, text: "The filters in force are always stated next to the figures."}
+      - {id: definitions_available, text: "Each figure's definition can be read."}
+      - {id: export_states_format, text: "An export states its format and when it is ready."}
+    acceptance:
+      compact: [happy_path, empty_data, server_error]
+      standard: [no_network, slow_network]
+      deep: [permission_denied, edit_conflict, extreme_content]
+    acceptance_overrides:
+      edit_conflict:
+        given: "the data behind {screen} changed after the figures were loaded"
+        when: "the user exports or opens the detail behind a figure"
+        then: "the export and the detail use the same data as the figures, or the user is told the figures are out of date"
+  permission:
+    states:
+      - {kind: error}
+      - {kind: "domain:granted", message: "The ability was granted; continue to what needed it.", copy: "Thank you. You can continue."}
+      - {kind: "domain:denied", message: "The user refused this time; the app continues without the ability and may ask again later.", copy: "No problem. You can turn this on later in settings."}
+      - {kind: "domain:blocked", message: "The system will not ask again; the only way is the system settings.", copy: "This is turned off in your device settings."}
+    behaviors:
+      - {id: explained_before_asked, text: "The reason is explained in plain words before the system asks."}
+      - {id: refusal_not_blocking, text: "A refusal never blocks the rest of the app, only the feature that needs the ability."}
+      - {id: settings_path, text: "When the system will not ask again, the way to the system settings is offered.", copy_keys: [lib.common.open_settings]}
+      - {id: no_nagging, text: "A refused permission is not asked for again until the user reaches the feature again."}
+    acceptance:
+      compact: [happy_path, device_permission_denied, no_network]
+      standard: [language_switch, expired_session]
+      deep: [permission_denied, edit_conflict, extreme_content]
+    acceptance_overrides:
+      permission_denied:
+        given: "the user refuses the device ability that {screen} explains"
+        when: "the refusal is received"
+        then: "the user is told what will not work, the rest of the app still works, and the way to the system settings is offered"
+      edit_conflict:
+        given: "the ability was changed in the system settings while {screen} was open"
+        when: "the user returns to {screen}"
+        then: "the screen follows the real setting, not the one it showed before"
+  legal:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: not_found}
+      - {kind: "domain:acceptance_pending", message: "The user must accept before continuing; say what they accept and which version.", copy: "Please read and accept to continue."}
+    behaviors:
+      - {id: version_shown, text: "The document's version and date are shown."}
+      - {id: acceptance_recorded, text: "Acceptance is recorded with the version that was shown."}
+      - {id: readable_offline, text: "A document the user has opened can be read again offline."}
+    acceptance:
+      compact: [happy_path, server_error, no_network]
+      standard: [language_switch, slow_network]
+      deep: [permission_denied, edit_conflict, extreme_content]
+    acceptance_overrides:
+      edit_conflict:
+        given: "a newer version of the document was published while the user was reading"
+        when: "the user accepts"
+        then: "the user is shown the newer version and accepts that one, not the older one"
+  auth:
+    states:
+      - {kind: loading}
+      - {kind: error}
+      - {kind: offline}
+      - {kind: success}
+      - {kind: "domain:code_sent", message: "A code was sent; say where, and when another can be requested.", copy: "We sent you a code."}
+      - {kind: "domain:code_expired", message: "The code is no longer valid; the user can request a new one.", copy: "That code has expired. Request a new one."}
+      - {kind: "domain:wrong_credentials", message: "The details do not match; do not reveal which part was wrong.", copy: "Those details did not match. Please check them and try again."}
+      - {kind: "domain:locked_out", message: "Too many attempts; say when the user may try again and how to recover.", copy: "Too many attempts. Try again later or reset your access."}
+    behaviors:
+      - {id: no_account_leak, text: "Messages never reveal whether an account exists."}
+      - {id: resend_after_wait, text: "A new code can be requested after a short wait, and the wait is shown."}
+      - {id: lockout_stated, text: "A lockout says when the user may try again and offers the recovery path."}
+      - {id: secret_never_shown, text: "A secret the user typed is never shown back or kept in logs."}
+      - {id: session_start, text: "A successful sign-in lands on the screen the user was heading for, or on their home screen."}
+    acceptance:
+      compact: [sign_in, validation_error, server_error]
+      standard: [no_network, expired_session]
+      deep: [permission_denied, edit_conflict, slow_network]
+    acceptance_overrides:
+      permission_denied:
+        given: "the account is blocked or its role may not use this app"
+        when: "the user signs in"
+        then: "the user is told they cannot use this app and whom to contact, and no session starts"
+      edit_conflict:
+        given: "the account's details were changed on another device while the user was signing in"
+        when: "the sign-in is submitted"
+        then: "the user is told the details changed and signs in again with the current ones"
+  onboarding:
+    states:
+      - {kind: offline}
+      - {kind: "domain:skipped", message: "The user skipped; the app starts with sensible defaults and the explanation stays reachable.", copy: "You can read this again from the help section."}
+      - {kind: "domain:completed", message: "The user reached the end; continue to the first real screen.", copy: "You are ready to start."}
+    behaviors:
+      - {id: skippable, text: "Onboarding can be skipped, unless the card says an agreement is required."}
+      - {id: shown_once, text: "Onboarding is shown once per account and device, and is reachable again from help."}
+      - {id: permissions_in_context, text: "Device permissions are asked only when the feature needing them is reached, unless the card states a reason to ask earlier."}
+    acceptance:
+      compact: [first_launch, happy_path, no_network]
+      standard: [language_switch, device_permission_denied]
+      deep: [permission_denied, edit_conflict, deep_link_signed_out]
+    acceptance_overrides:
+      permission_denied:
+        given: "onboarding asks for a device ability and the user refuses"
+        when: "the refusal is received"
+        then: "onboarding continues, the missing ability is explained once, and the app does not ask again until it is needed"
+      edit_conflict:
+        given: "the content of onboarding changed since this device last showed it"
+        when: "onboarding opens"
+        then: "the user sees the current content as a whole, never a mixture of old and new"

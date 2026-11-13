@@ -1,0 +1,25 @@
+# Motion intents (doc 17 2.8): what a movement MEANS. The front end chooses the animation.
+# `essential` movements convey state and MUST have a non-motion alternative (Locked by policy);
+# the intents themselves are guidance (COULD).
+version: 1
+groups:
+  feedback: tells the user the result of what they did or what is going on
+  orientation: tells the user where they are going or where they came from
+  change: tells the user that something in front of them changed
+motion_intents:
+  - {name: confirm_success, group: feedback, essential: true, what: "an action worked"}
+  - {name: signal_error, group: feedback, essential: true, what: "an action failed or an input is wrong"}
+  - {name: show_progress, group: feedback, essential: true, what: "work is under way"}
+  - {name: draw_attention, group: feedback, essential: false, what: "something needs noticing"}
+  - {name: reward, group: feedback, essential: false, what: "a moment worth celebrating"}
+  - {name: enter_deeper, group: orientation, essential: false, what: "going into more detail or a child screen"}
+  - {name: return_back, group: orientation, essential: false, what: "going back up"}
+  - {name: switch_peer, group: orientation, essential: false, what: "moving between equal destinations"}
+  - {name: overlay_in, group: orientation, essential: false, what: "something temporary arrives on top of the current screen"}
+  - {name: overlay_out, group: orientation, essential: false, what: "something temporary leaves"}
+  - {name: identity_continuity, group: orientation, essential: false, what: "this item here is the same item there"}
+  - {name: reveal_more, group: orientation, essential: false, what: "more of the same content appears"}
+  - {name: content_arrival, group: change, essential: false, what: "new content has loaded"}
+  - {name: state_change, group: change, essential: true, what: "an item moved to a different status"}
+  - {name: live_update, group: change, essential: true, what: "a live value changed while the user watches"}
+  - {name: reorder_feedback, group: change, essential: false, what: "items changed order"}

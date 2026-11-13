@@ -1,0 +1,100 @@
+# Direction axes (doc 17 5.2, 5.7): closed sets that candidate design directions differ along.
+# `field` is the Direction field the axis fills. `diff_axes` are the axes counted when checking
+# that two directions differ (the minimum number is configuration: min_direction_axis_differences).
+version: 1
+diff_axes: [mood_family, shape, density, depth, motion_personality, imagery, type_personality]
+axes:
+  - name: mood_family
+    field: mood
+    default: calm_trust
+    values:
+      - {name: calm_trust, what: "quiet, dependable, unhurried", suits: [health, finance, government, insurance]}
+      - {name: warm_friendly, what: "welcoming, human, informal", suits: [community, food, family, local_services]}
+      - {name: bold_energetic, what: "confident, fast, high-contrast", suits: [fitness, sport, mobility, youth]}
+      - {name: crisp_professional, what: "clear, efficient, businesslike", suits: [operations, admin, b2b, logistics]}
+      - {name: playful_bright, what: "light-hearted, curious, surprising", suits: [education, games, kids, social]}
+      - {name: premium_quiet, what: "restrained, refined, spacious", suits: [luxury, hospitality, wealth, travel]}
+      - {name: earthy_natural, what: "grounded, organic, honest", suits: [produce, wellness, outdoors, sustainability]}
+      - {name: technical_precise, what: "exact, dense with information, tool-like", suits: [developer, analytics, field_service, trading]}
+  - name: shape
+    field: shape
+    default: rounded
+    values:
+      - {name: sharp, what: "square corners, exact edges"}
+      - {name: softened, what: "corners barely eased"}
+      - {name: rounded, what: "clearly rounded corners"}
+      - {name: pill, what: "fully rounded ends"}
+      - {name: organic, what: "irregular, hand-made outlines"}
+  - name: density
+    field: density
+    default: comfortable
+    values:
+      - {name: spacious, what: "generous space around each piece of information"}
+      - {name: comfortable, what: "balanced space"}
+      - {name: snug, what: "tight space, more on screen"}
+      - {name: dense, what: "maximum information per screen"}
+      - {name: adaptive, what: "snug for work lists, spacious for reading and decisions"}
+  - name: depth
+    field: depth
+    default: soft
+    values:
+      - {name: flat, what: "no depth cues; separation by space and tone"}
+      - {name: soft, what: "gentle, low elevation cues"}
+      - {name: layered, what: "clear stacking of surfaces"}
+      - {name: glass, what: "translucent surfaces over content"}
+      - {name: dramatic, what: "strong shadows and contrast between layers"}
+  - name: motion_personality
+    field: motion_personality
+    default: calm
+    values:
+      - {name: minimal, what: "movement only where it carries meaning"}
+      - {name: calm, what: "slow, eased, unobtrusive"}
+      - {name: brisk, what: "quick and precise"}
+      - {name: springy, what: "lively with a little overshoot"}
+      - {name: playful, what: "expressive, a little surprising"}
+      - {name: cinematic, what: "long, choreographed transitions"}
+  - name: imagery
+    field: imagery
+    default: photo_led
+    values:
+      - {name: photo_led, what: "real photographs carry the screens"}
+      - {name: illustration_led, what: "drawn pictures carry the screens"}
+      - {name: icon_led, what: "symbols and small graphics carry the screens"}
+      - {name: type_led, what: "typography carries the screens, few pictures"}
+      - {name: mixed_media, what: "photographs, drawings and graphics together"}
+      - {name: abstract_texture, what: "patterns and textures instead of subjects"}
+  - name: type_personality
+    field: type_personality
+    default: neutral
+    values:
+      - {name: neutral, what: "plain and invisible"}
+      - {name: humanist, what: "open, readable, slightly handwritten"}
+      - {name: geometric, what: "round, modern, even"}
+      - {name: editorial, what: "high contrast, magazine-like"}
+      - {name: technical, what: "monospaced touches, exact"}
+      - {name: friendly_rounded, what: "soft, rounded letters"}
+      - {name: classic_serif, what: "traditional serif, trustworthy"}
+  - name: ambition
+    field: ambition
+    default: expressive
+    values:
+      - {name: refined, what: "clean, restrained motion"}
+      - {name: expressive, what: "rich motion and depth"}
+      - {name: immersive, what: "signature moments, heavy motion"}
+  - name: dark_stance
+    field: dark_stance
+    default: supported
+    values:
+      - {name: supported, what: "dark mode works and is tested"}
+      - {name: parity, what: "light and dark are designed equally"}
+      - {name: dark_first, what: "dark is the main look, light follows"}
+      - {name: light_first, what: "light is the main look, dark follows"}
+      - {name: follows_time_of_day, what: "switches by time as well as by system setting"}
+# The default ambition follows the audience and category (doc 17 5.1).
+ambition_defaults:
+  consumer: expressive
+  enterprise: refined
+  admin: refined
+  operations: refined
+  lifestyle: immersive
+  entertainment: immersive

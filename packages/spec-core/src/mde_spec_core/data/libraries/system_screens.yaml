@@ -1,0 +1,237 @@
+# System screen set (doc 15 4.3): what a store-ready app with accounts needs before its first feature screen.
+# Meaning only: regions and actions say what and how important, never where or how drawn.
+# `appears_when` is a structured predicate over vocab/predicates.yaml: "name" | {all: [...]} | {any: [...]} | {not: p}.
+# `variants` are states of one screen (not extra screens) and carry their own predicate.
+# `suppressed_in_profiles` drops the screen for those detail profiles unless the Brief asks for it.
+# `provenance` is what code writes on the instantiated node: kind `policy` (ref is a policy sheet id; code adds
+# `@<date>` from the policy sheet, V-33) or `library` (ref is `system_screens.<id>`).
+# An action may carry `when` (a predicate) and `destructive` / `irreversible` flags the instantiator raises on the card's action.
+# `per` set to `permission` means one instance for each sensitive permission, not one overall.
+version: 1
+screens:
+  - id: sign_in
+    name: Sign in
+    screen_type: auth
+    appears_when: accounts
+    purpose: "The user proves who they are, or creates an account where that is allowed."
+    variants:
+      - {name: phone_code, appears_when: phone_code_login}
+      - {name: email_password, appears_when: email_password_login}
+      - {name: social, appears_when: social_login}
+      - {name: create_account, appears_when: accounts_creatable_in_app}
+    regions:
+      - {key: methods, what: "the ways the user can sign in or sign up", shape: options, importance: supporting}
+      - {key: credentials, what: "what the chosen method asks for", shape: inputs, importance: primary}
+      - {key: problem, what: "why the last attempt failed, in plain words", shape: notice, importance: supporting}
+    inputs:
+      - {key: identifier, type: email, required: true}
+      - {key: secret, type: secret, required: true}
+    actions:
+      - {key: submit_credentials, intent: sign_in, what: "start a session with the given details", importance: primary}
+      - {key: choose_method, intent: select_one, what: "switch to another sign-in method", importance: secondary}
+      - {key: go_forgot_password, intent: navigate, what: "go to password recovery", importance: secondary, when: email_password_login}
+    provenance: {kind: library, ref: system_screens.sign_in}
+  - id: verify_code
+    name: Verify code
+    screen_type: auth
+    appears_when: phone_code_login
+    purpose: "The user enters the code that was sent to their phone."
+    regions:
+      - {key: code_entry, what: "the code the user received", shape: inputs, importance: primary}
+      - {key: resend_info, what: "where the code was sent and when another can be asked for", shape: notice, importance: supporting}
+    inputs:
+      - {key: code, type: code, required: true}
+    actions:
+      - {key: submit_code, intent: enter_code, what: "check the code and start a session", importance: primary}
+      - {key: resend_code, intent: act_on_item, what: "ask for a new code once the wait is over", importance: secondary}
+      - {key: change_number, intent: navigate, what: "go back to give another phone number", importance: secondary}
+    provenance: {kind: library, ref: system_screens.verify_code}
+  - id: forgot_password
+    name: Forgot password
+    screen_type: auth
+    appears_when: email_password_login
+    purpose: "The user asks for a way to set a new password."
+    regions:
+      - {key: identity, what: "the email address of the account", shape: inputs, importance: primary}
+      - {key: outcome, what: "what happens next, without revealing whether the account exists", shape: notice, importance: supporting}
+    inputs:
+      - {key: email, type: email, required: true}
+    actions:
+      - {key: request_reset, intent: confirm, what: "send the recovery message", importance: primary}
+      - {key: back_to_sign_in, intent: navigate, what: "return to sign in", importance: secondary}
+    provenance: {kind: library, ref: system_screens.forgot_password}
+  - id: reset_password
+    name: Reset password
+    screen_type: auth
+    appears_when: email_password_login
+    purpose: "The user chooses a new password after following the recovery message."
+    regions:
+      - {key: new_secret_entry, what: "the new password and its confirmation", shape: inputs, importance: primary}
+      - {key: rules, what: "what a valid password needs", shape: text, importance: supporting}
+    inputs:
+      - {key: new_secret, type: secret, required: true}
+      - {key: new_secret_again, type: secret, required: true}
+    actions:
+      - {key: save_secret, intent: enter_secret, what: "set the new password and end other sessions", importance: primary}
+    provenance: {kind: library, ref: system_screens.reset_password}
+  - id: role_chooser
+    name: Choose account or role
+    screen_type: list
+    appears_when: multi_role_user
+    purpose: "A user who holds several roles or business accounts picks the one to work in."
+    regions:
+      - {key: accounts, what: "the roles or accounts the user may use", shape: collection, importance: primary}
+    actions:
+      - {key: choose_account, intent: select_one, what: "work in the chosen role or account", importance: primary}
+      - {key: switch_later, intent: navigate, what: "come back here to change role later", importance: secondary}
+    provenance: {kind: library, ref: system_screens.role_chooser}
+  - id: profile
+    name: Profile
+    screen_type: profile
+    appears_when: accounts
+    purpose: "The user sees and edits the details of their own account."
+    regions:
+      - {key: identity, what: "the user's name, picture and contact details", shape: key_values, importance: primary}
+      - {key: account_links, what: "ways to the account's other screens", shape: collection, importance: supporting}
+    actions:
+      - {key: edit_details, intent: enter_text, what: "change the user's own details", importance: primary}
+      - {key: sign_out, intent: sign_out, what: "end the session on this device", importance: secondary}
+    provenance: {kind: library, ref: system_screens.profile}
+  - id: settings
+    name: Settings
+    screen_type: settings
+    appears_when: accounts
+    purpose: "The user manages app preferences and account controls."
+    regions:
+      - {key: preferences, what: "the app's preferences", shape: key_values, importance: primary, attrs: ["editable=true"]}
+      - {key: account_controls, what: "account actions such as sign out and delete account", shape: collection, importance: supporting}
+    actions:
+      - {key: change_preference, intent: toggle, what: "change a preference", importance: primary}
+      - {key: go_account_deletion, intent: navigate, what: "go to account deletion", importance: secondary, when: accounts_creatable_in_app}
+    provenance: {kind: library, ref: system_screens.settings}
+  - id: language
+    name: Language
+    screen_type: settings
+    appears_when: {all: [accounts, multi_language]}
+    purpose: "The user picks the language the app speaks."
+    regions:
+      - {key: languages, what: "the languages the app offers, each in its own language", shape: options, importance: primary}
+    actions:
+      - {key: choose_language, intent: select_one, what: "switch the app to the chosen language at once", importance: primary}
+    provenance: {kind: library, ref: system_screens.language}
+  - id: notification_settings
+    name: Notification settings
+    screen_type: settings
+    appears_when: {all: [accounts, {any: [push_notifications, in_app_notifications]}]}
+    purpose: "The user chooses which notifications they receive."
+    regions:
+      - {key: kinds, what: "the kinds of notification and whether each is on", shape: key_values, importance: primary, attrs: ["editable=true"]}
+      - {key: system_state, what: "whether the device allows notifications at all", shape: notice, importance: supporting}
+    actions:
+      - {key: change_kind, intent: toggle, what: "turn one kind of notification on or off", importance: primary}
+      - {key: open_system_settings, intent: grant_permission, what: "go to the system settings when the device blocks notifications", importance: secondary}
+    provenance: {kind: library, ref: system_screens.notification_settings}
+  - id: notifications_inbox
+    name: Notifications
+    screen_type: notifications
+    appears_when: {any: [push_notifications, in_app_notifications]}
+    purpose: "The user reads the messages the app has sent them."
+    regions:
+      - {key: messages, what: "the notifications the user received", shape: collection, importance: primary, attrs: ["cardinality=many"]}
+    actions:
+      - {key: open_notification, intent: navigate, what: "go to what the notification is about", importance: primary}
+      - {key: mark_all_read, intent: act_on_item, what: "mark every notification as read", importance: secondary}
+    provenance: {kind: library, ref: system_screens.notifications_inbox}
+  - id: help_support
+    name: Help and support
+    screen_type: detail
+    appears_when: always
+    purpose: "The user finds answers and a way to reach the owner."
+    regions:
+      - {key: answers, what: "common questions and their answers", shape: collection, importance: primary}
+      - {key: contact, what: "how to reach the owner", shape: key_values, importance: supporting}
+    actions:
+      - {key: contact_owner, intent: call_contact, what: "reach the owner by the offered channel", importance: primary}
+    provenance: {kind: library, ref: system_screens.help_support}
+  - id: terms
+    name: Terms of use
+    screen_type: legal
+    appears_when: always
+    purpose: "The user can read the terms they agree to; a link out is allowed."
+    regions:
+      - {key: document, what: "the terms, with version and date", shape: document, importance: primary}
+    actions:
+      - {key: accept_terms, intent: confirm, what: "agree to the terms where agreement is required", importance: primary}
+    link_out_allowed: true
+    provenance: {kind: policy, ref: policy:store.legal_links}
+  - id: privacy
+    name: Privacy policy
+    screen_type: legal
+    appears_when: always
+    purpose: "The user can read how their data is used; a link out is allowed."
+    regions:
+      - {key: document, what: "the privacy policy, with version and date", shape: document, importance: primary}
+    actions:
+      - {key: view_policy, intent: view, what: "read the policy", importance: primary}
+    link_out_allowed: true
+    provenance: {kind: policy, ref: policy:store.privacy_policy}
+  - id: account_deletion
+    name: Delete account
+    screen_type: form
+    appears_when: accounts_creatable_in_app
+    purpose: "The user deletes their account and its data from inside the app, as the stores require."
+    regions:
+      - {key: consequences, what: "what will be removed, what is kept by law, and when", shape: text, importance: primary}
+      - {key: confirmation, what: "the user's confirmation of the request", shape: inputs, importance: primary}
+    inputs:
+      - {key: confirm_secret, type: secret, required: true}
+    actions:
+      - {key: delete_account, intent: confirm, what: "delete the account and end every session", importance: primary, destructive: true, irreversible: true}
+      - {key: keep_account, intent: cancel, what: "leave the account as it is", importance: secondary}
+    provenance: {kind: policy, ref: policy:store.account_deletion}
+  - id: consent_age_gate
+    name: Consent and age
+    screen_type: form
+    appears_when: minors_or_health_or_identity
+    purpose: "The user states their age and gives the consent the data needs before anything is collected."
+    regions:
+      - {key: statement, what: "what data is collected and why, in plain words", shape: text, importance: primary}
+      - {key: answers, what: "the user's age and consents", shape: inputs, importance: primary}
+    inputs:
+      - {key: birth_year, type: number, required: true}
+      - {key: consent_given, type: toggle, required: true}
+    actions:
+      - {key: give_consent, intent: confirm, what: "record the consent with its version", importance: primary}
+      - {key: decline, intent: cancel, what: "decline and leave the data uncollected", importance: secondary}
+    provenance: {kind: policy, ref: policy:store.sensitive_data_consent}
+  - id: onboarding
+    name: Welcome
+    screen_type: onboarding
+    appears_when: value_needs_explaining
+    suppressed_in_profiles: [compact]
+    purpose: "The user learns what the app is for before using it."
+    regions:
+      - {key: messages, what: "the few points the app must get across", shape: pages, importance: primary}
+    actions:
+      - {key: continue_onboarding, intent: navigate, what: "go on to the next point or to the app", importance: primary}
+      - {key: skip_onboarding, intent: cancel, what: "skip the explanation", importance: secondary}
+    provenance: {kind: library, ref: system_screens.onboarding}
+  - id: permission_rationale
+    name: Permission explanation
+    screen_type: permission
+    appears_when: sensitive_permission
+    per: permission
+    purpose: "The user is told why the app needs one device ability before the system asks."
+    regions:
+      - {key: reason, what: "why the ability is needed and what the app does with it", shape: text, importance: primary}
+    actions:
+      - {key: allow, intent: grant_permission, what: "go on to the system's own question", importance: primary}
+      - {key: continue_without, intent: cancel, what: "continue without the ability", importance: secondary}
+    provenance: {kind: policy, ref: policy:store.permission_purpose}
+# Not screens: states and global behaviours (doc 15 4.3). `behavior_category` is in vocab/behavior_categories.yaml.
+not_screens:
+  - {name: launch, kind: configuration, note: "the launch image and first loading are configuration, not a screen"}
+  - {name: error, kind: state, behavior_category: errors, note: "a state of the screen that failed"}
+  - {name: maintenance, kind: state, behavior_category: errors, note: "a blocking notice state shown when the service is down on purpose"}
+  - {name: update_required, kind: state, behavior_category: errors, scenario: forced_update, note: "a blocking notice state shown when the installed version is no longer supported"}
+  - {name: offline, kind: state, behavior_category: offline, note: "a state of every screen that needs data"}

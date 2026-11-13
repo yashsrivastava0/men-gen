@@ -1,0 +1,110 @@
+# Screen types (doc 15 4.4): a closed, functional vocabulary. Each owns a state set and a
+# standard-behaviours entry in libraries/state_library.yaml. `adds` is what the type adds to the
+# base card (doc 15 5.7a), meaning only. `typical_shapes` and `typical_intents` seed the baseline.
+version: 1
+screen_types:
+  - name: auth
+    what: "the user proves who they are or creates an account"
+    adds: [methods, code_length, code_timeout, lockout, recovery_path]
+    typical_shapes: [inputs, notice]
+    typical_intents: [sign_in, enter_text, enter_secret, enter_code, authenticate]
+  - name: onboarding
+    what: "the first explanation of what the app is for"
+    adds: [messages, permissions_asked, skip_rules]
+    typical_shapes: [pages]
+    typical_intents: [navigate, grant_permission]
+  - name: list
+    what: "a set of similar items"
+    adds: [source_operation, paging, sort_fields, filter_fields, search_fields, selection, expected_count, row_actions]
+    typical_shapes: [collection]
+    typical_intents: [view, filter, sort, search, refresh, load_more, act_on_item, navigate]
+  - name: detail
+    what: "everything about one item"
+    adds: []
+    typical_shapes: [key_values, text, media]
+    typical_intents: [view, act_on_item, share, navigate]
+  - name: form
+    what: "the user gives information in one step"
+    adds: [inputs, validation_timing, submission_states, unsaved_input_rule, draft_persistence]
+    typical_shapes: [inputs]
+    typical_intents: [enter_text, select_one, confirm, cancel]
+  - name: wizard
+    what: "the user gives information over several ordered steps"
+    adds: [steps, progress_persistence, back_rules, exit_behaviour]
+    typical_shapes: [inputs, sequence]
+    typical_intents: [enter_text, select_one, navigate, confirm, cancel]
+  - name: search
+    what: "the user looks for items by a query"
+    adds: [query_sources, suggestions_and_history, no_results_state, result_entity_kinds]
+    typical_shapes: [suggestions, collection]
+    typical_intents: [search, filter, select_one, navigate]
+  - name: dashboard
+    what: "a summary of figures and quick ways in"
+    adds: [metrics, range_options, drill_down_targets]
+    typical_shapes: [value, series, collection]
+    typical_intents: [view, choose_range, navigate, refresh]
+  - name: calendar
+    what: "items or availability over time"
+    adds: [range_kinds, selection_kinds, availability_source, time_zone_rule]
+    typical_shapes: [schedule, collection]
+    typical_intents: [choose_date, choose_range, select_one, navigate]
+  - name: map
+    what: "items placed on a map"
+    adds: [places_source, location_needed, selection_result, route_needed, offline_behaviour]
+    typical_shapes: [places, collection]
+    typical_intents: [view, pick_place, select_one, navigate]
+  - name: chat
+    what: "messages between people"
+    adds: [thread_source, message_states, attachment_kinds_and_limits, unread_rules, report_and_moderation]
+    typical_shapes: [conversation, inputs]
+    typical_intents: [enter_text, pick_media, capture_media, report, refresh]
+  - name: media
+    what: "photos, video or audio to view, capture or upload"
+    adds: [media_kinds, limits, capture_or_pick_sources, upload_states_and_resume]
+    typical_shapes: [media]
+    typical_intents: [view, capture_media, pick_media, share]
+  - name: checkout
+    what: "the user reviews an order and pays"
+    adds: [order_summary, payment_methods, confirmation_target]
+    typical_shapes: [key_values, collection, inputs]
+    typical_intents: [select_one, enter_text, pay, confirm]
+  - name: confirmation
+    what: "the result of something the user did"
+    adds: [confirmed_entity, next_actions]
+    typical_shapes: [key_values, notice]
+    typical_intents: [view, navigate, share]
+  - name: status
+    what: "where something is in its life, such as an order"
+    adds: [stages, stage_messages, live_or_polled]
+    typical_shapes: [sequence, key_values, places]
+    typical_intents: [view, refresh, call_contact, navigate]
+  - name: notifications
+    what: "messages the app sent to the user"
+    adds: [list_source, grouping_rules, read_and_unread, deep_link_targets]
+    typical_shapes: [collection]
+    typical_intents: [view, act_on_item, navigate, refresh]
+  - name: profile
+    what: "the user's own identity in the app"
+    adds: [editable_fields, destructive_actions, consent_switches]
+    typical_shapes: [key_values, media]
+    typical_intents: [view, enter_text, pick_media, sign_out, navigate]
+  - name: settings
+    what: "preferences and account controls"
+    adds: [editable_fields, destructive_actions, consent_switches]
+    typical_shapes: [key_values]
+    typical_intents: [toggle, select_one, navigate, sign_out]
+  - name: report
+    what: "figures the user reads, filters and exports"
+    adds: [filters, export_formats, figure_definitions]
+    typical_shapes: [series, collection, value]
+    typical_intents: [filter, choose_range, sort, share]
+  - name: permission
+    what: "the app explains why it needs a device ability and asks for it"
+    adds: [permission, why_needed, denied_path, system_settings_path]
+    typical_shapes: [text, notice]
+    typical_intents: [grant_permission, cancel, navigate]
+  - name: legal
+    what: "terms, privacy and similar documents"
+    adds: [document_ids_and_versions, acceptance_required]
+    typical_shapes: [document, text]
+    typical_intents: [view, confirm, navigate]

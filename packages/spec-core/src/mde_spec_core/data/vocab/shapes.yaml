@@ -1,0 +1,134 @@
+# Information shapes (doc 17 2.2): what a region's information IS, never how it is drawn.
+# A shape not listed here is written `other:<name>` and goes to the gap list (validator V-38).
+version: 1
+other_prefix: "other:"
+cardinality_buckets:
+  one: {min: 1, max: 1}
+  few: {min: 2, max: 7}
+  many: {min: 8, max: 50}
+  very_many: {min: 51, max: null}
+# Attributes every shape may carry. `type` is enum | ref | integer | bool.
+common_attributes:
+  - {name: item, type: ref, what: "the block or entity the items come from"}
+  - {name: cardinality, type: enum, values: [one, few, many, very_many], what: "a size bucket"}
+  - {name: typical, type: integer, what: "the usual count"}
+  - {name: maximum, type: integer, what: "the largest expected count"}
+  - {name: live, type: enum, values: [none, polled, realtime], what: "how fresh the data must stay"}
+  - {name: editable, type: bool, what: "whether the user changes it here"}
+shapes:
+  - name: value
+    what: one labelled value
+    example: balance; sales against yesterday; 4.5 from 120; open or busy
+    variant_attr: kind
+    needs_cardinality: false
+    attributes:
+      - {name: kind, type: enum, values: [plain, metric, rating, progress, flag], what: "plain; metric with a comparison or trend; rating with score, count and optional distribution; progress; flag as a small status"}
+  - name: text
+    what: prose
+    example: a description
+    variant_attr: length
+    needs_cardinality: false
+    attributes:
+      - {name: length, type: enum, values: [short, long, rich]}
+  - name: key_values
+    what: labelled facts, including settings rows
+    example: order details; preferences
+    variant_attr: null
+    needs_cardinality: false
+    attributes: []
+  - name: collection
+    what: homogeneous items
+    example: my orders; a menu by category; a ledger; activity
+    variant_attr: null
+    needs_cardinality: true
+    attributes:
+      - {name: grouping, type: enum, values: [none, by_field]}
+      - {name: columns, type: integer, what: "0 for items; 2 or more for comparable columns (the table case)"}
+      - {name: stream, type: bool, what: "mixed item kinds (the feed case)"}
+      - {name: selection, type: enum, values: [none, single, multi]}
+  - name: hierarchy
+    what: a tree
+    example: categories
+    variant_attr: null
+    needs_cardinality: true
+    attributes: []
+  - name: sequence
+    what: ordered things
+    example: order history; delivery progress
+    variant_attr: kind
+    needs_cardinality: true
+    attributes:
+      - {name: kind, type: enum, values: [events, stages], what: "events are history; stages are ordered statuses with a current one"}
+      - {name: exits, type: bool, what: "stages may have exits"}
+  - name: media
+    what: images, video or audio
+    example: produce photos
+    variant_attr: count
+    needs_cardinality: false
+    attributes:
+      - {name: count, type: enum, values: [single, set]}
+      - {name: kind, type: enum, values: [photo, video, audio, illustration]}
+  - name: places
+    what: locations
+    example: stores nearby; a trip
+    variant_attr: kind
+    needs_cardinality: true
+    attributes:
+      - {name: kind, type: enum, values: [points, route]}
+  - name: series
+    what: numbers
+    example: earnings by week; expense split
+    variant_attr: kind
+    needs_cardinality: false
+    attributes:
+      - {name: kind, type: enum, values: [over_axis, parts]}
+  - name: schedule
+    what: time
+    example: a class timetable
+    variant_attr: kind
+    needs_cardinality: false
+    attributes:
+      - {name: kind, type: enum, values: [dates, slots], what: "dates are availability; slots are bookable times"}
+  - name: inputs
+    what: a set of inputs (listed separately in the screen's inputs)
+    example: create listing
+    variant_attr: null
+    needs_cardinality: false
+    attributes: []
+  - name: conversation
+    what: messages
+    example: support chat
+    variant_attr: null
+    needs_cardinality: true
+    attributes: []
+  - name: document
+    what: a file or long attachment
+    example: an invoice
+    variant_attr: null
+    needs_cardinality: false
+    attributes: []
+  - name: pages
+    what: ordered pages of content
+    example: onboarding
+    variant_attr: null
+    needs_cardinality: false
+    attributes: []
+  - name: notice
+    what: a message about the app's or the user's situation
+    example: an announcement; maintenance
+    variant_attr: severity
+    needs_cardinality: false
+    attributes:
+      - {name: severity, type: enum, values: [info, warning, blocking]}
+  - name: options
+    what: alternatives to choose between, with comparable attributes
+    example: plan chooser
+    variant_attr: null
+    needs_cardinality: true
+    attributes: []
+  - name: suggestions
+    what: candidate values offered for an input
+    example: search suggestions
+    variant_attr: null
+    needs_cardinality: true
+    attributes: []

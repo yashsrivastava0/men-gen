@@ -1,0 +1,90 @@
+# Global behaviour categories (BN-16, doc 15 7.1; checked by V-35).
+# supplied_by: library = code instantiates it from `default_text` (provenance library, tier Default);
+#              mixed = library default plus app-specific facts; app_specific = only the app knows it.
+# required_in: the detail profiles in which the category must be present when `applies_if` holds.
+version: 1
+behavior_categories:
+  - name: session
+    what: "how a signed-in session starts, is stored securely, expires and is renewed"
+    supplied_by: mixed
+    applies_if: accounts
+    required_in: [compact, standard, deep]
+    default_text: "A session is kept in secure device storage, renewed quietly before it expires, and an expired session sends the user to sign in again with their place and unsent work kept."
+  - name: offline
+    what: "what works without a network, what is queued, and how queued work is synced"
+    supplied_by: mixed
+    applies_if: always
+    required_in: [compact, standard, deep]
+    default_text: "Without a network the last saved data is shown as stale, actions that need the network say so, and queued actions are sent in order when the network returns."
+  - name: errors
+    what: "the error taxonomy and the recovery for each kind"
+    supplied_by: library
+    applies_if: always
+    required_in: [compact, standard, deep]
+    default_text: "Errors are sorted into network, server, validation, permission and unexpected; each says what happened in plain words and offers retry, correction or a way out."
+  - name: loading
+    what: "what the user sees while data is on its way, and for how long before a timeout"
+    supplied_by: library
+    applies_if: always
+    required_in: [compact, standard, deep]
+    default_text: "Every wait that lasts more than a moment shows that content is coming; a wait that passes the timeout becomes an error with retry."
+  - name: permissions
+    what: "when device permissions are asked, how a refusal is handled, and the way to system settings"
+    supplied_by: library
+    applies_if: sensitive_permission
+    required_in: [compact, standard, deep]
+    default_text: "A permission is asked only when the user reaches the feature that needs it, after a short explanation; a refusal keeps the rest of the app usable and offers the way to system settings."
+  - name: notifications
+    what: "remote and local notifications: asking, grouping, opening the right screen"
+    supplied_by: mixed
+    applies_if: {any: [push_notifications, in_app_notifications]}
+    required_in: [compact, standard, deep]
+    default_text: "Notifications are asked for in context, open the screen they are about, and do nothing sensitive before the user signs in."
+  - name: lifecycle
+    what: "app lifecycle and state restoration: closing, resuming, being cleared from memory"
+    supplied_by: library
+    applies_if: always
+    required_in: [standard, deep]
+    default_text: "When the app returns from the background it restores the user's place and unsent input, and refreshes data that has gone stale."
+  - name: background_work
+    what: "work that continues while the app is closed, and its limits"
+    supplied_by: app_specific
+    applies_if: background_work
+    required_in: [compact, standard, deep]
+    default_text: ""
+  - name: interrupted_external_flow
+    what: "what happens when the user leaves for a provider's flow and comes back, or never does"
+    supplied_by: app_specific
+    applies_if: provider_side_flow
+    required_in: [compact, standard, deep]
+    default_text: ""
+  - name: pending_timeouts
+    what: "how long a pending result is waited for, and what the user sees when the wait ends"
+    supplied_by: app_specific
+    applies_if: provider_side_flow
+    required_in: [compact, standard, deep]
+    default_text: ""
+  - name: i18n
+    what: "languages, formats, plural forms and right-to-left behaviour"
+    supplied_by: mixed
+    applies_if: {any: [multi_language, right_to_left]}
+    required_in: [standard, deep]
+    default_text: "All text comes from the copy store; numbers, dates and money follow the user's language and region; right-to-left scripts mirror the reading direction."
+  - name: analytics
+    what: "what is measured and how consent is respected"
+    supplied_by: mixed
+    applies_if: analytics
+    required_in: [standard, deep]
+    default_text: "Usage is measured only after consent where the law requires it, and never includes secrets or message content."
+  - name: state
+    what: "which data is shared between screens and when it is refreshed"
+    supplied_by: app_specific
+    applies_if: always
+    required_in: [standard, deep]
+    default_text: ""
+  - name: media
+    what: "what shows when an image or video is missing, slow or too large"
+    supplied_by: library
+    applies_if: always
+    required_in: [standard, deep]
+    default_text: "A missing or slow picture shows its fallback and never moves the content around it; uploads can be retried and resumed."

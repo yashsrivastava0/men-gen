@@ -289,6 +289,22 @@ def _is_view_only(s: Screen) -> bool:
     return all(a.intent in ("view", "navigate", "cancel", "refresh", "share") for a in s.actions)
 
 
+def _mf_add(out: list[Finding], s: Screen, waived: bool, sev: str, why: str, gross: bool) -> None:
+    """A mobile-fit finding: a warning, or a blocker for a gross breach without a recorded waiver."""
+    if gross and not waived:
+        sev = "blocker"
+    out.append(
+        Finding(
+            "V-37",
+            sev,
+            s.id,
+            why,
+            "split the screen (Product call) or record a mobile_fit_waiver",
+            "B",
+        )
+    )  # type: ignore[arg-type]
+
+
 @validator(
     "V-37",
     "Mobile-fit (warning by default; error for hover, right-click, tooltip and gross breaches)",
@@ -300,35 +316,30 @@ def v37(ctx: Context) -> list[Finding]:
             continue  # web portals are exempt from the column limit and keep the rest (doc 19 2.6): handled below
         waived = s.id in ctx.waivers
 
-        def add(sev: str, why: str, gross: bool) -> None:
-            if gross and not waived:
-                sev = "blocker"
-            out.append(
-                Finding(
-                    "V-37",
-                    sev,
-                    s.id,
-                    why,
-                    "split the screen (Product call) or record a mobile_fit_waiver",
-                    "B",
-                )
-            )  # type: ignore[arg-type]
-
         prim = sum(1 for r in s.regions if r.importance == "primary")
         if prim > mf.max_primary_regions:
-            add(
+            _mf_add(
+                out,
+                s,
+                waived,
                 "warning",
                 f"{prim} primary regions (limit {mf.max_primary_regions})",
                 prim >= mf.max_primary_regions * mf.gross_breach_factor,
             )
         if len(s.regions) > mf.max_regions:
-            add(
+            _mf_add(
+                out,
+                s,
+                waived,
                 "warning",
                 f"{len(s.regions)} regions (limit {mf.max_regions})",
                 len(s.regions) >= mf.max_regions * mf.gross_breach_factor,
             )
         if s.screen_type == "form" and len(s.inputs) > mf.max_form_inputs:
-            add(
+            _mf_add(
+                out,
+                s,
+                waived,
                 "warning",
                 f"{len(s.inputs)} inputs on a form step (limit {mf.max_form_inputs})",
                 len(s.inputs) >= mf.max_form_inputs * mf.gross_breach_factor,
@@ -376,7 +387,10 @@ def v37(ctx: Context) -> list[Finding]:
                     if x.startswith("columns=") and x.split("=")[1].isdigit()
                 ]
                 if cols and cols[0] > mf.max_phone_columns:
-                    add(
+                    _mf_add(
+                        out,
+                        s,
+                        waived,
                         "warning",
                         f"{r.key}: {cols[0]} columns on a phone (limit {mf.max_phone_columns})",
                         cols[0] >= mf.max_phone_columns * mf.gross_breach_factor,

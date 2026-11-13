@@ -1,0 +1,29 @@
+# Facts the baseline derives from the Brief and the graph. System screens and behaviour categories
+# say WHEN they apply with a structured predicate over these names, never an expression string:
+#   "name" | {all: [...]} | {any: [...]} | {not: <predicate>}
+version: 1
+predicates:
+  - {name: always, what: "true for every app"}
+  - {name: accounts, what: "users have accounts"}
+  - {name: accounts_creatable_in_app, what: "a user can create an account inside the app"}
+  - {name: phone_code_login, what: "sign-in by a code sent to a phone number"}
+  - {name: email_password_login, what: "sign-in by email and password"}
+  - {name: social_login, what: "sign-in through another account provider"}
+  - {name: multi_role_user, what: "one user can hold several roles or business accounts"}
+  - {name: push_notifications, what: "the app sends push notifications"}
+  - {name: in_app_notifications, what: "the app keeps an inbox of notifications"}
+  - {name: minors_or_health_or_identity, what: "the app handles data of minors, health data or identity documents"}
+  - {name: sensitive_data, what: "a sensitive-data flag from the Brief or research"}
+  - {name: value_needs_explaining, what: "the app's value is not obvious at first use"}
+  - {name: sensitive_permission, what: "the app asks for a sensitive device permission"}
+  - {name: multi_language, what: "more than one language"}
+  - {name: right_to_left, what: "a right-to-left script is shown"}
+  - {name: offline_first, what: "the app must work without a network"}
+  - {name: offline_capable, what: "some data or actions work without a network"}
+  - {name: provider_side_flow, what: "an integration moves the user to a provider's own flow, such as a payment page"}
+  - {name: background_work, what: "work continues while the app is closed, such as uploads or location"}
+  - {name: media_upload, what: "users add photos, video or files"}
+  - {name: realtime, what: "live data or chat"}
+  - {name: payments, what: "money moves through the app"}
+  - {name: analytics, what: "usage is measured"}
+  - {name: deep_links, what: "links or notifications open a specific screen"}

@@ -1,0 +1,11 @@
+# Importance levels (doc 15 2.1). Spec gives importance, never order or position.
+version: 1
+region:
+  - {name: primary, what: "the screen exists to show this; a phone screen has at most three"}
+  - {name: supporting, what: "helps the user understand or act on the primary information"}
+  - {name: optional, what: "useful when there is room; may be dropped on a small screen"}
+action:
+  - {name: primary, what: "the one decision this screen is mainly for; one per decision"}
+  - {name: secondary, what: "any other action"}
+# Navigation destinations use the same three levels as regions.
+navigation: [primary, supporting, optional]

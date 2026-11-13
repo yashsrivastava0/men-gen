@@ -1,0 +1,15 @@
+# State kinds (doc 15 2.1, 2.4): every state a screen may be in, with the meaning its message must carry.
+# Domain states are written `domain:<name>`; their meaning and copy live in libraries/state_library.yaml
+# (per screen type) or in the card itself.
+version: 1
+domain_prefix: "domain:"
+state_kinds:
+  - {name: loading, what: "nothing to show yet; the user must still see that content is coming", recovery: wait, demonstrated_on: typical}
+  - {name: empty, what: "there is nothing to show, and the message says why and what to do next", recovery: next_step, demonstrated_on: empty}
+  - {name: error, what: "something failed; the message says what and offers a retry", recovery: retry, demonstrated_on: broken}
+  - {name: offline, what: "no network; last saved data is shown and actions that need the network are unavailable, with the reason", recovery: wait_or_retry, demonstrated_on: offline}
+  - {name: forbidden, what: "the user's role may not see or do this; the message says so and where to go instead", recovery: go_elsewhere, demonstrated_on: broken}
+  - {name: not_found, what: "the item does not exist or was removed", recovery: go_back, demonstrated_on: broken}
+  - {name: stale, what: "the data shown may be out of date; the user can ask for the latest", recovery: refresh, demonstrated_on: offline}
+  - {name: partial, what: "some of the data arrived and some did not", recovery: retry_part, demonstrated_on: broken}
+  - {name: success, what: "the thing the user did worked; the message says what changed", recovery: continue, demonstrated_on: typical}
