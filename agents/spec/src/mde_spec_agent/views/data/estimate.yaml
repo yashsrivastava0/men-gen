@@ -1,0 +1,57 @@
+# The zero-cost estimate of a run: how many model calls each step makes and how many tokens a call reads and writes.
+# EVERY number here is a [J] estimate (judgement), taken from the worked tables of doc 15 10.1, doc 18 1.2 and doc 19 2.5 and
+# meant to be replaced by measured values (PS-8). Nothing here is a price: prices come from the writer profile.
+# Counts are formulas over the derived plan (see views/estimate.py); token numbers are per call.
+version: 1
+
+# tokens per call kind: `in` is what the call reads; `out` is what it is expected to write. `out_per_item` kinds write
+# per item (a card, an entity) and the call writes `out_per_item x items_in_that_call`.
+calls:
+  plan:         {in: 20000, out: 4000}      # doc 15 10.1: Plan 20k / 4k
+  skeleton:     {in: 22000, out: 6000}      # Product skeleton (deep only)
+  modules:      {in: 20000, out: 6000}      # one per module
+  integrations: {in: 16000, out: 5000}      # one per `integrations_per_call` integrations
+  journeys:     {in: 14000, out: 5000}      # one per `flows_per_journey_call` flows
+  design:       {in: 12000, out: 4000}      # one direction per call (the split form)
+  screens:      {in: 22000, out_per_item: 1900}   # doc 15 10.1: 3 to 4 cards write about 7k
+  hero:         {in: 12000, out_per_item: 1500}   # example records of one entity
+  behav:        {in: 14000, out: 6000}
+  gloss:        {in: 4000,  out: 1500}
+  locales:      {in: 8000,  out: 5000}      # one per `strings_per_locale_call` strings per extra language
+  g2_summary:   {in: 6000,  out: 1000}
+  reasks:       {in: 12000, out: 4000}
+  canaries:     {in: 22000, out: 3000}      # one per task card (Verify)
+  critics:      {in: 22000, out: 3000}      # the structure critic and the final critic
+
+# fixed numbers of calls per detail profile
+fixed_calls:
+  plan:       {compact: 1, standard: 1, deep: 1}
+  skeleton:   {compact: 0, standard: 0, deep: 1}
+  gloss:      {compact: 1, standard: 1, deep: 1}
+  g2_summary: {compact: 1, standard: 1, deep: 1}
+  behav:      {compact: 1, standard: 1, deep: 2}
+  critics:    {compact: 0, standard: 0, deep: 2}
+# steps that are folded into the plan call for a compact app (doc 18 1.2)
+folded_into_plan_for_compact: [modules, integrations, journeys]
+# a standard app writes its three design directions in one call when the writer can output them; deep keeps them apart
+design_fused_profiles: [standard]
+
+# how big the work is
+screens:
+  strings_per_screen: 12            # copy strings a screen adds to the source language [J]
+  screens_per_task_card: 5          # about how many screens one task card reads [J]
+hero:
+  avg_out_tokens_per_entity: 1500
+reasks_share_percent: 5             # doc 18 1.2: re-asks are about 5% of calls
+
+# the worst case: what a call may read and write at most (relative to the expected numbers) [J]
+worst_case:
+  input_factor_percent: 130
+  max_output_factor_percent: 200
+
+# time: seconds one call takes at best and at worst (doc 15 10.2: 30 to 60 s)
+time:
+  call_seconds_low: 30
+  call_seconds_high: 60
+  workers_cap_low: 8                # the optimistic number of parallel calls
+  serial_tail_seconds: 120          # the structure critic, the final critic and the summary after the last screen

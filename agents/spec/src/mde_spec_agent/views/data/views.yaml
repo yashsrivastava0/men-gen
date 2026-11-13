@@ -1,0 +1,260 @@
+# Plain words for the Spec Bench views (the owner-facing text). Content lives here, never in logic (hard rule 8).
+# Nothing here is a fact about an app: it is the wording that turns the spec's own fields into sentences.
+version: 1
+
+profiles:
+  compact:  {label: "Compact: a small app", note: "one short run, one design direction, the essentials only"}
+  standard: {label: "Standard: a medium app", note: "several parts, three design directions, every screen checked"}
+  deep:     {label: "Deep: a big app or a program of apps", note: "a pause for your OK on the structure, an independent check of every task, the most detail"}
+profile_reasons:   # why the size was raised above the tier the person picked
+  apps: "it has several apps"
+  sensitive_data: "it holds sensitive data"
+  integrations: "it connects to several outside services"
+  locales: "it speaks several languages"
+  right_to_left: "it shows a right-to-left script"
+  offline_first: "it must work without a network"
+  modules: "it has many parts"
+  apps_deep: "it has four or more apps"
+  modules_deep: "it has eight or more parts"
+
+phases:
+  one: {name: "Phase 1 (first release)"}
+  two: {name: "Phase 2 (later)"}
+  why_one: "What the first release needs: the screens Compass marked core, the parts the first release cannot work without, and the sign-in and settings screens the app stores require."
+  why_two_prefix: "These wait for a later release"
+later_reasons:
+  user: "you chose to leave them for later"
+  capacity: "an app would pass its limit of {cap} screens per release"
+  first_release: "they were outside the first release you approved with the structure"
+  default: "they are not in the first release"
+pull_in_rule: >-
+  A role's core journey must run from start to finish inside the first release, and a screen that creates or changes
+  something the first release shows must be there too. So a screen Compass left for later is pulled in when a first-release
+  journey needs it. A feature you chose to defer is never pulled in. Nothing is built from a part you move to a later
+  release, and a must-have of yours is never deferred without your recorded consent.
+pull_in_rules:
+  user_must: "you asked for this and no screen delivered it in the first release"
+  role_journey: "a role's main journey must run end to end"
+  entity_producer: "something the first release shows could not be created or changed without it"
+consent_kinds:
+  capacity: "an app is over its screen limit, so some features would move to a later release"
+  user_must: "one of your must-haves would move to a later release"
+  over_cap: "an app is still over its limit after moving things"
+  pull_in: "these parts were not in the first release but it cannot work without them"
+everything_in_one_release: "Everything in one release is allowed and is recorded. It makes the first release bigger, so it takes longer and is more likely to have rough edges."
+
+access_words:
+  none: "nothing"
+  view: "see"
+  create: "see and add"
+  edit: "see, add and change"
+  delete: "see, add, change and remove"
+  manage: "everything"
+
+emotion_levels: {frustrated: 1, anxious: 2, calm: 3, curious: 4, confident: 4, delighted: 5}
+emotion_words:
+  calm: "calm"
+  curious: "curious"
+  confident: "confident"
+  anxious: "anxious"
+  frustrated: "frustrated"
+  delighted: "delighted"
+emotion_assumed_note: "This is the spec's reading of how the person feels, not something the Brief states."
+
+voices:
+  must: "MUST"
+  usually: "USUALLY"
+  could: "COULD"
+region_importance_voice: {primary: must, supporting: usually, optional: could}
+usually_evidence:
+  official: "an official source says so"
+  corroborated: "several sources agree"
+  single_source: "one source says so"
+  unverified: "not verified"
+  library: "a standard pattern"
+step_verbs:
+  go: "go to {target}"
+  call: "ask the server to {target}"
+  stay: "stay on this screen"
+  external_flow: "hand over to {target}"
+state_words:
+  loading: "while it loads"
+  empty: "when there is nothing to show"
+  error: "when something goes wrong"
+  offline: "when there is no network"
+  forbidden: "when the person may not see it"
+  not_found: "when the item is gone"
+  stale: "when the data may be out of date"
+  partial: "when only some data arrived"
+  success: "after it worked"
+mock_profile_words:
+  empty: "a brand new account with no records"
+  typical: "an ordinary account with realistic records"
+  busy: "a busy account with a lot of records"
+  extreme: "extreme data: very long names, odd characters, huge numbers"
+  broken: "things failing: timeouts, expired sessions, refused requests"
+  offline: "no network: saved data and queued actions only"
+
+fixed_copy:
+  illustrative: "Illustrative: the final layout is the front end's."
+
+tiers:
+  A: "The standard Expo way: it runs in the normal preview app with no extra setup."
+  B: "Needs a development build, a config plugin or a store review step. It works, but it takes extra setup."
+  C: "Cannot be built in the fixed stack. The spec flags it and does not turn it into scope."
+tier_flag:
+  A: false
+  B: true
+  C: true
+# which capability of the platform sheet each fact of the app calls for
+fact_capabilities:
+  push_notifications: [push_remote]
+  in_app_notifications: [push_local]
+  media_upload: [camera]
+  offline_capable: [offline_storage]
+  offline_first: [offline_storage]
+  phone_code_login: [secure_storage]
+  email_password_login: [secure_storage]
+  background_work: [background_location]
+  realtime: [animated_transitions]
+
+# store-policy sheet facts from the graph's own facts (a policy fact that no graph fact maps to counts as false)
+policy_fact_map:
+  accounts_created_in_app: [accounts_creatable_in_app]
+  has_login: [accounts]
+  uses_third_party_login: [social_login]
+  requests_protected_permission: [sensitive_permission]
+  collects_user_data: [accounts]
+  has_push_notifications: [push_notifications]
+  uses_background_modes: [background_work]
+store_names:
+  apple: "Apple App Store"
+  google: "Google Play"
+  standard: "Accessibility standards"
+store_plain:
+  POL-APPLE-DELETION: "The stores require a way to delete the whole account and its personal data from inside the app."
+  POL-APPLE-DELETION-SUBSCRIPTIONS: "Deleting an account must warn about an active subscription and point to where to cancel it."
+  POL-APPLE-DELETION-SIWA-REVOKE: "When an account that signs in with Apple is deleted, the app must also revoke that sign-in."
+  POL-APPLE-ACCOUNT-OPTIONAL: "If the app has no real account-based features, people must be able to use it without signing in."
+  POL-APPLE-LOGIN-EQUIVALENT: "An app that signs people in with another company's account must also offer an equivalent sign-in option."
+  POL-APPLE-IAP: "Anything unlocked in the app for money must be sold through the store's own purchase system."
+  POL-APPLE-PURPOSE-STRINGS: "Every time the app asks for the camera, location, contacts or similar, it must say clearly why."
+  POL-APPLE-DATA-MINIMIZATION: "The app may only ask for the data its main job needs."
+  POL-APPLE-PRIVACY-POLICY: "The app needs a privacy policy, linked in the store listing and inside the app."
+  POL-APPLE-PRIVACY-LABELS: "The store listing must state honestly what data the app collects."
+  POL-APPLE-PRIVACY-MANIFEST-REASONS: "The app must declare why it uses certain device features."
+  POL-APPLE-TRACKING-PERMISSION: "Following people across other companies' apps needs their explicit permission."
+  POL-APPLE-THIRD-PARTY-AI-DISCLOSURE: "If personal data goes to another company, including an AI service, the app must say so and ask first."
+  POL-APPLE-PUSH: "The app must work without notifications, and a notification must not carry private details."
+  POL-APPLE-PUSH-MARKETING: "Notifications may not be used for promotion unless people chose to receive them."
+  POL-APPLE-BACKGROUND-SERVICES: "Work in the background is allowed only for its intended purposes."
+  POL-APPLE-LOCATION: "Location is used only when the features need it, and people are told and asked first."
+  POL-APPLE-UGC: "An app where people post content needs filtering, a way to report it, and a way to block people."
+  POL-APPLE-DEMO-ACCOUNT: "The store reviewers need a working demo account or demo mode."
+  POL-APPLE-AGE-RATING: "The age rating questions must be answered honestly."
+  POL-GOOGLE-DELETION: "The stores require a way to delete the account and its data from inside the app."
+  POL-GOOGLE-DATA-SAFETY: "The Google Play data-safety form must be filled in and kept accurate."
+  POL-GOOGLE-PAYMENTS: "Digital goods sold in the app must use Google Play's own billing."
+  POL-GOOGLE-BACKGROUND-LOCATION: "Location while the app is closed is allowed only when it is core to the app."
+  POL-GOOGLE-UGC: "An app where people post content must make them accept rules first and let others report it."
+  POL-GOOGLE-REVIEW-ACCESS: "The store reviewers need sign-in details that open every feature."
+  POL-GOOGLE-CONTENT-RATING: "The content rating questionnaire must be answered accurately."
+  POL-GOOGLE-TARGET-API: "New apps and updates must target a recent Android version to be accepted."
+  POL-ANDROID-NOTIFICATION-PERMISSION: "On newer Android phones the app must ask permission before it can send notifications."
+  POL-ANDROID-EDGE-TO-EDGE: "The app is drawn edge to edge on newer Android phones, so content must stay clear of the system bars."
+  POL-A11Y-CONTRAST-BODY: "Body text must have strong enough contrast against its background to be readable."
+  POL-A11Y-CONTRAST-LARGE: "Large text needs at least a lower, but still clear, level of contrast."
+  POL-A11Y-CONTRAST-NONTEXT: "Controls and the parts of graphics that carry meaning need enough contrast to be seen."
+  POL-A11Y-CONTRAST-BOTH-SCHEMES: "If the app has a dark mode, contrast must be checked in both light and dark."
+  POL-A11Y-TEXT-SCALE-200: "Text can be made twice as large without losing content or features."
+  POL-A11Y-TARGET-IOS: "Touch targets on iPhone are at least the size Apple recommends."
+  POL-A11Y-TARGET-ANDROID: "Touch targets on Android are at least the size Google recommends."
+  POL-A11Y-TARGET-WCAG: "Touch targets meet the minimum size of the web accessibility standard."
+  POL-A11Y-REDUCE-MOTION: "When a person turns on reduce motion, the app calms its animation."
+  POL-A11Y-MOTION-NOT-ONLY-SIGNAL: "Motion is never the only way the app tells you something important."
+
+confirm_why:
+  rule: "A number or rule the spec set because the Brief did not give it, or research only partly supports it. Please say if it is right."
+  rule_assumed: "The spec assumed this because nobody said. Please say if it is right."
+  screen: "A screen asked for your confirmation."
+  feature: "The fixed stack cannot build this as asked. Please decide what to do instead."
+  research: "Research found this but could not fully verify it ({evidence})."
+  money_extra: "It affects money."
+  legal_extra: "It has a legal side."
+  identity_extra: "It affects who a person is."
+evidence_words:
+  official: "an official source"
+  corroborated: "several sources agree"
+  single_source: "one source only"
+  unverified: "not verified"
+category_words: {money: "money", legal: "legal", identity: "identity", other: "other"}
+
+rcode_words:
+  sort_bytes: "put keys and lines in a fixed order"
+  mint_missing_id: "gave a missing id a name"
+  instantiate_library_default: "added a standard state, rule or behaviour that was missing"
+  exact_synonym: "replaced a word by its exact standard synonym"
+  drop_unknown_optional: "removed an optional field the spec does not know"
+  downgrade_locked_to_default: "lowered a claim that had no evidence from locked to default"
+
+differences:
+  merged: "{kept} and {removed} are one screen with a mode ({why})."
+  split: "{what} was split in two: {why}."
+  added_system: "Added a screen the stores or a sign-in need: {name}."
+  added_derived: "Added a screen the structure was missing: {name}."
+  added_peer: "Added a screen that similar apps usually have: {name} ({evidence})."
+  suggested_peer: "Similar apps usually have {name} ({evidence}); it is offered as a suggestion, not added."
+  phased: "{name} comes in a later release ({reason})."
+  pulled_in: "{name} moved into the first release: {because}."
+  access: "{text}"
+  link: "{text}"
+  note: "{text}"
+  dropped_role: "{text}"
+
+risks:
+  missing_need: "The front end would be missing something it needs: {title}."
+  blockers: "{n} checks found a problem that must be fixed before the front end can build."
+  warnings: "{n} checks found something worth a look."
+  tier_b: "{n} capability needs extra setup (a development build or a store review step)."
+  tier_c: "{n} capability cannot be built in the fixed stack."
+  degraded: "{n} parts could not be fully repaired and are marked degraded."
+  assumed: "{n} parts rest on an assumption nobody confirmed."
+  native_review: "The words in {langs} were written by a model and need a native speaker to read them."
+  thin_research: "Research was thin, so some choices rest on common patterns rather than evidence."
+  banner: "{message}"
+  verify_open: "{n} problems the independent check found are still open."
+  confirm_many: "{n} things need your confirmation."
+  consent: "The first release moved parts to make it work; your consent is recorded at the structure check."
+  same_critic: "The reviewer comes from the same maker as the writer, so its independence is limited."
+
+summary:
+  opening: "This spec describes {apps_text}, with {roles} kinds of user and {screens} screens in the first release."
+  later: "{n} more screens wait for later releases."
+  features: "It covers {n} features."
+  data: "The app keeps track of {n} kinds of information."
+  flows: "{n} journeys are written step by step."
+  integrations: "It connects to {text}."
+  confirm: "{n} things need your confirmation before the front end builds."
+  assumptions: "{n} parts rest on an assumption."
+  blocked: "It cannot go to approval yet: the front end would be missing {text}."
+  checks_ok: "Every check passed."
+  checks_open: "{n} checks found a problem that must be fixed."
+  languages: "It speaks {text}."
+  none: "no features were listed"
+
+kinds:   # words for a node kind in a sentence
+  features: "feature"
+  roles: "role"
+  apps: "app"
+  modules: "part"
+  entities: "kind of information"
+  operations: "server action"
+  rules: "rule"
+  integrations: "outside service"
+  screens: "screen"
+  personas: "persona"
+  stories: "story"
+  flows: "journey"
+  behaviors: "behaviour"
+  directions: "design direction"
+  assets: "asset"
