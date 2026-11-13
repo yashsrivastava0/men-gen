@@ -320,3 +320,45 @@ def test_all_kinds_are_covered_by_some_job() -> None:
 
     assert {k for ks in JOB_KINDS.values() for k in ks} == set(KINDS)
     _ = asyncio  # silence unused import in some configurations
+
+
+async def test_an_open_circuit_is_waited_out_and_the_call_then_succeeds() -> None:
+    """One provider hiccup opened the gateway's breaker and every call of a Medium run was refused for a minute: the run
+    stopped with no results (2026-11-13). The runner waits out the window and the work resumes."""
+    import asyncio
+    from types import SimpleNamespace
+
+    from mde_core.errors import CircuitOpen
+    from mde_research_agent.calls import check as check_call
+    from mde_research_agent.calls.base import CallRunner
+
+    calls = {"n": 0}
+
+    class Gateway:
+        async def run(self, spec, inp, ctx):  # type: ignore[no-untyped-def]
+            calls["n"] += 1
+            if calls["n"] <= 2:
+                raise CircuitOpen("open", details={"retry_in_seconds": 0.01})
+            return SimpleNamespace(
+                output=check_call.CheckOut(verdicts=[]),
+                usage=SimpleNamespace(input_tokens=5, output_tokens=5, cost_micros=1),
+                mode="live",
+                repaired=False,
+                cache_hit=False,
+                model="m",
+            )
+
+    runner = CallRunner(Gateway(), run_id="t")  # type: ignore[arg-type]
+    res = await runner.run(check_call.SPEC, check_call.CheckIn(items=[]))
+    assert calls["n"] == 3 and not res.failed and not res.used_fallback
+    # a window longer than the cap, or one that never closes, still ends in the deterministic fallback
+    calls["n"] = -100
+    long_wait = CallRunner(Gateway(), run_id="t")  # type: ignore[arg-type]
+
+    class Stuck:
+        async def run(self, spec, inp, ctx):  # type: ignore[no-untyped-def]
+            raise CircuitOpen("open", details={"retry_in_seconds": 9999})
+
+    res2 = await CallRunner(Stuck(), run_id="t").run(check_call.SPEC, check_call.CheckIn(items=[]))  # type: ignore[arg-type]
+    assert res2.used_fallback and long_wait is not None
+    await asyncio.sleep(0)

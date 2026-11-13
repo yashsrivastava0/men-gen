@@ -29,6 +29,7 @@ from mde_core.errors import (
     BudgetExceeded,
     CallCancelled,
     CassetteMissing,
+    CircuitOpen,
     GatewayError,
     LiveCallForbidden,
 )
@@ -87,6 +88,10 @@ class RunResult(Generic[O]):
     errors: list[str] = field(default_factory=list)
 
 
+CIRCUIT_WAITS = 3  # how many times a call waits out an open circuit before it uses its fallback
+CIRCUIT_WAIT_CAP_S = 45.0  # the longest single wait
+
+
 class CallRunner:
     """Runs :class:`ResearchCallSpec` objects through a ``GatewayClient`` inside one run's budget scope."""
 
@@ -132,14 +137,30 @@ class CallRunner:
         started = time.monotonic()
         self._cancel.check()
         ctx = self.context(cs)
-        try:
-            result = await asyncio.wait_for(
-                self._gateway.run(cs.spec, inp, ctx), timeout=cs.timeout_s + 5.0
-            )
-        except PROPAGATE:
-            raise
-        except FALLBACK_ON as exc:
-            return self._fallback(cs, inp, started, type(exc).__name__)
+        waits = 0
+        while True:
+            try:
+                result = await asyncio.wait_for(
+                    self._gateway.run(cs.spec, inp, ctx), timeout=cs.timeout_s + 5.0
+                )
+                break
+            except PROPAGATE:
+                raise
+            except CircuitOpen as exc:
+                # The gateway stopped calling a provider that failed repeatedly, for a few seconds. A deterministic
+                # fallback cannot extract facts, so a run that skipped every call during that window ended with no
+                # results after one provider hiccup (2026-11-13, Medium run, 134 refused calls in a minute): wait out the
+                # window, once the breaker lets a probe through the work resumes.
+                retry_in = float(
+                    (getattr(exc, "details", None) or {}).get("retry_in_seconds", 0) or 0
+                )
+                if waits >= CIRCUIT_WAITS or retry_in > CIRCUIT_WAIT_CAP_S:
+                    return self._fallback(cs, inp, started, type(exc).__name__)
+                waits += 1
+                await asyncio.sleep(max(0.5, retry_in + 0.5))
+                self._cancel.check()
+            except FALLBACK_ON as exc:
+                return self._fallback(cs, inp, started, type(exc).__name__)
         output = result.output
         if output is None:
             return self._fallback(cs, inp, started, "empty_output")
