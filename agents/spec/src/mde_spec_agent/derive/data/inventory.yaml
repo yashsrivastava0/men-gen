@@ -1,0 +1,45 @@
+# Inventory derivation data (doc 15 4.2, 4.3). Content, not logic.
+version: 1
+# A Compass screen satisfies a system screen when its type matches and its name carries one of the words.
+# Order matters: the first system screen a Compass screen matches is the one it satisfies.
+system_match:
+  verify_code: {types: [auth, form], words: [verify, verification, otp, code]}
+  forgot_password: {types: [auth, form], words: [forgot, forgotten]}
+  reset_password: {types: [auth, form], words: [reset]}
+  sign_in: {types: [auth], words: [sign in, sign-in, signin, login, log in, sign up, register, staff access]}
+  role_chooser: {types: [list, detail, auth], words: [choose account, choose role, switch account, switch role, select account]}
+  language: {types: [settings], words: [language, languages]}
+  notification_settings: {types: [settings], words: [notification, notifications, reminder settings]}
+  notifications_inbox: {types: [notifications], words: [notification, notifications, inbox, alerts, reminders]}
+  profile: {types: [profile, detail, form], words: [profile, my account, account profile]}
+  account_deletion: {types: [form, settings, detail], words: [delete account, account deletion, close account]}
+  settings: {types: [settings], words: [settings, preferences]}
+  help_support: {types: [detail, list, form], words: [help, support, contact us, contact]}
+  terms: {types: [legal, detail], words: [terms]}
+  privacy: {types: [legal, detail], words: [privacy]}
+  onboarding: {types: [onboarding], words: [welcome, onboarding, intro]}
+# The store-policy sheet rule that backs a system screen whose library provenance names no sheet id.
+# A system screen with no entry here keeps `library` provenance (the sheet has no rule for it).
+system_policy:
+  account_deletion: POL-APPLE-DELETION
+  privacy: POL-APPLE-PRIVACY-POLICY
+# Entity classes by name (a join or log entity needs no screen)
+entity_classes:
+  log_words: [log, audit, history, event, events, trail]
+  join_words: [link, join, mapping, membership]
+# Entity states that are negative endings (they branch off the happy path and are terminal)
+negative_states: [cancelled, canceled, rejected, failed, declined, no_show, unable_to_deliver, expired, removed, closed, refunded, closed_lost]
+# Field-name hints
+text_field_words: [description, notes, note, comment, comments, remarks, details, message, reason, summary]
+# Surface (App.surface) from Compass's free-text surface and the app name
+surface_words:
+  web: [portal, web, desktop, admin console, back office]
+  tablet: [tablet, ipad]
+# Words stripped from a role name that is also an app name ("Manager side" -> "Manager")
+role_name_suffix_words: [side, app, screens, portal, application]
+# Peer check (research screens lane)
+peers:
+  add_when_evidence: [official, corroborated]
+  add_when_level: [core, common]
+  level_rank: {core: 3, common: 2, advanced: 1, emerging: 0}
+  peer_screen_type: detail

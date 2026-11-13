@@ -31,7 +31,7 @@ class SpecSettings(BaseSettings):
     spec_live_budget_usd: Decimal = Decimal("5.00")
     spec_tripwire_usd: Decimal = Decimal("4.50")
     spec_data_dir: Path | None = None
-    spec_inputs_dirs: str = ""  # extra directories, separated by os.pathsep (SPEC_INPUT_DIRS)
+    spec_input_dirs: str = ""  # extra directories, separated by os.pathsep (SPEC_INPUT_DIRS)
     spec_ui_dir: Path | None = None
     spec_port: int = Field(default=DEFAULT_PORT, ge=1024, le=65535)
     spec_max_concurrent_runs: int = Field(default=1, ge=1, le=8)
@@ -46,7 +46,7 @@ class SpecSettings(BaseSettings):
 
     @property
     def input_dirs(self) -> list[Path]:
-        return [Path(p) for p in self.spec_inputs_dirs.split(os.pathsep) if p.strip()]
+        return [Path(p) for p in self.spec_input_dirs.split(os.pathsep) if p.strip()]
 
 
 def load_spec_settings(**overrides: object) -> SpecSettings:

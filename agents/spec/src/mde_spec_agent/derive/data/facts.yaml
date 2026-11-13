@@ -1,0 +1,47 @@
+# How the predicate facts of mde_spec_core vocab/predicates.yaml are derived from what the person said (doc 15 3.1, 7.4).
+# Content, not logic (hard rule 8): nothing here is specific to one company or app type. Words are matched whole-word,
+# case-insensitive, against the in-scope features (name and intent), the Compass screens (name) and the flows (name).
+version: 1
+# sign-in method words (Compass `access.methods`) -> the sign-in fact they set
+auth_methods:
+  phone_code_login: [phone_otp, phone, sms, otp, phone_code, mobile_otp]
+  email_password_login: [email_password, email, password, email_and_password]
+  social_login: [google, apple, facebook, social, sso, single_sign_on]
+# account-model words that mean people cannot create an account themselves
+managed_accounts: [invite_only, admin_created, managed, provisioned, staff_created]
+# account-model words that mean one user can hold several roles or business accounts
+multi_role_accounts: [team, business, organisation, organization, company, enterprise, multi_tenant]
+keywords:
+  push_notifications: [push, reminder, reminders, alert, alerts, notify, notification, notifications, notified]
+  value_needs_explaining: [onboarding, tutorial, walkthrough, introduction]
+  sensitive_permission: [camera, scan, scanner, barcode, photo, photos, gps, location, contacts, microphone]
+  offline_first: [offline, offline-first, no network, poor network, low connectivity, patchy network]
+  background_work: [background, tracking, geofence, sync in the background]
+  media_upload: [upload, photo, photos, picture, pictures, image, images, document, documents, proof]
+  realtime: [live, realtime, real-time, chat, messaging, instant]
+  payments: [pay, payment, payments, checkout, invoice, invoices, billing, subscription, subscriptions, fee, commission]
+  analytics: [analytics, metrics, insights, usage statistics]
+  in_app_notifications: [inbox, notification centre, notification center]
+# an integration (Compass `integrations[].name`) -> the facts it sets
+integrations:
+  payments: [payments, provider_side_flow]
+  payment: [payments, provider_side_flow]
+  messaging: [push_notifications]
+  notifications: [push_notifications]
+  maps: [sensitive_permission]
+  location: [sensitive_permission, background_work]
+  kyc: [minors_or_health_or_identity]
+  identity: [minors_or_health_or_identity]
+  analytics: [analytics]
+# Compass `sensitive_data` tokens -> minors_or_health_or_identity
+identity_sensitive: [health, medical, minors, children, child, personal_ids, identity, id_documents, biometric, aadhaar, passport]
+# Research profile signals -> facts (a hint from Research's own reading of the Brief; never the only source)
+research_signals:
+  payments: [payments]
+  maps_location: [sensitive_permission]
+  offline: [offline_first]
+# entity field types that imply a fact
+field_types:
+  location: [sensitive_permission]
+  file: [media_upload]
+  image: [media_upload]

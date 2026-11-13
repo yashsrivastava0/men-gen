@@ -1,0 +1,97 @@
+# Seed-graph data (doc 15 5.7, 5.8). Content, not logic. Deterministic placeholder text where a model writes prose later.
+version: 1
+# Compass entity field type -> graph field type; and the input type a form uses for it (None: not an input)
+field_types:
+  text: {field: text, input: text}
+  number: {field: number, input: number}
+  money: {field: money, input: money}
+  date: {field: date, input: date}
+  datetime: {field: date, input: date}
+  bool: {field: toggle, input: toggle}
+  enum: {field: enum, input: choice}
+  ref: {field: ref, input: choice}
+  image: {field: file, input: file, media: true}
+  file: {field: file, input: file, media: true}
+  location: {field: location, input: location}
+  list: {field: list, input: choice}
+default_field_type: text
+# default error codes of an operation (the stable error model); recovery words are the graph's own (stay, retry, offline, go)
+operation_errors:
+  read: [{code: network, recovery: offline}, {code: forbidden, recovery: stay}, {code: not_found, recovery: go_back}]
+  write: [{code: network, recovery: offline}, {code: forbidden, recovery: stay}, {code: validation_failed, recovery: stay}, {code: conflict, recovery: retry}]
+# what an access level allows (cumulative); `none` means nothing
+access_levels:
+  none: [none]
+  view: [view]
+  create: [view, create]
+  edit: [view, create, edit]
+  manage: [view, create, edit, delete, manage]
+# Templates per screen type for the regions of a card: meaning only (what the screen must communicate), bound to real
+# entity fields. `bind` picks which fields: key_fields (first non-text fields), text_fields, media_fields, status,
+# money_fields, date_fields, location_fields. `when` is a condition on what the entity has.
+region_templates:
+  list:
+    - {key: items, shape: collection, importance: primary, what: "the {items} the user can look through", bind: key_fields, cardinality: many, item: true}
+  detail:
+    - {key: summary, shape: key_values, importance: primary, what: "the key facts about the {entity}", bind: key_fields}
+    - {key: description, shape: text, importance: supporting, what: "the longer description of the {entity}", bind: text_fields, when: text_fields}
+    - {key: photos, shape: media, importance: supporting, what: "the pictures or files that belong to the {entity}", bind: media_fields, when: media_fields}
+    - {key: progress, shape: sequence, importance: supporting, what: "where the {entity} stands in its life", bind: status, when: status, attrs: ["kind=stages"], cardinality: few}
+  form:
+    - {key: details, shape: inputs, importance: primary, what: "the details the user gives about the {entity}", bind: input_fields}
+  wizard:
+    - {key: steps, shape: sequence, importance: primary, what: "the ordered steps to give the details of the {entity}", bind: input_fields, attrs: ["kind=stages"], cardinality: few}
+  dashboard:
+    - {key: figures, shape: value, importance: primary, what: "the figures that matter now for {items}", bind: status, attrs: ["kind=metric"], when: status}
+    - {key: recent, shape: collection, importance: supporting, what: "the latest {items}", bind: key_fields, cardinality: few, item: true}
+  calendar:
+    - {key: schedule, shape: schedule, importance: primary, what: "the {items} over time", bind: date_fields, when: date_fields}
+    - {key: day_items, shape: collection, importance: supporting, what: "the {items} on the chosen day", bind: key_fields, cardinality: few, item: true}
+  map:
+    - {key: places, shape: places, importance: primary, what: "where the {items} are", bind: location_fields, attrs: ["kind=points"], cardinality: few}
+  checkout:
+    - {key: amount_due, shape: key_values, importance: primary, what: "what the user pays for and the amount due", bind: money_fields}
+    - {key: methods, shape: options, importance: primary, what: "the ways the user can pay", bind: ops_list, cardinality: few}
+  confirmation:
+    - {key: result, shape: key_values, importance: primary, what: "what was done and what happens next", bind: key_fields}
+  status:
+    - {key: progress, shape: sequence, importance: primary, what: "where the {entity} stands now", bind: status, attrs: ["kind=stages"], cardinality: few}
+    - {key: facts, shape: key_values, importance: supporting, what: "the key facts about the {entity}", bind: key_fields}
+  notifications:
+    - {key: messages, shape: collection, importance: primary, what: "the {items} the user received", bind: key_fields, cardinality: many, item: true}
+  profile:
+    - {key: identity, shape: key_values, importance: primary, what: "the user's own details", bind: key_fields}
+  settings:
+    - {key: preferences, shape: key_values, importance: primary, what: "the preferences the user can change", bind: key_fields, attrs: ["editable=true"]}
+  report:
+    - {key: figures, shape: series, importance: primary, what: "the figures over time for {items}", bind: money_fields, when: money_fields}
+    - {key: rows, shape: collection, importance: supporting, what: "the {items} behind the figures", bind: key_fields, cardinality: many, item: true}
+  search:
+    - {key: results, shape: collection, importance: primary, what: "the {items} that match the query", bind: key_fields, cardinality: many, item: true}
+  chat:
+    - {key: thread, shape: conversation, importance: primary, what: "the messages of the conversation", bind: key_fields}
+  media:
+    - {key: files, shape: media, importance: primary, what: "the pictures or files", bind: media_fields, when: media_fields}
+  detail_fallback:
+    - {key: summary, shape: text, importance: primary, what: "what this screen is for"}
+# Intent used for each screen type's first mutation action
+mutation_intent: {form: confirm, wizard: confirm, checkout: pay, profile: enter_text, settings: toggle}
+# Provider-side flow defaults of an integration (assumed until Research or the owner says otherwise; listed on confirm)
+integration_defaults:
+  flow: "The user leaves the app for the provider's own step and returns with a result; the app never handles card or account secrets itself."
+  interruption: "If the app is closed or killed during the provider's step, the next open asks the provider for the status of the last attempt and shows the result; nothing is charged twice."
+  pending_timeout: "A pending result is waited for a limited time, then shown as unknown with a way to check again or contact support; the limit is on the confirm list."
+  events: [succeeded, failed, pending]
+  mock_behaviour: "A mock provider answers success, failure and pending on demand so every state can be shown without a real account."
+# app-specific behaviour categories the baseline fills as assumed (a model refines them later)
+assumed_behaviors:
+  background_work: "Work that continues while the app is closed (uploads, location) is limited to what a feature needs, resumes after a restart, and says plainly when it is paused."
+  interrupted_external_flow: "{flow}"
+  pending_timeouts: "{pending_timeout}"
+# placeholder text where a model writes prose later
+placeholders:
+  purpose_with_entities: "The user works with {entities} on this screen."
+  purpose_plain: "The user uses {name} to get this part of the job done."
+  story_so_that: "the app does what the Brief describes"
+  unhappy_path: "A step fails or the network drops: the user keeps what was entered and can try again from where they stopped."
+  persona_goal: "get the job done in the app"

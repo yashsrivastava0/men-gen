@@ -1,0 +1,9 @@
+# Release-planner data (doc 15 4.5, 4.6). Content, not logic.
+version: 1
+# Compass screen `phase` values
+core_phase: core
+extended_phase: extended
+# entity access levels that let a role produce (create or change) an entity
+producer_levels: [create, edit, manage]
+# peer prevalence of a feature (Research norm level -> rank, higher first)
+level_rank: {core: 3, common: 2, advanced: 1, emerging: 0}
