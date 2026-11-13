@@ -47,6 +47,10 @@ class RunContext:
         default_factory=dict
     )  # release plan, inventory, proposals (set by the plan step)
     flags: list[dict[str, Any]] = field(default_factory=list)  # degraded nodes, listed at G2
+    derived: Any = None  # derive.pipeline.Derived: facts, profile decision, inventory, release plan, seed result
+    pack: Any = None  # the assembled Pack (set by the assemble step)
+    check: Any = None  # the gate-3 CheckReport
+    verify: Any = None  # the injected VerifyPort for deep packs, or None
 
     # ---- events --------------------------------------------------------------------------------------------
     def emit(self, type_: str, *, step: str | None = None, **data: Any) -> None:
