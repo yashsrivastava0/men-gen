@@ -1,0 +1,23 @@
+id: SB-QP-20
+title: 'The needle: a fact stated in turn 2 is in the final Brief after more than twenty questions'
+tags: [planner, needle, memory, facts, brief]
+engines: [planner]
+steps:
+  - command: budget_thorough
+  - say: "I run a tiffin service in Pune and want an app for it"
+    expect:
+      interview: {budget: thorough}
+  - answer_texts: ["Customers order for the whole month, and our riders must wear a green vest and carry a steel dabba with a red tag so offices can tell our deliveries apart"]
+    note: turn 2, the needle
+    expect:
+      facts:
+        active_contains: ["green vest", "red tag"]
+        unverified_max: 0
+  - drive: {mode: tap_recommended, until: BRIEF_REVIEW, max: 60}
+    expect:
+      state: BRIEF_REVIEW
+      qa: {shown_min: 20}
+final:
+  brief_contains: ["green vest", "red tag"]
+  domain_facts_contains: ["green vest"]
+  facts: {coverage: 1.0, ids_gapless: true, unverified_max: 0}

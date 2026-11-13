@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Research</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<button type="button" class="skip" id="skip">Skip to content</button>
+<div id="fake-banner" class="fake-banner" role="alert" hidden>TEST FAKE: offline doubles, no real research</div>
+<header class="bar" id="bar">
+  <div class="bar-row">
+    <h1 class="brand">Research</h1>
+    <p class="live" id="live-banner">LIVE: real models and the real web; this costs money</p>
+    <button type="button" class="pill pill-wait" id="preflight-pill" aria-haspopup="dialog">Checking&hellip;</button>
+    <button type="button" class="linkish" id="theme-toggle">Theme: auto</button>
+  </div>
+  <div class="budget budget-off" id="budget">
+    <p class="budget-text" id="budget-text">Budget: loading&hellip;</p>
+    <div class="meter" id="budget-meter" role="progressbar" aria-label="Budget used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="meter-fill" id="budget-fill"></div>
+      <div class="meter-trip" id="budget-trip"></div>
+    </div>
+  </div>
+  <p class="credits-row" id="credits-row" hidden><a class="credits-chip credits-unknown" id="credits-chip" href="#/budget" title="Credits are what Tavily and Serper count for each search. This is advice only: it never stops a run.">Credits: loading&hellip;</a></p>
+  <nav class="nav" id="nav" aria-label="Main">
+    <a href="#/inputs" data-route="inputs">Inputs</a>
+    <a href="#/runs" data-route="runs">Runs</a>
+    <a href="#/spotcheck" data-route="spotcheck">Spot-check</a>
+    <a href="#/budget" data-route="budget">Budget</a>
+    <a href="#/tools" data-route="tools">Tools</a>
+    <a href="#/guide" data-route="guide">Guide</a>
+  </nav>
+</header>
+<div id="notices" class="notices"></div>
+<main id="view" tabindex="-1"><p class="muted pad">Loading&hellip;</p></main>
+<div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+<noscript><p class="pad">This page needs JavaScript. It uses no outside scripts and no tracking.</p></noscript>
+</body>
+</html>

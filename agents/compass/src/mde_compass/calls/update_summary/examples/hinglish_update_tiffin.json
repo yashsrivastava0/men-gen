@@ -1,0 +1,87 @@
+{
+  "name": "hinglish_update_tiffin",
+  "input": {
+    "language": "hi-Latn",
+    "previous_topics": [
+      {
+        "topic": "tiffin",
+        "decisions": [
+          "Ghar ka khana office walon ko bhejna hai"
+        ],
+        "open_issues": [],
+        "vocabulary": [
+          "tiffin",
+          "dabba"
+        ],
+        "tone": [],
+        "fact_ids": [
+          "FCT-001"
+        ]
+      },
+      {
+        "topic": "payment",
+        "decisions": [
+          "Customer mahine ka plan leta hai"
+        ],
+        "open_issues": [],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-002"
+        ]
+      }
+    ],
+    "new_facts_digest": "FCT-003 [rule|payment] Pehla hafta free trial hai (from Q-003)\nFCT-004 [context|delivery] Delivery cook ke apne ladke karte hain (from Q-004)\nFCT-005 [number|tiffin] Roz lagbhag 60 dabbe (from Q-005)",
+    "through_fact_id": "FCT-005"
+  },
+  "output": {
+    "topics": [
+      {
+        "topic": "tiffin",
+        "decisions": [
+          "Ghar ka khana office walon ko bhejna hai",
+          "Roz lagbhag 60 dabbe"
+        ],
+        "open_issues": [],
+        "vocabulary": [
+          "tiffin",
+          "dabba"
+        ],
+        "tone": [],
+        "fact_ids": [
+          "FCT-001",
+          "FCT-005"
+        ]
+      },
+      {
+        "topic": "payment",
+        "decisions": [
+          "Customer mahine ka plan leta hai",
+          "Pehla hafta free trial hai"
+        ],
+        "open_issues": [],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-002",
+          "FCT-003"
+        ]
+      },
+      {
+        "topic": "delivery",
+        "decisions": [
+          "Delivery cook ke apne ladke karte hain"
+        ],
+        "open_issues": [
+          "Kitne ladke aur kaun se area abhi pata nahi"
+        ],
+        "vocabulary": [],
+        "tone": [],
+        "fact_ids": [
+          "FCT-004"
+        ]
+      }
+    ],
+    "through_fact_id": "FCT-005"
+  }
+}

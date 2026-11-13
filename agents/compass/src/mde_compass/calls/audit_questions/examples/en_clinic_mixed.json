@@ -1,0 +1,135 @@
+{
+  "name": "en_clinic_mixed",
+  "input": {
+    "language": "en",
+    "project_terms": ["clinic", "Indore", "doctor", "patient", "appointment", "receptionist", "slot"],
+    "needs": [
+      {
+        "need_id": "scope.features",
+        "label": "Features",
+        "sufficient": "What each feature is for (the job it does) and what must be in the first release."
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+      },
+      {
+        "need_id": "data.sensitive",
+        "label": "Sensitive information",
+        "sufficient": "What sensitive information the app handles, such as health, financial, children's data or ID documents."
+      },
+      {
+        "need_id": "auth.methods",
+        "label": "How people sign in",
+        "sufficient": "How each kind of user signs in: phone number and code, email, a social account, or not at all."
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several."
+      }
+    ],
+    "asked_list": "Q-001 how doctors' time is organised (answered)\nQ-002 who books for whom (answered)\nQ-003 where the clinic is (answered)",
+    "questions": [
+      {
+        "card_id": "Q-004",
+        "text": "When a patient cancels at the last minute, should that slot go to other patients or stay empty?",
+        "intent": "learn what happens to a cancelled appointment slot",
+        "serves": ["scope.features", "domain:cancellations"],
+        "type": "choose_one",
+        "option_labels": [
+          "Offer it to patients on a waiting list",
+          "Keep it free for walk-ins",
+          "Leave it empty"
+        ],
+        "recommended": "Offer it to patients on a waiting list",
+        "why_we_ask": "It decides whether the booking screen needs a waiting list."
+      },
+      {
+        "card_id": "Q-005",
+        "text": "What features do you want in the app?",
+        "intent": "learn the features",
+        "serves": ["scope.features"],
+        "type": "open_prompt",
+        "option_labels": [],
+        "recommended": "",
+        "why_we_ask": "We need to know what to build."
+      },
+      {
+        "card_id": "Q-006",
+        "text": "Obviously the receptionist needs a secure database to store patient records, right?",
+        "intent": "learn whether patient records are kept in the app",
+        "serves": ["data.sensitive"],
+        "type": "confirm",
+        "option_labels": ["Yes", "No"],
+        "recommended": "Yes",
+        "why_we_ask": "Health information needs extra care."
+      },
+      {
+        "card_id": "Q-007",
+        "text": "How are your doctors' appointment slots arranged during the day?",
+        "intent": "learn how doctors' time is organised",
+        "serves": ["scope.features"],
+        "type": "open_prompt",
+        "option_labels": [],
+        "recommended": "",
+        "why_we_ask": "It shapes the booking screen."
+      }
+    ]
+  },
+  "output": {
+    "verdicts": [
+      {
+        "card_id": "Q-004",
+        "specific": 5,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [],
+        "fix": ""
+      },
+      {
+        "card_id": "Q-005",
+        "specific": 1,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [
+          "Generic: it would read the same for any app.",
+          "Uses none of the clinic's own words."
+        ],
+        "fix": "Ask about one concrete clinic job, such as the receptionist's day."
+      },
+      {
+        "card_id": "Q-006",
+        "specific": 3,
+        "leading": true,
+        "jargon": true,
+        "duplicate_of": "",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": [
+          "Leading: 'obviously' and the answer is built into the question.",
+          "Technical word 'database' for a clinic owner."
+        ],
+        "fix": "Drop the leading word and the technical term."
+      },
+      {
+        "card_id": "Q-007",
+        "specific": 4,
+        "leading": false,
+        "jargon": false,
+        "duplicate_of": "Q-001",
+        "answerable": true,
+        "maps_to_need": true,
+        "issues": ["Repeats Q-001, which is already answered."],
+        "fix": "Drop it or ask about something Q-001 did not cover."
+      }
+    ]
+  }
+}

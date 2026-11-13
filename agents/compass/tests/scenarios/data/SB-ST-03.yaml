@@ -1,0 +1,14 @@
+id: SB-ST-03
+title: With the switch off nothing is drafted and the Brief is exactly what it was before the structure existed
+tags: [planner, structure, switch]
+engines: [planner]
+steps:
+  - command: budget_standard
+  - say: "I run a tiffin service in Pune and want an app for it"
+  - drive: {mode: tap_recommended, until: BRIEF_REVIEW, max: 40}
+    expect:
+      state: BRIEF_REVIEW
+      structure: {absent: true}
+      no_notice_code: [structure_ready, size_suggestion]
+final:
+  interview: {fallback_count: 0}

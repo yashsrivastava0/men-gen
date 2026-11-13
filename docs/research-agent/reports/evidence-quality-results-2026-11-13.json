@@ -1,0 +1,1076 @@
+{
+ "note": "Raw results behind docs/research-agent/evidence-quality-2026-11-13.md. Run F = rrn_01M75KFZTD99D80M21DM5BZWKQ (Small yoga, Tavily, 2026-11-11). Live, model calls only.",
+ "planted_error_v2_first_baseline": {
+  "clean_items": 43,
+  "planted": 197,
+  "caught_overall": 0.9645,
+  "per_kind": {
+   "number_changed": {
+    "planted": 15,
+    "caught_by_code": 15,
+    "caught_by_checker": 0,
+    "checker_not_supported": 0,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "entity_swapped": {
+    "planted": 43,
+    "caught_by_code": 0,
+    "caught_by_checker": 42,
+    "checker_not_supported": 19,
+    "checker_partial": 23,
+    "missed": 1,
+    "gated": true,
+    "caught_rate": 0.9767
+   },
+   "condition_flipped": {
+    "planted": 43,
+    "caught_by_code": 2,
+    "caught_by_checker": 41,
+    "checker_not_supported": 16,
+    "checker_partial": 25,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "region_swapped": {
+    "planted": 43,
+    "caught_by_code": 28,
+    "caught_by_checker": 10,
+    "checker_not_supported": 0,
+    "checker_partial": 10,
+    "missed": 5,
+    "gated": true,
+    "caught_rate": 0.8837
+   },
+   "unsupported_attribute_added": {
+    "planted": 43,
+    "caught_by_code": 13,
+    "caught_by_checker": 30,
+    "checker_not_supported": 0,
+    "checker_partial": 30,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "currency_swapped": {
+    "planted": 1,
+    "caught_by_code": 0,
+    "caught_by_checker": 1,
+    "checker_not_supported": 1,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": false,
+    "caught_rate": 1.0
+   },
+   "period_changed": {
+    "planted": 3,
+    "caught_by_code": 0,
+    "caught_by_checker": 3,
+    "checker_not_supported": 3,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": false,
+    "caught_rate": 1.0
+   },
+   "qualifier_dropped": {
+    "planted": 6,
+    "caught_by_code": 0,
+    "caught_by_checker": 5,
+    "checker_not_supported": 2,
+    "checker_partial": 3,
+    "missed": 1,
+    "gated": false,
+    "caught_rate": 0.8333
+   }
+  },
+  "clean_wrongly_rejected": 0,
+  "clean_rejected_rate": 0.0,
+  "clean_flagged": 7,
+  "clean_flagged_rate": 0.1628,
+  "discrimination": 0.8017,
+  "degenerate_checker": false,
+  "partial_recheck": {
+   "items": 20,
+   "still_partial": 13,
+   "now_supported": 7,
+   "now_not_supported": 0
+  },
+  "passed": true,
+  "needs_second_vendor": false,
+  "thresholds": {
+   "overall": 0.9,
+   "per_kind": 0.8,
+   "clean_rejected_max": 0.05,
+   "discrimination_min": 0.3
+  },
+  "cost_micros": 11079,
+  "cost_usd": "0.011079"
+ },
+ "planted_error_v2_after_fix": {
+  "clean_items": 43,
+  "planted": 197,
+  "caught_overall": 0.8985,
+  "per_kind": {
+   "number_changed": {
+    "planted": 15,
+    "caught_by_code": 15,
+    "caught_by_checker": 0,
+    "checker_not_supported": 0,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "entity_swapped": {
+    "planted": 43,
+    "caught_by_code": 0,
+    "caught_by_checker": 34,
+    "checker_not_supported": 9,
+    "checker_partial": 25,
+    "missed": 9,
+    "gated": true,
+    "caught_rate": 0.7907
+   },
+   "condition_flipped": {
+    "planted": 43,
+    "caught_by_code": 2,
+    "caught_by_checker": 41,
+    "checker_not_supported": 13,
+    "checker_partial": 28,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "region_swapped": {
+    "planted": 43,
+    "caught_by_code": 28,
+    "caught_by_checker": 6,
+    "checker_not_supported": 0,
+    "checker_partial": 6,
+    "missed": 9,
+    "gated": true,
+    "caught_rate": 0.7907
+   },
+   "unsupported_attribute_added": {
+    "planted": 43,
+    "caught_by_code": 13,
+    "caught_by_checker": 30,
+    "checker_not_supported": 0,
+    "checker_partial": 30,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "currency_swapped": {
+    "planted": 1,
+    "caught_by_code": 0,
+    "caught_by_checker": 1,
+    "checker_not_supported": 1,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": false,
+    "caught_rate": 1.0
+   },
+   "period_changed": {
+    "planted": 3,
+    "caught_by_code": 0,
+    "caught_by_checker": 3,
+    "checker_not_supported": 3,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": false,
+    "caught_rate": 1.0
+   },
+   "qualifier_dropped": {
+    "planted": 6,
+    "caught_by_code": 0,
+    "caught_by_checker": 4,
+    "checker_not_supported": 0,
+    "checker_partial": 4,
+    "missed": 2,
+    "gated": false,
+    "caught_rate": 0.6667
+   }
+  },
+  "clean_wrongly_rejected": 0,
+  "clean_rejected_rate": 0.0,
+  "clean_flagged": 8,
+  "clean_flagged_rate": 0.186,
+  "discrimination": 0.7125,
+  "degenerate_checker": false,
+  "partial_recheck": {
+   "items": 20,
+   "still_partial": 15,
+   "now_supported": 5,
+   "now_not_supported": 0
+  },
+  "passed": false,
+  "needs_second_vendor": true,
+  "thresholds": {
+   "overall": 0.9,
+   "per_kind": 0.8,
+   "clean_rejected_max": 0.05,
+   "discrimination_min": 0.3
+  },
+  "checker": "v2",
+  "cost_micros": 5907,
+  "cost_usd": "0.005907"
+ },
+ "planted_error_v3_after_fix_with_protocol": {
+  "clean_items": 43,
+  "planted": 182,
+  "caught_overall": 0.989,
+  "per_kind": {
+   "number_changed": {
+    "planted": 15,
+    "caught_by_code": 15,
+    "caught_by_checker": 0,
+    "checker_not_supported": 0,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "entity_swapped": {
+    "planted": 43,
+    "caught_by_code": 0,
+    "caught_by_checker": 43,
+    "checker_not_supported": 42,
+    "checker_partial": 1,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "condition_flipped": {
+    "planted": 43,
+    "caught_by_code": 2,
+    "caught_by_checker": 41,
+    "checker_not_supported": 16,
+    "checker_partial": 25,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "region_swapped": {
+    "planted": 28,
+    "caught_by_code": 28,
+    "caught_by_checker": 0,
+    "checker_not_supported": 0,
+    "checker_partial": 0,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "unsupported_attribute_added": {
+    "planted": 43,
+    "caught_by_code": 13,
+    "caught_by_checker": 30,
+    "checker_not_supported": 1,
+    "checker_partial": 29,
+    "missed": 0,
+    "gated": true,
+    "caught_rate": 1.0
+   },
+   "currency_swapped": {
+    "planted": 1,
+    "caught_by_code": 0,
+    "caught_by_checker": 1,
+    "checker_not_supported": 0,
+    "checker_partial": 1,
+    "missed": 0,
+    "gated": false,
+    "caught_rate": 1.0
+   },
+   "period_changed": {
+    "planted": 3,
+    "caught_by_code": 0,
+    "caught_by_checker": 3,
+    "checker_not_supported": 1,
+    "checker_partial": 2,
+    "missed": 0,
+    "gated": false,
+    "caught_rate": 1.0
+   },
+   "qualifier_dropped": {
+    "planted": 6,
+    "caught_by_code": 0,
+    "caught_by_checker": 4,
+    "checker_not_supported": 0,
+    "checker_partial": 4,
+    "missed": 2,
+    "gated": false,
+    "caught_rate": 0.6667
+   }
+  },
+  "clean_wrongly_rejected": 0,
+  "clean_rejected_rate": 0.0,
+  "clean_flagged": 3,
+  "clean_flagged_rate": 0.0698,
+  "discrimination": 0.9192,
+  "degenerate_checker": false,
+  "partial_recheck": {
+   "items": 20,
+   "still_partial": 15,
+   "now_supported": 5,
+   "now_not_supported": 0
+  },
+  "passed": true,
+  "needs_second_vendor": false,
+  "thresholds": {
+   "overall": 0.9,
+   "per_kind": 0.8,
+   "clean_rejected_max": 0.05,
+   "discrimination_min": 0.3
+  },
+  "protocol": {
+   "flagged_partial": 62,
+   "tried": 31,
+   "climbed": 0,
+   "climbed_with_error_still_in_claim": 0,
+   "through_ids": [],
+   "caught_overall_after_protocol": 0.989
+  },
+  "checker": "v3",
+  "cost_micros": 8304,
+  "cost_usd": "0.008304"
+ },
+ "reextract_independent_repeats": {
+  "pairs": 36,
+  "topics_not_rebuilt": 6,
+  "repeats": 3,
+  "arms": {
+   "A": {
+    "what": "v2 checker, no tightening (the recorded runs)",
+    "partial_share": {
+     "min": 0.25,
+     "median": 0.2778,
+     "max": 0.3333
+    },
+    "unverified_share": {
+     "min": 0.2308,
+     "median": 0.2596,
+     "max": 0.2872
+    },
+    "verified_atoms": {
+     "min": 102.0,
+     "median": 108.0,
+     "max": 112.0
+    },
+    "tightened": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0
+    },
+    "rejected_not_supported": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0
+    },
+    "repeats": [
+     {
+      "atoms": 115,
+      "verified": 108,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 7,
+      "checked": 108,
+      "partial": 30,
+      "partial_share": 0.2778,
+      "tightened": 0,
+      "items": 104,
+      "unverified_items": 27,
+      "unverified_share": 0.2596,
+      "partial_by_kind": {
+       "competitor": [
+        10,
+        10
+       ],
+       "compliance_note": [
+        0,
+        4
+       ],
+       "design_convention": [
+        0,
+        13
+       ],
+       "navigation_pattern": [
+        0,
+        1
+       ],
+       "role_pattern": [
+        2,
+        3
+       ],
+       "rule": [
+        1,
+        32
+       ],
+       "screen_pattern": [
+        9,
+        25
+       ],
+       "service_option": [
+        4,
+        7
+       ],
+       "trend": [
+        0,
+        1
+       ],
+       "workflow": [
+        4,
+        12
+       ]
+      }
+     },
+     {
+      "atoms": 115,
+      "verified": 102,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 13,
+      "checked": 102,
+      "partial": 34,
+      "partial_share": 0.3333,
+      "tightened": 0,
+      "items": 94,
+      "unverified_items": 27,
+      "unverified_share": 0.2872,
+      "partial_by_kind": {
+       "competitor": [
+        9,
+        10
+       ],
+       "compliance_note": [
+        0,
+        5
+       ],
+       "design_convention": [
+        0,
+        2
+       ],
+       "role_pattern": [
+        5,
+        7
+       ],
+       "rule": [
+        0,
+        31
+       ],
+       "screen_pattern": [
+        13,
+        27
+       ],
+       "service_option": [
+        4,
+        8
+       ],
+       "workflow": [
+        3,
+        12
+       ]
+      }
+     },
+     {
+      "atoms": 126,
+      "verified": 112,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 14,
+      "checked": 112,
+      "partial": 28,
+      "partial_share": 0.25,
+      "tightened": 0,
+      "items": 104,
+      "unverified_items": 24,
+      "unverified_share": 0.2308,
+      "partial_by_kind": {
+       "competitor": [
+        9,
+        9
+       ],
+       "compliance_note": [
+        0,
+        6
+       ],
+       "navigation_pattern": [
+        0,
+        2
+       ],
+       "role_pattern": [
+        4,
+        4
+       ],
+       "rule": [
+        0,
+        34
+       ],
+       "screen_pattern": [
+        9,
+        30
+       ],
+       "service_option": [
+        2,
+        11
+       ],
+       "workflow": [
+        4,
+        16
+       ]
+      }
+     }
+    ]
+   },
+   "A3": {
+    "what": "v3 checker, no tightening",
+    "partial_share": {
+     "min": 0.2439,
+     "median": 0.271,
+     "max": 0.3269
+    },
+    "unverified_share": {
+     "min": 0.2087,
+     "median": 0.2524,
+     "max": 0.2812
+    },
+    "verified_atoms": {
+     "min": 104.0,
+     "median": 107.0,
+     "max": 123.0
+    },
+    "tightened": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0
+    },
+    "rejected_not_supported": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0
+    },
+    "repeats": [
+     {
+      "atoms": 115,
+      "verified": 107,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 8,
+      "checked": 107,
+      "partial": 29,
+      "partial_share": 0.271,
+      "tightened": 0,
+      "items": 103,
+      "unverified_items": 26,
+      "unverified_share": 0.2524,
+      "partial_by_kind": {
+       "competitor": [
+        10,
+        10
+       ],
+       "compliance_note": [
+        0,
+        4
+       ],
+       "design_convention": [
+        0,
+        11
+       ],
+       "navigation_pattern": [
+        0,
+        1
+       ],
+       "role_pattern": [
+        1,
+        2
+       ],
+       "rule": [
+        1,
+        33
+       ],
+       "screen_pattern": [
+        8,
+        26
+       ],
+       "service_option": [
+        5,
+        7
+       ],
+       "trend": [
+        0,
+        1
+       ],
+       "workflow": [
+        4,
+        12
+       ]
+      }
+     },
+     {
+      "atoms": 115,
+      "verified": 104,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 11,
+      "checked": 104,
+      "partial": 34,
+      "partial_share": 0.3269,
+      "tightened": 0,
+      "items": 96,
+      "unverified_items": 27,
+      "unverified_share": 0.2812,
+      "partial_by_kind": {
+       "competitor": [
+        9,
+        10
+       ],
+       "compliance_note": [
+        0,
+        5
+       ],
+       "navigation_pattern": [
+        0,
+        1
+       ],
+       "role_pattern": [
+        4,
+        7
+       ],
+       "rule": [
+        0,
+        33
+       ],
+       "screen_pattern": [
+        14,
+        28
+       ],
+       "service_option": [
+        4,
+        8
+       ],
+       "workflow": [
+        3,
+        12
+       ]
+      }
+     },
+     {
+      "atoms": 126,
+      "verified": 123,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 3,
+      "checked": 123,
+      "partial": 30,
+      "partial_share": 0.2439,
+      "tightened": 0,
+      "items": 115,
+      "unverified_items": 24,
+      "unverified_share": 0.2087,
+      "partial_by_kind": {
+       "competitor": [
+        9,
+        9
+       ],
+       "compliance_note": [
+        0,
+        6
+       ],
+       "design_convention": [
+        0,
+        11
+       ],
+       "navigation_pattern": [
+        0,
+        2
+       ],
+       "role_pattern": [
+        3,
+        4
+       ],
+       "rule": [
+        1,
+        34
+       ],
+       "screen_pattern": [
+        11,
+        30
+       ],
+       "service_option": [
+        2,
+        11
+       ],
+       "workflow": [
+        4,
+        16
+       ]
+      }
+     }
+    ]
+   },
+   "B": {
+    "what": "v3 checker, tighten and re-check once",
+    "partial_share": {
+     "min": 0.122,
+     "median": 0.1589,
+     "max": 0.1731
+    },
+    "unverified_share": {
+     "min": 0.1043,
+     "median": 0.1456,
+     "max": 0.1562
+    },
+    "verified_atoms": {
+     "min": 104.0,
+     "median": 107.0,
+     "max": 123.0
+    },
+    "tightened": {
+     "min": 12.0,
+     "median": 15.0,
+     "max": 16.0
+    },
+    "rejected_not_supported": {
+     "min": 0.0,
+     "median": 0.0,
+     "max": 0.0
+    },
+    "repeats": [
+     {
+      "atoms": 115,
+      "verified": 107,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 8,
+      "checked": 107,
+      "partial": 17,
+      "partial_share": 0.1589,
+      "tightened": 12,
+      "items": 103,
+      "unverified_items": 15,
+      "unverified_share": 0.1456,
+      "partial_by_kind": {
+       "competitor": [
+        8,
+        10
+       ],
+       "compliance_note": [
+        0,
+        4
+       ],
+       "design_convention": [
+        0,
+        11
+       ],
+       "navigation_pattern": [
+        0,
+        1
+       ],
+       "role_pattern": [
+        1,
+        2
+       ],
+       "rule": [
+        1,
+        33
+       ],
+       "screen_pattern": [
+        2,
+        26
+       ],
+       "service_option": [
+        2,
+        7
+       ],
+       "trend": [
+        0,
+        1
+       ],
+       "workflow": [
+        3,
+        12
+       ]
+      }
+     },
+     {
+      "atoms": 115,
+      "verified": 104,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 11,
+      "checked": 104,
+      "partial": 18,
+      "partial_share": 0.1731,
+      "tightened": 16,
+      "items": 96,
+      "unverified_items": 15,
+      "unverified_share": 0.1562,
+      "partial_by_kind": {
+       "competitor": [
+        5,
+        10
+       ],
+       "compliance_note": [
+        0,
+        5
+       ],
+       "navigation_pattern": [
+        0,
+        1
+       ],
+       "role_pattern": [
+        2,
+        7
+       ],
+       "rule": [
+        0,
+        33
+       ],
+       "screen_pattern": [
+        6,
+        28
+       ],
+       "service_option": [
+        2,
+        8
+       ],
+       "workflow": [
+        3,
+        12
+       ]
+      }
+     },
+     {
+      "atoms": 126,
+      "verified": 123,
+      "rejected_not_supported": 0,
+      "rejected_unsupported_field": 3,
+      "checked": 123,
+      "partial": 15,
+      "partial_share": 0.122,
+      "tightened": 15,
+      "items": 115,
+      "unverified_items": 12,
+      "unverified_share": 0.1043,
+      "partial_by_kind": {
+       "competitor": [
+        6,
+        9
+       ],
+       "compliance_note": [
+        0,
+        6
+       ],
+       "design_convention": [
+        0,
+        11
+       ],
+       "navigation_pattern": [
+        0,
+        2
+       ],
+       "role_pattern": [
+        1,
+        4
+       ],
+       "rule": [
+        1,
+        34
+       ],
+       "screen_pattern": [
+        3,
+        30
+       ],
+       "service_option": [
+        2,
+        11
+       ],
+       "workflow": [
+        2,
+        16
+       ]
+      }
+     }
+    ]
+   }
+  },
+  "tightened_sample": [
+   {
+    "kind": "competitor",
+    "before": "",
+    "after": "Dyno is studio-owned software with recurring memberships, class booking, payments into the studio’s own account, and a member app. Pricing and supported platforms are not stated.",
+    "quote": "Dyno is your studio’s own software, not a marketplace: recurring memberships, class booking, payments into your own account and a member app that is your"
+   },
+   {
+    "kind": "competitor",
+    "before": "",
+    "after": "ClassPass is a fitness marketplace where members buy credits and book classes across studios. The page does not state its pricing or supported platforms.",
+    "quote": "ClassPass is a fitness marketplace where members buy credits and book classes across many studios from one app."
+   },
+   {
+    "kind": "service_option",
+    "before": "Webex Connect Sandbox supports two-way WhatsApp messaging across countries supported by WhatsApp. API requests are authenticated with a service key, and the sandbox provides a separate WhatsApp endpoint.",
+    "after": "Webex Connect Sandbox supports two-way WhatsApp messaging across countries supported by WhatsApp.",
+    "quote": "By using the Webex Connect Sandbox you can send and receive WhatsApp messages from the interface, APIs, SDKs and advanced flows. We support two-way communications across all countries supported by WhatsApp."
+   },
+   {
+    "kind": "workflow",
+    "before": "",
+    "after": "Students can buy prepaid class packs; the pack balance auto-deducts when they check in. Packs can expire on a set schedule or remain open-ended.",
+    "quote": "Packs auto-deduct on check-in and expire on a schedule you set, or you can leave them open-ended"
+   },
+   {
+    "kind": "service_option",
+    "before": "HubSpot payments requires the business to be located in the U.S., U.K., or Canada, so the stated eligibility does not include Bengaluru. It has no sandbox account.",
+    "after": "HubSpot payments requires the business to be located in the U.S., U.K., or Canada, so the stated eligibility does not include Bengaluru.",
+    "quote": "Your business or organization must be located in the United States (U.S.), the United Kingdom (U.K.), or Canada..."
+   },
+   {
+    "kind": "service_option",
+    "before": "",
+    "after": "Zoho Payments supports online payment collection through APIs and webhooks, and offers iOS and Android mobile SDKs for in-app payments.",
+    "quote": "Using our APIs and webhooks, you can build a flexible and scalable payment experience."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Students use the schedule to browse available classes and find sessions to book.",
+    "quote": "students can browse the schedule, book a class on their phone in 1-2 minutes"
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Members review their upcoming bookings, including planned sessions.",
+    "quote": "students planning a week of practice can review upcoming bookings without searching old emails."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Members can review reservation details and the studio's cancellation policy before committing.",
+    "quote": "Show the policy with the reservation details so members understand the terms before committing."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Members open class details to review information about a session, including its name, instructor, style, and time.",
+    "quote": "the instructor and class style readable beside session details."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "The home screen organizes categories to help users find classes and collections.",
+    "quote": "Within the app home screen, we have also reorganized the categories"
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Users can follow guided yoga classes and meditations using ready-made videos.",
+    "quote": "300+ ready-made yoga videos & meditations"
+   },
+   {
+    "kind": "competitor",
+    "before": "",
+    "after": "StudioPartner is studio-management software for Indian studios, with a free plan for up to 30 students and paid Basic and Pro plans.",
+    "quote": "StudioPartner is free forever for up to 30 students, ₹999/month + GST for unlimited students on the Basic plan, and ₹1,499/month + GST on Pro."
+   },
+   {
+    "kind": "competitor",
+    "before": "Fitnexsolutions offers yoga studio management software with a branded iOS and Android app. Pricing is flexible monthly plans, based on class size, instructor count, and features; the page does not give amounts.",
+    "after": "Pricing is flexible monthly plans, based on class size, instructor count, and features; the page does not give amounts.",
+    "quote": "Most solutions, including Fitnexsolutions, offer flexible monthly plans without large upfront costs, making it suitable for both independent trainers and growing studios."
+   },
+   {
+    "kind": "competitor",
+    "before": "Glofox is gym management software focused on boutique fitness studios and gyms, with class booking, memberships, payments, and a branded member app. Pricing is on enquiry.",
+    "after": "Glofox is gym management software focused on boutique fitness studios and gyms, with class booking, memberships, payments, and a branded member app.",
+    "quote": "Glofox is gym management software built mainly for boutique fitness studios and gyms, with class booking, memberships, payments and a branded app."
+   },
+   {
+    "kind": "competitor",
+    "before": "CoreFitManager presents an all-in-one yoga studio management platform for classes, members, payments, and studio insights. The page does not specify its platforms or pricing.",
+    "after": "CoreFitManager presents an all-in-one yoga studio management platform for classes, members, payments, and studio insights.",
+    "quote": "Take charge of your yoga studio effortlessly with our all-in-one software."
+   },
+   {
+    "kind": "service_option",
+    "before": "",
+    "after": "WhatsApp API requests are authenticated with the unique service key for the selected service.",
+    "quote": "This key is used for authenticating the API request to send the WhatsApp message."
+   },
+   {
+    "kind": "service_option",
+    "before": "Google offers a hosted India Cards API with production and sandbox environments and POST methods for payment-related notifications. Google recommends its client libraries.",
+    "after": "Google recommends its client libraries.",
+    "quote": "To call this service, we recommend that you use the Google-provided client libraries."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Users practice yoga by watching full HD class videos with teacher commentary.",
+    "quote": "All our classes come with full HD video and teacher commentary that’s clear and easy to follow."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Users browse, search, or sort poses and can review instructions, benefits, modifications, variations, and cautions.",
+    "quote": "Browse, search or sort to quickly find a pose, then learn all about its yoga goodness."
+   },
+   {
+    "kind": "role_pattern",
+    "before": "",
+    "after": "Practitioners use the app to find and practice classes, create custom sequences, learn poses, and schedule classes.",
+    "quote": "Perfect for beginners, awesome for experts"
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "The categories screen groups sessions under categories such as Beginner, Stretching, and Evening Flow.",
+    "quote": "Categories like “Beginner,” “Stretching,” or “Evening Flow”"
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Students use the schedule to browse available classes and find sessions to book.",
+    "quote": "students can browse the schedule, book a class on their phone in 1-2 minutes"
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Members use this screen to check their bookings and review upcoming sessions.",
+    "quote": "For example, students planning a week of practice can review upcoming bookings without searching old emails."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "The search experience lets users search for and find classes, with filtering improvements.",
+    "quote": "We've also made search filtering improvements and fixed a few bugs."
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "The app provides yoga videos and meditations for guided home practice.",
+    "quote": "300+ ready-made yoga videos & meditations with frequent class updates so there's always something new!"
+   },
+   {
+    "kind": "screen_pattern",
+    "before": "",
+    "after": "Users create classes of their own and can change poses or extend the duration of any pose.",
+    "quote": "You can change poses or prolong the duration of any pose."
+   },
+   {
+    "kind": "role_pattern",
+    "before": "",
+    "after": "Yoga teachers and advanced practitioners familiar with sequencing a class can use the custom-class feature.",
+    "quote": "good for yoga teachers and advanced practitioners that are familiar with how to sequence a yoga class."
+   },
+   {
+    "kind": "competitor",
+    "before": "",
+    "after": "MyGymDesk plans start at ₹699 per month plus GST and include a 7-day free trial.",
+    "quote": "Plans start at ₹699/mo + GST, with a 7-day free trial."
+   },
+   {
+    "kind": "competitor",
+    "before": "",
+    "after": "StudioPartner is management software for Indian yoga and other class-based studios, with a free tier and paid Basic and Pro plans.",
+    "quote": "StudioPartner is free forever for up to 30 students, ₹999/month + GST for unlimited students on the Basic plan, and ₹1,499/month + GST on Pro."
+   }
+  ],
+  "cost_micros": 102076,
+  "cost_usd": "0.102076"
+ }
+}

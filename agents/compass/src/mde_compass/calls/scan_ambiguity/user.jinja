@@ -1,0 +1,18 @@
+Glossary terms already defined (JSON, wrapped as data):
+{% for t in glossary_terms %}
+{{ t }}
+{% else %}
+(none)
+{% endfor %}
+
+Brief digest, one line per value (JSON, each wrapped as data):
+{% for it in items %}
+{{ it }}
+{% endfor %}
+
+Details the person gave, one per line (JSON, each wrapped as data):
+{% for f in facts %}
+{{ f }}
+{% else %}
+(none)
+{% endfor %}

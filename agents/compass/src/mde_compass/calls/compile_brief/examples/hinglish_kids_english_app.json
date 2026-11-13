@@ -1,0 +1,298 @@
+{
+  "name": "hinglish_kids_english_app",
+  "input": {
+    "language": "hi-Latn",
+    "ledger": [
+      "# business\nFCT-001 [context|business] Yeh 5 se 10 saal ke bachchon ke liye English seekhne ki app hai (from evt_001) | conf 0.90 | stated | quote: \"5 se 10 saal ke bachchon ke liye English seekhne ki app banana chahta hoon\"\n# chat\nFCT-009 [context|chat] Haan theek hai (from evt_009) | conf 0.50 | stated | quote: \"haan theek hai\"\n# child\nFCT-003 [role|child] Bachcha games khelke seekhta hai (from evt_003) | conf 0.90 | stated | quote: \"bachcha games khelke seekhega\"\n# devices\nFCT-005 [context|devices] Zyadatar bachche parents ka purana phone use karte hain (from evt_005) | conf 0.70 | stated | quote: \"bachche parents ka purana phone use karte hain\"\n# launch\nFCT-010 [context|launch] Shuruat Jaipur ke schools se karenge (from evt_010) | conf 0.90 | stated | quote: \"hum Jaipur ke schools se shuru karenge\"\n# look\nFCT-007 [preference|look] Rang-birange aur masti wala look (from Q-007) | conf 0.90 | tap | quote: \"rang-birange aur masti wala look chahiye\"\n# parent\nFCT-002 [role|parent] Parents bachche ka progress dekhte hain aur paise dete hain (from evt_002) | conf 0.90 | stated | consumers: blueprint,design | quote: \"parents progress dekhenge aur paise denge\"\n# pricing\nFCT-008 [number|pricing] Pehla mahina free, phir 199 rupaye mahina (from evt_008) | conf 0.90 | stated | quote: \"pehla mahina free, phir 199 rupaye mahina\"\n# safety\nFCT-004 [constraint|safety] App mein koi ads ya bahar ke links nahi hone chahiye (from evt_004) | conf 0.90 | stated | consumers: blueprint,qa,verify | quote: \"koi ads nahi, bahar ke links bhi nahi\"\n# screen_time\nFCT-006 [rule|screen_time] Ek din mein 15 minute se zyada nahi khelna chahiye (from Q-005) | conf 0.90 | stated | quote: \"din mein 15 minute se zyada nahi\""
+    ],
+    "needs_table": [
+      "- idea.summary: Your idea in one line\n- audience.segments: Who it is for\n- roles.list: Roles\n- scope.must_not: What it must not do\n- devices.profile: Devices\n- look.tone_words: Tone and mood\n- context.geo: Country and city"
+    ],
+    "needs": [
+      {
+        "need_id": "idea.summary",
+        "label": "Your idea in one line",
+        "sufficient": "One or two sentences that say what the app does and for whom, in the user's own words."
+      },
+      {
+        "need_id": "audience.segments",
+        "label": "Who it is for",
+        "sufficient": "At least one named segment: who they are, their main goal, and where and how they use the app. Separate the paying customer from the end user when they differ."
+      },
+      {
+        "need_id": "roles.list",
+        "label": "Roles",
+        "sufficient": "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+      },
+      {
+        "need_id": "scope.must_not",
+        "label": "What it must not do",
+        "sufficient": "Anything the app must explicitly not do or include."
+      },
+      {
+        "need_id": "devices.profile",
+        "label": "Devices",
+        "sufficient": "Which devices the users have: phone only, phone and tablet, low-end phones."
+      },
+      {
+        "need_id": "look.tone_words",
+        "label": "Tone and mood",
+        "sufficient": "Two or three words for the mood and personality the app should have."
+      },
+      {
+        "need_id": "context.geo",
+        "label": "Country and city",
+        "sufficient": "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several."
+      }
+    ],
+    "assumptions": [],
+    "asked_list": [],
+    "qa_compact": [],
+    "sections": [],
+    "draft": [],
+    "targets": [
+      {
+        "path": "idea.summary",
+        "label": "Your idea in one line",
+        "value_kind": "text",
+        "options": [],
+        "fields": [],
+        "filled": ""
+      },
+      {
+        "path": "audience.segments",
+        "label": "Who it is for",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": [],
+        "filled": ""
+      },
+      {
+        "path": "roles.list",
+        "label": "Roles",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "goal",
+          "permissions"
+        ],
+        "filled": ""
+      },
+      {
+        "path": "scope.must_not",
+        "label": "What it must not do",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": [],
+        "filled": ""
+      },
+      {
+        "path": "devices.profile",
+        "label": "Devices",
+        "value_kind": "enum",
+        "options": [
+          "phones",
+          "phones_tablets",
+          "low_end"
+        ],
+        "fields": [],
+        "filled": ""
+      },
+      {
+        "path": "look.tone_words",
+        "label": "Tone and mood",
+        "value_kind": "enum_list",
+        "options": [
+          "calm_simple",
+          "friendly_playful",
+          "professional"
+        ],
+        "fields": [],
+        "filled": ""
+      },
+      {
+        "path": "context.geo",
+        "label": "Country and city",
+        "value_kind": "geo",
+        "options": [],
+        "fields": [
+          "country",
+          "city",
+          "region"
+        ],
+        "filled": ""
+      }
+    ],
+    "task": "fill",
+    "project": [],
+    "existing": [],
+    "kinds": [
+      {
+        "key": "rule",
+        "description": "A business rule, policy or functional requirement the app must follow or enforce."
+      },
+      {
+        "key": "number",
+        "description": "A quantity, limit, price, percentage, duration or other figure the app depends on."
+      },
+      {
+        "key": "acceptance",
+        "description": "A condition that must hold for a feature to count as done."
+      },
+      {
+        "key": "screen",
+        "description": "A screen, page or view and what it shows or lets the person do."
+      },
+      {
+        "key": "flow",
+        "description": "A sequence of steps a person goes through to get something done."
+      },
+      {
+        "key": "entity",
+        "description": "A thing the app keeps track of (a record, a document, an item) and what is known about it."
+      },
+      {
+        "key": "compliance",
+        "description": "A law, regulation, consent, privacy or certification requirement."
+      },
+      {
+        "key": "nfr",
+        "description": "A quality the app must have (speed, offline use, security, accessibility, reliability, scale)."
+      },
+      {
+        "key": "integration_detail",
+        "description": "An outside system, service or interface and how the app uses it."
+      },
+      {
+        "key": "constraint",
+        "description": "A limit on how the app is built or run (budget, deadline, platform, must use, must not)."
+      },
+      {
+        "key": "example",
+        "description": "A sample case, number or situation that illustrates how something should work."
+      },
+      {
+        "key": "preference",
+        "description": "A taste, style or wish that is not a hard requirement."
+      },
+      {
+        "key": "context",
+        "description": "Background about the business, the people, the place or the goal."
+      },
+      {
+        "key": "other",
+        "description": "A detail that fits none of the kinds above; every agent may need it."
+      }
+    ]
+  },
+  "output": {
+    "items": [
+      {
+        "path": "idea.summary",
+        "value_json": "\"5 se 10 saal ke bachchon ke liye games se English seekhne ki app\"",
+        "fact_ids": [
+          "FCT-001",
+          "FCT-003"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "path": "audience.segments",
+        "value_json": "[\"Bachche (5 se 10 saal) jo English seekhte hain\", \"Unke parents\"]",
+        "fact_ids": [
+          "FCT-001",
+          "FCT-002"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "roles.list",
+        "value_json": "[{\"name\": \"Bachcha\", \"goal\": \"Games khelke English seekhna\"}, {\"name\": \"Parent\", \"goal\": \"Progress dekhna aur paise dena\"}]",
+        "fact_ids": [
+          "FCT-002",
+          "FCT-003"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "scope.must_not",
+        "value_json": "[\"Ads\", \"Bahar ke links\"]",
+        "fact_ids": [
+          "FCT-004"
+        ],
+        "confidence": 0.9
+      },
+      {
+        "path": "devices.profile",
+        "value_json": "\"low_end\"",
+        "fact_ids": [
+          "FCT-005"
+        ],
+        "confidence": 0.6
+      },
+      {
+        "path": "look.tone_words",
+        "value_json": "[\"friendly_playful\"]",
+        "fact_ids": [
+          "FCT-007"
+        ],
+        "confidence": 0.85
+      },
+      {
+        "path": "context.geo",
+        "value_json": "{\"city\": \"Jaipur\"}",
+        "fact_ids": [
+          "FCT-010"
+        ],
+        "confidence": 0.8
+      }
+    ],
+    "placements": [
+      {
+        "fact_id": "FCT-004",
+        "topic": "safety",
+        "consumers": [
+          "blueprint",
+          "qa",
+          "verify"
+        ],
+        "kind": "constraint",
+        "refs": []
+      },
+      {
+        "fact_id": "FCT-006",
+        "topic": "screen_time",
+        "consumers": [
+          "blueprint",
+          "design",
+          "frontend",
+          "qa"
+        ],
+        "kind": "screen",
+        "refs": []
+      },
+      {
+        "fact_id": "FCT-008",
+        "topic": "pricing",
+        "consumers": [
+          "research",
+          "blueprint",
+          "backend"
+        ],
+        "kind": "number",
+        "refs": []
+      }
+    ],
+    "not_used": [
+      {
+        "fact_id": "FCT-009",
+        "reason": "ek haan, koi nayi jaankari nahi"
+      }
+    ],
+    "summary": "Bachchon (5 se 10 saal) ke liye games se English seekhne ki app, Jaipur se shuruat.",
+    "pitch": "Bachche games khelke English seekhte hain aur parents unka progress dekhte hain. App mein koi ads ya bahar ke links nahi honge, ek din mein 15 minute se zyada khel nahi hoga, aur pehla mahina free rahega.",
+    "additions": [],
+    "typical": []
+  }
+}

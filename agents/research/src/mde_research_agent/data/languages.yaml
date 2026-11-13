@@ -1,0 +1,34 @@
+# Languages Research may meet in a Brief: script, direction, and whether the script is Latin. Used to decide
+# when a script and font topic is needed and which language words a query may use. Add a language by adding
+# a block. Codes are BCP 47 primary subtags as Compass sends them.
+languages:
+  en: {name: English, script: Latin, direction: ltr, latin: true}
+  hi: {name: Hindi, script: Devanagari, direction: ltr, latin: false}
+  mr: {name: Marathi, script: Devanagari, direction: ltr, latin: false}
+  ne: {name: Nepali, script: Devanagari, direction: ltr, latin: false}
+  kn: {name: Kannada, script: Kannada, direction: ltr, latin: false}
+  ta: {name: Tamil, script: Tamil, direction: ltr, latin: false}
+  te: {name: Telugu, script: Telugu, direction: ltr, latin: false}
+  ml: {name: Malayalam, script: Malayalam, direction: ltr, latin: false}
+  bn: {name: Bengali, script: Bengali, direction: ltr, latin: false}
+  gu: {name: Gujarati, script: Gujarati, direction: ltr, latin: false}
+  pa: {name: Punjabi, script: Gurmukhi, direction: ltr, latin: false}
+  or: {name: Odia, script: Odia, direction: ltr, latin: false}
+  ur: {name: Urdu, script: Arabic, direction: rtl, latin: false}
+  ar: {name: Arabic, script: Arabic, direction: rtl, latin: false}
+  fa: {name: Persian, script: Arabic, direction: rtl, latin: false}
+  he: {name: Hebrew, script: Hebrew, direction: rtl, latin: false}
+  th: {name: Thai, script: Thai, direction: ltr, latin: false}
+  zh: {name: Chinese, script: Han, direction: ltr, latin: false}
+  ja: {name: Japanese, script: Japanese, direction: ltr, latin: false}
+  ko: {name: Korean, script: Hangul, direction: ltr, latin: false}
+  ru: {name: Russian, script: Cyrillic, direction: ltr, latin: false}
+  el: {name: Greek, script: Greek, direction: ltr, latin: false}
+  sw: {name: Swahili, script: Latin, direction: ltr, latin: true}
+  fr: {name: French, script: Latin, direction: ltr, latin: true}
+  es: {name: Spanish, script: Latin, direction: ltr, latin: true}
+  pt: {name: Portuguese, script: Latin, direction: ltr, latin: true}
+  de: {name: German, script: Latin, direction: ltr, latin: true}
+  id: {name: Indonesian, script: Latin, direction: ltr, latin: true}
+  tr: {name: Turkish, script: Latin, direction: ltr, latin: true}
+  hi-Latn: {name: Hinglish, script: Latin, direction: ltr, latin: true}

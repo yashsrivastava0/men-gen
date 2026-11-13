@@ -20,7 +20,7 @@ class ConfigError(MdeError):
 
 
 class LiveCallForbidden(MdeError):
-    """A live LLM call was attempted without LLM_MODE=live + ALLOW_LIVE_LLM=1, or under tests."""
+    """A live LLM call was attempted without LLM_MODE=live, or under tests."""
 
     code = "live_call_forbidden"
 

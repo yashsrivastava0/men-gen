@@ -1,0 +1,141 @@
+{
+ "run_id": "rrn_01M7AZQPN0YNR22KE5SR3WD3M1",
+ "status": "complete",
+ "search_provider": "serper",
+ "models": {
+  "writer": "claude-haiku-5-5",
+  "checker": "claude-haiku-5-5",
+  "checker_vendor": "same"
+ },
+ "budget": {
+  "searches_used": 47,
+  "pages_read": 78,
+  "seconds": 347,
+  "usd": "0.2740",
+  "usd_micros": 273955,
+  "failures": 3
+ },
+ "cost_by_step": {
+  "assemble": 14438,
+  "check": 64536,
+  "extract": 120341,
+  "plan": 1012,
+  "queries": 6628,
+  "search.serper": 51000,
+  "search.tavily": 16000
+ },
+ "slots": {
+  "filled": 16,
+  "required": 22,
+  "ratio": 0.7273
+ },
+ "topics": {
+  "total": 17,
+  "covered": 12,
+  "not_found": 5
+ },
+ "items": 235,
+ "evidence_labels": {
+  "unverified": 39,
+  "official": 96,
+  "single_source": 100
+ },
+ "by_kind": {
+  "competitor": 5,
+  "screen_pattern": 36,
+  "workflow": 31,
+  "compliance_note": 6,
+  "entity_pattern": 5,
+  "lifecycle": 2,
+  "rule": 39,
+  "provider_fact": 80,
+  "service_option": 7,
+  "platform_constraint": 24
+ },
+ "extraction": {
+  "extracted": 284,
+  "first_try_ok": 271,
+  "final_ok": 271,
+  "quote_pass_first_try": 0.9542,
+  "quote_pass_final": 0.9542,
+  "quote_failed_first": 2,
+  "recovered_by_retry": 0,
+  "number_not_in_quote": 11,
+  "number_rejection_rate": 0.0387,
+  "figures_dropped": 1,
+  "invalid": 0,
+  "claim_too_long": 0,
+  "forbidden_pattern": 0
+ },
+ "checker": {
+  "items_checked": 271,
+  "supported": 0.8266,
+  "partial": 0.1513,
+  "not_supported": 0.0111,
+  "unchecked": 0.0111,
+  "rubber_stamp_signal": false
+ },
+ "fallbacks": {
+  "rsch.check": 1
+ },
+ "fact_rejections": {
+  "number_not_in_quote": 11,
+  "unsupported_field": 11,
+  "not_supported": 3
+ },
+ "validation": {
+  "errors": 0,
+  "warnings": 0,
+  "by_rule": {}
+ },
+ "dossiers": 23,
+ "platform_constraints": 24,
+ "compliance_register": 1,
+ "failed_slots": [
+  {
+   "target": "T-01",
+   "label": "Comparable bike repair workshop apps",
+   "status": "not_found",
+   "filled": 1,
+   "required": 2
+  },
+  {
+   "target": "T-04",
+   "label": "Journey: Book a repair slot",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-07",
+   "label": "Journey: Repair status",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-08",
+   "label": "Journey: Workshop calendar",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-11",
+   "label": "Providers for calendar sync",
+   "status": "not_found",
+   "filled": 0,
+   "required": 2
+  }
+ ],
+ "acceptance": {
+  "extraction_quote_pass_first_try": true,
+  "number_rejection_rate": false,
+  "fetch_success": true,
+  "searches_contributing": true,
+  "slots_filled": true,
+  "checker_not_supported": true,
+  "norms_with_3_plus_sources": false,
+  "recent_24m_of_dated": true
+ }
+}

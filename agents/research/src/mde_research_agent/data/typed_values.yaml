@@ -1,0 +1,39 @@
+# What counts as evidence, in a quote, for the parts of a typed value (`typed` of a provider_fact: amount, currency, unit,
+# period, condition; domain/typed.py). The amount must be a figure of the quote (core/numbers.py); a currency must be written
+# in the quote as its code or by one of the tokens below; a unit and a period must use words of the quote.
+#
+# `currencies`: code -> tokens (symbols and words, compared casefolded) that show the currency in a quote. The code itself
+# always counts. A symbol can belong to several codes; any of them is accepted. Add a currency here, never in code.
+currencies:
+  USD: ["$", "us$", "usd", "dollar", "dollars"]
+  CAD: ["$", "c$", "cad", "dollar", "dollars"]
+  AUD: ["$", "a$", "aud", "dollar", "dollars"]
+  MXN: ["$", "mx$", "mxn", "peso", "pesos"]
+  SGD: ["$", "s$", "sgd", "dollar", "dollars"]
+  EUR: ["€", "eur", "euro", "euros"]
+  GBP: ["£", "gbp", "pound", "pounds"]
+  INR: ["₹", "rs", "inr", "rupee", "rupees"]
+  PKR: ["rs", "pkr", "rupee", "rupees"]
+  AED: ["aed", "dirham", "dirhams"]
+  SAR: ["sar", "riyal", "riyals"]
+  NGN: ["₦", "ngn", "naira"]
+  KES: ["kes", "ksh", "shilling", "shillings"]
+  ZAR: ["r", "zar", "rand"]
+  XOF: ["xof", "fcfa", "cfa", "cfa franc", "francs"]
+  XAF: ["xaf", "fcfa", "cfa", "cfa franc", "francs"]
+  GTQ: ["q", "gtq", "quetzal", "quetzales"]
+  CRC: ["₡", "crc", "colon", "colones"]
+  BRL: ["r$", "brl", "real", "reais"]
+  JPY: ["¥", "jpy", "yen"]
+  CNY: ["¥", "cny", "rmb", "yuan"]
+  CHF: ["chf", "franc", "francs"]
+  IDR: ["rp", "idr", "rupiah"]
+  BDT: ["৳", "bdt", "taka"]
+  EGP: ["egp", "pound", "pounds"]
+  TRY: ["₺", "try", "lira"]
+# Units that mean a share of an amount: the quote must show a percent sign or the word.
+percent_units: ["%", "percent", "percentage", "per cent", "pct"]
+percent_evidence: ["%", "percent", "per cent", "pct"]
+# Words that carry no meaning in a unit, a period or a condition (never required to be in the quote).
+# (quoted: an unquoted `on` is a boolean in YAML)
+ignore_words: [per, a, an, each, every, the, of, and, or, to, in, "on", at, by, for, with, any, all, up]

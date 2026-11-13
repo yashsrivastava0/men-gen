@@ -1,0 +1,27 @@
+# The one-line reasons the zero-cost preview (inputs/preview.py) shows. Plain words for a person, no jargon, no names.
+
+# How far the export's own hash seal could be checked (quality.input_binding). Only the unverified states show a note.
+binding:
+  verified: "The Brief matches its approval seal."
+  unverified_no_baseline: "This export has no approval record (no approved baseline), so Research cannot check that it is the Brief the person approved. It is researched as it is and the report says so."
+  unverified_hash_mismatch: "The Brief in this export does not match its approval seal, so it may have changed after it was approved. It is researched as it is and the report says so."
+
+# Why a Brief research request has no topic of its own in the plan, or is not used.
+request:
+  mapped: "Carried by the topic shown."
+  not_run: "Its topic is planned but ranked below what this size runs, so it is not searched."
+  dropped: "Its topic was left out: {why}"
+  unmapped: "No planned topic fits this request. Nothing is searched for it."
+  template: "Looks like filler text, so the topics are built from the Brief instead."
+  thin: "Too thin to use: no named thing to look up."
+
+# Why a planned topic was dropped (plan.dropped).
+dropped:
+  declined: "You said you do not want this researched."
+  trivia: "Too small to be worth a search for an app this size."
+  own_brand: "It is your own brand name, which is never searched alone."
+  not_worthwhile: "It has no usable anchor or decision, so it was not worth a query."
+  over_budget: "Over the budget for this size."
+
+# Why a topic is planned but not run: its rank against what this size runs.
+not_run: "Ranked {rank} of {total} planned topics; this size runs the top {cap} besides the regulation, provider, identity, data-protection and payments topics, which are never left out."

@@ -1,0 +1,14 @@
+id: SB-QP-14-b
+title: When the planner call itself fails the flagged fallback is used and counted too
+tags: [planner, fallback, gateway]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      interview: {fallback_count: 1, fallback_batches: 1}
+      calls:
+        counts: {cmp.plan_questions: 1, cmp.audit_questions: 0}
+      batch: {mode: initial, origins: [fallback], total_min: 1}
+      qa: {origins_include: [fallback], shown_max: 1}
+final:
+  interview: {fallback_count: 1}

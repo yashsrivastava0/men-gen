@@ -12,6 +12,7 @@ root_packages =
     mde_spec_builder
     mde_flow
     mde_compass
+    mde_research_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -22,7 +23,7 @@ name = Package layering (brief 5.2)
 type = layers
 layers =
     mde_cli
-    mde_context_api | mde_llm_gateway_api | mde_compass
+    mde_context_api | mde_llm_gateway_api | mde_compass | mde_research_agent
     mde_flow
     mde_discovery | mde_research | mde_spec_builder
     mde_prompts
@@ -47,8 +48,8 @@ modules =
     mde_persistence
     mde_spec_loader
 
-[importlinter:contract:only-gateway-imports-openai]
-name = Only mde_llm_gateway may import openai
+[importlinter:contract:only-gateway-imports-model-sdks]
+name = Only mde_llm_gateway may import a model vendor SDK (openai, anthropic; rule 14)
 type = forbidden
 source_modules =
     mde_core
@@ -62,11 +63,13 @@ source_modules =
     mde_spec_builder
     mde_flow
     mde_compass
+    mde_research_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
 forbidden_modules =
     openai
+    anthropic
 allow_indirect_imports = True
 
 [importlinter:contract:no-agent-frameworks-no-sqlite]
@@ -85,6 +88,7 @@ source_modules =
     mde_spec_builder
     mde_flow
     mde_compass
+    mde_research_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -109,6 +113,7 @@ source_modules =
     mde_core
 forbidden_modules =
     openai
+    anthropic
     httpx
     requests
     sqlalchemy
@@ -125,11 +130,32 @@ source_modules =
 forbidden_modules =
     mde_discovery
     mde_research
+    mde_research_agent
     mde_spec_builder
     mde_flow
     mde_prompts
     mde_content
     mde_spec_loader
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+allow_indirect_imports = True
+
+[importlinter:contract:research-agent-isolated]
+name = The Research agent imports only core, contracts and llm_gateway (and third-party libraries); no other agent, app or the older mde_research
+type = forbidden
+source_modules =
+    mde_research_agent
+forbidden_modules =
+    mde_compass
+    mde_discovery
+    mde_research
+    mde_spec_builder
+    mde_flow
+    mde_prompts
+    mde_content
+    mde_spec_loader
+    mde_persistence
     mde_context_api
     mde_llm_gateway_api
     mde_cli

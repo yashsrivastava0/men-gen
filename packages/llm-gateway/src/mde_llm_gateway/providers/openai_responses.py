@@ -257,7 +257,7 @@ class OpenAIResponsesProvider:
         store: bool = False,
         include_sources: bool = True,
     ) -> None:
-        require_live(settings)  # LLM_MODE=live AND ALLOW_LIVE_LLM=1, never under MDE_FORBID_LIVE
+        require_live(settings)  # LLM_MODE=live, never under MDE_FORBID_LIVE
         self.mode: CallMode = "live"
         self._client = client
         self._store = store

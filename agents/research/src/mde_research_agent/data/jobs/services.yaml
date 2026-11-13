@@ -1,0 +1,38 @@
+# Job: services. Spec decision: contract and integrations (BLUE-4, BN-10). Providers by need (payments, OTP and
+# messaging, maps, telematics, identity, government portals): auth, endpoints or events, sandbox, limits, fees,
+# regional fit and current status.
+job: services
+spec_need: "Contract and integrations"
+lane: integrations
+also_lanes: [verify]
+recency: true
+intent: [api, sandbox, fees, limits, webhook, documentation]
+kinds: [provider_fact, service_option, compliance_note]
+extract_focus: >
+  Record what the page states about a provider or portal as SEPARATE facts, one fact and one quote each (kind
+  provider_fact): the provider's name as the page writes it, the need it serves, which dossier field the fact belongs to
+  (authentication, endpoints, webhook events, sandbox, SDKs, React Native or Expo support, fees, limits, onboarding,
+  settlement, compliance, status, countries, products), the value as the page states it and, for a fee, limit or time, the
+  typed amount with its currency or unit, period and condition. Copy numbers exactly. A fact the page does not state is not
+  written. Use a service_option only for a one-sentence summary of a provider (the need and where it is offered). Official
+  documentation beats articles.
+targets:
+  - id: providers
+    label: "Providers for {need}"
+    foreach: need
+    max: 8
+    question: "Which providers offer {need} in {place}, and what are their authentication, events, sandbox, limits and fees?"
+    decision_unlocked: "Which provider and contract to use for this integration"
+    needs: [current, entity, number]
+    priority: 88
+    risk: integration
+    official_first: true
+    engines: both
+    anchor: need
+    scope: country_each
+    slots:
+      # Atoms are single facts (D-159), so the slot counts providers that have at least one verified fact and the distinct
+      # dossier fields stated across them. The old slot needed `endpoints_or_events` on a service_option, which a one-fact
+      # atom never fills (D-160).
+      - {key: providers, type: count, kind: provider_fact, distinct_by: provider, min: 2, required: true}
+      - {key: provider_fields, type: distinct_values, kind: provider_fact, attr: field, min: 3, deep_min: 5, required: true}

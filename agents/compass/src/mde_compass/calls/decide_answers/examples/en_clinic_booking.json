@@ -1,0 +1,153 @@
+{
+  "name": "en_clinic_booking",
+  "input": {
+    "language": "en",
+    "project_card": "Idea (user's words): An appointment booking app for my family clinic in Indore: patients pick a doctor and a time slot, and the receptionist manages the day's schedule.\nCategory: clinic appointment booking. Geography: Indore, India. Language: en.",
+    "fact_digest": "FCT-001 [context|location] The business is a family clinic in Indore\nFCT-002 [role|patients] Patients choose a doctor and a time slot\nFCT-003 [role|reception] The receptionist manages the day's schedule",
+    "hypothesis": "Small clinic, 3 to 6 doctors, bookings by phone today; likely roles: patient, receptionist, doctor.",
+    "items": [
+      {
+        "card_id": "Q-004",
+        "question": "Do all your doctors see patients on fixed time slots, or do some also take walk-ins?",
+        "card_type": "choose_one",
+        "needs": [
+          "scope.features",
+          "domain:doctor_schedules"
+        ],
+        "answer_spec": "Whether doctors work on fixed slots, take walk-ins, or both",
+        "options": [
+          {
+            "id": "A",
+            "label": "Fixed slots for every doctor",
+            "basis": "suggestion"
+          },
+          {
+            "id": "B",
+            "label": "A mix of booked slots and walk-ins",
+            "basis": "typical"
+          },
+          {
+            "id": "C",
+            "label": "Mostly walk-ins; bookings are few",
+            "basis": "suggestion"
+          }
+        ],
+        "recommended_id": "",
+        "must_confirm": false
+      },
+      {
+        "card_id": "Q-005",
+        "question": "Which of these should patients be able to do in the app?",
+        "card_type": "pick_many",
+        "needs": [
+          "scope.features"
+        ],
+        "answer_spec": "The jobs patients do themselves",
+        "options": [
+          {
+            "id": "A",
+            "label": "Book a slot with a doctor",
+            "basis": "typical"
+          },
+          {
+            "id": "B",
+            "label": "Cancel or move a booking",
+            "basis": "typical"
+          },
+          {
+            "id": "C",
+            "label": "See their past visits",
+            "basis": "suggestion"
+          },
+          {
+            "id": "D",
+            "label": "Get a reminder before the visit",
+            "basis": "typical"
+          }
+        ],
+        "recommended_id": "",
+        "must_confirm": false
+      },
+      {
+        "card_id": "Q-006",
+        "question": "Where do you keep your patients' records today?",
+        "card_type": "open_prompt",
+        "needs": [
+          "data.existing_systems"
+        ],
+        "answer_spec": "Where records live now and in what form",
+        "options": [],
+        "recommended_id": "",
+        "must_confirm": false
+      },
+      {
+        "card_id": "Q-007",
+        "question": "How should patients sign in?",
+        "card_type": "choose_one",
+        "needs": [
+          "auth.methods"
+        ],
+        "answer_spec": "The sign-in method",
+        "options": [
+          {
+            "id": "A",
+            "label": "Phone number and a one-time code",
+            "basis": "typical"
+          },
+          {
+            "id": "B",
+            "label": "Email and password",
+            "basis": "suggestion"
+          },
+          {
+            "id": "C",
+            "label": "Without an account",
+            "basis": "suggestion"
+          }
+        ],
+        "recommended_id": "A",
+        "must_confirm": true
+      }
+    ]
+  },
+  "output": {
+    "decisions": [
+      {
+        "card_id": "Q-004",
+        "option_ids": [
+          "B"
+        ],
+        "answer_text": "",
+        "rationale": "Family clinics usually keep some time free for walk-ins",
+        "confidence": 0.6
+      },
+      {
+        "card_id": "Q-005",
+        "option_ids": [
+          "A",
+          "B",
+          "D"
+        ],
+        "answer_text": "",
+        "rationale": "Booking, cancelling and a reminder are the core jobs for patients",
+        "confidence": 0.7
+      },
+      {
+        "card_id": "Q-006",
+        "option_ids": [],
+        "answer_text": "On paper registers at the front desk",
+        "rationale": "Common for small clinics; you can correct it",
+        "confidence": 0.4
+      },
+      {
+        "card_id": "Q-007",
+        "option_ids": [
+          "A"
+        ],
+        "answer_text": "",
+        "rationale": "The safest and simplest for patients; please confirm it",
+        "confidence": 0.3
+      }
+    ]
+  }
+}

@@ -37,7 +37,7 @@ git status --short                               # what is changed here
 | warnings or log assertions vanish only in a full run | an earlier test changed global state (log level, environment, working directory) and did not restore it (D-038) | restore it in a fixture (module scope plus `structlog.reset_defaults()`); tests must leave nothing behind |
 | the secret scan fails (`key-like text found`, names only, never values) | a key-like string in a tracked or unignored file, `docs/` and cassettes included | replace it with a placeholder. A deliberate fixture carries `secret-scan: allow` on the **same line**; if the formatter moves the trailing comment, assign the fixture to a variable first |
 | an Edit fails with "string not found" after you did not change the file | the formatter hook rewrote the `.py` file | Read the file again, then edit |
-| a live test is skipped with `ALLOW_LIVE_LLM=1 must be set in the outer environment` | **expected**: live tests need the second key and are not for subagents | nothing to fix |
+| a live test is skipped with `LLM_MODE=live must be set in the outer environment` | **expected**: live tests run only in live mode and are not for subagents | nothing to fix |
 | `docs-check: git was not found on PATH` | the scripts resolve `git` from `PATH` only and ignore empty or relative entries (a planted `git.exe` must never run) | put an absolute Git folder on `PATH` |
 
 ## 3. Mock, replay and live
@@ -46,14 +46,14 @@ git status --short                               # what is changed here
 | --- | --- | --- | --- |
 | `mock` (default) | nothing | none | all offline work; every call spec ships a deterministic handler |
 | `replay` | a cassette per rendered request | none | free reruns of calls recorded live |
-| `live` | `ALLOW_LIVE_LLM=1`, a key, no `MDE_FORBID_LIVE` | metered against USD 6.00 | only the lead's or operator's batches |
+| `live` | a key, no `MDE_FORBID_LIVE` | metered against the cap in force (default USD 6.00, ceiling 8.00) | only the lead's or operator's batches |
 
 * **`CassetteMissing: no cassette for <spec> v<n> (key ...)`**: replay never goes live. A cassette goes stale whenever the rendered prompt, model, tools, effort or schema changes, so a prompt edit makes every older cassette a miss. Switch to mock for development; re-record only in a live batch. `CASSETTE_DIR` (default `tests/cassettes`) is anchored to the **main checkout**, so a worktree replays only cassettes already in main. Never edit a cassette by hand.
-* **`LiveCallForbidden`**: one of the three switches is wrong (`LLM_MODE`, `ALLOW_LIVE_LLM`, `MDE_FORBID_LIVE`). In tests this is by design.
+* **`LiveCallForbidden`**: `LLM_MODE` is not `live`, or `MDE_FORBID_LIVE` is set. In tests this is by design.
 * **`UnknownModelPrice`**: the model or tool has no price in `pricing.yaml`. Do not guess a price; stay in mock or replay.
-* **`mde sim --llm` exits 3**: refused on purpose (it needs both switches and a budget below the 80% tripwire).
+* **`mde sim --llm` exits 3**: refused on purpose (it needs `LLM_MODE=live` and a budget below the 80% tripwire).
 
-## 4. The ledger and the live-call guard
+## 4. The ledger
 
 **`LedgerIntegrityError` / `ledger_integrity` / HTTP 503, or `/readyz` says `ledger: failed`.** The ledger (`data/.budget/ledger.jsonl` in the main checkout) contradicts its guard file (`ledger.jsonl.guard`): it was deleted, truncated, edited or replaced, or the guard is unreadable. Live calls refuse rather than hand out a fresh USD 6. Do **not** reset to "get budget back": the real spend is on the OpenAI invoice. A deliberate reset is the lead's or operator's call, in this order:
 
@@ -62,10 +62,6 @@ git status --short                               # what is changed here
 3. Reconcile the spend with the OpenAI dashboard; write the carried-over total in `docs/implementation/PROGRESS.md`.
 4. Reset on purpose: `uv run python -m mde_llm_gateway.budget_cli init --force` (or `$env:MDE_BUDGET_LEDGER_RESET = "1"` for the next start only). `init` without `--force` only creates a missing ledger and refuses when the guard says one was deleted.
 5. `just budget` to confirm.
-
-**`Blocked by .claude/hooks/guard_live.py`.** The hook stops a shell command that would turn live mode on (assigning the live value to the mode variable, running a live `just` recipe or the live batch runner) unless `ALLOW_LIVE_LLM=1` is **already in the environment**.
-* If you meant to run something live: that is not yours to do. Only the lead or operator runs live batches, and adding the second key is their decision (D-069; [the runbook](live-llm-budget.md)). A subagent stays in mock or replay.
-* If you only *mentioned* those words (a heredoc, a commit message, an `echo`): the hook matches command **text**, so a command that merely quotes them is blocked too (D-056). Put such text in a file with the editor's Write or Edit tool, which the hook does not inspect, and keep it out of shell commands. Do not try respellings: the hook normalises quoting and obfuscation, and a guard that is easy to dodge is no guard.
 
 **`BudgetExceeded`.** Read `details`: a `scope` means that scope's cap, a `tripwire` means 80% or 95% of the whole budget, `reason: unknown_scope_kind` means a scope kind that is not allowed. Engines fall back to deterministic output; they never retry. In a session the flow parks it in PAUSED with a `budget_cap_reached` notice and the owner or an approver resumes it ([flow-and-gates](../architecture/flow-and-gates.md)). A reservation left by a crashed process counts as **spent** after ten minutes (the ledger may run ahead of the invoice; reconcile against the dashboard).
 

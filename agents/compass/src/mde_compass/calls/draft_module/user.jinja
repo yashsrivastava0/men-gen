@@ -1,0 +1,47 @@
+Language: {{ language }}
+
+Size band: {{ band.id }}. A must-have feature needs at least {{ band.must_feature_screens_min }} screens and a module at least {{ band.module_screens_min }}. Guidance only.
+
+Project card:
+{{ project_card }}
+
+Allowed screen patterns: {{ patterns | join(", ") }}
+Allowed field types: {{ field_types | join(", ") }}
+Sign-in methods: {{ auth_methods | join(", ") or "(not said)" }}
+
+Modules to write (your group; ref, existing_id, kind, name, purpose, apps, features, roles, screen_target):
+{% for m in modules %}{{ m }}
+{% endfor %}
+Modules outside your group (do not repeat their screens):
+{% for m in other_modules %}{{ m }}
+{% endfor %}{% if not other_modules %}(none){% endif %}
+
+Entities (ref, name, purpose, owner_module; mine = true means you write its key, fields, states and access):
+{% for e in entities %}{{ e }}
+{% endfor %}
+Roles (id, name, goal):
+{% for r in roles %}{{ r }}
+{% endfor %}
+Apps (id, name, surface):
+{% for a in apps %}{{ a }}
+{% endfor %}
+Features these modules deliver (id, name, intent, priority, scope_status, family, apps):
+{% for f in features %}{{ f }}
+{% endfor %}
+Journeys that touch your group (legs: index, module, here = you write that leg; owner = you write the acceptance lines):
+{% for j in journeys %}{{ j }}
+{% endfor %}{% if not journeys %}(none){% endif %}
+
+Screens that already exist (keep and improve these; pinned = the person accepted or wrote it, keep exactly):
+{% for s in existing %}{{ s }}
+{% endfor %}{% if not existing %}(none){% endif %}
+
+Facts for these modules:
+{{ facts or "(none)" }}
+
+Problems to fix or thin spots to cover:
+{% for i in issues %}{{ i }}
+{% endfor %}{% if not issues %}(none){% endif %}
+
+The person's request:
+{{ instruction or "(none)" }}

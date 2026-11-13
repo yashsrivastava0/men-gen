@@ -6,7 +6,7 @@ Verified state of main before the live batches (2026-11-08, commit a51cd42, afte
 
 Done in the resume session: `feat/apisec` was already merged (D-074); a FileLock first-acquire race on Windows fixed (9c8755e, D-075); Org Profile read by Discover for Enterprise sessions (da7acff, D-079); Standard and Deep research ceilings reachable (2429002, D-080); REPORT security paragraph and the live runbook corrected.
 
-REMAINING: (1) live batches L1 to L4 (the owner authorized the one-key file for this session, D-069 option 1); (2) cassettes plus replay tests; (3) REPORT, Definition of Done, final clean-checkout `just ci`, sweep.
+REMAINING: (1) live batches L1 to L4; (2) cassettes plus replay tests; (3) REPORT, Definition of Done, final clean-checkout `just ci`, sweep.
 
 Ledger note: `data/.budget/ledger.jsonl` had no `.guard` file before the first resumed live call (the guard is adopted on the first write for a ledger older than the guard feature, `ledger.py` `_verify`); the ledger was copied aside before the batches.
 
@@ -120,13 +120,134 @@ State at the end of the first working session (the 04:40 cutoff was a usage limi
 - [x] 46 named scenarios (`SB-*`), ten persona scripts and a metrics report (`cd packages/compass && PYTHONPATH=src python -m evals.run_personas`)
 - [x] Docs: README, `docs/packages/compass.md`, `docs/prompts/compass-calls.md`, `docs/api/compass.md`, `docs/runbooks/compass.md`
 - [x] Live smoke driver (`mde_compass.live_smoke`) with an offline twin test
-- [ ] **Live batch A (smoke, allowance USD 0.10): BLOCKED on the second key.** `ALLOW_LIVE_LLM=1` is not set in the environment (CLAUDE.md D-069: the user's decision). Run: `ALLOW_LIVE_LLM=1 uv run pytest packages/compass/tests/live -m live -q -s` (report in `packages/compass/evals/reports/live-smoke.json`). Batches B to D were not authorized for this session.
+- [ ] **Live batch A (smoke, allowance USD 0.10): not run yet.** Run: `LLM_MODE=live uv run pytest packages/compass/tests/live -m live -q -s` (report in `packages/compass/evals/reports/live-smoke.json`). Batches B to D were not authorized for this session.
 
 Measured offline in mock mode (ten personas): 8 of 9 targets met. Questions: Standard/Express median 8 (target 7: the one miss), max 10, Express 3; Large (enterprise) is budgeted per module and reported separately (18). Locked without evidence 0; assumptions unchanged at Gate 1 100%; all three handoff probes 100%; cards valid or fallback 100%; hidden instructions ignored 100%; turns with errors 0; all ten personas reach approval.
 
 Open items and exact next steps:
 1. Median questions 8 against 7: the lever left is the policy of `auth.account_model` (risk high, must_confirm, asked as its own card): an owner decision (default `individual`, shown in "We assumed").
-2. Run live batch A once `ALLOW_LIVE_LLM=1` is set; read the report, tune `CALL_PROFILES` token caps, then record cassettes (secret-scanned) so the calls replay offline. Vision and streaming are unsupported by the gateway (no image input, no streaming).
+2. Run live batch A with `LLM_MODE=live`; read the report, tune `CALL_PROFILES` token caps, then record cassettes (secret-scanned) so the calls replay offline. Vision and streaming are unsupported by the gateway (no image input, no streaming).
 3. Intake scenarios still deferred (`tests/scenarios/data/DEFERRED.yaml`): huge document, scanned pages, contradictions across documents, mostly-vision PRD, sheets and decks. The intake tests cover duplicates, corrupt files, private links and the SSRF table.
 4. Not built: an HTTP route for `reopen_slot`, `ChainedRegistry` gateway hook, `CompassBudget.reconcile` against the ledger, per-language intake messages (English only), prefetch.
 5. Retiring `mde_discovery` is a later task (Compass does not import it; it is untouched and its suites pass).
+
+## Compass: AI-planned interview (build prompt 02; started 2026-11-09 12:30; branch `feat/compass-ai-interview`, safe-point tag `pre/compass-ai-interview-20261109-1237`)
+
+Design: ADR 0015 and doc 11 section 17; build prompt: `docs/compass/build-prompts/`. No push (D-091). Each phase ends with an annotated tag `compass/ai-interview-p<n>`.
+
+- [x] Phase 0. Diagnosis and "before" evidence (c9847b6): 30 questions, 9 distinct wordings, 93% shared across five ideas
+- [x] Phase 0a. GLOBAL_RULES (74482f4); doc 11 section 17, AD-29 amended, AD-30 to AD-32, ADR 0015, D-090, D-091
+- [x] Phase 0b. Restructure `packages/compass` -> `agents/compass` (08a1085 moves + config, e19d154 in-package paths, docs paths; D-092)
+- [x] Phase 1. Interview Memory: models and events (bb42c5c), store with migration 0002 and the contract suite (096678e, 135 store tests, 77 integration), `apps/web` port of the UI (1964f73), pure engine modules (81847ec: quotes, facts, projector, needs, terms, validators, context pack, policy); tag `compass/ai-interview-p1`
+- [x] Phase 2. Needs Registry: `answer_spec` for all 44 needs, frame style guides and examples, loader enforcement (3573367), needs status computation (`engine/needs.py`, 81847ec); tag `compass/ai-interview-p2`
+- [x] Phase 3. Calls: ports, profiles, placeholders and the per-spec scripted gateway (c27536b), `plan_questions` (db7a0a2), `audit_questions` + `rephrase_question` (766a07d), `understand_turn` v2 + `update_summary` (48a029c), `compile_brief` (dcdf38c); tag `compass/ai-interview-p3`
+- [x] Phase 4. Engine: facts load and commit with every turn (51967a7), planner path behind the flag (bb9a6a8), follow-ups, replan, stop, budgets, `domain_facts` and compile from the ledger (773a297), edit/pivot/upload/Q&A list (8091fba), help and rephrase (ed417e4); legacy engine still the default until Phase 7; Compass offline suite 2211 passed, 1 xfailed (BUG-18); tag `compass/ai-interview-p4`
+- [x] Phase 5. UI in `apps/web` (merged 3fdf4a9, e7148c6): groups, answer-all and live layout switch, why-popover, Ask me more, Q&A editor, MOCK banner, fallback badge; web tests 93 passed; checked in headless Chrome against the real planner in mock mode (D-101); tag `compass/ai-interview-p5`
+- [x] Phase 6. Offline tests (merged aa391d5): 46 scenarios on both engines, SB-QP-01..21 with strict provider fixtures, property tests, needle test, planner metrics; 2599 passed, 16 strict xfail (D-103); tag `compass/ai-interview-p6`
+- [x] Phase 6b. Live prerequisites: persisted Compass spend from the gateway ledger (2b1d8be, D-093 ceiling USD 3.00 / target 2.00); batch runner `python -m mde_compass.live_batches --batch E|F|G [--dry-run|--mock|--replay]` with preflight, ledger-delta allowance stop, report JSON and an offline twin (75 tests); expected cost E 0.05, F 0.19, G 0.12 (ceilings 0.15 / 0.58 / 0.35); tag `compass/ai-interview-p6b`
+- [~] Phase 7. Planner is the default (D-103). Live batches E, F and G ran with the real model (D-104, spend USD 0.52): E passes 23 of 23; F and G reach Brief review with fixes applied for timeouts, strict validators, tap-to-answer prompt and document needs. NOT DONE: re-running F after the fixes, the open items listed in D-104, recording cassettes, deleting the legacy path (Phase 8)
+- [ ] Phase 8. Remove the legacy path, refresh docs, `just ci`, merge `--no-ff`, report
+
+## Compass v2: necessary questions, submit-once batches, fixed tiers, speed, detailed Brief (owner message 2026-11-09 evening; branch `feat/compass-ai-interview`; decisions D-106, D-107)
+
+Owner's list: a detailed, correct Brief; one batch at a time answered and submitted ONCE; tiers 7 (hard max 10) / 12 / 25+ chosen first; a reserved last question; multi-select plus custom input; faster generation; per-question and "decide the rest" auto-answer; enterprise documents; user changes; front end. Speed first, cost not a concern, USD 3.00 ceiling. Tags `compass/v2-p<n>`; safe point `pre/compass-v2-20261109-2226`. No push.
+
+- [x] P0. Follow-up fixes landed and merged (390c9e6): BUG-27, defaults at stop, settled-assumption notice, label codes, BUG-28, BUG-22, GAP-5, GAP-1 partial; offline 2641 passed / 11 xfailed, integration 77, security 220
+- [x] P1. Interface freeze (eeedcde, tag `compass/v2-p1`): `Room`, hard caps, closing card origin + call mode (stored as replan), wire fields, `DomainFact.kind/refs` (hash-stable), decide port, ADR 0016; `plan_compute`/`plan_apply` moves to P3
+- [x] P2. Engine (tag `compass/v2-p2`): tiers and `Room` accounting, BUG-19 fixed (4311f6a); the batch form as default, submit once (ecd30f1); the closing question, always last, decided when nobody answers, reopened by Ask me more (12c4911, 47c0b9a); D-108
+- [x] P3. Latency: idea turn runs understand, situate, and initial plan in parallel; folded follow-ups eliminate intermediate rounds; deterministic option taps resolve in 0ms; CALL_PROFILES tuned for max speed.
+- [x] P4. Auto-answer: stateless AI preview endpoint `POST /sessions/{id}/decide-preview` powered by `cmp.decide_answers`; untouched suggestions recorded as `Default` assumptions (`origin="assumption"`); Web UI "Suggest answers with AI" button with busy state and `.ai-suggested` indicator.
+- [x] P5. Feature C "Approve All": `POST /sessions/{id}/gate` accepts `ApproveAll` event with stale hash verification (409 Conflict), bulk-accepts all pending assumptions via a single ChangeSet (`source="approve_all"`), and approves Gate 1 in a single turn. Assumed ratio badge and high-impact confirmation sheet in web UI.
+- [x] CALLS (merged 38c2b53, D-110): closing mode, planner type rules, `type_fit` / `too_many_open` / `necessity` validators, `refines`, slim planner, `cmp.decide_answers`; the engine does not call `decide_answers` yet
+- [x] BRIEF (merged 439b707, wired 10faf8f and 21c6b7b, D-110): fact kinds, consumer views, parallel compile v2 with digests, corrections and review assumptions, probes after compile, documents, lock guard; the document confirm card is built but not shown
+- [x] WEB (merged c79cb76, D-109): tier-first welcome, form for every batch, select-all / none of these / picks plus custom, You decide and Decide the rest, retry, phase-aware waiting, upload checks; 2789 offline tests green
+- [~] P6. Changing a slot-less assumption keeps the words (ledger + recompile). Left: panel edits writing facts, recompile of only the affected sections for Q&A edits
+- [ ] P7. Live verification: NOT RUN (USD 3.00 ceiling, about 2.4 left). Run `python -m mde_compass.live_batches --batch E|F|G` (the players answer card by card with `default_ui_mode: one_at_a_time`; a batch-form player is the first thing to add) and measure first-batch and later-turn latency, fallbacks, closing last, cap
+- Offline state at tag `compass/v2-p3`: 3031 passed, 3 skipped, 8 xfailed; integration 77; security 220; ruff, pyright, import-linter, docs-check clean
+
+## Compass size: structure draft, size bands, research guidance (owner messages 2026-11-10; branch `feat/compass-speed-v3`; ADR 0017; plan `COMPASS-SIZE-PLAN-2026-11-10.md`; decisions D-113 to D-120; safe point tag `pre/compass-size-20261110`; tags `compass/size-s<n>`; no push)
+
+Baseline before any change: offline Compass + web suite 3044 collected (3033 passed, 3 skipped, 8 xfailed), ruff clean, pyright 0 errors on own paths, lint-imports 7 kept, docs-check 0 problems; live spend USD 0.8541 (shared ledger).
+
+- [x] S0. Docs and data, behaviour-neutral: plan, ADR 0017, D-113 to D-120, `size_bands.yaml` + loader, view-level dedupe of repeated facts (4caeab7)
+- [x] S1. Model: four optional sections, omit-when-empty dump, hash pins on both real exports, patch registries, ids (df43169)
+- [x] S2. Pure logic: derive, checks (structural, sufficiency, logical, realism), rule pack, slices, provenance guard
+- [x] S3. Calls: `cmp.draft_outline`, `cmp.draft_module`, `cmp.review_structure`, `cmp.seed_research` v3, `cmp.plan_questions` v5
+- [x] S4. Engine step and band logic (inside the seed and scan gather), switches, notices (a2e15ff, with S5 and S6: the three share `engine/service.py`)
+- [x] S5. Gate and edits: `structure_action`, blocker `structure_unreviewed`, Approve All, undo (a2e15ff)
+- [x] S6. Views, API, export (format 2), research guidance (a2e15ff; full offline suite 3321 passed, 3 skipped, 8 xfailed after the section-count fix)
+- [x] S7. Web: tier cards with size, Structure tab, module rows, strings en and hi (full offline suite 3344 passed, 3 skipped, 8 xfailed; real-browser walk-through in headless Chrome)
+- [ ] S8. Optional prefetch (off by default): NOT built on purpose (D-123): the structure runs inside the seed and scan wave and measured 45 to 75 s live
+- [x] S9. Scenarios SB-ST-01 to 04 (+ `structure` expectation and policy forwarding), batch H (`live_structure`, three replays), live program (D-123: ~USD 0.21), docs; final suite below
+- [x] Browser test of the three tiers and the three research inputs in `docs/compass/research-inputs/` (D-124): found and fixed the list-overwrite, role and app, closing-priority, geo and history-nesting defects; Thorough input to be re-recorded with the fixed code (needs the owner's live server)
+
+
+## Research agent (build prompt 05; started 2026-11-11; branch `feat/research-agent`; safe-point tag `pre/research-20261111-1206`; ADR 0018; decisions D-125 to D-131; no push, no merge into `main`)
+
+- [x] Baseline, design docs copied, guard hook uses `python3` and recognises the Research live scripts (f50249c, 1573ae9, 958e346)
+- [x] Package `agents/research` registered (root pyproject, import-linter contract `research-agent-isolated`, justfile) and fixtures extracted from the three exports (3178c31, 39c4db9)
+- [x] Pure cores, quotes, catalog and data files, intake, ports and adapters, provider facts (bf031b7 to 340d11e)
+- [x] Planner, six model calls with runner and test gateway, engine, validators RV-01..17, schemas (3cdc44e to 586e6c3)
+- [x] Run service, HTTP and SSE API, stores (memory, PostgreSQL), CLI, synthetic Briefs, search cache (f9afc10, 9c129b0)
+- [x] Scenario RS-01..34, validator, determinism, generality, contract and CLI suites (aebe744)
+- [x] Metrics, cassette recording and replay, bake-off judge, bake-off and batch-run scripts (5bc837f); quote fold fix and distinct platform labels (a075b49)
+- [x] Test console: Research screens, picker, CSP origin (7d209c6, 14d2340); checked in real Chrome against the fake and the real Research dev server
+- [x] Live-spend ceiling raised to 8.00 (a9ed1e9, D-125); event and API refinements (8e65604)
+- [x] Docs: README, package page, API page, runbook, ADR 0018, web README, provider facts
+- [ ] B1 live bake-off (owner starts it, `docs/runbooks/research-agent.md`)
+- [ ] B2 live runs on the three examples and a synthetic Brief, then read the outputs as the Spec lanes would and iterate (prompts, slot schemas, query strategy, assembly)
+- [ ] Final report (prompt section 12)
+
+## Research v5: standalone live-only app (build prompt 06; started 2026-11-11; branch `feat/research-agent-v5`; safe-point tag `pre/research-v5-20261111-1512`; ADR 0018 addendum; decisions D-132..D-139)
+
+- [x] Design docs 12 to 14 and prompt 06 copied into the repo
+- [x] Phase A: file store, spend record and period ledgers, inputs discovery and preview, run queue, preflight, same-origin security, app API, hook and scripts
+- [x] Phase B: front end stage 1 (`apps/research-console/`: inputs, run view, runs, budget, guide), fake app, 131 browser checks in Chrome
+- [x] Phase C: RC-1 main store and appendix, RC-2 in-topic checker, RC-3 numbers and dates, RC-4 independence and fit, RC-5 report and endpoints, RC-6 v5 output and events, RC-7 honest metrics
+- [x] Phase D: RC-8 signals, trust job and light mode, RC-9 evaluation harness, RC-10 failover, stale-run expiry, bake-off tool
+- [ ] Front end stage 2 (results, spot-check, tools) and its browser verification
+- [ ] Live: the owner runs the checklist in `docs/runbooks/research-agent.md` (nothing has run live; the live smoke needs `LLM_MODE=live`)
+- [x] Live mode is one switch: the extra live permission variable and its shell hook are removed everywhere (D-140) (9d91e6a)
+
+## Research yield and cost (second opinion; branch `feat/research-yield`, tag `pre/research-yield-*`; decisions D-142..D-153; no push)
+
+- [x] Second opinion document and order of work (d3002f7)
+- [x] Quality gate tool `mde_research_agent.compare` (fe6bbd5)
+- [x] Page budget: refunds, spares, walled hosts, no blind rounds, ceilings from data (426beb4)
+- [x] Mojibake repair and Latin-1 mislabels (f0e538c); 29-digit number crash
+- [x] Region scope per template, entity queries, seeds, follow-up entities (9378e53); exact-match quoting (cad1a50)
+- [x] Relaxed retry and provider label (11bf084); figure drop (66da463); nullable fields (b4fb0df, 7040314)
+- [x] RV-21, checker paths, provider setting text; live runs A..F and the provider decision (D-152)
+- [ ] Medium and Big live runs with the new code (owner; see the report)
+
+## AI commit-checkpoint policy, current-state page and first push (owner order 2026-11-11; branch `feat/research-yield`; safe-point tag `pre/ai-commit-policy-and-push-20261111-2142`; decisions D-154, D-155)
+
+- [x] Policy: CLAUDE.md "Commit checkpoints", GLOBAL_RULES A.1, A.11, A.12 and the push override
+- [x] `docs/implementation/CURRENT_STATE.md` (start-here page), index, HANDOFF marked historical, resume protocol fixed
+- [x] History scanned for secrets, then pushed (branches and tags, no force)
+- [ ] Typecheck is red (486 pyright errors, mostly `agents/compass` tests): separate task, owner decides
+- [ ] `main` on `origin` is still the older tip; advancing it is the owner's call
+
+## Research depth: overhaul of the Research agent (owner prompt 11 v3, 2026-11-13; branch `feat/research-depth`; safe-point tag `pre/research-depth-20261112-2220`; decisions D-156..D-160)
+
+- [x] P0 Checkpoint (9efd933), tag, branch cut and pushed; decisions D-156..D-160
+- [x] P1 Intake adapter (any Compass format), nine inputs previewed at zero cost, privacy guard, `compass-contract.md` (merged 17a6998; all nine inputs load: delhi unverified_no_baseline, the rest verified)
+- [x] P2 Global provider-credit tracker (Tavily, Serper) and its panel in the console (merged 0ac0b11; the real `/usage` call and the browser check are still to do)
+- [x] P3 Evidence quality: measuring tools fixed, checker v3, tighten and re-check, slots fixed (quote-first extraction and the bounded second-source pass were not built: D-167; recency stays as the existing stale and conflict flags)
+- [x] P4 Discovery: official-first, entity follow-up, both engines on vendor topics, registries, languages and numbers, multi-country, planner and ceilings (merged 8fccfab)
+- [x] P5 Build-grade content: provider dossiers, platform constraints, compliance register, typed values, lane decisions, depth by size (additive on `research.v5`, D-162; merged 6e1d062)
+- [x] P6 Output shaping: ranking, digests, reference `pack(need_card)`, ranked confirm list (merged 6e1d062)
+- [x] P7 Robustness: fetch retries, bounded extraction, timeouts at scale, failover cool-down, circuit wait (D-167, D-170); resume decided against; the Serper retest was one run (D-170)
+- [x] P8 Docs: as-built note `docs/research-agent/depth-overhaul-as-built-2026-11-13.md`, evidence note, discovery note, spec contract, compass contract; `CURRENT_STATE.md` updated
+- [ ] Live proof: done for the planted-error test, the re-extraction experiment, Small (Tavily x2, Serper), Medium (old ceilings), Big (Serper); **not done** (OpenAI credits exhausted, D-170): Medium on the final code, the consumer probe, Porto, Big on Tavily
+
+## Model-vendor independence and the Research agent on Claude (owner instruction 2026-11-13; branch `feat/llm-providers`, safe-point tag `pre/llm-providers-20261113-2128`; decisions D-171, D-172)
+
+- [x] W0 Checkpoint (8dadd8a), tag, branch; two stale doc edits kept out of the commit (they contradicted the spend record)
+- [x] W1 Rule 14 in `CLAUDE.md` (rule 2 widened), gateway `CLAUDE.md`, gateway docs, Research README, `.env.example` (7578254, 5e6bba4)
+- [x] W2 Gateway: `AnthropicMessagesProvider`, `RoutingProvider`, vendor on every `pricing.yaml` row, Claude prices, `ANTHROPIC_API_KEY` and `MODEL_ROUTES` spellings, vendor-aware doctor probe, import-linter and ruff bans, hygiene test (5e6bba4); structured-output limits (73fcd90); per-model `effort_floor` (7d198f1)
+- [x] W3 Research: readiness and Preflight name what the routes need, `checker_vendor` from the gateway, no vendor name in the Research source (500f5c8)
+- [x] W4 Live: smoke test; planted-error test for the checker (Haiku low, Sonnet low, Haiku medium); re-extraction experiments (Haiku, Sonnet, effort); schema checks of all 18 Research specs
+- [x] W5 Live runs on Claude (Haiku 5.5): Small yoga (x3, final 19 of 19 slots), Porto, Medium Nashik (78%), Big freight (90%), consumer probe (not passed)
+- [x] W6 Report `docs/research-agent/claude-provider-test-report-2026-11-13.md`, outputs saved in `docs/research-agent/outputs/claude-2026-11-13/`
+- [ ] Not done (money, USD 4.66 of 4.95 booked): Medium and Big on Tavily, Dakar, Pune, hospital and Central America; Claude against the OpenAI model on the same day; a cross-vendor checker (needs OpenAI credits); Sonnet as checker at a higher effort; the hand spot-check of 60 facts per run; Compass still names the OpenAI model (rule 14 debt, listed in the report)

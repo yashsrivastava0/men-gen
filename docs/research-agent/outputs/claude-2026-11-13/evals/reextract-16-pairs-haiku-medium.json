@@ -1,0 +1,170 @@
+{
+ "pairs": 16,
+ "topics_not_rebuilt": 0,
+ "repeats": 1,
+ "arms": {
+  "B": {
+   "what": "v3 checker, tighten and re-check once",
+   "partial_share": {
+    "min": 0.1507,
+    "median": 0.1507,
+    "max": 0.1507
+   },
+   "unverified_share": {
+    "min": 0.1452,
+    "median": 0.1452,
+    "max": 0.1452
+   },
+   "verified_atoms": {
+    "min": 73.0,
+    "median": 73.0,
+    "max": 73.0
+   },
+   "tightened": {
+    "min": 13.0,
+    "median": 13.0,
+    "max": 13.0
+   },
+   "rejected_not_supported": {
+    "min": 0.0,
+    "median": 0.0,
+    "max": 0.0
+   },
+   "repeats": [
+    {
+     "atoms": 79,
+     "verified": 73,
+     "rejected_not_supported": 0,
+     "rejected_unsupported_field": 6,
+     "checked": 73,
+     "partial": 11,
+     "partial_share": 0.1507,
+     "tightened": 13,
+     "items": 62,
+     "unverified_items": 9,
+     "unverified_share": 0.1452,
+     "partial_by_kind": {
+      "competitor": [
+       1,
+       4
+      ],
+      "compliance_note": [
+       0,
+       2
+      ],
+      "navigation_pattern": [
+       1,
+       1
+      ],
+      "platform_constraint": [
+       1,
+       10
+      ],
+      "provider_fact": [
+       0,
+       9
+      ],
+      "rule": [
+       0,
+       4
+      ],
+      "screen_pattern": [
+       2,
+       7
+      ],
+      "service_option": [
+       2,
+       2
+      ],
+      "workflow": [
+       4,
+       34
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "tightened_sample": [
+  {
+   "kind": "competitor",
+   "before": "",
+   "after": "Fitnexsolutions is yoga studio management software that lets studios connect with students through a branded iOS and Android app.",
+   "quote": "connect with students worldwide through your branded iOS & Android app"
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "The Government imposed stock limits on some pulses under the Essential Commodities Act, 1955 in July 2021.",
+   "quote": "the Government imposed stock limits on some pulses under the Essential Commodities Act, 1955 in July 2021"
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "The Central Consumer Protection Authority was established as a regulatory body to protect consumer interests with effect from 24.07.2020.",
+   "quote": "Central Consumer Protection Authority (CCPA), a regulatory body to protect interests of consumers, has been established w.e.f. 24.07.2020."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students visit the booking page, select a class, choose an available time slot, and receive instant confirmation, outside business hours.",
+   "quote": "students visit your booking page, select their desired class, choose an available time slot, and receive instant confirmation."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A student opens the schedule, selects a class, checks its details, and reserves a place. The reservation then appears in the member's account for later use.",
+   "quote": "A student opens the schedule, selects a class, checks its details, and reserves a place."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Clients book a time slot directly through the Bobclass Go app, or the studio books it on their behalf, and reminders go out automatically.",
+   "quote": "The client books a time slot directly through the Bobclass Go app, or you book it on their behalf."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When a class is full, clients can join the waitlist via the Bobclass Go client app, and the studio decides who to offer an opened spot to.",
+   "quote": "When a class is full, clients can join the waitlist via the Bobclass Go client app."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "After work is completed, OctopusPro generates invoices, collects payments through supported gateways, tracks balances, automates reminders, and keeps financial records; deposits and refunds are also managed.",
+   "quote": "Generate invoices quickly, collect payments through supported gateways, track balances, automate reminders"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "On the Business plan a student can pick several class times, fill in details once and pay once; each class becomes its own booking with its own invite and reminder.",
+   "quote": "A student picks several class times on your booking page, fills in their details once and pays once."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Setting up takes a few minutes: sign up free, connect your calendar, add an event type for each class with its price and length, then share the booking link.",
+   "quote": "Sign up free, connect your calendar, add an event type for each class with its price and length, and share your booking link."
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Members can review upcoming bookings in the app without searching old emails.",
+   "quote": "students planning a week of practice can review upcoming bookings without searching old emails"
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Members should be able to locate account details without navigating unrelated menus.",
+   "quote": "Members checking a booking should be able to locate the schedule, upcoming sessions, and account details without navigating unrelated menus."
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Sign-in is one of the core flows members should test on the devices they use.",
+   "quote": "Test sign-in, schedule browsing, booking, and confirmation on the devices and operating systems your members use."
+  }
+ ],
+ "cost_micros": 42827,
+ "cost_usd": "0.042827"
+}

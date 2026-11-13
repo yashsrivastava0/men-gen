@@ -1,0 +1,3185 @@
+"""The Compass service: the turn loop that wires ports, engine functions, store and views together.
+
+Plain code controls flow (prompt 6.2): the model never chooses what to do next, it fills schemas through the
+ports. One event at a time per session (an in-process lock queues events in order; the store's
+``try_begin_turn`` is the cross-process backstop). A turn is three phases, because a transaction never spans a
+model call (ADR 0004): (1) read and claim the turn, (2) think (model calls, pure code), (3) write everything
+in one unit of work.
+
+Everything the user sees is an outbound event stored with a per-session sequence number (SSE replay). The Brief
+is the single source of truth: slots are rebuilt from it on every turn (``slots_from_brief``), and every
+committed content change is a new version.
+"""
+
+from __future__ import annotations
+
+import asyncio
+import contextlib
+import contextvars
+from collections.abc import Callable, Iterator, Sequence
+from dataclasses import dataclass, field, replace
+from datetime import datetime
+from functools import lru_cache
+from pathlib import Path
+from typing import Any, cast
+
+import yaml
+from pydantic import BaseModel, JsonValue
+
+from mde_compass.budget import CompassBudget
+from mde_compass.catalog import Catalog
+from mde_compass.config import DEFAULT_CONFIG, CompassConfig
+from mde_compass.domain import (
+    Brief,
+    Card,
+    CardOption,
+    ChangeSet,
+    Contributor,
+    DiscoveryPlan,
+    DomainHypothesis,
+    OpenQuestion,
+    PatchOp,
+    Provenance,
+    ResearchRequest,
+    SessionRecord,
+    SessionState,
+    SourceRecord,
+    StoredEvent,
+    brief_hash,
+    changed_sections,
+    section_hashes,
+)
+from mde_compass.domain.cards import CardProgress, CustomInput, SkipSpec, YouDecide
+from mde_compass.domain.changes import ChangeSource
+from mde_compass.domain.common import ProvenanceType
+from mde_compass.domain.events import (
+    AnswerEdit,
+    ApproveAll,
+    AssistantMessage,
+    AssumptionDecision,
+    BatchAnswer,
+    BriefApproved,
+    BriefEdit,
+    BriefFeedback,
+    BriefPatch,
+    BriefReady,
+    CardAnswer,
+    CardBack,
+    CardEvent,
+    CardSkip,
+    CardYouDecide,
+    Command,
+    ContributorSwitch,
+    ErrorEvent,
+    GateDecision,
+    InboundEvent,
+    LinkAdded,
+    LookupEdit,
+    LookupPreview,
+    Notice,
+    Playback,
+    PlaybackItem,
+    ProbeResultEvent,
+    Progress,
+    StructureAction,
+    UploadAdded,
+    UserMessage,
+)
+from mde_compass.domain.situation import SituationProfile
+from mde_compass.domain.structure import STRUCTURE_SECTIONS
+from mde_compass.engine import assumptions as assumptions_mod
+from mde_compass.engine import cards as cards_mod
+from mde_compass.engine import document_flow as docflow
+from mde_compass.engine import facts as facts_mod
+from mde_compass.engine import gate as gate_mod
+from mde_compass.engine import patch as patch_mod
+from mde_compass.engine import probe_gaps as probe_gaps_mod
+from mde_compass.engine import review as review_mod
+from mde_compass.engine import state as state_mod
+from mde_compass.engine import structure_actions as actions_mod
+from mde_compass.engine import structure_derive as derive_mod
+from mde_compass.engine import voi as voi_mod
+from mde_compass.engine.app_structure import expand_structure
+from mde_compass.engine.brief_builder import apply_slots, empty_brief, slots_from_brief
+from mde_compass.engine.expr import holds
+from mde_compass.engine.flows.hooks import FlowHooks
+from mde_compass.engine.interview import (
+    FINISHED_BY_PERSON,
+    AnswerItem,
+    InterviewController,
+    internal_event_id,
+)
+from mde_compass.engine.interview_state import InterviewMemory
+from mde_compass.engine.language import detect_language
+from mde_compass.engine.ports import (
+    Caller,
+    ChangeInput,
+    DecideItem,
+    DecideOption,
+    DecideRequest,
+    HandoffPort,
+    Ports,
+    ProbeKind,
+    ResolvedTarget,
+    SlotView,
+    TurnContext,
+    TurnLine,
+    TurnResult,
+)
+from mde_compass.engine.router import route as route_text
+from mde_compass.engine.router import route_help
+from mde_compass.engine.slots import SlotStore, plain
+from mde_compass.engine.structure_controller import StructureController
+from mde_compass.engine.validate import must_slots_missing
+from mde_compass.intake import (
+    ingest_bytes,
+    ingest_text,
+    ingest_url,
+    is_document_text,
+)
+from mde_compass.intake.pipeline import IngestResult
+from mde_compass.safety.screen import screen
+from mde_compass.store.ports import BriefVersionRecord, CallLogEntry, QuestionRecord, Store
+from mde_compass.views.build import build_view_model
+from mde_compass.views.consumers import build_handoff
+from mde_compass.views.diff import diff_briefs
+from mde_compass.views.provenance import provenance_for
+from mde_compass.views.readiness import compute_readiness
+from mde_compass.views.structure_view import build_structure_view, structure_export
+from mde_core.clock import Clock, SystemClock
+from mde_core.errors import (
+    Conflict,
+    GateError,
+    InvalidTransition,
+    MdeError,
+    NotFound,
+    TenantViolation,
+)
+from mde_core.ids import new_id
+from mde_core.logging import get_logger
+
+log = get_logger(__name__)
+
+_TENANT: contextvars.ContextVar[str | None] = contextvars.ContextVar("compass_tenant", default=None)
+_TURN_ID: contextvars.ContextVar[str | None] = contextvars.ContextVar(
+    "compass_turn_id", default=None
+)
+
+
+@contextlib.contextmanager
+def tenant_scope(tenant: str) -> Iterator[None]:
+    """Bind the tenant for call-log writes made outside ``handle_event`` (smoke and eval drivers)."""
+    token = _TENANT.set(tenant)
+    try:
+        yield
+    finally:
+        _TENANT.reset(token)
+
+
+# Frames whose answer is PROPOSED, not asked, once the engine has a value: the playback card shows it for
+# correction and "We assumed" lists it for approval (docs 11: propose, then correct; fewer questions).
+PROPOSED_NOT_ASKED: dict[str, str] = {"confirm_kind_of_app": "idea.category", "roles": "roles.list"}
+WELCOME_FRAME = "welcome"
+VARIANTS_FRAME = "change_variants"
+SECTION_STRING = {
+    "idea": "section.idea",
+    "context": "section.idea",
+    "audience": "section.who",
+    "apps": "section.apps_roles",
+    "roles": "section.apps_roles",
+    "scope": "section.features",
+    "modules": "section.structure",
+    "screens": "section.structure",
+    "flows": "section.structure",
+    "entities": "section.structure",
+    "references": "section.look",
+    "experience": "section.look",
+    "access": "section.access",
+    "integrations": "section.integrations_data",
+    "data": "section.integrations_data",
+    "constraints": "section.limits",
+    "glossary": "section.words",
+    "assumptions": "section.assumed",
+    "open_questions": "section.unknown",
+    "research_requests": "section.lookup",
+    "assets": "section.sources",
+    "sources": "section.sources",
+    "declined": "section.cannot_build",
+}
+# Sections whose change re-seeds research, and which probes a change re-runs.
+# Research is re-seeded only when an op touches what the requests are built from (prompt 6.10 step 6):
+# geography, category, audience, references or features. A wording edit must not re-seed (undo stays exact).
+RESEED_PATH_PREFIXES = (
+    "idea.category",
+    "idea.subcategory",
+    "context.geo",
+    "audience.",
+    "references",
+    "scope.",
+)
+PROBES_BY_SECTION = {
+    "research": {
+        "idea",
+        "context",
+        "audience",
+        "scope",
+        "references",
+        "glossary",
+        "research_requests",
+    },
+    "blueprint": {"apps", "roles", "scope", "integrations", "data", "constraints", "access"},
+    "design": {"experience", "audience", "references"},
+}
+IDEA_CHARS = 500
+
+
+def _text(value: JsonValue) -> str:
+    if value is None:
+        return ""
+    if isinstance(value, list):
+        return ", ".join(_text(v) for v in value)
+    if isinstance(value, dict):
+        for key in ("name", "term", "label"):  # a record reads as its name, not as its fields
+            if isinstance(value.get(key), str):
+                return str(value[key])
+        return ", ".join(f"{k}: {_text(v)}" for k, v in value.items())
+    return str(value)
+
+
+@lru_cache(maxsize=1)
+def _chat_language_cues() -> tuple[tuple[str, ...], tuple[str, ...]]:
+    data = yaml.safe_load(
+        (Path(__file__).parent / "chat_language.yaml").read_text(encoding="utf-8")
+    )
+    return tuple(data["chat_cues"]), tuple(data["app_cues"])
+
+
+def _is_chat_language_switch(text: str) -> bool:
+    """True when the message is about the chat language only (never about the app's languages)."""
+    low = text.lower()
+    chat, app = _chat_language_cues()
+    return any(c in low for c in chat) and not any(a in low for a in app)
+
+
+def _chat_language_target(text: str) -> str | None:
+    """The language a chat-language switch asks for, when it names one (``en`` or ``hi``)."""
+    low = text.lower()
+    if "english" in low or "अंग्रेज़ी" in low or "अंग्रेजी" in low:
+        return "en"
+    if "hindi" in low or "हिंदी" in low or "हिन्दी" in low:
+        return "hi"
+    return None
+
+
+def _idea_like(text: str) -> bool:
+    """A first message must carry some content before it can become the idea (a bare "yes" cannot)."""
+    return len(text.split()) >= 3 or len(text.strip()) >= 20
+
+
+@dataclass
+class _Turn:
+    tenant: str
+    session: SessionRecord
+    rec: BriefVersionRecord
+    brief: Brief
+    slots: SlotStore
+    questions: list[QuestionRecord]
+    event: Any
+    lang: str
+    state: SessionState
+    transcript: list[TurnLine] = field(default_factory=list)
+    out: list[BaseModel] = field(default_factory=list)
+    asked: list[tuple[Card, dict[str, JsonValue]]] = field(default_factory=list)
+    answered: list[tuple[str, str, JsonValue]] = field(default_factory=list)
+    change_set: ChangeSet | None = None
+    approval: tuple[int, str] | None = None  # (version, label) when a baseline is created
+    handoff_views: dict[str, dict[str, JsonValue]] | None = None
+    original_text: str = ""
+    memory: InterviewMemory = field(default_factory=InterviewMemory)
+    internal: Any = (
+        None  # an internal event to run right after this turn commits (round 0 planning)
+    )
+    reshow_pending: bool = (
+        False  # a typed message (not an answer) arrived: the open question comes back
+    )
+    situation: Any = None  # the idea turn reads the situation in parallel with the understanding (ADR 0016: speed)
+    scan_findings: Any = None  # the ambiguity scan, read in parallel with research seeding
+    followup_candidates: list[str] = field(default_factory=list)
+
+    @property
+    def turn_id(self) -> str:
+        return str(getattr(self.event, "event_id", ""))
+
+    def say(self, text: str, chips: Sequence[str] = ()) -> None:
+        self.out.append(AssistantMessage(text=text, language=self.lang, chips=list(chips)))
+
+    def notice(
+        self, code: str, text: str, *, chips: Sequence[str] = (), warn: bool = False
+    ) -> None:
+        self.out.append(
+            Notice(code=code, text=text, chips=list(chips), severity="warning" if warn else "info")
+        )
+
+    def pending_card(self) -> Card | None:
+        for q in reversed([*self.questions]):
+            if q.outcome == "open" and q.card.frame != WELCOME_FRAME:
+                return q.card
+        for card, _ in reversed(self.asked):
+            return card
+        return None
+
+    def asked_cards(self) -> list[Card]:
+        return [q.card for q in self.questions] + [c for c, _ in self.asked]
+
+
+class Service(FlowHooks):
+    """Implements ``mde_compass.engine.ports.CompassService``."""
+
+    def __init__(
+        self,
+        *,
+        store: Store,
+        catalog: Catalog,
+        budget: CompassBudget,
+        handoff: HandoffPort,
+        ports: Ports | None = None,
+        clock: Clock | None = None,
+        config: CompassConfig = DEFAULT_CONFIG,
+        new_session_id: Callable[[], str] | None = None,
+        mode_label: str = "mock",
+    ) -> None:
+        self.store = store
+        self.catalog = catalog
+        self.budget_guard = budget
+        self.handoff_port = handoff
+        self.ports = ports
+        self.clock = clock or SystemClock()
+        self.config = config
+        self.mode_label = mode_label
+        self._new_session_id = new_session_id or (lambda: new_id("ses"))
+        self._locks: dict[str, asyncio.Lock] = {}
+        self._pending_uploads: dict[str, tuple[str, bytes]] = {}
+        self.url_resolver: Any = None  # tests inject; None means the production resolver
+        self.url_fetcher: Any = None
+        self.interview = InterviewController(self)
+        self.structure = StructureController(self)  # ADR 0017: modules, screens, flows, entities
+
+    def bind_ports(self, ports: Ports) -> None:
+        self.ports = ports
+
+    # ------------------------------------------------------------------ call log sink
+    async def log_call(self, session_id: str, entry: CallLogEntry) -> None:
+        tenant = _TENANT.get()
+        if tenant is None:
+            return
+        turn_id = entry.turn_id or _TURN_ID.get()
+        event_id = entry.event_id or _TURN_ID.get()
+        if entry.turn_id != turn_id or entry.event_id != event_id:
+            entry = entry.model_copy(update={"turn_id": turn_id, "event_id": event_id})
+        async with self.store.begin(tenant) as uow:
+            await uow.call_log.record(session_id, entry)
+            await uow.sessions.add_spend(session_id, entry.cost_micros)
+
+    # ------------------------------------------------------------------ sessions
+    async def create_session(
+        self, caller: Caller, *, mode: str, locale: str, user_label: str
+    ) -> SessionRecord:
+        now = self.clock.now()
+        sid = self._new_session_id()
+        lang = locale if locale in self.config.supported_languages else self.config.default_language
+        contributors = [
+            Contributor(
+                id=caller.user_id,
+                name=user_label or caller.user_id,
+                role="requester",
+                decision_owner=True,
+            )
+        ]
+        if mode == "enterprise":
+            contributors += [
+                Contributor(id="approver", name="Approver", role="approver"),
+                Contributor(id="commenter", name="Commenter", role="commenter"),
+            ]
+        record = SessionRecord(
+            id=sid, tenant_id=caller.tenant_id, user_id=caller.user_id,
+            mode="enterprise" if mode == "enterprise" else "guided", locale=lang,
+            user_label=user_label, state="WELCOME", brief_version=1, contributors=contributors,
+            created_at=now, updated_at=now,
+        )  # fmt: skip
+        brief = empty_brief(sid, record.mode, lang)
+        brief.version = 1
+        welcome = self._welcome_card(lang)
+        async with self.store.begin(caller.tenant_id) as uow:
+            await uow.sessions.create(record)
+            for c in contributors:
+                await uow.contributors.upsert(sid, c)
+            await uow.briefs.save_version(sid, brief)
+            await uow.questions.record_asked(sid, welcome, {"why": "welcome"})
+            await uow.events.append_outbound(
+                sid, "assistant_message",
+                AssistantMessage(text=self.catalog.t("welcome.greeting", lang), language=lang).model_dump(mode="json"),
+            )  # fmt: skip
+            await uow.events.append_outbound(
+                sid, "card", CardEvent(card=welcome).model_dump(mode="json")
+            )
+            return await uow.sessions.get(sid)
+
+    def _welcome_card(self, lang: str) -> Card:
+        t = self.catalog.t
+        opts = [
+            CardOption(id="describe", label=t("welcome.start_describe", lang), basis="suggestion", recommended=True, reason=t("welcome.greeting", lang)),
+            CardOption(id="upload", label=t("welcome.start_upload", lang)),
+            CardOption(id="like_app", label=t("welcome.start_like_app", lang)),
+            CardOption(id="just_build", label=t("welcome.start_just_build", lang)),
+        ]  # fmt: skip
+        return Card(
+            id="Q-001", frame=WELCOME_FRAME, slots=[], type="choose_one",
+            question=t("welcome.greeting", lang), options=opts,
+            custom_input=CustomInput(enabled=False), you_decide=YouDecide(enabled=False),
+            skip=SkipSpec(enabled=False), language=lang,
+        )  # fmt: skip
+
+    async def list_sessions(self, caller: Caller) -> list[SessionRecord]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            return await uow.sessions.list_for_user(caller.user_id)
+
+    async def get_session(self, caller: Caller, session_id: str) -> SessionRecord:
+        async with self.store.begin(caller.tenant_id) as uow:
+            return await uow.sessions.get(session_id)
+
+    # ------------------------------------------------------------------ events
+    async def handle_event(
+        self, caller: Caller, session_id: str, event: InboundEvent
+    ) -> TurnResult:
+        assert self.ports is not None, "Service.ports is not bound"
+        token = _TENANT.set(caller.tenant_id)
+        turn_token = _TURN_ID.set(event.event_id)
+        try:
+            lock = self._locks.setdefault(session_id, asyncio.Lock())
+            async with lock:
+                queue: list[InboundEvent] = [self._sanitize(event)]
+                seq_before = 0
+                first = True
+                # A turn can end by asking for an internal follow-up turn (round 0: the playback card is shown
+                # and committed, then the first batch is planned), so the person reads while the planner works.
+                while queue:
+                    current = queue.pop(0)
+                    step_token = _TURN_ID.set(current.event_id)
+                    async with self.store.begin(caller.tenant_id) as uow:
+                        session = await uow.sessions.get(session_id)
+                        fresh = await uow.events.record_inbound(
+                            session_id,
+                            current.event_id,
+                            current.type,
+                            current.model_dump(mode="json"),
+                        )
+                        if not fresh:
+                            _TURN_ID.reset(step_token)
+                            if first:
+                                return TurnResult(accepted=True, duplicate=True)
+                            continue
+                        if not await uow.sessions.try_begin_turn(session_id):
+                            _TURN_ID.reset(step_token)
+                            raise Conflict("a turn is already running for this session")
+                        if first:
+                            seq_before = session.outbound_seq
+                    follow: InboundEvent | None = None
+                    try:
+                        try:
+                            follow = await self._process(caller, session_id, current)
+                        except (NotFound, Conflict, TenantViolation):
+                            raise
+                        except Exception as exc:
+                            log.exception(
+                                "compass_turn_failed", session=session_id, inbound=current.type
+                            )
+                            await self._emit_error(
+                                caller.tenant_id, session_id, current.event_id, exc
+                            )
+                    finally:
+                        async with self.store.begin(caller.tenant_id) as uow:
+                            await uow.sessions.end_turn(session_id)
+                        _TURN_ID.reset(step_token)
+                    if follow is not None:
+                        queue.append(follow)
+                    first = False
+                async with self.store.begin(caller.tenant_id) as uow:
+                    produced = await uow.events.list_outbound(session_id, after_seq=seq_before)
+                return TurnResult(accepted=True, events=produced)
+        finally:
+            _TURN_ID.reset(turn_token)
+            _TENANT.reset(token)
+
+    def _sanitize(self, event: InboundEvent) -> InboundEvent:
+        """Redact secrets and mask card numbers in every free-text field before anything is stored."""
+        if isinstance(event, UserMessage):
+            return event.model_copy(update={"text": screen(event.text).text})
+        if isinstance(event, BriefFeedback):
+            return event.model_copy(update={"text": screen(event.text).text})
+        if isinstance(event, LookupEdit):
+            return event.model_copy(update={"text": screen(event.text).text})
+        if isinstance(event, CardAnswer) and event.custom_text:
+            return event.model_copy(update={"custom_text": screen(event.custom_text).text})
+        return event
+
+    async def _emit_error(self, tenant: str, session_id: str, turn_id: str, exc: Exception) -> None:
+        lang = self.config.default_language
+        err = ErrorEvent(code="turn_failed", message=self.catalog.t("error.generic", lang))
+        async with self.store.begin(tenant) as uow:
+            await uow.events.append_outbound(
+                session_id, "error", err.model_dump(mode="json"), turn_id=turn_id
+            )
+
+    # ------------------------------------------------------------------ the three-phase turn
+    async def _process(
+        self, caller: Caller, session_id: str, event: InboundEvent
+    ) -> InboundEvent | None:
+        turn = await self._load(caller.tenant_id, session_id, event)
+        if isinstance(event, UserMessage):
+            await self._on_user_message(turn, event)
+        elif isinstance(event, CardAnswer):
+            await self._on_card_answer(turn, event)
+        elif isinstance(event, CardSkip):
+            await self._on_card_skip(turn, event)
+        elif isinstance(event, CardYouDecide):
+            await self._on_you_decide(turn, event)
+        elif isinstance(event, CardBack):
+            await self._on_back(turn)
+        elif isinstance(event, Command):
+            await self._on_command(turn, event.name)
+        elif isinstance(event, BriefEdit):
+            await self._on_brief_edit(turn, event)
+        elif isinstance(event, BriefFeedback):
+            await self._on_feedback(turn, event)
+        elif isinstance(event, AssumptionDecision):
+            await self._on_assumption(turn, event)
+        elif isinstance(event, StructureAction):
+            await self._on_structure_action(turn, event)
+        elif isinstance(event, LookupEdit):
+            await self._on_lookup(turn, event)
+        elif isinstance(event, ContributorSwitch):
+            await self._on_switch(turn, event)
+        elif isinstance(event, GateDecision):
+            await self._on_gate(turn, event)
+        elif isinstance(event, ApproveAll):
+            await self._on_approve_all(turn, event)
+        elif isinstance(event, UploadAdded):
+            await self._on_upload_added(turn, event)
+        elif isinstance(event, LinkAdded):
+            await self._on_link_added(turn, event)
+        elif isinstance(event, BatchAnswer):
+            await self._on_batch_answer(turn, event)
+        elif isinstance(event, AnswerEdit):
+            await self._on_answer_edit(turn, event)
+        await self._commit(turn)
+        return cast("InboundEvent | None", turn.internal)
+
+    async def _load(self, tenant: str, session_id: str, event: InboundEvent) -> _Turn:
+        async with self.store.begin(tenant) as uow:
+            session = await uow.sessions.get(session_id)
+            rec = await uow.briefs.get(session_id)
+            questions = await uow.questions.list(session_id)
+            memory = InterviewMemory(
+                facts=await uow.facts.list(session_id),
+                qa=await uow.qa.list(session_id),
+                batches=await uow.batches.list(session_id),
+                summary=await uow.summaries.get(session_id),
+            )
+            transcript: list[TurnLine] = []
+            after = 0
+            for _ in range(5):
+                page = await uow.events.list_history(session_id, after_idx=after, limit=200)
+                for item in page.items:
+                    line = self._line(item)
+                    if line:
+                        transcript.append(line)
+                if page.next_after_idx is None:
+                    break
+                after = page.next_after_idx
+        lang = session.locale
+        slots = SlotStore(self.catalog, clock=self.clock)
+        slots.load(self._slot_records(rec.brief))
+        return _Turn(
+            tenant=tenant, session=session, rec=rec, brief=rec.brief.model_copy(deep=True), slots=slots,
+            questions=questions, event=event, lang=lang, state=session.state,
+            transcript=transcript[-self.config.gate.history_slice_turns :], memory=memory,
+        )  # fmt: skip
+
+    @staticmethod
+    def _line(item: StoredEvent) -> TurnLine | None:
+        text = item.payload.get("text")
+        if not isinstance(text, str) or not text:
+            return None
+        if item.direction == "in" and item.type == "user_message":
+            return TurnLine(role="user", text=text)
+        if item.direction == "out" and item.type == "assistant_message":
+            return TurnLine(role="assistant", text=text)
+        return None
+
+    async def _commit(self, turn: _Turn) -> None:
+        sid = turn.session.id
+        new_hash = brief_hash(turn.brief)
+        # The interview audit block is outside the hash by design, but a change to it (the presentation mode,
+        # counts) must still be saved, so it also counts as a change here.
+        changed = (
+            new_hash != turn.rec.hash
+            or turn.brief.meta.interview != turn.rec.brief.meta.interview
+            or turn.brief.meta.compile_digests != turn.rec.brief.meta.compile_digests
+        )
+        async with self.store.begin(turn.tenant) as uow:
+            version = turn.rec.version
+            if changed:
+                turn.brief.version = turn.rec.version + 1
+                saved = await uow.briefs.save_version(
+                    sid, turn.brief, change_set_id=turn.change_set.id if turn.change_set else None
+                )
+                version = saved.version
+            if turn.change_set is not None:
+                await uow.change_sets.save(sid, turn.change_set)
+            for card, why in turn.asked:
+                await uow.questions.record_asked(sid, card, why)
+            for card_id, outcome, answer in turn.answered:
+                await uow.questions.record_answer(sid, card_id, outcome, answer)  # type: ignore[arg-type]
+            mem = turn.memory
+            for fact_id in mem.new_fact_ids:
+                fact = mem.fact(fact_id)
+                if fact is not None:
+                    await uow.facts.add(sid, fact)
+            for fact_id in sorted(mem.changed_fact_ids):
+                fact = mem.fact(fact_id)
+                if fact is not None:
+                    await uow.facts.update(sid, fact)
+            for record in mem.qa_writes.values():
+                await uow.qa.upsert(sid, record)
+            for batch in mem.batch_writes:
+                await uow.batches.add(sid, batch)
+            if mem.summary_write is not None:
+                await uow.summaries.put(sid, mem.summary_write)
+            session = await uow.sessions.get(sid)
+            session.state = turn.state
+            session.locale = turn.lang
+            session.brief_version = version
+            session.updated_at = self.clock.now()
+            idea = turn.brief.idea.get("summary")
+            if idea is not None and isinstance(idea.value, str):
+                session.title = idea.value[:80]
+            if turn.approval is not None:
+                session.approved_version = turn.approval[0]
+                session.approved_hash = new_hash
+            await uow.sessions.save(session)
+            if turn.approval is not None:
+                await uow.briefs.mark_baseline(sid, turn.approval[0], turn.approval[1])
+            for ev in turn.out:
+                payload = ev.model_dump(mode="json")
+                await uow.events.append_outbound(
+                    sid, str(payload["type"]), payload, turn_id=turn.turn_id
+                )
+        if turn.handoff_views is not None and turn.approval is not None:
+            await self.handoff_port.hand_off(
+                session_id=sid,
+                version=turn.approval[0],
+                brief_hash=new_hash,
+                views=turn.handoff_views,
+            )
+
+    # ------------------------------------------------------------------ helpers
+    def _t(self, turn: _Turn, key: str, **values: str | int) -> str:
+        return self.catalog.t(key, turn.lang, **values)
+
+    def _go(self, turn: _Turn, trigger: str, fallback: SessionState) -> None:
+        try:
+            turn.state = state_mod.next_state(turn.state, trigger)
+        except InvalidTransition:
+            log.warning("compass_state_fallback", state=turn.state, trigger=trigger, to=fallback)
+            turn.state = fallback
+
+    def _plan(self, turn: _Turn) -> DiscoveryPlan:
+        return turn.brief.meta.plan or DiscoveryPlan()
+
+    def _ctx(self, turn: _Turn) -> TurnContext:
+        views = [
+            SlotView(
+                slot_id=sid, value=plain(rec.value), state=rec.status, confidence=rec.confidence
+            )
+            for sid, rec in turn.slots.all().items()
+        ]
+        return TurnContext(
+            session_id=turn.session.id, tenant_id=turn.tenant, language=turn.lang, mode=turn.session.mode,
+            depth=self._plan(turn).depth, profile=turn.brief.meta.situation_profile, slots=views,
+            recent_turns=turn.transcript[-self.config.gate.history_slice_turns :],
+            pending_card=turn.pending_card(), question_n=self._question_n(turn),
+        )  # fmt: skip
+
+    def _question_n(self, turn: _Turn) -> int:
+        return sum(1 for c in turn.asked_cards() if c.frame not in (WELCOME_FRAME, VARIANTS_FRAME))
+
+    def _rebuild(self, turn: _Turn) -> None:
+        brief = apply_slots(turn.brief, turn.slots, self.catalog)
+        self._enrich_intents(brief)
+        brief = assumptions_mod.sync_assumptions(brief, turn.slots.all(), self.catalog)
+        brief.readiness = compute_readiness(brief, self.catalog)
+        turn.brief = brief
+
+    def _slot_records(self, brief: Brief) -> list[Any]:
+        """Slot records from the Brief with each record's last contributor restored (enterprise conflicts)."""
+        records = slots_from_brief(brief, self.catalog, self.clock)
+        for rec in records:
+            if rec.contributor_id is None:
+                rec.contributor_id = next(
+                    (p.contributor_id for p in reversed(rec.provenance) if p.contributor_id), None
+                )
+        return records
+
+    def _enrich_intents(self, brief: Brief) -> None:
+        """A feature's intent (the job it does) comes from the family data or the hypothesis when the user
+        only named the feature; custom features stay blank and the blueprint probe asks about them."""
+        intents: dict[str, str] = {}
+        for family in self.catalog.families.values():
+            for feature in family.typical_features:
+                intents[feature.name.en.lower()] = feature.intent
+                intents[feature.name.hi.lower()] = feature.intent
+        hyp = brief.meta.hypothesis
+        if hyp is not None:
+            for hf in hyp.likely_features:
+                if hf.intent:
+                    intents.setdefault(hf.name.lower(), hf.intent)
+        described = self.catalog.slots.get("scope.features")
+        for option in described.fallback_card.options if described else ():
+            for label in (option.label.en, option.label.hi):
+                intents.setdefault(
+                    label.lower(), label
+                )  # the label already says what people can do
+        for rec in brief.scope:
+            if not rec.intent:
+                rec.intent = intents.get(rec.name.lower(), "")
+
+    def _resync_slots(self, turn: _Turn) -> None:
+        slots = SlotStore(self.catalog, clock=self.clock)
+        slots.load(self._slot_records(turn.brief))
+        turn.slots = slots
+
+    def _prov(self, turn: _Turn, kind: str, quote: str = "") -> Provenance:
+        contributor = getattr(turn.event, "contributor_id", None)
+        return Provenance(
+            type=cast(ProvenanceType, kind),
+            ref=turn.turn_id,
+            quote=quote[:300],
+            date=self.clock.now(),
+            contributor_id=contributor,
+        )  # type: ignore[arg-type]
+
+    def _label(self, turn: _Turn, slot_id: str) -> str:
+        sd = self.catalog.slots.get(slot_id)
+        return sd.label.get(turn.lang) if sd else slot_id
+
+    def _corpus(self, turn: _Turn) -> str:
+        return " ".join(line.text for line in turn.transcript if line.role == "user")
+
+    def _blockers(
+        self, turn: _Turn, *, supplied_version: int | None = None, supplied_hash: str | None = None
+    ) -> list[gate_mod.Blocker]:
+        brief = turn.brief
+        cur_hash = brief_hash(brief)
+        cur_version = turn.rec.version + (1 if cur_hash != turn.rec.hash else 0)
+        roles = {c.id: c.role for c in turn.session.contributors}
+        by_role = {roles[cid]: h for cid, h in brief.meta.approvals.items() if cid in roles}
+        return gate_mod.gate_blockers(
+            brief,
+            must_missing=must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode),
+            probes=brief.meta.probes,
+            blocking_questions=sum(1 for q in brief.open_questions if q.blocking),
+            mode=turn.session.mode,
+            approvals=by_role,
+            required_roles=self.config.gate.required_approver_roles,
+            supplied_version=supplied_version,
+            supplied_hash=supplied_hash,
+            current_hash=cur_hash,
+            current_version=cur_version,
+            structure_unreviewed=self.structure.unreviewed(turn),
+        )
+
+    def _blocker_lines(self, turn: _Turn, blockers: Sequence[gate_mod.Blocker]) -> list[str]:
+        return [self.catalog.t(b.key, turn.lang, **b.values) for b in blockers]
+
+    # ------------------------------------------------------------------ user messages
+    async def _on_user_message(self, turn: _Turn, ev: UserMessage) -> None:
+        assert self.ports is not None
+        scr = screen(ev.text)
+        text = scr.text
+        turn.original_text = text
+        turn.lang = (
+            ev.lang_hint
+            if ev.lang_hint in self.config.supported_languages
+            else detect_language(text, turn.lang)
+        )
+        for flag in scr.flags:
+            if flag == "secret":
+                turn.notice("secret_redacted", self._t(turn, "error.generic"), warn=True)
+        if _is_chat_language_switch(text):
+            target = _chat_language_target(text)
+            if target in self.config.supported_languages:
+                turn.lang = target
+        if turn.state == "PAUSED":  # a message while paused is an implicit resume, never silence
+            turn.state = turn.session.resume_state or "INTERVIEWING"
+            turn.say(self._t(turn, "notice.paused_resumed"))
+        pending_now = turn.pending_card()
+        if self.interview.active and pending_now is not None and pending_now.frame == "planned":
+            help_kind = route_help(text)
+            if help_kind is not None:
+                if await self.interview.on_help(turn, pending_now, help_kind):
+                    self._rebuild(turn)
+                    await self._advance(turn)
+                return
+        route = route_text(
+            text, has_pending_card=turn.pending_card() is not None, language=turn.lang
+        )
+        if route is not None:
+            await self._on_route(turn, route.kind)
+            return
+        if scr.unsafe:
+            turn.say(self._t(turn, "fallback.unsafe_decline"))
+            return
+        if scr.declined is not None:
+            await self._decline(turn, scr.declined)
+            return
+        if is_document_text(text, self.config.intake):
+            await self._ingest_pasted(turn, text)
+            return
+        if scr.tier_b:
+            labels = [
+                self.catalog.capabilities[i].label.get(turn.lang)
+                for i in scr.tier_b
+                if i in self.catalog.capabilities
+            ]
+            if labels:
+                turn.notice("tier_b", self._t(turn, "notice.tier_b", items=", ".join(labels)))
+        has_draft = turn.slots.filled("idea.summary")
+        if not has_draft and not _idea_like(text):
+            self._ask_idea_card(turn)
+            return
+        if turn.state == "BRIEF_REVIEW":
+            blockers = self._blockers(turn)
+            verdict = gate_mod.classify_yes(
+                text,
+                gate_open=not blockers,
+                language=turn.lang,
+                confidence_min=self.config.gate.typed_yes_min_confidence,
+            )
+            if verdict == "yes":
+                brief = turn.brief
+                await self._on_gate(
+                    turn,
+                    GateDecision(event_id=turn.turn_id, contributor_id=getattr(ev, "contributor_id", None), decision="approve", version=turn.rec.version, brief_hash=brief_hash(brief), section_hashes=section_hashes(brief)),
+                )  # fmt: skip
+                return
+        if await self._flow_voice_remove(turn, text):
+            return
+        ctx = self._ctx(turn)
+        if self.interview.active and not has_draft and self.interview.policy.parallel_initial_plan:
+            # the idea turn: reading the message, reading the situation, AND initial planning
+            # do not depend on each other (A1: speed)
+            turn.transcript.append(TurnLine(role="user", text=text))
+
+            async def _initial_plan() -> Any:
+                try:
+                    statuses = self.interview.statuses(turn)
+                    return await self.interview.plan(turn, "initial", statuses)
+                except Exception as exc:
+                    log.warning("initial_plan_parallel_failed", exc=str(exc))
+                    return None
+
+            understood, turn.situation, _ = await asyncio.gather(
+                self.interview.understand_text(turn, text, ev.input_mode),
+                self.ports.situator.situate(ctx, user_text=text),
+                _initial_plan(),
+            )
+            turn.transcript.pop()
+        elif self.interview.active and not has_draft:
+            understood, turn.situation = await asyncio.gather(
+                self.interview.understand_text(turn, text, ev.input_mode),
+                self.ports.situator.situate(ctx, user_text=text),
+            )
+        elif self.interview.active:
+            understood = await self.interview.understand_text(turn, text, ev.input_mode)
+        else:
+            understood = await self.ports.understander.understand(
+                ctx, text, input_mode=ev.input_mode
+            )
+        if understood.language in self.config.supported_languages and not text.isascii():
+            turn.lang = understood.language
+        # During the interview a change cue with an extracted value is a plain correction (the latest explicit
+        # statement wins); once the Brief is in review or approved the change goes through the change flow,
+        # which shows the impact of editing a Locked value first (DC-08).
+        corrected = turn.state not in ("BRIEF_REVIEW", "APPROVED") and any(
+            u.basis in ("user_text", "voice") and not u.remove for u in understood.slot_updates
+        )
+        if (
+            understood.intent == "change_request"
+            and has_draft
+            and not corrected
+            and turn.state not in ("WELCOME",)
+        ):
+            await self._change_from_text(turn, text, ResolvedTarget())
+            return
+        if understood.intent in ("question", "price_or_time", "tech_choice", "off_topic"):
+            ans = await self.ports.answerer.answer(ctx, text)
+            turn.say(ans.text)
+            await self._reshow_or_advance(turn)
+            return
+        if understood.intent == "unsafe":
+            turn.say(self._t(turn, "fallback.unsafe_decline"))
+            return
+        first = not has_draft
+        if self.interview.active:
+            applied = await self.interview.on_text(turn, understood, text, ev.input_mode)
+        else:
+            applied = self._write_updates(
+                turn, self._flow_filter_updates(understood.slot_updates), text
+            )
+        if first and not turn.slots.filled("idea.summary") and len(text.strip()) >= 3:
+            turn.slots.write(
+                "idea.summary", text.strip()[:IDEA_CHARS], state="volunteered",
+                provenance=self._prov(turn, "user_text", text), confidence=0.6, turn_id=turn.turn_id,
+                contributor_id=getattr(ev, "contributor_id", None),
+            )  # fmt: skip
+        self._flow_references(turn, understood.references, text)
+        if applied:
+            turn.out.append(
+                Notice(
+                    code="picked_up",
+                    text=self._t(turn, "notice.picked_up", items=", ".join(applied)),
+                    chips=applied,
+                )
+            )
+        if await self._flow_on_message(turn, ev, text, understood):
+            return
+        if first:
+            await self._first_understanding(turn, text)
+        else:
+            self._rebuild(turn)
+        turn.reshow_pending = True  # BUG-27: a question still on screen is shown again, not skipped
+        await self._advance(turn)
+
+    def _write_updates(self, turn: _Turn, updates: Sequence[Any], text: str) -> list[str]:
+        chips: list[str] = []
+        for u in updates:
+            if u.slot_id not in self.catalog.slots:
+                continue
+            if u.slot_id == "locales" and _is_chat_language_switch(text):
+                continue
+            if u.basis in ("user_text", "voice"):
+                state, ptype = "volunteered", u.basis
+            else:
+                state, ptype = "assumed", "model_knowledge"
+            res = turn.slots.write(
+                u.slot_id, u.value, state=state, provenance=self._prov(turn, ptype, u.quote),
+                confidence=u.confidence, turn_id=turn.turn_id, remove=u.remove,
+                contributor_id=getattr(turn.event, "contributor_id", None),
+            )  # fmt: skip
+            if res.applied and state == "volunteered":
+                chips.append(f"{self._label(turn, u.slot_id)}: {_text(u.value)}"[:80])
+        return chips
+
+    async def _decline(self, turn: _Turn, match: Any) -> None:
+        turn.notice(
+            "declined_category",
+            self._t(
+                turn, "notice.declined_category", what=match.label, alternative=match.alternative
+            ),
+        )
+        from mde_compass.domain import DeclinedRecord
+
+        turn.brief.declined.append(
+            DeclinedRecord(what=match.label, reason=match.reason, alternative=match.alternative, status="confirmed", tier="Locked", provenance=[self._prov(turn, "user_text", turn.original_text)], confidence=0.9)
+        )  # fmt: skip
+
+    async def _first_understanding(self, turn: _Turn, text: str) -> None:
+        assert self.ports is not None
+        self._rebuild(turn)
+        ctx = self._ctx(turn)
+        situation = turn.situation or await self.ports.situator.situate(ctx, user_text=text)
+        profile: SituationProfile = situation.profile
+        turn.brief.meta.situation_profile = profile
+        depth = (
+            "large"
+            if turn.session.mode == "enterprise" or profile.size_stakes == "enterprise"
+            else "standard"
+        )
+        if profile.urgency == "just_build":
+            depth = "express"
+        budget = {
+            "express": self.config.questions.express_max,
+            "standard": self.config.questions.standard_target,
+            "large": self.config.questions.hard_cap,
+        }[depth]
+        prior = turn.brief.meta.plan  # a depth the person chose before the idea (budget_*) is kept
+        turn.brief.meta.plan = DiscoveryPlan(
+            depth=depth,
+            question_budget=budget,
+            minimum_viable=profile.urgency == "just_build",
+            interview_budget=prior.interview_budget if prior is not None else None,
+        )  # type: ignore[arg-type]
+        turn.brief.meta.depth_profile = depth
+        turn.brief.meta.hypothesis = situation.hypothesis
+        hyp = situation.hypothesis
+        if hyp.category and not turn.slots.filled("idea.category"):
+            turn.slots.write("idea.category", hyp.category, state="assumed", provenance=Provenance(type="model_knowledge", ref="hypothesis", date=self.clock.now()), confidence=hyp.confidence, turn_id=turn.turn_id)  # fmt: skip
+        if hyp.subcategory and not turn.slots.filled("idea.subcategory"):
+            turn.slots.write("idea.subcategory", hyp.subcategory, state="assumed", provenance=Provenance(type="model_knowledge", ref="hypothesis", date=self.clock.now()), confidence=hyp.confidence, turn_id=turn.turn_id)  # fmt: skip
+        self._rebuild(turn)
+        self.structure.suggest(
+            turn
+        )  # the idea asks for a bigger app than the tier plans for: say so once
+        self._go(turn, "idea_received", "UNDERSTANDING")
+        self._go(turn, "understood", "UNDERSTANDING")
+        summary_rec = turn.slots.get("idea.summary")
+        items = [PlaybackItem(key="idea.summary", label=self._label(turn, "idea.summary"), value=_text(summary_rec.value if summary_rec else ""), basis="your_words")]  # fmt: skip
+        if hyp.category:
+            items.append(
+                PlaybackItem(
+                    key="idea.category",
+                    label=self._label(turn, "idea.category"),
+                    value=hyp.category,
+                    basis="suggestion",
+                )
+            )
+        if hyp.likely_roles:
+            items.append(PlaybackItem(key="roles.list", label=self._label(turn, "roles.list"), value=", ".join(hyp.likely_roles[:5]), basis="suggestion"))  # fmt: skip
+        if hyp.likely_features:
+            items.append(PlaybackItem(key="scope.features", label=self._label(turn, "scope.features"), value=", ".join(f.name for f in hyp.likely_features[:6]), basis="typical" if any(not f.custom for f in hyp.likely_features) else "suggestion"))  # fmt: skip
+        missing = must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode)
+        turn.out.append(
+            Playback(
+                title=self._t(turn, "playback.title"),
+                items=items,
+                unclear=[self._label(turn, s) for s in missing[:5]],
+            )
+        )
+        self._go(turn, "playback_shown", "PLAYBACK")
+
+    # ------------------------------------------------------------------ the interview loop
+    def _inferability(self, turn: _Turn) -> dict[str, float]:
+        out: dict[str, float] = {}
+        for sid, rec in turn.slots.all().items():
+            if rec.status == "assumed":
+                out[sid] = max(rec.confidence, 0.5)
+        return out
+
+    async def _advance(self, turn: _Turn) -> None:
+        if turn.state in ("WELCOME", "INTAKE", "UNDERSTANDING", "PLAYBACK", "INTERVIEWING"):
+            if self.interview.active:
+                outcome = await self.interview.next_question(turn)
+                if outcome == "asked":
+                    turn.state = "INTERVIEWING"
+                    return
+                if outcome == "scheduled":  # round 0 continues in an internal turn
+                    return
+                self._derive_subcategory(turn)  # required, written by no card: derived and listed
+                self._assume_defaults(
+                    turn
+                )  # optional needs with a pattern default, listed for approval
+                self._assume_required(turn)  # what is still open becomes a visible assumption
+                self._go(turn, "queue_empty", "SEEDING")
+            elif await self._ask_next(turn) or await self._ask_missing_must(turn):
+                turn.state = "INTERVIEWING"
+                return
+            else:
+                self._go(turn, "queue_empty", "SEEDING")
+        if turn.state == "SEEDING":
+            if self.interview.active:
+                await self._compile_brief(
+                    turn
+                )  # research seeding and the probes read the full Brief
+                self.structure.prepare(
+                    turn
+                )  # the size band: research depth and the draft both read it
+                # the ambiguity scan only needs the compiled Brief: it runs while research is seeded, and the
+                # structure of the app is drafted in the same wave (it reads a snapshot and applies after it, because
+                # ``_seed`` rebuilds ``turn.brief``; ADR 0017)
+                _, turn.scan_findings, structure = await asyncio.gather(
+                    self._seed(turn),
+                    review_mod.scan_findings(self, turn),
+                    self.structure.compute(turn),
+                )
+                self.structure.apply(turn, structure)
+            else:
+                await self._seed(turn)
+            self._go(turn, "research_seeded", "PROBING")
+        if turn.state == "PROBING":
+            if not await self._probe(turn):
+                turn.state = "INTERVIEWING"
+                return
+            self._go(turn, "probes_done", "BRIEF_REVIEW")
+        if turn.state == "BRIEF_REVIEW":
+            await self._open_review(turn)
+
+    def _ask_cap(self, turn: _Turn) -> int:
+        plan = self._plan(turn)
+        q = self.config.questions
+        if plan.depth == "express":
+            return plan.question_budget
+        # Large (enterprise) is budgeted per module: the Standard hard cap plus one module's worth
+        return q.hard_cap + q.large_per_module if plan.depth == "large" else q.hard_cap
+
+    def _derive_subcategory(self, turn: _Turn) -> None:
+        """idea.subcategory is required but no card writes it: assume it from the hypothesis, else from the
+        category's label, listed in "We assumed" (never Locked)."""
+        if turn.slots.filled("idea.subcategory"):
+            return
+        hyp = turn.brief.meta.hypothesis
+        cat = turn.slots.get("idea.category")
+        value = (hyp.subcategory if hyp is not None else "") or (
+            _text(cat.value) if cat is not None and cat.value else ""
+        )
+        if value:
+            turn.slots.write(
+                "idea.subcategory",
+                value,
+                state="assumed",
+                provenance=Provenance(type="model_knowledge", ref="derived", date=self.clock.now()),
+                confidence=0.4,
+                turn_id=turn.turn_id,
+            )
+            self._rebuild(turn)
+
+    def _assume_defaults_once(self, turn: _Turn) -> int:
+        written = 0
+        for sid, sd in self.catalog.slots.items():
+            if sd.default is None or sd.level not in ("must", "should") or turn.slots.filled(sid):
+                continue
+            if sd.group == "org" and turn.session.mode != "enterprise":
+                continue
+            if not holds(sd.ask_if, turn.slots.all()):
+                continue
+            written += 1 if self._assume_slot(turn, sid, ref="interview") else 0
+        return written
+
+    def _assume_defaults(self, turn: _Turn) -> None:
+        """When the interview stops, every required or optional need that still has no value but has a catalog
+        pattern default (neutral, never Locked) is assumed and listed in "We assumed" for approval. The planner
+        decides what to ask; it never leaves a downstream consumer (design: tone) without a visible answer.
+        Filling one slot can make another apply (``ask_if``), and a required slot can unlock an optional one, so
+        the two passes repeat together until a round adds nothing."""
+        for _ in range(6):
+            if self._assume_defaults_once(turn) + self._assume_required_once(turn) == 0:
+                break
+        self._rebuild(turn)
+
+    def _assume_required(self, turn: _Turn) -> None:
+        """Express: every required slot still empty is assumed (catalog default, else the hypothesis, else the
+        first, suggested option) and listed in "We assumed" for approval; never Locked."""
+        for _ in range(
+            6
+        ):  # filling one slot can make another required (ask_if): repeat until a pass adds nothing
+            if self._assume_required_once(turn) == 0:
+                break
+        self._rebuild(turn)
+
+    def _assume_slot(self, turn: _Turn, sid: str, *, ref: str = "express") -> bool:
+        """Assume a value for one slot (catalog default, else the hypothesis, else the first typical option) and
+        list it in "We assumed". Never overwrites what the person said; never Locked."""
+        sd = self.catalog.slots[sid]
+        hyp = turn.brief.meta.hypothesis
+        value: JsonValue = cast(JsonValue, sd.default)
+        if value is None and hyp is not None:
+            if sid == "idea.business_model" and hyp.business_model_candidates:
+                value = hyp.business_model_candidates[0]
+            elif sid == "scope.features":
+                feats = [f for f in hyp.likely_features if not f.custom][:3]
+                value = (
+                    cast(JsonValue, [{"name": f.name, "intent": f.intent} for f in feats]) or None
+                )
+        if value is None and sd.fallback_card.options:
+            first = sd.fallback_card.options[0]
+            if first.value is not None:
+                value = (
+                    [first.value]
+                    if sd.value_schema.kind in ("enum_list", "text_list")
+                    else first.value
+                )
+                value = self._label_codes(sid, value, turn.lang)
+        if value is None or value == []:
+            return False
+        res = turn.slots.write(
+            sid,
+            value,
+            state="assumed",
+            provenance=Provenance(type="pattern", ref=f"{ref}:{sid}", date=self.clock.now()),
+            confidence=0.4,
+            turn_id=turn.turn_id,
+        )
+        return bool(res.applied)
+
+    def _assume_need(self, turn: _Turn, need_id: str) -> None:
+        """A vague answer the person did not sharpen, or "You decide": assume visibly (a chip), do not nag."""
+        if (
+            need_id in self.catalog.slots
+            and not turn.slots.filled(need_id)
+            and self._assume_slot(turn, need_id, ref="interview")
+        ):
+            turn.notice(
+                "assumed",
+                self._t(turn, "card.assumed_collapsed", value=self._label(turn, need_id)),
+            )
+
+    def _merge_hypothesis(self, turn: _Turn, hyp: DomainHypothesis) -> None:
+        """The planner's domain hypothesis refines the one ``situate`` made: non-empty fields win, lists merge."""
+        cur = turn.brief.meta.hypothesis
+        if cur is None:
+            turn.brief.meta.hypothesis = hyp
+            return
+
+        def merge(a: list[str], b: list[str]) -> list[str]:
+            return list(dict.fromkeys([*a, *b]))
+
+        seen = {f.name.casefold() for f in cur.likely_features}
+        turn.brief.meta.hypothesis = cur.model_copy(
+            update={
+                "category": hyp.category or cur.category,
+                "subcategory": hyp.subcategory or cur.subcategory,
+                "business_model_candidates": merge(
+                    cur.business_model_candidates, hyp.business_model_candidates
+                ),
+                "likely_roles": merge(cur.likely_roles, hyp.likely_roles),
+                "likely_features": [
+                    *cur.likely_features,
+                    *(f for f in hyp.likely_features if f.name.casefold() not in seen),
+                ],
+                "hard_parts": merge(cur.hard_parts, hyp.hard_parts),
+                "confidence": max(cur.confidence, hyp.confidence),
+            }
+        )
+
+    def _assume_required_once(self, turn: _Turn) -> int:
+        written = 0
+        for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
+            written += 1 if self._assume_slot(turn, sid) else 0
+        return written
+
+    async def _ask_missing_must(self, turn: _Turn) -> bool:
+        """A required slot with no default that is still empty after its frame was asked (a frame batches
+        several slots but one card settles one) gets ONE follow-up card; never more than twice per slot."""
+        self._derive_subcategory(turn)
+        plan = self._plan(turn)
+        if (
+            plan.depth == "express"
+        ):  # "just build it": assume and list everything still required, ask nothing more
+            self._assume_required(turn)
+            return False
+        over_cap = self._question_n(turn) >= self._ask_cap(turn)
+        answered = {q.card.id for q in turn.questions if q.outcome != "open"}
+        answered.update(card_id for card_id, _, _ in turn.answered)
+        counts: dict[str, int] = {}
+        for card in turn.asked_cards():
+            if (
+                card.id not in answered
+            ):  # a card the user moved past with free text did not settle its slots
+                continue
+            for sid in card.slots:
+                counts[sid] = counts.get(sid, 0) + 1
+        for sid in must_slots_missing(turn.slots, self.catalog, mode=turn.session.mode):
+            sd = self.catalog.slots[sid]
+            if sd.default is not None or counts.get(sid, 0) >= 2:
+                continue
+            if over_cap and not sd.must_confirm and plan.depth != "large":
+                continue
+            frame = next((f for f in self.catalog.frames.values() if sid in f.slots), None)
+            if frame is None:
+                continue
+            item = voi_mod.QueueItem(
+                frame_id=frame.id,
+                slots=[sid],
+                action="ask",
+                score=50.0,
+                must_confirm=sd.must_confirm,
+                reason="required answer still empty",
+            )
+            await self._ask_next(turn, forced=item)
+            return True
+        return False
+
+    async def _reshow_or_advance(self, turn: _Turn) -> None:
+        pending = turn.pending_card()
+        if pending is not None and turn.state in ("INTERVIEWING", "PLAYBACK"):
+            turn.out.append(CardEvent(card=pending))
+            return
+        await self._advance(turn)
+
+    def _queue(self, turn: _Turn) -> list[voi_mod.QueueItem]:
+        asked = [
+            c.frame for c in turn.asked_cards() if c.frame not in (WELCOME_FRAME, VARIANTS_FRAME)
+        ]
+        self._propose_from_hypothesis(turn)
+        queue = voi_mod.plan_queue(
+            turn.slots.all(), self.catalog, profile=turn.brief.meta.situation_profile, depth=self._plan(turn).depth,
+            asked_frames=asked, inferability=self._inferability(turn), config=self.config.questions, mode=turn.session.mode,
+        )  # fmt: skip
+        hyp = turn.brief.meta.hypothesis
+        hybrid = (
+            hyp is not None and len(hyp.likely_families) >= 2
+        )  # which kind is primary is a real question
+        return [
+            item
+            for item in queue
+            if not (
+                item.frame_id in PROPOSED_NOT_ASKED
+                and item.action in ("ask", "propose")
+                and turn.slots.filled(PROPOSED_NOT_ASKED[item.frame_id])
+                and not (hybrid and item.frame_id == "confirm_kind_of_app")
+            )
+        ]
+
+    def _propose_from_hypothesis(self, turn: _Turn) -> None:
+        """Roles the hypothesis names are proposed (assumed, listed for approval), not asked."""
+        hyp = turn.brief.meta.hypothesis
+        if hyp is None or not hyp.likely_roles or turn.slots.filled("roles.list"):
+            return
+        roles = [{"name": role} for role in hyp.likely_roles[:3] if role.strip()]
+        if roles:
+            turn.slots.write(
+                "roles.list",
+                cast(JsonValue, roles),
+                state="assumed",
+                provenance=Provenance(
+                    type="model_knowledge", ref="hypothesis", date=self.clock.now()
+                ),
+                confidence=hyp.confidence or 0.5,
+                turn_id=turn.turn_id,
+            )
+
+    async def _ask_next(self, turn: _Turn, forced: voi_mod.QueueItem | None = None) -> bool:
+        queue = self._queue(turn)
+        for item in queue:
+            if item.action == "assume":
+                self._assume_default(turn, item)
+        natural = next((i for i in queue if i.action in ("ask", "propose")), None)
+        item = forced or self._flow_pick(turn, natural)
+        if item is None:
+            self._rebuild(turn)
+            return False
+        asked_frames = [c.frame for c in turn.asked_cards()]
+        total = voi_mod.estimate_total(queue, asked_frames)
+        card = await self._make_card(
+            turn,
+            item,
+            n=self._question_n(turn) + 1,
+            of_about=max(total, self._question_n(turn) + 1),
+        )
+        card = self._flow_adjust_card(turn, card)
+        self._rebuild(turn)
+        turn.asked.append(
+            (
+                card,
+                {
+                    "frame": item.frame_id,
+                    "action": item.action,
+                    "score": item.score,
+                    "reason": item.reason,
+                },
+            )
+        )
+        turn.out.append(
+            Progress(
+                stage="interview",
+                n=card.progress.n if card.progress else 0,
+                of_about=card.progress.of_about if card.progress else 0,
+            )
+        )
+        turn.out.append(CardEvent(card=card))
+        return True
+
+    def _assume_default(self, turn: _Turn, item: voi_mod.QueueItem) -> None:
+        for sid in item.slots:
+            sd = self.catalog.slots.get(sid)
+            if sd is None or sd.default is None or turn.slots.filled(sid):
+                continue
+            turn.slots.write(
+                sid, cast(JsonValue, sd.default), state="assumed", provenance=Provenance(type="pattern", ref=f"catalog:{sid}", date=self.clock.now()),
+                confidence=0.5, turn_id=turn.turn_id,
+            )  # fmt: skip
+
+    async def _make_card(
+        self, turn: _Turn, item: voi_mod.QueueItem, *, n: int, of_about: int
+    ) -> Card:
+        assert self.ports is not None
+        special = self._flow_special_card(turn, item, n=n, of_about=of_about)
+        if special is not None:
+            return special
+        hyp = turn.brief.meta.hypothesis
+        frame = self.catalog.frames.get(item.frame_id)
+        if (
+            frame is not None
+            and frame.card_type in ("choose_one", "pick_many")
+            and all(
+                self.catalog.slots[sid].value_schema.kind == "text"
+                for sid in item.slots
+                if sid in self.catalog.slots
+            )
+        ):
+            # A choice card cannot be written for text-only slots: confirm the whole frame instead.
+            item = replace(item, slots=list(frame.slots))
+        hints: list[str] = []
+        if hyp is not None:
+            if item.frame_id == "features":
+                hints = [f.name for f in hyp.likely_features if not f.custom]
+            elif item.frame_id == "roles":
+                hints = list(hyp.likely_roles)
+            elif item.frame_id == "business_model":
+                hints = list(hyp.business_model_candidates)
+        if not hints:
+            family_ids = list(hyp.likely_families) if hyp is not None else []
+            cat = turn.slots.get("idea.category")
+            if (
+                cat is not None
+                and isinstance(cat.value, str)
+                and cat.value in self.catalog.families
+            ):
+                family_ids.insert(0, cat.value)
+            hints = cards_mod.family_hints(
+                self.catalog, item.slots, family_ids[:2], language=turn.lang
+            )
+        user_text = self._corpus(turn) + " " + turn.original_text
+        evidence = [line.text for line in turn.transcript if line.role == "user"][-3:]
+        card_id = f"Q-{len(turn.asked_cards()) + 1:03d}"
+        selected = self._selected_labels(turn, item.slots)
+        req = cards_mod.request_for(
+            item,
+            self.catalog,
+            ctx_language=turn.lang,
+            hints=hints,
+            evidence=evidence,
+            avoid_labels=selected,
+        )
+        ctx = self._ctx(turn)
+        for _ in range(self.config.questions.card_validation_retries):
+            draft = await self.ports.card_writer.write(ctx, req)
+            if not cards_mod.validate_card(
+                draft,
+                req,
+                self.catalog,
+                language=turn.lang,
+                user_text=user_text,
+                config=self.config.questions,
+            ):
+                return cards_mod.assemble_card(
+                    draft,
+                    req,
+                    card_id=card_id,
+                    n=n,
+                    of_about=of_about,
+                    language=turn.lang,
+                    catalog=self.catalog,
+                )
+        return cards_mod.fallback_card(
+            item.frame_id, self.catalog, language=turn.lang, card_id=card_id, n=n, of_about=of_about
+        )
+
+    # ------------------------------------------------------------------ seeding, probes, review
+    async def _seed(self, turn: _Turn) -> None:
+        assert self.ports is not None
+        self._rebuild(turn)
+        seed = await self.ports.seeder.seed(self._ctx(turn), turn.brief)
+        kept = [r for r in turn.brief.research_requests if r.user_added]
+        fresh: list[ResearchRequest] = []
+        for r in seed.requests:
+            fresh.append(r.model_copy(update={"id": turn.brief.ids.allocate("RR")}))
+        turn.brief.research_requests = [*fresh, *kept]
+        turn.brief.search_hints = seed.hints
+        turn.out.append(LookupPreview(requests=turn.brief.research_requests))
+
+    async def _run_probes(self, turn: _Turn, kinds: Sequence[ProbeKind]) -> dict[str, Any]:
+        assert self.ports is not None
+        ctx = self._ctx(turn)
+        results = await asyncio.gather(
+            *(self.ports.prober.probe(ctx, k, turn.brief) for k in kinds)
+        )
+        return dict(zip(kinds, results, strict=True))
+
+    async def _probe(self, turn: _Turn) -> bool:
+        """Run the three canaries; assume-fixes are applied (shown for approval), ask-fixes become ONE card.
+        Returns True when probing is done (passed or flagged degraded), False when a card was asked."""
+        kinds: list[ProbeKind] = ["research", "blueprint", "design"]
+        for _ in range(self.config.gate.probe_repair_rounds + 1):
+            results = await self._run_probes(turn, kinds)
+            for kind, res in results.items():
+                turn.brief.meta.probes[kind] = res.passed
+                turn.out.append(
+                    ProbeResultEvent(
+                        kind=cast(ProbeKind, kind),
+                        passed=res.passed,
+                        gaps=[g.question for g in res.gaps],
+                        round=turn.brief.meta.probe_rounds + 1,
+                    )
+                )
+            failing = [k for k, r in results.items() if not r.passed]
+            if not failing:
+                turn.brief.meta.degraded = False
+                return True
+            if turn.brief.meta.probe_rounds >= self.config.gate.probe_repair_rounds:
+                turn.brief = probe_gaps_mod.record_gaps(
+                    turn.brief,
+                    [g for r in results.values() if not r.passed for g in r.gaps],
+                    self.catalog,
+                    language=turn.lang,
+                )  # the gaps nobody could fix are listed to approve, not hidden behind a warning
+                turn.brief.meta.degraded = True
+                turn.notice("degraded_probes", self._t(turn, "notice.degraded_probes"), warn=True)
+                return True
+            turn.brief.meta.probe_rounds += 1
+            ask_gap = None
+            for kind in failing:
+                for gap in results[kind].gaps:
+                    if (
+                        gap.fix == "assume"
+                        and gap.slot_id
+                        and gap.suggested_value is not None
+                        and not turn.slots.filled(gap.slot_id)
+                    ):
+                        turn.slots.write(gap.slot_id, gap.suggested_value, state="assumed", provenance=Provenance(type="model_knowledge", ref=f"probe:{kind}", date=self.clock.now()), confidence=0.5, turn_id=turn.turn_id)  # fmt: skip
+                    elif ask_gap is None and gap.slot_id:
+                        ask_gap = gap
+            self._rebuild(turn)
+            if ask_gap is not None and self.interview.person_finished(turn):
+                self._assume_slot(
+                    turn, ask_gap.slot_id, ref="probe"
+                )  # they asked for defaults: no new question
+                self._rebuild(turn)
+            elif ask_gap is not None and self.interview.active:
+                if await self.interview.ask_gap(turn, ask_gap.slot_id):
+                    return False
+                # no question may follow the closing one (or the gap was already asked twice): assume it, visibly
+                self._assume_slot(turn, ask_gap.slot_id, ref="probe")
+                self._assume_defaults(turn)  # an assumed slot can make another need apply (ask_if)
+                self._rebuild(turn)
+            elif ask_gap is not None:
+                frame = next(
+                    (f for f in self.catalog.frames.values() if ask_gap.slot_id in f.slots), None
+                )
+                asks = sum(1 for c in turn.asked_cards() if ask_gap.slot_id in c.slots)
+                if frame is not None and asks < 2 and self._question_n(turn) < self._ask_cap(turn):
+                    item = voi_mod.QueueItem(
+                        frame_id=frame.id,
+                        slots=[ask_gap.slot_id],
+                        action="ask",
+                        score=99.0,
+                        must_confirm=False,
+                        reason="handoff probe gap",
+                    )
+                    await self._ask_next(turn, forced=item)
+                    return False
+        return True
+
+    async def _flag_ambiguity(self, turn: _Turn) -> None:
+        """cmp.scan_ambiguity: vague, conflicting, undefined or implausible statements become NON-BLOCKING open
+        questions, and findings about a value the person gave become assumptions to review (the scan returns
+        findings only, so it can never change the Brief)."""
+        await review_mod.flag_review(self, turn, turn.scan_findings)
+        turn.scan_findings = None  # a later review (after an edit) scans the Brief as it is then
+
+    async def _compile_brief(self, turn: _Turn) -> None:
+        """The Brief from the whole fact ledger and its summary. It runs before research is seeded and the probes run
+        (ADR 0016), and again when the review opens: an unchanged ledger makes no model call (digests are kept in the
+        Brief's meta), so the second run is a no-op."""
+        assert self.ports is not None
+        self._rebuild(turn)
+        await self.interview.compile(
+            turn
+        )  # the Brief from the whole fact ledger (planner engine only)
+        if self.interview.active:
+            self._assume_defaults(
+                turn
+            )  # compile fills slots from the facts: a need that now applies gets its default
+        compiled = await self.ports.compiler.compile(self._ctx(turn), turn.brief)
+        turn.brief.summary = compiled.summary
+        turn.brief.pitch = compiled.pitch
+
+    async def _open_review(self, turn: _Turn) -> None:
+        assert self.ports is not None
+        await self._compile_brief(turn)
+        await self.structure.run(
+            turn
+        )  # a digest no-op unless an input changed since it was drafted (ADR 0017)
+        await self._flag_ambiguity(turn)
+        blockers = self._blockers(turn)
+        lines = self._blocker_lines(turn, blockers)
+        h = brief_hash(turn.brief)
+        version = turn.rec.version + (1 if h != turn.rec.hash else 0)
+        turn.say(self._t(turn, "brief.ready" if not lines else "notice.gate_blocked"))
+        turn.out.append(
+            BriefReady(
+                version=version,
+                brief_hash=h,
+                section_hashes=section_hashes(turn.brief),
+                approvable=not lines,
+                blockers=lines,
+            )
+        )
+
+    # ------------------------------------------------------------------ card answers
+    def _find_question(self, turn: _Turn, card_id: str) -> Card | None:
+        for card in turn.asked_cards():
+            if card.id == card_id:
+                return card
+        return None
+
+    async def _on_card_answer(self, turn: _Turn, ev: CardAnswer) -> None:
+        card = self._find_question(turn, ev.card_id)
+        if card is None:
+            raise NotFound(f"card {ev.card_id}")
+        if card.frame == WELCOME_FRAME:
+            await self._on_welcome(turn, str(ev.value))
+            return
+        if card.frame == VARIANTS_FRAME:
+            await self._on_variant_pick(turn, card, ev)
+            return
+        if self.interview.active and card.frame == "planned":
+            typed = bool(ev.custom_text) and ev.value in (None, "", [])
+            await self.interview.on_answers(
+                turn,
+                [AnswerItem(card, "answer", ev.value, ev.custom_text, "text" if typed else "tap")],
+            )
+            self._rebuild(turn)
+            await self._advance(turn)
+            return
+        if await self._flow_card_answer(turn, card, ev):
+            return
+        writes = cards_mod.answer_to_writes(card, ev.value, ev.custom_text, self.catalog)
+        if not writes and card.type == "pick_many" and not ev.custom_text:
+            await self._assume_checklist(turn, card)
+            turn.answered.append((card.id, "answered", {"value": ev.value, "slots": []}))  # type: ignore[arg-type]
+            self._rebuild(turn)
+            await self._advance(turn)
+            return
+        applied = self._apply_card_writes(
+            turn, writes, state="confirmed", from_tap=True, merge=self._follow_up_slots(turn, card)
+        )
+        turn.answered.append(
+            (
+                card.id,
+                "answered",
+                {"value": ev.value, "custom": ev.custom_text, "slots": [w.slot_id for w in writes]},
+            )
+        )  # type: ignore[arg-type]
+        if applied:
+            turn.out.append(
+                Notice(
+                    code="picked_up",
+                    text=self._t(turn, "notice.picked_up", items=", ".join(applied)),
+                    chips=applied,
+                )
+            )
+        self._rebuild(turn)
+        await self._advance(turn)
+
+    async def _assume_checklist(self, turn: _Turn, card: Card) -> None:
+        """An empty checklist on a required slot is not a decision: assume the typical items (listed in
+        "We assumed" for approval) instead of asking the same card again."""
+        required = {
+            sid
+            for sid in card.slots
+            if sid in self.catalog.slots and self.catalog.slots[sid].level == "must"
+        }
+        if not required or any(turn.slots.filled(sid) for sid in required):
+            return
+        typical = [o for o in card.options if o.basis == "typical"] or list(card.options)
+        picked = [o.id for o in typical[:3]]
+        writes = cards_mod.answer_to_writes(card, cast(JsonValue, picked), None, self.catalog)
+        if writes:
+            self._apply_card_writes(turn, writes, state="assumed", from_tap=True)
+            turn.notice(
+                "assumed",
+                self._t(
+                    turn, "card.assumed_collapsed", value=", ".join(_text(w.value) for w in writes)
+                ),
+            )
+
+    def _follow_up_slots(self, turn: _Turn, card: Card) -> set[str]:
+        """Slots of this card that an EARLIER answered card already wrote: a follow-up adds to them."""
+        earlier: set[str] = set()
+        for q in turn.questions:
+            if q.card.id != card.id and q.outcome == "answered":
+                earlier.update(q.card.slots)
+        for card_id, outcome, _ in turn.answered:
+            other = self._find_question(turn, card_id)
+            if other is not None and card_id != card.id and outcome == "answered":
+                earlier.update(other.slots)
+        return {sid for sid in card.slots if sid in earlier}
+
+    @staticmethod
+    def _merge_items(existing: JsonValue, new: JsonValue) -> JsonValue:
+        """Extend a list value with new items (de-duplicated by name, case-insensitive)."""
+        if not isinstance(existing, list) or not isinstance(new, list):
+            return new
+
+        def key(v: JsonValue) -> str:
+            name = v.get("name") or v.get("term") if isinstance(v, dict) else v
+            return str(name).lower()
+
+        seen = {key(v) for v in existing}
+        return [*existing, *[v for v in new if key(v) not in seen]]
+
+    def _apply_card_writes(
+        self,
+        turn: _Turn,
+        writes: Sequence[Any],
+        *,
+        state: str,
+        from_tap: bool,
+        merge: set[str] | None = None,
+    ) -> list[str]:
+        chips: list[str] = []
+        for w in writes:
+            kind = w.provenance_type if state == "confirmed" else "assumed"
+            value = (
+                expand_structure(w.value, lambda key: self._t(turn, key))
+                if w.slot_id == "apps.list"
+                else self._label_codes(w.slot_id, w.value, turn.lang)
+            )
+            if merge and w.slot_id in merge:
+                current = turn.slots.get(w.slot_id)
+                if current is not None:
+                    value = self._merge_items(current.value, value)
+            res = turn.slots.write(
+                w.slot_id, value, state=state,  # type: ignore[arg-type]
+                provenance=self._prov(turn, kind, w.custom_text or ""), confidence=0.9 if state == "confirmed" else 0.5,
+                turn_id=turn.turn_id, custom_text=w.custom_text, contributor_id=getattr(turn.event, "contributor_id", None),
+            )  # fmt: skip
+            if res.applied and state == "confirmed":
+                chips.append(f"{self._label(turn, w.slot_id)}: {_text(value)}"[:80])
+        return chips
+
+    async def _on_answer_edit(self, turn: _Turn, ev: AnswerEdit) -> None:
+        """Edit an earlier answer from the Questions-and-answers list (before approval; after it the change flow
+        applies, with its impact preview)."""
+        if not self.interview.active or turn.state in ("APPROVED", "ARCHIVED"):
+            turn.notice("edit_unavailable", self._t(turn, "notice.edit_unavailable"), warn=True)
+            return
+        await self.interview.on_answer_edit(turn, ev.card_id, ev.value, ev.custom_text)
+        self._rebuild(turn)
+        if turn.state == "BRIEF_REVIEW":
+            await self._open_review(turn)
+        else:
+            await self._advance(turn)
+
+    async def _on_batch_answer(self, turn: _Turn, ev: BatchAnswer) -> None:
+        """ "Answer all at once": the answers of a whole batch form, read in one pass (ADR 0016: nothing is processed
+        before this event). Every question of the submitted batch is closed by it: a question the form left out
+        counts as skipped. A question that is already answered (a repeated submit, a retry after a slow reply) is
+        ignored, so nothing is recorded twice."""
+        if not self.interview.active:
+            return
+        mem = turn.memory
+        if not any(b.id == ev.batch_id for b in mem.batches):
+            raise NotFound(
+                f"batch {ev.batch_id}"
+            )  # the page shows "the questions changed" and offers to retry
+        items: list[AnswerItem] = []
+        closed: set[str] = set()
+        for a in ev.answers:
+            card = self._find_question(turn, a.card_id)
+            if card is None:
+                raise NotFound(f"card {a.card_id}")
+            closed.add(card.id)
+            qa = mem.qa_for(card.id)
+            if qa is not None and qa.status != "open":
+                continue
+            typed = bool(a.custom_text) and a.value in (None, "", [])
+            items.append(
+                AnswerItem(
+                    card,
+                    a.action,
+                    a.value,
+                    a.custom_text,
+                    "text" if typed else "tap",
+                    ai_suggested=a.ai_suggested,
+                )
+            )
+        for qa in self.interview.pending(turn):
+            if qa.batch_id == ev.batch_id and qa.card_id not in closed:
+                # "decide the rest": what the form left blank is decided for the person, otherwise it is skipped
+                items.append(AnswerItem(qa.card, "you_decide" if ev.decide_rest else "skip"))
+        if not items and not ev.decide_rest:
+            return  # everything in it was answered already: a no-op, never a second batch
+        if items:
+            await self.interview.on_answers(turn, items)
+            self._rebuild(turn)
+        if ev.decide_rest:
+            await self._finish_with_defaults(
+                turn
+            )  # every other question is decided too, the interview ends
+            return
+        await self._advance(turn)
+
+    async def _on_card_skip(self, turn: _Turn, ev: CardSkip) -> None:
+        card = self._find_question(turn, ev.card_id)
+        if card is None:
+            raise NotFound(f"card {ev.card_id}")
+        if card.must_confirm:
+            turn.notice("must_confirm", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
+            turn.out.append(CardEvent(card=card))
+            return
+        if self.interview.active and card.frame == "planned":
+            await self.interview.on_answers(turn, [AnswerItem(card, "skip")])
+        else:
+            turn.answered.append((card.id, "skipped", None))
+        await self._advance(turn)
+
+    async def _on_you_decide(self, turn: _Turn, ev: CardYouDecide) -> None:
+        card = self._find_question(turn, ev.card_id)
+        if card is None:
+            raise NotFound(f"card {ev.card_id}")
+        if card.must_confirm:
+            turn.notice("must_confirm", self._t(turn, "fallback.not_sure_rephrase"), warn=True)
+            turn.out.append(CardEvent(card=card))
+            return
+        if self.interview.active and card.frame == "planned":
+            await self.interview.on_answers(turn, [AnswerItem(card, "you_decide")])
+            self._rebuild(turn)
+            await self._advance(turn)
+            return
+        writes = cards_mod.you_decide_writes(card) or self._default_writes(card)
+        self._apply_card_writes(turn, writes, state="assumed", from_tap=True)
+        picked = ", ".join(_text(w.value) for w in writes)
+        turn.answered.append((card.id, "you_decide", {"slots": [w.slot_id for w in writes]}))  # type: ignore[arg-type]
+        turn.notice("assumed", self._t(turn, "card.assumed_collapsed", value=picked))
+        self._rebuild(turn)
+        await self._advance(turn)
+
+    def _label_codes(self, slot_id: str, value: JsonValue, lang: str) -> JsonValue:
+        """For list-type slots a card option's value may be an internal code (``account_profile``): the Brief
+        stores the human label instead. Enum slots keep their codes (the schema validates them)."""
+        sd = self.catalog.slots.get(slot_id)
+        if sd is None or sd.value_schema.kind not in ("object_list", "text_list"):
+            return value
+        labels = {o.value: o.label.get(lang) for o in sd.fallback_card.options if o.value}
+
+        def convert(v: JsonValue) -> JsonValue:
+            if isinstance(v, str) and "_" in v and v in labels:
+                return labels[v]
+            if isinstance(v, dict):
+                name = v.get("name")
+                if isinstance(name, str) and "_" in name and name in labels:
+                    return {**v, "name": labels[name]}
+            return v
+
+        if isinstance(value, list):
+            return [convert(x) for x in value]
+        return convert(value)
+
+    def _selected_labels(self, turn: _Turn, slot_ids: Sequence[str]) -> list[str]:
+        """Names already chosen for list slots, so a follow-up card offers something new."""
+        out: list[str] = []
+        for sid in slot_ids:
+            rec = turn.slots.get(sid)
+            if rec is None or not isinstance(rec.value, list):
+                continue
+            for item in rec.value:
+                name = item.get("name") if isinstance(item, dict) else item
+                if isinstance(name, str) and name.strip():
+                    out.append(name)
+        return out
+
+    def _ask_idea_card(self, turn: _Turn) -> None:
+        card = cards_mod.fallback_card(
+            "idea_in_your_words",
+            self.catalog,
+            language=turn.lang,
+            card_id=f"Q-{len(turn.asked_cards()) + 1:03d}",
+            n=1,
+            of_about=self._plan(turn).question_budget,
+        )
+        turn.asked.append(
+            (card, {"frame": "idea_in_your_words", "action": "ask", "reason": "idea"})
+        )
+        turn.out.append(CardEvent(card=card))
+
+    def _default_writes(self, card: Card) -> list[Any]:
+        """Writes for the pattern defaults of the card's slots (listed as assumptions, never Locked)."""
+        out: list[Any] = []
+        for sid in card.slots:
+            sd = self.catalog.slots.get(sid)
+            if sd is not None and sd.default is not None:
+                out.append(
+                    cards_mod.CardWrite(
+                        slot_id=sid,
+                        value=cast(JsonValue, sd.default),
+                        provenance_type="assumed",
+                        custom_text=None,
+                        needs_confirmation=False,
+                    )
+                )
+        return out
+
+    async def _on_welcome(self, turn: _Turn, choice: str) -> None:
+        turn.answered.append(("Q-001", "answered", choice))
+        key = {
+            "upload": "welcome.upload_not_ready",
+            "like_app": "welcome.like_app_prompt",
+            "just_build": "welcome.just_build_prompt",
+        }.get(choice)
+        if choice == "describe" or key is None:
+            card = cards_mod.fallback_card("idea_in_your_words", self.catalog, language=turn.lang, card_id=f"Q-{len(turn.asked_cards()) + 1:03d}", n=1, of_about=self._plan(turn).question_budget)  # fmt: skip
+            turn.asked.append(
+                (card, {"frame": "idea_in_your_words", "action": "ask", "reason": "welcome"})
+            )
+            turn.out.append(CardEvent(card=card))
+            return
+        turn.say(self._t(turn, key))
+        if choice == "just_build":
+            turn.brief.meta.plan = DiscoveryPlan(
+                depth="express",
+                question_budget=self.config.questions.express_max,
+                minimum_viable=True,
+                interview_budget="quick",
+            )
+
+    async def _on_back(self, turn: _Turn) -> None:
+        cards = [c for c in turn.asked_cards() if c.frame not in (WELCOME_FRAME, VARIANTS_FRAME)]
+        if len(cards) < 1:
+            turn.notice("nothing_to_undo", self._t(turn, "notice.nothing_to_undo"))
+            return
+        answered = {q.card.id for q in turn.questions if q.outcome != "open"} | {
+            cid for cid, _, _ in turn.answered
+        }
+        target = next((c for c in reversed(cards) if c.id in answered), cards[-1])
+        turn.out.append(CardEvent(card=target))
+        turn.state = "INTERVIEWING"
+
+    # ------------------------------------------------------------------ commands
+    async def _on_route(self, turn: _Turn, kind: str) -> None:
+        mapping = {
+            "you_decide": "you_decide",
+            "finish_with_defaults": "finish_with_defaults",
+            "pause": "pause",
+            "start_over": "start_over",
+            "back": "back",
+            "undo": "undo",
+            "show_what_you_know": "show_what_you_know",
+            "stop": "pause",
+        }
+        if kind == "greeting":
+            turn.out.append(CardEvent(card=self._welcome_card(turn.lang)))
+            return
+        if kind == "you_decide":
+            pending = turn.pending_card()
+            if pending is not None:
+                await self._on_you_decide(
+                    turn, CardYouDecide(event_id=turn.turn_id, card_id=pending.id)
+                )
+            return
+        if kind == "none_of_these":
+            turn.say(self._t(turn, "fallback.not_sure_rephrase"))
+            return
+        name = mapping.get(kind)
+        if name:
+            await self._on_command(turn, name)
+
+    async def _on_command(self, turn: _Turn, name: str) -> None:
+        if name == "undo":
+            await self._undo(turn)
+        elif name == "back":
+            await self._on_back(turn)
+        elif name == "pause":
+            if turn.state != "PAUSED":
+                turn.session.resume_state = turn.state
+                self._go(turn, "pause", "PAUSED")
+            turn.notice("paused", self._t(turn, "notice.paused"))
+        elif name == "resume":
+            if turn.state == "PAUSED":
+                back = turn.session.resume_state or "INTERVIEWING"
+                turn.state = back
+            await self._recap(turn)
+        elif name == "start_over":
+            turn.say(self._t(turn, "notice.started_over"))
+            turn.state = "ARCHIVED"
+        elif name == "finish_with_defaults":
+            await self._finish_with_defaults(turn)
+        elif name == "prepare_questions":
+            await self.interview.prepare(turn)
+            if turn.state not in ("INTERVIEWING", "PLAYBACK"):
+                await self._advance(turn)
+        elif name == "ask_more":
+            await self.interview.ask_more(turn)
+        elif name in ("mode_answer_all", "mode_one_at_a_time"):
+            self.interview.set_ui_mode(
+                turn, "answer_all" if name == "mode_answer_all" else "one_at_a_time"
+            )
+        elif name in ("budget_quick", "budget_standard", "budget_thorough"):
+            self.interview.set_budget(turn, cast(Any, name.removeprefix("budget_")))
+        elif name == "show_what_you_know":
+            items = [PlaybackItem(key=sid, label=self._label(turn, sid), value=rec.value, basis="your_words" if rec.status in ("volunteered", "confirmed") else "suggestion") for sid, rec in turn.slots.all().items() if rec.value not in (None, "", [], {})]  # fmt: skip
+            turn.out.append(Playback(title=self._t(turn, "playback.title"), items=items))
+
+    async def _recap(self, turn: _Turn) -> None:
+        app = turn.brief.idea.get("summary")
+        pending = turn.pending_card()
+        turn.notice(
+            "resumed",
+            self._t(
+                turn,
+                "notice.resumed_recap",
+                app=_text(app.value)[:60] if app else "",
+                question=pending.question if pending else "",
+            ),
+        )
+        if pending is not None:
+            turn.out.append(CardEvent(card=pending))
+
+    async def _finish_with_defaults(self, turn: _Turn) -> None:
+        if (
+            self.interview.active
+        ):  # the planner path: stop asking, what is open becomes visible assumptions
+            pending_qas = self.interview.pending(turn)
+            if pending_qas and self.ports is not None:
+                decide_cards = [qa.card for qa in pending_qas]
+                decisions = await self.interview.decide_for_cards(turn, decide_cards)
+                dec_by_id = {d.card_id: d for d in decisions}
+                for qa in pending_qas:
+                    card = qa.card
+                    d = dec_by_id.get(card.id)
+                    chosen = (
+                        [o for o in card.options if o.id in d.option_ids]
+                        if d and d.option_ids
+                        else None
+                    )
+                    self.interview._record_decision(
+                        turn,
+                        card,
+                        chosen=chosen,
+                        answer_text=d.answer_text if d else "",
+                        rationale=d.rationale if d else "",
+                    )
+            self.interview.finish(turn, FINISHED_BY_PERSON, [])
+            turn.slots_defaulted = True  # type: ignore[attr-defined]
+            turn.notice("finish_defaults", self._t(turn, "notice.finish_defaults"))
+            self._derive_subcategory(turn)
+            self._assume_defaults(turn)  # the required and the should-level defaults, to a fixpoint
+            self._go(turn, "queue_empty", "SEEDING")
+            await self._advance(turn)
+            return
+        queue = self._queue(turn)
+        for item in queue:
+            if item.action in ("ask", "propose", "assume"):
+                if item.must_confirm:
+                    continue
+                self._assume_default(turn, item)
+        turn.slots_defaulted = True  # type: ignore[attr-defined]
+        turn.notice("finish_defaults", self._t(turn, "notice.finish_defaults"))
+        self._rebuild(turn)
+        self._go(turn, "queue_empty", "SEEDING")
+        await self._advance(turn)
+
+    # ------------------------------------------------------------------ changes (every one is a change set)
+    def _section_label(self, turn: _Turn, path: str) -> str:
+        key = SECTION_STRING.get(path.split(".")[0])
+        return self._t(turn, key) if key else path
+
+    async def _apply_change(
+        self,
+        turn: _Turn,
+        ops: Sequence[PatchOp],
+        *,
+        source: ChangeSource,
+        reason: str = "",
+        what: str = "",
+    ) -> bool:
+        res = patch_mod.apply_ops(
+            turn.brief, list(ops), self.catalog, now=self.clock.now(), turn_id=turn.turn_id
+        )
+        if res.errors:
+            turn.notice("change_failed", self._t(turn, "change.nothing_changed"), warn=True)
+            return False
+        return await self._finish_change(
+            turn, res, list(ops), source=source, reason=reason, what=what
+        )
+
+    async def _finish_change(
+        self,
+        turn: _Turn,
+        res: Any,
+        ops: Sequence[PatchOp],
+        *,
+        source: ChangeSource,
+        reason: str = "",
+        what: str = "",
+    ) -> bool:
+        """Everything after a change was applied to a Brief: the change set, the rebuild, the voided sections, research
+        and probes, the events and the state. ``res`` is a ``PatchResult`` (its ``brief`` is the Brief after the change)."""
+        where = self._section_label(turn, ops[0].path) if ops else ""
+        summary = self._t(turn, "change.updated", where=where, what=what or ops[0].path)
+        n = len(turn.questions) + 0  # unique per session via the store's change-set count below
+        change_id = f"CHG-{len(await self._change_sets(turn)) + 1:03d}"
+        cs = patch_mod.build_change_set(
+            res,
+            id=change_id,
+            base_version=turn.rec.version,
+            source=source,
+            reason=reason,
+            summary=summary,
+            turn_id=turn.turn_id,
+        )  # type: ignore[arg-type]
+        before = turn.rec
+        turn.brief = res.brief
+        self._resync_slots(turn)
+        self._rebuild(turn)
+        voided = changed_sections(before.section_hashes, section_hashes(turn.brief))
+        cs = cs.model_copy(update={"voided_sections": voided})
+        if any(op.path.startswith(RESEED_PATH_PREFIXES) for op in ops) and turn.state != "WELCOME":
+            await self._seed(turn)
+            cs = cs.model_copy(update={"reseeded_research": True})
+        kinds: list[ProbeKind] = [
+            cast(ProbeKind, k) for k, secs in PROBES_BY_SECTION.items() if secs & set(voided)
+        ]
+        if kinds and turn.brief.meta.probes:
+            results = await self._run_probes(turn, kinds)
+            for k, r in results.items():
+                turn.brief.meta.probes[k] = r.passed
+                turn.out.append(
+                    ProbeResultEvent(
+                        kind=cast(ProbeKind, k), passed=r.passed, gaps=[g.question for g in r.gaps]
+                    )
+                )
+        turn.change_set = cs
+        turn.out.append(
+            BriefPatch(
+                change_set_id=cs.id,
+                from_version=cs.base_version,
+                to_version=cs.new_version,
+                summary=summary,
+                ops=res.ops,
+                voided_sections=voided,
+            )
+        )
+        turn.say(summary)
+        if turn.state in ("APPROVED",):
+            turn.notice(
+                "changed_since_approval",
+                self._t(turn, "notice.changed_since_approval", sections=", ".join(voided)),
+            )
+            self._go(turn, "reopen", "BRIEF_REVIEW")
+        if turn.state == "BRIEF_REVIEW":
+            blockers = self._blockers(turn)
+            h = brief_hash(turn.brief)
+            turn.out.append(
+                BriefReady(
+                    version=cs.new_version,
+                    brief_hash=h,
+                    section_hashes=section_hashes(turn.brief),
+                    approvable=not blockers,
+                    blockers=self._blocker_lines(turn, blockers),
+                )
+            )
+        _ = n
+        return True
+
+    async def _change_sets(self, turn: _Turn) -> list[ChangeSet]:
+        async with self.store.begin(turn.tenant) as uow:
+            return await uow.change_sets.list(turn.session.id)
+
+    async def _undo(self, turn: _Turn) -> None:
+        sets = await self._change_sets(turn)
+        undone = {c.undoes for c in sets if c.undoes}
+        target = next((c for c in reversed(sets) if c.id not in undone and c.undoes is None), None)
+        if target is None:
+            await self._on_back(turn)
+            return
+        res = patch_mod.apply_ops(
+            turn.brief, target.inverse_ops, self.catalog, now=self.clock.now(), turn_id=turn.turn_id
+        )
+        if res.errors:
+            turn.notice("undo_failed", self._t(turn, "change.nothing_changed"), warn=True)
+            return
+        cs = patch_mod.build_change_set(
+            res,
+            id=f"CHG-{len(sets) + 1:03d}",
+            base_version=turn.rec.version,
+            source="undo",
+            reason="undo",
+            summary=self._t(turn, "notice.undone", what=target.summary),
+            turn_id=turn.turn_id,
+        )
+        cs = cs.model_copy(update={"undoes": target.id})
+        before = turn.rec
+        turn.brief = res.brief
+        self._resync_slots(turn)
+        self._rebuild(turn)
+        cs = cs.model_copy(
+            update={
+                "voided_sections": changed_sections(
+                    before.section_hashes, section_hashes(turn.brief)
+                )
+            }
+        )
+        turn.change_set = cs
+        turn.out.append(
+            BriefPatch(
+                change_set_id=cs.id,
+                from_version=cs.base_version,
+                to_version=cs.new_version,
+                summary=cs.summary,
+                ops=res.ops,
+                voided_sections=cs.voided_sections,
+                undoable=False,
+            )
+        )
+        turn.say(cs.summary)
+
+    async def _on_brief_edit(self, turn: _Turn, ev: BriefEdit) -> None:
+        if self._flow_locked_edit(turn, ev):
+            return
+        ops = [
+            PatchOp(
+                op="set",
+                path=ev.item_id,
+                value=ev.value,
+                provenance=[self._prov(turn, "user_text", _text(ev.value))],
+            )
+        ]
+        await self._apply_change(
+            turn, ops, source="ui_edit", what=self._edit_label(turn.brief, ev.item_id)
+        )
+
+    @staticmethod
+    def _edit_label(brief: Brief, path: str) -> str:
+        """What a change summary says about an edited path: the record's name and the field for the structure
+        (``Account › name``), the path itself for everything else."""
+        parts = path.split(".")
+        if len(parts) == 3 and parts[0] in STRUCTURE_SECTIONS:
+            for rec in getattr(brief, parts[0], []):
+                if rec.id == parts[1]:
+                    return f"{rec.name} › {parts[2]}"
+        return path
+
+    async def _on_structure_action(self, turn: _Turn, ev: StructureAction) -> None:
+        """Accept, add, remove, redraft or re-size the structure of the app (ADR 0017). Each action is ONE change set:
+        undo restores it whole. Renaming and moving use ``brief_edit``."""
+        named = ""  # the record's name as the person knows it (read before a removal takes it away)
+        try:
+            if ev.action in ("regenerate", "set_band"):
+                await self.structure.redraft(turn, ev)
+                return
+            if not ev.section:
+                raise actions_mod.ActionError("a section is needed")
+            if ev.action != "add":
+                named = str(
+                    getattr(actions_mod.find(turn.brief, ev.section, ev.target), "name", "")
+                )
+            if ev.action == "add":
+                ops = actions_mod.add_ops(
+                    ev.section, ev.value, [self._prov(turn, "user_text", _text(ev.value))]
+                )
+            elif ev.action == "accept":
+                ops = actions_mod.accept_ops(
+                    turn.brief, ev.section, ev.target, actions_mod.not_evidence(turn.turn_id)
+                )
+            else:
+                ops = actions_mod.remove_ops(
+                    turn.brief, ev.section, ev.target, actions_mod.not_evidence(turn.turn_id)
+                )
+        except actions_mod.ActionError as exc:
+            raise NotFound(str(exc)) from exc
+        if not ops:
+            turn.notice("structure_nothing_to_do", self._t(turn, "change.nothing_changed"))
+            return
+        name = (
+            str(ev.value.get("name", ""))
+            if ev.action == "add" and isinstance(ev.value, dict)
+            else named
+        )
+        await self._apply_change(
+            turn,
+            ops,
+            source="structure",
+            what=self._t(turn, f"structure.what.{ev.action}", name=name or ev.target),
+        )
+
+    async def _on_assumption(self, turn: _Turn, ev: AssumptionDecision) -> None:
+        asm = next((a for a in turn.brief.assumptions if a.id == ev.id), None)
+        if asm is None:
+            if turn.brief.ids.is_deleted(
+                ev.id
+            ):  # settled by another answer meanwhile: not an error
+                turn.notice("assumption_settled", self._t(turn, "notice.assumption_settled"))
+                return
+            raise NotFound(f"assumption {ev.id}")
+        if ev.decision == "accept":
+            ops = [
+                PatchOp(
+                    op="set",
+                    path=f"assumptions.{ev.id}.decision",
+                    value="accepted",
+                    provenance=[self._prov(turn, "user_tap", asm.claim)],
+                )
+            ]
+            if await self._apply_change(turn, ops, source="assumption", what=asm.claim):
+                turn.notice(
+                    "assumption_accepted",
+                    self._t(turn, "notice.assumption_accepted", claim=asm.claim),
+                )
+            return
+        if asm.slot_id is None and ev.value is not None and _text(ev.value).strip():
+            # a decision, correction or review row has no slot: the person's own words are read as a change request
+            # (they are not lost), and the row is marked changed
+            text = _text(ev.value)
+            ops = [PatchOp(op="set", path=f"assumptions.{ev.id}.decision", value="changed")]
+            await self._apply_change(turn, ops, source="assumption", what=asm.claim)
+            if self.interview.active:
+                # whatever the change flow can structure, the words themselves join the ledger like any message
+                understood = await self.interview.understand_text(turn, text, "text")
+                await self.interview.on_text(turn, understood, text, "text")
+            await self._change_from_text(turn, text, ResolvedTarget(kind="assumption", id=asm.id))
+            if self.interview.active:
+                await self._compile_brief(
+                    turn
+                )  # an unchanged part of the ledger makes no model call
+            return
+        slot = self.catalog.slots.get(asm.slot_id or "")
+        if ev.value is not None and slot is not None:
+            ops = [
+                PatchOp(op="set", path=slot.brief_path, value=ev.value, provenance=[self._prov(turn, "user_text", _text(ev.value))]),
+                PatchOp(op="set", path=f"assumptions.{ev.id}.decision", value="changed"),
+            ]  # fmt: skip
+            await self._apply_change(turn, ops, source="assumption", what=asm.claim)
+            return
+        await self._variants(turn, asm.slot_id, _text(asm.claim), "dont_want_assumption")
+
+    async def _on_lookup(self, turn: _Turn, ev: LookupEdit) -> None:
+        if ev.action == "remove" and ev.request_id:
+            req = next((r for r in turn.brief.research_requests if r.id == ev.request_id), None)
+            ops = [PatchOp(op="remove", path=f"research_requests.{ev.request_id}")]
+            if await self._apply_change(
+                turn, ops, source="lookup", what=req.topic if req else ev.request_id
+            ):
+                turn.notice(
+                    "lookup_removed",
+                    self._t(
+                        turn, "notice.lookup_removed", text=req.topic if req else ev.request_id
+                    ),
+                )
+            return
+        if ev.action == "add" and ev.text.strip():
+            geo = turn.slots.get("context.geo")
+            cat = turn.slots.get("idea.category")
+            words = [w for w in ev.text.replace(",", " ").split() if len(w) >= 3][:6]
+            req = ResearchRequest(
+                id=turn.brief.ids.allocate("RR"), topic=ev.text.strip()[:200], question=ev.text.strip()[:300], decision_unlocked="you asked for it",
+                entity=_text(cat.value) if cat and cat.value else ev.text.strip()[:60], geography=_text(geo.value) if geo and geo.value else "global",
+                terms=words or [ev.text.strip()[:30]], shown_to_user_as=ev.text.strip()[:120], priority="high", user_added=True,
+            )  # fmt: skip
+            ops = [PatchOp(op="add", path="research_requests", value=req.model_dump(mode="json"))]
+            if await self._apply_change(turn, ops, source="lookup", what=req.topic):
+                turn.notice("lookup_added", self._t(turn, "notice.lookup_added", text=req.topic))
+
+    async def _on_feedback(self, turn: _Turn, ev: BriefFeedback) -> None:
+        target = self._resolve_target(turn, ev.target)
+        if ev.reason == "dont_want_assumption":
+            asm = next(
+                (a for a in turn.brief.assumptions if a.id == target.id.split(".")[-1]), None
+            )
+            if asm is not None:
+                await self._variants(turn, asm.slot_id, asm.claim, ev.reason)
+                return
+        await self._change_from_text(turn, ev.text or ev.reason, target, reason=ev.reason)
+
+    def _resolve_target(self, turn: _Turn, raw: str) -> ResolvedTarget:
+        head = raw.split(".")[0]
+        if raw in SECTION_STRING or raw in (
+            "idea",
+            "who",
+            "features",
+            "assumed",
+            "look",
+            "access",
+            "words",
+        ):
+            return ResolvedTarget(kind="section", id=raw)
+        if head == "assumptions":
+            return ResolvedTarget(kind="assumption", id=raw)
+        if head == "scope":
+            return ResolvedTarget(kind="feature", id=raw)
+        if raw in self.catalog.slots:
+            return ResolvedTarget(kind="slot", id=raw)
+        return ResolvedTarget(kind="row" if "." in raw else "unknown", id=raw)
+
+    async def _change_from_text(
+        self, turn: _Turn, text: str, target: ResolvedTarget, *, reason: str = ""
+    ) -> None:
+        assert self.ports is not None
+        history = []
+        from mde_compass.engine.ports import HistoryLine
+
+        for i, line in enumerate(turn.transcript):
+            history.append(HistoryLine(turn_id=f"t{i}", role=line.role, text=line.text))
+        proposal = await self.ports.change_interpreter.interpret(
+            self._ctx(turn),
+            ChangeInput(text=text, target=target, history_slice=history, reason=reason),
+            turn.brief,
+        )
+        if not proposal.understood or not proposal.ops:
+            question = proposal.clarification or self._t(turn, "change.target_unknown")
+            if proposal.options:
+                card = Card(
+                    id=f"Q-{len(turn.asked_cards()) + 1:03d}", frame=VARIANTS_FRAME, slots=[], type="choose_one", question=question,
+                    options=[CardOption(id=chr(65 + i), label=o) for i, o in enumerate(proposal.options[:3])], language=turn.lang,
+                )  # fmt: skip
+                turn.asked.append((card, {"frame": VARIANTS_FRAME, "reason": "clarify"}))
+                turn.out.append(CardEvent(card=card))
+            else:
+                turn.say(question)
+            return
+        if proposal.touches_locked and self._flow_locked_chat(turn, proposal.ops):
+            return
+        if proposal.touches_locked:
+            turn.notice("touches_locked", ", ".join(proposal.touches_locked), warn=False)
+        await self._apply_change(
+            turn,
+            proposal.ops,
+            source="chat" if not reason else "feedback",
+            reason=reason,
+            what=text[:60],
+        )
+
+    async def _variants(self, turn: _Turn, slot_id: str | None, current: str, reason: str) -> None:
+        assert self.ports is not None
+        slot = self.catalog.slots.get(slot_id or "")
+        if slot is None:
+            turn.say(self._t(turn, "change.target_unknown"))
+            return
+        cur = turn.slots.get(slot.id)
+        vs = await self.ports.variant_maker.variants(
+            self._ctx(turn), path=slot.brief_path, current=cur.value if cur else None, reason=reason
+        )
+        opts = [
+            CardOption(id=chr(65 + i), label=v.label, basis=v.basis, recommended=i == 0, reason=v.reason, sets={slot.id: v.value})
+            for i, v in enumerate(vs.variants[:3])
+        ]  # fmt: skip
+        card = Card(
+            id=f"Q-{len(turn.asked_cards()) + 1:03d}", frame=VARIANTS_FRAME, slots=[slot.id], type="choose_one",
+            question=self._t(turn, "change.variants_question", current=current[:80]), options=opts, language=turn.lang,
+            progress=CardProgress(n=0, of_about=0),
+        )  # fmt: skip
+        turn.asked.append((card, {"frame": VARIANTS_FRAME, "reason": reason}))
+        turn.out.append(CardEvent(card=card))
+
+    async def _on_variant_pick(self, turn: _Turn, card: Card, ev: CardAnswer) -> None:
+        turn.answered.append((card.id, "answered", ev.value))
+        opt = next((o for o in card.options if o.id == ev.value), None)
+        if ev.custom_text and card.slots:
+            slot = self.catalog.slots[card.slots[0]]
+            ops = [
+                PatchOp(
+                    op="set",
+                    path=slot.brief_path,
+                    value=ev.custom_text,
+                    provenance=[self._prov(turn, "user_text", ev.custom_text)],
+                )
+            ]
+        elif opt is not None and opt.sets:
+            ops = []
+            for sid, value in opt.sets.items():
+                slot = self.catalog.slots.get(sid)
+                if slot is not None:
+                    ops.append(
+                        PatchOp(
+                            op="set",
+                            path=slot.brief_path,
+                            value=value,
+                            provenance=[self._prov(turn, "user_tap", opt.label)],
+                        )
+                    )
+        else:
+            turn.say(self._t(turn, "change.nothing_changed"))
+            return
+        if ops:
+            await self._apply_change(turn, ops, source="feedback", what=opt.label if opt else "")
+
+    async def _on_switch(self, turn: _Turn, ev: ContributorSwitch) -> None:
+        who = next((c for c in turn.session.contributors if c.id == ev.contributor_id), None)
+        if who is None:
+            raise NotFound(f"contributor {ev.contributor_id}")
+        turn.notice("speaking_as", self._t(turn, "notice.speaking_as", name=who.name or who.id))
+
+    # ------------------------------------------------------------------ documents and links (intake)
+    async def ingest_upload(
+        self, caller: Caller, session_id: str, filename: str, data: bytes
+    ) -> TurnResult:
+        """An uploaded file is one turn: it becomes a source, its claims become cited Brief writes."""
+        # A fresh id per request: the same bytes twice are caught by intake's sha256 de-duplication, which
+        # tells the user, instead of by event idempotency, which would stay silent.
+        event_id = new_id("evt")
+        self._pending_uploads[event_id] = (filename, data)
+        try:
+            return await self.handle_event(
+                caller, session_id, UploadAdded(event_id=event_id, source_id="pending")
+            )
+        finally:
+            self._pending_uploads.pop(event_id, None)
+
+    async def _intake_context(self, turn: _Turn) -> tuple[dict[str, str], int, int, int]:
+        async with self.store.begin(turn.tenant) as uow:
+            sources = await uow.sources.list_sources(turn.session.id)
+        hashes = {s.sha256: s.id for s in sources}
+        files = sum(1 for s in sources if s.kind != "url")
+        urls = sum(1 for s in sources if s.kind == "url")
+        return hashes, files, sum(s.bytes for s in sources), urls
+
+    async def _on_upload_added(self, turn: _Turn, ev: UploadAdded) -> None:
+        assert self.ports is not None
+        stash = self._pending_uploads.pop(ev.event_id, None)
+        if stash is None:  # a bare event without bytes (nothing to read)
+            turn.notice("upload_not_ready", self._t(turn, "welcome.upload_not_ready"))
+            return
+        name, data = stash
+        hashes, files, size, _ = await self._intake_context(turn)
+        sid = turn.brief.ids.allocate("SRC")
+        res = await ingest_bytes(
+            name, data, session_id=turn.session.id, source_seq=int(sid.split("-")[1]),
+            existing_hashes=hashes, ports=self.ports, ctx=self._ctx(turn),
+            limits=self.config.intake, session_files=files, session_bytes=size,
+        )  # fmt: skip
+        await self._apply_ingest(turn, res, sid)
+
+    async def _on_link_added(self, turn: _Turn, ev: LinkAdded) -> None:
+        assert self.ports is not None
+        hashes, files, size, urls = await self._intake_context(turn)
+        sid = turn.brief.ids.allocate("SRC")
+        res = await ingest_url(
+            ev.url, session_id=turn.session.id, source_seq=int(sid.split("-")[1]),
+            existing_hashes=hashes, ports=self.ports, ctx=self._ctx(turn),
+            limits=self.config.intake, url_count=urls, session_files=files, session_bytes=size,
+            resolver=self.url_resolver, fetcher=self.url_fetcher,
+        )  # fmt: skip
+        await self._apply_ingest(turn, res, sid)
+
+    async def _ingest_pasted(self, turn: _Turn, text: str) -> None:
+        assert self.ports is not None
+        hashes, files, size, _ = await self._intake_context(turn)
+        sid = turn.brief.ids.allocate("SRC")
+        res = await ingest_text(
+            text, session_id=turn.session.id, source_seq=int(sid.split("-")[1]),
+            existing_hashes=hashes, ports=self.ports, ctx=self._ctx(turn),
+            limits=self.config.intake, session_files=files, session_bytes=size,
+        )  # fmt: skip
+        await self._apply_ingest(turn, res, sid)
+
+    async def _apply_ingest(self, turn: _Turn, res: IngestResult, source_id: str) -> None:
+        if res.status != "ingested" or res.source is None:
+            turn.brief.ids.tombstone(source_id)  # an id that held nothing is never reused
+            turn.say(res.message or self._t(turn, "error.generic"))
+            return
+        async with self.store.begin(turn.tenant) as uow:
+            fresh = await uow.sources.save_source(turn.session.id, res.source, chunks=res.chunks)
+            if fresh:
+                await uow.sources.save_claims(turn.session.id, res.claims)
+        if not fresh:  # a race on the de-duplication
+            turn.brief.ids.tombstone(source_id)
+            turn.say(self._t(turn, "intake.duplicate"))
+            return
+        src = res.source
+        turn.brief.sources.append(
+            SourceRecord(
+                id=src.id, kind=src.kind, name=src.name, sha256=src.sha256, coverage=src.coverage,
+                tier="Locked", status="confirmed", confidence=1.0,
+                provenance=[Provenance(type="document", ref=src.id, quote=src.name, date=self.clock.now())],
+            )
+        )  # fmt: skip
+        turn.say(self._t(turn, "intake.read_summary", name=src.name, summary=res.summary))
+        if res.injection_notes:
+            turn.notice(
+                "document_instruction_ignored", self._t(turn, "intake.injection_note"), warn=True
+            )
+        existing = {sid: rec.value for sid, rec in turn.slots.all().items()}
+        plan = docflow.plan_from_claims(res.claims, existing)
+        if self.interview.active:  # the document's statements join the fact ledger
+            self.interview.after_ingest(turn, res.claims, src.id)
+        chips: list[str] = []
+        for w in plan.writes:
+            r = turn.slots.write(
+                w.slot_id, w.value, state="volunteered", provenance=w.provenance,
+                confidence=w.confidence, turn_id=turn.turn_id,
+            )  # fmt: skip
+            if r.applied:
+                chips.append(f"{self._label(turn, w.slot_id)}: {_text(w.value)}"[:80])
+        if chips:
+            turn.out.append(
+                Notice(code="picked_up", text=self._t(turn, "intake.picked_from_doc", items="; ".join(chips)), chips=chips)
+            )  # fmt: skip
+        for issue in plan.open_issues[:5]:
+            turn.brief.open_questions.append(
+                OpenQuestion(
+                    id=turn.brief.ids.allocate("Q"), text=issue, blocking=False, owner="user"
+                )
+            )
+        if plan.needs_confirming:
+            turn.brief.open_questions.append(
+                OpenQuestion(
+                    id=turn.brief.ids.allocate("Q"), blocking=False, owner="user",
+                    text=self._t(turn, "intake.needs_confirming", count=plan.needs_confirming),
+                )
+            )  # fmt: skip
+        if turn.state == "WELCOME":
+            self._go(turn, "documents_received", "INTAKE")
+        if not turn.slots.filled("idea.summary"):
+            lead = next(
+                (c.statement.text for c in res.claims if c.status == "used"
+                 and c.statement.type in ("business_context", "goal", "requirement")),
+                src.name,
+            )  # fmt: skip
+            turn.slots.write(
+                "idea.summary", lead[:IDEA_CHARS], state="volunteered",
+                provenance=Provenance(type="document", ref=src.id, quote=lead[:200], date=self.clock.now()),
+                confidence=0.6, turn_id=turn.turn_id,
+            )  # fmt: skip
+            await self._first_understanding(turn, lead)
+        else:
+            self._rebuild(turn)
+        await self._advance(turn)
+
+    # ------------------------------------------------------------------ Gate 1
+    async def _on_gate(self, turn: _Turn, ev: GateDecision) -> None:
+        if ev.decision == "request_changes":
+            turn.notice("changes_requested", self._t(turn, "change.target_unknown"))
+            return
+        if turn.state not in ("BRIEF_REVIEW", "APPROVED"):
+            turn.notice("gate_blocked", self._t(turn, "notice.gate_blocked"), warn=True)
+            return
+        if (
+            turn.state == "APPROVED"
+            and turn.session.approved_hash is not None
+            and turn.session.approved_hash == brief_hash(turn.brief)
+        ):  # approving the same, unchanged Brief again is a no-op, never a second baseline
+            turn.say(self._t(turn, "notice.approved", version=turn.session.approved_version or 0))
+            return
+        blockers = self._blockers(
+            turn, supplied_version=ev.version, supplied_hash=ev.brief_hash or None
+        )
+        if ev.section_hashes and ev.section_hashes != section_hashes(turn.brief):
+            blockers = [
+                *blockers,
+                gate_mod.Blocker(code="hash_mismatch", key="blocker.hash_mismatch", values={}),
+            ]
+        who = ev.contributor_id or turn.session.user_id
+        roles = {c.id: c.role for c in turn.session.contributors}
+        if turn.session.mode == "enterprise":
+            if roles.get(who) == "approver" and not [
+                b for b in blockers if b.code != "approvers_missing"
+            ]:
+                turn.brief.meta.approvals[who] = brief_hash(turn.brief)
+                blockers = self._blockers(
+                    turn, supplied_version=ev.version, supplied_hash=ev.brief_hash or None
+                )
+            elif roles.get(who) != "approver":
+                turn.notice(
+                    "not_an_approver",
+                    self._t(
+                        turn,
+                        "blocker.approvers_missing",
+                        roles=", ".join(self.config.gate.required_approver_roles),
+                    ),
+                    warn=True,
+                )
+                return
+        if blockers:
+            lines = self._blocker_lines(turn, blockers)
+            only_approvals = all(b.code == "approvers_missing" for b in blockers)
+            turn.notice(
+                "gate_waiting" if only_approvals else "gate_blocked",
+                lines[0] if only_approvals else self._t(turn, "notice.gate_blocked"),
+                warn=not only_approvals,
+            )
+            turn.out.append(
+                BriefReady(
+                    version=turn.rec.version,
+                    brief_hash=brief_hash(turn.brief),
+                    section_hashes=section_hashes(turn.brief),
+                    approvable=False,
+                    blockers=lines,
+                )
+            )
+            return
+        version = turn.rec.version + (1 if brief_hash(turn.brief) != turn.rec.hash else 0)
+        label = "B-G1" if turn.session.approved_version is None else f"B-G1-v{version}"
+        self._go(turn, "gate_approved", "APPROVED")
+        turn.state = "APPROVED"
+        turn.approval = (version, label)
+        turn.handoff_views = build_handoff(turn.brief)
+        h = brief_hash(turn.brief)
+        turn.out.append(BriefApproved(version=version, brief_hash=h, baseline=label))
+        turn.say(self._t(turn, "notice.approved", version=version))
+
+    async def _on_approve_all(self, turn: _Turn, ev: ApproveAll) -> None:
+        """Approve all on the final Brief (Feature C / Section 10): bulk-accepts all proposed
+        assumptions in one change set and approves Gate 1 if no blockers remain."""
+        current_hash = brief_hash(turn.brief)
+        if (ev.version and ev.version != turn.rec.version) or (
+            ev.brief_hash and ev.brief_hash != current_hash
+        ):
+            raise Conflict(f"Brief changed (version {turn.rec.version}, hash {current_hash[:8]})")
+
+        pending_asms = [
+            a for a in turn.brief.assumptions if a.decision not in ("accepted", "rejected")
+        ]
+        # the structure of the app is approved in the SAME change set (one change set per turn): accepted, never Locked
+        structure_ops = actions_mod.accept_all_ops(
+            turn.brief, actions_mod.not_evidence(turn.turn_id)
+        )
+        if pending_asms or structure_ops:
+            ops = [
+                PatchOp(
+                    op="set",
+                    path=f"assumptions.{a.id}.decision",
+                    value="accepted",
+                    provenance=[self._prov(turn, "user_tap", a.claim)],
+                )
+                for a in pending_asms
+            ]
+            ops += structure_ops
+            await self._apply_change(
+                turn,
+                ops,
+                source="approve_all",
+                what=f"Accepted {len(pending_asms)} assumptions and {len(structure_ops)} parts of the structure",
+            )
+            if pending_asms:
+                turn.notice(
+                    "assumptions_all_accepted",
+                    self._t(turn, "notice.assumptions_all_accepted", count=len(pending_asms)),
+                )
+
+        cur_hash = brief_hash(turn.brief)
+        cur_version = turn.rec.version + (1 if cur_hash != turn.rec.hash else 0)
+        blockers = self._blockers(turn, supplied_version=cur_version, supplied_hash=cur_hash)
+        if not blockers:
+            gate_ev = GateDecision(
+                event_id=internal_event_id(ev.event_id, "gate_approve"),
+                decision="approve",
+                version=cur_version,
+                brief_hash=cur_hash,
+            )
+            await self._on_gate(turn, gate_ev)
+        else:
+            await self._open_review(turn)
+
+    async def gate(
+        self, caller: Caller, session_id: str, event: InboundEvent
+    ) -> dict[str, JsonValue]:
+        result = await self.handle_event(caller, session_id, event)
+        session = await self.get_session(caller, session_id)
+        async with self.store.begin(caller.tenant_id) as uow:
+            rec = await uow.briefs.get(session_id)
+        blockers: list[str] = []
+        for ev in result.events:
+            if ev.type == "brief_ready":
+                raw = ev.payload.get("blockers")
+                blockers = [str(b) for b in raw] if isinstance(raw, list) else []
+        return {
+            "accepted": session.state == "APPROVED" and result.accepted,
+            "state": session.state, "version": rec.version, "brief_hash": rec.hash,
+            "baseline": rec.baseline_label, "blockers": list(blockers),
+        }  # fmt: skip
+
+    # ------------------------------------------------------------------ queries
+    async def list_outbound(
+        self, caller: Caller, session_id: str, *, after_seq: int = 0, limit: int = 200
+    ) -> list[StoredEvent]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            await uow.sessions.get(session_id)
+            return await uow.events.list_outbound(session_id, after_seq=after_seq, limit=limit)
+
+    async def get_brief(
+        self, caller: Caller, session_id: str, version: int | None = None
+    ) -> dict[str, JsonValue]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            rec = await uow.briefs.get(session_id, version)
+        data = rec.brief.model_dump(mode="json")
+        data["_hash"] = rec.hash
+        data["_section_hashes"] = rec.section_hashes
+        return data
+
+    async def brief_view(
+        self, caller: Caller, session_id: str, *, version: int | None = None
+    ) -> dict[str, JsonValue]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            session = await uow.sessions.get(session_id)
+            rec = await uow.briefs.get(session_id, version)
+            prev = await uow.briefs.get(session_id, rec.version - 1) if rec.version > 1 else None
+            baseline = await uow.briefs.get_baseline(session_id)
+        slots = SlotStore(self.catalog, clock=self.clock)
+        slots.load(self._slot_records(rec.brief))
+        turn_like = _Turn(
+            tenant=caller.tenant_id,
+            session=session,
+            rec=rec,
+            brief=rec.brief,
+            slots=slots,
+            questions=[],
+            event=None,
+            lang=session.locale,
+            state=session.state,
+        )
+        lines = (
+            self._blocker_lines(turn_like, self._blockers(turn_like))
+            if session.state in ("BRIEF_REVIEW", "APPROVED")
+            else []
+        )
+        changed = (
+            [
+                e.path
+                for e in diff_briefs(
+                    prev.brief, rec.brief, from_version=prev.version, to_version=rec.version
+                ).entries
+            ]
+            if prev
+            else []
+        )
+        view = build_view_model(
+            rec.brief, catalog=self.catalog, language=session.locale, session=session, blockers=lines,
+            reviewed_sections=(), changed_paths=changed, baseline=baseline, brief_hash=rec.hash, section_hashes=rec.section_hashes,
+        )  # fmt: skip
+        return view.model_dump(mode="json")
+
+    async def brief_versions(self, caller: Caller, session_id: str) -> list[dict[str, JsonValue]]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            versions = await uow.briefs.list_versions(session_id)
+        return [
+            {"version": v.version, "hash": v.hash, "baseline": v.baseline_label, "change_set_id": v.change_set_id, "created_at": v.created_at.isoformat() if v.created_at else None}
+            for v in versions
+        ]  # fmt: skip
+
+    async def brief_diff(
+        self, caller: Caller, session_id: str, *, from_version: int, to_version: int
+    ) -> dict[str, JsonValue]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            a = await uow.briefs.get(session_id, from_version)
+            b = await uow.briefs.get(session_id, to_version)
+        return diff_briefs(
+            a.brief, b.brief, from_version=from_version, to_version=to_version
+        ).model_dump(mode="json")
+
+    async def _structure_brief(
+        self, caller: Caller, session_id: str
+    ) -> tuple[SessionRecord, BriefVersionRecord]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            return await uow.sessions.get(session_id), await uow.briefs.get(session_id)
+
+    async def structure_view(
+        self, caller: Caller, session_id: str, *, language: str | None = None
+    ) -> dict[str, JsonValue]:
+        """The Structure tab of the page (ADR 0017): modules with their screens, journeys, data, who can open what,
+        the size band and what is still wrong."""
+        session, rec = await self._structure_brief(caller, session_id)
+        block = rec.brief.meta.interview
+        band, source = derive_mod.band_of_brief(rec.brief)
+        view = build_structure_view(
+            rec.brief,
+            catalog=self.catalog,
+            language=language or session.locale,
+            band=band,
+            source=source,
+            enabled=self.config.interview.structure_enabled,
+            session_id=session_id,
+            suggested=block.size_suggested if block is not None else "",
+        )
+        return cast("dict[str, JsonValue]", view.model_dump(mode="json"))
+
+    async def structure_outline(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        _, rec = await self._structure_brief(caller, session_id)
+        return derive_mod.outline(rec.brief)
+
+    async def structure_slice(
+        self, caller: Caller, session_id: str, module_id: str
+    ) -> dict[str, JsonValue]:
+        """One module with everything a downstream call needs to build it (values only)."""
+        _, rec = await self._structure_brief(caller, session_id)
+        try:
+            return derive_mod.module_slice(rec.brief, module_id)
+        except KeyError as exc:
+            raise NotFound(f"modules.{module_id}: no such record") from exc
+
+    async def export_full(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        """The complete output of a Compass session for the next engine (the research agent): the Brief with its hash
+        and versions, the four consumer views, the whole interview (every question with its answer, every fact with
+        its verbatim quote and status, the summary), the documents read, the change history and what it cost.
+        Read-only; nothing is left out on purpose."""
+        from datetime import UTC, datetime
+
+        async with self.store.begin(caller.tenant_id) as uow:
+            session = await uow.sessions.get(session_id)
+            rec = await uow.briefs.get(session_id)
+            versions = await uow.briefs.list_versions(session_id)
+            baseline = await uow.briefs.get_baseline(session_id)
+            facts = await uow.facts.list(session_id)
+            qa = await uow.qa.list(session_id, latest_only=False)
+            batches = await uow.batches.list(session_id)
+            sources = await uow.sources.list_sources(session_id)
+            claims = await uow.sources.list_claims(session_id)
+            contributors = await uow.contributors.list(session_id)
+            change_sets = await uow.change_sets.list(session_id)
+            calls = await uow.call_log.list(session_id, limit=5000)
+            try:
+                got = await uow.summaries.get(session_id)
+                summary: JsonValue = got.model_dump(mode="json") if got is not None else None
+            except Exception:  # no rolling summary was ever written
+                summary = None
+        brief = rec.brief.model_dump(mode="json")
+        by_spec: dict[str, dict[str, int]] = {}
+        for c in calls:
+            row = by_spec.setdefault(
+                c.spec_id,
+                {"calls": 0, "latency_ms": 0, "tokens_in": 0, "tokens_out": 0, "cost_micros": 0},
+            )
+            row["calls"] += 1
+            row["latency_ms"] += c.latency_ms
+            row["tokens_in"] += c.tokens_in
+            row["tokens_out"] += c.tokens_out
+            row["cost_micros"] += c.cost_micros
+        out: dict[str, Any] = {
+            "export": {
+                "format": "compass-full-output",
+                "format_version": 2,
+                "exported_at": datetime.now(UTC).isoformat(),
+                "session_id": session_id,
+                "brief_version": rec.version,
+                "brief_hash": rec.hash,
+                "approved_baseline": baseline.model_dump(mode="json", exclude={"brief"})
+                if baseline
+                else None,
+                "reading_guide": {
+                    "brief": "the source of truth: slots as sections, records (features, roles, apps, integrations), domain_facts (typed details with kind and refs), assumptions (what was assumed and its decision), open_questions, research_requests and search_hints",
+                    "consumer_views": "what each downstream engine reads: research, blueprint, design, verify (values only, no quotes)",
+                    "interview": "every question and answer (qa), every fact with verbatim quote, origin and status (facts), the rolling summary",
+                    "sources": "documents the person gave and the claims read from them",
+                    "structure": "the user-approved structure of the app (ADR 0017): size band and source, counts, an outline (ids and names), one slice per module (screens, the journeys that touch them, the data they use, who may do what, the features served, the detail facts routed to it), the role by module matrix, navigation edges taken from the journeys, the issues left, and the research guidance; absent for a Brief without a structure",
+                },
+            },
+            "session": session.model_dump(mode="json"),
+            "brief": {**brief, "_hash": rec.hash, "_section_hashes": rec.section_hashes},
+            "consumer_views": cast(JsonValue, build_handoff(rec.brief)),
+            **(
+                {"structure": structure_export(rec.brief)}
+                if derive_mod.has_structure(rec.brief)
+                else {}
+            ),
+            "brief_versions": [v.model_dump(mode="json") for v in versions],
+            "interview": {
+                "qa": [q.model_dump(mode="json") for q in qa],
+                "facts": [f.model_dump(mode="json") for f in facts],
+                "summary": summary,
+                "batches": [b.model_dump(mode="json") for b in batches],
+            },
+            "sources": {
+                "documents": [s.model_dump(mode="json") for s in sources],
+                "claims": [c.model_dump(mode="json") for c in claims],
+            },
+            "contributors": [c.model_dump(mode="json") for c in contributors],
+            "change_sets": [c.model_dump(mode="json") for c in change_sets],
+            "spend": {
+                "calls": len(calls),
+                "cost_micros": sum(c.cost_micros for c in calls),
+                "by_call": cast(JsonValue, by_spec),
+            },
+        }
+        return cast(dict[str, JsonValue], out)
+
+    async def qa_list(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        """The Questions-and-answers list (History tab): every question put to the person, the answer in plain
+        words, its status and the facts it produced, so an answer can be edited from there."""
+        async with self.store.begin(caller.tenant_id) as uow:
+            await uow.sessions.get(session_id)
+            qa = await uow.qa.list(session_id)
+            facts = await uow.facts.list(session_id)
+        by_card: dict[str, list[JsonValue]] = {}
+        for fact in facts:
+            if fact.qa_card_id:
+                by_card.setdefault(fact.qa_card_id, []).append(
+                    {"id": fact.id, "statement": fact.statement, "status": fact.status}
+                )
+        items: list[JsonValue] = []
+        for rec in qa:
+            if rec.status in ("dropped",) or (rec.status == "open" and rec.asked_at is None):
+                continue
+            card = rec.card
+            by_id = {o.id: o.label for o in card.options}
+            picked = rec.answer if isinstance(rec.answer, list) else [rec.answer]
+            words = [by_id[str(p)] for p in picked if str(p) in by_id]
+            if rec.custom_text:
+                words.append(rec.custom_text)
+            elif isinstance(rec.answer, str) and not words and rec.answer.strip():
+                words.append(rec.answer.strip())
+            items.append(
+                {
+                    "card_id": rec.card_id, "version": rec.version, "status": rec.status,
+                    "batch_id": rec.batch_id, "group_id": rec.group_id, "origin": card.origin,
+                    "depth": card.depth, "parent_card_id": rec.parent_card_id, "type": card.type,
+                    "question": card.question, "why_we_ask": card.why_we_ask,
+                    "unlocks": cast(JsonValue, list(card.unlocks)), "need_ids": cast(JsonValue, list(card.need_ids)),
+                    "options": [{"id": o.id, "label": o.label} for o in card.options],
+                    "answer": " | ".join(words), "value": rec.answer, "custom_text": rec.custom_text,
+                    "fallback": card.fallback,
+                    "facts": by_card.get(rec.card_id, []),
+                }
+            )  # fmt: skip
+        return {"items": items}
+
+    async def history(
+        self,
+        caller: Caller,
+        session_id: str,
+        *,
+        after_idx: int = 0,
+        limit: int = 50,
+        slot: str | None = None,
+        q: str | None = None,
+    ) -> dict[str, JsonValue]:
+        turn_ids: list[str] | None = None
+        highlighted: list[str] = []
+        async with self.store.begin(caller.tenant_id) as uow:
+            if slot:
+                rec = await uow.briefs.get(session_id)
+                prov = provenance_for(rec.brief, slot)
+                highlighted = prov.turn_ids if prov else []
+            page = await uow.events.list_history(
+                session_id, after_idx=after_idx, limit=limit, q=q, turn_ids=turn_ids
+            )
+        out: dict[str, JsonValue] = {
+            "items": [i.model_dump(mode="json") for i in page.items],
+            "next_after_idx": page.next_after_idx,
+            "highlighted_turn_ids": cast(JsonValue, highlighted),
+        }
+        return out
+
+    async def provenance(
+        self, caller: Caller, session_id: str, item_id: str
+    ) -> dict[str, JsonValue]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            rec = await uow.briefs.get(session_id)
+        prov = provenance_for(rec.brief, item_id)
+        if prov is None:
+            raise NotFound(f"item {item_id}")
+        return prov.model_dump(mode="json")
+
+    async def handoff(self, caller: Caller, session_id: str) -> dict[str, JsonValue]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            session = await uow.sessions.get(session_id)
+            if session.state != "APPROVED" or session.approved_version is None:
+                raise GateError("the Brief is not approved yet")
+            rec = await uow.briefs.get(session_id, session.approved_version)
+        return {"version": rec.version, "brief_hash": rec.hash, "views": build_handoff(rec.brief)}  # type: ignore[dict-item]
+
+    async def budget(self) -> dict[str, JsonValue]:
+        return dict(self.budget_snapshot())
+
+    def budget_snapshot(self) -> dict[str, Any]:
+        snap = dict(self.budget_guard.snapshot())
+        snap["mode"] = self.mode_label
+        return snap
+
+    async def calls(
+        self, caller: Caller, session_id: str, *, limit: int = 30
+    ) -> list[dict[str, JsonValue]]:
+        async with self.store.begin(caller.tenant_id) as uow:
+            await uow.sessions.get(session_id)
+            entries = await uow.call_log.list(session_id, limit=limit)
+        return [
+            {
+                "call_id": e.call_id,
+                "spec_id": e.spec_id,
+                "outcome": e.outcome,
+                "tokens_in": e.tokens_in,
+                "tokens_out": e.tokens_out,
+                "cost_usd": f"{e.cost_micros / 1_000_000:.4f}",
+                "latency_ms": e.latency_ms,
+                "turn_id": e.turn_id,
+                "event_id": e.event_id,
+                "at": e.at.isoformat() if e.at else None,
+            }
+            for e in entries
+        ]
+
+    async def decide_preview(self, caller: Caller, session_id: str) -> dict[str, Any]:
+        """Stateless decide preview (ADR 0016 / A5 / A9): returns AI-suggested answers
+        for the currently open batch cards without mutating the session or database."""
+        async with self.store.begin(caller.tenant_id) as uow:
+            rec = await uow.sessions.get(session_id)
+            if rec is None:
+                raise NotFound(f"session {session_id!r}")
+            qa_list = await uow.qa.list(session_id)
+            facts = await uow.facts.list(session_id)
+            brief_rec = await uow.briefs.get(session_id)
+            brief = brief_rec.brief if brief_rec else None
+
+        open_qa = [q for q in qa_list if q.status == "open"]
+        if not open_qa or self.ports is None:
+            return {"session_id": session_id, "answers": []}
+
+        cards = [q.card for q in open_qa]
+        decide_items: list[DecideItem] = []
+        for c in cards[:12]:
+            opt = c.recommended_option()
+            decide_items.append(
+                DecideItem(
+                    card_id=c.id,
+                    question=c.question,
+                    card_type=c.type,
+                    need_ids=list(c.need_ids),
+                    answer_spec=c.answer_spec,
+                    options=[
+                        DecideOption(id=o.id, label=o.label, basis=o.basis) for o in c.options
+                    ],
+                    recommended_id=opt.id if opt else "",
+                    must_confirm=c.must_confirm,
+                )
+            )
+
+        active_facts = [f for f in facts if f.status == "active"]
+        digest = facts_mod.digest(active_facts, budget_tokens=self.config.context.fact_digest // 3)
+        ctx = TurnContext(
+            tenant_id=caller.tenant_id,
+            session_id=session_id,
+            language=rec.locale or "en",
+        )
+        summary_item = brief.idea.get("summary") if brief else None
+        summary_val = (
+            summary_item.value if summary_item and isinstance(summary_item.value, str) else ""
+        )
+        req = DecideRequest(
+            language=rec.locale or "en",
+            project_card=f"App: {summary_val}" if summary_val else "",
+            fact_digest=digest,
+            hypothesis="",
+            items=decide_items,
+        )
+        try:
+            res = await self.ports.answer_decider.decide(ctx, req)
+            answers: list[dict[str, Any]] = []
+            for d in res.decisions:
+                answers.append(
+                    {
+                        "card_id": d.card_id,
+                        "option_ids": d.option_ids,
+                        "value": d.option_ids if d.option_ids else (d.answer_text or None),
+                        "custom_text": d.answer_text if not d.option_ids else None,
+                        "reasoning": d.rationale,
+                        "confidence": d.confidence,
+                    }
+                )
+            return {"session_id": session_id, "answers": answers}
+        except Exception:
+            fallback_answers: list[dict[str, Any]] = []
+            for c in cards:
+                opt = c.recommended_option() or (c.options[0] if c.options else None)
+                if opt:
+                    fallback_answers.append(
+                        {
+                            "card_id": c.id,
+                            "option_ids": [opt.id],
+                            "value": [opt.id] if c.type == "pick_many" else opt.id,
+                            "custom_text": None,
+                            "reasoning": opt.reason or "Recommended option",
+                            "confidence": 0.5,
+                        }
+                    )
+            return {"session_id": session_id, "answers": fallback_answers}
+
+
+__all__ = ["MdeError", "Service", "datetime"]

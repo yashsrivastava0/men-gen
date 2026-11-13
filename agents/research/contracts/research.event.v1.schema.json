@@ -1,0 +1,175 @@
+{
+  "$defs": {
+    "Counters": {
+      "additionalProperties": false,
+      "properties": {
+        "elapsed_s": {
+          "default": 0,
+          "title": "Elapsed S",
+          "type": "integer"
+        },
+        "eta_s": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Eta S"
+        },
+        "facts_verified": {
+          "default": 0,
+          "title": "Facts Verified",
+          "type": "integer"
+        },
+        "pages_read": {
+          "default": 0,
+          "title": "Pages Read",
+          "type": "integer"
+        },
+        "searches_ceiling": {
+          "default": 0,
+          "title": "Searches Ceiling",
+          "type": "integer"
+        },
+        "searches_planned": {
+          "default": 0,
+          "title": "Searches Planned",
+          "type": "integer"
+        },
+        "searches_used": {
+          "default": 0,
+          "title": "Searches Used",
+          "type": "integer"
+        },
+        "targets_done": {
+          "default": 0,
+          "title": "Targets Done",
+          "type": "integer"
+        },
+        "targets_total": {
+          "default": 0,
+          "title": "Targets Total",
+          "type": "integer"
+        }
+      },
+      "title": "Counters",
+      "type": "object"
+    }
+  },
+  "$id": "research.event.v1",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "additionalProperties": false,
+  "properties": {
+    "counters": {
+      "$ref": "#/$defs/Counters"
+    },
+    "detail": {
+      "additionalProperties": true,
+      "title": "Detail",
+      "type": "object"
+    },
+    "id": {
+      "title": "Id",
+      "type": "string"
+    },
+    "label": {
+      "title": "Label",
+      "type": "string"
+    },
+    "phase": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Phase"
+    },
+    "round": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Round"
+    },
+    "run_id": {
+      "title": "Run Id",
+      "type": "string"
+    },
+    "schema": {
+      "default": "research.event.v1",
+      "title": "Schema",
+      "type": "string"
+    },
+    "seq": {
+      "title": "Seq",
+      "type": "integer"
+    },
+    "target_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Target Id"
+    },
+    "ts": {
+      "format": "date-time",
+      "title": "Ts",
+      "type": "string"
+    },
+    "type": {
+      "enum": [
+        "run.started",
+        "plan.ready",
+        "target.started",
+        "target.covered",
+        "target.not_found",
+        "target.cancelled",
+        "query.issued",
+        "search.results",
+        "page.reading",
+        "page.read",
+        "page.skipped",
+        "fact.found",
+        "fact.verified",
+        "fact.rejected",
+        "entity.discovered",
+        "round.completed",
+        "gap.detected",
+        "warning",
+        "run.finished",
+        "run.skipped",
+        "run.failed"
+      ],
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "seq",
+    "ts",
+    "run_id",
+    "type",
+    "label"
+  ],
+  "title": "Event",
+  "type": "object"
+}

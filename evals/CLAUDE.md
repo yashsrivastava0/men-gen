@@ -7,7 +7,7 @@
 - `datasets/`: `personas/` (10, incl. Hindi and Hinglish), `briefs/<archetype>/` (5, with generated `expected.yaml` and `APP_SPEC.md.golden`), `injections/` (9), `situations/` (the catalog as data, generated).
 - `graders/`: `metrics.py` (cards per session, assumption rate, first-pass rate, proposals, screens, tokens per slice, cost, latency, research additions), `injection.py`, `sufficiency.py`.
 - `probes/sufficiency/`: the context sufficiency probe (its call spec, templates and offline reader; not part of the product catalog).
-- `runners/`: `mock_batch.py` (offline, writes a report), `make_goldens.py`, `make_situations.py`, the live batch module (entry point of `just live-eval`: refuses without the switches and a budget that allows it; lead only).
+- `runners/`: `mock_batch.py` (offline, writes a report), `make_goldens.py`, `make_situations.py`, the live batch module (entry point of `just live-eval`: refuses without `LLM_MODE=live` and a budget that allows it; lead only).
 
 **Metrics (spec section 12):** cards asked per Guided session (target 7, cap 10), assumption rate, first-pass validator rate, valid proposals accepted vs dropped, context sufficiency probe, screens per app, tokens per slice, cost and latency per session, injection pass rate, research additions accepted. Report where Luna struggles and what changed.
 

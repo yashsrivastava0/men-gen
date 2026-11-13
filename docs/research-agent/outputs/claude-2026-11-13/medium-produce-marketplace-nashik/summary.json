@@ -1,0 +1,159 @@
+{
+ "run_id": "rrn_01M7AYNGSQCYVSY85AZJ9KPJ8N",
+ "status": "complete",
+ "search_provider": "serper",
+ "models": {
+  "writer": "claude-haiku-5-5",
+  "checker": "claude-haiku-5-5",
+  "checker_vendor": "same"
+ },
+ "budget": {
+  "searches_used": 111,
+  "pages_read": 163,
+  "seconds": 318,
+  "usd": "0.5041",
+  "usd_micros": 504145,
+  "failures": 2
+ },
+ "cost_by_step": {
+  "assemble": 5505,
+  "check": 91548,
+  "extract": 238236,
+  "plan": 1386,
+  "queries": 13470,
+  "search.serper": 114000,
+  "search.tavily": 40000
+ },
+ "slots": {
+  "filled": 32,
+  "required": 41,
+  "ratio": 0.7805
+ },
+ "topics": {
+  "total": 34,
+  "covered": 27,
+  "not_found": 7
+ },
+ "items": 361,
+ "evidence_labels": {
+  "single_source": 119,
+  "official": 194,
+  "unverified": 48
+ },
+ "by_kind": {
+  "competitor": 3,
+  "navigation_pattern": 1,
+  "role_pattern": 3,
+  "screen_pattern": 25,
+  "workflow": 33,
+  "compliance_note": 14,
+  "entity_pattern": 18,
+  "lifecycle": 3,
+  "rule": 90,
+  "provider_fact": 135,
+  "service_option": 18,
+  "platform_constraint": 18
+ },
+ "extraction": {
+  "extracted": 438,
+  "first_try_ok": 405,
+  "final_ok": 405,
+  "quote_pass_first_try": 0.9247,
+  "quote_pass_final": 0.9247,
+  "quote_failed_first": 2,
+  "recovered_by_retry": 0,
+  "number_not_in_quote": 28,
+  "number_rejection_rate": 0.0639,
+  "figures_dropped": 1,
+  "invalid": 0,
+  "claim_too_long": 1,
+  "forbidden_pattern": 1
+ },
+ "checker": {
+  "items_checked": 405,
+  "supported": 0.8198,
+  "partial": 0.1802,
+  "not_supported": 0.0,
+  "unchecked": 0.0,
+  "rubber_stamp_signal": true
+ },
+ "fallbacks": {},
+ "fact_rejections": {
+  "number_not_in_quote": 28,
+  "unsupported_field": 21,
+  "quote_not_found": 1,
+  "forbidden_pattern": 1,
+  "claim_too_long": 1
+ },
+ "validation": {
+  "errors": 0,
+  "warnings": 1,
+  "by_rule": {
+   "RV-05": 1
+  }
+ },
+ "dossiers": 19,
+ "platform_constraints": 18,
+ "compliance_register": 4,
+ "failed_slots": [
+  {
+   "target": "T-01",
+   "label": "Comparable bulk produce orders marketplace apps",
+   "status": "not_found",
+   "filled": 0,
+   "required": 2
+  },
+  {
+   "target": "T-06",
+   "label": "Journey: Browse weekly availability",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-08",
+   "label": "Journey: Place bulk orders",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-21",
+   "label": "What a Farmer record holds",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-28",
+   "label": "Journey: Online payment",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-31",
+   "label": "Marathi Hindi English text",
+   "status": "not_found",
+   "filled": 0,
+   "required": 2
+  },
+  {
+   "target": "T-32",
+   "label": "Key screens of bulk produce orders marketplace apps",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  }
+ ],
+ "acceptance": {
+  "extraction_quote_pass_first_try": true,
+  "number_rejection_rate": false,
+  "fetch_success": true,
+  "searches_contributing": true,
+  "slots_filled": true,
+  "checker_not_supported": true,
+  "norms_with_3_plus_sources": false,
+  "recent_24m_of_dated": true
+ }
+}

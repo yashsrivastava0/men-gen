@@ -1,0 +1,78 @@
+# Currency tokens for the number check (core/currencies.py, RV-18). A token is how a page or a claim names a currency next to
+# an amount; each maps to the ISO 4217 codes it can mean. A token with ONE code is exact ("EUR", "euros", the euro sign);
+# a token with several is ambiguous ("$" is many dollars and pesos, "FCFA" is two African francs): two currency mentions
+# agree when their code sets share a code, so "350 MXN" in a claim is backed by "$350" in a quote, but "$350" is never
+# backed by "₹350" and "EUR" is never backed by "USD". Matching is case-insensitive and by whole word, except symbols.
+# Content, not code: a new currency is a new line here. Only currencies the countries of the registry (data/authority)
+# and their neighbours use are listed; an unlisted currency is simply not checked (it never rejects, it never grounds).
+tokens:
+  # euro
+  "€": [EUR]
+  eur: [EUR]
+  euro: [EUR]
+  euros: [EUR]
+  # dollars and pesos (ambiguous when written with the sign alone)
+  "$": [USD, MXN, CAD, AUD, NZD, SGD, HKD, ARS, CLP, COP, UYU, DOP]
+  usd: [USD]
+  "us$": [USD]
+  "u$s": [USD]
+  dollar: [USD, CAD, AUD, NZD, SGD, HKD]
+  dollars: [USD, CAD, AUD, NZD, SGD, HKD]
+  dólar: [USD, CAD, AUD, NZD, SGD, HKD]
+  dólares: [USD, CAD, AUD, NZD, SGD, HKD]
+  dolar: [USD, CAD, AUD, NZD, SGD, HKD]
+  dolares: [USD, CAD, AUD, NZD, SGD, HKD]
+  cad: [CAD]
+  aud: [AUD]
+  mxn: [MXN]
+  "mx$": [MXN]
+  peso: [MXN, ARS, CLP, COP, UYU, DOP, PHP]
+  pesos: [MXN, ARS, CLP, COP, UYU, DOP, PHP]
+  "pesos mexicanos": [MXN]
+  "peso mexicano": [MXN]
+  # pound
+  "£": [GBP]
+  gbp: [GBP]
+  # rupee
+  "₹": [INR]
+  inr: [INR]
+  rs: [INR, PKR, LKR, NPR]
+  rupee: [INR, PKR, LKR, NPR]
+  rupees: [INR, PKR, LKR, NPR]
+  rupia: [INR, PKR, LKR, NPR]
+  rupias: [INR, PKR, LKR, NPR]
+  pkr: [PKR]
+  # Brazil
+  "r$": [BRL]
+  brl: [BRL]
+  reais: [BRL]
+  # Central America
+  gtq: [GTQ]
+  quetzal: [GTQ]
+  quetzales: [GTQ]
+  "₡": [CRC]
+  crc: [CRC]
+  colón: [CRC]
+  colon: [CRC]
+  colones: [CRC]
+  # West and Central African francs ("FCFA" is either, "XOF" and "XAF" are exact)
+  xof: [XOF]
+  xaf: [XAF]
+  fcfa: [XOF, XAF]
+  "f cfa": [XOF, XAF]
+  cfa: [XOF, XAF]
+  "francs cfa": [XOF, XAF]
+  "franc cfa": [XOF, XAF]
+  # others a Brief may meet
+  "₦": [NGN]
+  ngn: [NGN]
+  naira: [NGN]
+  kes: [KES]
+  ksh: [KES]
+  kshs: [KES]
+  aed: [AED]
+  dirham: [AED, MAD]
+  dirhams: [AED, MAD]
+  mad: [MAD]
+  zar: [ZAR]
+  chf: [CHF]

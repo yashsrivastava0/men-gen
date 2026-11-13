@@ -1,0 +1,167 @@
+# Rule tables for the deterministic reader (cmp.read_chunk fallback and mock). Data, not logic (hard rule 8).
+# Matching is on normalised, whole-word tokens: single words in `words`, multi-word in `phrases`.
+# Languages: en, hi (Devanagari), hinglish (Hindi in Latin letters). The first matching type wins.
+version: 1
+limits:
+  max_statements: 60   # dense requirement tables: the chunker keeps a table chunk to 40 rows so this is never the limit
+  max_name_chars: 80
+  max_text_chars: 240
+  max_quote_chars: 300
+  min_quote_chars: 4
+  min_words_business_context: 6
+confidence:
+  keyword: high
+  business_context: low
+abbreviations: [e.g, i.e, etc, vs, mr, mrs, dr, no, st, approx, inc, ltd, fig, ref]
+# A sentence that tries to instruct the reader is never turned into a statement.
+injection_markers:
+  en:
+    - ignore previous
+    - ignore all previous
+    - ignore the previous
+    - ignore prior
+    - ignore above
+    - ignore the above
+    - ignore your instructions
+    - ignore these instructions
+    - disregard
+    - forget your instructions
+    - forget previous
+    - system prompt
+    - you are an ai
+    - you are a language model
+    - as an ai
+    - as an assistant
+    - reveal your
+    - new instructions
+    - override your
+    - do not tell the user
+    - you must now
+  hi:
+    - पिछले निर्देश
+    - निर्देशों को अनदेखा
+    - निर्देश अनदेखा
+    - सिस्टम प्रॉम्प्ट
+  hinglish:
+    - pichle instructions
+    - instructions ignore
+    - ignore kar
+    - system prompt
+    - pehle ke instructions
+types:
+  - type: open_issue
+    words:
+      en: [tbd, tbc, tba, undecided, unknown, unclear]
+      hi: []
+      hinglish: [baaki, tbd]
+    phrases:
+      en: [to be decided, to be confirmed, to be determined, not decided, yet to decide, open question, needs discussion]
+      hi: [तय नहीं, अभी तय नहीं, बाद में तय, तय होना बाकी]
+      hinglish: [tay nahi, baad mein tay, abhi tay nahi, decide nahi]
+  - type: glossary_term
+    words:
+      en: [means, stands, denotes]
+      hi: [यानी, अर्थात]
+      hinglish: [matlab, yaani]
+    phrases:
+      en: [refers to, is defined as, is short for, stands for, is called, also known as]
+      hi: [का मतलब, का अर्थ]
+      hinglish: [ka matlab, ko kehte hain]
+  - type: exclusion
+    words:
+      en: [not, never, no, cannot, "can't", "won't", "don't", exclude, excluded, "shouldn't", "mustn't"]
+      hi: [नहीं, मत, नही]
+      hinglish: [nahi, nahin, mat]
+    phrases:
+      en: [out of scope, no need, not required, will not, shall not]
+      hi: [ज़रूरत नहीं, जरूरत नहीं]
+      hinglish: [zaroorat nahi, jarurat nahi]
+  - type: requirement
+    words:
+      en: [must, shall, should, need, needs, required, require, requires, support, supports, allow, allows, enable, enables, ensure]
+      hi: [चाहिए, ज़रूरी, जरूरी, होना, सकें, सके]
+      hinglish: [chahiye, zaroori, jaruri, hona, sakein, sake, honi, honge]
+    phrases:
+      en: [has to, have to, will need, need to, able to, be able to]
+      hi: [होना चाहिए, कर सकें]
+      hinglish: [hona chahiye, kar sakein, kar sake]
+  - type: exclusion
+    words:
+      en: [without, excluding, except]
+      hi: [बिना]
+      hinglish: [bina, bagair]
+    phrases:
+      en: []
+      hi: []
+      hinglish: []
+  - type: goal
+    words:
+      en: [goal, goals, aim, aims, objective, objectives, mission, vision, purpose, grow]
+      hi: [लक्ष्य, उद्देश्य, मकसद]
+      hinglish: [lakshya, uddeshya, maksad, goal]
+    phrases:
+      en: [so that, in order to, we want to, we aim to, we hope to]
+      hi: [ताकि]
+      hinglish: [taaki, hum chahte hain]
+  - type: rule_or_number
+    words:
+      en: [rule, rules, limit, limits, maximum, minimum, max, min, quota, threshold, fee, fees, charge, charges, price, discount]
+      hi: [नियम, सीमा, शुल्क, छूट]
+      hinglish: [niyam, seema, shulk, chhoot, charge]
+    phrases:
+      en: [at least, at most, up to, no more than, per month, per day, per user, per order]
+      hi: []
+      hinglish: []
+  - type: constraint
+    words:
+      en: [compliance, comply, gdpr, hipaa, deadline, budget, offline, regulation, regulatory, legal, licence, license, secure, security, encrypted, encryption, only]
+      hi: [अनुपालन, बजट, ऑफलाइन, कानूनी]
+      hinglish: [budget, offline, deadline, kanooni, compliance]
+    phrases:
+      en: [data residency, go live, launch by, must comply]
+      hi: []
+      hinglish: []
+  - type: preference
+    words:
+      en: [prefer, prefers, preferred, preference, like, likes, love, favourite, favorite, ideally, optional]
+      hi: [पसंद, बेहतर]
+      hinglish: [pasand, behtar, accha]
+    phrases:
+      en: [nice to have, would like, would prefer, it would be good]
+      hi: []
+      hinglish: [accha rahega]
+  - type: example
+    words:
+      en: [example, examples, instance, eg, such]
+      hi: [उदाहरण, जैसे]
+      hinglish: [udaharan, jaise, misaal]
+    phrases:
+      en: [for example, for instance, such as, e.g]
+      hi: [उदाहरण के लिए]
+      hinglish: [udaharan ke liye]
+  - type: user_or_role
+    words:
+      en: [admin, admins, administrator, customer, customers, driver, drivers, manager, managers, owner, owners, staff, vendor, vendors, seller, sellers, buyer, buyers, rider, riders, student, students, teacher, teachers, patient, patients, doctor, doctors, operator, operators, role, roles, persona, user, users, employee, employees]
+      hi: [ग्राहक, प्रबंधक, मालिक, विक्रेता, छात्र, शिक्षक, कर्मचारी, उपयोगकर्ता]
+      hinglish: [grahak, malik, dukandaar, vikreta, chhatra, shikshak, karmchari]
+    phrases:
+      en: [as a, as an]
+      hi: []
+      hinglish: []
+number_units:
+  symbols: ["%", "₹", "$", "€", "£"]
+  en: [kg, g, km, m, cm, mm, mb, gb, kb, tb, ms, sec, secs, second, seconds, minute, minutes, min, mins, hour, hours, hr, hrs, day, days, week, weeks, month, months, year, years, users, user, orders, items, files, rs, inr, usd, eur, percent, pages, screens, times, attempts, people, members]
+  hi: [दिन, घंटे, मिनट, सेकंड, रुपये, रुपए, प्रतिशत, महीने, साल, उपयोगकर्ता]
+  hinglish: [din, ghante, ghanta, minute, rupaye, rupees, rupay, mahine, saal, log]
+slot_hints:
+  requirement: scope.features
+  goal: goals.primary
+  user_or_role: roles.list
+  glossary_term: glossary.terms
+  exclusion: scope.must_not
+  constraint: constraints.must_use
+  business_context: idea.problem_value
+  rule_or_number: null
+  example: null
+  open_issue: null
+  preference: null

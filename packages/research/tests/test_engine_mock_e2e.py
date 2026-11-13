@@ -204,6 +204,7 @@ def test_the_engine_imports_only_core_contracts_prompts_and_content() -> None:
         "mde_persistence",
         "mde_spec_loader",
         "openai",
+        "anthropic",
         "httpx",
         "requests",
         "sqlalchemy",
@@ -224,10 +225,10 @@ def test_no_eval_or_exec_on_text() -> None:
                 assert node.func.id not in {"eval", "exec", "compile"}, path.name
 
 
-def test_importing_the_engine_loads_neither_the_gateway_nor_openai() -> None:
+def test_importing_the_engine_loads_neither_the_gateway_nor_a_model_sdk() -> None:
     code = (
         "import sys, mde_research; "
-        "bad = [m for m in sys.modules if m.split('.')[0] in {'mde_llm_gateway', 'openai'}]; "
+        "bad = [m for m in sys.modules if m.split('.')[0] in {'mde_llm_gateway', 'openai', 'anthropic'}]; "
         "print(bad)"
     )
     out = subprocess.run(

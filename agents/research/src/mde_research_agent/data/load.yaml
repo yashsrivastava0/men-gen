@@ -1,0 +1,18 @@
+# Research load: computed from the CONTENT of the Brief, never from the Compass tier (AD-49).
+#   load_score = features + facts(kinds below) + weights.app * apps + weights.sensitive * sensitive flags
+#                + weights.reference * named references
+# Class boundaries are calibrated on three real runs (17, 27 and 83 on the three real exports); retune on more evidence.
+weights:
+  feature: 1
+  fact: 1
+  app: 3
+  sensitive: 5
+  reference: 2
+fact_kinds: [rule, compliance, integration_detail, nfr]
+# A score within this many points below a class boundary uses the larger class (boundaries become 22 and 58).
+class_margin: 3
+# A class applies while score < below; the last class has no bound.
+classes:
+  - {name: focused, below: 25}
+  - {name: standard, below: 61}
+  - {name: deep}

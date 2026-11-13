@@ -1,0 +1,1813 @@
+{
+ "export": {
+  "format": "compass-full-output",
+  "format_version": 2,
+  "exported_at": "2026-11-10T10:46:13.433142+00:00",
+  "session_id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+  "brief_version": 7,
+  "brief_hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da",
+  "approved_baseline": {
+   "session_id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+   "version": 7,
+   "hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da",
+   "baseline_label": "B-G1",
+   "change_set_id": "CHG-001",
+   "created_at": "2026-11-10T10:46:13.088140Z"
+  },
+  "trimmed_for": "batch H (mde_compass.live_structure): the Brief without a structure, the active interview facts and the session; a live Thorough session of 2026-11-10 (idea plus a 10-role hospital document, decide-the-rest), the input for the enterprise-size structure replay"
+ },
+ "brief": {
+  "version": 7,
+  "meta": {
+   "session_id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+   "program_id": "",
+   "mode": "guided",
+   "situation_profile": {
+    "input_richness": "rich",
+    "clarity": "knows_everything",
+    "expertise": "product",
+    "size_stakes": "enterprise",
+    "reference_driven": false,
+    "collaboration": "several",
+    "language": "en",
+    "input_mode": "text",
+    "urgency": "thorough",
+    "formality": "professional"
+   },
+   "plan": {
+    "depth": "large",
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 10,
+    "minimum_viable": false,
+    "interview_budget": "thorough"
+   },
+   "hypothesis": {
+    "label": "hypothesis",
+    "category": "Healthcare software",
+    "subcategory": "Possibly a hospital operations and patient-care management app",
+    "business_model_candidates": [
+     "Hospitals pay for access",
+     "A hospital chain pays for use across its hospitals",
+     "Not yet clear"
+    ],
+    "likely_families": [
+     "health_wellness",
+     "booking_scheduling",
+     "communication",
+     "identity_access",
+     "payments_wallet",
+     "finance",
+     "dashboards_admin",
+     "workflows",
+     "enterprise_workforce"
+    ],
+    "likely_roles": [
+     "patient",
+     "doctor",
+     "nurse",
+     "receptionist",
+     "hospital administrator",
+     "finance staff",
+     "Hospital administrators",
+     "Doctors",
+     "Nurses",
+     "Receptionists",
+     "Patients",
+     "Administrators"
+    ],
+    "likely_features": [
+     {
+      "family": "booking_scheduling",
+      "name": "Book a time",
+      "intent": "Let patients book appointments.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Reschedule or cancel",
+      "intent": "Let patients manage their appointments.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Personal records",
+      "intent": "Give patients access to health records such as prescriptions and lab reports.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Book a visit",
+      "intent": "Support booking care with doctors.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Patient history and clinical notes",
+      "intent": "Let doctors review patient history and write notes.",
+      "custom": true
+     },
+     {
+      "family": "health_wellness",
+      "name": "E-prescriptions",
+      "intent": "Let doctors write and patients view e-prescriptions.",
+      "custom": true
+     },
+     {
+      "family": "communication",
+      "name": "Video consultations",
+      "intent": "Enable remote consultations between patients and doctors.",
+      "custom": true
+     },
+     {
+      "family": "communication",
+      "name": "Notifications",
+      "intent": "Send appointment and other reminders in the listed languages.",
+      "custom": false
+     },
+     {
+      "family": "identity_access",
+      "name": "Roles and permissions",
+      "intent": "Control access for patients, clinical staff, administrators, and finance staff.",
+      "custom": false
+     },
+     {
+      "family": "payments_wallet",
+      "name": "Pay online",
+      "intent": "Let patients pay hospital bills.",
+      "custom": false
+     },
+     {
+      "family": "finance",
+      "name": "Invoices",
+      "intent": "Support hospital billing.",
+      "custom": false
+     },
+     {
+      "family": "finance",
+      "name": "Insurance claims management",
+      "intent": "Support finance staff managing insurance claims.",
+      "custom": true
+     },
+     {
+      "family": "dashboards_admin",
+      "name": "Reports with filters",
+      "intent": "Provide reports across hospitals.",
+      "custom": false
+     },
+     {
+      "family": "dashboards_admin",
+      "name": "Activity log",
+      "intent": "Maintain an audit trail of activity.",
+      "custom": false
+     },
+     {
+      "family": "workflows",
+      "name": "Admissions and bed availability",
+      "intent": "Help nurses and receptionists manage admissions and available beds.",
+      "custom": true
+     },
+     {
+      "family": "enterprise_workforce",
+      "name": "Shift schedule",
+      "intent": "Help staff manage schedules.",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Appointments and availability",
+      "intent": "Help staff manage doctor schedules and patient appointments",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Patient records and notes",
+      "intent": "Give authorised staff access to patient history and consultation notes",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Billing and claims",
+      "intent": "Manage hospital bills and insurance claims",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Roles and audit trail",
+      "intent": "Control staff access and keep a record of changes",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Appointments and schedules",
+      "intent": "Book and manage appointments and staff availability",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Admissions and beds",
+      "intent": "Manage patient admissions and bed availability",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Patient records",
+      "intent": "Keep patient history, prescriptions, and consultation notes",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Audit trail",
+      "intent": "Track who accessed or changed sensitive records",
+      "custom": false
+     }
+    ],
+    "hard_parts": [
+     "Protecting sensitive health data and meeting Indian health data rules",
+     "Building secure video consultations",
+     "Supporting Marathi, Gujarati, Hindi, and English throughout the app",
+     "Producing reports across eleven hospitals",
+     "Enforcing role-based access and maintaining an audit trail",
+     "Keeping admissions and bed availability current across hospitals",
+     "Protecting sensitive patient information while giving the right staff access",
+     "Understanding whether the app is for hospital operations, patient services, or both",
+     "Supporting the workflows of different hospital staff"
+    ],
+    "glossary_candidates": [
+     {
+      "term": "video consultations",
+      "synonyms": [
+       "virtual consultations",
+       "video visits"
+      ]
+     },
+     {
+      "term": "e-prescriptions",
+      "synonyms": [
+       "electronic prescriptions",
+       "digital prescriptions"
+      ]
+     },
+     {
+      "term": "lab reports",
+      "synonyms": [
+       "laboratory reports",
+       "test results"
+      ]
+     },
+     {
+      "term": "bed availability",
+      "synonyms": [
+       "available beds",
+       "bed capacity"
+      ]
+     },
+     {
+      "term": "insurance claims",
+      "synonyms": [
+       "health insurance claims",
+       "insurance billing claims"
+      ]
+     },
+     {
+      "term": "audit trail",
+      "synonyms": [
+       "audit log",
+       "activity record"
+      ]
+     }
+    ],
+    "confidence": 0.94
+   },
+   "locales": [
+    "Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app."
+   ],
+   "schema_version": 1,
+   "depth_profile": "large",
+   "degraded": false,
+   "probes": {
+    "research": true,
+    "blueprint": true,
+    "design": true
+   },
+   "probe_rounds": 1,
+   "approvals": {},
+   "interview": {
+    "budget": "thorough",
+    "ui_mode": "answer_all",
+    "ui_mode_set": false,
+    "questions_asked": 4,
+    "followups": 0,
+    "answered": 0,
+    "skipped": 0,
+    "assumed": 4,
+    "batches": 1,
+    "facts_active": 40,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "coverage": 1,
+    "fallback_count": 0,
+    "question_ids": [
+     "Q-005",
+     "Q-006",
+     "Q-003",
+     "Q-004"
+    ],
+    "stop_reason": "the person asked to finish with defaults",
+    "target": 25,
+    "hard_cap": 30,
+    "tier_set": true,
+    "closing": "auto",
+    "followup_candidates": [],
+    "reopened": 0,
+    "size_band": "large",
+    "size_source": "tier",
+    "size_suggested": "",
+    "structure_modules": 10,
+    "structure_screens": 71,
+    "structure_flows": 12,
+    "structure_entities": 21,
+    "structure_issues": 24
+   },
+   "compile_digests": {
+    "fill:idea:0": "02fafd86a7db7796f6dbdddf",
+    "fill:people_and_scope:0": "b0294c1c5ecd10ff6c708ffc",
+    "fill:experience_and_systems:0": "e23ce6e6eda0e7cbbc11a8b4",
+    "typical": "bcd8cc722b02f3be3727a635",
+    "structure:outline": "76786b0c116f9033ac4c218d",
+    "structure:module:MOD-001": "43260b11d98566d6ff384460",
+    "structure:module:MOD-002": "c525f3b264b29e6ee1fe1587",
+    "structure:module:MOD-003": "3b397ddcaa643254974f72e1",
+    "structure:module:MOD-004": "a20a874128c62cdcc6cd26fe",
+    "structure:module:MOD-005": "dfb2563370014a93db95fe3a",
+    "structure:module:MOD-006": "d980c024dee878f3608603a6",
+    "structure:module:MOD-007": "ddf4aefc4231512c36dd0006",
+    "structure:module:MOD-008": "ad5d96195fff753ce60262aa",
+    "structure:module:MOD-009": "14446820f4523545b59fd9fb",
+    "structure:module:MOD-010": "08539ad602f0e579dbd6419a",
+    "text": "0afd23ed55358769c9ef2b8e"
+   }
+  },
+  "idea": {
+   "summary": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "One patient and staff app for a hospital chain, covering patient care and hospital operations."
+   },
+   "category": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "hospital patient and staff app"
+   },
+   "subcategory": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "A hospital patient and staff app for patient care and hospital operations across a hospital chain"
+   },
+   "problem_value": {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "value": "The app is for a hospital chain"
+   },
+   "business_model": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "Hospitals pay for access"
+   }
+  },
+  "context": {
+   "geo": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": {
+     "country": "India",
+     "region": "Maharashtra and Gujarat"
+    }
+   },
+   "scale_launch": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "pilot_small"
+   }
+  },
+  "audience": {
+   "segments": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "everyday users"
+    ]
+   }
+  },
+  "apps": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "APP-001",
+    "name": "patient and staff app",
+    "purpose": "Patient services and hospital staff operations",
+    "surface": "not specified",
+    "audience": "",
+    "roles": []
+   }
+  ],
+  "roles": [
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-001",
+    "name_in_user_words": "Patient",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-002",
+    "name_in_user_words": "Doctor",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-003",
+    "name_in_user_words": "Nurse",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-004",
+    "name_in_user_words": "Receptionist",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-005",
+    "name_in_user_words": "Pharmacist",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-006",
+    "name_in_user_words": "Lab technician",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-007",
+    "name_in_user_words": "Billing and insurance",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-008",
+    "name_in_user_words": "Administration",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-009",
+    "name_in_user_words": "Roles",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "ROL-010",
+    "name_in_user_words": "Group administrator",
+    "goal": "Manage users and roles, configure hospital departments and doctor schedules, and view reports across hospitals",
+    "rough_permissions": []
+   }
+  ],
+  "scope": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-001",
+    "name": "appointment booking and management",
+    "intent": "Patients book and manage appointments",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-002",
+    "name": "Access logging",
+    "intent": "Every access to a patient record must be logged.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-003",
+    "name": "Record downloads",
+    "intent": "Patients can download their own records.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-004",
+    "name": "Language support",
+    "intent": "The app must work in Marathi, Gujarati, Hindi, and English.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-005",
+    "name": "Patient sign-in",
+    "intent": "Patients must sign in with phone OTP.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-006",
+    "name": "Staff sign-in",
+    "intent": "Staff must sign in with single sign-on.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-007",
+    "name": "Role-based access",
+    "intent": "Provide access based on roles",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-008",
+    "name": "Video consultations",
+    "intent": "Let patients and doctors join or conduct video consultations",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-009",
+    "name": "Prescriptions and lab reports",
+    "intent": "Let patients see prescriptions and lab reports",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-010",
+    "name": "Bill payments",
+    "intent": "Let patients pay bills online or at the counter",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FTR-011",
+    "name": "Patient reminders",
+    "intent": "Send patients reminders, including by SMS and WhatsApp",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-012",
+    "name": "Admissions and bed management",
+    "intent": "Manage admissions, bed availability, and admission and discharge status",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FTR-013",
+    "name": "Billing, insurance claims and reports",
+    "intent": "Support hospital billing, insurance claims, and reports across hospitals",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   }
+  ],
+  "references": [],
+  "experience": {
+   "locales": {
+    "tier": "Default",
+    "confidence": 0.5,
+    "status": "assumed",
+    "value": "Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app."
+   },
+   "tone_words": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "calm_simple"
+    ]
+   },
+   "density_mode": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "balanced"
+   },
+   "devices": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "phones"
+   }
+  },
+  "access": {
+   "auth_methods": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "phone_otp"
+    ]
+   },
+   "account_model": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "individual"
+   },
+   "onboarding_approvals": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "open_join"
+   }
+  },
+  "integrations": [],
+  "data": {},
+  "constraints": {
+   "must_use": {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "value": [
+     "Only the treating doctor and authorised staff can open a patient record",
+     "Consent must be taken before sharing records with another hospital",
+     "Data must stay in India"
+    ]
+   }
+  },
+  "glossary": [],
+  "domain_facts": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-001",
+    "type": "context",
+    "statement": "We are a hospital chain with eleven hospitals.",
+    "topics": [
+     "organization"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "We are a hospital chain with eleven hospitals",
+    "kind": "number",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-002",
+    "type": "context",
+    "statement": "The hospitals are across Maharashtra and Gujarat.",
+    "topics": [
+     "location"
+    ],
+    "entities": [
+     "Maharashtra",
+     "Gujarat"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "across Maharashtra and Gujarat",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-003",
+    "type": "requirement",
+    "statement": "We want one patient and staff app.",
+    "topics": [
+     "app"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "want one patient and staff app",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-004",
+    "type": "requirement",
+    "statement": "Patients book and manage appointments.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Patients book and manage appointments",
+    "kind": "flow",
+    "refs": [
+     "FTR-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-005",
+    "type": "requirement",
+    "statement": "Patients join video consultations.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "join video consultations",
+    "kind": "flow",
+    "refs": [
+     "FTR-008"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-006",
+    "type": "requirement",
+    "statement": "Patients see prescriptions and lab reports.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "see prescriptions and lab reports",
+    "kind": "screen",
+    "refs": [
+     "FTR-009"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-007",
+    "type": "requirement",
+    "statement": "Patients pay bills.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "pay bills",
+    "kind": "flow",
+    "refs": [
+     "FTR-010"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-008",
+    "type": "requirement",
+    "statement": "Patients get reminders.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "get reminders",
+    "kind": "flow",
+    "refs": [
+     "FTR-011"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-009",
+    "type": "requirement",
+    "statement": "The app has reminders in Marathi, Gujarati, Hindi and English.",
+    "topics": [
+     "languages"
+    ],
+    "entities": [
+     "Marathi",
+     "Gujarati",
+     "Hindi",
+     "English"
+    ],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "get reminders in Marathi, Gujarati, Hindi and English",
+    "kind": "nfr",
+    "refs": [
+     "FTR-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-010",
+    "type": "role",
+    "statement": "Doctors see their schedule and patient history.",
+    "topics": [
+     "doctors"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Doctors see their schedule, patient history",
+    "kind": "screen",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-011",
+    "type": "requirement",
+    "statement": "Doctors write notes and e-prescriptions.",
+    "topics": [
+     "doctors"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "write notes and e-prescriptions",
+    "kind": "flow",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-012",
+    "type": "role",
+    "statement": "Nurses and receptionists manage admissions, bed availability and the daily schedule.",
+    "topics": [
+     "nurses"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Nurses and receptionists manage admissions, bed availability and the daily schedule",
+    "kind": "flow",
+    "refs": [
+     "ROL-003",
+     "ROL-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-014",
+    "type": "requirement",
+    "statement": "The app needs role-based access with an audit trail.",
+    "topics": [
+     "access_control"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "role-based access with an audit trail",
+    "kind": "rule",
+    "refs": [
+     "FTR-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-015",
+    "type": "context",
+    "statement": "Everything handles sensitive health data.",
+    "topics": [
+     "health_data"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Everything handles sensitive health data",
+    "kind": "compliance",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-016",
+    "type": "constraint",
+    "statement": "Everything has to follow Indian health data rules.",
+    "topics": [
+     "compliance"
+    ],
+    "entities": [
+     "India"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "has to follow Indian health data rules",
+    "kind": "compliance",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-017",
+    "type": "context",
+    "statement": "The app is for a hospital chain.",
+    "topics": [
+     "business"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Hospital chain app",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-018",
+    "type": "role",
+    "statement": "Patients can register with phone OTP, add family members, and book, reschedule, or cancel appointments by doctor, specialty, and hospital.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+    "kind": "flow",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-019",
+    "type": "role",
+    "statement": "Patients can view doctor profiles and availability, join video consultations, and see prescriptions, lab reports, and invoices.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "see doctor profiles and availability, join video consultations, see prescriptions, lab reports and invoices",
+    "kind": "flow",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-020",
+    "type": "role",
+    "statement": "Patients can pay online or at the counter, receive SMS and WhatsApp reminders, and give feedback after a visit.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "pay online or at the counter, receive reminders by SMS and WhatsApp, give feedback after a visit.",
+    "kind": "flow",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-021",
+    "type": "role",
+    "statement": "Doctors can see the day's schedule, open patient histories, write consultation notes, issue e-prescriptions, order lab tests, manage availability and leave, conduct video consultations, and refer patients to another doctor.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Doctor: see the day's schedule, open the patient's history, write consultation notes, issue e-prescriptions, order lab tests, mark availability and leave, conduct video consultations, refer patients to another doctor.",
+    "kind": "flow",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-022",
+    "type": "role",
+    "statement": "Nurses can manage ward rounds, record vitals, see bed availability and assign beds, and update admission and discharge status.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Nurse: manage ward rounds, record vitals, see bed availability and assign beds, update admission and discharge status.",
+    "kind": "flow",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-023",
+    "type": "role",
+    "statement": "Receptionists can register walk-in patients, manage the daily appointment schedule, handle admission and discharge paperwork, and collect payments.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Receptionist: register walk-in patients, manage the daily appointment schedule, handle admissions and discharge paperwork, collect payments.",
+    "kind": "flow",
+    "refs": [
+     "ROL-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-024",
+    "type": "role",
+    "statement": "Pharmacists can view e-prescriptions, dispense medicines, manage stock and expiry, and raise purchase requests.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Pharmacist: see e-prescriptions, dispense medicines, manage stock and expiry, raise purchase requests.",
+    "kind": "flow",
+    "refs": [
+     "ROL-005"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-025",
+    "type": "role",
+    "statement": "Lab technicians can receive test orders, record samples, upload results, and notify the doctor.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Lab technician: receive test orders, record samples, upload results, notify the doctor.",
+    "kind": "flow",
+    "refs": [
+     "ROL-006"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-026",
+    "type": "role",
+    "statement": "Billing and insurance staff can create invoices, take advance payments, submit insurance claims, track claim status and rejections, and issue refunds.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Billing and insurance: create invoices, take advance payments, submit insurance claims, track claim status and rejections, issue refunds.",
+    "kind": "flow",
+    "refs": [
+     "ROL-007"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-027",
+    "type": "role",
+    "statement": "Administrators can manage users and roles per hospital, configure departments and doctor schedules, view occupancy, revenue, and wait-time reports across hospitals, and audit who opened each patient record.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Administration: manage users and roles per hospital, configure departments and doctor schedules, see occupancy, revenue and wait-time reports across hospitals, audit log of who opened which patient record.",
+    "kind": "flow",
+    "refs": [
+     "ROL-008"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-028",
+    "type": "role",
+    "statement": "The app includes patients, doctors, nurses, receptionists, pharmacists, lab technicians, billing executives, insurance coordinators, hospital administrators, and group administrators.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Roles: patient, doctor, nurse, receptionist, pharmacist, lab technician, billing executive, insurance coordinator, hospital administrator, group administrator.",
+    "kind": "context",
+    "refs": [
+     "ROL-010",
+     "ROL-006"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-029",
+    "type": "constraint",
+    "statement": "Only the treating doctor and authorised staff can open a patient record.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "only the treating doctor and authorised staff can open a patient record",
+    "kind": "rule",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-030",
+    "type": "requirement",
+    "statement": "Every access to a patient record must be logged.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "every access is logged",
+    "kind": "rule",
+    "refs": [
+     "FTR-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.9,
+    "status": "volunteered",
+    "id": "FCT-031",
+    "type": "requirement",
+    "statement": "Patients can download their own records.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "patients can download their own records",
+    "kind": "flow",
+    "refs": [
+     "FTR-003"
+    ]
+   }
+  ],
+  "assumptions": [],
+  "open_questions": [],
+  "research_requests": [
+   {
+    "id": "RR-001",
+    "topic": "Features of hospital patient and staff apps",
+    "question": "Which features do hospital patient and staff apps for everyday users and hospital teams across Maharashtra and Gujarat commonly offer for appointment booking and management, video consultations, prescriptions and lab reports, admissions and bed management, billing, insurance claims, and cross-hospital operations?",
+    "decision_unlocked": "Which patient-care and hospital-operations features to include in the first release and how to differentiate the app",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "hospital patient and staff app",
+     "patient care",
+     "hospital operations",
+     "hospital chain",
+     "eleven hospitals",
+     "appointment booking and management",
+     "video consultations",
+     "prescriptions and lab reports",
+     "admissions and bed management",
+     "billing",
+     "insurance claims",
+     "रुग्णालय",
+     "रुग्ण सेवा",
+     "હોસ્પિટલ",
+     "દર્દી સંભાળ",
+     "अस्पताल",
+     "मरीज़ देखभाल"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "app store listings",
+     "official app documentation"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "What similar hospital apps offer across Maharashtra and Gujarat",
+    "user_added": false
+   },
+   {
+    "id": "RR-002",
+    "topic": "Local hospital apps and market differentiation",
+    "question": "What kinds of hospital patient and staff apps and local hospital-chain digital services are available across Maharashtra and Gujarat, which patient and operations needs do they serve, and what gaps could make a hospital-chain app different?",
+    "decision_unlocked": "How to position the app and which local needs or gaps it should address",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps and hospital-chain digital services",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "hospital patient and staff app",
+     "hospital chain",
+     "what makes it different",
+     "patient care",
+     "hospital operations",
+     "रुग्णालय अॅप",
+     "હોસ્પિટલ એપ",
+     "अस्पताल ऐप"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "app store listings",
+     "healthcare industry reports"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How this app could stand out locally",
+    "user_added": false
+   },
+   {
+    "id": "RR-003",
+    "topic": "Hospital app terminology in four languages",
+    "question": "What patient-friendly and staff-facing terms do hospital apps use for appointments, records, prescriptions, lab reports, admissions, discharge, billing, and insurance in Marathi, Gujarati, Hindi, and English in Maharashtra and Gujarat?",
+    "decision_unlocked": "Which consistent, understandable terms to use across the app and reminders",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "words we will use",
+     "hospital app",
+     "appointments",
+     "patient records",
+     "prescriptions",
+     "lab reports",
+     "admissions",
+     "discharge",
+     "billing",
+     "insurance",
+     "रुग्णालय",
+     "दाखल",
+     "રોગી",
+     "દર્દી",
+     "ભરતી",
+     "अस्पताल",
+     "मरीज़",
+     "भर्ती"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital patient materials",
+     "official app interfaces",
+     "government health materials"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "medium",
+    "shown_to_user_as": "Which hospital terms work in four languages",
+    "user_added": false
+   },
+   {
+    "id": "RR-004",
+    "topic": "Hospital app approvals and purchasing",
+    "question": "For hospital chains in Maharashtra and Gujarat buying patient and staff apps where hospitals pay for access, which roles typically evaluate, approve, procure, and govern the service, and what evidence do they require?",
+    "decision_unlocked": "Which hospital decision-makers and approval requirements to account for in the business and rollout plan",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps sold to hospital chains",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "hospitals pay for access",
+     "hospital chain",
+     "company profile",
+     "who approves",
+     "hospital app procurement",
+     "hospital operations"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "hospital procurement materials",
+     "official hospital governance information",
+     "healthcare industry reports"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "medium",
+    "shown_to_user_as": "Who typically approves hospital apps",
+    "user_added": false
+   },
+   {
+    "id": "RR-005",
+    "topic": "Patient appointment booking flows",
+    "question": "How do hospital patient apps in Maharashtra and Gujarat handle the full appointment booking and management flow, including finding a service or doctor, choosing a time, confirming, changing or cancelling, and receiving reminders?",
+    "decision_unlocked": "Which appointment steps, statuses, and reminder points the patient flow needs",
+    "consumer": "research",
+    "entity": "hospital patient apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "appointment booking and management",
+     "patients book and manage appointments",
+     "hospital app",
+     "डॉक्टर भेट",
+     "भेट ठरवणे",
+     "ડૉક્ટરની મુલાકાત",
+     "મુલાકાત બુક કરવી",
+     "डॉक्टर अपॉइंटमेंट",
+     "अपॉइंटमेंट बुकिंग"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "app store listings",
+     "official app help pages"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How hospital appointment booking works",
+    "user_added": false
+   },
+   {
+    "id": "RR-006",
+    "topic": "Patient and staff sign-in methods",
+    "question": "How do hospital patient and staff apps in Maharashtra and Gujarat implement patient sign-in with phone OTP and staff sign-in with single sign-on, including account recovery and access across multiple hospitals?",
+    "decision_unlocked": "Which sign-in and recovery patterns to support for patients and staff across the hospital chain",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "patient sign-in",
+     "phone OTP",
+     "staff sign-in",
+     "single sign-on",
+     "hospital chain",
+     "एकदाच साइन इन",
+     "फोन ओटीपी"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital app help pages",
+     "official identity-provider documentation",
+     "app store listings"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How patients and staff sign in",
+    "user_added": false
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "synonyms": [
+    "hospital patient and staff app",
+    "hospital app",
+    "hospital-chain digital service",
+    "patient portal",
+    "hospital operations app"
+   ],
+   "local_competitors": [],
+   "languages": [
+    "en",
+    "mr",
+    "gu",
+    "hi"
+   ]
+  },
+  "assets": [],
+  "sources": [],
+  "declined": [],
+  "readiness": {},
+  "ids": {},
+  "summary": "A patient and staff app for a hospital chain, covering patient care and hospital operations across Maharashtra and Gujarat, India.",
+  "pitch": "This patient and staff app is for a hospital chain across Maharashtra and Gujarat, India. It supports appointment booking and management, patient services, and hospital operations. Only the treating doctor and authorised staff can open patient records, and every access is logged.",
+  "_hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da"
+ }
+}

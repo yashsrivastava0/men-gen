@@ -2,7 +2,7 @@
 
 This is the ONLY place the CLI can spend money, so it is fenced twice:
 
-1. :func:`check_live_allowed` refuses unless ``ALLOW_LIVE_LLM=1`` and ``LLM_MODE=live`` are in the
+1. :func:`check_live_allowed` refuses unless ``LLM_MODE=live`` is in the
    environment, the gateway's own live check passes (``MDE_FORBID_LIVE`` unset) and the budget ledger
    says there is room (below the 80% tripwire, ledger intact). Nothing else runs before it.
 2. Every call goes through the gateway (budget guard, ledger, retries) with a versioned call spec,
@@ -74,16 +74,10 @@ def check_live_allowed(
 ) -> None:
     """Raise :class:`LiveRefused` unless an LLM-driven run may start. Reads, never spends."""
     environ = os.environ if env is None else env
-    wrong = [
-        f"{name}={want}"
-        for name, want in (("ALLOW_LIVE_LLM", "1"), ("LLM_MODE", "live"))
-        if environ.get(name) != want
-    ]
-    if wrong:
+    if environ.get("LLM_MODE") != "live":
         raise LiveRefused(
-            "mde sim --llm spends real money, so it needs "
-            + " and ".join(wrong)
-            + " in the environment. Scripted personas (the default) cost nothing."
+            "mde sim --llm spends real money, so it needs LLM_MODE=live"
+            " in the environment. Scripted personas (the default) cost nothing."
         )
     try:
         require_live(settings)

@@ -1,0 +1,147 @@
+{
+  "name": "en_tiffin_pune_closing",
+  "input": {
+    "mode": "closing",
+    "language": "en",
+    "project_card": "Idea (user's words): A subscription app for my tiffin delivery service in Pune: customers pick a weekly plan, I cook and send meals, and my delivery boys see their route each morning.\nCategory: tiffin meal delivery. Geography: Pune, India. Audience: office workers and students. Language: en.",
+    "fact_digest": "FCT-001 [context|location] The service runs in Pune (from the first message)\nFCT-004 [requirement|subscription] Customers choose a weekly meal plan (from Q-002)\nFCT-006 [requirement|delivery] Delivery staff see their route every morning (from Q-004)\nFCT-009 [goal|growth] The owner wants the first 100 subscribers by December (from Q-007)\nFCT-011 [constraint|devices] Most customers have low-cost Android phones (from Q-008)",
+    "asked_list": "Q-001 | answered | learn how customers choose and pay for a tiffin plan\nQ-004 | answered | learn how delivery routes are organised each morning\nQ-007 | answered | learn the owner's target for the first months",
+    "last_qa": "",
+    "project_terms": [
+      "tiffin",
+      "Pune",
+      "subscription",
+      "weekly plan",
+      "meals",
+      "delivery",
+      "customers"
+    ],
+    "needs": [],
+    "want_min": 1,
+    "want_max": 1,
+    "group_min": 1,
+    "group_max": 1,
+    "remaining_budget": 1,
+    "focus_needs": [],
+    "focus_card_id": "",
+    "focus_question": "",
+    "focus_answer": "",
+    "missing_aspects": [],
+    "pivot_from": "",
+    "style_notes": [],
+    "next_card_n": 12,
+    "closing": {
+      "features": [
+        "weekly meal plans",
+        "daily menu",
+        "morning delivery routes",
+        "pause a delivery",
+        "payment reminders"
+      ],
+      "roles": [
+        "customer",
+        "cook",
+        "delivery staff"
+      ],
+      "goals": [
+        "first 100 subscribers by December"
+      ],
+      "constraints": [
+        "works on low-cost Android phones"
+      ],
+      "assumptions": [
+        "payments are collected outside the app at first"
+      ]
+    },
+    "followup_candidates": []
+  },
+  "output": {
+    "domain_hypothesis": {
+      "category": "",
+      "subcategory": "",
+      "business_model_candidates": [],
+      "likely_roles": [],
+      "likely_features": [],
+      "hard_parts": [],
+      "glossary_candidates": [],
+      "confidence": 0.0
+    },
+    "questions": [
+      {
+        "id": "Q-012",
+        "group_id": "G1",
+        "group_title": "The first version",
+        "intent": "learn what matters most in the first version of the tiffin subscription app",
+        "serves": [
+          "scope.priority",
+          "goals.primary"
+        ],
+        "unlocks": [
+          "Blueprint: what ships first",
+          "QA: what must work on launch day"
+        ],
+        "answer_spec": "The few things the first version must get right, most important first, plus anything else or what success looks like",
+        "priority": 1,
+        "type": "priority",
+        "text": "For the first version of your tiffin service, which of these matters most?",
+        "why_we_ask": "It decides what we build first and what can wait.",
+        "options": [
+          {
+            "label": "Weekly meal plans",
+            "description": "Customers subscribe and choose a plan",
+            "basis": "your_words",
+            "reason": ""
+          },
+          {
+            "label": "Morning delivery routes for your staff",
+            "description": "Each delivery boy sees the day's route",
+            "basis": "your_words",
+            "reason": ""
+          },
+          {
+            "label": "A daily menu customers can see",
+            "description": "",
+            "basis": "your_words",
+            "reason": ""
+          },
+          {
+            "label": "Pausing a delivery",
+            "description": "",
+            "basis": "your_words",
+            "reason": ""
+          },
+          {
+            "label": "Reaching your first 100 subscribers",
+            "description": "The goal you mentioned for December",
+            "basis": "your_words",
+            "reason": ""
+          },
+          {
+            "label": "Working well on low-cost phones",
+            "description": "",
+            "basis": "your_words",
+            "reason": ""
+          },
+          {
+            "label": "Launching quickly with fewer features",
+            "description": "",
+            "basis": "suggestion",
+            "reason": ""
+          }
+        ],
+        "recommended": "Weekly meal plans",
+        "examples": [
+          "The thing you would be unhappy to launch without"
+        ],
+        "refines": ""
+      }
+    ],
+    "covered_needs": [
+      "scope.priority",
+      "goals.primary"
+    ],
+    "assumed_instead": [],
+    "expert_gaps": [],
+    "backlog": []
+  }
+}

@@ -1,0 +1,15 @@
+id: SB-DC-01
+title: Custom text contradicts the chosen option, the latest explicit statement wins
+tags: [interview, custom-answer]
+steps:
+  - say: "I want a food delivery app for restaurants in Pune, in Hindi and English"
+  - drive: {until_frame: business_model}
+    expect:
+      card_frame: business_model
+  - tap_and_custom: {recommended: true, custom: "actually no commission at all, it is free for everyone and we earn from ads"}
+    expect:
+      slots:
+        idea.business_model: {contains_any: [ads, free, no commission], planner_contains_any: [advertising], history_min: 0}
+final:
+  slots:
+    idea.business_model: {contains_any: [ads, free, no commission], planner_contains_any: [advertising]}

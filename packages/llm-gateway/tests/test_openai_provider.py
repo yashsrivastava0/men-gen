@@ -47,9 +47,7 @@ GOOD = EchoOut(answer="hello there", confidence=0.5)
 
 
 def live_settings() -> Settings:
-    return make_settings(
-        llm_mode="live", allow_live_llm=True, forbid_live=False, openai_api_key=fake_api_key()
-    )
+    return make_settings(llm_mode="live", forbid_live=False, openai_api_key=fake_api_key())
 
 
 def make_response(

@@ -1,0 +1,28 @@
+# How a document statement type lands in the Brief (data, not code). Only `used` claims (confident, not
+# conflicting, not an open issue) are written; the rest become questions for the user.
+# slot: the catalog slot written; shape: how a statement becomes a value of that slot. A ``named_item`` is named by the
+# model's short name when the claim has one, else by the statement cut at a WORD boundary to ``max_chars`` (ADR 0016: no
+# more first-8-words and first-4-words cuts); the other shapes are cut to ``max_words``.
+requirement:   {slot: scope.features,     shape: named_item,   max_chars: 80}
+user_or_role:  {slot: roles.list,         shape: named_item,   max_chars: 80}
+exclusion:     {slot: scope.must_not,     shape: text,         max_words: 24}
+constraint:    {slot: constraints.must_use, shape: text,       max_words: 24}
+glossary_term: {slot: glossary.terms,     shape: glossary,     max_words: 12}
+business_context: {slot: idea.problem_value, shape: single_text, max_words: 40}
+goal:          {slot: idea.problem_value, shape: single_text,  max_words: 40}
+
+# What a document statement becomes in the fact ledger (engine/document_facts.py): the fact type and the topic words that
+# type the detail (the kinds file reads them) and route it to a compile group. A ``rule_or_number`` is a ``number`` when it
+# carries a digit, else a ``rule``.
+fact_types:
+  requirement:      {type: requirement, topics: [requirements]}
+  constraint:       {type: constraint,  topics: [constraints]}
+  business_context: {type: context,     topics: [business]}
+  goal:             {type: goal,        topics: [goals]}
+  user_or_role:     {type: role,        topics: [roles]}
+  rule_or_number:   {type: rule,        topics: [rules], with_digit: {type: number, topics: [numbers]}}
+  glossary_term:    {type: glossary,    topics: [glossary]}
+  example:          {type: example,     topics: [examples]}
+  open_issue:       {type: context,     topics: [open_issue]}
+  preference:       {type: preference,  topics: [preferences]}
+  exclusion:        {type: exclusion,   topics: [exclusions]}

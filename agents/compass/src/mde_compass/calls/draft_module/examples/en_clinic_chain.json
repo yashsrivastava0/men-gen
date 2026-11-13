@@ -1,0 +1,595 @@
+{
+  "name": "en_clinic_chain",
+  "input": {
+    "language": "en",
+    "band": {
+      "id": "medium",
+      "screens_low": 20,
+      "screens_high": 30,
+      "open_upper": false,
+      "modules_low": 4,
+      "modules_high": 8,
+      "flows_low": 5,
+      "flows_high": 12,
+      "entities_low": 6,
+      "entities_high": 15,
+      "must_feature_screens_min": 2,
+      "module_screens_min": 2
+    },
+    "project_card": "Idea (user's words): An app for my chain of six clinics in Pune.\nCategory: clinic chain. Language: en.",
+    "modules": [
+      {
+        "ref": "m2",
+        "existing_id": "",
+        "kind": "",
+        "name": "Appointments",
+        "purpose": "Find a doctor, book a slot and keep track of visits.",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "features": [
+          "FTR-001",
+          "FTR-003"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-002",
+          "ROL-003"
+        ],
+        "screen_target": 6
+      },
+      {
+        "ref": "m3",
+        "existing_id": "",
+        "kind": "",
+        "name": "Consultations",
+        "purpose": "Meet the doctor by video and keep the visit notes.",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "features": [
+          "FTR-002"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-002"
+        ],
+        "screen_target": 4
+      }
+    ],
+    "other_modules": [
+      "Account and privacy",
+      "Notifications"
+    ],
+    "entities": [
+      {
+        "ref": "e1",
+        "name": "Appointment",
+        "purpose": "A booked visit with a doctor.",
+        "owner_module": "m2",
+        "mine": true
+      },
+      {
+        "ref": "e2",
+        "name": "Doctor",
+        "purpose": "A doctor patients can book.",
+        "owner_module": "m2",
+        "mine": true
+      },
+      {
+        "ref": "e3",
+        "name": "Visit note",
+        "purpose": "What the doctor wrote about a visit.",
+        "owner_module": "m3",
+        "mine": true
+      }
+    ],
+    "roles": [
+      {
+        "id": "ROL-001",
+        "name": "Patient",
+        "goal": "book and attend appointments"
+      },
+      {
+        "id": "ROL-002",
+        "name": "Doctor",
+        "goal": "see patients and write notes"
+      },
+      {
+        "id": "ROL-003",
+        "name": "Receptionist",
+        "goal": "manage the daily schedule"
+      }
+    ],
+    "apps": [
+      {
+        "id": "APP-001",
+        "name": "Patient app",
+        "surface": "mobile"
+      },
+      {
+        "id": "APP-002",
+        "name": "Staff app",
+        "surface": "mobile"
+      }
+    ],
+    "features": [
+      {
+        "id": "FTR-001",
+        "name": "Book appointments",
+        "intent": "Patients book a slot",
+        "priority": "must",
+        "scope_status": "in",
+        "family": "",
+        "apps": []
+      },
+      {
+        "id": "FTR-002",
+        "name": "Video consultation",
+        "intent": "Patients and doctors meet online",
+        "priority": "must",
+        "scope_status": "in",
+        "family": "",
+        "apps": []
+      },
+      {
+        "id": "FTR-003",
+        "name": "Schedule view",
+        "intent": "Staff see the day",
+        "priority": "nice",
+        "scope_status": "in",
+        "family": "",
+        "apps": []
+      }
+    ],
+    "journeys": [
+      {
+        "ref": "j1",
+        "name": "Book an appointment",
+        "role": "ROL-001",
+        "goal": "A patient gets a slot with a doctor.",
+        "legs": [
+          {
+            "index": 0,
+            "module": "m2",
+            "here": true
+          }
+        ],
+        "owner": true
+      },
+      {
+        "ref": "j2",
+        "name": "Run a consultation",
+        "role": "ROL-002",
+        "goal": "A doctor sees a patient and writes the notes.",
+        "legs": [
+          {
+            "index": 0,
+            "module": "m2",
+            "here": true
+          },
+          {
+            "index": 1,
+            "module": "m3",
+            "here": true
+          }
+        ],
+        "owner": true
+      }
+    ],
+    "existing": [],
+    "auth_methods": [
+      "phone_otp"
+    ],
+    "facts": "FCT-001 [rule] Patients can only see their own visit notes\nFCT-003 [flow] Receptionists manage the daily appointment schedule",
+    "instruction": "",
+    "issues": [],
+    "patterns": [
+      "list",
+      "detail",
+      "form",
+      "dashboard",
+      "search",
+      "auth",
+      "profile",
+      "settings",
+      "onboarding",
+      "checkout",
+      "confirmation",
+      "status",
+      "calendar",
+      "map",
+      "chat",
+      "report",
+      "notifications"
+    ],
+    "field_types": [
+      "text",
+      "number",
+      "money",
+      "date",
+      "datetime",
+      "bool",
+      "enum",
+      "ref",
+      "image",
+      "file",
+      "location",
+      "list"
+    ]
+  },
+  "output": {
+    "screens": [
+      {
+        "ref": "s1",
+        "module": "m2",
+        "name": "My appointments",
+        "purpose": "See your booked visits.",
+        "pattern": "list",
+        "apps": [
+          "APP-001"
+        ],
+        "roles": [
+          "ROL-001"
+        ],
+        "serves": [
+          "FTR-001"
+        ]
+      },
+      {
+        "ref": "s2",
+        "module": "m2",
+        "name": "Find a doctor",
+        "purpose": "Search doctors by speciality and clinic.",
+        "pattern": "search",
+        "apps": [
+          "APP-001"
+        ],
+        "roles": [
+          "ROL-001"
+        ],
+        "serves": [
+          "FTR-001"
+        ]
+      },
+      {
+        "ref": "s3",
+        "module": "m2",
+        "name": "Book a slot",
+        "purpose": "Choose a time and confirm the booking.",
+        "pattern": "form",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-003"
+        ],
+        "serves": [
+          "FTR-001"
+        ]
+      },
+      {
+        "ref": "s4",
+        "module": "m2",
+        "name": "Appointment details",
+        "purpose": "See one visit in full.",
+        "pattern": "detail",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-002",
+          "ROL-003"
+        ],
+        "serves": [
+          "FTR-001"
+        ]
+      },
+      {
+        "ref": "s5",
+        "module": "m2",
+        "name": "Day schedule",
+        "purpose": "See and move the day's visits.",
+        "pattern": "calendar",
+        "apps": [
+          "APP-002"
+        ],
+        "roles": [
+          "ROL-002",
+          "ROL-003"
+        ],
+        "serves": [
+          "FTR-003"
+        ]
+      },
+      {
+        "ref": "s6",
+        "module": "m3",
+        "name": "Consultation room",
+        "purpose": "Talk to the patient by video.",
+        "pattern": "chat",
+        "apps": [
+          "APP-001",
+          "APP-002"
+        ],
+        "roles": [
+          "ROL-001",
+          "ROL-002"
+        ],
+        "serves": [
+          "FTR-002"
+        ]
+      },
+      {
+        "ref": "s7",
+        "module": "m3",
+        "name": "Visit notes",
+        "purpose": "Write and save the notes of the visit.",
+        "pattern": "form",
+        "apps": [
+          "APP-002"
+        ],
+        "roles": [
+          "ROL-002"
+        ],
+        "serves": [
+          "FTR-002"
+        ]
+      }
+    ],
+    "uses": [
+      {
+        "screen": "s1",
+        "entity": "e1",
+        "use": "view"
+      },
+      {
+        "screen": "s2",
+        "entity": "e2",
+        "use": "view"
+      },
+      {
+        "screen": "s3",
+        "entity": "e1",
+        "use": "create"
+      },
+      {
+        "screen": "s4",
+        "entity": "e1",
+        "use": "view"
+      },
+      {
+        "screen": "s5",
+        "entity": "e1",
+        "use": "edit"
+      },
+      {
+        "screen": "s7",
+        "entity": "e3",
+        "use": "edit"
+      }
+    ],
+    "entries": [
+      {
+        "module": "m2",
+        "screen": "s1"
+      },
+      {
+        "module": "m3",
+        "screen": "s6"
+      }
+    ],
+    "segments": [
+      {
+        "journey": "j1",
+        "leg": 0,
+        "module": "m2",
+        "steps": [
+          {
+            "screen": "s2",
+            "action": "pick a doctor"
+          },
+          {
+            "screen": "s3",
+            "action": "choose a slot"
+          },
+          {
+            "screen": "s4",
+            "action": "see the booking"
+          }
+        ]
+      },
+      {
+        "journey": "j2",
+        "leg": 0,
+        "module": "m2",
+        "steps": [
+          {
+            "screen": "s5",
+            "action": "open today's visit"
+          }
+        ]
+      },
+      {
+        "journey": "j2",
+        "leg": 1,
+        "module": "m3",
+        "steps": [
+          {
+            "screen": "s6",
+            "action": "talk"
+          },
+          {
+            "screen": "s7",
+            "action": "write notes"
+          }
+        ]
+      }
+    ],
+    "entities": [
+      {
+        "ref": "e1",
+        "key": "appointment",
+        "states": [
+          "booked",
+          "done",
+          "cancelled"
+        ]
+      },
+      {
+        "ref": "e2",
+        "key": "doctor",
+        "states": []
+      },
+      {
+        "ref": "e3",
+        "key": "visit_note",
+        "states": []
+      }
+    ],
+    "fields": [
+      {
+        "entity": "e1",
+        "key": "starts_at",
+        "name": "Starts at",
+        "type": "datetime",
+        "required": true,
+        "ref": "",
+        "values": []
+      },
+      {
+        "entity": "e1",
+        "key": "status",
+        "name": "Status",
+        "type": "enum",
+        "required": true,
+        "ref": "",
+        "values": [
+          "booked",
+          "done",
+          "cancelled"
+        ]
+      },
+      {
+        "entity": "e1",
+        "key": "fee",
+        "name": "Fee",
+        "type": "money",
+        "required": false,
+        "ref": "",
+        "values": []
+      },
+      {
+        "entity": "e2",
+        "key": "name",
+        "name": "Name",
+        "type": "text",
+        "required": true,
+        "ref": "",
+        "values": []
+      },
+      {
+        "entity": "e2",
+        "key": "speciality",
+        "name": "Speciality",
+        "type": "text",
+        "required": false,
+        "ref": "",
+        "values": []
+      },
+      {
+        "entity": "e3",
+        "key": "text",
+        "name": "Note",
+        "type": "text",
+        "required": true,
+        "ref": "",
+        "values": []
+      },
+      {
+        "entity": "e3",
+        "key": "appointment",
+        "name": "Appointment",
+        "type": "ref",
+        "required": true,
+        "ref": "e1",
+        "values": []
+      }
+    ],
+    "access": [
+      {
+        "entity": "e1",
+        "role": "ROL-001",
+        "level": "create"
+      },
+      {
+        "entity": "e1",
+        "role": "ROL-002",
+        "level": "edit"
+      },
+      {
+        "entity": "e1",
+        "role": "ROL-003",
+        "level": "manage"
+      },
+      {
+        "entity": "e2",
+        "role": "ROL-001",
+        "level": "view"
+      },
+      {
+        "entity": "e2",
+        "role": "ROL-002",
+        "level": "edit"
+      },
+      {
+        "entity": "e2",
+        "role": "ROL-003",
+        "level": "manage"
+      },
+      {
+        "entity": "e3",
+        "role": "ROL-001",
+        "level": "view"
+      },
+      {
+        "entity": "e3",
+        "role": "ROL-002",
+        "level": "edit"
+      },
+      {
+        "entity": "e3",
+        "role": "ROL-003",
+        "level": "none"
+      }
+    ],
+    "journeys": [
+      {
+        "ref": "j1",
+        "acceptance": [
+          "The booking appears in My appointments.",
+          "A slot that is taken cannot be booked twice."
+        ],
+        "alternates": [
+          "No slot is free: the patient is offered the next day."
+        ]
+      },
+      {
+        "ref": "j2",
+        "acceptance": [
+          "The notes are saved against the appointment.",
+          "Only the patient and the doctors can read them."
+        ],
+        "alternates": [
+          "The video call drops: the doctor can call again or write notes without it."
+        ]
+      }
+    ]
+  }
+}

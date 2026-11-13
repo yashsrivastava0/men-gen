@@ -1,0 +1,19 @@
+id: login_and_accounts
+purpose: Decide how people sign in, how accounts work and who may join.
+slots:
+- auth.methods
+- auth.account_model
+- onboarding.approvals
+card_type: choose_one
+option_source: model
+order: 11
+option_count: 3
+max_question_words: 20
+max_option_words: 8
+guidance: Offer three mutually exclusive ways, in words a non-technical person understands, based on the
+  roles and audience already known. Mark the question as important because it is hard to undo. Never name
+  technologies.
+style_guide: "Ask in terms of the people: who must sign in, and how easily. For non-technical users avoid the words authentication and OTP."
+examples:
+- "Should customers need an account to order, or can they order with just a phone number?"
+- "Can a family member sign in on behalf of an elderly rider?"

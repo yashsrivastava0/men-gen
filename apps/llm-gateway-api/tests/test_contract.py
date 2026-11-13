@@ -123,8 +123,8 @@ async def test_budget_exceeded(harness_factory: HarnessFactory) -> None:
 
 async def test_scoped_budget_exceeded_names_the_scope(harness_factory: HarnessFactory) -> None:
     h = harness_factory()
-    rsv = h.gateway.guard.reserve(["session:ses_1"], 499_900, model="gpt-6-luna", mode="live")
-    h.gateway.guard.commit_cost(rsv, 499_900)  # 100 micros left of the session's 0.50 USD
+    rsv = h.gateway.guard.reserve(["session:ses_1"], 999_900, model="gpt-6-luna", mode="live")
+    h.gateway.guard.commit_cost(rsv, 999_900)  # 100 micros left of the session's 1.00 USD (D-124)
     _good(h)
     with pytest.raises(BudgetExceeded) as exc:
         await h.client.run(ECHO_SPEC, Q, make_ctx(scope="session:ses_1"))

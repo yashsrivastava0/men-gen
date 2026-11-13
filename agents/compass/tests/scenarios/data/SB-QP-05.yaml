@@ -1,0 +1,33 @@
+id: SB-QP-05
+title: A vague answer to an important need earns exactly one follow-up, a second vague answer is assumed and never chased
+tags: [planner, followup, vague]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      batch: {mode: initial, total_min: 3, total_max: 3}
+      qa: {first_serves: [audience.segments], shown_max: 1}
+  - answer_texts: ["office workers"]
+    note: three words and no detail about who they are or what they want
+    expect:
+      qa:
+        followups: 1
+        origins_include: [followup]
+      card_text_contains: ["office workers"]
+      calls:
+        counts: {cmp.plan_questions: 2, cmp.audit_questions: 2}
+        modes: {cmp.plan_questions: [initial, followup]}
+  - answer_texts: ["just people"]
+    note: still vague, so the engine assumes visibly and moves on
+    expect:
+      qa:
+        followups: 1
+        followups_max: 1
+        shown_contains: ["monthly plan"]
+      notice_code: assumed
+      card_text_contains: ["monthly plan"]
+      calls:
+        counts: {cmp.plan_questions: 2}
+final:
+  qa: {followups: 1, no_repeats: true}
+  interview: {fallback_count: 0}

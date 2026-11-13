@@ -1,0 +1,152 @@
+{
+ "run_id": "rrn_01M7AWTB3ATZAKPRFT028Q3KY8",
+ "status": "complete",
+ "search_provider": "tavily",
+ "models": {
+  "writer": "claude-haiku-5-5",
+  "checker": "claude-haiku-5-5",
+  "checker_vendor": "same"
+ },
+ "budget": {
+  "searches_used": 46,
+  "pages_read": 75,
+  "seconds": 215,
+  "usd": "0.5401",
+  "usd_micros": 540072,
+  "failures": 1
+ },
+ "cost_by_step": {
+  "assemble": 13562,
+  "check": 39102,
+  "extract": 88267,
+  "plan": 1244,
+  "queries": 3897,
+  "search.serper": 2000,
+  "search.tavily": 392000
+ },
+ "slots": {
+  "filled": 12,
+  "required": 19,
+  "ratio": 0.6316
+ },
+ "topics": {
+  "total": 15,
+  "covered": 9,
+  "not_found": 6
+ },
+ "items": 167,
+ "evidence_labels": {
+  "unverified": 72,
+  "single_source": 33,
+  "official": 62
+ },
+ "by_kind": {
+  "competitor": 4,
+  "navigation_pattern": 1,
+  "screen_pattern": 31,
+  "workflow": 34,
+  "entity_pattern": 1,
+  "rule": 15,
+  "provider_fact": 61,
+  "service_option": 6,
+  "platform_constraint": 14
+ },
+ "extraction": {
+  "extracted": 274,
+  "first_try_ok": 247,
+  "final_ok": 249,
+  "quote_pass_first_try": 0.9015,
+  "quote_pass_final": 0.9088,
+  "quote_failed_first": 4,
+  "recovered_by_retry": 2,
+  "number_not_in_quote": 17,
+  "number_rejection_rate": 0.062,
+  "figures_dropped": 1,
+  "invalid": 0,
+  "claim_too_long": 2,
+  "forbidden_pattern": 1
+ },
+ "checker": {
+  "items_checked": 249,
+  "supported": 0.4418,
+  "partial": 0.4859,
+  "not_supported": 0.012,
+  "unchecked": 0.0602,
+  "rubber_stamp_signal": false
+ },
+ "fallbacks": {
+  "rsch.check": 1
+ },
+ "fact_rejections": {
+  "number_not_in_quote": 17,
+  "claim_too_long": 2,
+  "unsupported_field": 51,
+  "quote_not_found": 1,
+  "not_supported": 3,
+  "forbidden_pattern": 1
+ },
+ "validation": {
+  "errors": 1,
+  "warnings": 0,
+  "by_rule": {
+   "RV-17": 1
+  }
+ },
+ "dossiers": 15,
+ "platform_constraints": 14,
+ "compliance_register": 0,
+ "failed_slots": [
+  {
+   "target": "T-01",
+   "label": "Comparable yoga studio apps",
+   "status": "not_found",
+   "filled": 0,
+   "required": 2
+  },
+  {
+   "target": "T-04",
+   "label": "Journey: Class booking",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-05",
+   "label": "Journey: Class management",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-06",
+   "label": "Journey: Class packs",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-07",
+   "label": "Journey: Weekly class timetable",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-15",
+   "label": "personal data consent rules",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  }
+ ],
+ "acceptance": {
+  "extraction_quote_pass_first_try": true,
+  "number_rejection_rate": false,
+  "fetch_success": true,
+  "searches_contributing": true,
+  "slots_filled": false,
+  "checker_not_supported": true,
+  "norms_with_3_plus_sources": false,
+  "recent_24m_of_dated": true
+ }
+}

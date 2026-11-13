@@ -24,6 +24,7 @@ Start with [../CLAUDE.md](../CLAUDE.md) (commands, hard rules) and [../README.md
 - [specs/frontend-consumption.md](specs/frontend-consumption.md): how the frontend engine reads it (build sequence, slices, `raise_decision`)
 - [specs/events-and-api.md](specs/events-and-api.md): the Context API: auth, routes, SSE, errors, event catalog
 - [api/compass.md](api/compass.md): the Compass HTTP API (`/v1/compass`): auth, events, Brief, Gate 1, SSE replay, errors, curl walk-through
+- [api/research-agent.md](api/research-agent.md): the Research agent HTTP API (`/v1/research`): runs, snapshot, resumable SSE events, skip, per-topic cancel, review, reject, errors
 - [specs/question-cards.md](specs/question-cards.md): cards, the `ask_if` language, the slot vocabulary
 - [specs/policy-format.md](specs/policy-format.md): policies (Guided, Enterprise, regulated)
 - [specs/domain-pack-format.md](specs/domain-pack-format.md): Domain Packs, recipes, themes, the Stack Profile
@@ -37,7 +38,7 @@ Start with [../CLAUDE.md](../CLAUDE.md) (commands, hard rules) and [../README.md
 
 Libraries: [core](packages/core.md), [contracts](packages/contracts.md), [llm-gateway](packages/llm-gateway.md), [prompts](packages/prompts.md), [content](packages/content.md), [persistence](packages/persistence.md), [spec-loader](packages/spec-loader.md), [discovery](packages/discovery.md), [research](packages/research.md), [spec-builder](packages/spec-builder.md), [flow](packages/flow.md).
 
-Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gateway-api.md), [cli](packages/cli.md), [compass](packages/compass.md) (the Compass agent: Brief, calls, catalog, API, test UI; also [packages/compass/README.md](../packages/compass/README.md)).
+Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gateway-api.md), [cli](packages/cli.md), [compass](packages/compass.md) (the Compass agent: Brief, calls, catalog, API, test UI; also [agents/compass/README.md](../agents/compass/README.md)), [research-agent](packages/research-agent.md) (the Research agent `mde_research_agent`: plan, search, verified quotes, `research.json`; also [agents/research/README.md](../agents/research/README.md)). The older [research](packages/research.md) package is untouched.
 
 ## ADRs
 
@@ -56,6 +57,10 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 - [0012 Compass package, boundaries and layering](adr/0012-compass-package-boundaries-and-layering.md)
 - [0013 Brief schema v1, hashing and versioning](adr/0013-brief-schema-v1-hashing-and-versioning.md)
 - [0014 Call specs live in the agent package](adr/0014-call-spec-registration-from-agent-packages.md)
+- [0015 AI-planned interview, Interview Memory and the domain_facts section](adr/0015-ai-planned-interview-and-interview-memory.md)
+- [0016 Compass v2 interview mechanics: tiers with hard caps, closing question, submit-once](adr/0016-compass-v2-interview-mechanics.md)
+- [0017 The Brief carries a user-approved structure (modules, screens, flows, entities); tiers map to size bands](adr/0017-brief-structure-sections-and-size-bands.md)
+- [0018 The Research agent: orchestrator-worker, code-verified quotes, data-defined ceilings](adr/0018-research-agent-architecture.md)
 
 ## Evals
 
@@ -65,8 +70,20 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 ## Runbooks
 
 - [runbooks/local-dev.md](runbooks/local-dev.md): run it on Windows (private Postgres on 54329, `just` targets)
-- [runbooks/live-llm-budget.md](runbooks/live-llm-budget.md): USD 6.00 cap, tripwires, the second key, the ledger, the lead-only batch procedure
-- [runbooks/troubleshooting.md](runbooks/troubleshooting.md): real failure modes: database, tests, event loop, ledger, the live-call hook, worktrees
+- [runbooks/live-llm-budget.md](runbooks/live-llm-budget.md): USD 6.00 cap, tripwires, live mode, the ledger, the lead-only batch procedure
+- [runbooks/troubleshooting.md](runbooks/troubleshooting.md): real failure modes: database, tests, event loop, ledger, worktrees
+- [runbooks/research-agent.md](runbooks/research-agent.md): run, test and (owner only) run live the Research agent: offline commands, live prerequisites, the bake-off and batch runs, reading a run, troubleshooting
+- [research-agent/reports/research-agent-build-report-2026-11-11.md](research-agent/reports/research-agent-build-report-2026-11-11.md): the Research agent build report: what it is, how it works, what was built against the plan, tests, limits, decisions, next steps (written before the live runs)
+- [research-agent/compass-contract.md](research-agent/compass-contract.md): what Research needs from a Compass export: the fields it reads, which are optional and what degrades without them, the seal (`input_binding`), the two refusals, and how to add a new Compass version (one adapter change, one fixture, one contract test)
+- [research-agent/evidence-quality-2026-11-13.md](research-agent/evidence-quality-2026-11-13.md): why 30 to 41% of facts were unusable (the checker said partial), what changed (checker v3, tighten and ask once more, the Screens slot), the planted-error test and the re-extraction experiment, with numbers and what is not proven
+- [research-agent/depth-overhaul-as-built-2026-11-13.md](research-agent/depth-overhaul-as-built-2026-11-13.md): the owner's as-built note for the Research depth overhaul: what was wrong, what changed, the live runs on the new code, before and after against the targets, what is not proven and what finishing the proof costs
+- [research-agent/discovery-and-planning.md](research-agent/discovery-and-planning.md): how the Research agent plans and discovers (research-depth P4): risk topics outside the topic cap, ceilings from data, official-first query variants, a provider's own-site follow-up, both search engines on vendor topics, the authority registries and `official_inferred`, numbers across languages and currencies, one topic per country
+- [research-agent/spec-contract.md](research-agent/spec-contract.md): what Spec gets from Research and how to read it: the guarantees, the use rules, dossiers, platform constraints, compliance register, lane decisions, the ranked confirm list, and the reference `pack(research, need_card)` (select by Brief id plus one hop plus lane essentials, split never truncate)
+- [research-agent/claude-provider-test-report-2026-11-13.md](research-agent/claude-provider-test-report-2026-11-13.md): the owner's report on running the Research agent on Claude: the plan against the outcome, the vendor-independence work (rule 14), what the live tests found (structured-output limits, the checker and the effort floor, with numbers), Small, Medium, Big and Porto against the earlier OpenAI-era runs, the consumer probe, money, opinion and what is not proven
+- [research-agent/outputs/claude-2026-11-13/README.md](research-agent/outputs/claude-2026-11-13/README.md): the saved outputs of those runs (`research.json`, readable report and numbers per run) and the experiment results
+- [research-agent/provider-facts.md](research-agent/provider-facts.md): Tavily and Serper parameters, checked against the official documentation, with URLs and dates
+- [research-agent/second-opinion-cost-and-yield.md](research-agent/second-opinion-cost-and-yield.md): the second opinion on the Small run's cost and yield: which findings hold, what was missed (page ceiling, page mojibake), the order of work
+- [research-agent/yield-and-cost-report-2026-11-11.md](research-agent/yield-and-cost-report-2026-11-11.md): the owner's note: what changed in yield and cost, live results before and after, the gate, the provider decision, what still needs Medium or Big
 - [runbooks/compass.md](runbooks/compass.md): run, migrate and test Compass (port 8110, private Postgres, `MDE_PG_BIN` on the Mac), live prerequisites, troubleshooting
 
 ## API (generated)
@@ -76,13 +93,21 @@ Apps: [context-api](packages/context-api.md), [llm-gateway-api](packages/llm-gat
 
 ## Implementation (lead-owned)
 
+- [implementation/CURRENT_STATE.md](implementation/CURRENT_STATE.md): **start here when resuming**: where the project is right now (active branch, what we are working on: the Research agent, branch map, what is done and not, things in older docs that are no longer true, how to run and verify it, reading order)
 - [implementation/BRIEF.md](implementation/BRIEF.md): normative for *how* to implement
 - [implementation/AGENT_PROTOCOL.md](implementation/AGENT_PROTOCOL.md): the rules every subagent follows
+- [../apps/web/README.md](../apps/web/README.md): the global front end (console shell, registry, tokens, UI smoke tests, `MDE_WEB_DIR`)
+- [implementation/GLOBAL_RULES.md](implementation/GLOBAL_RULES.md): commit policy (checkpoint before medium or major work, new branch only after the owner's yes for a complete overhaul), tags, merges, repository layout (`agents/`, `apps/web/`) and the owner's recorded overrides
+- [compass/research-inputs/README.md](compass/research-inputs/README.md): nine Compass exports for the research agent: three approved real runs (Quick, Standard, Thorough; three unrelated ideas) recorded in a real browser with the live model, plus six test inputs (three older real exports, three synthetic) that cover format 1, a missing approval, a Brief with no consumer views, and a three-country Brief; the three real runs are checked by `agents/compass/tests/test_research_inputs.py`
+- [compass/build-prompts/02-compass-ai-interview-prompt.md](compass/build-prompts/02-compass-ai-interview-prompt.md): the owner's build prompt for the AI-planned interview (verbatim copy); evidence: [compass/evidence/before-first-questions.json](compass/evidence/before-first-questions.json)
 - [implementation/PROGRESS.md](implementation/PROGRESS.md): checklist, ticked with commit hashes
 - [implementation/DECISIONS.md](implementation/DECISIONS.md): decision log (D-001 onward)
-- [implementation/HANDOFF.md](implementation/HANDOFF.md): **start here when resuming**: exact state, open decision, resume checklist, environment facts, lessons
+- [implementation/HANDOFF.md](implementation/HANDOFF.md): history of the Context Engine as of 2026-11-08 (its hashes and the `contracts-v1` tag are not in this repository); still useful for environment facts and lessons, **not** for the current state, see CURRENT_STATE
+- [implementation/HANDOFF-compass-ai-interview.md](implementation/HANDOFF-compass-ai-interview.md): handoff for the Compass AI-planned interview task (state, live findings, open items, how to run)
+- [implementation/COMPASS-STATUS-2026-11-09.md](implementation/COMPASS-STATUS-2026-11-09.md): long record of the Compass AI-planned interview session (chronology, live results, open defects, config values)
+- [implementation/COMPASS-SIZE-PLAN-2026-11-10.md](implementation/COMPASS-SIZE-PLAN-2026-11-10.md): analysis and phased plan for the size-aware Brief (structure draft, size bands, checks, research guidance, live program)
 - [implementation/REPORT.md](implementation/REPORT.md): the final report (draft; live evidence and the last fix branch are pending)
 
 ## Where the agent tooling lives
 
-- `.claude/agents/` (roster), `.claude/skills/` (procedures), `.claude/rules/` (path rules), `.claude/hooks/` (format on edit, live-call guard).
+- `.claude/agents/` (roster), `.claude/skills/` (procedures), `.claude/rules/` (path rules), `.claude/hooks/` (format on edit).

@@ -1,0 +1,10 @@
+# Number words the number check knows (core/numbers.py, RV-18): a word on the QUOTE side satisfies the same digit on the claim
+# side ("three documents" backs "3 documents"; "trois jours" backs "3 days"). Claims are English, so only the English words 2 to
+# 12 are demanded of a claim; the other languages only ever satisfy a digit. "sept" (7 in French) is left out because "Sept." is
+# also an English month.
+# A word that is also a common word of another language is left out on purpose ("once" is 11 in Spanish and "once a day" in
+# English). Add a language by adding a block; claims are English, the quotes may be in any of these.
+en: {one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12}
+fr: {un: 1, deux: 2, trois: 3, quatre: 4, cinq: 5, huit: 8, neuf: 9, dix: 10, onze: 11, douze: 12}
+es: {uno: 1, dos: 2, tres: 3, cuatro: 4, cinco: 5, seis: 6, siete: 7, ocho: 8, nueve: 9, diez: 10, doce: 12}
+pt: {um: 1, dois: 2, duas: 2, "três": 3, tres: 3, quatro: 4, cinco: 5, seis: 6, sete: 7, oito: 8, nove: 9, dez: 10, onze: 11, doze: 12}

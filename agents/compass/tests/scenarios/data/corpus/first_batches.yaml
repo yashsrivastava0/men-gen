@@ -1,0 +1,532 @@
+# Cross-idea diversity corpus (build prompt 02, section 2.6 and 6): the first batch a good planner writes for the
+# five ideas of docs/compass/evidence/before-first-questions.json, hand-written. Five to seven questions in two
+# or three themed groups; every question is about THIS project. Wire outputs of cmp.plan_questions (fields left
+# out are filled by type, see scenarios/providers.py).
+ideas:
+  tiffin_pune:
+    idea: "I want an app for my tiffin delivery service in Pune. Office workers order a daily home-cooked lunch and my riders deliver it before noon."
+    batch:
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin and meal-plan delivery
+        business_model_candidates: [pay per tiffin, weekly or monthly meal plan]
+        likely_roles: [office worker, rider, kitchen manager]
+        hard_parts: [delivering before noon, order cut-off times]
+        confidence: 0.8
+      questions:
+        - group_id: G1
+          group_title: How your tiffin day runs
+          intent: understand the daily cycle from order to delivery
+          serves:
+          - idea.summary
+          type: text
+          text: 'Walk me through one day: when do office workers order, when do you cook, and when do riders leave?'
+          why_we_ask: The daily rhythm decides what the ordering and delivery screens must do.
+          answer_spec: Order time, cooking time and rider departure time.
+          unlocks:
+          - 'Blueprint: order cut-off rules'
+          examples:
+          - Orders close at 9, we cook until 10, riders leave at 10:30
+        - group_id: G1
+          group_title: How your tiffin day runs
+          intent: learn who carries the tiffins to the offices
+          serves:
+          - roles.list
+          - domain:delivery_staff
+          type: choose_one
+          text: 'Who carries the tiffins from your kitchen to the offices: your own riders, independent riders, or both?'
+          why_we_ask: The kind of rider decides what the rider screens must show and pay.
+          answer_spec: The kind of riders and how they work with the kitchen.
+          unlocks:
+          - 'Blueprint: rider role'
+          options:
+          - label: Our own salaried riders
+            basis: suggestion
+          - label: Independent riders paid per delivery
+            basis: suggestion
+            reason: Many tiffin kitchens work this way to cope with busy days
+          - label: A mix of both
+            basis: suggestion
+          recommended: Independent riders paid per delivery
+        - group_id: G1
+          group_title: How your tiffin day runs
+          intent: learn what happens to a late order for the daily lunch
+          serves:
+          - domain:order_cutoff
+          type: text
+          text: What happens when an office worker orders the daily lunch after the morning cut-off?
+          why_we_ask: Late orders are where a tiffin service loses money.
+          answer_spec: The rule for orders after the cut-off.
+          unlocks:
+          - 'Blueprint: cut-off rule'
+          examples:
+          - We refuse it
+          - We cook one extra batch
+        - group_id: G2
+          group_title: Who orders and pays
+          intent: learn how office workers pay for their tiffins
+          serves:
+          - idea.business_model
+          type: choose_one
+          text: Do office workers pay for each tiffin, buy a weekly or monthly meal plan, or both?
+          why_we_ask: Payment decides which plan and billing screens the tiffin app needs.
+          answer_spec: Who pays, how and how often.
+          unlocks:
+          - 'Research: pricing of similar tiffin services'
+          options:
+          - label: They pay for each tiffin when they order
+            basis: suggestion
+          - label: A meal plan paid in advance
+            basis: suggestion
+            reason: A plan gives you steady income and fewer daily payments
+          - label: Both, with plans cheaper per tiffin
+            basis: suggestion
+          recommended: A meal plan paid in advance
+        - group_id: G2
+          group_title: Who orders and pays
+          intent: learn whether anyone besides office workers orders the tiffins
+          serves:
+          - audience.segments
+          type: text
+          text: Besides office workers, will families or students in Pune also order your tiffins?
+          why_we_ask: A second kind of customer needs its own menu and delivery times.
+          answer_spec: Other customer groups and what they want.
+          unlocks:
+          - 'Blueprint: customer roles'
+          examples:
+          - Some families near the kitchen
+        - group_id: G2
+          group_title: Who orders and pays
+          intent: learn how a rider proves a tiffin reached the right desk
+          serves:
+          - domain:delivery_proof
+          type: text
+          text: How should a rider prove a tiffin reached the right office desk before noon?
+          why_we_ask: Proof of delivery settles every complaint about a missing tiffin.
+          answer_spec: What the rider records at the desk.
+          unlocks:
+          - 'Blueprint: delivery proof screen'
+          examples:
+          - A photo of the tiffin at the reception
+  clinic_appointments:
+    idea: "An appointment booking app for my family clinic in Indore: patients pick a doctor and a time slot, and the receptionist manages the day's schedule."
+    batch:
+      domain_hypothesis:
+        category: healthcare
+        subcategory: clinic appointment booking
+        business_model_candidates: [clinic pays a subscription, free for patients]
+        likely_roles: [patient, doctor, receptionist]
+        hard_parts: [slot lengths per doctor, walk-in patients]
+        confidence: 0.85
+      questions:
+        - group_id: G1
+          group_title: How booking works at the clinic today
+          intent: learn how patients book a visit today
+          serves:
+          - domain:booking_today
+          type: text
+          text: How do patients book a visit at your Indore clinic today, and what goes wrong with it?
+          why_we_ask: The pain of today's booking shows what the app must fix first.
+          answer_spec: Today's way of booking and its problems.
+          unlocks:
+          - 'Research: booking apps for clinics'
+          examples:
+          - They phone the receptionist, who writes it in a diary
+        - group_id: G1
+          group_title: How booking works at the clinic today
+          intent: learn how long a doctor's appointment slot lasts
+          serves:
+          - domain:slot_length
+          type: text
+          text: How long is one appointment slot for each doctor, and does it differ from doctor to doctor?
+          why_we_ask: Slot length is the base of the whole schedule.
+          answer_spec: Slot length per doctor.
+          unlocks:
+          - 'Blueprint: schedule rules'
+          examples:
+          - Fifteen minutes, thirty for the senior doctor
+        - group_id: G1
+          group_title: How booking works at the clinic today
+          intent: learn how walk-in patients are handled
+          serves:
+          - domain:walk_ins
+          type: text
+          text: How should the receptionist handle walk-in patients who have no booked slot?
+          why_we_ask: Walk-ins change the day's schedule and the waiting time.
+          answer_spec: The rule for walk-in patients.
+          unlocks:
+          - 'Blueprint: walk-in flow'
+          examples:
+          - We add them to the end of the queue
+        - group_id: G2
+          group_title: Patients doctors and the receptionist
+          intent: learn who may change a booked appointment
+          serves:
+          - roles.list
+          - domain:change_permissions
+          type: choose_one
+          text: 'Who may change a booked clinic appointment: the receptionist only, patient and receptionist, or the doctor too?'
+          why_we_ask: Changing rights decide the roles and the screens for each of them.
+          answer_spec: Who can change or cancel an appointment.
+          unlocks:
+          - 'Blueprint: roles and permissions'
+          options:
+          - label: Only the receptionist
+            basis: suggestion
+          - label: The patient and the receptionist
+            basis: suggestion
+            reason: Patients can then reschedule without calling
+          - label: The patient, the receptionist and the doctor
+            basis: suggestion
+          recommended: The patient and the receptionist
+        - group_id: G2
+          group_title: Patients doctors and the receptionist
+          intent: learn how much patient health detail the clinic app keeps
+          serves:
+          - data.sensitive
+          - domain:visit_detail
+          type: choose_one
+          text: Should the clinic app keep only names and appointment times, or also short visit reasons?
+          why_we_ask: Health details need extra care and decide what the app may store.
+          answer_spec: Which patient details are stored.
+          unlocks:
+          - 'Blueprint: data and privacy'
+          options:
+          - label: Only names, phone numbers and times
+            basis: suggestion
+            reason: It keeps health details out of the app
+          - label: Also a short reason for the visit
+            basis: suggestion
+          - label: Full health records of every patient
+            basis: suggestion
+          recommended: Only names, phone numbers and times
+        - group_id: G2
+          group_title: Patients doctors and the receptionist
+          intent: learn when and how patients are reminded of their visit
+          serves:
+          - domain:visit_reminders
+          type: text
+          text: When should a patient be reminded about the clinic visit, and by message, call, or both?
+          why_we_ask: Reminders cut missed visits at a small clinic.
+          answer_spec: Timing and channel of the reminder.
+          unlocks:
+          - 'Blueprint: reminder rules'
+          examples:
+          - A message the evening before
+  pharmacy_inventory_b2b:
+    idea: "A B2B inventory tool for pharmacies: shop owners track stock and expiry dates, and reorder from their wholesalers when medicines run low."
+    batch:
+      domain_hypothesis:
+        category: business tools
+        subcategory: pharmacy inventory
+        business_model_candidates: [monthly subscription per shop, share of reorders]
+        likely_roles: [pharmacy owner, counter staff, wholesaler]
+        hard_parts: [expiry tracking, batch numbers, wholesaler ordering]
+        confidence: 0.8
+      questions:
+        - group_id: G1
+          group_title: Stock and expiry
+          intent: learn how new medicine stock is entered today
+          serves:
+          - domain:stock_entry
+          type: choose_one
+          text: 'How does a pharmacy add new medicine stock today: typing, scanning pack barcodes, or copying the wholesaler''s bill?'
+          why_we_ask: The way stock enters decides how much typing the tool must save.
+          answer_spec: How stock is added now.
+          unlocks:
+          - 'Blueprint: stock entry screen'
+          options:
+          - label: Typing each medicine by hand
+            basis: suggestion
+          - label: Scanning the barcodes on the packs
+            basis: suggestion
+            reason: Barcodes are quick and avoid typing mistakes
+          - label: Copying from the wholesaler's bill
+            basis: suggestion
+          recommended: Scanning the barcodes on the packs
+        - group_id: G1
+          group_title: Stock and expiry
+          intent: learn how early the pharmacy wants an expiry warning
+          serves:
+          - domain:expiry_alerts
+          type: text
+          text: How many days before a medicine expires should the tool warn the pharmacy owner?
+          why_we_ask: The warning time decides when stock can still be returned.
+          answer_spec: The number of days before expiry.
+          unlocks:
+          - 'Blueprint: expiry alert rule'
+          examples:
+          - Ninety days, sixty for tablets
+        - group_id: G1
+          group_title: Stock and expiry
+          intent: learn what a pharmacy does with medicines close to expiry
+          serves:
+          - domain:near_expiry
+          type: choose_one
+          text: 'What does a pharmacy do with medicines close to expiry: return them to the wholesaler, discount them, or discard them?'
+          why_we_ask: The usual action decides which buttons the expiry list needs.
+          answer_spec: The usual action for near-expiry stock.
+          unlocks:
+          - 'Blueprint: expiry actions'
+          options:
+          - label: Return them to the wholesaler
+            basis: suggestion
+            reason: Returns recover the money when the wholesaler allows it
+          - label: Discount them at the counter
+            basis: suggestion
+          - label: Discard them
+            basis: suggestion
+          recommended: Return them to the wholesaler
+        - group_id: G2
+          group_title: Wholesalers and reorders
+          intent: learn how far the reordering should go
+          serves:
+          - domain:reorder_rule
+          type: choose_one
+          text: When medicine stock runs low, should the tool only remind the pharmacy or also prepare an order for the wholesaler?
+          why_we_ask: How far reordering goes decides the wholesaler side of the tool.
+          answer_spec: Remind, prepare or place the order.
+          unlocks:
+          - 'Blueprint: reorder flow'
+          options:
+          - label: Only remind the pharmacy owner
+            basis: suggestion
+          - label: Prepare an order for the owner to approve
+            basis: suggestion
+            reason: The owner keeps control and saves the typing
+          - label: Place the order with the wholesaler by itself
+            basis: suggestion
+          recommended: Prepare an order for the owner to approve
+        - group_id: G2
+          group_title: Wholesalers and reorders
+          intent: learn who in a pharmacy will use the tool
+          serves:
+          - audience.segments
+          type: text
+          text: 'Who in a pharmacy will use the stock tool: the owner, the counter staff, or an accountant too?'
+          why_we_ask: Each person in the shop needs different screens and rights.
+          answer_spec: Who uses the tool and for what.
+          unlocks:
+          - 'Blueprint: roles'
+          examples:
+          - The owner and two counter staff
+        - group_id: G2
+          group_title: Wholesalers and reorders
+          intent: learn how pharmacies would pay for the inventory tool
+          serves:
+          - idea.business_model
+          type: choose_one
+          text: 'How should pharmacies pay for the stock tool: monthly per shop, per user, or a share of reorders?'
+          why_we_ask: The charging model decides the account and billing screens.
+          answer_spec: Who pays, how and how often.
+          unlocks:
+          - 'Research: pricing of inventory tools'
+          options:
+          - label: A monthly fee for each pharmacy
+            basis: suggestion
+            reason: It is simple for a small shop to understand
+          - label: A fee for each user in the shop
+            basis: suggestion
+          - label: A share of what is reordered
+            basis: suggestion
+          recommended: A monthly fee for each pharmacy
+  kids_language_learning:
+    idea: "A language-learning app for children aged 5 to 10 with short games and stories; parents see their child's progress."
+    batch:
+      domain_hypothesis:
+        category: education
+        subcategory: language learning for children
+        business_model_candidates: [parent subscription, free with a paid story library]
+        likely_roles: [child, parent]
+        hard_parts: [child safety, short attention span]
+        confidence: 0.8
+      questions:
+        - group_id: G1
+          group_title: How children learn
+          intent: learn how long one learning session should be
+          serves:
+          - domain:session_length
+          type: text
+          text: How long should one learning session be for a child aged 5 to 10, five minutes or longer?
+          why_we_ask: Short sessions suit young children and decide how the lessons are cut.
+          answer_spec: The length of a session.
+          unlocks:
+          - 'Design: lesson length'
+          examples:
+          - About ten minutes a day
+        - group_id: G1
+          group_title: How children learn
+          intent: learn which language the children learn and speak at home
+          serves:
+          - domain:target_language
+          type: text
+          text: Which language will the children learn first, and which language do they speak at home?
+          why_we_ask: The two languages decide the words, voices and stories we plan for.
+          answer_spec: The learned language and the home language.
+          unlocks:
+          - 'Research: apps teaching that language'
+          examples:
+          - English, and Marathi at home
+        - group_id: G1
+          group_title: How children learn
+          intent: learn whether lessons or stories open the child's day
+          serves:
+          - domain:lessons_or_stories
+          type: choose_one
+          text: When a child opens the app, should the short lessons or the stories come first?
+          why_we_ask: What a child sees first shapes the home screen.
+          answer_spec: Which comes first.
+          unlocks:
+          - 'Design: child home screen'
+          options:
+          - label: The short lessons come first
+            basis: suggestion
+            reason: Short lessons catch a young child's attention quickly
+          - label: The stories come first
+            basis: suggestion
+          - label: The child chooses each time
+            basis: suggestion
+          recommended: The short lessons come first
+        - group_id: G2
+          group_title: Parents and safety
+          intent: learn what parents want to see about their child's progress
+          serves:
+          - audience.segments
+          type: text
+          text: 'What should a parent see about their child''s progress: time spent, words learned, or a weekly summary?'
+          why_we_ask: The parent view is the reason parents pay for the app.
+          answer_spec: What the parent screen shows.
+          unlocks:
+          - 'Blueprint: parent role'
+          examples:
+          - Words learned this week
+        - group_id: G2
+          group_title: Parents and safety
+          intent: learn which safety rules matter for the children
+          serves:
+          - domain:child_safety
+          type: text
+          text: Which safety rules matter most for the children, such as no chat, no ads and no outside links?
+          why_we_ask: Safety rules for children shape every screen and every feature.
+          answer_spec: The safety rules.
+          unlocks:
+          - 'Blueprint: safety constraints'
+          examples:
+          - No chat and no ads
+        - group_id: G2
+          group_title: Parents and safety
+          intent: learn what rewards a child gets after a lesson or story
+          serves:
+          - domain:rewards
+          type: text
+          text: 'What should a child get after a lesson or a story: stars, stickers or new characters?'
+          why_we_ask: Rewards keep young children coming back each day.
+          answer_spec: The rewards.
+          unlocks:
+          - 'Design: reward screens'
+          examples:
+          - A sticker for each story
+  senior_ride_sharing:
+    idea: "A ride-sharing app for senior citizens: simple booking, trusted drivers, and a family member can follow the trip."
+    batch:
+      domain_hypothesis:
+        category: transport
+        subcategory: ride sharing for senior citizens
+        business_model_candidates: [fare commission, family subscription]
+        likely_roles: [senior citizen, driver, family member]
+        hard_parts: [driver trust, simple booking]
+        confidence: 0.8
+      questions:
+        - group_id: G1
+          group_title: Booking for senior citizens
+          intent: learn who books the ride for a senior citizen
+          serves:
+          - domain:who_books
+          type: choose_one
+          text: Will senior citizens book their own rides, or will a family member often book for them?
+          why_we_ask: Who books decides how simple the booking screen must be.
+          answer_spec: Who makes the booking.
+          unlocks:
+          - 'Blueprint: booking roles'
+          options:
+          - label: Senior citizens book for themselves
+            basis: suggestion
+          - label: A family member books for them
+            basis: suggestion
+          - label: Both happen often
+            basis: suggestion
+            reason: Many families share the booking between them
+          recommended: Both happen often
+        - group_id: G1
+          group_title: Booking for senior citizens
+          intent: learn what a senior citizen must do in one tap
+          serves:
+          - domain:one_tap_booking
+          type: text
+          text: What should a senior citizen be able to book in one tap, such as a ride home?
+          why_we_ask: One-tap rides are what makes the app simple for seniors.
+          answer_spec: The one-tap rides.
+          unlocks:
+          - 'Design: home screen'
+          examples:
+          - Home, the clinic, the temple
+        - group_id: G1
+          group_title: Booking for senior citizens
+          intent: learn what help the driver gives at pickup
+          serves:
+          - domain:pickup_help
+          type: text
+          text: Should the driver help the senior citizen into the car and carry their bags?
+          why_we_ask: Help at pickup decides what the driver must be trained and paid for.
+          answer_spec: What help the driver gives.
+          unlocks:
+          - 'Blueprint: driver duties'
+          examples:
+          - Yes, to the door and into the car
+        - group_id: G2
+          group_title: Trusted drivers and family
+          intent: learn how drivers are checked before they carry senior citizens
+          serves:
+          - roles.list
+          type: text
+          text: How will you check and approve drivers before they carry senior citizens?
+          why_we_ask: Trusted drivers are the promise of the app, so approval is a key role.
+          answer_spec: The checks and who approves.
+          unlocks:
+          - 'Blueprint: driver approval'
+          examples:
+          - A police check and a training day
+        - group_id: G2
+          group_title: Trusted drivers and family
+          intent: learn what a family member sees during the trip
+          serves:
+          - domain:family_follow
+          type: text
+          text: 'What should a family member see while following a senior citizen''s trip: the map, the driver''s details, or arrival alerts?'
+          why_we_ask: The family view is what lets relatives relax during the ride.
+          answer_spec: What the family sees.
+          unlocks:
+          - 'Blueprint: family view'
+          examples:
+          - The map and an alert on arrival
+        - group_id: G2
+          group_title: Trusted drivers and family
+          intent: learn who pays for the senior citizen's ride
+          serves:
+          - idea.business_model
+          type: choose_one
+          text: 'Who pays for a senior citizen''s ride: the senior, the family member, or either of them?'
+          why_we_ask: Who pays decides the payment screens and the account types.
+          answer_spec: Who pays and how.
+          unlocks:
+          - 'Research: pricing of ride apps'
+          options:
+          - label: The senior citizen pays
+            basis: suggestion
+          - label: The family member pays
+            basis: suggestion
+            reason: Many seniors prefer not to handle payments themselves
+          - label: Either of them can pay
+            basis: suggestion
+          recommended: The family member pays
+

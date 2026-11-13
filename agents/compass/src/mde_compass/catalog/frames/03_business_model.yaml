@@ -1,0 +1,17 @@
+id: business_model
+purpose: Learn how money flows, in the domain's own terms, when money flows at all.
+slots:
+- idea.business_model
+card_type: choose_one
+option_source: family
+order: 3
+option_count: 3
+max_question_words: 20
+max_option_words: 8
+guidance: Write three mutually exclusive ways this kind of app can earn, in plain words for this domain.
+  Use the family's typical business models only as grounding. Never quote numbers or say what most people
+  choose.
+style_guide: "Name who pays whom for what, in the domain's own terms. Offer three options only when three real, different ways exist for this kind of business; otherwise ask an open question with an example."
+examples:
+- "For a pharmacy stock tool: do shops pay a monthly fee, pay per reorder, or does the wholesaler pay?"
+- "For a tutoring app for children: do parents pay monthly, pay per class, or is the app free with paid extras?"

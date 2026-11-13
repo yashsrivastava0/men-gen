@@ -1,0 +1,67 @@
+# Five questions, all skipped: the engine sees the streak, stops asking and turns what is still open into visible
+# assumptions. The handoff probes may still ask for one gap each (their planner calls run the mock handler).
+unscripted: mock
+then_mock: [cmp.plan_questions, cmp.audit_questions]
+calls:
+  cmp.understand_turn:
+    - mock: true
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: Kinds of customers and what each wants.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G2
+          group_title: How it should work
+          intent: learn which areas of the city the tiffins reach
+          serves: [context.geo]
+          answer_spec: City and areas.
+          type: text
+          text: "Which city and areas do your tiffins reach?"
+          why_we_ask: Place decides maps and rivals.
+          unlocks: ["Research: local competitors"]
+          examples: ["Baner and Aundh"]
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn who prepares and packs the tiffins
+          serves: [roles.list]
+          answer_spec: Who does what.
+          type: text
+          text: "Who in your kitchen prepares and packs the tiffins each morning?"
+          why_we_ask: Kitchen roles decide the screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Two cooks and a packer"]
+        - group_id: G3
+          group_title: Running the kitchen
+          intent: learn how the riders get their routes
+          serves: [domain:rider_routes]
+          answer_spec: How routes are given out.
+          type: text
+          text: "How do your tiffin riders get their routes each day?"
+          why_we_ask: Routes are the hard part of a tiffin service.
+          unlocks: ["Blueprint: rider screens"]
+          examples: ["The manager hands out a list at 10"]
+  cmp.audit_questions:
+    - pass_all: true

@@ -1,0 +1,114 @@
+# Depth by size class (doc 13 section 9.2 depth ladder; D-156). The classes are the research-load classes: focused is a
+# small app, standard a medium one, deep a big one.
+#
+# `classes`: numbers the code reads. `platform_capabilities` is how many platform topics (job `platform`) a run of the class
+# plans at most: one per capability the Brief implies, best-evidenced first.
+#
+# `items`: what each class adds, and WHICH existing job, topic and slot delivers it, so the depth is a checked definition and
+# not a promise in prose (tests/catalog/test_depth.py fails when a job, topic or slot named here does not exist).
+# `wired` says how far the delivery is real today:
+#   code       built by code from what the run finds, for every class (no search needed beyond the topic itself)
+#   data       a topic or slot in the job files already asks for it; the planner (caps, protected topics) decides whether it runs
+#   data_only  defined here but nothing enforces the class floor yet (a slot minimum is one number for every class, a topic
+#              `max` is not per class); UNPROVEN until a Medium or Big run is read against it
+classes:
+  focused:
+    platform_capabilities: 4
+  standard:
+    platform_capabilities: 7
+  deep:
+    platform_capabilities: 11
+items:
+  - id: pattern_sheet
+    classes: [focused, standard, deep]
+    job: structure
+    template: screen_inventory
+    slot: typical_screens
+    wired: data
+    note: "core features, 8 or more typical screens and one navigation pattern: the Small floor, the same slots at every size"
+  - id: competitor_matrix
+    classes: [standard, deep]
+    job: features
+    template: landscape
+    slot: competitors
+    floor: {standard: 4, deep: 6}
+    wired: data_only
+    note: "4 to 6 comparable apps with their features; the slot minimum is 3 at every size (only deep_min could raise it, for deep)"
+  - id: flows_with_exceptions
+    classes: [standard, deep]
+    job: flows
+    template: journeys
+    slot: journey
+    wired: data
+    note: "every main journey needs steps, an alternate and an exception to count as covered, at every size"
+  - id: entity_lifecycles
+    classes: [standard, deep]
+    job: data
+    template: entity_shape
+    slot: lifecycle
+    wired: data_only
+    note: "the lifecycle slot is optional at every size; making it required for standard and deep needs a per-class minimum"
+  - id: rules_with_official_sources
+    classes: [standard, deep]
+    job: data
+    template: rules
+    slot: rules
+    wired: data
+    note: "rules topics rank high and the planner protects them; official pages come first only when official_first is set on the topic"
+  - id: dossier_every_integration
+    classes: [focused, standard, deep]
+    job: services
+    template: providers
+    slot: provider_fields
+    wired: code
+    note: "the dossier of every provider with provider facts is built by code; the slots decide how many facts are searched for"
+  - id: platform_constraints
+    classes: [focused, standard, deep]
+    job: platform
+    template: capability_rules
+    slot: constraints
+    wired: data
+    note: "one topic per capability the Brief implies; the number per class is classes.platform_capabilities"
+  - id: playbooks_per_module_cluster
+    classes: [deep]
+    job: screens
+    template: module_screens
+    slot: patterns
+    floor: {deep: 8}
+    wired: data
+    note: "at most 8 module topics with screen patterns; the topic max is 8 at every size, the class cap decides how many run"
+  - id: dossier_per_external_system
+    classes: [deep]
+    job: services
+    template: providers
+    slot: providers
+    wired: data
+    note: "a system the Brief names that matches no need keeps its own provider topic (need_candidates)"
+  - id: role_workflow_exceptions
+    classes: [deep]
+    job: flows
+    template: journeys
+    slot: journey
+    wired: data_only
+    note: "journeys are per feature and flow, not per role; a per-role exception topic is not defined"
+  - id: compliance_register
+    classes: [standard, deep]
+    job: trust
+    template: data_protection_law
+    slot: law
+    wired: code
+    note: "the register is built by code from compliance notes, grouped by country and regime; how many countries get a topic is the planner's"
+  - id: realistic_data_by_entity
+    classes: [deep]
+    job: local
+    template: samples
+    slot: samples
+    wired: data_only
+    note: "the samples topic is optional and capped at 3 entities at every size"
+  - id: trends
+    classes: [deep]
+    job: features
+    template: recent
+    slot: recent_additions
+    wired: data_only
+    note: "the trends topic is optional at every size and ranks low"

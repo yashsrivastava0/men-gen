@@ -1,0 +1,11 @@
+# Mexico. Official sources checked on 2026-11-13 (see pt.yaml for what `fetch` and `verified_on` mean). dof.gob.mx and sat.gob.mx
+# did not resolve for the reader (www.dof.gob.mx and the bare name alike) although pages of both domains are in the search index
+# and name themselves, so they are recorded `unresolved` and read through the search provider's text only.
+country: mx
+language: es
+entries:
+  - {domain: stps.gob.mx, topics: [labor, labour, employment, workplace safety, safety, health at work, working hours, incident, incident reporting, inspection], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: dof.gob.mx, topics: [law, decree, official gazette, regulation, norm, legislation], class: official, fetch: unresolved, verified_on: 2026-11-13}
+  - {domain: sat.gob.mx, topics: [tax, invoice, invoicing, e-invoice, cfdi, vat], class: official, fetch: unresolved, verified_on: 2026-11-13}
+  - {domain: banxico.org.mx, topics: [payments, banking, bank, spei, wallet, regulation, payment institution], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: imss.gob.mx, topics: [social security, employer, labor, labour, employees, contributions], class: official, fetch: blocked, verified_on: 2026-11-13}

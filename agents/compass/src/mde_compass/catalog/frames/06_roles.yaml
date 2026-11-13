@@ -1,0 +1,16 @@
+id: roles
+purpose: Propose the kinds of people who use the app and let the user correct the list.
+slots:
+- roles.list
+card_type: pick_many
+option_source: family
+order: 6
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: A checklist of roles in the user's own words, pre-ticking only roles the user already mentioned
+  or that the family strongly implies. Add an 'add your own' field. Keep descriptions to a few words.
+style_guide: "Propose the roles you can already see in the idea as a checklist and ask what each may approve or change. One extra role the user has not mentioned is welcome, flagged as a suggestion."
+examples:
+- "I can see customers, riders and you as the owner. Does anyone else sign in, such as a kitchen helper?"
+- "Besides parents and children, does a teacher or school ever need to see progress?"

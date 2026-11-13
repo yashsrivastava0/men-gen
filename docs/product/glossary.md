@@ -44,11 +44,11 @@ Terms as used in the [spec](context-engine-spec.md) and the [brief](../implement
 
 Words that came out of building and operating the system. Each row points at the page that explains it.
 
-### Money and the live-call guard
+### Money and live mode
 
 | Term | Meaning |
 | --- | --- |
-| **Second key** | `ALLOW_LIVE_LLM=1` in the environment of the process that makes live calls. The first key is the live mode itself; a live call needs both and no `MDE_FORBID_LIVE`. Adding it is the user's decision, never an agent's (D-069). [Runbook](../runbooks/live-llm-budget.md) |
+| **Live mode** | `LLM_MODE=live` in the environment of the process that makes live calls, with no `MDE_FORBID_LIVE`. [Runbook](../runbooks/live-llm-budget.md) |
 | **Hard cap / effective cap** | USD 6.00 for the whole job, clamped in code whatever the environment says; the guard plans against 95% of it, USD 5.70. [ADR 0005](../adr/0005-budget-guard-fails-closed.md) |
 | **Tripwire** | A level of spent plus reserved: 50% warns, 80% allows only `must-run` calls, 95% refuses everything. |
 | **`must-run`** | A call purpose prefix that may still run past the 80% tripwire. In-process code only; the HTTP API rewrites it. |
@@ -56,8 +56,6 @@ Words that came out of building and operating the system. Each row points at the
 | **Fail closed** | Every uncertainty about money (a failed commit, a timeout, unpriceable usage) books the worst case instead of nothing. |
 | **Ledger guard** | `<ledger>.guard`: the ledger's size, line count, spend and first-line hash. A deleted or truncated ledger raises `LedgerIntegrityError` until an operator resets on purpose. [Troubleshooting](../runbooks/troubleshooting.md) |
 | **Budget gate** | The flow's `BudgetGate` port. Asked before enqueueing a plan run and before each plan phase; a "no" parks the session in PAUSED with a `budget_cap_reached` notice. [Flow](../architecture/flow-and-gates.md) |
-| **Live-call hook** | `.claude/hooks/guard_live.py`: stops an agent's shell command that would switch live mode on without the second key. It reads command text only. [Security](../architecture/security.md) |
-
 ### Gates, roles and versions
 
 | Term | Meaning |

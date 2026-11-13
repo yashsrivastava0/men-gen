@@ -1,0 +1,661 @@
+{
+  "tiffin_pune": {
+    "idea": "I want an app for my tiffin delivery service in Pune. Office workers order a daily home-cooked lunch and my riders deliver it before noon.",
+    "cards": [
+      {
+        "id": "Q-002",
+        "frame": "business_model",
+        "type": "choose_one",
+        "question": "How will the app earn money?",
+        "why_we_ask": "It decides which payment and plan screens are needed.",
+        "options": [
+          {
+            "label": "fee on each delivery",
+            "basis": "typical"
+          },
+          {
+            "label": "monthly plan for businesses",
+            "basis": "typical"
+          },
+          {
+            "label": "commission from partners",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-003",
+        "frame": "who_and_where",
+        "type": "quick_form",
+        "question": "Which of these describe your users?",
+        "why_we_ask": "It sets how simple the screens and words should be.",
+        "options": [],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-004",
+        "frame": "which_apps",
+        "type": "choose_one",
+        "question": "How many apps do you need?",
+        "why_we_ask": "Each app gets its own screens and sign-in.",
+        "options": [
+          {
+            "label": "One app for everybody",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app for customers, one for staff",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app plus a simple manager side",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-005",
+        "frame": "features",
+        "type": "pick_many",
+        "question": "Which of these should the app have?",
+        "why_we_ask": "This list becomes the plan for the first version.",
+        "options": [
+          {
+            "label": "Request a delivery",
+            "basis": "typical"
+          },
+          {
+            "label": "Assign a rider",
+            "basis": "typical"
+          },
+          {
+            "label": "Track on a map",
+            "basis": "typical"
+          },
+          {
+            "label": "Delivery status updates",
+            "basis": "typical"
+          },
+          {
+            "label": "Proof of delivery",
+            "basis": "typical"
+          },
+          {
+            "label": "Today's route list",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-006",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should people sign in?",
+        "why_we_ask": "Sign-in changes the first screens and what we must protect.",
+        "options": [
+          {
+            "label": "Phone number and a one-time code",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Email address and password",
+            "basis": "suggestion"
+          },
+          {
+            "label": "No sign-in at first",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-007",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should accounts work?",
+        "why_we_ask": "It decides who owns the data and who can see it.",
+        "options": [
+          {
+            "label": "Each person has their own account",
+            "basis": "suggestion"
+          },
+          {
+            "label": "People share a team or business account",
+            "basis": "suggestion"
+          },
+          {
+            "label": "An admin creates all accounts",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      }
+    ]
+  },
+  "clinic_appointments": {
+    "idea": "An appointment booking app for my family clinic in Indore: patients pick a doctor and a time slot, and the receptionist manages the day's schedule.",
+    "cards": [
+      {
+        "id": "Q-002",
+        "frame": "confirm_kind_of_app",
+        "type": "choose_one",
+        "question": "Which of these is closest to your app?",
+        "why_we_ask": "It tells us which similar apps to study.",
+        "options": [
+          {
+            "label": "People buy or order things",
+            "basis": "suggestion"
+          },
+          {
+            "label": "People book a time or a place",
+            "basis": "suggestion"
+          },
+          {
+            "label": "A tool for my team to manage work",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-003",
+        "frame": "business_model",
+        "type": "choose_one",
+        "question": "How will the app earn money?",
+        "why_we_ask": "It decides which payment and plan screens are needed.",
+        "options": [
+          {
+            "label": "fee on each booking",
+            "basis": "typical"
+          },
+          {
+            "label": "monthly listing fee for providers",
+            "basis": "typical"
+          },
+          {
+            "label": "free for customers",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-004",
+        "frame": "who_and_where",
+        "type": "quick_form",
+        "question": "Which of these describe your users?",
+        "why_we_ask": "It sets how simple the screens and words should be.",
+        "options": [],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-005",
+        "frame": "which_apps",
+        "type": "choose_one",
+        "question": "How many apps do you need?",
+        "why_we_ask": "Each app gets its own screens and sign-in.",
+        "options": [
+          {
+            "label": "One app for everybody",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app for customers, one for staff",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app plus a simple manager side",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-006",
+        "frame": "features",
+        "type": "pick_many",
+        "question": "Which of these should the app have?",
+        "why_we_ask": "This list becomes the plan for the first version.",
+        "options": [
+          {
+            "label": "Browse providers or places",
+            "basis": "typical"
+          },
+          {
+            "label": "Available times",
+            "basis": "typical"
+          },
+          {
+            "label": "Book a time",
+            "basis": "typical"
+          },
+          {
+            "label": "Find a doctor or trainer",
+            "basis": "typical"
+          },
+          {
+            "label": "Book a visit",
+            "basis": "typical"
+          },
+          {
+            "label": "Personal records",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-007",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should people sign in?",
+        "why_we_ask": "Sign-in changes the first screens and what we must protect.",
+        "options": [
+          {
+            "label": "Phone number and a one-time code",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Email address and password",
+            "basis": "suggestion"
+          },
+          {
+            "label": "No sign-in at first",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      }
+    ]
+  },
+  "pharmacy_inventory_b2b": {
+    "idea": "A B2B inventory tool for pharmacies: shop owners track stock and expiry dates, and reorder from their wholesalers when medicines run low.",
+    "cards": [
+      {
+        "id": "Q-002",
+        "frame": "business_model",
+        "type": "choose_one",
+        "question": "How will the app earn money?",
+        "why_we_ask": "It decides which payment and plan screens are needed.",
+        "options": [
+          {
+            "label": "commission on each sale",
+            "basis": "typical"
+          },
+          {
+            "label": "monthly plan for sellers",
+            "basis": "typical"
+          },
+          {
+            "label": "margin on items sold",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-003",
+        "frame": "who_and_where",
+        "type": "quick_form",
+        "question": "Which of these describe your users?",
+        "why_we_ask": "It sets how simple the screens and words should be.",
+        "options": [],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-004",
+        "frame": "which_apps",
+        "type": "choose_one",
+        "question": "How many apps do you need?",
+        "why_we_ask": "Each app gets its own screens and sign-in.",
+        "options": [
+          {
+            "label": "One app for everybody",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app for customers, one for staff",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app plus a simple manager side",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-005",
+        "frame": "features",
+        "type": "pick_many",
+        "question": "Which of these should the app have?",
+        "why_we_ask": "This list becomes the plan for the first version.",
+        "options": [
+          {
+            "label": "Browse the catalog",
+            "basis": "typical"
+          },
+          {
+            "label": "Search and filter",
+            "basis": "typical"
+          },
+          {
+            "label": "Item details",
+            "basis": "typical"
+          },
+          {
+            "label": "Cart",
+            "basis": "typical"
+          },
+          {
+            "label": "Checkout",
+            "basis": "typical"
+          },
+          {
+            "label": "Order history",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-006",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should people sign in?",
+        "why_we_ask": "Sign-in changes the first screens and what we must protect.",
+        "options": [
+          {
+            "label": "Phone number and a one-time code",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Email address and password",
+            "basis": "suggestion"
+          },
+          {
+            "label": "No sign-in at first",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-007",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should accounts work?",
+        "why_we_ask": "It decides who owns the data and who can see it.",
+        "options": [
+          {
+            "label": "Each person has their own account",
+            "basis": "suggestion"
+          },
+          {
+            "label": "People share a team or business account",
+            "basis": "suggestion"
+          },
+          {
+            "label": "An admin creates all accounts",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      }
+    ]
+  },
+  "kids_language_learning": {
+    "idea": "A language-learning app for children aged 5 to 10 with short games and stories; parents see their child's progress.",
+    "cards": [
+      {
+        "id": "Q-002",
+        "frame": "idea_in_your_words",
+        "type": "open_prompt",
+        "question": "What would you like your app to do?",
+        "why_we_ask": "Everything else we plan starts from this.",
+        "options": [],
+        "fallback_card": true
+      },
+      {
+        "id": "Q-003",
+        "frame": "confirm_kind_of_app",
+        "type": "choose_one",
+        "question": "Which of these is closest to your app?",
+        "why_we_ask": "It tells us which similar apps to study.",
+        "options": [
+          {
+            "label": "People buy or order things",
+            "basis": "suggestion"
+          },
+          {
+            "label": "People book a time or a place",
+            "basis": "suggestion"
+          },
+          {
+            "label": "A tool for my team to manage work",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-004",
+        "frame": "business_model",
+        "type": "choose_one",
+        "question": "How will the app earn money?",
+        "why_we_ask": "It decides which payment and plan screens are needed.",
+        "options": [
+          {
+            "label": "A small fee on each sale or booking",
+            "basis": "suggestion"
+          },
+          {
+            "label": "A monthly or yearly plan",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Free to use; the business pays for it",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-005",
+        "frame": "who_and_where",
+        "type": "quick_form",
+        "question": "Which of these describe your users?",
+        "why_we_ask": "It sets how simple the screens and words should be.",
+        "options": [],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-006",
+        "frame": "which_apps",
+        "type": "choose_one",
+        "question": "How many apps do you need?",
+        "why_we_ask": "Each app gets its own screens and sign-in.",
+        "options": [
+          {
+            "label": "One app for everybody",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app for customers, one for staff",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app plus a simple manager side",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-007",
+        "frame": "roles",
+        "type": "pick_many",
+        "question": "Who will use it, and in what role?",
+        "why_we_ask": "Each role sees different screens and can do different things.",
+        "options": [
+          {
+            "label": "Customer who uses the service",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Staff who handle the requests",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Manager who sees reports",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Partner who offers a service",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      }
+    ]
+  },
+  "senior_ride_sharing": {
+    "idea": "A ride-sharing app for senior citizens: simple booking, trusted drivers, and a family member can follow the trip.",
+    "cards": [
+      {
+        "id": "Q-002",
+        "frame": "business_model",
+        "type": "choose_one",
+        "question": "How will the app earn money?",
+        "why_we_ask": "It decides which payment and plan screens are needed.",
+        "options": [
+          {
+            "label": "commission on each booking",
+            "basis": "typical"
+          },
+          {
+            "label": "monthly listing fee",
+            "basis": "typical"
+          },
+          {
+            "label": "subscription",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-003",
+        "frame": "who_and_where",
+        "type": "quick_form",
+        "question": "Which of these describe your users?",
+        "why_we_ask": "It sets how simple the screens and words should be.",
+        "options": [],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-004",
+        "frame": "which_apps",
+        "type": "choose_one",
+        "question": "How many apps do you need?",
+        "why_we_ask": "Each app gets its own screens and sign-in.",
+        "options": [
+          {
+            "label": "One app for everybody",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app for customers, one for staff",
+            "basis": "suggestion"
+          },
+          {
+            "label": "One app plus a simple manager side",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-005",
+        "frame": "features",
+        "type": "pick_many",
+        "question": "Which of these should the app have?",
+        "why_we_ask": "This list becomes the plan for the first version.",
+        "options": [
+          {
+            "label": "Search places to stay or trips",
+            "basis": "typical"
+          },
+          {
+            "label": "Trip plan",
+            "basis": "typical"
+          },
+          {
+            "label": "Booking confirmation",
+            "basis": "typical"
+          },
+          {
+            "label": "Guest requests",
+            "basis": "typical"
+          },
+          {
+            "label": "Local guides",
+            "basis": "typical"
+          },
+          {
+            "label": "Reviews",
+            "basis": "typical"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-006",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should people sign in?",
+        "why_we_ask": "Sign-in changes the first screens and what we must protect.",
+        "options": [
+          {
+            "label": "Phone number and a one-time code",
+            "basis": "suggestion"
+          },
+          {
+            "label": "Email address and password",
+            "basis": "suggestion"
+          },
+          {
+            "label": "No sign-in at first",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      },
+      {
+        "id": "Q-007",
+        "frame": "login_and_accounts",
+        "type": "choose_one",
+        "question": "How should accounts work?",
+        "why_we_ask": "It decides who owns the data and who can see it.",
+        "options": [
+          {
+            "label": "Each person has their own account",
+            "basis": "suggestion"
+          },
+          {
+            "label": "People share a team or business account",
+            "basis": "suggestion"
+          },
+          {
+            "label": "An admin creates all accounts",
+            "basis": "suggestion"
+          }
+        ],
+        "fallback_card": false
+      }
+    ]
+  }
+}

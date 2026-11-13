@@ -1,0 +1,66 @@
+# A Hinglish session: the questions and options are Hinglish in Latin letters; the stored values are catalog keys.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - intent: answer
+      facts:
+        - type: context
+          statement: "Customers are office workers who order lunch every day"
+          quote: "office me kaam karne wale log"
+          topics: [audience]
+          aspects: ["audience.segments:*"]
+          effects:
+            - {slot_id: audience.segments, value_json: '["Office workers"]'}
+    - intent: answer
+      facts:
+        - type: preference
+          statement: "Customers sign in with phone number and OTP"
+          quote: "Phone number aur OTP se"
+          topics: [access]
+          aspects: ["auth.methods:*"]
+          effects:
+            - {slot_id: auth.methods, value_json: '["phone_otp"]'}
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Aapke customers
+          intent: learn who orders the tiffins
+          serves: [audience.segments]
+          answer_spec: Customers ke prakar aur unki zaroorat.
+          type: text
+          text: "Aapke tiffin ke customers kaun hain aur woh app se kya chahte hain?"
+          why_we_ask: Customers hi tay karte hain ki app me kya dikhe.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office ke log jo time par khana chahte hain"]
+        - group_id: G1
+          group_title: Aapke customers
+          intent: learn how customers sign in to the tiffin app
+          serves: [auth.methods, "domain:sign_in"]
+          answer_spec: Sign-in ka tareeka.
+          type: choose_one
+          text: "Tiffin app me customers kaise sign in karein?"
+          why_we_ask: Sign-in ka tareeka app ki banawat tay karta hai.
+          unlocks: ["Blueprint: sign-in"]
+          options:
+            - {label: "Phone number aur OTP se", basis: suggestion, reason: "Zyada tar customers phone number se aasaani se jud jaate hain"}
+            - {label: "Email aur password se", basis: suggestion}
+            - {label: "Bina sign-in ke shuru karein", basis: suggestion}
+          recommended: "Phone number aur OTP se"
+        - group_id: G2
+          group_title: Aapka ilaka
+          intent: learn which areas the tiffin service delivers to
+          serves: [context.geo]
+          answer_spec: Sheher aur ilake.
+          type: text
+          text: "Aapke tiffin Pune ke kin ilakon me pahunchte hain?"
+          why_we_ask: Ilaka maps aur competitors tay karta hai.
+          unlocks: ["Research: local competitors"]
+          examples: ["Baner aur Aundh"]
+  cmp.audit_questions:
+    - pass_all: true

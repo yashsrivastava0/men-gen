@@ -1,0 +1,111 @@
+{
+ "run_id": "rrn_01M7AY9CSBGKAQ6SGJS2BJ6YV2",
+ "status": "complete",
+ "search_provider": "tavily",
+ "models": {
+  "writer": "claude-haiku-5-5",
+  "checker": "claude-haiku-5-5",
+  "checker_vendor": "same"
+ },
+ "budget": {
+  "searches_used": 45,
+  "pages_read": 73,
+  "seconds": 334,
+  "usd": "0.6096",
+  "usd_micros": 609629,
+  "failures": 1
+ },
+ "cost_by_step": {
+  "assemble": 7989,
+  "check": 70478,
+  "extract": 129943,
+  "plan": 1296,
+  "queries": 5923,
+  "search.serper": 2000,
+  "search.tavily": 392000
+ },
+ "slots": {
+  "filled": 19,
+  "required": 19,
+  "ratio": 1.0
+ },
+ "topics": {
+  "total": 15,
+  "covered": 15,
+  "not_found": 0
+ },
+ "items": 209,
+ "evidence_labels": {
+  "unverified": 24,
+  "single_source": 84,
+  "official": 101
+ },
+ "by_kind": {
+  "competitor": 8,
+  "navigation_pattern": 2,
+  "role_pattern": 2,
+  "screen_pattern": 26,
+  "workflow": 37,
+  "entity_pattern": 1,
+  "lifecycle": 1,
+  "rule": 21,
+  "compliance_note": 9,
+  "provider_fact": 74,
+  "service_option": 8,
+  "local_format": 6,
+  "platform_constraint": 14
+ },
+ "extraction": {
+  "extracted": 277,
+  "first_try_ok": 250,
+  "final_ok": 252,
+  "quote_pass_first_try": 0.9025,
+  "quote_pass_final": 0.9097,
+  "quote_failed_first": 5,
+  "recovered_by_retry": 2,
+  "number_not_in_quote": 18,
+  "number_rejection_rate": 0.065,
+  "figures_dropped": 2,
+  "invalid": 0,
+  "claim_too_long": 1,
+  "forbidden_pattern": 3
+ },
+ "checker": {
+  "items_checked": 252,
+  "supported": 0.8254,
+  "partial": 0.1667,
+  "not_supported": 0.0079,
+  "unchecked": 0.0,
+  "rubber_stamp_signal": true
+ },
+ "fallbacks": {
+  "rsch.check": 1
+ },
+ "fact_rejections": {
+  "number_not_in_quote": 18,
+  "forbidden_pattern": 3,
+  "quote_not_found": 1,
+  "unsupported_field": 6,
+  "not_supported": 2,
+  "claim_too_long": 1
+ },
+ "validation": {
+  "errors": 0,
+  "warnings": 0,
+  "by_rule": {}
+ },
+ "dossiers": 22,
+ "platform_constraints": 14,
+ "compliance_register": 1,
+ "failed_slots": [],
+ "acceptance": {
+  "extraction_quote_pass_first_try": true,
+  "number_rejection_rate": false,
+  "fetch_success": true,
+  "searches_contributing": true,
+  "slots_filled": true,
+  "checker_not_supported": true,
+  "norms_with_3_plus_sources": false,
+  "recent_24m_of_dated": true
+ }
+}

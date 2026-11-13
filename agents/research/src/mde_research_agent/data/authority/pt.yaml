@@ -1,0 +1,13 @@
+# Portugal. Official sources checked on 2026-11-13: each domain was requested with a plain page fetch and/or found by a web
+# search restricted to that domain, and identified itself as the body named here. `fetch`: ok = our plain reader gets the
+# page; blocked = a real official site whose pages our reader cannot get (403, an incomplete TLS chain, an empty shell): its
+# text comes from the search provider only; unresolved = the name did not resolve for the reader but pages of the domain
+# exist in the search index (same rule as blocked). `language` is the language the authorities write in (used for rules
+# queries). Topic keywords are English and match a topic when every word of a keyword phrase is in the topic's words.
+country: pt
+language: pt
+entries:
+  - {domain: cnpd.pt, topics: [data protection, privacy, personal data, consent, gdpr], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: bportugal.pt, topics: [payments, banking, bank, regulation, payment institution, e-money, wallet, card payments], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: portaldasfinancas.gov.pt, topics: [tax, vat, invoice, e-invoice, invoicing], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: diariodarepublica.pt, topics: [law, decree, official gazette, regulation, legislation], class: official, fetch: blocked, verified_on: 2026-11-13}

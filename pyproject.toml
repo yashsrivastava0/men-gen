@@ -17,6 +17,7 @@ dependencies = [
   "mde-spec-builder",
   "mde-flow",
   "mde-compass",
+  "mde-research-agent",
   "mde-context-api",
   "mde-llm-gateway-api",
   "mde-cli",
@@ -26,7 +27,8 @@ dependencies = [
 package = false
 
 [tool.uv.workspace]
-members = ["packages/*", "apps/*"]
+members = ["packages/*", "apps/*", "agents/*"]
+exclude = ["apps/web", "apps/research-console"]  # front ends are static files, not Python members
 
 [tool.uv.sources]
 mde-core = { workspace = true }
@@ -41,6 +43,7 @@ mde-research = { workspace = true }
 mde-spec-builder = { workspace = true }
 mde-flow = { workspace = true }
 mde-compass = { workspace = true }
+mde-research-agent = { workspace = true }
 mde-context-api = { workspace = true }
 mde-llm-gateway-api = { workspace = true }
 mde-cli = { workspace = true }
@@ -85,12 +88,14 @@ ignore = [
 "scripts/**" = ["T20", "S603", "S607", "S404"]
 "apps/cli/**" = ["T20"]
 ".claude/hooks/**" = ["T20", "S603", "S607"]
-"packages/llm-gateway/**" = ["TID251"]   # the only package allowed to import openai
+"packages/llm-gateway/**" = ["TID251"]   # the only package allowed to import a model vendor SDK
 "packages/persistence/**/migrations/**" = ["E402"]
-"packages/compass/**/migrations/**" = ["E402"]
+"agents/compass/**/migrations/**" = ["E402"]
+"agents/research/**/migrations/**" = ["E402"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
-"openai".msg = "Only mde_llm_gateway may import openai (brief section 2)."
+"openai".msg = "Only mde_llm_gateway may import a model vendor SDK (brief section 2, rule 14)."
+"anthropic".msg = "Only mde_llm_gateway may import a model vendor SDK (brief section 2, rule 14)."
 "langchain".msg = "Agent frameworks are forbidden."
 "langgraph".msg = "Agent frameworks are forbidden."
 "llama_index".msg = "Agent frameworks are forbidden."
@@ -107,7 +112,8 @@ ignore = [
 known-first-party = [
   "mde_core", "mde_contracts", "mde_llm_gateway", "mde_prompts", "mde_content",
   "mde_persistence", "mde_spec_loader", "mde_discovery", "mde_research",
-  "mde_spec_builder", "mde_flow", "mde_compass", "mde_context_api", "mde_llm_gateway_api", "mde_cli",
+  "mde_spec_builder", "mde_flow", "mde_compass", "mde_research_agent", "mde_context_api",
+  "mde_llm_gateway_api", "mde_cli",
 ]
 
 [tool.ruff.format]
@@ -118,7 +124,7 @@ venvPath = "."
 venv = ".venv"
 pythonVersion = "3.13"
 typeCheckingMode = "standard"
-include = ["packages", "apps", "scripts", "tests", "evals"]
+include = ["packages", "apps", "agents", "scripts", "tests", "evals"]
 exclude = ["**/__pycache__", "**/.venv", "data", "**/migrations/versions"]
 reportMissingTypeStubs = false
 # strict where the brief requires it (5.3)
@@ -133,12 +139,12 @@ strict = [
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-testpaths = ["packages", "apps", "tests"]
+testpaths = ["packages", "apps", "agents", "tests"]
 addopts = "-ra --strict-markers --import-mode=importlib"
 markers = [
   "integration: needs the local PostgreSQL cluster (just db-up)",
   "e2e: end-to-end through the API in mock mode",
-  "live: calls the real OpenAI API; needs ALLOW_LIVE_LLM=1 in the outer environment",
+  "live: calls the real OpenAI API; needs LLM_MODE=live in the outer environment",
   "slow: slow test",
 ]
 filterwarnings = ["error::DeprecationWarning:mde_*"]
@@ -147,5 +153,6 @@ filterwarnings = ["error::DeprecationWarning:mde_*"]
 branch = true
 source = [
   "packages/flow/src", "packages/llm-gateway/src", "packages/spec-loader/src",
-  "packages/spec-builder/src", "packages/discovery/src", "packages/compass/src",
+  "packages/spec-builder/src", "packages/discovery/src", "agents/compass/src",
+  "agents/research/src",
 ]

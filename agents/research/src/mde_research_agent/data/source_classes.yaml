@@ -1,0 +1,28 @@
+# Order of rules: authority registry, TLD patterns, documentation subdomains, store domains, then heuristics.
+# Source classes: official | official_inferred | store | help | press | blog | forum | seo.
+# `official_inferred` is official BY PATTERN: the host's public suffix looks like a government, an education body or an
+# intergovernmental one, but the domain is not in the authority registry (data/authority). Code decides it, never the model.
+# A pattern is dotted labels matched against the END of the host; `*` is exactly one two-letter label (a country code), so
+# `gov.*` matches gov.in, gov.uk and gov.ae and `go.*` matches go.ke and go.cr but not x.go.com.
+official_suffix_patterns: [gov, "gov.*", "gob.*", "gouv.*", "govt.*", "go.*", nic.in, edu, "edu.*", "ac.*", europa.eu, int]
+# Only where a country code is part of the pattern: the page counts for a topic of THAT country (a Brazilian ministry says
+# nothing official about an Indian rule). Without a country in the topic the pattern alone decides.
+doc_subdomain_prefixes: [docs, developer, developers, api, dev, reference, support-docs]
+help_subdomain_prefixes: [help, support, helpcenter, faq, learn, kb]
+store_domains: [apps.apple.com, play.google.com, appgallery.huawei.com, microsoft.com/store]
+forum_domains: [reddit.com, quora.com, stackexchange.com, stackoverflow.com, news.ycombinator.com, community.cloudflare.com, discuss.python.org, answers.microsoft.com, facebook.com, instagram.com, linkedin.com, tiktok.com, x.com, twitter.com, pinterest.com]
+forum_subdomain_prefixes: [community, forum, forums, discuss, answers]
+blog_domains: [medium.com, substack.com, wordpress.com, blogspot.com, hashnode.com, dev.to, ghost.io, tumblr.com]
+blog_path_markers: ["/blog/", "/blogs/", "/post/", "/posts/", "/article/", "/articles/"]
+# Review aggregators and affiliate listicles count as seo: they cannot support high-impact claims.
+seo_domains: [g2.com, capterra.com, softwareadvice.com, getapp.com, trustradius.com, sourceforge.net, alternativeto.net, appsruntheworld.com]
+seo_title_patterns: ["top \\d+", "best \\d+", "\\d+ best", "best .* (apps|software|tools) (in|for|of) 20\\d\\d", "ultimate guide", "\\bvs\\.? ", "alternatives to", "review(s)? (and|&) pricing"]
+press_domains: [reuters.com, bloomberg.com, techcrunch.com, economictimes.indiatimes.com, livemint.com, thehindu.com, business-standard.com, moneycontrol.com, yourstory.com, inc42.com, entrackr.com, bbc.com, theguardian.com, ft.com, wsj.com, nytimes.com, forbes.com, thenationalnews.com, businessdailyafrica.com, techcabal.com]
+# Social platforms are user-generated (forum above), and their robots.txt refuses our reader: a result from one of them is
+# read only when the search provider already returned its text (300+ characters). Without it the page attempt is never
+# made, so it does not use up a page of the ceiling (Small run 2026-11-11: facebook, instagram, linkedin cost 5 of 40).
+walled_domains: [facebook.com, instagram.com, linkedin.com, tiktok.com, x.com, twitter.com, pinterest.com]
+# Classes that cannot support a high-impact claim on their own (R8, R9).
+cannot_support_high_impact: [forum, blog, seo]
+# Classes that count as an authoritative origin for rules and provider facts.
+authoritative: [official, help]

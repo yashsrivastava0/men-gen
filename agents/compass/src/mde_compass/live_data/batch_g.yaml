@@ -1,0 +1,161 @@
+# Batch G: document-led and Hinglish sessions (build prompt 02, section 6).
+#
+# (a) A PRD-led session: the first user event is a document upload, then the interview. Few questions are
+#     expected: nothing the document already answers should be asked again, document claims become facts with
+#     verified quotes, and an unverified quote never leads to a Locked item.
+# (b) A Hinglish interview of about eight questions and answers: the questions must come in the session's
+#     language (``card.language``), and facts keep the person's own words verbatim.
+#
+# The answer policy is the one of batch F (see batch_f.yaml for how the pools and cycles are read).
+id: G
+title: Document-led and Hinglish sessions
+allowance_usd: "0.40"
+thresholds:
+  prd_questions_max: 8
+sessions:
+  - id: prd_led
+    kind: interview
+    label: PRD-led session (FreshCrate weekly produce subscription)
+    idea: ""
+    budget: standard
+    start_locale: en
+    max_actions: 20  # a Standard interview now ends with the closing question and may use follow-up slack
+    text_on_choice_every: 0
+    answer_cycle: [specific, specific, vague, specific]
+    skip_turns: []
+    you_decide_turns: []
+    document:
+      filename: freshcrate-prd.txt
+      text: |
+        Product Requirements Document: FreshCrate
+
+        1. Overview
+        FreshCrate is a weekly vegetable and fruit subscription for apartment communities in Bengaluru. Residents of a community choose a crate size once and receive a fresh crate every Saturday morning.
+
+        2. Users
+        Residents order and pay for crates. Community managers collect a minimum of 25 subscribers per apartment complex before a route goes live. Farm partners pack the crates. Delivery partners drop the crates at the community gate between 6 am and 9 am.
+
+        3. Core flows
+        A resident picks a crate size (small, medium or family) and a delivery day.
+        A resident can skip a week up to Thursday 8 pm.
+        A resident can swap up to 3 items per crate from a seasonal list.
+        Farm partners confirm the harvest list every Wednesday before 6 pm.
+        Delivery partners scan each crate at the gate and take a photo as proof of delivery.
+
+        4. Business rules
+        Subscriptions are billed weekly through UPI autopay, and a failed payment pauses the next crate.
+        Refunds for damaged items are approved by the support team within 24 hours.
+        The family crate costs Rs 899 per week, the medium crate Rs 599 and the small crate Rs 349.
+        Community managers earn 5 percent of the subscriptions in their community.
+
+        5. Platforms and languages
+        Android first, iOS after launch. English and Kannada, with Hindi to follow.
+
+        6. Out of scope for version one
+        Grocery items beyond fruit and vegetables, same-day delivery, and any city outside Bengaluru.
+    pools:
+      by_need:
+        audience.segments:
+          specific:
+            - "Families in gated apartment communities in Bengaluru, mostly in Whitefield and Sarjapur, who want fresh produce without a weekly market trip."
+          vague: ["apartment residents"]
+        scope.priority:
+          specific:
+            - "First release: choosing a crate, weekly UPI billing, the skip-a-week option and the delivery proof photo."
+          vague: ["subscriptions first"]
+        look.tone_words:
+          specific:
+            - "Fresh, calm and trustworthy, with green colours and photos of real vegetables, easy for parents to use one-handed."
+          vague: ["fresh green feel"]
+        integrations.wanted:
+          specific:
+            - "UPI autopay through Razorpay, WhatsApp messages for delivery updates and Google Maps for the routes."
+          vague: ["payment maps"]
+        data.sensitive:
+          specific:
+            - "Home address with flat number, phone number and payment mandate details held by the payment provider only."
+          vague: ["resident details"]
+      generic:
+        specific:
+          - "We start with 6 communities and about 400 residents, and plan 40 communities within the first year."
+          - "Our farm partners are three cooperatives near Hoskote who already pack crates for us by hand."
+          - "A missed delivery must be refunded automatically as credit for the next crate."
+          - "Community managers need a simple list of who has paid and who has paused this week."
+        vague: ["keep it simple", "the usual way", "as discussed"]
+    expected_calls:
+      cmp.read_chunk: 1
+      cmp.merge_claims: 1
+      cmp.understand_turn: 12
+      cmp.situate: 1
+      cmp.plan_questions: 8
+      cmp.audit_questions: 8
+      cmp.update_summary: 1
+      cmp.compile_brief: 1
+      cmp.compile_text: 1
+      cmp.seed_research: 1
+      cmp.probe_handoff: 3
+      cmp.scan_ambiguity: 1
+  - id: hinglish
+    kind: interview
+    label: Hinglish interview (tiffin delivery in Pune)
+    idea: >-
+      Mujhe Pune mein ek tiffin delivery app banana hai, office wale log roz dopahar ka khana order
+      karenge aur mere riders deliver karenge.
+    budget: standard
+    start_locale: hi-Latn
+    expect_language: ["hi", "hi-Latn"]
+    max_actions: 20
+    max_answers: 8
+    qa_range: [8, 14]
+    tail: you_decide
+    text_on_choice_every: 3
+    answer_cycle: [specific, specific, vague, specific]
+    skip_turns: []
+    you_decide_turns: []
+    pools:
+      by_need:
+        audience.segments:
+          specific:
+            - "Baner aur Hinjewadi ke office wale log, zyada tar IT job karne wale, jo roz ghar jaisa khana chahte hain."
+          vague: ["office wale log"]
+        context.geo:
+          specific:
+            - "Abhi sirf Pune mein, Baner, Aundh aur Hinjewadi ke areas mein, doosre shehar baad mein."
+          vague: ["Pune mein bas"]
+        apps.list:
+          specific:
+            - "Ek customer app aur ek chhota rider app chahiye, kitchen manager ke liye bas ek web page."
+          vague: ["customer app bas"]
+        roles.list:
+          specific:
+            - "Customer, rider, kitchen manager jo menu daalta hai, aur main owner jo payments dekhta hoon."
+          vague: ["customer rider owner"]
+        scope.features:
+          specific:
+            - "Roz ka menu dekhna, 10 baje se pehle order karna, UPI se payment aur rider ko live track karna."
+          vague: ["order karna bas"]
+        idea.business_model:
+          specific:
+            - "Customer har khane ke 120 rupaye deta hai ya mahine ka plan 2400 mein, aur rider ko main har delivery ke hisaab se paise deta hoon."
+          vague: ["customer paise deta hai"]
+        scope.priority:
+          specific:
+            - "Pehle version mein menu, order, UPI payment aur rider tracking chahiye, ratings baad mein."
+          vague: ["order pehle"]
+      generic:
+        specific:
+          - "Abhi hum roz lagbhag 200 order WhatsApp pe lete hain, isliye app ko itna sambhalna aana chahiye."
+          - "Khana 12 se 1 baje ke beech office pahunchna chahiye, late hua to us khane ke paise wapas."
+          - "Hum sirf Pune mein shuru karenge, doosre shehar is saal nahi."
+        vague: ["kuch simple sa", "aam tareeke se", "jaisa theek lage"]
+    expected_calls:
+      cmp.understand_turn: 11
+      cmp.situate: 1
+      cmp.plan_questions: 8
+      cmp.audit_questions: 8
+      cmp.update_summary: 1
+      cmp.compile_brief: 1
+      cmp.compile_text: 1
+      cmp.seed_research: 2
+      cmp.probe_handoff: 6
+      cmp.scan_ambiguity: 1

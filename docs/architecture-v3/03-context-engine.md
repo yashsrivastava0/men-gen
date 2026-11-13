@@ -1,5 +1,7 @@
 # 03. The Context Engine: six stage-engines
 
+> **Superseded in part, 2026-11-10 ([doc 12](12-four-agent-pipeline.md), AD-35..38).** The Context Engine is now **four agents**: Compass (stage 1), Research (stage 2, runs in the background from the first question batch), **Spec** (stages 3, 4 and 5 as the Product, Design and Screens lanes of one agent: Product ‖ Design → join → Freeze → Screens batches) and **Verify and package** (stage 6, streaming). The steps, validators, artifacts, depth profiles, gates and worked example below stay valid as lane and agent content. Where this page and doc 12 differ, doc 12 wins. Research depth, jobs, pipeline and output format: doc 13 wins (2026-11-10).
+
 The Context Engine is six engines in sequence. Each reads the committed Spec Graph (only the parts it needs), runs a pipeline of schema-checked steps, writes **one artifact**, and commits it to the graph after validation. Code controls the order. There are no free-roaming agent loops; the only bounded tool loop is Research (read-only). (AD-02)
 
 ```
@@ -11,11 +13,11 @@ The Context Engine is six engines in sequence. Each reads the committed Spec Gra
 After G2 the chain continues in other engines: Front-end (spec slices -> app + preview, G2.5 and **G3**), Backend (Approved Build Manifest -> server), QA (journey replay), optional G4.
 
 ## 1. Depth profiles (data, chosen from size and customer)
-| Parameter | Express | Standard | Large |
+| Parameter (Compass tiers: Quick = Express, Thorough = Large; see doc 12 §4.3) | Express | Standard | Large |
 |---|---|---|---|
 | Size | ≤ 12 screens, one app | 13-60 screens, 1-2 apps | 60+ screens, multi-app, multi-approver |
 | Interview | ≤ 5 cards, defaults allowed from the first message | ~7 cards, 10 max | per-module pass, documents first, 10 cards per module max |
-| Research | none or light (≤ 4 searches) | ~12 searches | ~20 searches + one gap-fill round |
+| Research (superseded by doc 13 §7, v3) | derived from the Brief, not the tier: focused load, ceiling 20 searches | standard load, ceiling 40 | deep load, ceiling 80; all foreground after G1 |
 | G1.5 structure checkpoint | off | soft (non-blocking) | hard |
 | G2.5 slice preview | off | soft | hard |
 | Sufficiency probe | sampled 20% | all screens, sampled flows/ops | 100% of slices, flows and operations |

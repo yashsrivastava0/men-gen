@@ -1,0 +1,316 @@
+"""All Compass tunables in one place (the only module with numbers that logic depends on).
+
+Nothing here is secret. Money is integer micro-dollars (1 USD = 1_000_000) or ``Decimal``, never float.
+Environment overrides are read in one function (``load_budget_policy``) so tests can pass a dict.
+"""
+
+from __future__ import annotations
+
+import os
+from collections.abc import Mapping
+from dataclasses import dataclass, field
+from decimal import Decimal
+from typing import Literal
+
+MODEL_ID = "gpt-6-luna"
+"""The one model Compass uses (through the gateway). Every call spec carries a ``lane`` so a second
+vendor can be added later without redesign."""
+
+MICROS_PER_USD = 1_000_000
+
+Effort = Literal["none", "low", "medium", "high"]
+Lane = Literal["writer", "critic", "canary"]
+Route = Literal["fast", "standard", "deep"]
+
+
+@dataclass(frozen=True)
+class CallProfile:
+    """Starting values for one structured call (prompt section 7). Reasoning tokens count against
+    ``max_output_tokens``, so the caps are generous; measure in the live smoke and tune."""
+
+    call_id: str
+    effort: Effort
+    max_output_tokens: int
+    lane: Lane
+    route: Route
+    timeout_s: float
+
+
+def _p(
+    call_id: str, effort: Effort, cap: int, lane: Lane, route: Route, timeout: float
+) -> CallProfile:
+    return CallProfile(call_id, effort, cap, lane, route, timeout)
+
+
+CALL_PROFILES: dict[str, CallProfile] = {
+    p.call_id: p
+    for p in (
+        _p("cmp.read_chunk", "medium", 8000, "writer", "standard", 90),
+        _p("cmp.merge_claims", "high", 6000, "writer", "deep", 120),
+        _p("cmp.situate", "high", 6000, "writer", "deep", 90),
+        _p("cmp.understand_turn", "low", 3500, "writer", "standard", 60),
+        _p("cmp.answer", "medium", 1500, "writer", "standard", 45),
+        _p("cmp.write_card", "high", 2500, "writer", "deep", 60),
+        _p("cmp.scan_ambiguity", "medium", 2500, "critic", "standard", 60),
+        _p("cmp.seed_research", "low", 4500, "writer", "standard", 60),
+        _p("cmp.probe_handoff", "low", 2500, "canary", "fast", 30),
+        _p("cmp.compile_text", "high", 3500, "writer", "deep", 90),
+        _p("cmp.interpret_change", "high", 3500, "writer", "deep", 90),
+        _p("cmp.make_variants", "high", 2500, "writer", "deep", 60),
+        # the AI-planned interview (build prompt 02): starting caps, measured in the live batches
+        _p("cmp.plan_questions", "low", 3500, "writer", "standard", 90),
+        _p("cmp.audit_questions", "low", 2000, "critic", "standard", 60),
+        _p("cmp.update_summary", "medium", 2500, "writer", "standard", 60),
+        _p("cmp.decide_answers", "low", 2000, "writer", "standard", 30),
+        _p("cmp.compile_brief", "low", 12000, "writer", "standard", 120),
+        _p("cmp.rephrase_question", "medium", 1500, "writer", "standard", 45),
+        # the structure of the app (ADR 0017): starting caps, calibrated in the live program (plan 8a). The cap
+        # includes reasoning, so it is generous; the timeout stays under the gateway's 60 s per attempt.
+        _p("cmp.draft_outline", "low", 4000, "writer", "standard", 40),
+        _p("cmp.draft_module", "low", 5000, "writer", "standard", 55),
+        _p("cmp.review_structure", "low", 2500, "critic", "standard", 45),
+    )
+}
+
+
+@dataclass(frozen=True)
+class QuestionPolicy:
+    """Question budgets and the weights of the value-of-information score (pure function, tested)."""
+
+    express_max: int = 5
+    standard_target: int = 7
+    hard_cap: int = 10
+    large_per_module: int = 6
+    # score = w_impact*impact + w_risk*risk - w_infer*inferability - w_effort*effort
+    w_impact: float = 3.0
+    w_risk: float = 2.0
+    w_inferability: float = 2.5
+    w_effort: float = 0.5
+    high_impact_at: int = 4  # catalog impact 1..5
+    high_inferability_at: float = 0.75
+    max_followups_per_answer: int = 1
+    max_question_words: int = 26  # live batches lost good questions at 20 (rejected as too long)
+    max_option_words: int = 8
+    option_count: int = 3
+    card_validation_retries: int = 2  # two validation failures in a row -> fallback card
+
+
+InterviewEngine = Literal["legacy", "planner"]
+InterviewBudget = Literal["quick", "standard", "thorough"]
+
+
+@dataclass(frozen=True)
+class InterviewPolicy:
+    """The AI-planned interview (build prompt 02): budgets, follow-up rules, thresholds. Code decides all of these;
+    the model only proposes questions. Numbers marked *calibrate* are set from the live planner-quality batch."""
+
+    # ``legacy`` is the frame-driven path kept only while the planner path is built (D-090); removed in phase 8.
+    engine: InterviewEngine = "planner"
+    # the layout of a planned batch: one form, submitted once (ADR 0016). Drivers that answer card by card (the
+    # scenario runner, the persona and live-batch players) ask for ``one_at_a_time`` explicitly.
+    default_ui_mode: Literal["one_at_a_time", "answer_all"] = "answer_all"
+    # question quality rules the product enforces (ADR 0016): at most this share of a batch may be open prompts (the
+    # product is mostly tap-to-answer), and a question must serve a need that is open, ask-eligible and above an
+    # impact floor (the necessity rule). Scripted scenario fixtures predate them and switch them off in the runner.
+    open_prompt_share: float = 1 / 3
+    necessity_check: bool = True
+    # question budgets (follow-ups included)
+    quick_max: int = 7  # the tier targets (ADR 0016); the closing question is one of them
+    standard_max: int = 12
+    thorough_max: int = 25
+    # hard caps (ADR 0016): never exceeded, counting follow-ups, the gap question and the closing question. The
+    # ``*_max`` numbers above are the tier TARGETS (they become 7 / 12 / 25 with the engine change); the slack
+    # between target and hard cap is what follow-ups may use. Not read by the engine yet.
+    quick_hard: int = 10
+    standard_hard: int = 15
+    thorough_hard: int = 30
+    # first batch sizes (min, max) by budget; later batches of the thorough budget are 6 to 8
+    quick_first_batch: tuple[int, int] = (3, 3)  # every batch of the tier, not only the first
+    standard_first_batch: tuple[int, int] = (4, 4)
+    thorough_batch: tuple[int, int] = (5, 5)
+    groups_per_batch: tuple[int, int] = (1, 2)
+    questions_per_group: tuple[int, int] = (3, 4)
+    fan_out: bool = True
+    parallel_initial_plan: bool = False
+    deterministic_taps: bool = True
+    # follow-ups
+    followup_max_depth: int = (
+        1  # per need: a follow-up is never followed up (a second thin answer is assumed)
+    )
+    followup_max_fraction: float = 0.4  # follow-ups at most this share of the base questions
+    # stopping
+    fatigue_streak: int = 2  # consecutive skips / "you decide" / very short answers
+    fatigue_short_chars: int = 2
+    marginal_new_facts_min: int = (
+        1  # a batch that adds fewer facts than this counts as low marginal value
+    )
+    # validators and auditor
+    audit_min_specificity: int = 3  # reject below this, or any flag
+    repair_attempts: int = 1  # one repair call for rejected questions, then drop
+    repair_only_when_short: bool = (
+        True  # repair only when fewer than want_min questions survived (live: saves ~30 s)
+    )
+    min_accepted_share: float = (
+        0.5  # fewer accepted than this share of a batch triggers the repair call
+    )
+    project_term_share_min: float = (
+        0.9  # target: share of non-universal questions with a project term
+    )
+    cross_idea_overlap_max: float = (
+        0.5  # calibrate: pairwise Jaccard of question terms across ideas
+    )
+    duplicate_similarity_min: float = (
+        0.8  # calibrate: normalized-text similarity that counts as a repeat
+    )
+    same_need_similarity_min: float = 0.6  # two questions for exactly the same needs count as a repeat from this similarity (live batch E: 0.70)
+    # facts and quotes
+    min_quote_chars: int = 3
+    high_confidence_closes_need: float = (
+        0.8  # a fact at or above this closes its need (becomes a confirmation)
+    )
+    understand_concurrency: int = 4  # answer-all form: parallel understand_turn calls
+    # ADR 0017: draft the structure of the app (modules, screens, flows, entities) while the Brief is built. Off by
+    # default so every test and scenario keeps its call counts; on in the live product policy. ``structure_prefetch``
+    # starts the draft while the closing question is on screen (optional, off until a live run shows it pays).
+    structure_enabled: bool = False
+    structure_prefetch: bool = False
+
+    def budget_max(self, budget: InterviewBudget) -> int:
+        return {
+            "quick": self.quick_max,
+            "standard": self.standard_max,
+            "thorough": self.thorough_max,
+        }[budget]
+
+    def hard_cap(self, budget: InterviewBudget) -> int:
+        """The most questions an interview of this tier may ever put to the person (ADR 0016)."""
+        return {
+            "quick": self.quick_hard,
+            "standard": self.standard_hard,
+            "thorough": self.thorough_hard,
+        }[budget]
+
+
+@dataclass(frozen=True)
+class ContextBudgets:
+    """Token budgets of the working context sent with each interview call (build prompt 02, section 3.3).
+    Tokens are estimated as characters / ``chars_per_token`` (no tokenizer dependency); measure and adjust."""
+
+    project_card: int = 1500
+    fact_digest: int = (
+        4500  # tokens; 4500 * 4 chars stays under the gateway's 20,000-char cap on untrusted input
+    )
+    needs_table: int = 2000
+    asked_list: int = 1500
+    last_qa: int = 1500
+    last_qa_count: int = 4
+    compile_chunk_facts: int = 120  # facts per compile call above the ceiling (~150 placements fit)
+    compile_ceiling: int = (
+        60_000  # above this, compile_brief works per section, then one consistency pass
+    )
+    chars_per_token: int = 4
+
+
+@dataclass(frozen=True)
+class IntakeLimits:
+    max_file_bytes: int = 15 * 1024 * 1024
+    max_files: int = 10
+    max_session_bytes: int = 60 * 1024 * 1024
+    max_pages: int = 300
+    max_urls: int = 5
+    pasted_text_is_document_over: int = 3000  # characters
+    url_timeout_s: float = 10.0
+    url_max_bytes: int = 2 * 1024 * 1024
+    url_max_redirects: int = 3
+    chunk_target_tokens: tuple[int, int] = (3000, 4000)
+    extract_concurrency: int = 4
+
+
+@dataclass(frozen=True)
+class GatePolicy:
+    probe_repair_rounds: int = 2
+    typed_yes_min_confidence: float = 0.8
+    required_approver_roles: tuple[str, ...] = ("approver",)
+    history_slice_turns: int = 6
+    max_back_edge_loops: int = 2
+
+
+@dataclass(frozen=True)
+class BudgetPolicy:
+    """The Compass-only live-test cap, additive to the repo's global cap and ledger (prompt 4).
+
+    Owner decision 2026-11-09 (D-093): the hard ceiling is USD 3.00, the aim is to finish every live batch
+    under ``target_usd`` (USD 2.00), and cost is not to slow the work down. The guard enforces the ceiling;
+    the target is what the batch runner plans and reports against.
+    """
+
+    hard_cap_usd: Decimal = Decimal("3.00")
+    cap_usd: Decimal = Decimal("3.00")  # ``COMPASS_LIVE_BUDGET_USD`` clamped to <= hard_cap_usd
+    target_usd: Decimal = Decimal("2.00")  # plan and report against this; not enforced by the guard
+    stop_fraction: Decimal = Decimal("0.95")  # effective stop at 95% of the cap (2.85)
+    per_session_cap_usd: Decimal = Decimal(
+        "1.00"
+    )  # a Thorough interview with a document needs more than 0.50 (D-124)
+    reserve_usd: Decimal = Decimal(
+        "0.30"
+    )  # kept unspent across the live batches (owner manual sessions)
+
+    @property
+    def effective_stop_micros(self) -> int:
+        return int(self.cap_usd * self.stop_fraction * MICROS_PER_USD)
+
+    @property
+    def per_session_micros(self) -> int:
+        return int(self.per_session_cap_usd * MICROS_PER_USD)
+
+    @property
+    def cap_micros(self) -> int:
+        return int(self.cap_usd * MICROS_PER_USD)
+
+
+def load_budget_policy(env: Mapping[str, str] | None = None) -> BudgetPolicy:
+    """``COMPASS_LIVE_BUDGET_USD`` is clamped: unparsable, non-positive or above 3.00 never widens it."""
+    source = os.environ if env is None else env
+    hard = BudgetPolicy().hard_cap_usd
+    raw = source.get("COMPASS_LIVE_BUDGET_USD")
+    cap = hard
+    if raw is not None:
+        try:
+            parsed = Decimal(raw.strip())
+        except Exception:
+            parsed = hard
+        if parsed.is_finite() and parsed > 0:
+            cap = min(parsed, hard)
+    return BudgetPolicy(cap_usd=cap)
+
+
+PRODUCT_INTERVIEW_POLICY = InterviewPolicy(
+    quick_first_batch=(5, 6),
+    standard_first_batch=(5, 6),
+    thorough_batch=(7, 8),
+    groups_per_batch=(1, 3),
+    questions_per_group=(2, 4),
+    fan_out=True,
+    parallel_initial_plan=True,
+    deterministic_taps=True,
+    structure_enabled=True,
+)
+
+
+@dataclass(frozen=True)
+class CompassConfig:
+    questions: QuestionPolicy = field(default_factory=QuestionPolicy)
+    interview: InterviewPolicy = field(default_factory=InterviewPolicy)
+    context: ContextBudgets = field(default_factory=ContextBudgets)
+    intake: IntakeLimits = field(default_factory=IntakeLimits)
+    gate: GatePolicy = field(default_factory=GatePolicy)
+    budget: BudgetPolicy = field(default_factory=BudgetPolicy)
+    default_language: str = "en"
+    supported_languages: tuple[str, ...] = ("en", "hi")
+    max_event_text_chars: int = 20_000
+    sse_poll_seconds: float = 0.25
+    sse_max_seconds: float = 900.0
+    prefetch_enabled: bool = False  # stretch goal, default off
+
+
+DEFAULT_CONFIG = CompassConfig()

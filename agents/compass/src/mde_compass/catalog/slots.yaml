@@ -1,0 +1,2146 @@
+slots:
+- id: idea.summary
+  group: idea
+  label:
+    en: Your idea in one line
+    hi: आपका आइडिया एक पंक्ति में
+  level: must
+  consumers:
+  - all
+  filled_by:
+  - U
+  - D
+  impact: 5
+  risk: low
+  effort: text
+  value_schema: &id001
+    kind: text
+  brief_path: idea.summary
+  order: 1
+  answer_spec:
+    sufficient: "One or two sentences that say what the app does and for whom, in the user's own words."
+    aspects: [what_it_does, for_whom]
+    fact_types: [goal, requirement, context]
+    min_facts: 1
+  universal: true
+  fallback_card:
+    type: open_prompt
+    question:
+      en: What would you like your app to do?
+      hi: आप चाहते हैं कि आपका ऐप क्या करे?
+    why_we_ask:
+      en: Everything else we plan starts from this.
+      hi: बाकी सारी योजना इसी से शुरू होती है।
+    options: []
+    placeholder:
+      en: Describe it in a few words
+      hi: कुछ शब्दों में बताइए
+- id: idea.category
+  group: idea
+  label:
+    en: Kind of app
+    hi: ऐप का प्रकार
+  level: must
+  consumers:
+  - research
+  - blueprint
+  filled_by:
+  - I
+  - U
+  impact: 5
+  risk: low
+  effort: tap
+  value_schema: *id001
+  ask_if: filled('idea.summary')
+  brief_path: idea.category
+  order: 1
+  answer_spec:
+    sufficient: "The kind of app, specific enough to choose which similar apps to study (a multi-restaurant delivery marketplace, not just 'commerce')."
+    aspects: [category, sub_kind]
+    fact_types: [context, requirement]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: Which of these is closest to your app?
+      hi: इनमें से कौन सा आपके ऐप के सबसे करीब है?
+    why_we_ask:
+      en: It tells us which similar apps to study.
+      hi: इससे पता चलता है कि कौन से मिलते-जुलते ऐप देखने हैं।
+    options:
+    - id: A
+      label:
+        en: People buy or order things
+        hi: लोग चीज़ें खरीदते या ऑर्डर करते हैं
+      value: commerce
+    - id: B
+      label:
+        en: People book a time or a place
+        hi: लोग समय या जगह बुक करते हैं
+      value: booking
+    - id: C
+      label:
+        en: A tool for my team to manage work
+        hi: मेरी टीम के काम सँभालने का टूल
+      value: internal_tool
+- id: idea.subcategory
+  group: idea
+  label:
+    en: Kind of app, in detail
+    hi: ऐप का प्रकार, विस्तार से
+  level: must
+  consumers:
+  - research
+  - blueprint
+  filled_by:
+  - I
+  - U
+  impact: 4
+  risk: low
+  effort: text
+  value_schema: *id001
+  ask_if: filled('idea.category')
+  brief_path: idea.subcategory
+  order: 1
+  answer_spec:
+    sufficient: "A more specific description of the sub-kind: who sells or provides what to whom, and how it is delivered or used."
+    aspects: [provides_what, to_whom, how_delivered]
+    fact_types: [context, requirement]
+    min_facts: 1
+  domain_topics: ["how it is delivered", "who provides it"]
+  fallback_card:
+    type: open_prompt
+    question:
+      en: What exactly does your business or service do?
+      hi: आपका काम या सेवा ठीक-ठीक क्या है?
+    why_we_ask:
+      en: A precise kind of app lets us study the right examples.
+      hi: सही प्रकार पता हो तो हम सही उदाहरण देख पाते हैं।
+    options: []
+    placeholder:
+      en: 'For example: what you sell, offer or manage'
+      hi: 'जैसे: आप क्या बेचते, देते या सँभालते हैं'
+- id: idea.business_model
+  group: idea
+  label:
+    en: How it earns money
+    hi: कमाई कैसे होगी
+  level: must
+  must_where: money flows
+  consumers:
+  - research
+  - blueprint
+  filled_by:
+  - U
+  - P
+  impact: 4
+  risk: medium
+  effort: tap
+  value_schema: *id001
+  ask_if: filled('idea.category') and value('idea.category') != 'internal_tool'
+  brief_path: idea.business_model
+  order: 1
+  answer_spec:
+    sufficient: "Who pays whom for what, where the revenue comes from, and which parts are free versus paid."
+    aspects: [payer, payee, revenue_source, free_vs_paid]
+    fact_types: [rule, requirement, context]
+    min_facts: 1
+  domain_topics: ["pricing", "commission or fees", "payouts", "subscriptions"]
+  fallback_card:
+    type: choose_one
+    question:
+      en: How will the app earn money?
+      hi: ऐप से कमाई कैसे होगी?
+    why_we_ask:
+      en: It decides which payment and plan screens are needed.
+      hi: इससे तय होता है कि भुगतान और प्लान की कौन सी स्क्रीन चाहिए।
+    options:
+    - id: A
+      label:
+        en: A small fee on each sale or booking
+        hi: हर बिक्री या बुकिंग पर छोटी फ़ीस
+      value: per_transaction_fee
+    - id: B
+      label:
+        en: A monthly or yearly plan
+        hi: मासिक या वार्षिक प्लान
+      value: subscription
+    - id: C
+      label:
+        en: Free to use; the business pays for it
+        hi: इस्तेमाल मुफ़्त; खर्च व्यवसाय उठाता है
+      value: business_funded
+- id: idea.problem_value
+  group: idea
+  label:
+    en: The problem it solves
+    hi: यह किस समस्या को सुलझाता है
+  level: should
+  consumers:
+  - research
+  - design
+  filled_by:
+  - U
+  - D
+  - I
+  impact: 3
+  risk: low
+  effort: text
+  value_schema: *id001
+  ask_if: filled('idea.category')
+  brief_path: idea.problem_value
+  order: 1
+  answer_spec:
+    sufficient: "The problem the app solves, for whom, and what is painful about how they cope today."
+    aspects: [problem, who_has_it, current_workaround]
+    fact_types: [goal, context]
+    min_facts: 1
+  domain_topics: ["current workaround"]
+  fallback_card:
+    type: open_prompt
+    question:
+      en: What problem should the app solve for people?
+      hi: ऐप को लोगों की कौन सी समस्या सुलझानी चाहिए?
+    why_we_ask:
+      en: It helps us pick what to build first.
+      hi: इससे तय होता है कि पहले क्या बनाना है।
+    options: []
+    placeholder:
+      en: Say it in your own words
+      hi: अपने शब्दों में बताइए
+- id: idea.differentiator
+  group: idea
+  label:
+    en: What makes it different
+    hi: इसे अलग क्या बनाता है
+  level: should
+  consumers:
+  - research
+  - design
+  filled_by:
+  - U
+  - D
+  - I
+  impact: 2
+  risk: low
+  effort: text
+  value_schema: *id001
+  ask_if: filled('idea.category')
+  brief_path: idea.differentiator
+  order: 1
+  answer_spec:
+    sufficient: "What makes this idea different from existing apps or from the way people do it today."
+    aspects: [difference]
+    fact_types: [preference, context, requirement]
+    min_facts: 1
+  fallback_card:
+    type: open_prompt
+    question:
+      en: What would make your app different from others?
+      hi: आपका ऐप दूसरों से अलग कैसे होगा?
+    why_we_ask:
+      en: It guides the research and the look.
+      hi: इससे रिसर्च और रूप की दिशा तय होती है।
+    options: []
+    placeholder:
+      en: One or two lines are enough
+      hi: एक-दो पंक्तियाँ काफ़ी हैं
+- id: context.geo
+  group: context
+  label:
+    en: Country and city
+    hi: देश और शहर
+  level: must
+  consumers:
+  - research
+  - blueprint
+  - design
+  filled_by:
+  - U
+  - D
+  impact: 5
+  risk: low
+  effort: text
+  value_schema:
+    kind: geo
+    fields:
+    - country
+    - city
+    - region
+  ask_if: filled('idea.summary')
+  brief_path: context.geo
+  order: 1
+  answer_spec:
+    sufficient: "Country; city or region (or nationwide); the languages spoken there; and whether it starts in one city or several."
+    aspects: [country, city_or_region, languages, single_or_multi_city]
+    fact_types: [context, constraint]
+    min_facts: 1
+  universal: true
+  domain_topics: ["service area", "regional languages"]
+  fallback_card:
+    type: quick_form
+    question:
+      en: Where will people use it?
+      hi: लोग इसे कहाँ इस्तेमाल करेंगे?
+    why_we_ask:
+      en: Places change which services and habits matter.
+      hi: जगह के हिसाब से सेवाएँ और आदतें बदल जाती हैं।
+    options: []
+    placeholder:
+      en: Country and city
+      hi: देश और शहर
+- id: context.scale_launch
+  group: context
+  label:
+    en: Size and timing of launch
+    hi: लॉन्च का आकार और समय
+  level: should
+  consumers:
+  - blueprint
+  - frontend
+  - qa
+  filled_by:
+  - U
+  - P
+  impact: 3
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum
+    options:
+    - pilot_small
+    - single_city
+    - wide_launch
+  default: pilot_small
+  brief_path: context.scale_launch
+  order: 8
+  answer_spec:
+    sufficient: "Expected size at launch (users, locations or orders per day), the target launch timing, and whether it starts as a pilot."
+    aspects: [size, timing, pilot]
+    fact_types: [number, constraint, goal]
+    min_facts: 1
+  domain_topics: ["peak periods"]
+  fallback_card:
+    type: choose_one
+    question:
+      en: How big will the first launch be?
+      hi: पहला लॉन्च कितना बड़ा होगा?
+    why_we_ask:
+      en: It sets how much the first version must handle.
+      hi: इससे तय होता है कि पहला संस्करण कितना सँभालेगा।
+    options:
+    - id: A
+      label:
+        en: A small pilot with a few dozen people
+        hi: कुछ दर्जन लोगों के साथ छोटा पायलट
+      value: pilot_small
+    - id: B
+      label:
+        en: One city or one organisation
+        hi: एक शहर या एक संस्था
+      value: single_city
+    - id: C
+      label:
+        en: Many cities or a whole country
+        hi: कई शहर या पूरा देश
+      value: wide_launch
+- id: goals.primary
+  group: goals
+  label:
+    en: Main goal
+    hi: मुख्य लक्ष्य
+  level: should
+  consumers:
+  - blueprint
+  - qa
+  filled_by:
+  - U
+  - D
+  - I
+  impact: 3
+  risk: low
+  effort: tap
+  value_schema:
+    kind: enum
+    options:
+    - first_users
+    - save_time
+    - more_revenue
+  ask_if: filled('scope.features')
+  brief_path: context.goals
+  order: 4
+  answer_spec:
+    sufficient: "The single main goal the app must achieve for the business."
+    aspects: [main_goal]
+    fact_types: [goal]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: What matters most in the first version?
+      hi: पहले संस्करण में सबसे ज़रूरी क्या है?
+    why_we_ask:
+      en: It helps us decide what to leave for later.
+      hi: इससे तय होता है कि क्या बाद के लिए छोड़ना है।
+    options:
+    - id: A
+      label:
+        en: Getting the first real users
+        hi: पहले असली उपयोगकर्ता जोड़ना
+      value: first_users
+    - id: B
+      label:
+        en: Saving my team's time
+        hi: मेरी टीम का समय बचाना
+      value: save_time
+    - id: C
+      label:
+        en: Bringing in more revenue
+        hi: ज़्यादा कमाई लाना
+      value: more_revenue
+- id: goals.success_measures
+  group: goals
+  label:
+    en: How success is measured
+    hi: सफलता कैसे नापी जाएगी
+  level: should
+  consumers:
+  - blueprint
+  - qa
+  filled_by:
+  - U
+  - D
+  - I
+  impact: 2
+  risk: low
+  effort: tap
+  value_schema:
+    kind: enum_list
+    options:
+    - active_users
+    - completed_transactions
+    - time_saved
+  ask_if: filled('goals.primary')
+  brief_path: context.success_measures
+  order: 8
+  answer_spec:
+    sufficient: "How the owner will know it works: one to three measures, with a rough target if known."
+    aspects: [measure, target]
+    fact_types: [goal, number]
+    min_facts: 1
+  fallback_card:
+    type: pick_many
+    question:
+      en: How will you know the app is working well?
+      hi: आपको कैसे पता चलेगा कि ऐप अच्छा चल रहा है?
+    why_we_ask:
+      en: Clear measures let us test the app against them.
+      hi: साफ़ पैमानों से हम ऐप को परख सकते हैं।
+    options:
+    - id: A
+      label:
+        en: Number of people using it
+        hi: इस्तेमाल करने वालों की संख्या
+      value: active_users
+    - id: B
+      label:
+        en: Number of orders or bookings done
+        hi: पूरे हुए ऑर्डर या बुकिंग की संख्या
+      value: completed_transactions
+    - id: C
+      label:
+        en: Time saved on each task
+        hi: हर काम में बचा समय
+      value: time_saved
+    placeholder:
+      en: Add your own measure
+      hi: अपना पैमाना जोड़ें
+- id: audience.segments
+  group: audience
+  label:
+    en: Who it is for
+    hi: यह किनके लिए है
+  level: must
+  consumers:
+  - research
+  - design
+  - screens
+  filled_by:
+  - U
+  - D
+  impact: 5
+  risk: low
+  effort: text
+  value_schema:
+    kind: text_list
+  default:
+  - everyday users
+  brief_path: audience.segments
+  order: 2
+  answer_spec:
+    sufficient: "At least one named segment: who they are, their main goal, and where and how they use the app. Separate the paying customer from the end user when they differ."
+    aspects: [who, goal, where_how, payer_vs_user]
+    fact_types: [role, context, goal]
+    min_facts: 1
+  domain_topics: ["how often they use it", "buyer versus user"]
+  fallback_card:
+    type: open_prompt
+    question:
+      en: Who will use the app?
+      hi: ऐप का इस्तेमाल कौन करेगा?
+    why_we_ask:
+      en: It shapes the research, the words and the look.
+      hi: इससे रिसर्च, शब्द और रूप तय होते हैं।
+    options: []
+    placeholder:
+      en: 'For example: shop owners, students, patients'
+      hi: 'जैसे: दुकानदार, छात्र, मरीज़'
+- id: audience.traits
+  group: audience
+  label:
+    en: What the users are like
+    hi: उपयोगकर्ता कैसे हैं
+  level: should
+  consumers:
+  - design
+  - screens
+  filled_by:
+  - U
+  - I
+  impact: 3
+  risk: low
+  effort: tap
+  value_schema:
+    kind: enum_list
+    options:
+    - tech_comfortable
+    - tech_new
+    - older_users
+    - multilingual
+  ask_if: filled('audience.segments')
+  brief_path: audience.traits
+  order: 2
+  answer_spec:
+    sufficient: "Age range, comfort with technology, languages and any accessibility needs of the main users."
+    aspects: [age, tech_comfort, languages, accessibility]
+    fact_types: [context, constraint, preference]
+    min_facts: 1
+  fallback_card:
+    type: pick_many
+    question:
+      en: Which of these describe your users?
+      hi: इनमें से कौन सी बात आपके उपयोगकर्ताओं पर लागू होती है?
+    why_we_ask:
+      en: It sets how simple the screens and words should be.
+      hi: इससे तय होता है कि स्क्रीन और शब्द कितने सरल हों।
+    options:
+    - id: A
+      label:
+        en: Comfortable with apps
+        hi: ऐप चलाने में सहज
+      value: tech_comfortable
+    - id: B
+      label:
+        en: New to apps, need very simple screens
+        hi: ऐप में नए, बहुत सरल स्क्रीन चाहिए
+      value: tech_new
+    - id: C
+      label:
+        en: Older people, large text matters
+        hi: बड़ी उम्र के लोग, बड़े अक्षर ज़रूरी
+      value: older_users
+    - id: D
+      label:
+        en: Use more than one language
+        hi: एक से ज़्यादा भाषाएँ इस्तेमाल करते हैं
+      value: multilingual
+    placeholder:
+      en: Add anything else
+      hi: और कुछ जोड़ें
+- id: audience.usage_context
+  group: audience
+  label:
+    en: Where and how it is used
+    hi: कहाँ और कैसे इस्तेमाल होगा
+  level: may
+  consumers:
+  - design
+  - frontend
+  filled_by:
+  - I
+  - P
+  impact: 2
+  risk: low
+  effort: tap
+  value_schema:
+    kind: enum_list
+    options:
+    - on_the_go
+    - low_network
+    - shared_device
+  ask_if: filled('audience.segments')
+  brief_path: audience.usage_context
+  order: 2
+  answer_spec:
+    sufficient: "Where and how the app is used: on the go, low network, a shared device, one hand."
+    aspects: [where, network, device_sharing]
+    fact_types: [context, constraint]
+    min_facts: 1
+  fallback_card:
+    type: pick_many
+    question:
+      en: In what situations will people use it?
+      hi: लोग इसे किन हालात में इस्तेमाल करेंगे?
+    why_we_ask:
+      en: It helps us design for real conditions.
+      hi: इससे हम असली हालात के हिसाब से डिज़ाइन कर पाते हैं।
+    options:
+    - id: A
+      label:
+        en: While moving, with one hand
+        hi: चलते हुए, एक हाथ से
+      value: on_the_go
+    - id: B
+      label:
+        en: With a weak or slow internet
+        hi: कमज़ोर या धीमे इंटरनेट पर
+      value: low_network
+    - id: C
+      label:
+        en: On a phone shared with others
+        hi: दूसरों के साथ साझा फ़ोन पर
+      value: shared_device
+    placeholder:
+      en: Add another situation
+      hi: कोई और हालात जोड़ें
+- id: apps.list
+  group: apps
+  label:
+    en: Apps needed
+    hi: ज़रूरी ऐप
+  level: must
+  consumers:
+  - blueprint
+  - design
+  filled_by:
+  - I
+  - U
+  impact: 5
+  risk: low
+  effort: tap
+  value_schema:
+    kind: object_list
+    fields:
+    - name
+    - purpose
+    - surface
+  ask_if: filled('audience.segments')
+  brief_path: apps
+  order: 3
+  answer_spec:
+    sufficient: "Each app needed (for example a customer app, a staff app, an admin panel): its purpose, who uses it, and whether it is mobile, web or both."
+    aspects: [name, purpose, who_uses, surface]
+    fact_types: [requirement, role]
+    min_facts: 1
+  domain_topics: ["who operates the back office"]
+  fallback_card:
+    type: choose_one
+    question:
+      en: How many apps do you need?
+      hi: आपको कितने ऐप चाहिए?
+    why_we_ask:
+      en: Each app gets its own screens and sign-in.
+      hi: हर ऐप की अपनी स्क्रीन और साइन-इन होती है।
+    options:
+    - id: A
+      label:
+        en: One app for everybody
+        hi: सबके लिए एक ऐप
+      value: one_app
+    - id: B
+      label:
+        en: One app for customers, one for staff
+        hi: ग्राहकों का एक ऐप, स्टाफ़ का एक
+      value: customer_and_staff
+    - id: C
+      label:
+        en: One app plus a simple manager side
+        hi: एक ऐप और प्रबंधकों के लिए सरल हिस्सा
+      value: app_plus_admin
+- id: roles.list
+  group: roles
+  label:
+    en: Roles
+    hi: भूमिकाएँ
+  level: must
+  consumers:
+  - blueprint
+  filled_by:
+  - I
+  - U
+  impact: 5
+  risk: low
+  effort: tap
+  value_schema:
+    kind: object_list
+    fields:
+    - name
+    - goal
+    - permissions
+  ask_if: filled('apps.list')
+  brief_path: roles
+  order: 3
+  answer_spec:
+    sufficient: "Each distinct kind of person who signs in: their top goal and what they can approve or change."
+    aspects: [role_name, top_goal, permissions]
+    fact_types: [role, rule]
+    min_facts: 1
+  domain_topics: ["who approves", "who operates", "outside partners"]
+  fallback_card:
+    type: pick_many
+    question:
+      en: Who will use it, and in what role?
+      hi: कौन इसे किस भूमिका में इस्तेमाल करेगा?
+    why_we_ask:
+      en: Each role sees different screens and can do different things.
+      hi: हर भूमिका को अलग स्क्रीन और अलग अधिकार मिलते हैं।
+    options:
+    - id: A
+      label:
+        en: Customer who uses the service
+        hi: सेवा इस्तेमाल करने वाला ग्राहक
+      value: customer
+    - id: B
+      label:
+        en: Staff who handle the requests
+        hi: अनुरोध सँभालने वाला स्टाफ़
+      value: staff
+    - id: C
+      label:
+        en: Manager who sees reports
+        hi: रिपोर्ट देखने वाला प्रबंधक
+      value: manager
+    - id: D
+      label:
+        en: Partner who offers a service
+        hi: सेवा देने वाला साझेदार
+      value: partner
+    placeholder:
+      en: Add a role in your own words
+      hi: अपने शब्दों में कोई भूमिका जोड़ें
+- id: scope.features
+  group: scope
+  label:
+    en: Features
+    hi: सुविधाएँ
+  level: must
+  consumers:
+  - blueprint
+  - research
+  - change_control
+  filled_by:
+  - D
+  - I
+  - U
+  impact: 5
+  risk: medium
+  effort: tap
+  value_schema:
+    kind: object_list
+    fields:
+    - name
+    - intent
+    - status
+    - priority
+    - tier
+  ask_if: filled('roles.list')
+  brief_path: scope
+  order: 4
+  answer_spec:
+    sufficient: "What each feature is for (the job it does) and what must be in the first release."
+    aspects: [feature, purpose, first_release]
+    fact_types: [requirement, goal, preference]
+    min_facts: 1
+  domain_topics: ["the core journey", "exceptions and edge cases"]
+  fallback_card:
+    type: pick_many
+    question:
+      en: Which of these should the app have?
+      hi: ऐप में इनमें से क्या-क्या होना चाहिए?
+    why_we_ask:
+      en: This list becomes the plan for the first version.
+      hi: यही सूची पहले संस्करण की योजना बनती है।
+    options:
+    - id: A
+      label:
+        en: Sign-up and a profile page
+        hi: साइन-अप और प्रोफ़ाइल पेज
+      value: account_profile
+    - id: B
+      label:
+        en: Search and browse a list of items
+        hi: चीज़ों की सूची खोजना और देखना
+      value: search_browse
+    - id: C
+      label:
+        en: Messages between people
+        hi: लोगों के बीच संदेश
+      value: messaging
+    placeholder:
+      en: Add a feature in your own words
+      hi: अपने शब्दों में कोई सुविधा जोड़ें
+- id: scope.priority
+  group: scope
+  label:
+    en: What must be in the first version
+    hi: पहले संस्करण में क्या ज़रूरी है
+  level: should
+  consumers:
+  - blueprint
+  filled_by:
+  - U
+  impact: 4
+  risk: low
+  effort: tap
+  value_schema:
+    kind: enum
+    options:
+    - must
+    - nice
+    - later
+  ask_if: filled('scope.features')
+  brief_path: scope.priority
+  order: 4
+  answer_spec:
+    sufficient: "Which features define the first version and which can wait, when everything cannot fit."
+    aspects: [must_have, can_wait]
+    fact_types: [preference, requirement]
+    min_facts: 1
+  fallback_card:
+    type: priority
+    question:
+      en: Which features must be in the first version?
+      hi: पहले संस्करण में कौन सी सुविधाएँ ज़रूर चाहिए?
+    why_we_ask:
+      en: A clear first version is faster to build and test.
+      hi: साफ़ पहला संस्करण जल्दी बनता और परखा जाता है।
+    options:
+    - id: A
+      label:
+        en: Must have
+        hi: ज़रूरी
+      value: must
+    - id: B
+      label:
+        en: Nice to have
+        hi: हो तो अच्छा
+      value: nice
+    - id: C
+      label:
+        en: Later
+        hi: बाद में
+      value: later
+- id: scope.must_not
+  group: scope
+  label:
+    en: What it must not do
+    hi: जो इसमें नहीं होना चाहिए
+  level: may
+  consumers:
+  - verify
+  - change_control
+  filled_by:
+  - U
+  - D
+  impact: 2
+  risk: low
+  effort: text
+  value_schema:
+    kind: text_list
+  ask_if: filled('scope.features')
+  brief_path: scope.must_not
+  order: 4
+  answer_spec:
+    sufficient: "Anything the app must explicitly not do or include."
+    aspects: [exclusion]
+    fact_types: [exclusion, constraint]
+    min_facts: 1
+  fallback_card:
+    type: open_prompt
+    question:
+      en: Is there anything the app must not do?
+      hi: क्या कुछ ऐसा है जो ऐप में बिल्कुल नहीं होना चाहिए?
+    why_we_ask:
+      en: We will keep it out and check for it later.
+      hi: हम उसे बाहर रखेंगे और बाद में जाँचेंगे।
+    options: []
+    placeholder:
+      en: Leave empty if nothing comes to mind
+      hi: कुछ याद न आए तो खाली छोड़ दें
+- id: scope.references
+  group: scope
+  label:
+    en: Apps you like
+    hi: पसंदीदा ऐप
+  level: should
+  consumers:
+  - research
+  - design
+  filled_by:
+  - U
+  impact: 3
+  risk: low
+  effort: text
+  value_schema:
+    kind: object_list
+    fields:
+    - label
+    - borrow
+    - avoid
+  brief_path: references
+  order: 4
+  answer_spec:
+    sufficient: "Apps the user likes or dislikes, and what to borrow or avoid from each."
+    aspects: [app_name, borrow, avoid]
+    fact_types: [reference, preference]
+    min_facts: 1
+  fallback_card:
+    type: open_prompt
+    question:
+      en: Is there an app you like? What would you borrow or avoid?
+      hi: क्या कोई पसंदीदा ऐप है? उससे क्या लेना या क्या नहीं लेना चाहेंगे?
+    why_we_ask:
+      en: We study the idea, never copy the brand.
+      hi: हम उसका विचार देखते हैं, उसका ब्रांड नहीं अपनाते।
+    options: []
+    placeholder:
+      en: Name an app and say what you like
+      hi: ऐप का नाम और उसमें क्या पसंद है, बताइए
+- id: auth.methods
+  group: auth
+  label:
+    en: How people sign in
+    hi: लोग साइन-इन कैसे करेंगे
+  level: must
+  consumers:
+  - blueprint
+  filled_by:
+  - U
+  - P
+  impact: 4
+  risk: high
+  effort: tap
+  value_schema:
+    kind: enum_list
+    options:
+    - phone_otp
+    - email_password
+    - no_sign_in
+  ask_if: filled('roles.list')
+  brief_path: access.auth_methods
+  order: 5
+  must_confirm: true
+  answer_spec:
+    sufficient: "How each kind of user signs in: phone number and code, email, a social account, or not at all."
+    aspects: [method, per_role]
+    fact_types: [requirement, constraint, preference]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: How should people sign in?
+      hi: लोग साइन-इन कैसे करें?
+    why_we_ask:
+      en: Sign-in changes the first screens and what we must protect.
+      hi: साइन-इन से पहली स्क्रीन और सुरक्षा की ज़रूरतें बदलती हैं।
+    options:
+    - id: A
+      label:
+        en: Phone number and a one-time code
+        hi: फ़ोन नंबर और एक बार वाला कोड
+      value: phone_otp
+    - id: B
+      label:
+        en: Email address and password
+        hi: ईमेल और पासवर्ड
+      value: email_password
+    - id: C
+      label:
+        en: No sign-in at first
+        hi: शुरू में साइन-इन नहीं
+      value: no_sign_in
+- id: auth.account_model
+  group: auth
+  label:
+    en: Account model
+    hi: खाते का तरीका
+  level: must
+  consumers:
+  - blueprint
+  filled_by:
+  - U
+  - P
+  impact: 4
+  risk: high
+  effort: tap
+  value_schema:
+    kind: enum
+    options:
+    - individual
+    - team
+    - admin_created
+  ask_if: filled('auth.methods')
+  brief_path: access.account_model
+  order: 5
+  must_confirm: true
+  answer_spec:
+    sufficient: "Whether people have individual accounts, shared team or business accounts, or can use the app as a guest."
+    aspects: [account_model]
+    fact_types: [requirement, rule]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: How should accounts work?
+      hi: खाते कैसे काम करें?
+    why_we_ask:
+      en: It decides who owns the data and who can see it.
+      hi: इससे तय होता है कि डेटा किसका है और कौन देख सकता है।
+    options:
+    - id: A
+      label:
+        en: Each person has their own account
+        hi: हर व्यक्ति का अपना खाता
+      value: individual
+    - id: B
+      label:
+        en: People share a team or business account
+        hi: लोग टीम या व्यवसाय का खाता साझा करते हैं
+      value: team
+    - id: C
+      label:
+        en: An admin creates all accounts
+        hi: सारे खाते एडमिन बनाता है
+      value: admin_created
+- id: onboarding.approvals
+  group: auth
+  label:
+    en: Who may join
+    hi: कौन जुड़ सकता है
+  level: should
+  consumers:
+  - blueprint
+  filled_by:
+  - U
+  - P
+  impact: 3
+  risk: low
+  effort: tap
+  value_schema:
+    kind: enum
+    options:
+    - open_join
+    - admin_approves
+    - invite_only
+  default: open_join
+  ask_policy: infer
+  ask_if: filled('auth.account_model')
+  brief_path: access.onboarding_approvals
+  order: 5
+  answer_spec:
+    sufficient: "Whether new people can join freely, need approval, or are invited, and who approves them."
+    aspects: [join_rule, approver]
+    fact_types: [rule]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: Who is allowed to join?
+      hi: कौन जुड़ सकता है?
+    why_we_ask:
+      en: It decides whether new people need approval.
+      hi: इससे तय होता है कि नए लोगों को मंज़ूरी चाहिए या नहीं।
+    options:
+    - id: A
+      label:
+        en: Anyone, straight away
+        hi: कोई भी, तुरंत
+      value: open_join
+    - id: B
+      label:
+        en: Only after an admin approves
+        hi: एडमिन की मंज़ूरी के बाद ही
+      value: admin_approves
+    - id: C
+      label:
+        en: Only by invitation
+        hi: सिर्फ़ निमंत्रण से
+      value: invite_only
+- id: brand.name
+  group: brand
+  label:
+    en: App or business name
+    hi: ऐप या व्यवसाय का नाम
+  level: should
+  consumers:
+  - design
+  filled_by:
+  - U
+  impact: 2
+  risk: low
+  effort: text
+  value_schema: *id001
+  brief_path: experience.brand.name
+  order: 6
+  answer_spec:
+    sufficient: "The name of the app or the business."
+    aspects: [name]
+    fact_types: [context, reference]
+    min_facts: 1
+  universal: true
+  fallback_card:
+    type: quick_form
+    question:
+      en: What is the app or business called?
+      hi: ऐप या व्यवसाय का नाम क्या है?
+    why_we_ask:
+      en: The name appears on screens and in the look.
+      hi: नाम स्क्रीन और रूप में दिखाई देगा।
+    options: []
+    placeholder:
+      en: Name, or leave empty if undecided
+      hi: नाम, या तय न हो तो खाली छोड़ें
+- id: brand.assets
+  group: brand
+  label:
+    en: Logo and brand files
+    hi: लोगो और ब्रांड फ़ाइलें
+  level: should
+  consumers:
+  - design
+  filled_by:
+  - U
+  impact: 3
+  risk: low
+  effort: upload
+  value_schema:
+    kind: text_list
+  brief_path: experience.brand.assets
+  order: 6
+  answer_spec:
+    sufficient: "Whether a logo, colors or brand files exist, and where to find them."
+    aspects: [logo, colors, files]
+    fact_types: [reference, context]
+    min_facts: 1
+  universal: true
+  fallback_card:
+    type: upload_or_link
+    question:
+      en: Do you have a logo or brand guide?
+      hi: क्या आपके पास लोगो या ब्रांड गाइड है?
+    why_we_ask:
+      en: We can match your colours and style.
+      hi: हम आपके रंग और शैली से मेल बिठा सकते हैं।
+    options:
+    - id: A
+      label:
+        en: Yes, I will upload it
+        hi: हाँ, मैं अपलोड करूँगा
+      value: upload
+    - id: B
+      label:
+        en: Yes, I have a link
+        hi: हाँ, मेरे पास लिंक है
+      value: link
+    - id: C
+      label:
+        en: No, please suggest a style
+        hi: नहीं, कोई शैली सुझाइए
+      value: none
+    placeholder:
+      en: Upload a file or paste a link
+      hi: फ़ाइल अपलोड करें या लिंक चिपकाएँ
+- id: look.tone_words
+  group: look
+  label:
+    en: Tone and mood
+    hi: अंदाज़ और माहौल
+  level: should
+  consumers:
+  - design
+  filled_by:
+  - U
+  impact: 4
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum_list
+    options:
+    - calm_simple
+    - friendly_playful
+    - professional
+  ask_if: filled('audience.segments')
+  default:
+  - calm_simple
+  brief_path: experience.tone_words
+  order: 6
+  answer_spec:
+    sufficient: "Two or three words for the mood and personality the app should have."
+    aspects: [tone_words]
+    fact_types: [preference]
+    min_facts: 1
+  fallback_card:
+    type: look_signals
+    question:
+      en: How should the app feel?
+      hi: ऐप कैसा महसूस होना चाहिए?
+    why_we_ask:
+      en: Mood words guide the whole visual direction.
+      hi: मूड के शब्द पूरे रूप की दिशा तय करते हैं।
+    options:
+    - id: A
+      label:
+        en: Calm and simple
+        hi: शांत और सरल
+      value: calm_simple
+    - id: B
+      label:
+        en: Friendly and playful
+        hi: दोस्ताना और खिलंदड़ा
+      value: friendly_playful
+    - id: C
+      label:
+        en: Serious and professional
+        hi: गंभीर और पेशेवर
+      value: professional
+    placeholder:
+      en: Add your own words
+      hi: अपने शब्द जोड़ें
+- id: look.visual_references
+  group: look
+  label:
+    en: Looks you like
+    hi: पसंदीदा रूप
+  level: should
+  consumers:
+  - design
+  filled_by:
+  - U
+  impact: 2
+  risk: low
+  effort: upload
+  value_schema:
+    kind: text_list
+  ask_if: filled('look.tone_words')
+  brief_path: experience.visual_references
+  order: 6
+  answer_spec:
+    sufficient: "Apps or sites whose look the user likes."
+    aspects: [reference]
+    fact_types: [reference, preference]
+    min_facts: 1
+  fallback_card:
+    type: upload_or_link
+    question:
+      en: Is there an app or screen whose look you like?
+      hi: क्या किसी ऐप या स्क्रीन का रूप आपको पसंद है?
+    why_we_ask:
+      en: Examples help us understand your taste quickly.
+      hi: उदाहरणों से हम आपकी पसंद जल्दी समझ पाते हैं।
+    options: []
+    placeholder:
+      en: Paste a link or upload a screenshot
+      hi: लिंक चिपकाएँ या स्क्रीनशॉट अपलोड करें
+- id: look.density_mode
+  group: look
+  label:
+    en: How full the screens are
+    hi: स्क्रीन कितनी भरी हों
+  level: should
+  consumers:
+  - design
+  filled_by:
+  - U
+  - I
+  - P
+  impact: 2
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum
+    options:
+    - roomy
+    - balanced
+    - compact
+  default: balanced
+  ask_if: filled('look.tone_words')
+  brief_path: experience.density_mode
+  order: 6
+  answer_spec:
+    sufficient: "Whether screens should feel spacious and simple or compact and rich in information."
+    aspects: [density]
+    fact_types: [preference]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: How much should each screen show?
+      hi: हर स्क्रीन पर कितना दिखना चाहिए?
+    why_we_ask:
+      en: It sets spacing and the size of buttons and text.
+      hi: इससे दूरी तथा बटन और अक्षरों का आकार तय होता है।
+    options:
+    - id: A
+      label:
+        en: Roomy, few things at a time
+        hi: खुली, एक बार में कम चीज़ें
+      value: roomy
+    - id: B
+      label:
+        en: Balanced
+        hi: संतुलित
+      value: balanced
+    - id: C
+      label:
+        en: Compact, more on each screen
+        hi: सघन, हर स्क्रीन पर ज़्यादा
+      value: compact
+- id: locales
+  group: experience
+  label:
+    en: Languages
+    hi: भाषाएँ
+  level: must
+  consumers:
+  - design
+  - screens
+  filled_by:
+  - U
+  - I
+  impact: 5
+  risk: low
+  effort: tap
+  value_schema:
+    kind: locales
+    options:
+    - en
+    - hi
+    fields:
+    - chat
+    - app
+    - right_to_left
+  default:
+  - en
+  brief_path: experience.locales
+  order: 2
+  answer_spec:
+    sufficient: "The language the chat uses and the languages the app itself must support, including any right-to-left language."
+    aspects: [chat_language, app_languages, right_to_left]
+    fact_types: [constraint, preference, context]
+    min_facts: 1
+  universal: true
+  fallback_card:
+    type: pick_many
+    question:
+      en: Which languages should the app speak?
+      hi: ऐप किन भाषाओं में हो?
+    why_we_ask:
+      en: Every screen and message must be written in these.
+      hi: हर स्क्रीन और संदेश इन्हीं भाषाओं में लिखा जाएगा।
+    options:
+    - id: A
+      label:
+        en: English
+        hi: अंग्रेज़ी
+      value: en
+    - id: B
+      label:
+        en: Hindi
+        hi: हिंदी
+      value: hi
+    - id: C
+      label:
+        en: Another language, I will say which
+        hi: कोई और भाषा, मैं बताऊँगा
+      value: other
+    placeholder:
+      en: Add a language
+      hi: कोई भाषा जोड़ें
+- id: devices.profile
+  group: experience
+  label:
+    en: Devices
+    hi: डिवाइस
+  level: should
+  consumers:
+  - design
+  - frontend
+  filled_by:
+  - I
+  - P
+  impact: 2
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum
+    options:
+    - phones
+    - phones_tablets
+    - low_end
+  default: phones
+  brief_path: experience.devices
+  order: 6
+  answer_spec:
+    sufficient: "Which devices the users have: phone only, phone and tablet, low-end phones."
+    aspects: [device_types, low_end]
+    fact_types: [context, constraint]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: Which devices should it work on?
+      hi: यह किन डिवाइस पर चलना चाहिए?
+    why_we_ask:
+      en: It sets screen sizes and how light the app must be.
+      hi: इससे स्क्रीन का आकार और ऐप का हल्कापन तय होता है।
+    options:
+    - id: A
+      label:
+        en: Mostly phones
+        hi: ज़्यादातर फ़ोन
+      value: phones
+    - id: B
+      label:
+        en: Phones and tablets
+        hi: फ़ोन और टैबलेट
+      value: phones_tablets
+    - id: C
+      label:
+        en: Low-cost, older phones too
+        hi: सस्ते, पुराने फ़ोन भी
+      value: low_end
+- id: integrations.wanted
+  group: integrations
+  label:
+    en: Services to connect
+    hi: जोड़ने वाली सेवाएँ
+  level: should
+  consumers:
+  - blueprint
+  - backend
+  filled_by:
+  - U
+  - P
+  impact: 4
+  risk: medium
+  effort: tap
+  value_schema:
+    kind: enum_list
+    options:
+    - payments
+    - maps
+    - messaging
+    - email
+    - kyc
+  ask_if: filled('scope.features')
+  brief_path: integrations
+  order: 7
+  must_confirm: true
+  answer_spec:
+    sufficient: "Which outside services to connect (payments, maps, SMS codes, push messages, email, identity checks) and what each is for."
+    aspects: [service, purpose]
+    fact_types: [requirement, preference]
+    min_facts: 1
+  domain_topics: ["payment providers", "local services"]
+  fallback_card:
+    type: pick_many
+    question:
+      en: Which services should the app connect to?
+      hi: ऐप को किन सेवाओं से जुड़ना चाहिए?
+    why_we_ask:
+      en: Each service adds setup work and accounts.
+      hi: हर सेवा के साथ सेटअप और खाते जुड़ते हैं।
+    options:
+    - id: A
+      label:
+        en: Online payments
+        hi: ऑनलाइन भुगतान
+      value: payments
+    - id: B
+      label:
+        en: Maps and location
+        hi: नक्शा और लोकेशन
+      value: maps
+    - id: C
+      label:
+        en: SMS or email messages
+        hi: एसएमएस या ईमेल संदेश
+      value: messaging
+    placeholder:
+      en: Add another service
+      hi: कोई और सेवा जोड़ें
+- id: integrations.mode
+  group: integrations
+  label:
+    en: Real or sample connections
+    hi: असली या नमूना कनेक्शन
+  level: should
+  consumers:
+  - blueprint
+  - backend
+  filled_by:
+  - U
+  - P
+  impact: 3
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum
+    options:
+    - mock_first
+    - real_from_start
+    - mock_only
+  default: mock_first
+  ask_if: filled('integrations.wanted')
+  brief_path: integrations.preference
+  order: 7
+  answer_spec:
+    sufficient: "Whether connections should be real from the start or use sample data for now."
+    aspects: [mode]
+    fact_types: [preference, constraint]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: Should connections be real from the start?
+      hi: क्या कनेक्शन शुरू से असली हों?
+    why_we_ask:
+      en: Sample data lets you try the app before paying for services.
+      hi: नमूना डेटा से आप सेवाओं पर खर्च करने से पहले ऐप आज़मा सकते हैं।
+    options:
+    - id: A
+      label:
+        en: Sample data now, real services later
+        hi: अभी नमूना डेटा, असली सेवाएँ बाद में
+      value: mock_first
+    - id: B
+      label:
+        en: Real services from the start
+        hi: शुरू से असली सेवाएँ
+      value: real_from_start
+    - id: C
+      label:
+        en: Sample data only, for a demo
+        hi: सिर्फ़ नमूना डेटा, डेमो के लिए
+      value: mock_only
+- id: data.existing_systems
+  group: data
+  label:
+    en: Existing systems and data
+    hi: मौजूदा सिस्टम और डेटा
+  level: should
+  consumers:
+  - blueprint
+  - backend
+  filled_by:
+  - U
+  - D
+  impact: 3
+  risk: medium
+  effort: upload
+  value_schema:
+    kind: object_list
+    fields:
+    - name
+    - kind
+    - pointer
+  ask_if: filled('scope.features')
+  brief_path: data.existing_systems
+  order: 7
+  answer_spec:
+    sufficient: "Existing systems, databases, spreadsheets or APIs to connect to, and what each holds."
+    aspects: [system, data_held, access]
+    fact_types: [reference, constraint, context]
+    min_facts: 1
+  fallback_card:
+    type: upload_or_link
+    question:
+      en: Does the app need to connect to something you already use?
+      hi: क्या ऐप को आपके किसी मौजूदा सिस्टम से जुड़ना है?
+    why_we_ask:
+      en: We plan around what already exists.
+      hi: जो पहले से है, उसके हिसाब से हम योजना बनाते हैं।
+    options:
+    - id: A
+      label:
+        en: Yes, I can share details or files
+        hi: हाँ, मैं जानकारी या फ़ाइलें दे सकता हूँ
+      value: 'yes'
+    - id: B
+      label:
+        en: Yes, but I need help describing it
+        hi: हाँ, पर बताने में मदद चाहिए
+      value: need_help
+    - id: C
+      label:
+        en: No, it starts from scratch
+        hi: नहीं, यह नए सिरे से शुरू होगा
+      value: none
+    placeholder:
+      en: Paste a link or upload a file
+      hi: लिंक चिपकाएँ या फ़ाइल अपलोड करें
+- id: data.sensitive
+  group: data
+  label:
+    en: Sensitive information
+    hi: संवेदनशील जानकारी
+  level: should
+  consumers:
+  - blueprint
+  - backend
+  - qa
+  filled_by:
+  - U
+  - P
+  impact: 4
+  risk: high
+  effort: tap
+  value_schema:
+    kind: enum_list
+    options:
+    - personal_ids
+    - health
+    - financial
+    - none
+  ask_if: filled('scope.features')
+  brief_path: data.sensitive
+  order: 7
+  must_confirm: true
+  answer_spec:
+    sufficient: "What sensitive information the app handles, such as health, financial, children's data or ID documents."
+    aspects: [data_kinds]
+    fact_types: [constraint, context]
+    min_facts: 1
+  domain_topics: ["regulation", "how long data is kept"]
+  fallback_card:
+    type: pick_many
+    question:
+      en: Will the app keep any sensitive information?
+      hi: क्या ऐप में कोई संवेदनशील जानकारी रहेगी?
+    why_we_ask:
+      en: Sensitive data needs extra care in the design.
+      hi: संवेदनशील डेटा के लिए डिज़ाइन में अतिरिक्त सावधानी चाहिए।
+    options:
+    - id: A
+      label:
+        en: Personal ID numbers or documents
+        hi: निजी पहचान नंबर या दस्तावेज़
+      value: personal_ids
+    - id: B
+      label:
+        en: Health records
+        hi: स्वास्थ्य रिकॉर्ड
+      value: health
+    - id: C
+      label:
+        en: Bank or payment details
+        hi: बैंक या भुगतान की जानकारी
+      value: financial
+    placeholder:
+      en: Or say none
+      hi: या बताइए कि कोई नहीं
+- id: constraints.offline
+  group: constraints
+  label:
+    en: Offline use
+    hi: बिना इंटरनेट इस्तेमाल
+  level: may
+  consumers:
+  - blueprint
+  - frontend
+  filled_by:
+  - I
+  - P
+  impact: 2
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum
+    options:
+    - full_offline
+    - partial_offline
+    - online_only
+  default: online_only
+  brief_path: constraints.offline
+  order: 8
+  answer_spec:
+    sufficient: "Whether the app must work without internet, and which parts."
+    aspects: [offline_need, parts]
+    fact_types: [constraint]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: Does the app need to work without internet?
+      hi: क्या ऐप को बिना इंटरनेट के चलना है?
+    why_we_ask:
+      en: Offline use changes how data is saved on the phone.
+      hi: ऑफ़लाइन इस्तेमाल से फ़ोन में डेटा सहेजने का तरीका बदलता है।
+    options:
+    - id: A
+      label:
+        en: Fully, for everything
+        hi: पूरी तरह, हर काम के लिए
+      value: full_offline
+    - id: B
+      label:
+        en: For the main tasks, sync later
+        hi: मुख्य कामों के लिए, बाद में सिंक
+      value: partial_offline
+    - id: C
+      label:
+        en: No, internet is always there
+        hi: नहीं, इंटरनेट हमेशा रहता है
+      value: online_only
+- id: constraints.performance
+  group: constraints
+  label:
+    en: Speed and load
+    hi: रफ़्तार और भार
+  level: may
+  consumers:
+  - blueprint
+  - frontend
+  filled_by:
+  - I
+  - P
+  impact: 2
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum
+    options:
+    - low_network
+    - normal
+    - high_load
+  default: normal
+  brief_path: constraints.performance
+  order: 8
+  answer_spec:
+    sufficient: "Expected load or speed needs, such as peak users or acceptable waiting time."
+    aspects: [peak_load, speed]
+    fact_types: [constraint, number]
+    min_facts: 1
+  fallback_card:
+    type: choose_one
+    question:
+      en: What matters most about speed?
+      hi: रफ़्तार के बारे में सबसे ज़रूरी क्या है?
+    why_we_ask:
+      en: It sets how light and quick the screens must be.
+      hi: इससे तय होता है कि स्क्रीन कितनी हल्की और तेज़ हों।
+    options:
+    - id: A
+      label:
+        en: Fast even on slow internet
+        hi: धीमे इंटरनेट पर भी तेज़
+      value: low_network
+    - id: B
+      label:
+        en: Normal speed is fine
+        hi: सामान्य रफ़्तार काफ़ी है
+      value: normal
+    - id: C
+      label:
+        en: Many people at the same moment
+        hi: एक ही समय पर बहुत लोग
+      value: high_load
+- id: constraints.accessibility
+  group: constraints
+  label:
+    en: Accessibility needs
+    hi: सुलभता की ज़रूरतें
+  level: may
+  consumers:
+  - blueprint
+  - frontend
+  filled_by:
+  - I
+  - P
+  impact: 2
+  risk: low
+  effort: tap
+  ask_policy: infer
+  value_schema:
+    kind: enum_list
+    options:
+    - large_text
+    - screen_reader
+    - voice_input
+  default:
+  - large_text
+  brief_path: constraints.accessibility
+  order: 8
+  answer_spec:
+    sufficient: "Accessibility needs such as large text, a screen reader, strong color contrast or a right-to-left layout."
+    aspects: [needs]
+    fact_types: [constraint]
+    min_facts: 1
+  fallback_card:
+    type: pick_many
+    question:
+      en: Which accessibility needs matter to your users?
+      hi: आपके उपयोगकर्ताओं के लिए कौन सी सुलभता ज़रूरतें मायने रखती हैं?
+    why_we_ask:
+      en: We build these in from the start.
+      hi: हम इन्हें शुरू से ही शामिल करते हैं।
+    options:
+    - id: A
+      label:
+        en: Large text and clear contrast
+        hi: बड़े अक्षर और साफ़ कंट्रास्ट
+      value: large_text
+    - id: B
+      label:
+        en: Works with a screen reader
+        hi: स्क्रीन रीडर के साथ चलना
+      value: screen_reader
+    - id: C
+      label:
+        en: Speaking instead of typing
+        hi: लिखने की जगह बोलना
+      value: voice_input
+    placeholder:
+      en: Add another need
+      hi: कोई और ज़रूरत जोड़ें
+- id: constraints.must_use
+  group: constraints
+  label:
+    en: Things it must use
+    hi: जो इसमें इस्तेमाल होना ही चाहिए
+  level: may
+  consumers:
+  - blueprint
+  - frontend
+  filled_by:
+  - U
+  - D
+  impact: 2
+  risk: low
+  effort: text
+  value_schema:
+    kind: text_list
+  brief_path: constraints.must_use
+  order: 8
+  answer_spec:
+    sufficient: "Services or components that must be used, and why."
+    aspects: [item, reason]
+    fact_types: [constraint, requirement]
+    min_facts: 1
+  fallback_card:
+    type: open_prompt
+    question:
+      en: Is there a service or system the app must use?
+      hi: क्या कोई सेवा या सिस्टम है जो ऐप में इस्तेमाल होना ही चाहिए?
+    why_we_ask:
+      en: We will plan around it.
+      hi: हम उसके हिसाब से योजना बनाएँगे।
+    options: []
+    placeholder:
+      en: Leave empty if there is none
+      hi: कोई न हो तो खाली छोड़ें
+- id: constraints.must_not
+  group: constraints
+  label:
+    en: Things it must avoid
+    hi: जिनसे इसे बचना चाहिए
+  level: may
+  consumers:
+  - blueprint
+  - verify
+  filled_by:
+  - U
+  - D
+  impact: 2
+  risk: low
+  effort: text
+  value_schema:
+    kind: text_list
+  brief_path: constraints.must_not
+  order: 8
+  answer_spec:
+    sufficient: "Things the app must avoid: data, behaviours or services."
+    aspects: [item]
+    fact_types: [exclusion, constraint]
+    min_facts: 1
+  fallback_card:
+    type: open_prompt
+    question:
+      en: Is there anything the app must avoid using?
+      hi: क्या कुछ है जिसका ऐप में इस्तेमाल नहीं होना चाहिए?
+    why_we_ask:
+      en: We will keep it out of the plan.
+      hi: हम उसे योजना से बाहर रखेंगे।
+    options: []
+    placeholder:
+      en: Leave empty if there is none
+      hi: कोई न हो तो खाली छोड़ें
+- id: glossary.terms
+  group: glossary
+  label:
+    en: Words we will use
+    hi: जो शब्द हम इस्तेमाल करेंगे
+  level: should
+  consumers:
+  - research
+  - blueprint
+  - screens
+  filled_by:
+  - D
+  - U
+  - I
+  impact: 3
+  risk: low
+  effort: tap
+  value_schema:
+    kind: object_list
+    fields:
+    - term
+    - synonyms
+    - avoid
+  ask_if: filled('scope.features')
+  brief_path: glossary
+  order: 8
+  answer_spec:
+    sufficient: "The user's own words for the key things in their business, with synonyms and any words to avoid."
+    aspects: [term, synonyms, avoid]
+    fact_types: [glossary]
+    min_facts: 1
+  fallback_card:
+    type: confirm
+    question:
+      en: Are these the words you use for things?
+      hi: क्या आप चीज़ों के लिए यही शब्द इस्तेमाल करते हैं?
+    why_we_ask:
+      en: The app will speak in your words, not ours.
+      hi: ऐप आपके शब्दों में बात करेगा, हमारे नहीं।
+    options:
+    - id: A
+      label:
+        en: Yes, use these words
+        hi: हाँ, यही शब्द इस्तेमाल करें
+      value: 'yes'
+    - id: B
+      label:
+        en: I want to change some
+        hi: कुछ शब्द बदलने हैं
+      value: change
+    - id: C
+      label:
+        en: I will add more
+        hi: मैं और शब्द जोड़ूँगा
+      value: add
+    placeholder:
+      en: Type a word and what it means
+      hi: कोई शब्द और उसका मतलब लिखें
+- id: unknowns.research_wanted
+  group: unknowns
+  label:
+    en: What to look up
+    hi: क्या खोजना है
+  level: generated
+  consumers:
+  - research
+  filled_by:
+  - I
+  impact: 3
+  risk: low
+  effort: tap
+  value_schema:
+    kind: text_list
+  brief_path: research_requests
+  order: 8
+  answer_spec:
+    sufficient: "Specific things the user wants looked up, such as competitors, regulations or typical prices."
+    aspects: [topic]
+    fact_types: [requirement, reference]
+    min_facts: 1
+  fallback_card:
+    type: confirm
+    question:
+      en: Is there anything else you want us to look up?
+      hi: क्या आप चाहते हैं कि हम कुछ और खोजें?
+    why_we_ask:
+      en: This list shapes the research we do for you.
+      hi: यह सूची तय करती है कि हम आपके लिए क्या खोजेंगे।
+    options:
+    - id: A
+      label:
+        en: No, the list looks good
+        hi: नहीं, सूची ठीक है
+      value: ok
+    - id: B
+      label:
+        en: Yes, I want to add something
+        hi: हाँ, कुछ जोड़ना है
+      value: add
+    - id: C
+      label:
+        en: Yes, I want to remove something
+        hi: हाँ, कुछ हटाना है
+      value: remove
+    placeholder:
+      en: What should we look up?
+      hi: हम क्या खोजें?
+- id: org.profile
+  group: org
+  label:
+    en: Company profile
+    hi: कंपनी की प्रोफ़ाइल
+  level: should
+  consumers:
+  - all
+  filled_by:
+  - D
+  - U
+  impact: 3
+  risk: low
+  effort: upload
+  value_schema:
+    kind: object
+  brief_path: meta.org.profile
+  order: 1
+  answer_spec:
+    sufficient: "Company name, industry, size and brand direction."
+    aspects: [name, industry, size]
+    fact_types: [context]
+    min_facts: 1
+  fallback_card:
+    type: upload_or_link
+    question:
+      en: Do you have a company profile or guidelines document?
+      hi: क्या आपके पास कंपनी की प्रोफ़ाइल या दिशानिर्देश का दस्तावेज़ है?
+    why_we_ask:
+      en: It fills in many answers so we ask less.
+      hi: इससे कई जवाब भर जाते हैं और हमें कम पूछना पड़ता है।
+    options: []
+    placeholder:
+      en: Upload a file or paste a link
+      hi: फ़ाइल अपलोड करें या लिंक चिपकाएँ
+- id: org.approvers
+  group: org
+  label:
+    en: Who approves
+    hi: कौन मंज़ूर करेगा
+  level: should
+  consumers:
+  - all
+  filled_by:
+  - U
+  - D
+  impact: 4
+  risk: medium
+  effort: text
+  value_schema:
+    kind: object_list
+    fields:
+    - name
+    - role
+  brief_path: meta.org.approvers
+  order: 1
+  answer_spec:
+    sufficient: "Who must approve the Brief and the spec, by role or name."
+    aspects: [approver, scope]
+    fact_types: [role, rule]
+    min_facts: 1
+  fallback_card:
+    type: quick_form
+    question:
+      en: Who must approve the plan?
+      hi: योजना को कौन मंज़ूर करेगा?
+    why_we_ask:
+      en: The plan can only go ahead once these people agree.
+      hi: ये लोग सहमत हों, तभी योजना आगे बढ़ सकती है।
+    options: []
+    placeholder:
+      en: Names or roles
+      hi: नाम या भूमिकाएँ
+- id: org.design_system
+  group: org
+  label:
+    en: Company design guidelines
+    hi: कंपनी के डिज़ाइन दिशानिर्देश
+  level: should
+  consumers:
+  - design
+  - frontend
+  filled_by:
+  - D
+  - U
+  impact: 3
+  risk: low
+  effort: upload
+  value_schema:
+    kind: text_list
+  brief_path: meta.org.design_system
+  order: 6
+  answer_spec:
+    sufficient: "Whether a company design system or brand guidelines exist, and where they live."
+    aspects: [exists, location]
+    fact_types: [reference, constraint]
+    min_facts: 1
+  fallback_card:
+    type: upload_or_link
+    question:
+      en: Does your company have design guidelines to follow?
+      hi: क्या आपकी कंपनी के डिज़ाइन दिशानिर्देश हैं जिनका पालन करना है?
+    why_we_ask:
+      en: The app can then match your company's look.
+      hi: तब ऐप आपकी कंपनी के रूप से मेल खा सकता है।
+    options: []
+    placeholder:
+      en: Upload a file or paste a link
+      hi: फ़ाइल अपलोड करें या लिंक चिपकाएँ
+- id: org.api_catalog
+  group: org
+  label:
+    en: Company systems and APIs
+    hi: कंपनी के सिस्टम और एपीआई
+  level: should
+  consumers:
+  - blueprint
+  - backend
+  filled_by:
+  - D
+  - U
+  impact: 3
+  risk: medium
+  effort: upload
+  value_schema:
+    kind: text_list
+  brief_path: meta.org.api_catalog
+  order: 7
+  answer_spec:
+    sufficient: "Company APIs or systems the app must use, and where their documentation is."
+    aspects: [system, docs_location]
+    fact_types: [reference, constraint]
+    min_facts: 1
+  fallback_card:
+    type: upload_or_link
+    question:
+      en: Do you have a list of company systems or APIs the app can use?
+      hi: क्या आपके पास कंपनी के सिस्टम या एपीआई की सूची है जिन्हें ऐप इस्तेमाल कर सकता है?
+    why_we_ask:
+      en: We plan the connections around what you already have.
+      hi: जो पहले से है, उसके हिसाब से हम जुड़ाव की योजना बनाते हैं।
+    options: []
+    placeholder:
+      en: Upload a file or paste a link
+      hi: फ़ाइल अपलोड करें या लिंक चिपकाएँ

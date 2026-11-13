@@ -1,0 +1,100 @@
+# FCT-001 (Pune) is stated in the first message; the first batch is answered; a second batch is planned; then
+# the person corrects the city. The model reports the contradiction with FCT-001.
+calls:
+  cmp.understand_turn:
+    - facts:
+        - type: context
+          statement: "The tiffin service delivers in Pune"
+          quote: "in Pune"
+          topics: [place]
+          entities: [Pune]
+          aspects: ["context.geo:*"]
+          effects:
+            - {slot_id: context.geo, value_json: '{"country": "India", "city": "Pune"}'}
+    - {}
+    - {}
+    - {}
+    - flags: [contradiction]
+      contradicts: [FCT-001]
+      facts:
+        - type: context
+          statement: "The tiffin service delivers only in Mumbai"
+          quote: "we only deliver in Mumbai"
+          topics: [place]
+          entities: [Mumbai]
+          aspects: ["context.geo:*"]
+          effects:
+            - {slot_id: context.geo, value_json: '{"country": "India", "city": "Mumbai"}'}
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: The kinds of customers, what each wants, where and how they use the app.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, and how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge and remind.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G2
+          group_title: Where you work
+          intent: learn which areas the tiffin service delivers to
+          serves: [context.geo]
+          answer_spec: The city and the areas covered.
+          type: text
+          text: "Which city and areas do your tiffins reach?"
+          why_we_ask: Place decides maps, rules and competitors to study.
+          unlocks: ["Research: local competitors"]
+          examples: ["Pune, Baner and Aundh"]
+    - defer_rest: later batches
+      questions:
+        - group_id: G1
+          group_title: Running the kitchen
+          intent: learn who prepares and packs the tiffins
+          serves: [roles.list]
+          answer_spec: Who does what in the kitchen.
+          type: text
+          text: "Who in your kitchen prepares and packs the tiffins each morning?"
+          why_we_ask: Kitchen roles decide which screens the app needs.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Two cooks and one packer"]
+        - group_id: G1
+          group_title: Running the kitchen
+          intent: learn how the riders get their routes
+          serves: [domain:rider_routes]
+          answer_spec: How routes are given out.
+          type: text
+          text: "How do your tiffin riders get their routes each day?"
+          why_we_ask: Routes are the hard part of any tiffin service.
+          unlocks: ["Blueprint: rider screens"]
+          examples: ["The manager hands out a list at 10"]
+        - group_id: G2
+          group_title: Customers
+          intent: learn what customers do when a tiffin is late
+          serves: [domain:late_tiffin]
+          answer_spec: The rule for a late tiffin.
+          type: text
+          text: "What should happen when a tiffin is late, does the customer get a refund?"
+          why_we_ask: Late tiffins decide support screens.
+          unlocks: ["Blueprint: support rules"]
+          examples: ["They get a free meal next day"]
+  cmp.audit_questions:
+    - pass_all: true
+    - pass_all: true

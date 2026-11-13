@@ -151,7 +151,7 @@ async def test_usage_and_budget_routes() -> None:
         "research:r5": 200,
     }
     assert total["cap_micros"] == 5_700_000 and total["scope"] is None and total["live_calls"] == 1
-    assert (session["spent_micros"], session["cap_micros"]) == (200, 500_000)
+    assert (session["spent_micros"], session["cap_micros"]) == (200, 1_000_000)
     assert (research["spent_micros"], research["cap_micros"]) == (200, 300_000)
     assert (other["spent_micros"], other["cap_micros"]) == (0, None)
 

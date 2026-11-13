@@ -1,0 +1,134 @@
+{
+ "pairs": 16,
+ "topics_not_rebuilt": 0,
+ "repeats": 1,
+ "arms": {
+  "B": {
+   "what": "v3 checker, tighten and re-check once",
+   "partial_share": {
+    "min": 0.25,
+    "median": 0.25,
+    "max": 0.25
+   },
+   "unverified_share": {
+    "min": 0.2778,
+    "median": 0.2778,
+    "max": 0.2778
+   },
+   "verified_atoms": {
+    "min": 44.0,
+    "median": 44.0,
+    "max": 44.0
+   },
+   "tightened": {
+    "min": 7.0,
+    "median": 7.0,
+    "max": 7.0
+   },
+   "rejected_not_supported": {
+    "min": 0.0,
+    "median": 0.0,
+    "max": 0.0
+   },
+   "repeats": [
+    {
+     "atoms": 47,
+     "verified": 44,
+     "rejected_not_supported": 0,
+     "rejected_unsupported_field": 3,
+     "checked": 44,
+     "partial": 11,
+     "partial_share": 0.25,
+     "tightened": 7,
+     "items": 36,
+     "unverified_items": 10,
+     "unverified_share": 0.2778,
+     "partial_by_kind": {
+      "competitor": [
+       1,
+       2
+      ],
+      "compliance_note": [
+       1,
+       1
+      ],
+      "platform_constraint": [
+       1,
+       5
+      ],
+      "provider_fact": [
+       1,
+       8
+      ],
+      "role_pattern": [
+       0,
+       1
+      ],
+      "rule": [
+       0,
+       1
+      ],
+      "screen_pattern": [
+       2,
+       4
+      ],
+      "service_option": [
+       3,
+       3
+      ],
+      "workflow": [
+       2,
+       19
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "tightened_sample": [
+  {
+   "kind": "competitor",
+   "before": "",
+   "after": "Fitnexsolutions offers yoga studio management software for classes, staff and sales, delivered through a studio-branded iOS and Android app.",
+   "quote": "power your studio with the best solution and connect with students worldwide through your branded iOS & Android app."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "For rescheduling, the existing reservation should be easy to find and show available alternatives without searching the full schedule again, with a clear status at each step.",
+   "quote": "For rescheduling, make the existing reservation easy to find and show available alternatives without requiring another search through the full schedule."
+  },
+  {
+   "kind": "workflow",
+   "before": "Students visit the booking page, pick a class, choose an available time slot and receive instant confirmation. Custom booking pages per class type avoid confusion about what is being booked.",
+   "after": "Students visit the booking page, pick a class, choose an available time slot and receive instant confirmation.",
+   "quote": "students visit your booking page, select their desired class, choose an available time slot, and receive instant confirmation."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A student opens the schedule, selects a class, checks its details and reserves a place. The reservation then appears in the member's account so it is easy to find later.",
+   "quote": "A student opens the schedule, selects a class, checks its details, and reserves a place."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When a class is full, clients join the waitlist in the client app. If a spot opens, the studio owner decides who to offer it to. Available on Studio and Unlimited plans.",
+   "quote": "When a class is full, clients can join the waitlist via the Bobclass Go client app. If a spot opens up, you decide who to"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A student opens the schedule, selects a class, checks its details and reserves a place. The reservation then appears in the member's account so it is easy to find later.",
+   "quote": "A student opens the schedule, selects a class, checks its details, and reserves a place."
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Students browse the class schedule on their phone and book a class; the page recommends the familiar label \"Schedule\" with instructor and class style readable beside session details.",
+   "quote": "Use familiar labels such as \u201cSchedule\u201d and \u201cMy bookings,\u201d and keep the instructor and class style readable beside session details."
+  }
+ ],
+ "cost_micros": 332983,
+ "cost_usd": "0.332983"
+}

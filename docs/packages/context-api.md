@@ -106,7 +106,7 @@ Everything is built from settings alone; nothing connects to the database while 
 
 | Part | From |
 | --- | --- |
-| gateway | `GATEWAY_MODE=inprocess`: `InProcessGatewayClient(create_gateway(settings, PromptRegistry(), sink=PgLlmCallSink))` (mock, replay or live by `LLM_MODE`; live also needs `ALLOW_LIVE_LLM=1`). `http`: `HttpGatewayClient(GATEWAY_URL, GATEWAY_SERVICE_TOKEN)` (both required, else `ConfigError`) |
+| gateway | `GATEWAY_MODE=inprocess`: `InProcessGatewayClient(create_gateway(settings, PromptRegistry(), sink=PgLlmCallSink))` (mock, replay or live by `LLM_MODE`). `http`: `HttpGatewayClient(GATEWAY_URL, GATEWAY_SERVICE_TOKEN)` (both required, else `ConfigError`) |
 | engines | `DiscoverEngine(gateway)`, `DefaultResearchEngine(gateway)`, the Spec Builder |
 | Spec Builder | `mde_spec_builder.engine.SpecBuilderImpl(gateway, clock=...)`, imported lazily; if it cannot be imported a `ConfigError` says so and names the way out. `--fake-builder` / `SPEC_BUILDER=fake` use `mde_flow.testing.FakeSpecBuilder` (dev and tests) |
 | store | `PostgresStore(create_engine(settings))` (pool of 5, no overflow), or any `Store` passed in |

@@ -1,0 +1,19 @@
+id: company_setup
+purpose: 'In Company mode: capture the company profile, approvers, design guidelines and system list.'
+slots:
+- org.profile
+- org.approvers
+- org.design_system
+- org.api_catalog
+card_type: upload_or_link
+option_source: document
+order: 17
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: Ask for documents first and read them; ask only for what the documents do not answer. Names
+  and roles of approvers are needed before the plan can be approved.
+style_guide: "Enterprise only. Ask for what exists (a profile, approvers, a design guide, a list of systems) and where to find it; accept a link or a file."
+examples:
+- "Do you have brand guidelines or a design system we should follow? A link or a file is fine."
+- "Who in your company must approve this before we build?"

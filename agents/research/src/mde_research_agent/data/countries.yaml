@@ -1,0 +1,83 @@
+# Countries the Research agent can target. Key: ISO 3166-1 alpha-2 code, lowercase (the form SearchRequest.country
+# carries).
+#   name:     lowercase English name exactly as Tavily's `country` parameter expects it. Every non-null name below is
+#             in the `country` enum of the official Tavily Search OpenAPI spec (checked 2026-11-11). `name: null`
+#             means "not in that enum (or not checked yet)": the country is still known (parsing a Brief, the TLD,
+#             the default language) but the Tavily adapter sends no `country` and reports a weak locale instead of
+#             sending a value Tavily would reject with a 400. Fill `name` in once it is checked against the spec.
+#   label:    the display name when `name` is null (English, lowercase). Defaults to `name`.
+#   tld:      the country-code top-level domain, without the dot (used to prefer local sites).
+#   bloc:     a legal bloc the country belongs to (`eu`): the bloc's authority file (authority/eu.yaml) applies to its
+#             members too.
+#   language: ISO 639-1 code of the main language of the country's consumer web, used only when nothing else
+#             says which language to search in (a language chosen in the session always wins). English where
+#             English is the everyday language of local business content on the web.
+in: {name: india, tld: in, language: en}
+ae: {name: united arab emirates, tld: ae, language: ar}
+ke: {name: kenya, tld: ke, language: en}
+gb: {name: united kingdom, tld: uk, language: en}
+us: {name: united states, tld: us, language: en}
+ng: {name: nigeria, tld: ng, language: en}
+za: {name: south africa, tld: za, language: en}
+eg: {name: egypt, tld: eg, language: ar}
+sa: {name: saudi arabia, tld: sa, language: ar}
+pk: {name: pakistan, tld: pk, language: en}
+bd: {name: bangladesh, tld: bd, language: bn}
+lk: {name: sri lanka, tld: lk, language: en}
+np: {name: nepal, tld: np, language: ne}
+sg: {name: singapore, tld: sg, language: en}
+my: {name: malaysia, tld: my, language: ms}
+id: {name: indonesia, tld: id, language: id}
+ph: {name: philippines, tld: ph, language: en}
+th: {name: thailand, tld: th, language: th}
+vn: {name: vietnam, tld: vn, language: vi}
+jp: {name: japan, tld: jp, language: ja}
+kr: {name: south korea, tld: kr, language: ko}
+cn: {name: china, tld: cn, language: zh}
+au: {name: australia, tld: au, language: en}
+nz: {name: new zealand, tld: nz, language: en}
+ca: {name: canada, tld: ca, language: en}
+ie: {name: ireland, tld: ie, language: en, bloc: eu}
+de: {name: germany, tld: de, language: de, bloc: eu}
+fr: {name: france, tld: fr, language: fr, bloc: eu}
+es: {name: spain, tld: es, language: es, bloc: eu}
+it: {name: italy, tld: it, language: it, bloc: eu}
+nl: {name: netherlands, tld: nl, language: nl, bloc: eu}
+be: {name: belgium, tld: be, language: nl, bloc: eu}
+pt: {name: portugal, tld: pt, language: pt, bloc: eu}
+ch: {name: switzerland, tld: ch, language: de}
+at: {name: austria, tld: at, language: de, bloc: eu}
+se: {name: sweden, tld: se, language: sv, bloc: eu}
+"no": {name: norway, tld: "no", language: "no"}  # quoted: a bare `no` is a YAML boolean
+dk: {name: denmark, tld: dk, language: da, bloc: eu}
+fi: {name: finland, tld: fi, language: fi, bloc: eu}
+pl: {name: poland, tld: pl, language: pl, bloc: eu}
+cz: {name: czech republic, tld: cz, language: cs, bloc: eu}
+hu: {name: hungary, tld: hu, language: hu, bloc: eu}
+ro: {name: romania, tld: ro, language: ro, bloc: eu}
+gr: {name: greece, tld: gr, language: el, bloc: eu}
+tr: {name: turkey, tld: tr, language: tr}
+ua: {name: ukraine, tld: ua, language: uk}
+ru: {name: russia, tld: ru, language: ru}
+il: {name: israel, tld: il, language: he}
+jo: {name: jordan, tld: jo, language: ar}
+kw: {name: kuwait, tld: kw, language: ar}
+qa: {name: qatar, tld: qa, language: ar}
+om: {name: oman, tld: om, language: ar}
+bh: {name: bahrain, tld: bh, language: ar}
+ma: {name: morocco, tld: ma, language: ar}
+br: {name: brazil, tld: br, language: pt}
+mx: {name: mexico, tld: mx, language: es}
+ar: {name: argentina, tld: ar, language: es}
+cl: {name: chile, tld: cl, language: es}
+co: {name: colombia, tld: co, language: es}
+pe: {name: peru, tld: pe, language: es}
+gh: {name: ghana, tld: gh, language: en}
+tz: {name: tanzania, tld: tz, language: sw}
+ug: {name: uganda, tld: ug, language: en}
+zm: {name: zambia, tld: zm, language: en}
+zw: {name: zimbabwe, tld: zw, language: en}
+et: {name: ethiopia, tld: et, language: am}
+sn: {name: senegal, tld: sn, language: fr}
+gt: {name: guatemala, tld: gt, language: es}
+cr: {name: costa rica, tld: cr, language: es}

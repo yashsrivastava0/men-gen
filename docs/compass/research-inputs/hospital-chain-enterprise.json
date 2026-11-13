@@ -1,0 +1,5737 @@
+{
+ "export": {
+  "format": "compass-full-output",
+  "format_version": 2,
+  "exported_at": "2026-11-10T10:46:13.433142+00:00",
+  "session_id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+  "brief_version": 7,
+  "brief_hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da",
+  "approved_baseline": {
+   "session_id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+   "version": 7,
+   "hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da",
+   "section_hashes": {
+    "idea": "d343fc02972274c18d05a1780ca7a971b414160ae9b91d1d7a2e84ab6af918c9",
+    "context": "9b4c3cd2e9a44301c6ef786703d29d481382c0105f8ae1a95f5d725a85913320",
+    "audience": "b445eb16a6965147b0467dec67a435582edb8ca5115fee17abc5f8b835c97eee",
+    "apps": "7436c98274d4400e23d4327677e714d83f0ed05b97af43f4a22b7defcd2f968e",
+    "roles": "b6fac2670e9d3fed9d9014d3224316c506c6137a1e58928bfe11a9ffebb6b3d7",
+    "scope": "4a76582d69cad603f49cc05c941b68a8fa13cf5504bd8888692b2a8bc68516df",
+    "modules": "0ab94aeeaf5fc1a54a97e87bc86a7032cc35ba5da76e58b3777210a0aa180687",
+    "screens": "994ddf8973d9edfec0133d9f7767c79f12d41d2c533b9cd42752be8fb7c7c871",
+    "flows": "79ea3e4ac0ccc70ad017f19264d61b3bcf383095409a9f7006def2ba88d31aff",
+    "entities": "15627821642078696157ad89f3b46686844fe460cadc2e2d0ed8d3722b34af00",
+    "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "experience": "afbba853d610fe6c7317a0e66dad36ca1ff6829c249c9ff7f1caa310b3138d2f",
+    "access": "f74b1489ea5eedffc5b428038faf21b428cef9b1b55623a568851f18e8c52cf6",
+    "integrations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "constraints": "15c4efe5cb6bcf879d430704240405cf498795f56f7b0a90b033885407b6d245",
+    "glossary": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "domain_facts": "09c256f68ad025320156caeebfebb2baab70f8148f3384874b4829fcdc9b8c6d",
+    "assumptions": "c8343ec8582f2b03397b898b44313f86d2cb8385cf792e64ecb426a16a9e279b",
+    "open_questions": "b7f0335c19ef7568154de6723db07232dd76b703cef936b2e9495715d6bb5303",
+    "research_requests": "edd7b6b4285a623de3dd96f4388309c0bee426fc7190588c6f455304bda98e6c",
+    "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "sources": "383510dde7c339a5f9363d4772bbb020c2c3fb46ff2c3ab510e71a78eb60e179",
+    "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+   },
+   "baseline_label": "B-G1",
+   "change_set_id": "CHG-001",
+   "created_at": "2026-11-10T10:46:13.088140Z"
+  },
+  "reading_guide": {
+   "brief": "the source of truth: slots as sections, records (features, roles, apps, integrations), domain_facts (typed details with kind and refs), assumptions (what was assumed and its decision), open_questions, research_requests and search_hints",
+   "consumer_views": "what each downstream engine reads: research, blueprint, design, verify (values only, no quotes)",
+   "interview": "every question and answer (qa), every fact with verbatim quote, origin and status (facts), the rolling summary",
+   "sources": "documents the person gave and the claims read from them",
+   "structure": "the user-approved structure of the app (ADR 0017): size band and source, counts, an outline (ids and names), one slice per module (screens, the journeys that touch them, the data they use, who may do what, the features served, the detail facts routed to it), the role by module matrix, navigation edges taken from the journeys, the issues left, and the research guidance; absent for a Brief without a structure"
+  },
+  "trimmed_for": "batch H (mde_compass.live_structure): the Brief without a structure, the active interview facts and the session; a live Thorough session of 2026-11-10 (idea plus a 10-role hospital document, decide-the-rest), the input for the enterprise-size structure replay"
+ },
+ "session": {
+  "id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+  "tenant_id": "demo",
+  "user_id": "demo-user",
+  "mode": "guided",
+  "locale": "en",
+  "user_label": "Live thorough",
+  "title": "One patient and staff app for a hospital chain, covering patient care and hospit",
+  "state": "APPROVED",
+  "resume_state": null,
+  "brief_version": 7,
+  "approved_version": 7,
+  "approved_hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da",
+  "spent_micros": 41131,
+  "llm_calls": 37,
+  "outbound_seq": 31,
+  "active_turn": false,
+  "row_version": 6,
+  "contributors": [
+   {
+    "id": "demo-user",
+    "name": "Live thorough",
+    "role": "requester",
+    "decision_owner": true
+   }
+  ],
+  "created_at": "2026-11-10T10:42:14.274249Z",
+  "updated_at": "2026-11-10T10:46:13.096587Z"
+ },
+ "brief": {
+  "version": 7,
+  "meta": {
+   "session_id": "ses_01M72GT842CX9E3XX2BMSHVNKR",
+   "program_id": "",
+   "mode": "guided",
+   "situation_profile": {
+    "input_richness": "rich",
+    "clarity": "knows_everything",
+    "expertise": "product",
+    "size_stakes": "enterprise",
+    "reference_driven": false,
+    "collaboration": "several",
+    "language": "en",
+    "input_mode": "text",
+    "urgency": "thorough",
+    "formality": "professional"
+   },
+   "plan": {
+    "depth": "large",
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 10,
+    "minimum_viable": false,
+    "interview_budget": "thorough"
+   },
+   "hypothesis": {
+    "label": "hypothesis",
+    "category": "Healthcare software",
+    "subcategory": "Possibly a hospital operations and patient-care management app",
+    "business_model_candidates": [
+     "Hospitals pay for access",
+     "A hospital chain pays for use across its hospitals",
+     "Not yet clear"
+    ],
+    "likely_families": [
+     "health_wellness",
+     "booking_scheduling",
+     "communication",
+     "identity_access",
+     "payments_wallet",
+     "finance",
+     "dashboards_admin",
+     "workflows",
+     "enterprise_workforce"
+    ],
+    "likely_roles": [
+     "patient",
+     "doctor",
+     "nurse",
+     "receptionist",
+     "hospital administrator",
+     "finance staff",
+     "Hospital administrators",
+     "Doctors",
+     "Nurses",
+     "Receptionists",
+     "Patients",
+     "Administrators"
+    ],
+    "likely_features": [
+     {
+      "family": "booking_scheduling",
+      "name": "Book a time",
+      "intent": "Let patients book appointments.",
+      "custom": false
+     },
+     {
+      "family": "booking_scheduling",
+      "name": "Reschedule or cancel",
+      "intent": "Let patients manage their appointments.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Personal records",
+      "intent": "Give patients access to health records such as prescriptions and lab reports.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Book a visit",
+      "intent": "Support booking care with doctors.",
+      "custom": false
+     },
+     {
+      "family": "health_wellness",
+      "name": "Patient history and clinical notes",
+      "intent": "Let doctors review patient history and write notes.",
+      "custom": true
+     },
+     {
+      "family": "health_wellness",
+      "name": "E-prescriptions",
+      "intent": "Let doctors write and patients view e-prescriptions.",
+      "custom": true
+     },
+     {
+      "family": "communication",
+      "name": "Video consultations",
+      "intent": "Enable remote consultations between patients and doctors.",
+      "custom": true
+     },
+     {
+      "family": "communication",
+      "name": "Notifications",
+      "intent": "Send appointment and other reminders in the listed languages.",
+      "custom": false
+     },
+     {
+      "family": "identity_access",
+      "name": "Roles and permissions",
+      "intent": "Control access for patients, clinical staff, administrators, and finance staff.",
+      "custom": false
+     },
+     {
+      "family": "payments_wallet",
+      "name": "Pay online",
+      "intent": "Let patients pay hospital bills.",
+      "custom": false
+     },
+     {
+      "family": "finance",
+      "name": "Invoices",
+      "intent": "Support hospital billing.",
+      "custom": false
+     },
+     {
+      "family": "finance",
+      "name": "Insurance claims management",
+      "intent": "Support finance staff managing insurance claims.",
+      "custom": true
+     },
+     {
+      "family": "dashboards_admin",
+      "name": "Reports with filters",
+      "intent": "Provide reports across hospitals.",
+      "custom": false
+     },
+     {
+      "family": "dashboards_admin",
+      "name": "Activity log",
+      "intent": "Maintain an audit trail of activity.",
+      "custom": false
+     },
+     {
+      "family": "workflows",
+      "name": "Admissions and bed availability",
+      "intent": "Help nurses and receptionists manage admissions and available beds.",
+      "custom": true
+     },
+     {
+      "family": "enterprise_workforce",
+      "name": "Shift schedule",
+      "intent": "Help staff manage schedules.",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Appointments and availability",
+      "intent": "Help staff manage doctor schedules and patient appointments",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Patient records and notes",
+      "intent": "Give authorised staff access to patient history and consultation notes",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Billing and claims",
+      "intent": "Manage hospital bills and insurance claims",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Roles and audit trail",
+      "intent": "Control staff access and keep a record of changes",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Appointments and schedules",
+      "intent": "Book and manage appointments and staff availability",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Admissions and beds",
+      "intent": "Manage patient admissions and bed availability",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Patient records",
+      "intent": "Keep patient history, prescriptions, and consultation notes",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Audit trail",
+      "intent": "Track who accessed or changed sensitive records",
+      "custom": false
+     }
+    ],
+    "hard_parts": [
+     "Protecting sensitive health data and meeting Indian health data rules",
+     "Building secure video consultations",
+     "Supporting Marathi, Gujarati, Hindi, and English throughout the app",
+     "Producing reports across eleven hospitals",
+     "Enforcing role-based access and maintaining an audit trail",
+     "Keeping admissions and bed availability current across hospitals",
+     "Protecting sensitive patient information while giving the right staff access",
+     "Understanding whether the app is for hospital operations, patient services, or both",
+     "Supporting the workflows of different hospital staff"
+    ],
+    "glossary_candidates": [
+     {
+      "term": "video consultations",
+      "synonyms": [
+       "virtual consultations",
+       "video visits"
+      ]
+     },
+     {
+      "term": "e-prescriptions",
+      "synonyms": [
+       "electronic prescriptions",
+       "digital prescriptions"
+      ]
+     },
+     {
+      "term": "lab reports",
+      "synonyms": [
+       "laboratory reports",
+       "test results"
+      ]
+     },
+     {
+      "term": "bed availability",
+      "synonyms": [
+       "available beds",
+       "bed capacity"
+      ]
+     },
+     {
+      "term": "insurance claims",
+      "synonyms": [
+       "health insurance claims",
+       "insurance billing claims"
+      ]
+     },
+     {
+      "term": "audit trail",
+      "synonyms": [
+       "audit log",
+       "activity record"
+      ]
+     }
+    ],
+    "confidence": 0.94
+   },
+   "locales": [
+    "Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app."
+   ],
+   "schema_version": 1,
+   "depth_profile": "large",
+   "degraded": false,
+   "probes": {
+    "research": true,
+    "blueprint": true,
+    "design": true
+   },
+   "probe_rounds": 1,
+   "approvals": {},
+   "interview": {
+    "budget": "thorough",
+    "ui_mode": "answer_all",
+    "ui_mode_set": false,
+    "questions_asked": 4,
+    "followups": 0,
+    "answered": 0,
+    "skipped": 0,
+    "assumed": 4,
+    "batches": 1,
+    "facts_active": 40,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "coverage": 1,
+    "fallback_count": 0,
+    "question_ids": [
+     "Q-005",
+     "Q-006",
+     "Q-003",
+     "Q-004"
+    ],
+    "stop_reason": "the person asked to finish with defaults",
+    "target": 25,
+    "hard_cap": 30,
+    "tier_set": true,
+    "closing": "auto",
+    "followup_candidates": [],
+    "reopened": 0,
+    "size_band": "large",
+    "size_source": "tier",
+    "size_suggested": "",
+    "structure_modules": 10,
+    "structure_screens": 71,
+    "structure_flows": 12,
+    "structure_entities": 21,
+    "structure_issues": 24
+   },
+   "compile_digests": {
+    "fill:idea:0": "02fafd86a7db7796f6dbdddf",
+    "fill:people_and_scope:0": "b0294c1c5ecd10ff6c708ffc",
+    "fill:experience_and_systems:0": "e23ce6e6eda0e7cbbc11a8b4",
+    "typical": "bcd8cc722b02f3be3727a635",
+    "structure:outline": "76786b0c116f9033ac4c218d",
+    "structure:module:MOD-001": "43260b11d98566d6ff384460",
+    "structure:module:MOD-002": "c525f3b264b29e6ee1fe1587",
+    "structure:module:MOD-003": "3b397ddcaa643254974f72e1",
+    "structure:module:MOD-004": "a20a874128c62cdcc6cd26fe",
+    "structure:module:MOD-005": "dfb2563370014a93db95fe3a",
+    "structure:module:MOD-006": "d980c024dee878f3608603a6",
+    "structure:module:MOD-007": "ddf4aefc4231512c36dd0006",
+    "structure:module:MOD-008": "ad5d96195fff753ce60262aa",
+    "structure:module:MOD-009": "14446820f4523545b59fd9fb",
+    "structure:module:MOD-010": "08539ad602f0e579dbd6419a",
+    "text": "0afd23ed55358769c9ef2b8e"
+   }
+  },
+  "idea": {
+   "summary": {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-003",
+      "quote": "want one patient and staff app",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "value": "One patient and staff app for a hospital chain, covering patient care and hospital operations."
+   },
+   "category": {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-003",
+      "quote": "want one patient and staff app",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "value": "hospital patient and staff app"
+   },
+   "subcategory": {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-003",
+      "quote": "want one patient and staff app",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "value": "A hospital patient and staff app for patient care and hospital operations across a hospital chain"
+   },
+   "problem_value": {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Hospital chain app",
+      "date": "2026-11-10T10:43:24.890837Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "value": "The app is for a hospital chain"
+   },
+   "business_model": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "express:idea.business_model",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382551Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": "Hospitals pay for access"
+   }
+  },
+  "context": {
+   "geo": {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-002",
+      "quote": "across Maharashtra and Gujarat",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "value": {
+     "country": "India",
+     "region": "Maharashtra and Gujarat"
+    }
+   },
+   "scale_launch": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "interview:context.scale_launch",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382380Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": "pilot_small"
+   }
+  },
+  "audience": {
+   "segments": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "interview:audience.segments",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382413Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": [
+     "everyday users"
+    ]
+   }
+  },
+  "apps": [
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-003",
+      "quote": "want one patient and staff app",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "APP-001",
+    "name": "patient and staff app",
+    "purpose": "Patient services and hospital staff operations",
+    "surface": "not specified",
+    "audience": "",
+    "roles": []
+   }
+  ],
+  "roles": [
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-001",
+    "name_in_user_words": "Patient",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-002",
+    "name_in_user_words": "Doctor",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-003",
+    "name_in_user_words": "Nurse",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-004",
+    "name_in_user_words": "Receptionist",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-005",
+    "name_in_user_words": "Pharmacist",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-006",
+    "name_in_user_words": "Lab technician",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-007",
+    "name_in_user_words": "Billing and insurance",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-008",
+    "name_in_user_words": "Administration",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.891212Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-009",
+    "name_in_user_words": "Roles",
+    "goal": "",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "FCT-027",
+      "quote": "Administration: manage users and roles per hospital, configure departments and doctor schedules, see occupancy, revenue and wait-time reports across hospitals, audit log of who opened which patient record.",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "ROL-010",
+    "name_in_user_words": "Group administrator",
+    "goal": "Manage users and roles, configure hospital departments and doctor schedules, and view reports across hospitals",
+    "rough_permissions": []
+   }
+  ],
+  "scope": [
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-004",
+      "quote": "Patients book and manage appointments",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-001",
+    "name": "appointment booking and management",
+    "intent": "Patients book and manage appointments",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "every access is logged",
+      "date": "2026-11-10T10:43:24.891784Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [
+     {
+      "value": [
+       {
+        "id": "FTR-001",
+        "name": "appointment booking and management",
+        "intent": "Patients book and manage appointments",
+        "apps": [],
+        "family": null,
+        "scope_status": "in",
+        "priority": "nice",
+        "source": "",
+        "size": {
+         "screens": 0,
+         "entities": 0,
+         "integrations": 0
+        },
+        "capability_tier": "A",
+        "custom": false,
+        "_meta": {
+         "tier": "Locked",
+         "provenance": [
+          {
+           "type": "user_text",
+           "ref": "FCT-004",
+           "quote": "Patients book and manage appointments",
+           "date": "2026-11-10T10:42:53.680717Z",
+           "contributor_id": null
+          }
+         ],
+         "confidence": 0.99,
+         "status": "volunteered",
+         "history": []
+        }
+       }
+      ],
+      "status": "volunteered",
+      "turn_id": "evt_01M72GVEMJ4RCNS1YY9EPE7MT9",
+      "at": "2026-11-10T10:43:24.891867Z",
+      "reason": "corrected"
+     }
+    ],
+    "id": "FTR-002",
+    "name": "Access logging",
+    "intent": "Every access to a patient record must be logged.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "every access is logged",
+      "date": "2026-11-10T10:43:24.891784Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [
+     {
+      "value": [
+       {
+        "id": "FTR-001",
+        "name": "appointment booking and management",
+        "intent": "Patients book and manage appointments",
+        "apps": [],
+        "family": null,
+        "scope_status": "in",
+        "priority": "nice",
+        "source": "",
+        "size": {
+         "screens": 0,
+         "entities": 0,
+         "integrations": 0
+        },
+        "capability_tier": "A",
+        "custom": false,
+        "_meta": {
+         "tier": "Locked",
+         "provenance": [
+          {
+           "type": "user_text",
+           "ref": "FCT-004",
+           "quote": "Patients book and manage appointments",
+           "date": "2026-11-10T10:42:53.680717Z",
+           "contributor_id": null
+          }
+         ],
+         "confidence": 0.99,
+         "status": "volunteered",
+         "history": []
+        }
+       }
+      ],
+      "status": "volunteered",
+      "turn_id": "evt_01M72GVEMJ4RCNS1YY9EPE7MT9",
+      "at": "2026-11-10T10:43:24.891867Z",
+      "reason": "corrected"
+     }
+    ],
+    "id": "FTR-003",
+    "name": "Record downloads",
+    "intent": "Patients can download their own records.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "every access is logged",
+      "date": "2026-11-10T10:43:24.891784Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [
+     {
+      "value": [
+       {
+        "id": "FTR-001",
+        "name": "appointment booking and management",
+        "intent": "Patients book and manage appointments",
+        "apps": [],
+        "family": null,
+        "scope_status": "in",
+        "priority": "nice",
+        "source": "",
+        "size": {
+         "screens": 0,
+         "entities": 0,
+         "integrations": 0
+        },
+        "capability_tier": "A",
+        "custom": false,
+        "_meta": {
+         "tier": "Locked",
+         "provenance": [
+          {
+           "type": "user_text",
+           "ref": "FCT-004",
+           "quote": "Patients book and manage appointments",
+           "date": "2026-11-10T10:42:53.680717Z",
+           "contributor_id": null
+          }
+         ],
+         "confidence": 0.99,
+         "status": "volunteered",
+         "history": []
+        }
+       }
+      ],
+      "status": "volunteered",
+      "turn_id": "evt_01M72GVEMJ4RCNS1YY9EPE7MT9",
+      "at": "2026-11-10T10:43:24.891867Z",
+      "reason": "corrected"
+     }
+    ],
+    "id": "FTR-004",
+    "name": "Language support",
+    "intent": "The app must work in Marathi, Gujarati, Hindi, and English.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "every access is logged",
+      "date": "2026-11-10T10:43:24.891784Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [
+     {
+      "value": [
+       {
+        "id": "FTR-001",
+        "name": "appointment booking and management",
+        "intent": "Patients book and manage appointments",
+        "apps": [],
+        "family": null,
+        "scope_status": "in",
+        "priority": "nice",
+        "source": "",
+        "size": {
+         "screens": 0,
+         "entities": 0,
+         "integrations": 0
+        },
+        "capability_tier": "A",
+        "custom": false,
+        "_meta": {
+         "tier": "Locked",
+         "provenance": [
+          {
+           "type": "user_text",
+           "ref": "FCT-004",
+           "quote": "Patients book and manage appointments",
+           "date": "2026-11-10T10:42:53.680717Z",
+           "contributor_id": null
+          }
+         ],
+         "confidence": 0.99,
+         "status": "volunteered",
+         "history": []
+        }
+       }
+      ],
+      "status": "volunteered",
+      "turn_id": "evt_01M72GVEMJ4RCNS1YY9EPE7MT9",
+      "at": "2026-11-10T10:43:24.891867Z",
+      "reason": "corrected"
+     }
+    ],
+    "id": "FTR-005",
+    "name": "Patient sign-in",
+    "intent": "Patients must sign in with phone OTP.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "every access is logged",
+      "date": "2026-11-10T10:43:24.891784Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [
+     {
+      "value": [
+       {
+        "id": "FTR-001",
+        "name": "appointment booking and management",
+        "intent": "Patients book and manage appointments",
+        "apps": [],
+        "family": null,
+        "scope_status": "in",
+        "priority": "nice",
+        "source": "",
+        "size": {
+         "screens": 0,
+         "entities": 0,
+         "integrations": 0
+        },
+        "capability_tier": "A",
+        "custom": false,
+        "_meta": {
+         "tier": "Locked",
+         "provenance": [
+          {
+           "type": "user_text",
+           "ref": "FCT-004",
+           "quote": "Patients book and manage appointments",
+           "date": "2026-11-10T10:42:53.680717Z",
+           "contributor_id": null
+          }
+         ],
+         "confidence": 0.99,
+         "status": "volunteered",
+         "history": []
+        }
+       }
+      ],
+      "status": "volunteered",
+      "turn_id": "evt_01M72GVEMJ4RCNS1YY9EPE7MT9",
+      "at": "2026-11-10T10:43:24.891867Z",
+      "reason": "corrected"
+     }
+    ],
+    "id": "FTR-006",
+    "name": "Staff sign-in",
+    "intent": "Staff must sign in with single sign-on.",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-014",
+      "quote": "role-based access with an audit trail",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-007",
+    "name": "Role-based access",
+    "intent": "Provide access based on roles",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-005",
+      "quote": "join video consultations",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-008",
+    "name": "Video consultations",
+    "intent": "Let patients and doctors join or conduct video consultations",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-006",
+      "quote": "see prescriptions and lab reports",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-009",
+    "name": "Prescriptions and lab reports",
+    "intent": "Let patients see prescriptions and lab reports",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-007",
+      "quote": "pay bills",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-010",
+    "name": "Bill payments",
+    "intent": "Let patients pay bills online or at the counter",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-008",
+      "quote": "get reminders",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-011",
+    "name": "Patient reminders",
+    "intent": "Send patients reminders, including by SMS and WhatsApp",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-012",
+      "quote": "Nurses and receptionists manage admissions, bed availability and the daily schedule",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-012",
+    "name": "Admissions and bed management",
+    "intent": "Manage admissions, bed availability, and admission and discharge status",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "FCT-013",
+      "quote": "Hospital administrators and finance staff need billing, insurance claims, reports across hospitals",
+      "date": "2026-11-10T10:43:28.390458Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FTR-013",
+    "name": "Billing, insurance claims and reports",
+    "intent": "Support hospital billing, insurance claims, and reports across hospitals",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "nice",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   }
+  ],
+  "references": [],
+  "experience": {
+   "locales": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "you_decide:Q-005",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.375936Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.5,
+    "status": "assumed",
+    "history": [],
+    "value": "Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app."
+   },
+   "tone_words": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "interview:look.tone_words",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382457Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": [
+     "calm_simple"
+    ]
+   },
+   "density_mode": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "interview:look.density_mode",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382480Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": "balanced"
+   },
+   "devices": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "interview:devices.profile",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382497Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": "phones"
+   }
+  },
+  "access": {
+   "auth_methods": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "express:auth.methods",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382570Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": [
+     "phone_otp"
+    ]
+   },
+   "account_model": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "express:auth.account_model",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382613Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": "individual"
+   },
+   "onboarding_approvals": {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "interview:onboarding.approvals",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.382633Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "value": "open_join"
+   }
+  },
+  "integrations": [],
+  "data": {},
+  "constraints": {
+   "must_use": {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001 lines 1-21",
+      "quote": "only the treating doctor and authorised staff can open a patient record",
+      "date": "2026-11-10T10:43:24.891633Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "value": [
+     "Only the treating doctor and authorised staff can open a patient record",
+     "Consent must be taken before sharing records with another hospital",
+     "Data must stay in India"
+    ]
+   }
+  },
+  "glossary": [],
+  "domain_facts": [
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "We are a hospital chain with eleven hospitals",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-001",
+    "type": "context",
+    "statement": "We are a hospital chain with eleven hospitals.",
+    "topics": [
+     "organization"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "We are a hospital chain with eleven hospitals",
+    "kind": "number",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "across Maharashtra and Gujarat",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-002",
+    "type": "context",
+    "statement": "The hospitals are across Maharashtra and Gujarat.",
+    "topics": [
+     "location"
+    ],
+    "entities": [
+     "Maharashtra",
+     "Gujarat"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "across Maharashtra and Gujarat",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "want one patient and staff app",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-003",
+    "type": "requirement",
+    "statement": "We want one patient and staff app.",
+    "topics": [
+     "app"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "want one patient and staff app",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "Patients book and manage appointments",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-004",
+    "type": "requirement",
+    "statement": "Patients book and manage appointments.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Patients book and manage appointments",
+    "kind": "flow",
+    "refs": [
+     "FTR-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "join video consultations",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-005",
+    "type": "requirement",
+    "statement": "Patients join video consultations.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "join video consultations",
+    "kind": "flow",
+    "refs": [
+     "FTR-008"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "see prescriptions and lab reports",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-006",
+    "type": "requirement",
+    "statement": "Patients see prescriptions and lab reports.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "see prescriptions and lab reports",
+    "kind": "screen",
+    "refs": [
+     "FTR-009"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "pay bills",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-007",
+    "type": "requirement",
+    "statement": "Patients pay bills.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "pay bills",
+    "kind": "flow",
+    "refs": [
+     "FTR-010"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "get reminders",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-008",
+    "type": "requirement",
+    "statement": "Patients get reminders.",
+    "topics": [
+     "patients"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "get reminders",
+    "kind": "flow",
+    "refs": [
+     "FTR-011"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "get reminders in Marathi, Gujarati, Hindi and English",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-009",
+    "type": "requirement",
+    "statement": "The app has reminders in Marathi, Gujarati, Hindi and English.",
+    "topics": [
+     "languages"
+    ],
+    "entities": [
+     "Marathi",
+     "Gujarati",
+     "Hindi",
+     "English"
+    ],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "get reminders in Marathi, Gujarati, Hindi and English",
+    "kind": "nfr",
+    "refs": [
+     "FTR-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "Doctors see their schedule, patient history",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-010",
+    "type": "role",
+    "statement": "Doctors see their schedule and patient history.",
+    "topics": [
+     "doctors"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Doctors see their schedule, patient history",
+    "kind": "screen",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "write notes and e-prescriptions",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-011",
+    "type": "requirement",
+    "statement": "Doctors write notes and e-prescriptions.",
+    "topics": [
+     "doctors"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "write notes and e-prescriptions",
+    "kind": "flow",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "Nurses and receptionists manage admissions, bed availability and the daily schedule",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-012",
+    "type": "role",
+    "statement": "Nurses and receptionists manage admissions, bed availability and the daily schedule.",
+    "topics": [
+     "nurses"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Nurses and receptionists manage admissions, bed availability and the daily schedule",
+    "kind": "flow",
+    "refs": [
+     "ROL-003",
+     "ROL-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "role-based access with an audit trail",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-014",
+    "type": "requirement",
+    "statement": "The app needs role-based access with an audit trail.",
+    "topics": [
+     "access_control"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "role-based access with an audit trail",
+    "kind": "rule",
+    "refs": [
+     "FTR-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "Everything handles sensitive health data",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-015",
+    "type": "context",
+    "statement": "Everything handles sensitive health data.",
+    "topics": [
+     "health_data"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "Everything handles sensitive health data",
+    "kind": "compliance",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "user_text",
+      "ref": "live-thorough-1794307334286-2",
+      "quote": "has to follow Indian health data rules",
+      "date": "2026-11-10T10:42:53.680717Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.99,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-016",
+    "type": "constraint",
+    "statement": "Everything has to follow Indian health data rules.",
+    "topics": [
+     "compliance"
+    ],
+    "entities": [
+     "India"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify",
+     "backend",
+     "qa"
+    ],
+    "source": "live-thorough-1794307334286-2",
+    "quote": "has to follow Indian health data rules",
+    "kind": "compliance",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Hospital chain app",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-017",
+    "type": "context",
+    "statement": "The app is for a hospital chain.",
+    "topics": [
+     "business"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Hospital chain app",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-018",
+    "type": "role",
+    "statement": "Patients can register with phone OTP, add family members, and book, reschedule, or cancel appointments by doctor, specialty, and hospital.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+    "kind": "flow",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "see doctor profiles and availability, join video consultations, see prescriptions, lab reports and invoices",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-019",
+    "type": "role",
+    "statement": "Patients can view doctor profiles and availability, join video consultations, and see prescriptions, lab reports, and invoices.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "see doctor profiles and availability, join video consultations, see prescriptions, lab reports and invoices",
+    "kind": "flow",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "pay online or at the counter, receive reminders by SMS and WhatsApp, give feedback after a visit.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-020",
+    "type": "role",
+    "statement": "Patients can pay online or at the counter, receive SMS and WhatsApp reminders, and give feedback after a visit.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "pay online or at the counter, receive reminders by SMS and WhatsApp, give feedback after a visit.",
+    "kind": "flow",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Doctor: see the day's schedule, open the patient's history, write consultation notes, issue e-prescriptions, order lab tests, mark availability and leave, conduct video consultations, refer patients to another doctor.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-021",
+    "type": "role",
+    "statement": "Doctors can see the day's schedule, open patient histories, write consultation notes, issue e-prescriptions, order lab tests, manage availability and leave, conduct video consultations, and refer patients to another doctor.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Doctor: see the day's schedule, open the patient's history, write consultation notes, issue e-prescriptions, order lab tests, mark availability and leave, conduct video consultations, refer patients to another doctor.",
+    "kind": "flow",
+    "refs": [
+     "ROL-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Nurse: manage ward rounds, record vitals, see bed availability and assign beds, update admission and discharge status.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-022",
+    "type": "role",
+    "statement": "Nurses can manage ward rounds, record vitals, see bed availability and assign beds, and update admission and discharge status.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Nurse: manage ward rounds, record vitals, see bed availability and assign beds, update admission and discharge status.",
+    "kind": "flow",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Receptionist: register walk-in patients, manage the daily appointment schedule, handle admissions and discharge paperwork, collect payments.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-023",
+    "type": "role",
+    "statement": "Receptionists can register walk-in patients, manage the daily appointment schedule, handle admission and discharge paperwork, and collect payments.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Receptionist: register walk-in patients, manage the daily appointment schedule, handle admissions and discharge paperwork, collect payments.",
+    "kind": "flow",
+    "refs": [
+     "ROL-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Pharmacist: see e-prescriptions, dispense medicines, manage stock and expiry, raise purchase requests.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-024",
+    "type": "role",
+    "statement": "Pharmacists can view e-prescriptions, dispense medicines, manage stock and expiry, and raise purchase requests.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Pharmacist: see e-prescriptions, dispense medicines, manage stock and expiry, raise purchase requests.",
+    "kind": "flow",
+    "refs": [
+     "ROL-005"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Lab technician: receive test orders, record samples, upload results, notify the doctor.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-025",
+    "type": "role",
+    "statement": "Lab technicians can receive test orders, record samples, upload results, and notify the doctor.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Lab technician: receive test orders, record samples, upload results, notify the doctor.",
+    "kind": "flow",
+    "refs": [
+     "ROL-006"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Billing and insurance: create invoices, take advance payments, submit insurance claims, track claim status and rejections, issue refunds.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-026",
+    "type": "role",
+    "statement": "Billing and insurance staff can create invoices, take advance payments, submit insurance claims, track claim status and rejections, and issue refunds.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Billing and insurance: create invoices, take advance payments, submit insurance claims, track claim status and rejections, issue refunds.",
+    "kind": "flow",
+    "refs": [
+     "ROL-007"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Administration: manage users and roles per hospital, configure departments and doctor schedules, see occupancy, revenue and wait-time reports across hospitals, audit log of who opened which patient record.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-027",
+    "type": "role",
+    "statement": "Administrators can manage users and roles per hospital, configure departments and doctor schedules, view occupancy, revenue, and wait-time reports across hospitals, and audit who opened each patient record.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Administration: manage users and roles per hospital, configure departments and doctor schedules, see occupancy, revenue and wait-time reports across hospitals, audit log of who opened which patient record.",
+    "kind": "flow",
+    "refs": [
+     "ROL-008"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "Roles: patient, doctor, nurse, receptionist, pharmacist, lab technician, billing executive, insurance coordinator, hospital administrator, group administrator.",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-028",
+    "type": "role",
+    "statement": "The app includes patients, doctors, nurses, receptionists, pharmacists, lab technicians, billing executives, insurance coordinators, hospital administrators, and group administrators.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "Roles: patient, doctor, nurse, receptionist, pharmacist, lab technician, billing executive, insurance coordinator, hospital administrator, group administrator.",
+    "kind": "context",
+    "refs": [
+     "ROL-010",
+     "ROL-006"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "only the treating doctor and authorised staff can open a patient record",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-029",
+    "type": "constraint",
+    "statement": "Only the treating doctor and authorised staff can open a patient record.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "only the treating doctor and authorised staff can open a patient record",
+    "kind": "rule",
+    "refs": [
+     "ROL-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "every access is logged",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-030",
+    "type": "requirement",
+    "statement": "Every access to a patient record must be logged.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "every access is logged",
+    "kind": "rule",
+    "refs": [
+     "FTR-002"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "patients can download their own records",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-031",
+    "type": "requirement",
+    "statement": "Patients can download their own records.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "patients can download their own records",
+    "kind": "flow",
+    "refs": [
+     "FTR-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "consent is taken before sharing records with another hospital",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-032",
+    "type": "constraint",
+    "statement": "Consent must be taken before sharing records with another hospital.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "consent is taken before sharing records with another hospital",
+    "kind": "compliance",
+    "refs": [
+     "FTR-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "data stays in India",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-033",
+    "type": "constraint",
+    "statement": "Data must stay in India.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "data stays in India",
+    "kind": "constraint",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "the app must work in Marathi, Gujarati, Hindi and English",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-034",
+    "type": "requirement",
+    "statement": "The app must work in Marathi, Gujarati, Hindi, and English.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "the app must work in Marathi, Gujarati, Hindi and English",
+    "kind": "nfr",
+    "refs": [
+     "FTR-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "sign in with phone OTP for patients",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-035",
+    "type": "requirement",
+    "statement": "Patients must sign in with phone OTP.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "sign in with phone OTP for patients",
+    "kind": "rule",
+    "refs": [
+     "FTR-005"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001:lines 1-21",
+      "quote": "with single sign-on for staff",
+      "date": "2026-11-10T10:43:24.884119Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.9,
+    "status": "volunteered",
+    "history": [],
+    "id": "FCT-036",
+    "type": "requirement",
+    "statement": "Staff must sign in with single sign-on.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "SRC-001:lines 1-21",
+    "quote": "with single sign-on for staff",
+    "kind": "rule",
+    "refs": [
+     "FTR-006"
+    ]
+   },
+   {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "assumed",
+      "ref": "live-thorough-1794307404937-3",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.375936Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "id": "FCT-037",
+    "type": "preference",
+    "statement": "Establish where the system will be used and which languages it needs.: Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app.",
+    "topics": [
+     "general"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-005",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "assumed",
+      "ref": "live-thorough-1794307404937-3",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.376249Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "id": "FCT-038",
+    "type": "preference",
+    "statement": "Find out which people need their own app or screen.: Doctors, Nurses, Receptionists, Administrators, Patients",
+    "topics": [
+     "general"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-006",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "ROL-001",
+     "ROL-002",
+     "ROL-003",
+     "ROL-004"
+    ]
+   },
+   {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "assumed",
+      "ref": "live-thorough-1794307404937-3",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.376365Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "id": "FCT-039",
+    "type": "preference",
+    "statement": "Identify the app's main category and specific kind: Both staff and patients",
+    "topics": [
+     "general"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-003",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Default",
+    "provenance": [
+     {
+      "type": "assumed",
+      "ref": "live-thorough-1794307404937-3",
+      "quote": "",
+      "date": "2026-11-10T10:43:28.376430Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "assumed",
+    "history": [],
+    "id": "FCT-040",
+    "type": "preference",
+    "statement": "Check the privacy and access-control boundary for patient data: Use role-based access: only the treating doctor and authorised staff can access patient records; log every access and record changes.",
+    "topics": [
+     "patient_data_access"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-004",
+    "quote": "",
+    "kind": "rule",
+    "refs": [
+     "FTR-002"
+    ]
+   }
+  ],
+  "assumptions": [
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "Q-005",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Decided for you: Where will the hospitals be, and which languages should people use for our chat and in the app? Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app.",
+      "date": "2026-11-10T10:46:12.991459Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "Q-005",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-001",
+    "claim": "Decided for you: Where will the hospitals be, and which languages should people use for our chat and in the app? Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app.",
+    "reason": "Matches the stated hospital locations and required app languages.",
+    "basis": "model_knowledge",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "What we build for this part of your app."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "Q-006",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Decided for you: Who needs their own screen for hospital work: doctors, nurses, receptionists, administrators, patients, or others? Doctors, Nurses, Receptionists, Administrators, Patients",
+      "date": "2026-11-10T10:46:12.991463Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "Q-006",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-002",
+    "claim": "Decided for you: Who needs their own screen for hospital work: doctors, nurses, receptionists, administrators, patients, or others? Doctors, Nurses, Receptionists, Administrators, Patients",
+    "reason": "The project calls for patient and staff experiences, including these roles and their distinct workflows.",
+    "basis": "model_knowledge",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "What we build for this part of your app."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "Q-003",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Decided for you: Is your app mainly for managing hospital work, helping patients get care, or both? Both staff and patients",
+      "date": "2026-11-10T10:46:12.991466Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "Q-003",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-003",
+    "claim": "Decided for you: Is your app mainly for managing hospital work, helping patients get care, or both? Both staff and patients",
+    "reason": "The app explicitly combines patient care with hospital operations for staff.",
+    "basis": "model_knowledge",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "What we build for this part of your app."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "Q-004",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Decided for you: For patient history and notes, which hospital staff should be allowed to view or change them? Use role-based access: only the treating doctor and authorised staff can access patient records; log every access and record changes.",
+      "date": "2026-11-10T10:46:12.991468Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "Q-004",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-004",
+    "claim": "Decided for you: For patient history and notes, which hospital staff should be allowed to view or change them? Use role-based access: only the treating doctor and authorised staff can access patient records; log every access and record changes.",
+    "reason": "This follows the stated access limits and audit-trail requirement for sensitive health data.",
+    "basis": "model_knowledge",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "What we build for this part of your app."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Languages: Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app.",
+      "date": "2026-11-10T10:46:12.991470Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.5,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-005",
+    "claim": "Languages: Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app.",
+    "reason": "Our suggestion from what you described.",
+    "basis": "model_knowledge",
+    "impact": "high",
+    "theme": "Look",
+    "slot_id": "locales",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the design, the screens plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "closing",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "What matters most for the first version: appointment booking and management, Access logging, Record downloads, Language support, Patient sign-in",
+      "date": "2026-11-10T10:46:12.991472Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "closing",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-006",
+    "claim": "What matters most for the first version: appointment booking and management, Access logging, Record downloads, Language support, Patient sign-in",
+    "reason": "The last question was not answered, so we took the first things you told us about.",
+    "basis": "model_knowledge",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "Which features are built first."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Size and timing of launch: pilot_small",
+      "date": "2026-11-10T10:46:12.991474Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-007",
+    "claim": "Size and timing of launch: pilot_small",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": "context.scale_launch",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the blueprint, the app build, testing plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Who it is for: everyday users",
+      "date": "2026-11-10T10:46:12.991476Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-008",
+    "claim": "Who it is for: everyday users",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "high",
+    "theme": "Users",
+    "slot_id": "audience.segments",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what research, the design, the screens plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Tone and mood: calm_simple",
+      "date": "2026-11-10T10:46:12.991478Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-009",
+    "claim": "Tone and mood: calm_simple",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "high",
+    "theme": "Look",
+    "slot_id": "look.tone_words",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the design plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "How full the screens are: balanced",
+      "date": "2026-11-10T10:46:12.991480Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-010",
+    "claim": "How full the screens are: balanced",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "low",
+    "theme": "Look",
+    "slot_id": "look.density_mode",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the design plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Devices: phones",
+      "date": "2026-11-10T10:46:12.991482Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-011",
+    "claim": "Devices: phones",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "low",
+    "theme": "Look",
+    "slot_id": "devices.profile",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the design, the app build plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "How it earns money: Hospitals pay for access",
+      "date": "2026-11-10T10:46:12.991484Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-012",
+    "claim": "How it earns money: Hospitals pay for access",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "high",
+    "theme": "Business",
+    "slot_id": "idea.business_model",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what research, the blueprint plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "How people sign in: phone_otp",
+      "date": "2026-11-10T10:46:12.991486Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-013",
+    "claim": "How people sign in: phone_otp",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "high",
+    "theme": "Access",
+    "slot_id": "auth.methods",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the blueprint plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Account model: individual",
+      "date": "2026-11-10T10:46:12.991488Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-014",
+    "claim": "Account model: individual",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "high",
+    "theme": "Access",
+    "slot_id": "auth.account_model",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the blueprint plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "pattern",
+      "ref": "",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "Who may join: open_join",
+      "date": "2026-11-10T10:46:12.991490Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 0.4,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "live-thorough-1794307572979-4",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-015",
+    "claim": "Who may join: open_join",
+    "reason": "A typical choice for this kind of app.",
+    "basis": "pattern",
+    "impact": "low",
+    "theme": "Access",
+    "slot_id": "onboarding.approvals",
+    "decision": "accepted",
+    "what_changes": "Changing this updates what the blueprint plan for."
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "compile:typical",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "The app warns users before they leave a form with unsaved changes",
+      "date": "2026-11-10T10:46:12.991492Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "compile:typical",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-016",
+    "claim": "The app warns users before they leave a form with unsaved changes",
+    "reason": "This helps prevent losing information during busy hospital work",
+    "basis": "typical",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "Users could lose unsaved information if they leave a form"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "compile:typical",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "The app tells users when a service is temporarily unavailable and what they can do next",
+      "date": "2026-11-10T10:46:12.991494Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "compile:typical",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-017",
+    "claim": "The app tells users when a service is temporarily unavailable and what they can do next",
+    "reason": "Clear guidance helps people recover when a hospital service or connection fails",
+    "basis": "typical",
+    "impact": "low",
+    "theme": "Business",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "Users may see an unclear failure and have to work out what to do"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-002 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991496Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-018",
+    "claim": "ROL-002 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-003 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991498Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-019",
+    "claim": "ROL-003 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-004 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991500Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-020",
+    "claim": "ROL-004 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-005 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991502Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-021",
+    "claim": "ROL-005 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-006 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991504Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-022",
+    "claim": "ROL-006 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-007 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991506Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-023",
+    "claim": "ROL-007 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-008 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991508Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-024",
+    "claim": "ROL-008 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "model_knowledge",
+      "ref": "structure:screen_entity_access_conflict",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "ROL-009 can open SCR-005, which views ENT-001, but may only none it",
+      "date": "2026-11-10T10:46:12.991510Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "structure:screen_entity_access_conflict",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-025",
+    "claim": "ROL-009 can open SCR-005, which views ENT-001, but may only none it",
+    "reason": "Found while checking the plan of screens",
+    "basis": "structure",
+    "impact": "low",
+    "theme": "Features",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "screen_entity_access_conflict"
+   },
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "assumed",
+      "ref": "auth.methods",
+      "quote": "",
+      "date": null,
+      "contributor_id": null
+     },
+     {
+      "type": "user_tap",
+      "ref": "live-thorough-1794307572979-4",
+      "quote": "These two do not fit together: phone_otp / staff sign-in with single sign-on.",
+      "date": "2026-11-10T10:46:12.991512Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [
+     {
+      "value": "proposed",
+      "status": "assumed",
+      "turn_id": "auth.methods",
+      "at": "2026-11-10T10:46:12.991516Z",
+      "reason": "decision edited"
+     }
+    ],
+    "id": "ASM-026",
+    "claim": "These two do not fit together: phone_otp / staff sign-in with single sign-on.",
+    "reason": "Something in the plan is unclear or does not add up.",
+    "basis": "review",
+    "impact": "high",
+    "theme": "Access",
+    "slot_id": null,
+    "decision": "accepted",
+    "what_changes": "We will use your answer instead of our reading."
+   }
+  ],
+  "open_questions": [
+   {
+    "tier": "Open",
+    "provenance": [],
+    "confidence": 0,
+    "status": "empty",
+    "history": [],
+    "id": "Q-001",
+    "text": "pilot_small",
+    "blocking": false,
+    "owner": "user",
+    "slot_id": "context.scale_launch"
+   },
+   {
+    "tier": "Open",
+    "provenance": [],
+    "confidence": 0,
+    "status": "empty",
+    "history": [],
+    "id": "Q-002",
+    "text": "several locations",
+    "blocking": false,
+    "owner": "user",
+    "slot_id": "locales"
+   },
+   {
+    "tier": "Open",
+    "provenance": [],
+    "confidence": 0,
+    "status": "empty",
+    "history": [],
+    "id": "Q-003",
+    "text": "everyday users",
+    "blocking": false,
+    "owner": "user",
+    "slot_id": "audience.segments"
+   }
+  ],
+  "research_requests": [
+   {
+    "id": "RR-001",
+    "topic": "Features of hospital patient and staff apps",
+    "question": "Which features do hospital patient and staff apps for everyday users and hospital teams across Maharashtra and Gujarat commonly offer for appointment booking and management, video consultations, prescriptions and lab reports, admissions and bed management, billing, insurance claims, and cross-hospital operations?",
+    "decision_unlocked": "Which patient-care and hospital-operations features to include in the first release and how to differentiate the app",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "hospital patient and staff app",
+     "patient care",
+     "hospital operations",
+     "hospital chain",
+     "eleven hospitals",
+     "appointment booking and management",
+     "video consultations",
+     "prescriptions and lab reports",
+     "admissions and bed management",
+     "billing",
+     "insurance claims",
+     "रुग्णालय",
+     "रुग्ण सेवा",
+     "હોસ્પિટલ",
+     "દર્દી સંભાળ",
+     "अस्पताल",
+     "मरीज़ देखभाल"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "app store listings",
+     "official app documentation"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "What similar hospital apps offer across Maharashtra and Gujarat",
+    "user_added": false
+   },
+   {
+    "id": "RR-002",
+    "topic": "Local hospital apps and market differentiation",
+    "question": "What kinds of hospital patient and staff apps and local hospital-chain digital services are available across Maharashtra and Gujarat, which patient and operations needs do they serve, and what gaps could make a hospital-chain app different?",
+    "decision_unlocked": "How to position the app and which local needs or gaps it should address",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps and hospital-chain digital services",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "hospital patient and staff app",
+     "hospital chain",
+     "what makes it different",
+     "patient care",
+     "hospital operations",
+     "रुग्णालय अॅप",
+     "હોસ્પિટલ એપ",
+     "अस्पताल ऐप"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "app store listings",
+     "healthcare industry reports"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How this app could stand out locally",
+    "user_added": false
+   },
+   {
+    "id": "RR-003",
+    "topic": "Hospital app terminology in four languages",
+    "question": "What patient-friendly and staff-facing terms do hospital apps use for appointments, records, prescriptions, lab reports, admissions, discharge, billing, and insurance in Marathi, Gujarati, Hindi, and English in Maharashtra and Gujarat?",
+    "decision_unlocked": "Which consistent, understandable terms to use across the app and reminders",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "words we will use",
+     "hospital app",
+     "appointments",
+     "patient records",
+     "prescriptions",
+     "lab reports",
+     "admissions",
+     "discharge",
+     "billing",
+     "insurance",
+     "रुग्णालय",
+     "दाखल",
+     "રોગી",
+     "દર્દી",
+     "ભરતી",
+     "अस्पताल",
+     "मरीज़",
+     "भर्ती"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital patient materials",
+     "official app interfaces",
+     "government health materials"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "medium",
+    "shown_to_user_as": "Which hospital terms work in four languages",
+    "user_added": false
+   },
+   {
+    "id": "RR-004",
+    "topic": "Hospital app approvals and purchasing",
+    "question": "For hospital chains in Maharashtra and Gujarat buying patient and staff apps where hospitals pay for access, which roles typically evaluate, approve, procure, and govern the service, and what evidence do they require?",
+    "decision_unlocked": "Which hospital decision-makers and approval requirements to account for in the business and rollout plan",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps sold to hospital chains",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "hospitals pay for access",
+     "hospital chain",
+     "company profile",
+     "who approves",
+     "hospital app procurement",
+     "hospital operations"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "hospital procurement materials",
+     "official hospital governance information",
+     "healthcare industry reports"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "medium",
+    "shown_to_user_as": "Who typically approves hospital apps",
+    "user_added": false
+   },
+   {
+    "id": "RR-005",
+    "topic": "Patient appointment booking flows",
+    "question": "How do hospital patient apps in Maharashtra and Gujarat handle the full appointment booking and management flow, including finding a service or doctor, choosing a time, confirming, changing or cancelling, and receiving reminders?",
+    "decision_unlocked": "Which appointment steps, statuses, and reminder points the patient flow needs",
+    "consumer": "research",
+    "entity": "hospital patient apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "appointment booking and management",
+     "patients book and manage appointments",
+     "hospital app",
+     "डॉक्टर भेट",
+     "भेट ठरवणे",
+     "ડૉક્ટરની મુલાકાત",
+     "મુલાકાત બુક કરવી",
+     "डॉक्टर अपॉइंटमेंट",
+     "अपॉइंटमेंट बुकिंग"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "app store listings",
+     "official app help pages"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How hospital appointment booking works",
+    "user_added": false
+   },
+   {
+    "id": "RR-006",
+    "topic": "Patient and staff sign-in methods",
+    "question": "How do hospital patient and staff apps in Maharashtra and Gujarat implement patient sign-in with phone OTP and staff sign-in with single sign-on, including account recovery and access across multiple hospitals?",
+    "decision_unlocked": "Which sign-in and recovery patterns to support for patients and staff across the hospital chain",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "patient sign-in",
+     "phone OTP",
+     "staff sign-in",
+     "single sign-on",
+     "hospital chain",
+     "एकदाच साइन इन",
+     "फोन ओटीपी"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital app help pages",
+     "official identity-provider documentation",
+     "app store listings"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How patients and staff sign in",
+    "user_added": false
+   },
+   {
+    "id": "RR-007",
+    "topic": "Hospital app payments and billing",
+    "question": "How do hospital apps in Maharashtra and Gujarat let patients pay bills online or at the counter, and how do they present billing status, receipts, and insurance claims?",
+    "decision_unlocked": "Which payment options and billing states the patient and staff flows need to support",
+    "consumer": "research",
+    "entity": "hospital patient and staff apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "bill payments",
+     "pay bills online or at the counter",
+     "hospital billing",
+     "insurance claims",
+     "hospital app",
+     "बिल भरणे",
+     "બિલ ચુકવણી",
+     "बिल भुगतान"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "official payment and billing help pages",
+     "app store listings"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "How hospital apps handle bills and payments",
+    "user_added": false
+   },
+   {
+    "id": "RR-008",
+    "topic": "Hospital reminders and messaging channels",
+    "question": "How do hospital patient apps in Maharashtra and Gujarat send appointment and care reminders by SMS and WhatsApp, including language selection, consent, delivery status, and message content?",
+    "decision_unlocked": "Which reminder channels, language settings, and message controls to include",
+    "consumer": "research",
+    "entity": "hospital patient apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "patient reminders",
+     "SMS",
+     "WhatsApp",
+     "Marathi",
+     "Gujarati",
+     "Hindi",
+     "English",
+     "hospital app",
+     "आठवण संदेश",
+     "સ્મરણ સંદેશ",
+     "रिमाइंडर"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "official app help pages",
+     "official messaging-channel documentation"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How hospitals send patient reminders",
+    "user_added": false
+   },
+   {
+    "id": "RR-009",
+    "topic": "Rules for sensitive health data in India",
+    "question": "Which Indian health data and privacy rules apply to a hospital patient and staff app handling sensitive health data across hospitals in Maharashtra and Gujarat, and what duties do the hospital and app operator have?",
+    "decision_unlocked": "Which privacy and data-protection requirements must shape the app and its operating model",
+    "consumer": "research",
+    "entity": "hospital patient and staff app handling sensitive health data",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr",
+     "gu"
+    ],
+    "terms": [
+     "sensitive health data",
+     "Indian health data rules",
+     "hospital app",
+     "patient records",
+     "privacy",
+     "आरोग्य माहिती",
+     "આરોગ્ય માહિતી",
+     "स्वास्थ्य डेटा"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official Indian government sources",
+     "official health-sector guidance",
+     "authoritative legal guidance"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "Which health-data rules apply",
+    "user_added": false
+   },
+   {
+    "id": "RR-010",
+    "topic": "Consent for sharing patient records between hospitals",
+    "question": "What rules and practical consent requirements apply in India when a hospital app shares patient records with another hospital, including how consent is obtained, recorded, limited, and withdrawn?",
+    "decision_unlocked": "How to design record-sharing permissions and consent controls between hospitals",
+    "consumer": "research",
+    "entity": "hospital patient and staff app sharing patient records between hospitals",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr",
+     "gu"
+    ],
+    "terms": [
+     "consent must be taken before sharing records with another hospital",
+     "patient records",
+     "hospital chain",
+     "record sharing",
+     "संमती",
+     "સંમતિ",
+     "सहमति"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official Indian government sources",
+     "official health-sector guidance",
+     "authoritative legal guidance"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "What consent is needed to share records",
+    "user_added": false
+   },
+   {
+    "id": "RR-011",
+    "topic": "Role-based access and patient-record audit trails",
+    "question": "What rules and established controls apply to role-based access and audit trails in Indian hospital apps, including the requirement that only the treating doctor and authorised staff can open a patient record and every access is logged?",
+    "decision_unlocked": "Which roles, record-access checks, and audit events the app must support",
+    "consumer": "research",
+    "entity": "hospital patient and staff app with role-based access and audit trail",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr",
+     "gu"
+    ],
+    "terms": [
+     "role-based access",
+     "audit trail",
+     "only the treating doctor and authorised staff can open a patient record",
+     "every access to a patient record must be logged",
+     "patient records",
+     "रुग्ण नोंदी",
+     "દર્દીના રેકોર્ડ",
+     "मरीज़ रिकॉर्ड"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official Indian government sources",
+     "official health-sector guidance",
+     "authoritative security guidance"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How patient-record access and audit logs should work",
+    "user_added": false
+   },
+   {
+    "id": "RR-012",
+    "topic": "Data residency for hospital apps",
+    "question": "What Indian rules and operational requirements apply to the constraint that hospital app data must stay in India, including patient records, backups, logs, and service-provider processing?",
+    "decision_unlocked": "Which hosting and vendor arrangements can meet the hospital chain’s India data-residency requirement",
+    "consumer": "research",
+    "entity": "hospital patient and staff app storing health data",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "hi",
+     "mr",
+     "gu"
+    ],
+    "terms": [
+     "data must stay in India",
+     "sensitive health data",
+     "patient records",
+     "hospital app",
+     "data residency",
+     "ભારતમાં ડેટા",
+     "भारतात डेटा",
+     "भारत में डेटा"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official Indian government sources",
+     "official cloud-provider documentation",
+     "authoritative legal guidance"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "What keeping hospital data in India requires",
+    "user_added": false
+   },
+   {
+    "id": "RR-013",
+    "topic": "Patient access to downloadable records and reports",
+    "question": "How do hospital apps in Maharashtra and Gujarat let patients view and download their own records, prescriptions, and lab reports, and what identity checks and safeguards are used?",
+    "decision_unlocked": "Which record-viewing and download permissions and safeguards to implement",
+    "consumer": "research",
+    "entity": "hospital patient apps",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "patients can download their own records",
+     "prescriptions and lab reports",
+     "patient records",
+     "hospital app",
+     "रुग्ण नोंदी डाउनलोड",
+     "દર્દીના રેકોર્ડ ડાઉનલોડ",
+     "मरीज़ रिकॉर्ड डाउनलोड"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital websites",
+     "official app help pages",
+     "app store listings"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How patients view and download their records",
+    "user_added": false
+   },
+   {
+    "id": "RR-014",
+    "topic": "Cross-hospital admissions, beds, and operations",
+    "question": "How do hospital-chain apps and digital systems in Maharashtra and Gujarat coordinate admissions, bed availability, admission and discharge status, billing, insurance claims, and reports across multiple hospitals?",
+    "decision_unlocked": "Which cross-hospital operational workflows and shared status information to design for the eleven-hospital chain",
+    "consumer": "research",
+    "entity": "hospital-chain patient and staff apps and operations systems",
+    "geography": "Maharashtra and Gujarat, India",
+    "source_languages": [
+     "en",
+     "mr",
+     "gu",
+     "hi"
+    ],
+    "terms": [
+     "admissions and bed management",
+     "bed availability",
+     "admission and discharge status",
+     "hospital billing",
+     "insurance claims and reports",
+     "eleven hospitals",
+     "hospital chain",
+     "रुग्णालय",
+     "હોસ્પિટલ",
+     "अस्पताल"
+    ],
+    "references": [],
+    "prefer_sources": [
+     "official hospital-chain websites",
+     "official system documentation",
+     "healthcare industry reports"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How hospital chains coordinate operations",
+    "user_added": false
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "synonyms": [
+    "hospital patient and staff app",
+    "hospital app",
+    "hospital-chain digital service",
+    "patient portal",
+    "hospital operations app"
+   ],
+   "local_competitors": [],
+   "languages": [
+    "en",
+    "mr",
+    "gu",
+    "hi"
+   ]
+  },
+  "assets": [],
+  "sources": [
+   {
+    "tier": "Locked",
+    "provenance": [
+     {
+      "type": "document",
+      "ref": "SRC-001",
+      "quote": "doc_thorough.txt",
+      "date": "2026-11-10T10:43:24.875349Z",
+      "contributor_id": null
+     }
+    ],
+    "confidence": 1,
+    "status": "confirmed",
+    "history": [],
+    "id": "SRC-001",
+    "kind": "text",
+    "name": "doc_thorough.txt",
+    "sha256": "c33a678e4d26c2687a1c1eb21431378e6e8fcffaa2c3a5d437778c2031b3e92d",
+    "coverage": 1
+   }
+  ],
+  "declined": [],
+  "readiness": {
+   "research": {
+    "status": "pass",
+    "gaps": []
+   },
+   "blueprint": {
+    "status": "pass",
+    "gaps": []
+   },
+   "design": {
+    "status": "pass",
+    "gaps": []
+   },
+   "verify": {
+    "status": "pass",
+    "gaps": []
+   }
+  },
+  "ids": {
+   "counters": {
+    "APP": 1,
+    "FTR": 13,
+    "SRC": 1,
+    "ROL": 10,
+    "ASM": 26,
+    "RR": 14,
+    "MOD": 10,
+    "SCR": 71,
+    "FLW": 12,
+    "ENT": 21,
+    "Q": 3
+   },
+   "tombstones": [],
+   "aliases": {}
+  },
+  "summary": "A patient and staff app for a hospital chain, covering patient care and hospital operations across Maharashtra and Gujarat, India.",
+  "pitch": "This patient and staff app is for a hospital chain across Maharashtra and Gujarat, India. It supports appointment booking and management, patient services, and hospital operations. Only the treating doctor and authorised staff can open patient records, and every access is logged.",
+  "_hash": "2a034077d50ca31e9b78863a7776843b582565ea464a0f12e7bc4e2ae54761da",
+  "_section_hashes": {
+   "idea": "d343fc02972274c18d05a1780ca7a971b414160ae9b91d1d7a2e84ab6af918c9",
+   "context": "9b4c3cd2e9a44301c6ef786703d29d481382c0105f8ae1a95f5d725a85913320",
+   "audience": "b445eb16a6965147b0467dec67a435582edb8ca5115fee17abc5f8b835c97eee",
+   "apps": "7436c98274d4400e23d4327677e714d83f0ed05b97af43f4a22b7defcd2f968e",
+   "roles": "b6fac2670e9d3fed9d9014d3224316c506c6137a1e58928bfe11a9ffebb6b3d7",
+   "scope": "4a76582d69cad603f49cc05c941b68a8fa13cf5504bd8888692b2a8bc68516df",
+   "modules": "0ab94aeeaf5fc1a54a97e87bc86a7032cc35ba5da76e58b3777210a0aa180687",
+   "screens": "994ddf8973d9edfec0133d9f7767c79f12d41d2c533b9cd42752be8fb7c7c871",
+   "flows": "79ea3e4ac0ccc70ad017f19264d61b3bcf383095409a9f7006def2ba88d31aff",
+   "entities": "15627821642078696157ad89f3b46686844fe460cadc2e2d0ed8d3722b34af00",
+   "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "experience": "afbba853d610fe6c7317a0e66dad36ca1ff6829c249c9ff7f1caa310b3138d2f",
+   "access": "f74b1489ea5eedffc5b428038faf21b428cef9b1b55623a568851f18e8c52cf6",
+   "integrations": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "constraints": "15c4efe5cb6bcf879d430704240405cf498795f56f7b0a90b033885407b6d245",
+   "glossary": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "domain_facts": "09c256f68ad025320156caeebfebb2baab70f8148f3384874b4829fcdc9b8c6d",
+   "assumptions": "c8343ec8582f2b03397b898b44313f86d2cb8385cf792e64ecb426a16a9e279b",
+   "open_questions": "b7f0335c19ef7568154de6723db07232dd76b703cef936b2e9495715d6bb5303",
+   "research_requests": "edd7b6b4285a623de3dd96f4388309c0bee426fc7190588c6f455304bda98e6c",
+   "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "sources": "383510dde7c339a5f9363d4772bbb020c2c3fb46ff2c3ab510e71a78eb60e179",
+   "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  }
+ },
+ "interview": {
+  "facts": [
+   {
+    "id": "FCT-001",
+    "type": "context",
+    "statement": "We are a hospital chain with eleven hospitals.",
+    "topics": [
+     "organization",
+     "hospitals"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "We are a hospital chain with eleven hospitals",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688028Z"
+   },
+   {
+    "id": "FCT-002",
+    "type": "context",
+    "statement": "The hospitals are across Maharashtra and Gujarat.",
+    "topics": [
+     "location",
+     "hospitals"
+    ],
+    "entities": [
+     "Maharashtra",
+     "Gujarat"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "across Maharashtra and Gujarat",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [
+     {
+      "slot_id": "context.geo",
+      "value_json": "{\"country\": \"India\", \"region\": \"Maharashtra and Gujarat\"}",
+      "mode": "set",
+      "contributor_id": null
+     }
+    ],
+    "aspects": [
+     "context.geo:city_or_region"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688085Z"
+   },
+   {
+    "id": "FCT-003",
+    "type": "requirement",
+    "statement": "We want one patient and staff app.",
+    "topics": [
+     "app"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "want one patient and staff app",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [
+     {
+      "slot_id": "idea.summary",
+      "value_json": "\"One patient and staff app for a hospital chain, covering patient care and hospital operations.\"",
+      "mode": "set",
+      "contributor_id": null
+     },
+     {
+      "slot_id": "idea.category",
+      "value_json": "\"hospital patient and staff app\"",
+      "mode": "set",
+      "contributor_id": null
+     },
+     {
+      "slot_id": "idea.subcategory",
+      "value_json": "\"A hospital patient and staff app for patient care and hospital operations across a hospital chain\"",
+      "mode": "set",
+      "contributor_id": null
+     },
+     {
+      "slot_id": "apps.list",
+      "value_json": "[{\"name\": \"patient and staff app\", \"purpose\": \"Patient services and hospital staff operations\", \"surface\": \"not specified\"}]",
+      "mode": "set",
+      "contributor_id": null
+     }
+    ],
+    "aspects": [
+     "idea.summary:what_it_does",
+     "idea.summary:for_whom",
+     "idea.category:category",
+     "idea.subcategory:provides_what",
+     "apps.list:name"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688125Z"
+   },
+   {
+    "id": "FCT-004",
+    "type": "requirement",
+    "statement": "Patients book and manage appointments.",
+    "topics": [
+     "patients",
+     "appointments"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "Patients book and manage appointments",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [
+     {
+      "slot_id": "scope.features",
+      "value_json": "[{\"name\": \"appointment booking and management\", \"intent\": \"Patients book and manage appointments\", \"status\": \"not specified\", \"priority\": \"not specified\", \"tier\": \"not specified\"}]",
+      "mode": "set",
+      "contributor_id": null
+     }
+    ],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688155Z"
+   },
+   {
+    "id": "FCT-005",
+    "type": "requirement",
+    "statement": "Patients join video consultations.",
+    "topics": [
+     "patients",
+     "consultations"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "join video consultations",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688180Z"
+   },
+   {
+    "id": "FCT-006",
+    "type": "requirement",
+    "statement": "Patients see prescriptions and lab reports.",
+    "topics": [
+     "patients",
+     "medical_records"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "see prescriptions and lab reports",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688203Z"
+   },
+   {
+    "id": "FCT-007",
+    "type": "requirement",
+    "statement": "Patients pay bills.",
+    "topics": [
+     "patients",
+     "billing"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "pay bills",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688225Z"
+   },
+   {
+    "id": "FCT-008",
+    "type": "requirement",
+    "statement": "Patients get reminders.",
+    "topics": [
+     "patients",
+     "reminders"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "get reminders",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688251Z"
+   },
+   {
+    "id": "FCT-009",
+    "type": "requirement",
+    "statement": "The app has reminders in Marathi, Gujarati, Hindi and English.",
+    "topics": [
+     "languages",
+     "reminders"
+    ],
+    "entities": [
+     "Marathi",
+     "Gujarati",
+     "Hindi",
+     "English"
+    ],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "get reminders in Marathi, Gujarati, Hindi and English",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "locales:app_languages"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688274Z"
+   },
+   {
+    "id": "FCT-010",
+    "type": "role",
+    "statement": "Doctors see their schedule and patient history.",
+    "topics": [
+     "doctors",
+     "scheduling",
+     "medical_records"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "Doctors see their schedule, patient history",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "audience.segments:who",
+     "roles.list:role_name",
+     "roles.list:top_goal"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688297Z"
+   },
+   {
+    "id": "FCT-011",
+    "type": "requirement",
+    "statement": "Doctors write notes and e-prescriptions.",
+    "topics": [
+     "doctors",
+     "prescriptions"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "write notes and e-prescriptions",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose",
+     "roles.list:permissions"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688320Z"
+   },
+   {
+    "id": "FCT-012",
+    "type": "role",
+    "statement": "Nurses and receptionists manage admissions, bed availability and the daily schedule.",
+    "topics": [
+     "nurses",
+     "receptionists",
+     "hospital_operations"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "Nurses and receptionists manage admissions, bed availability and the daily schedule",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "audience.segments:who",
+     "roles.list:role_name",
+     "roles.list:top_goal",
+     "roles.list:permissions"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688341Z"
+   },
+   {
+    "id": "FCT-013",
+    "type": "role",
+    "statement": "Hospital administrators and finance staff need billing, insurance claims and reports across hospitals.",
+    "topics": [
+     "administration",
+     "finance",
+     "billing"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "Hospital administrators and finance staff need billing, insurance claims, reports across hospitals",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "audience.segments:who",
+     "roles.list:role_name",
+     "roles.list:top_goal"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688364Z"
+   },
+   {
+    "id": "FCT-014",
+    "type": "requirement",
+    "statement": "The app needs role-based access with an audit trail.",
+    "topics": [
+     "access_control",
+     "audit"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "role-based access with an audit trail",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:feature",
+     "scope.features:purpose",
+     "roles.list:permissions"
+    ],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688385Z"
+   },
+   {
+    "id": "FCT-015",
+    "type": "context",
+    "statement": "Everything handles sensitive health data.",
+    "topics": [
+     "health_data",
+     "privacy"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "Everything handles sensitive health data",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688407Z"
+   },
+   {
+    "id": "FCT-016",
+    "type": "constraint",
+    "statement": "Everything has to follow Indian health data rules.",
+    "topics": [
+     "compliance",
+     "health_data"
+    ],
+    "entities": [
+     "India"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify",
+     "backend",
+     "qa"
+    ],
+    "confidence": 0.99,
+    "status": "active",
+    "origin": "stated",
+    "source_ref": "live-thorough-1794307334286-2",
+    "qa_card_id": null,
+    "claim_id": null,
+    "quote": "has to follow Indian health data rules",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:42:53.680717Z",
+    "updated_at": "2026-11-10T10:42:53.688428Z"
+   },
+   {
+    "id": "FCT-017",
+    "type": "context",
+    "statement": "The app is for a hospital chain.",
+    "topics": [
+     "business"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-001",
+    "quote": "Hospital chain app",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "idea.problem_value:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917024Z"
+   },
+   {
+    "id": "FCT-018",
+    "type": "role",
+    "statement": "Patients can register with phone OTP, add family members, and book, reschedule, or cancel appointments by doctor, specialty, and hospital.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-002",
+    "quote": "Patient: register with phone OTP, add family members, book, reschedule and cancel appointments by doctor or specialty and hospital",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917199Z"
+   },
+   {
+    "id": "FCT-019",
+    "type": "role",
+    "statement": "Patients can view doctor profiles and availability, join video consultations, and see prescriptions, lab reports, and invoices.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-003",
+    "quote": "see doctor profiles and availability, join video consultations, see prescriptions, lab reports and invoices",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917232Z"
+   },
+   {
+    "id": "FCT-020",
+    "type": "role",
+    "statement": "Patients can pay online or at the counter, receive SMS and WhatsApp reminders, and give feedback after a visit.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-004",
+    "quote": "pay online or at the counter, receive reminders by SMS and WhatsApp, give feedback after a visit.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917255Z"
+   },
+   {
+    "id": "FCT-021",
+    "type": "role",
+    "statement": "Doctors can see the day's schedule, open patient histories, write consultation notes, issue e-prescriptions, order lab tests, manage availability and leave, conduct video consultations, and refer patients to another doctor.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-005",
+    "quote": "Doctor: see the day's schedule, open the patient's history, write consultation notes, issue e-prescriptions, order lab tests, mark availability and leave, conduct video consultations, refer patients to another doctor.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917276Z"
+   },
+   {
+    "id": "FCT-022",
+    "type": "role",
+    "statement": "Nurses can manage ward rounds, record vitals, see bed availability and assign beds, and update admission and discharge status.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-006",
+    "quote": "Nurse: manage ward rounds, record vitals, see bed availability and assign beds, update admission and discharge status.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917296Z"
+   },
+   {
+    "id": "FCT-023",
+    "type": "role",
+    "statement": "Receptionists can register walk-in patients, manage the daily appointment schedule, handle admission and discharge paperwork, and collect payments.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-007",
+    "quote": "Receptionist: register walk-in patients, manage the daily appointment schedule, handle admissions and discharge paperwork, collect payments.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917316Z"
+   },
+   {
+    "id": "FCT-024",
+    "type": "role",
+    "statement": "Pharmacists can view e-prescriptions, dispense medicines, manage stock and expiry, and raise purchase requests.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-008",
+    "quote": "Pharmacist: see e-prescriptions, dispense medicines, manage stock and expiry, raise purchase requests.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917336Z"
+   },
+   {
+    "id": "FCT-025",
+    "type": "role",
+    "statement": "Lab technicians can receive test orders, record samples, upload results, and notify the doctor.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-009",
+    "quote": "Lab technician: receive test orders, record samples, upload results, notify the doctor.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917356Z"
+   },
+   {
+    "id": "FCT-026",
+    "type": "role",
+    "statement": "Billing and insurance staff can create invoices, take advance payments, submit insurance claims, track claim status and rejections, and issue refunds.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-010",
+    "quote": "Billing and insurance: create invoices, take advance payments, submit insurance claims, track claim status and rejections, issue refunds.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917376Z"
+   },
+   {
+    "id": "FCT-027",
+    "type": "role",
+    "statement": "Administrators can manage users and roles per hospital, configure departments and doctor schedules, view occupancy, revenue, and wait-time reports across hospitals, and audit who opened each patient record.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-011",
+    "quote": "Administration: manage users and roles per hospital, configure departments and doctor schedules, see occupancy, revenue and wait-time reports across hospitals, audit log of who opened which patient record.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917395Z"
+   },
+   {
+    "id": "FCT-028",
+    "type": "role",
+    "statement": "The app includes patients, doctors, nurses, receptionists, pharmacists, lab technicians, billing executives, insurance coordinators, hospital administrators, and group administrators.",
+    "topics": [
+     "roles"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-012",
+    "quote": "Roles: patient, doctor, nurse, receptionist, pharmacist, lab technician, billing executive, insurance coordinator, hospital administrator, group administrator.",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "roles.list:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917414Z"
+   },
+   {
+    "id": "FCT-029",
+    "type": "constraint",
+    "statement": "Only the treating doctor and authorised staff can open a patient record.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-013",
+    "quote": "only the treating doctor and authorised staff can open a patient record",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917434Z"
+   },
+   {
+    "id": "FCT-030",
+    "type": "requirement",
+    "statement": "Every access to a patient record must be logged.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-014",
+    "quote": "every access is logged",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917454Z"
+   },
+   {
+    "id": "FCT-031",
+    "type": "requirement",
+    "statement": "Patients can download their own records.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-015",
+    "quote": "patients can download their own records",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "scope.features:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917474Z"
+   },
+   {
+    "id": "FCT-032",
+    "type": "constraint",
+    "statement": "Consent must be taken before sharing records with another hospital.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-016",
+    "quote": "consent is taken before sharing records with another hospital",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917497Z"
+   },
+   {
+    "id": "FCT-033",
+    "type": "constraint",
+    "statement": "Data must stay in India.",
+    "topics": [
+     "constraints"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-017",
+    "quote": "data stays in India",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917516Z"
+   },
+   {
+    "id": "FCT-034",
+    "type": "requirement",
+    "statement": "The app must work in Marathi, Gujarati, Hindi, and English.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-018",
+    "quote": "the app must work in Marathi, Gujarati, Hindi and English",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917535Z"
+   },
+   {
+    "id": "FCT-035",
+    "type": "requirement",
+    "statement": "Patients must sign in with phone OTP.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-019",
+    "quote": "sign in with phone OTP for patients",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917594Z"
+   },
+   {
+    "id": "FCT-036",
+    "type": "requirement",
+    "statement": "Staff must sign in with single sign-on.",
+    "topics": [
+     "requirements"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.9,
+    "status": "active",
+    "origin": "document",
+    "source_ref": "SRC-001:lines 1-21",
+    "qa_card_id": null,
+    "claim_id": "CLM-020",
+    "quote": "with single sign-on for staff",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [
+     "constraints.must_use:*"
+    ],
+    "created_at": "2026-11-10T10:43:24.884119Z",
+    "updated_at": "2026-11-10T10:43:24.917625Z"
+   },
+   {
+    "id": "FCT-037",
+    "type": "preference",
+    "statement": "Establish where the system will be used and which languages it needs.: Hospitals across Maharashtra and Gujarat; launch across several locations, with Marathi, Gujarati, Hindi and English in chat and the app.",
+    "topics": [],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.4,
+    "status": "active",
+    "origin": "assumption",
+    "source_ref": "live-thorough-1794307404937-3",
+    "qa_card_id": "Q-005",
+    "claim_id": null,
+    "quote": "",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:43:28.375936Z",
+    "updated_at": "2026-11-10T10:46:12.935461Z"
+   },
+   {
+    "id": "FCT-038",
+    "type": "preference",
+    "statement": "Find out which people need their own app or screen.: Doctors, Nurses, Receptionists, Administrators, Patients",
+    "topics": [],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.4,
+    "status": "active",
+    "origin": "assumption",
+    "source_ref": "live-thorough-1794307404937-3",
+    "qa_card_id": "Q-006",
+    "claim_id": null,
+    "quote": "",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:43:28.376249Z",
+    "updated_at": "2026-11-10T10:46:12.935509Z"
+   },
+   {
+    "id": "FCT-039",
+    "type": "preference",
+    "statement": "Identify the app's main category and specific kind: Both staff and patients",
+    "topics": [],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.4,
+    "status": "active",
+    "origin": "assumption",
+    "source_ref": "live-thorough-1794307404937-3",
+    "qa_card_id": "Q-003",
+    "claim_id": null,
+    "quote": "",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:43:28.376365Z",
+    "updated_at": "2026-11-10T10:46:12.935533Z"
+   },
+   {
+    "id": "FCT-040",
+    "type": "preference",
+    "statement": "Check the privacy and access-control boundary for patient data: Use role-based access: only the treating doctor and authorised staff can access patient records; log every access and record changes.",
+    "topics": [
+     "domain:patient_data_access"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "confidence": 0.4,
+    "status": "active",
+    "origin": "assumption",
+    "source_ref": "live-thorough-1794307404937-3",
+    "qa_card_id": "Q-004",
+    "claim_id": null,
+    "quote": "",
+    "unverified_quote": false,
+    "supersedes": [],
+    "not_used_reason": "",
+    "effects": [],
+    "aspects": [],
+    "created_at": "2026-11-10T10:43:28.376430Z",
+    "updated_at": "2026-11-10T10:46:12.935556Z"
+   }
+  ]
+ }
+}

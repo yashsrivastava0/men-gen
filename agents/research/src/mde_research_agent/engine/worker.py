@@ -1,0 +1,1084 @@
+"""The per-topic worker: a FIXED pipeline (not an agent) that finds, reads, extracts and verifies for ONE topic.
+
+1. write 2 or 3 query variants (model, with a deterministic fallback), each checked by the anatomy gate;
+2. search them in parallel through the SearchPort (country, language, recency, exact match), fuse by reciprocal
+   rank, dedupe by canonical URL;
+3. triage by code (source class, snippet relevance, one or two pages per domain) to the best 3 to 5 pages;
+4. read each page (provider text, else FetchPort), select passages around the slot terms;
+5. extract typed items (model, no tools), then VERIFY by code: the quote must be on the stored page (one retry
+   "quote exactly", else dropped), strings screened, lengths and payload checked.
+
+A topic returns only verified items. Failures never raise out of here: they are counted, shown as warnings and the
+topic ends with what it has. Cancellation (the run's or the topic's) stops further stages; a budget stop ends the
+run. Pages are shared between topics through ``ctx.pages`` so a page is fetched once but extracted per job.
+"""
+
+from __future__ import annotations
+
+import asyncio
+from collections.abc import Sequence
+from dataclasses import dataclass
+from typing import Any
+
+from mde_core.errors import BudgetExceeded, CallCancelled, CassetteMissing, LiveCallForbidden
+from mde_research_agent.calls import queries as q_calls
+from mde_research_agent.calls.extract import (
+    JOB_KINDS,
+    KIND_GUIDE,
+    ExtractIn,
+)
+from mde_research_agent.calls.extract import (
+    SPECS as EXTRACT_SPECS,
+)
+from mde_research_agent.core.anatomy import check_query, is_repeat
+from mde_research_agent.core.hashing import text_hash
+from mde_research_agent.core.language import guess_language
+from mde_research_agent.core.norm_keys import clean_key
+from mde_research_agent.core.passages import bm25_scores, render, select_passages
+from mde_research_agent.core.privacy import find_private
+from mde_research_agent.core.rrf import FusedHit, fuse, fuse_engines
+from mde_research_agent.core.slots import Coverage, evaluate_target
+from mde_research_agent.core.sources import (
+    authority_language,
+    classify_source,
+    is_walled,
+    official_domains_for,
+    own_site,
+)
+from mde_research_agent.core.text import repair_mojibake, stem, tokens
+from mde_research_agent.core.urls import canonical_url, is_public_url, registrable_domain
+from mde_research_agent.domain.plan import Target
+from mde_research_agent.engine.checking import check_topic
+from mde_research_agent.engine.context import (
+    FETCH_TIMEOUT_S,
+    PASSAGE_CHARS,
+    RATE_LIMIT_WAIT_CAP_S,
+    SEARCH_TIMEOUT_S,
+    SEARCH_TRANSPORT_ATTEMPTS,
+    RunContext,
+)
+from mde_research_agent.engine.state import (
+    AtomRecord,
+    EntityRecord,
+    PageRecord,
+    QueryRecord,
+    TargetState,
+)
+from mde_research_agent.engine.verify import (
+    Candidate,
+    Rejected,
+    candidates_from_output,
+    check_candidate,
+)
+from mde_research_agent.ports.search import SearchError, SearchRequest, SearchResult
+
+STOP_RUN: tuple[type[BaseException], ...] = (BudgetExceeded, CassetteMissing, LiveCallForbidden)
+CLASS_WEIGHT = {
+    "official": 1.0,
+    "official_inferred": 0.9,
+    "help": 0.8,
+    "press": 0.6,
+    "store": 0.5,
+    "blog": 0.3,
+    "forum": 0.15,
+    "seo": 0.1,
+}
+MIN_PROVIDER_TEXT = 300
+BACKFILL_SPARES = 3  # candidates kept behind the picks, to replace a page that could not be read
+
+
+@dataclass(frozen=True)
+class FollowupQuery:
+    text: str
+    language: str = "en"
+    exact: bool = False
+    domain: str | None = None  # an entity's own domain: restrict the search to it
+    seed: bool = False
+    variant: str = "descriptive"
+    # Official-first: authority domains the search prefers (or is restricted to), chosen by code from the registry
+    domains: tuple[str, ...] = ()
+    domain_mode: str = "none"
+
+
+# --- coverage helpers -----------------------------------------------------------------------------------
+
+
+def update_coverage(ts: TargetState) -> Coverage:
+    cov = evaluate_target(ts.target.slots, ts.verified)
+    if ts.gate_excluded:  # not_found for good: its required slots are out of the gate (D-163)
+        ts.slots_required = 0
+        ts.slots_filled = 0
+    else:
+        ts.slots_required = cov.required_total
+        ts.slots_filled = cov.required_filled
+    return cov
+
+
+def slot_descriptions(ts: TargetState, cov: Coverage, ctx: RunContext) -> list[str]:
+    out = []
+    for slot, fill in zip(ts.target.slots, cov.fills, strict=True):
+        if fill.filled or not slot.required:
+            continue
+        rich = f", each with {slot.attr_min}+ {slot.attr}" if slot.attr and slot.attr_min else ""
+        what = (
+            f"{slot.min} distinct {slot.kind} items{rich}"
+            if slot.type == "count"
+            else f"{slot.min} distinct {slot.attr} values"
+        )
+        out.append(f"{slot.key}: need {what} (found {fill.count})")
+    return out
+
+
+def unfilled_kinds(ts: TargetState, cov: Coverage) -> list[str]:
+    kinds = [
+        s.kind
+        for s, f in zip(ts.target.slots, cov.fills, strict=True)
+        if s.required and not f.filled
+    ]
+    return list(dict.fromkeys(kinds or [s.kind for s in ts.target.slots]))
+
+
+def focus_terms(ts: TargetState, cov: Coverage, ctx: RunContext) -> list[str]:
+    words: list[str] = []
+    for kind in unfilled_kinds(ts, cov):
+        words += list(ctx.catalog.lanes.kinds[kind].terms)
+    for s, f in zip(ts.target.slots, cov.fills, strict=True):
+        if s.required and not f.filled and s.attr:
+            words.append(s.attr)
+    return list(dict.fromkeys(words))[:8]
+
+
+def pages_wanted(ctx: RunContext, round_no: int) -> int:
+    """Pages a topic reads in this round. Round one gives every topic the usual number (``pages_per_topic.max``) unless the
+    plan is so large that this would use more than three quarters of the hard page ceiling, in which case every topic gets an
+    equal share of that (never below ``pages_per_topic.min``): the topics that start last must not read nothing."""
+    cap = ctx.catalog.ceilings.pages_per_topic
+    if round_no != 1:
+        return min(cap.max, 3)
+    share = (ctx.budget.hard.pages * 3 // 4) // max(1, len(ctx.targets))
+    return max(cap.min, min(cap.max, share))
+
+
+# --- queries -------------------------------------------------------------------------------------------
+
+
+def _intent_words(ctx: RunContext) -> list[str]:
+    return [w for lang in ctx.catalog.intent_words.languages.values() for w in lang.words]
+
+
+def _check(
+    ctx: RunContext,
+    t: Target,
+    text: str,
+    *,
+    extra_anchors: Sequence[str] = (),
+    require_place: bool | None = None,
+    named: Sequence[str] = (),
+) -> bool:
+    if find_private(text, ctx.input.private):
+        # The person's brand, phones, e-mails and addresses never leave in a query (core/privacy.py). The query fails like
+        # any other anatomy failure, so the deterministic variant (or no query) takes its place; only the COUNT is kept.
+        ctx.failures.count_private()
+        return False
+    intent = [*_intent_words(ctx), *t.intent]
+    res = check_query(
+        text,
+        anchors=[*t.anchors, *extra_anchors],
+        named=named,
+        places=list(t.place.phrases) if t.place else [],
+        intent_words=intent,
+        generic_words=ctx.catalog.intent_words.generic_words,
+        own_brand=ctx.input.own_brand_terms,
+        require_place=bool(t.place and not t.place.unknown)
+        if require_place is None
+        else require_place,
+    )
+    return res.ok
+
+
+def topic_countries(ctx: RunContext, t: Target) -> list[str]:
+    """The country codes a topic is about: its own (a per-country topic), else every country the Brief names."""
+    if t.place is None:
+        return []
+    if t.country_code:
+        return [t.country_code]
+    codes = [c.code for c in t.place.countries if c.code]
+    return codes or ([t.place.country_code] if t.place.country_code else [])
+
+
+def official_plan(ctx: RunContext, t: Target, round_no: int) -> tuple[str, tuple[str, ...]] | None:
+    """``(domain mode, domains)`` for the official variant of an ``official_first`` topic in round one, else None.
+
+    A platform topic names its owner's domain (``domain_restrict``): both providers can restrict to it. Other topics
+    take the registry domains that fit the topic (``official_domains_for``): Tavily PREFERS them, a provider with no
+    prefer mode (Serper) gets a ``site:``-restricted query only on topics of a risk class (provider, rule and regulation
+    topics), where an empty answer is relaxed by the failover and a wrong restriction costs one variant, not the topic."""
+    if not t.official_first or round_no != 1:
+        return None
+    caps = ctx.search.capabilities
+    if t.domain_restrict:
+        return ("restrict", t.domain_restrict) if caps.domain_restrict else None
+    domains = official_domains_for(
+        ctx.catalog,
+        [t.label, t.question, *t.anchors, *t.terms],
+        topic_countries(ctx, t),
+    )
+    if not domains:
+        return None
+    if caps.domain_prefer:
+        return ("prefer", domains)
+    if caps.domain_restrict and t.risk:
+        return ("restrict", domains)
+    return None
+
+
+def build_query_in(
+    ctx: RunContext, ts: TargetState, round_no: int, cov: Coverage, want: int
+) -> q_calls.QueryIn:
+    t = ts.target
+    # a local-language variant runs only in the local job (regional language is not a focus: owner, 2026-11-11)
+    langs = list(t.place.languages[:1]) if t.place and t.job == "local" else []
+    local_terms = [s for s in ctx.input.hints.synonyms if not s.isascii()][:3] if langs else []
+    info = ctx.catalog.intent_words.languages.get(langs[0]) if langs else None
+    # Names from model memory are untyped (competitors or providers of the category): only the competitor landscape can use
+    # them. A messaging-providers topic searched '"Mindbody" messaging API' in the first live run after this rule changed.
+    seeds = (
+        list(ctx.plan.discovery_names[:2]) if round_no == 1 and t.template_id == "landscape" else []
+    )
+    official = official_plan(ctx, t, round_no)
+    code = (topic_countries(ctx, t) or [None])[0]
+    language = authority_language(ctx.catalog, code) if official else "en"
+    off_info = ctx.catalog.intent_words.languages.get(language) if official else None
+    return q_calls.QueryIn(
+        job=t.job,
+        question=t.question,
+        anchors=list(t.anchors),
+        context=ctx.plan.category_phrase,
+        place=t.place.text if t.place else "",
+        languages=langs,
+        local_terms=local_terms,
+        local_intent=list(info.words[:3]) if info else [],
+        intent=list(t.intent),
+        entity=t.entity,
+        earlier=list(ts.queries),
+        want=want,
+        round=round_no,
+        focus_terms=focus_terms(ts, cov, ctx) if round_no > 1 else [],
+        seed_names=seeds,
+        language=language,
+        official_intent=list(off_info.words[:4]) if off_info else [],
+        official_domains=list(official[1]) if official else [],
+    )
+
+
+async def write_variants(
+    ctx: RunContext, ts: TargetState, round_no: int, cov: Coverage, want: int
+) -> list[FollowupQuery]:
+    """Variants from the model, each checked by the anatomy gate; the deterministic builder when none survives."""
+    t = ts.target
+    inp = build_query_in(ctx, ts, round_no, cov, want)
+    valid: list[FollowupQuery] = []
+    blocked_before = ctx.failures.private_blocked
+    async with ctx.llm_sem:
+        with ctx.stage("queries"):
+            res = await ctx.runner.run(q_calls.SPEC, inp)
+    ctx.budget.add_llm_cost(res.cost_micros, "queries")
+    if res.failed:
+        ctx.failures.record("llm", res.reason or "failed", t.id)
+        await ctx.warn("model_failed", target_id=t.id)
+    official = official_plan(ctx, t, round_no)
+
+    def make(v: q_calls.Variant) -> FollowupQuery:
+        if v.style == "official" and official is not None:
+            return FollowupQuery(
+                v.text, v.language, False, None, False, "official", official[1], official[0]
+            )
+        style = (
+            "descriptive" if v.style == "official" else v.style
+        )  # no official plan: a plain variant
+        return FollowupQuery(v.text, v.language, v.exact, None, v.seed, style)
+
+    def accept(v: q_calls.Variant) -> bool:
+        extra = [*inp.local_terms] if v.style == "local" else [*inp.seed_names] if v.seed else []
+        return not is_repeat(v.text, [*ts.queries, *(x.text for x in valid)]) and _check(
+            ctx, t, v.text, extra_anchors=extra, named=inp.seed_names if v.seed else ()
+        )
+
+    for v in res.output.variants:
+        if accept(v):
+            valid.append(make(v))
+    if not valid:
+        for v in q_calls.deterministic_variants(inp).variants:
+            if accept(v):
+                valid.append(make(v))
+    if official is not None and not any(x.variant == "official" for x in valid):
+        # the model wrote no official variant (or it failed the gate): the deterministic one takes the place of the last
+        # descriptive variant, so the number of searches is the same
+        for v in q_calls.deterministic_variants(inp).variants:
+            if v.style == "official" and accept(v):
+                swap = next(
+                    (i for i in range(len(valid) - 1, 0, -1) if valid[i].variant == "descriptive"),
+                    None,
+                )
+                if swap is not None:
+                    valid[swap] = make(v)
+                elif len(valid) < want + 1:
+                    valid.append(make(v))
+                break
+    if t.engines == "both" and round_no == 1:
+        _put_discovery_first(ctx, ts, valid, want)
+    if ctx.failures.private_blocked > blocked_before:
+        await ctx.warn("private_term", target_id=t.id)
+    return _keep_official(valid, want + 1)
+
+
+def discovery_text(t: Target) -> str:
+    """The query that finds who the providers ARE in the place ("best online payments providers India alternatives"):
+    a comparison query surfaces the local leaders that a documentation query leaves to the global giants (Run on the
+    yoga input of 2026-11-13: payments in India came back as Visa and PayPal)."""
+    anchor = t.anchors[0] if t.anchors else ""
+    place = t.place.text if t.place else ""
+    return " ".join(f"best {anchor} providers {place} alternatives".split())
+
+
+def _put_discovery_first(
+    ctx: RunContext, ts: TargetState, valid: list[FollowupQuery], want: int
+) -> None:
+    """On a vendor topic (``engines: both``) the first query is a discovery query. It REPLACES a descriptive variant, so
+    the number of searches does not change; being first it is also the one the second engine answers."""
+    t = ts.target
+    text = discovery_text(t)
+    if (
+        not text
+        or not _check(ctx, t, text)
+        or is_repeat(text, [*ts.queries, *(x.text for x in valid)])
+    ):
+        return
+    q = FollowupQuery(text, "en", False, None, False, "descriptive")
+    swap = next((i for i, x in enumerate(valid) if x.variant == "descriptive" and not x.seed), None)
+    if swap is not None:
+        valid.pop(swap)
+    elif len(valid) >= want + 1:
+        return
+    valid.insert(0, q)
+
+
+def _keep_official(valid: list[FollowupQuery], n: int) -> list[FollowupQuery]:
+    """The first ``n`` variants, but the official one is never the one cut (it REPLACES a variant; it is not extra)."""
+    kept = valid[:n]
+    official = next((v for v in valid if v.variant == "official"), None)
+    if official is not None and official not in kept:
+        slot = next((i for i in range(len(kept) - 1, -1, -1) if not kept[i].seed), len(kept) - 1)
+        kept[slot] = official
+    return kept
+
+
+# --- search --------------------------------------------------------------------------------------------
+
+
+async def _search_call(ctx: RunContext, req: SearchRequest) -> SearchResult:
+    try:
+        with ctx.stage("search"):
+            return await asyncio.wait_for(ctx.search.search(req), timeout=SEARCH_TIMEOUT_S)
+    except TimeoutError as exc:
+        raise SearchError("timeout", "search timed out") from exc
+
+
+async def search_one(
+    ctx: RunContext, ts: TargetState, fq: FollowupQuery, round_no: int
+) -> SearchResult | None:
+    t = ts.target
+    if not ctx.active() or ts.cancel.cancelled or not ctx.budget.try_search():
+        if ctx.budget.exhausted():
+            ctx.budget_stopped = True
+            ts.reason = ts.reason or "budget_stop"
+            await ctx.warn("budget_stop")
+        return None
+    place = t.place
+    req = SearchRequest(
+        query=fq.text,
+        country=place.country_code if place else None,
+        language=fq.language,
+        domain_mode=fq.domain_mode if fq.domains else ("restrict" if fq.domain else "none"),  # type: ignore[arg-type]
+        domains=fq.domains or ((fq.domain,) if fq.domain else ()),
+        exact=fq.exact,
+        recency_months=t.recency_months,
+        want_content=bool(getattr(ctx.search.capabilities, "page_content", False)),
+        max_results=10,
+    )
+    ts.queries.append(fq.text)
+    await ctx.events.emit(
+        "query.issued",
+        target_id=t.id,
+        round_=round_no,
+        phase="search",
+        params={"query": fq.text},
+        detail={
+            "query": fq.text,
+            "variant": fq.variant,
+            "lang": fq.language,
+            "country": req.country or "",
+            "provider": ctx.search.name,
+            "domain": fq.domain or "",
+            "domains": ",".join(fq.domains[:8]),
+        },
+    )
+    result: SearchResult | None = None
+    async with ctx.search_sem:
+        for attempt in range(SEARCH_TRANSPORT_ATTEMPTS + 2):
+            try:
+                result = await _search_call(ctx, req)
+                break
+            except SearchError as err:
+                if err.kind == "rate_limited" and attempt < SEARCH_TRANSPORT_ATTEMPTS + 1:
+                    ctx.failures.rate_limit_waits += 1
+                    await ctx.warn("rate_limited", target_id=t.id)
+                    await ctx.sleep(min(err.retry_after or 2.0, RATE_LIMIT_WAIT_CAP_S))
+                    continue
+                if (
+                    err.kind in ("timeout", "network", "http_error")
+                    and attempt < SEARCH_TRANSPORT_ATTEMPTS - 1
+                ):
+                    ctx.failures.retries += 1
+                    await ctx.sleep(0.5 * (2**attempt))
+                    continue
+                reason = "provider_down" if err.kind in ("auth", "quota") else err.kind
+                ctx.failures.record("search", reason, t.id)
+                if reason == "provider_down":
+                    ctx.provider_down = True
+                    ts.reason = "provider_down"
+                    await ctx.warn("provider_down", target_id=t.id)
+                elif err.kind == "timeout":
+                    await ctx.warn("slow_provider", target_id=t.id)
+                break
+    rec = QueryRecord(
+        id=ctx.ids.new("qry"),
+        target_id=t.id,
+        round=round_no,
+        text=fq.text,
+        variant=fq.variant,
+        language=fq.language,
+        country=req.country,
+        provider=ctx.search.name,
+        exact=fq.exact,
+        domain=fq.domain,
+        seed=fq.seed,
+    )
+    if result is None:
+        rec.failed = "failed"
+        ctx.queries.append(rec)
+        return None
+    ctx.budget.add_search_cost(result.cost_micros, result.provider)
+    for note in getattr(ctx.search, "drain_notes", lambda: [])():
+        await ctx.warn(note, target_id=t.id)
+    rec.results = len(result.hits)
+    rec.urls = [canonical_url(h.url) for h in result.hits]
+    rec.cost_micros = result.cost_micros
+    rec.cached = result.cached
+    rec.applied = dict(result.applied)
+    rec.locale_weak = result.locale_weak
+    ctx.queries.append(rec)
+    domains = list(dict.fromkeys(registrable_domain(h.url) for h in result.hits))[:5]
+    await ctx.events.emit(
+        "search.results",
+        target_id=t.id,
+        round_=round_no,
+        phase="search",
+        params={"count": len(result.hits), "domains": ", ".join(domains)},
+        detail={"count": len(result.hits), "domains": domains, "query": fq.text},
+    )
+    return result
+
+
+async def search_second(
+    ctx: RunContext, ts: TargetState, fq: FollowupQuery, round_no: int
+) -> SearchResult | None:
+    """One extra query on the OTHER configured provider for a ``engines: both`` topic (vendor topics: payments, messaging,
+    maps, tracking, identity, accounting), so that a page both engines return rises in the fusion. Cheap by design: the
+    topic's first query only, no retry, and any failure is counted and ignored (the primary result stands). It is admitted
+    with the primary search (the pair counts as ONE search against the ceiling) and both providers' cost is booked."""
+    second = ctx.second_search
+    if second is None or not ctx.active() or ts.cancel.cancelled:
+        return None
+    t = ts.target
+    place = t.place
+    req = SearchRequest(
+        query=fq.text,
+        country=place.country_code if place else None,
+        language=fq.language,
+        domain_mode="none",  # the second opinion is the plain query: official-first is the primary's variant
+        exact=fq.exact,
+        recency_months=t.recency_months,
+        want_content=bool(getattr(second.capabilities, "page_content", False)),
+        max_results=10,
+    )
+    try:
+        with ctx.stage("search"):
+            res = await asyncio.wait_for(second.search(req), timeout=SEARCH_TIMEOUT_S)
+    except (SearchError, TimeoutError) as err:
+        reason = err.kind if isinstance(err, SearchError) else "timeout"
+        ctx.failures.record("search_second", reason, t.id)
+        return None
+    ctx.budget.add_second_search_cost(res.cost_micros, res.provider)
+    ctx.count("second_engine_queries")
+    rec = QueryRecord(
+        id=ctx.ids.new("qry"),
+        target_id=t.id,
+        round=round_no,
+        text=fq.text,
+        variant=fq.variant,
+        language=fq.language,
+        country=req.country,
+        provider=second.name,
+        exact=fq.exact,
+        results=len(res.hits),
+        urls=[canonical_url(h.url) for h in res.hits],
+        cost_micros=res.cost_micros,
+        cached=res.cached,
+        applied=dict(res.applied),
+        locale_weak=res.locale_weak,
+    )
+    ctx.queries.append(rec)
+    await ctx.events.emit(
+        "query.issued",
+        target_id=t.id,
+        round_=round_no,
+        phase="search",
+        params={"query": fq.text},
+        detail={
+            "query": fq.text,
+            "variant": "second_engine",
+            "lang": fq.language,
+            "country": req.country or "",
+            "provider": second.name,
+            "domain": "",
+        },
+    )
+    return res
+
+
+# --- triage --------------------------------------------------------------------------------------------
+
+
+def triage(
+    ctx: RunContext,
+    ts: TargetState,
+    fused: list[FusedHit],
+    limit: int,
+    per_domain: int | None = None,
+) -> list[tuple[FusedHit, str]]:
+    """The best pages for this topic: ``[(hit, source_class)]``, at most ``limit`` and few per domain."""
+    t = ts.target
+    cfg = ctx.catalog.ceilings
+    docs = [[stem(x) for x in tokens(f"{h.hit.title} {h.hit.snippet}")] for h in fused]
+    query = [stem(x) for term in t.terms for x in tokens(term)]
+    rel = bm25_scores(docs, query)
+    top = max(rel, default=0.0) or 1.0
+    scored: list[tuple[float, FusedHit, str]] = []
+    country = t.place.country_code if t.place else None
+    anchor = t.entity or (t.anchors[0] if t.anchors else None)
+    names = [
+        e.name for e in ctx.entities.values()
+    ]  # a provider's own domain speaks for itself, whoever asked
+    for h, r in zip(fused, rel, strict=True):
+        if not is_public_url(h.url):
+            continue
+        cls = classify_source(
+            h.url, ctx.catalog, title=h.hit.title, entity=anchor, country=country, entities=names
+        )
+        authority = (
+            1.0
+            if ("current" in t.needs or "number" in t.needs)
+            and cls in ("official", "official_inferred", "help")
+            else 0.0
+        )
+        score = 2.0 * CLASS_WEIGHT.get(cls, 0.3) + 20.0 * h.score + r / top + authority
+        scored.append((score, h, cls))
+    scored.sort(key=lambda s: (-round(s[0], 9), s[1].url))
+    seen_domains: dict[str, int] = {}
+    picks: list[tuple[FusedHit, str]] = []
+    done = set(ts.page_ids)
+    walled = ctx.catalog.source_rules.walled_domains
+    for _, h, cls in scored:
+        page = ctx.pages.get(h.url)
+        if page is not None and page.id in done:
+            continue
+        if h.url in ctx.unreadable:
+            continue  # the reader already failed on it in this run
+        dom = registrable_domain(h.url)
+        if (dom in walled or is_walled(h.url, ctx.catalog)) and len(
+            h.hit.content or ""
+        ) < MIN_PROVIDER_TEXT:
+            continue  # it refuses our reader and the provider gave no text: not worth a page attempt
+        if seen_domains.get(dom, 0) >= (per_domain or cfg.max_per_domain):
+            continue
+        seen_domains[dom] = seen_domains.get(dom, 0) + 1
+        picks.append((h, cls))
+        if len(picks) >= limit:
+            break
+    return picks
+
+
+# --- read ----------------------------------------------------------------------------------------------
+
+
+async def read_page(
+    ctx: RunContext, ts: TargetState, hit: FusedHit, cls: str, round_no: int
+) -> PageRecord | None:
+    """Read a page once per run, however many topics ask for it at the same moment (one lock per URL)."""
+    lock = ctx.page_locks.setdefault(hit.url, asyncio.Lock())
+    async with lock:
+        cached = ctx.pages.get(hit.url)
+        if cached is not None:
+            return cached
+        return await _read_page(ctx, ts, hit, cls, round_no)
+
+
+async def _pages_refused(ctx: RunContext, ts: TargetState) -> None:
+    """The page ceiling is used up: this topic cannot read. Say so (it is a budget stop, never silent) and mark it."""
+    if not ctx.budget.pages_exhausted():  # time or money ran out, not the page ceiling
+        ctx.budget_stopped = ctx.budget_stopped or bool(ctx.budget.exhausted())
+        return
+    ctx.pages_refused += 1
+    ts.reason = ts.reason or "budget_stop"
+    await ctx.warn("pages_exhausted", target_id=ts.target.id)
+
+
+async def _read_page(
+    ctx: RunContext, ts: TargetState, hit: FusedHit, cls: str, round_no: int
+) -> PageRecord | None:
+    t = ts.target
+    url = hit.url
+    dom = registrable_domain(url)
+    title = hit.hit.title
+    if hit.hit.content and len(hit.hit.content) >= MIN_PROVIDER_TEXT:
+        if not ctx.budget.try_page():
+            await _pages_refused(ctx, ts)
+            return None
+        text, source, published, final = (
+            repair_mojibake(hit.hit.content),
+            "provider",
+            hit.hit.published,
+            url,
+        )
+        await ctx.events.emit(
+            "page.read",
+            target_id=t.id,
+            round_=round_no,
+            phase="read",
+            params={"domain": dom},
+            detail={"domain": dom, "title": title, "chars": len(text)},
+        )
+    else:
+        if not ctx.active() or ts.cancel.cancelled:
+            return None
+        if not ctx.budget.try_page():
+            await _pages_refused(ctx, ts)
+            return None
+        await ctx.events.emit(
+            "page.reading",
+            target_id=t.id,
+            round_=round_no,
+            phase="read",
+            params={"domain": dom},
+            detail={"domain": dom, "title": title},
+        )
+        async with ctx.fetch_sem:
+            try:
+                with ctx.stage("read"):
+                    page = await asyncio.wait_for(
+                        ctx.fetch.fetch(hit.hit.url), timeout=FETCH_TIMEOUT_S
+                    )
+            except TimeoutError:
+                ctx.budget.refund_page()
+                ctx.unreadable.add(hit.url)
+                ctx.failures.record("fetch", "timeout", t.id)
+                await ctx.events.emit(
+                    "page.skipped",
+                    target_id=t.id,
+                    round_=round_no,
+                    phase="read",
+                    params={"domain": dom},
+                    detail={"domain": dom, "title": title, "reason": "timeout"},
+                )
+                return None
+        if not page.ok:
+            ctx.budget.refund_page()
+            ctx.unreadable.add(hit.url)
+            reason = page.reason or "error"
+            if reason in ("error",):
+                ctx.failures.record("fetch", reason, t.id)
+            await ctx.events.emit(
+                "page.skipped",
+                target_id=t.id,
+                round_=round_no,
+                phase="read",
+                params={"domain": dom, "reason": ctx.events.labels.reason(reason)},
+                detail={"domain": dom, "title": title or page.title, "reason": reason},
+            )
+            return None
+        text, source, published, final = (
+            page.text,
+            "fetch",
+            page.published or hit.hit.published,
+            page.final_url or url,
+        )
+        title = title or page.title
+        await ctx.events.emit(
+            "page.read",
+            target_id=t.id,
+            round_=round_no,
+            phase="read",
+            params={"domain": dom},
+            detail={"domain": dom, "title": title, "chars": len(text)},
+        )
+
+    lang = guess_language(text, list(t.place.languages) if t.place else [], ctx.catalog.languages)
+    rec = PageRecord(
+        id=ctx.ids.new("pg"),
+        url=url,
+        final_url=canonical_url(final),
+        domain=dom,
+        source_class=cls,
+        title=title,
+        text=text,
+        content_hash=text_hash(text),
+        text_source=source,
+        published=published,
+        retrieved_on=ctx.as_of,
+        language=lang,
+    )
+    ctx.pages[url] = rec
+    ctx.pages_by_id[rec.id] = rec
+    return rec
+
+
+# --- extract and verify -----------------------------------------------------------------------------------
+
+
+def _register_entity(
+    ctx: RunContext, ts: TargetState, name: str, kind: str, page: PageRecord
+) -> EntityRecord | None:
+    key = clean_key(name)
+    if not key or any(own and clean_key(own) == key for own in ctx.input.own_brand_terms):
+        return None
+    ent = ctx.entities.get(key)
+    new = ent is None
+    if ent is None:
+        ent = EntityRecord(name=name.strip(), kind=kind)
+        ctx.entities[key] = ent
+    ent.target_ids.add(ts.target.id)
+    if own_site(name, page.domain) and not ent.domain:
+        ent.domain = page.domain
+    return ent if new else None
+
+
+async def extract_page(
+    ctx: RunContext, ts: TargetState, page: PageRecord, round_no: int, cov: Coverage, via_seed: bool
+) -> int:
+    """Extract and verify from one page; returns the number of newly verified items."""
+    t = ts.target
+    job = ctx.catalog.jobs[t.job]
+    passages = select_passages(
+        page.text,
+        t.terms,
+        max_chars=PASSAGE_CHARS[ctx.input.load.load_class if ctx.input.load else "standard"],
+    )
+    kinds = list(JOB_KINDS[t.job])
+    base = ExtractIn(
+        job=t.job,
+        question=t.question,
+        anchor=t.anchors[0],
+        place=t.place.text if t.place else "",
+        language=page.language or "en",
+        focus=job.extract_focus.strip(),
+        kinds=kinds,
+        want_kinds=[k for k in unfilled_kinds(ts, cov) if k in kinds],
+        kind_guides=[KIND_GUIDE[k] for k in kinds],
+        slots=slot_descriptions(ts, cov, ctx) or [s.key for s in t.slots],
+        page_title=page.title,
+        page_domain=page.domain,
+        page_published=page.published.isoformat() if page.published else None,
+        passages=render(passages),
+        retry_keys=[],
+    )
+    verified = 0
+    pending: list[Candidate | Rejected] = []
+    fids: dict[
+        tuple[str, str, str], str
+    ] = {}  # one stable id per finding, from "checking" to "checked"
+    for attempt in range(2):
+        inp = (
+            base
+            if attempt == 0
+            else base.model_copy(
+                update={
+                    "retry_keys": sorted(
+                        {c.norm_key for c in pending if isinstance(c, Rejected | Candidate)}
+                    )[:12]
+                }
+            )
+        )
+        async with ctx.llm_sem:
+            with ctx.stage("extract"):
+                res = await ctx.runner.run(EXTRACT_SPECS[t.job], inp)
+        ctx.budget.add_llm_cost(res.cost_micros, "extract")
+        if res.failed:
+            ctx.failures.record("llm", res.reason or "failed", t.id)
+            await ctx.warn("model_failed", target_id=t.id)
+        retry: list[Candidate | Rejected] = []
+        existing = {(a.kind, a.norm_key, a.page_id) for a in ts.atoms}
+        for cand in candidates_from_output(res.output, page):
+            if attempt == 0:
+                ctx.count(
+                    "extracted"
+                )  # EVERY item the model returned, including malformed and empty ones
+            if isinstance(cand, Rejected):
+                ctx.count_drop(cand.reason)
+                await ctx.events.emit(
+                    "fact.rejected",
+                    target_id=t.id,
+                    round_=round_no,
+                    phase="verify",
+                    detail={
+                        "reason": cand.reason,
+                        "topic": t.label,
+                        "label": cand.label,
+                        "fact_id": ctx.ids.new("atm"),
+                    },
+                )
+                continue
+            if attempt == 1 and cand.norm_key not in {p.norm_key for p in pending}:
+                continue  # a retry only answers for the items that failed
+            key = (cand.kind, cand.norm_key, page.id)
+            if key in existing:
+                continue
+            fid = fids.setdefault(key, ctx.ids.new("atm"))
+            await ctx.events.emit(
+                "fact.found",
+                target_id=t.id,
+                round_=round_no,
+                phase="verify",
+                params={"topic": t.label},
+                detail={"kind": cand.kind, "label": cand.label, "topic": t.label, "fact_id": fid},
+            )
+            checked = check_candidate(cand, page, ctx.catalog.figure_drop.fields)
+            if isinstance(checked, Rejected):
+                if checked.reason == "quote_not_found":
+                    if attempt == 0:
+                        ctx.count("quote_failed_first")
+                    retry.append(
+                        cand
+                    )  # one retry ("quote exactly"); still failing after it is counted below
+                    continue
+                ctx.count_drop(checked.reason)
+                if (
+                    checked.detail
+                ):  # a currency the quote does not state: counted apart (internal counters)
+                    ctx.count(checked.detail)
+                await ctx.events.emit(
+                    "fact.rejected",
+                    target_id=t.id,
+                    round_=round_no,
+                    phase="verify",
+                    detail={
+                        "reason": checked.reason,
+                        "topic": t.label,
+                        "label": cand.label,
+                        "fact_id": fid,
+                    },
+                )
+                continue
+            cand = checked
+            ctx.count("first_try_ok" if attempt == 0 else "recovered_by_retry")
+            if "figures_dropped" in cand.flags:
+                ctx.count(
+                    "figures_dropped"
+                )  # kept without an unverified figure: counted apart from the rejections
+            existing.add(key)
+            atom = AtomRecord(
+                id=fid,
+                kind=cand.kind,
+                job=t.job,
+                target_id=t.id,
+                norm_key=cand.norm_key,
+                label=cand.label,
+                claim=cand.claim,
+                quote=cand.quote,
+                impact="high"
+                if cand.impact == "high" or cand.kind in ctx.catalog.lanes.high_impact_kinds
+                else "normal",
+                published_on=cand.published_on,
+                data=cand.data,
+                about_region=cand.about_region,
+                about_entity=cand.about_entity,
+                flags=set(cand.flags),
+                page_id=page.id,
+                round=round_no,
+                seed=via_seed,
+            )
+            ts.atoms.append(atom)
+            verified += 1
+            for ent_name, ent_kind in _entity_names(cand):
+                if _register_entity(ctx, ts, ent_name, ent_kind, page) is not None:
+                    await ctx.events.emit(
+                        "entity.discovered",
+                        target_id=t.id,
+                        round_=round_no,
+                        phase="verify",
+                        params={"name": ent_name},
+                        detail={"name": ent_name, "kind": ent_kind},
+                    )
+        pending = retry
+        if not pending or not ctx.active():
+            break
+    for p in pending:
+        ctx.drops.quote_not_found += 1
+        pkey = (getattr(p, "kind", ""), getattr(p, "norm_key", ""), page.id)
+        await ctx.events.emit(
+            "fact.rejected",
+            target_id=t.id,
+            round_=round_no,
+            phase="verify",
+            # the label of the unchecked item the person saw as "checking", so the console can close that row
+            detail={
+                "reason": "quote_not_found",
+                "topic": t.label,
+                "label": getattr(p, "label", "") or "",
+                "fact_id": fids.get(pkey, ""),
+            },
+        )
+    return verified
+
+
+def _entity_names(c: Candidate) -> list[tuple[str, str]]:
+    data: dict[str, Any] = c.data
+    if c.kind == "competitor" and data.get("name"):
+        return [(str(data["name"]), "competitor")]
+    if c.kind in ("service_option", "provider_fact") and data.get("provider"):
+        return [(str(data["provider"]), "provider")]
+    if c.kind == "reference_check" and data.get("name") and data.get("status") == "found":
+        return [(str(data["name"]), "reference")]
+    return []
+
+
+# --- one topic -----------------------------------------------------------------------------------------
+
+
+async def run_topic(
+    ctx: RunContext,
+    ts: TargetState,
+    round_no: int,
+    *,
+    followups: Sequence[FollowupQuery] | None = None,
+    quota: int | None = None,
+    pages: int | None = None,
+    per_domain: int | None = None,
+) -> int:
+    """Run one round for one topic; returns the number of newly verified items. Never raises for model or web failures."""
+    t = ts.target
+    if ts.cancel.cancelled or not ctx.active():
+        return 0
+    try:
+        if ts.status == "queued":
+            ts.status = "running"
+            await ctx.events.emit(
+                "target.started",
+                target_id=t.id,
+                round_=round_no,
+                phase="plan",
+                params={"topic": t.label},
+                detail={"job": t.job, "lane": t.lane, "round": round_no, "topic": t.label},
+            )
+        cov = update_coverage(ts)
+        want = quota or ctx.catalog.ceilings.variants_per_topic
+        if followups is not None:
+            names = [e.name for e in ctx.entities.values()]
+            blocked_before = ctx.failures.private_blocked
+            variants = [
+                f
+                for f in followups
+                if not is_repeat(f.text, ts.queries)
+                and _check(
+                    ctx,
+                    t,
+                    f.text,
+                    extra_anchors=names,
+                    named=names,
+                    require_place=False if f.domain else None,
+                )
+            ]
+            if ctx.failures.private_blocked > blocked_before:
+                await ctx.warn("private_term", target_id=t.id)
+        else:
+            variants = await write_variants(ctx, ts, round_no, cov, want)
+        if not variants:
+            if (
+                followups is None
+            ):  # no distinct follow-up left is a normal end; no first-round query is a failure
+                ctx.failures.record("plan", "no_query", t.id)
+            return 0
+        both = t.engines == "both" and ctx.second_search is not None and followups is None
+        first = next((v for v in variants if not v.seed and v.variant != "official"), variants[0])
+        second_holder: list[SearchResult] = []
+
+        async def primary(v: FollowupQuery) -> SearchResult | None:
+            res = await search_one(ctx, ts, v, round_no)
+            if (
+                both and v is first and res is not None
+            ):  # admitted and answered: now the second opinion
+                extra = await search_second(ctx, ts, v, round_no)
+                if extra is not None:
+                    second_holder.append(extra)
+            return res
+
+        results = await asyncio.gather(*[primary(v) for v in variants])
+        second_result = second_holder[0] if second_holder else None
+        usable = [(v, r) for v, r in zip(variants, results, strict=True) if r is not None]
+        if not usable:
+            return 0
+        if second_result is not None and second_result.hits:
+            # both engines answered: fuse per engine, agreement between the engines counts (core/rrf.fuse_engines)
+            fused = fuse_engines([[list(r.hits) for _, r in usable], [list(second_result.hits)]])
+        else:
+            fused = fuse([list(r.hits) for _, r in usable])
+        want_pages = pages or pages_wanted(ctx, round_no)
+        ranked = triage(ctx, ts, fused, want_pages + BACKFILL_SPARES, per_domain)
+        picks, spares = ranked[:want_pages], ranked[want_pages:]
+        seed_urls = {canonical_url(h.url) for v, r in usable if v.seed for h in r.hits}
+        non_seed_urls = {canonical_url(h.url) for v, r in usable if not v.seed for h in r.hits}
+
+        async def process(hit: FusedHit, cls: str) -> tuple[int, bool]:
+            """``(newly verified items, the page could not be read and a spare may take its place)``."""
+            page = await read_page(ctx, ts, hit, cls, round_no)
+            if page is None:
+                return 0, hit.url in ctx.unreadable
+            if ts.cancel.cancelled or ctx.run_cancel.cancelled:
+                return 0, False
+            if page.id not in ts.page_ids:
+                ts.page_ids.append(page.id)
+            via_seed = page.url in seed_urls and page.url not in non_seed_urls
+            return await extract_page(ctx, ts, page, round_no, cov, via_seed), False
+
+        results = await asyncio.gather(*[process(h, c) for h, c in picks])
+        counts = [n for n, _ in results]
+        lost = sum(1 for _, replace in results if replace)
+        while lost and spares and ctx.active() and not ts.cancel.cancelled:
+            batch, spares = spares[:lost], spares[lost:]
+            more = await asyncio.gather(*[process(h, c) for h, c in batch])
+            counts += [n for n, _ in more]
+            lost = sum(1 for _, replace in more if replace)
+        await check_topic(
+            ctx, ts
+        )  # every verified item is checked BEFORE the coverage audit (a rejection reopens its slot)
+        update_coverage(ts)
+        return sum(counts)
+    except CallCancelled:
+        return 0
+    except STOP_RUN as exc:
+        ctx.budget_stopped = isinstance(exc, BudgetExceeded) or ctx.budget_stopped
+        ts.reason = ts.reason or (
+            "budget_stop" if isinstance(exc, BudgetExceeded) else "provider_down"
+        )
+        await ctx.warn("budget_stop")
+        return 0

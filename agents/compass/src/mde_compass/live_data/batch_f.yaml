@@ -1,0 +1,247 @@
+# Batch F: long interviews with a needle (build prompt 02, section 6). Two simulated users answer 15 to 25
+# questions each. The model plans the questions, so no answer can be fixed per question: an answer policy
+# (``AnswerPolicy`` in live_batches.py) reads this file. A tap card gets its recommended option (or the first);
+# a text card gets the next line of the pool for its need (or the generic pool), alternating specific and vague
+# lines by ``answer_cycle``; skips and "you decide" fall on the listed turns (never two in a row, so the
+# fatigue rule does not end the interview early).
+#
+# Planted on purpose, by turn number (one turn = one answered question, counted from 1):
+#   needle         a distinctive typed fact at turn 2; it must still be in the final Brief
+#   contradiction  an anchor statement at turn 3, a correction of it later; the newest statement must win
+#   pivot          a chat message before the listed turn: the direction changes, history is kept
+# If the engine ends an interview before those turns are reached, the user presses "Ask me more" (at most
+# ``ask_more_max`` times), so the planted facts still meet the whole Brief pipeline.
+#
+# "Specific" lines have six or more words or a number; "vague" lines are two to four words with no number,
+# comma or "and" (the offline stand-in for the model reads them the same way).
+id: F
+title: Long interviews with a needle, a contradiction and a pivot
+allowance_usd: "0.70"
+thresholds:
+  followup_after_vague_min: 0.9
+  followup_after_specific_max: 0
+  coverage_min: 1.0
+  qa_range: [15, 25]
+sessions:
+  - id: tiffin_pune
+    kind: interview
+    label: Pune tiffin delivery (home-style food for office workers)
+    idea: >-
+      I run a home-style tiffin service in Pune and I want an app where office workers order a daily lunch
+      box and my riders deliver it.
+    budget: thorough
+    start_locale: en
+    max_actions: 45
+    ask_more_max: 2
+    text_on_choice_every: 4
+    answer_cycle: [specific, specific, vague, specific, vague, specific, specific, vague, specific]
+    skip_turns: [9]
+    you_decide_turns: [6, 14]
+    needle:
+      turn: 2
+      text: >-
+        One hard rule for us: lunch boxes must leave the Aundh kitchen by 11:40 am sharp, because the
+        Hinjewadi offices close their orders at 11:15 am and nothing may be added after that cutoff.
+      probe_terms: ["11:40"]
+      bonus_terms: ["Aundh", "Hinjewadi"]
+    contradiction:
+      anchor_turn: 3
+      anchor_text: >-
+        Our riders are salaried staff on a fixed monthly pay of 15,000 rupees, we do not use freelancers.
+      anchor_terms: ["salaried"]
+      correction_turn: 12
+      correction_text: >-
+        Correction to what I said before: our riders are independent partners paid per delivery, they are
+        not salaried staff.
+      correction_terms: ["independent"]
+    pivot:
+      turn: 16
+      text: >-
+        Actually, I want to change direction: this should be for corporate canteens that order lunch in
+        bulk for their staff, not for individual office workers.
+      terms: ["canteen"]
+    pools:
+      by_need:
+        audience.segments:
+          specific:
+            - "Office workers around Baner and Hinjewadi, mostly IT staff in their late twenties, who skip the canteen and want home-style food at their desk."
+            - "Working people in shared flats who cannot cook on weekdays; about 300 of them already order from us on WhatsApp."
+          vague: ["office workers", "mostly working people"]
+        context.geo:
+          specific:
+            - "Pune only for now: Baner, Aundh and Hinjewadi, with customers who speak English and Marathi."
+          vague: ["Pune mostly"]
+        locales:
+          specific:
+            - "English and Marathi, because the riders and the kitchen staff read Marathi more easily."
+          vague: ["English mostly"]
+        apps.list:
+          specific:
+            - "One customer app and a small rider app, and the kitchen manager just uses a web page to see the day's orders."
+          vague: ["a customer app mainly"]
+        roles.list:
+          specific:
+            - "Customers, riders, a kitchen manager who sets the menu, and me as the owner who sees payments and complaints."
+          vague: ["customers riders owner"]
+        scope.features:
+          specific:
+            - "Choose a lunch from the daily menu before 10 am, subscribe to a weekly plan, pay by UPI, track the rider live and rate the meal."
+          vague: ["the usual stuff", "just ordering mostly"]
+        idea.business_model:
+          specific:
+            - "Customers pay per meal at Rs 120 or Rs 2,400 for a monthly plan, and I pay each rider per delivery."
+          vague: ["customers pay us"]
+        scope.priority:
+          specific:
+            - "First release: daily menu, ordering with UPI payment and rider tracking. Ratings and referrals can wait."
+          vague: ["ordering first"]
+        look.tone_words:
+          specific:
+            - "Warm, homely and friendly like a family kitchen, with big simple buttons because people order in a hurry at 11 am."
+          vague: ["warm friendly look"]
+        integrations.wanted:
+          specific:
+            - "UPI payments through Razorpay, WhatsApp order confirmations and Google Maps for the rider route."
+          vague: ["some payment thing"]
+        auth.methods:
+          specific:
+            - "Phone number with a one time code and no passwords, because colleagues sometimes share one phone."
+          vague: ["phone number mostly"]
+        data.sensitive:
+          specific:
+            - "We store home and office addresses and phone numbers; payment is handled by the gateway so we never keep card details."
+          vague: ["customer details"]
+        context.scale_launch:
+          specific:
+            - "About 300 customers at launch, 1,500 within a year, and 20 riders."
+          vague: ["a few hundred"]
+        goals.primary:
+          specific:
+            - "Cut the daily WhatsApp ordering mess and the wrong deliveries; 90 percent of orders should come through the app in three months."
+          vague: ["less mess"]
+      generic:
+        specific:
+          - "Right now we take about 200 orders a day on WhatsApp, so whatever we build must handle that without extra staff."
+          - "Lunch has to reach the office between 12 and 1 pm, and a late delivery means we refund that meal."
+          - "Our kitchen in Aundh cooks 3 different menus a week and every customer gets the same menu that day."
+          - "Customers in one building usually order together, so a floor or a company should get a single drop point."
+          - "We want to start only in Pune and do not plan other cities this year, so keep it simple."
+          - "Payment must be easy for people who do not use cards, mostly UPI and sometimes cash on delivery."
+        vague: ["not sure yet", "something simple", "whatever is normal", "the usual way", "as needed"]
+    expected_calls: &interview_calls
+      cmp.understand_turn: 24
+      cmp.situate: 2
+      cmp.plan_questions: 14
+      cmp.audit_questions: 12
+      cmp.update_summary: 4
+      cmp.compile_brief: 2
+      cmp.compile_text: 1
+      cmp.seed_research: 1
+      cmp.probe_handoff: 3
+      cmp.scan_ambiguity: 1
+      cmp.interpret_change: 1
+  - id: pharmacy_inventory_b2b
+    kind: interview
+    label: B2B pharmacy inventory tool in Nagpur
+    idea: >-
+      I supply medicines to around 300 retail pharmacies in Nagpur and I want a B2B tool where pharmacy
+      owners check stock and expiry dates, place restock orders and see what they owe us.
+    budget: thorough
+    start_locale: en
+    max_actions: 45
+    ask_more_max: 2
+    text_on_choice_every: 4
+    answer_cycle: [specific, vague, specific, specific, vague, specific, specific, vague, specific]
+    skip_turns: [9]
+    you_decide_turns: [6, 14]
+    needle:
+      turn: 2
+      text: >-
+        A hard constraint: our central warehouse in Nagpur freezes all stock transfers at 9:30 pm every
+        night, so every shop must sync its counts before then or the morning dispatch will be wrong.
+      probe_terms: ["9:30"]
+      bonus_terms: ["warehouse", "Nagpur"]
+    contradiction:
+      anchor_turn: 3
+      anchor_text: >-
+        All 300 of our pharmacy customers pay cash on delivery and we give no credit at all.
+      anchor_terms: ["cash on delivery"]
+      correction_turn: 12
+      correction_text: >-
+        Correction: that is wrong, most shops buy on credit with 15 days payment terms, and only the very
+        small ones pay cash on delivery.
+      correction_terms: ["15 days"]
+    pivot:
+      turn: 16
+      text: >-
+        Actually, let me change direction: make this for hospital pharmacies instead of retail chemist
+        shops.
+      terms: ["hospital"]
+    pools:
+      by_need:
+        audience.segments:
+          specific:
+            - "Owners and managers of independent chemist shops in Nagpur with one to three counters, not hospital pharmacies, who now order by phone from our sales reps."
+          vague: ["chemist shop owners"]
+        context.geo:
+          specific:
+            - "Nagpur city and the nearby districts of Vidarbha, in English with Hindi labels for the shop assistants."
+          vague: ["Nagpur mostly"]
+        locales:
+          specific:
+            - "English for the owners and Hindi labels for shop assistants, who find English medicine names hard to scan."
+          vague: ["English mostly"]
+        apps.list:
+          specific:
+            - "A mobile app for the shop owner and a web dashboard for our warehouse and sales team."
+          vague: ["mobile for shops"]
+        roles.list:
+          specific:
+            - "Shop owner who orders, shop assistant who only counts stock, our sales rep who can place orders for a shop, a warehouse picker and an admin in our head office."
+          vague: ["owners staff admin"]
+        scope.features:
+          specific:
+            - "Stock list with batch numbers and expiry dates, near-expiry alerts 60 days ahead, one-tap reorder of usual items, order tracking and a ledger of dues."
+          vague: ["stock management basics"]
+        idea.business_model:
+          specific:
+            - "We earn on the medicines we sell; the tool is free for pharmacies and we may charge a small fee later for premium analytics."
+          vague: ["free for shops"]
+        scope.priority:
+          specific:
+            - "Version one: stock with expiry alerts and reordering. The dues ledger and analytics wait for version two."
+          vague: ["stock first"]
+        look.tone_words:
+          specific:
+            - "Serious, clean and trustworthy; dense tables are fine because owners are used to ledgers."
+          vague: ["clean look"]
+        integrations.wanted:
+          specific:
+            - "Our existing Tally accounting export, GST invoice numbers and WhatsApp reminders for dues."
+          vague: ["accounts software"]
+        auth.methods:
+          specific:
+            - "Mobile number with an OTP, and a PIN for the shop assistant so the owner stays in control."
+          vague: ["mobile number login"]
+        data.sensitive:
+          specific:
+            - "Drug licence numbers, GST numbers and customer credit limits; no patient data is stored at all."
+          vague: ["business data"]
+        context.scale_launch:
+          specific:
+            - "300 shops now, about 1,000 within two years, and up to 4,000 products per shop."
+          vague: ["a few hundred"]
+        goals.primary:
+          specific:
+            - "Reduce expired stock write-offs, which cost shops about 3 percent of purchases, and cut our order-taking calls by half."
+          vague: ["less expired stock"]
+      generic:
+        specific:
+          - "Shops reorder weekly, usually on Monday and Thursday, so those two days carry most of the traffic."
+          - "Expiry is the biggest worry: anything within 90 days of expiry should be flagged and returned to us before it is useless."
+          - "Our warehouse dispatches orders by 6 pm the same day, and orders placed after 3 pm go out next morning."
+          - "Prices differ by shop group, so a chain of five shops gets a different rate card than a single shop."
+          - "Some medicines are controlled and can only be ordered by shops with a valid licence on file."
+          - "We have 12 sales reps today who visit each shop every two weeks."
+        vague: ["it depends", "something like that", "not decided", "keep it basic", "as usual"]
+    expected_calls: *interview_calls

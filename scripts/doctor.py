@@ -51,7 +51,7 @@ def main(argv: list[str]) -> int:
 
     if "--live" in argv:
         if not settings.live_enabled:
-            print("model: skipped (needs LLM_MODE=live and ALLOW_LIVE_LLM=1)")
+            print("model: skipped (needs LLM_MODE=live)")
         else:
             try:
                 from mde_llm_gateway.doctor import probe_model  # type: ignore[import-not-found]

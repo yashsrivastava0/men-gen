@@ -1,0 +1,159 @@
+{
+ "run_id": "rrn_01M7AZ51CBWCT53SWV3X0RQAB9",
+ "status": "partial",
+ "search_provider": "serper",
+ "models": {
+  "writer": "claude-haiku-5-5",
+  "checker": "claude-haiku-5-5",
+  "checker_vendor": "same"
+ },
+ "budget": {
+  "searches_used": 191,
+  "pages_read": 283,
+  "seconds": 571,
+  "usd": "1.0270",
+  "usd_micros": 1027028,
+  "failures": 9
+ },
+ "cost_by_step": {
+  "assemble": 7445,
+  "check": 251630,
+  "extract": 470458,
+  "plan": 1731,
+  "queries": 21764,
+  "search.serper": 194000,
+  "search.tavily": 80000
+ },
+ "slots": {
+  "filled": 57,
+  "required": 63,
+  "ratio": 0.9048
+ },
+ "topics": {
+  "total": 54,
+  "covered": 48,
+  "not_found": 6
+ },
+ "items": 885,
+ "evidence_labels": {
+  "single_source": 309,
+  "unverified": 138,
+  "official": 438
+ },
+ "by_kind": {
+  "competitor": 19,
+  "trend": 2,
+  "navigation_pattern": 8,
+  "role_pattern": 27,
+  "screen_pattern": 106,
+  "workflow": 70,
+  "compliance_note": 30,
+  "entity_pattern": 11,
+  "lifecycle": 2,
+  "rule": 126,
+  "provider_fact": 310,
+  "service_option": 33,
+  "data_hint": 1,
+  "local_format": 6,
+  "platform_constraint": 134
+ },
+ "extraction": {
+  "extracted": 1074,
+  "first_try_ok": 1009,
+  "final_ok": 1011,
+  "quote_pass_first_try": 0.9395,
+  "quote_pass_final": 0.9413,
+  "quote_failed_first": 4,
+  "recovered_by_retry": 2,
+  "number_not_in_quote": 47,
+  "number_rejection_rate": 0.0438,
+  "figures_dropped": 5,
+  "invalid": 5,
+  "claim_too_long": 0,
+  "forbidden_pattern": 4
+ },
+ "checker": {
+  "items_checked": 1011,
+  "supported": 0.8042,
+  "partial": 0.1899,
+  "not_supported": 0.002,
+  "unchecked": 0.004,
+  "rubber_stamp_signal": true
+ },
+ "fallbacks": {
+  "rsch.check": 1
+ },
+ "fact_rejections": {
+  "number_not_in_quote": 47,
+  "unsupported_field": 52,
+  "not_supported": 2,
+  "forbidden_pattern": 4,
+  "quote_not_found": 2,
+  "invalid": 5
+ },
+ "validation": {
+  "errors": 1,
+  "warnings": 1,
+  "by_rule": {
+   "RV-05": 1,
+   "RV-17": 1
+  }
+ },
+ "dossiers": 49,
+ "platform_constraints": 134,
+ "compliance_register": 2,
+ "failed_slots": [
+  {
+   "target": "T-01",
+   "label": "Comparable freight booking dispatch apps",
+   "status": "not_found",
+   "filled": 1,
+   "required": 2
+  },
+  {
+   "target": "T-27",
+   "label": "What a Branch record holds",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-47",
+   "label": "Formats: fitness permit",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-49",
+   "label": "Screens in Account and Sign-In",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-50",
+   "label": "Screens in Compliance",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  },
+  {
+   "target": "T-51",
+   "label": "Screens in Customer Bookings",
+   "status": "not_found",
+   "filled": 0,
+   "required": 1
+  }
+ ],
+ "acceptance": {
+  "extraction_quote_pass_first_try": true,
+  "number_rejection_rate": false,
+  "fetch_success": true,
+  "searches_contributing": true,
+  "slots_filled": true,
+  "checker_not_supported": true,
+  "norms_with_3_plus_sources": false,
+  "recent_24m_of_dated": true
+ }
+}

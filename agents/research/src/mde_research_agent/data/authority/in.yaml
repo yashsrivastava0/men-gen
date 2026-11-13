@@ -1,0 +1,46 @@
+# India. Government and regulator domains for tax, payments, data protection, transport, company law,
+# telecom and food. Seed list: a reviewer should confirm it (open item OI-18); domains only, never claims.
+country: in
+language: en
+entries:
+  - {domain: gst.gov.in, topics: [gst, tax, invoice, e-invoice, gstin], class: official}
+  - {domain: ewaybillgst.gov.in, topics: [e-way bill, eway, transport, goods movement], class: official}
+  - {domain: einvoice1.gst.gov.in, topics: [e-invoice, irn, gst], class: official}
+  - {domain: cbic.gov.in, topics: [gst, customs, tax], class: official}
+  - {domain: incometax.gov.in, topics: [income tax, tds, pan], class: official}
+  - {domain: rbi.org.in, topics: [payments, rbi, wallet, pa, pg, kyc, bank, upi regulation], class: official}
+  - {domain: npci.org.in, topics: [upi, fastag, imps, bbps, rupay, nach], class: official}
+  - {domain: bharat-connect.com, topics: [bbps, bill payments], class: official}
+  - {domain: meity.gov.in, topics: [dpdp, data protection, it rules, digital], class: official}
+  - {domain: dpdpact.in, topics: [dpdp], class: press}
+  - {domain: cert-in.org.in, topics: [security, incident reporting], class: official}
+  - {domain: uidai.gov.in, topics: [aadhaar, identity, ekyc], class: official}
+  - {domain: digilocker.gov.in, topics: [documents, identity], class: official}
+  - {domain: parivahan.gov.in, topics: [vehicle, driving licence, permit, registration, transport, vahan, sarathi], class: official}
+  - {domain: morth.nic.in, topics: [transport, highways, motor vehicles act, permit], class: official}
+  - {domain: nhai.gov.in, topics: [fastag, toll, highways], class: official}
+  - {domain: mca.gov.in, topics: [company registration, roc, llp], class: official}
+  - {domain: trai.gov.in, topics: [sms, dlt, telecom, commercial communication], class: official}
+  - {domain: fssai.gov.in, topics: [food safety, licence, food business], class: official}
+  - {domain: apeda.gov.in, topics: [agriculture export, produce], class: official}
+  - {domain: agmarknet.gov.in, topics: [mandi, market prices, agriculture], class: official}
+  - {domain: enam.gov.in, topics: [mandi, agriculture market, trading], class: official}
+  - {domain: indiapost.gov.in, topics: [postal, pin code], class: official}
+  - {domain: meity.gov.in, topics: [data protection, privacy, it rules, regulation], class: official}
+  - {domain: dpb.gov.in, topics: [data protection, privacy], class: official}
+# Added 2026-11-13 and checked that day (a plain page fetch and/or a web search restricted to the domain; `fetch` and
+# `verified_on` are explained in pt.yaml). arai.in was NOT added: it did not answer (TLS error) and a search says the
+# Automotive Research Association of India publishes at araiindia.com, which is listed instead.
+  - {domain: indiacode.nic.in, topics: [law, act, statute, legislation, rules, regulation], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: egazette.gov.in, topics: [gazette, notification, rules, regulation, legislation], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: consumeraffairs.gov.in, topics: [consumer protection, legal metrology, e-commerce, refund, pricing, consumer rights], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: msamb.com, topics: [mandi, market fees, agricultural marketing, produce, apmc, farmers, commission], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: sfacindia.com, topics: [farmers, agribusiness, fpo, produce, agriculture], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: nabard.org, topics: [agriculture, rural, farmers, credit, agricultural credit], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: araiindia.com, topics: [vehicle, vehicles, automotive, homologation, type approval, vehicle testing, cmvr], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: dot.gov.in, topics: [telecom, sms, messaging, licence, spectrum, commercial communication], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: irdai.gov.in, topics: [insurance, insurer, policyholder], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: abdm.gov.in, topics: [health records, health data, abha, digital health, ehr, patient records], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: nmc.org.in, topics: [medical, doctor, doctors, telemedicine, clinic, registration, medical practice], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: cdsco.gov.in, topics: [drugs, drug, pharmacy, medical devices, prescription, cosmetics], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: mohfw.gov.in, topics: [health, hospital, clinic, telemedicine, health regulation, patients], class: official, fetch: blocked, verified_on: 2026-11-13}

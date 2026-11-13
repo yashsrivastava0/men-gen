@@ -1,0 +1,48 @@
+# A question about the price and a remark about the weather: the model only classifies them, the engine answers
+# (cmp.answer runs its mock handler) and puts the question that was waiting back on screen.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - intent: price_or_time
+    - intent: off_topic
+      flags: [off_topic]
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: Your customers
+          intent: learn who orders the tiffins and what they want
+          serves: [audience.segments]
+          answer_spec: The kinds of customers, what each wants, where and how they use the app.
+          type: text
+          text: "Who orders your tiffins, and what do they want from the app?"
+          why_we_ask: The customers decide what the ordering screens must do.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Office workers who want lunch on time"]
+        - group_id: G1
+          group_title: Your customers
+          intent: learn how customers pay for the tiffins
+          serves: [idea.business_model]
+          answer_spec: Who pays, how, and how often.
+          type: text
+          text: "How do customers pay for your tiffins, one meal at a time or a monthly plan?"
+          why_we_ask: Payment decides what the app must charge and remind.
+          unlocks: ["Research: pricing of similar tiffin services"]
+          examples: ["They pay at the start of the month"]
+        - group_id: G2
+          group_title: Where you work
+          intent: learn which areas the tiffin service delivers to
+          serves: [context.geo]
+          answer_spec: The city and the areas covered.
+          type: text
+          text: "Which city and areas do your tiffins reach?"
+          why_we_ask: Place decides maps, rules and competitors to study.
+          unlocks: ["Research: local competitors"]
+          examples: ["Pune, Baner and Aundh"]
+  cmp.audit_questions:
+    - pass_all: true

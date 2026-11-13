@@ -4,7 +4,7 @@
   tracked or not-ignored file (``docs/`` included: a fixture there needs an explicit
   ``secret-scan: allow`` marker on its line), nor in runtime data (ledger, projects).
 * ``eval``/``exec`` are never called in source (rule 9).
-* Only ``mde_llm_gateway`` imports ``openai`` (rule 2); no agent frameworks; no SQLite.
+* Only ``mde_llm_gateway`` imports a model vendor SDK, ``openai`` or ``anthropic`` (rules 2 and 14); no agent frameworks; no SQLite.
 """
 
 from __future__ import annotations
@@ -147,7 +147,7 @@ def test_actual_env_secrets_never_appear_in_repo_files() -> None:
 
 
 def _python_sources() -> list[Path]:
-    roots = [*ROOT.glob("packages/*/src"), *ROOT.glob("apps/*/src")]
+    roots = [*ROOT.glob("packages/*/src"), *ROOT.glob("apps/*/src"), *ROOT.glob("agents/*/src")]
     return [p for r in roots for p in r.rglob("*.py")]
 
 
@@ -176,18 +176,21 @@ def _imports(path: Path) -> set[str]:
     return mods
 
 
-def test_only_gateway_imports_openai_and_no_forbidden_frameworks() -> None:
+MODEL_SDKS = {"openai", "anthropic"}  # every model vendor's SDK; add a vendor's here (rule 14)
+
+
+def test_only_gateway_imports_a_model_sdk_and_no_forbidden_frameworks() -> None:
     bad_openai: list[str] = []
     bad_fw: list[str] = []
     for path in [*_python_sources(), *ROOT.glob("tests/**/*.py"), *ROOT.glob("scripts/*.py")]:
         rel = path.relative_to(ROOT).as_posix()
         mods = _imports(path)
         in_gateway = rel.startswith("packages/llm-gateway/")
-        if "openai" in mods and not in_gateway:
+        if mods & MODEL_SDKS and not in_gateway:
             bad_openai.append(rel)
         if mods & FORBIDDEN_FRAMEWORKS and not rel.startswith("tests/security/"):
             bad_fw.append(rel)
-    assert not bad_openai, f"only mde_llm_gateway may import openai: {bad_openai}"
+    assert not bad_openai, f"only mde_llm_gateway may import a model vendor SDK: {bad_openai}"
     assert not bad_fw, f"forbidden framework / SQLite import: {bad_fw}"
 
 
@@ -201,6 +204,7 @@ def test_no_agent_framework_dependencies_declared() -> None:
         ROOT / "pyproject.toml",
         *ROOT.glob("packages/*/pyproject.toml"),
         *ROOT.glob("apps/*/pyproject.toml"),
+        *ROOT.glob("agents/*/pyproject.toml"),
     ]
     for pyproject in projects:
         data = tomllib.loads(pyproject.read_text(encoding="utf-8"))

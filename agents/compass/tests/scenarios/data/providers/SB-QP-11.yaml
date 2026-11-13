@@ -1,0 +1,85 @@
+# A Hindi session. The first draft carries one English question (rejected for its language); the repair replaces
+# it with a Hindi one. The sign-in question has Hindi option labels; tapping one is stored under the catalog key.
+calls:
+  cmp.understand_turn:
+    - mock: true
+    - intent: answer
+      facts:
+        - type: context
+          statement: "ग्राहक दफ्तर में काम करने वाले लोग हैं जो रोज़ दोपहर का खाना मंगाते हैं"
+          quote: "दफ्तर में काम करने वाले लोग"
+          topics: [audience]
+          aspects: ["audience.segments:*"]
+          effects:
+            - {slot_id: audience.segments, value_json: '["दफ्तर में काम करने वाले लोग"]'}
+    - intent: answer
+      slot_updates:
+        - slot_id: auth.methods
+          value_json: '["phone_otp"]'
+          quote: "मोबाइल नंबर और ओटीपी से"
+          confidence: 0.9
+      facts:
+        - type: preference
+          statement: "ग्राहक मोबाइल नंबर और ओटीपी से साइन इन करेंगे"
+          quote: "मोबाइल नंबर और ओटीपी से"
+          topics: [access]
+          aspects: ["auth.methods:*"]
+          effects:
+            - {slot_id: auth.methods, value_json: '["phone_otp"]'}
+  cmp.plan_questions:
+    - defer_rest: later batches
+      domain_hypothesis:
+        category: food delivery
+        subcategory: tiffin service
+        likely_roles: [customer, rider, kitchen]
+        confidence: 0.6
+      questions:
+        - group_id: G1
+          group_title: आपके ग्राहक
+          intent: learn who orders the tiffins
+          serves: [audience.segments]
+          answer_spec: ग्राहकों के प्रकार और उनकी ज़रूरत।
+          type: text
+          text: "आपके टिफिन के ग्राहक कौन हैं और वे ऐप से क्या चाहते हैं?"
+          why_we_ask: ग्राहक तय करते हैं कि ऐप में क्या दिखे।
+          unlocks: ["Blueprint: roles"]
+          examples: ["दफ्तर के लोग जो समय पर खाना चाहते हैं"]
+        - group_id: G1
+          group_title: आपके ग्राहक
+          intent: learn how customers sign in to the tiffin app
+          serves: [auth.methods, "domain:sign_in"]
+          answer_spec: साइन-इन का तरीका।
+          type: choose_one
+          text: "ग्राहक टिफिन ऐप में कैसे साइन इन करें?"
+          why_we_ask: साइन-इन का तरीका ऐप की बनावट तय करता है।
+          unlocks: ["Blueprint: sign-in"]
+          options:
+            - {label: "मोबाइल नंबर और ओटीपी से", basis: suggestion, reason: "ज़्यादातर ग्राहक फ़ोन नंबर से आसानी से जुड़ते हैं"}
+            - {label: "ईमेल और पासवर्ड से", basis: suggestion}
+            - {label: "बिना साइन-इन के शुरू करें", basis: suggestion}
+          recommended: "मोबाइल नंबर और ओटीपी से"
+        - group_id: G2
+          group_title: आपकी रसोई
+          intent: learn who prepares and packs the tiffins
+          serves: [roles.list]
+          answer_spec: Who does what in the kitchen.
+          type: text
+          text: "Who prepares and packs the tiffins in your kitchen?"
+          why_we_ask: Kitchen roles decide the screens.
+          unlocks: ["Blueprint: roles"]
+          examples: ["Two cooks and one packer"]
+    - covered_needs: [roles.list]
+      questions:
+        - group_id: G2
+          group_title: आपकी रसोई
+          intent: learn who prepares and packs the tiffins
+          serves: [roles.list]
+          answer_spec: रसोई में कौन क्या करता है।
+          type: text
+          text: "आपकी रसोई में टिफिन कौन तैयार और पैक करता है?"
+          why_we_ask: रसोई की भूमिकाएँ ऐप की स्क्रीन तय करती हैं।
+          unlocks: ["Blueprint: roles"]
+          examples: ["दो रसोइए और एक पैकर"]
+  cmp.audit_questions:
+    - pass_all: true
+    - pass_all: true

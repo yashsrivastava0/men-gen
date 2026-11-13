@@ -1,0 +1,99 @@
+# Provider dossier layout (assemble/dossier.py). A dossier is built by CODE from verified `provider_fact` items: one entry
+# per provider, one value per field, each with its item ids, its evidence label and, when empty, a reason. The model never
+# writes a dossier; it only extracts one fact and one quote at a time (D-159).
+#
+# `fields`: every key the extractor may use for a provider_fact's `field` (code rejects any other key).
+#   kind  list    several values are kept side by side (products, countries, events): never a conflict
+#         scalar  one value; two different values for it are a conflict (both kept); only `status` is one
+#         typed   a figure (fee, limit, time); two different amounts for the same unit, period and condition are a conflict
+#   text  what the field means; it is shown to the extraction model, so it says what the PAGE must state
+#   derived  `official_source`: filled by code from the provider's own official pages (never by the model)
+#
+# `capabilities`: which fields a dossier needs per integration need (the key is a need of need_keywords.yaml); `required`
+# counts into `completeness`. `default` serves a need with no entry here. `absence_after_sources`: how many distinct source
+# pages of the provider must have been read before a missing field is "not stated by the sources" (fewer: "not researched").
+fields:
+  official_docs:
+    kind: scalar
+    derived: official_source
+    text: "the provider's own documentation or developer site (set by code from the pages read)"
+  countries:
+    kind: list
+    text: "countries or regions where the provider offers the service, as the page states them"
+  products:
+    kind: list
+    text: "the products, methods or channels offered (for example payment methods, message channels, map services)"
+  auth_method:
+    kind: list
+    text: "how an app or server authenticates with the provider (keys, tokens, signatures)"
+  endpoints:
+    kind: list
+    text: "named API endpoints or operations the page lists"
+  webhooks_events:
+    kind: list
+    text: "webhook or event names the provider sends, as the page lists them"
+  sandbox:
+    kind: list
+    text: "whether a test or sandbox environment exists and how it is accessed"
+  sdk_support:
+    kind: list
+    text: "official SDKs or client libraries and the languages or platforms they cover"
+  react_native_support:
+    kind: list
+    text: "support for React Native or Expo: an official package, a config plugin or a native module, as the page states it"
+  expo_build:
+    kind: list
+    text: "whether the integration works in Expo Go or needs a development build, only when the page says so"
+  fees:
+    kind: typed
+    text: "a fee or price: the amount, currency or unit, period and condition exactly as the page states them"
+  limits:
+    kind: typed
+    text: "a limit or quota (a maximum, a rate, a size): the number, unit and period exactly as stated"
+  onboarding_kyc:
+    kind: list
+    text: "what the provider requires before going live (business verification, documents, approvals)"
+  onboarding_lead_time:
+    kind: typed
+    text: "how long approval or activation takes, as the page states it"
+  settlement:
+    kind: typed
+    text: "when and how money is paid out or settled, as the page states it"
+  compliance:
+    kind: list
+    text: "compliance or certification statements the page makes (card-data standard, licence, data residency)"
+  status:
+    kind: scalar
+    text: "whether the product is active, deprecated, in beta or closed to new customers, with any date the page gives"
+default:
+  required: [official_docs, countries, products, auth_method, sandbox, fees, limits, status]
+  optional: [endpoints, webhooks_events, sdk_support, react_native_support, expo_build, onboarding_kyc, onboarding_lead_time, settlement, compliance]
+capabilities:
+  payments:
+    required: [official_docs, countries, products, auth_method, webhooks_events, sandbox, react_native_support, fees, limits, onboarding_kyc, settlement, compliance, status]
+    optional: [endpoints, sdk_support, expo_build, onboarding_lead_time]
+  messaging:
+    required: [official_docs, countries, products, auth_method, sandbox, react_native_support, fees, limits, onboarding_kyc, onboarding_lead_time, compliance, status]
+    optional: [endpoints, webhooks_events, sdk_support, expo_build, settlement]
+  maps_location:
+    required: [official_docs, countries, products, auth_method, react_native_support, expo_build, fees, limits, status]
+    optional: [endpoints, sandbox, sdk_support, compliance]
+  tracking_telematics:
+    required: [official_docs, countries, products, auth_method, webhooks_events, sandbox, fees, limits, onboarding_kyc, status]
+    optional: [endpoints, sdk_support, compliance]
+  identity:
+    required: [official_docs, countries, products, auth_method, sandbox, react_native_support, fees, limits, onboarding_kyc, compliance, status]
+    optional: [endpoints, webhooks_events, sdk_support, expo_build, onboarding_lead_time]
+  documents_government:
+    required: [official_docs, countries, products, auth_method, sandbox, limits, onboarding_kyc, onboarding_lead_time, compliance, status]
+    optional: [endpoints, fees, webhooks_events]
+  accounting:
+    required: [official_docs, countries, products, auth_method, sandbox, fees, limits, status]
+    optional: [endpoints, webhooks_events, sdk_support, compliance]
+  calendar_booking:
+    required: [official_docs, products, auth_method, sandbox, limits, status]
+    optional: [endpoints, webhooks_events, sdk_support, fees, react_native_support]
+  storage_media:
+    required: [official_docs, products, auth_method, react_native_support, fees, limits, status]
+    optional: [endpoints, sdk_support, expo_build, compliance, countries]
+absence_after_sources: 2

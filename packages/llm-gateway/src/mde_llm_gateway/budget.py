@@ -1,4 +1,4 @@
-"""Budget guard (brief 7.9): the USD 6.00 rule. A bug in this file is severe.
+"""Budget guard (brief 7.9): the USD 8.00 ceiling (D-125; it was 6.00). A bug in this file is severe.
 
 ``BudgetGuard.reserve`` runs inside the ledger's critical section, so the check
 ``spent + reserved + worst_case <= effective_cap`` (global AND every scoped cap) and the append of
@@ -7,10 +7,10 @@ the reserve line are one atomic step across processes.
 Money here is always integer micro-dollars.
 
 Hard limits that no configuration or caller can lift (a bug or a hostile caller must not be able to
-spend past USD 6.00):
+spend past USD 8.00):
 
 * ``HARD_CAP_USD`` clamps ``LLM_BUDGET_USD`` (a warning is logged); the effective cap is at most
-  ``HARD_EFFECTIVE_CAP_USD`` (USD 5.70) whatever the budget file says.
+  ``HARD_EFFECTIVE_CAP_USD`` (USD 7.60) whatever the budget file says.
 * ``reserve`` refuses a scope whose kind is not one of ``session``, ``research``, ``eval``, ``test``
   (or a kind added through ``budget.yaml``): an unknown kind used to get no scope cap at all.
 * A reservation that is not closed is never "released" by the passage of time: see ``ledger.py``.
@@ -42,12 +42,15 @@ from mde_llm_gateway.pricing import Pricing
 MUST_RUN_PREFIX = "must-run"
 Tripwire = Literal["ok", "warn_50", "must_run_only_80", "refuse_95"]
 
-HARD_CAP_USD = Decimal("6.00")  # the project's total live-spend ceiling (CLAUDE.md rule 3)
-HARD_EFFECTIVE_CAP_USD = Decimal("5.70")  # never plan to reach the cap: 95% of the hard cap
+# The project's total live-spend ceiling (CLAUDE.md rule 3). Raised from 6.00 to 8.00 by the owner (D-125) so the
+# Research agent's live work fits beside the spend already made. This is only the ceiling: the cap in force is
+# LLM_BUDGET_USD (default 6.00, clamped to this value), so nothing changes until the owner sets that variable.
+HARD_CAP_USD = Decimal("8.00")
+HARD_EFFECTIVE_CAP_USD = Decimal("7.60")  # never plan to reach the cap: 95% of the hard cap
 HARD_CAP_MICROS = usd_to_micros(HARD_CAP_USD)
 HARD_EFFECTIVE_CAP_MICROS = usd_to_micros(HARD_EFFECTIVE_CAP_USD)
 
-_DEFAULT_SCOPE_CAPS_USD = {"session": "0.50", "research": "0.30", "eval": "1.50", "test": "0.30"}
+_DEFAULT_SCOPE_CAPS_USD = {"session": "1.00", "research": "0.30", "eval": "1.50", "test": "0.30"}
 DEFAULT_SCOPE_KINDS: frozenset[str] = frozenset(_DEFAULT_SCOPE_CAPS_USD)
 
 log = get_logger("mde.llm_gateway.budget")
@@ -88,7 +91,7 @@ class BudgetConfig:
 
     @property
     def effective_cap_micros(self) -> int:
-        """95% of the cap by default (USD 5.70 of 6.00), rounded down; never above USD 5.70."""
+        """95% of the cap by default (USD 5.70 of 6.00, 7.60 of 8.00), rounded down; never above USD 7.60."""
         fraction = int(
             (Decimal(self.cap_micros) * self.effective_fraction).to_integral_value(ROUND_FLOOR)
         )

@@ -1,0 +1,27 @@
+id: SB-QP-17
+title: A document uploaded after the questions began adds facts with their source and no question is repeated
+tags: [planner, documents]
+engines: [planner]
+steps:
+  - say: "I run a tiffin service and want an app for it"
+    expect:
+      batch: {mode: initial, total_min: 4, total_max: 4}
+  - answer_texts: ["Office workers who want lunch on time, ordering the evening before"]
+  - upload:
+      name: prd.txt
+      text: |
+        Product requirements: Dabbawala Connect
+        We run a tiffin delivery service in Pune with 40 riders. Office workers in Baner and Hinjewadi order a monthly meal plan.
+        Roles: customer, rider, kitchen manager and admin.
+        Features: choose a weekly menu, pay by UPI, track the rider live, pause the plan during holidays.
+    expect:
+      facts:
+        active_contains: ["Baner and Hinjewadi", "pause the plan during holidays"]
+        unverified_max: 0
+      calls:
+        counts: {cmp.plan_questions: 1, cmp.read_chunk: 1}
+      qa: {shown_max: 3}
+      notice_code: picked_up
+final:
+  facts: {ids_gapless: true}
+  qa: {no_repeats: true}

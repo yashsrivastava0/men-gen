@@ -28,9 +28,9 @@ result = await client.run(spec, spec.input_model(...), ctx)    # CallResult[O]
 | --- | --- |
 | `gateway` | `Gateway` pipeline, `GatewayConfig` |
 | `client`, `http_client`, `wire` | `InProcessGatewayClient`, `HttpGatewayClient`, shared wire models and error mapping |
-| `factory` | `create_gateway` (provider by `LLM_MODE`, live gating, ledger choice) |
+| `factory` | `create_gateway` (provider by `LLM_MODE`; in live mode one provider per vendor the routes need, `vendors_in_use`, live gating, ledger choice) |
 | `budget`, `ledger`, `pricing`, `budget_cli` | `BudgetGuard`, file-locked ledger, `pricing.yaml`, `budget.yaml`, `python -m mde_llm_gateway.budget_cli` |
-| `providers/*` | `ScriptedProvider`, `MockProvider`, `ReplayProvider`, `RecordingProvider`, `OpenAIResponsesProvider`, cassette I/O |
+| `providers/*` | `ScriptedProvider`, `MockProvider`, `ReplayProvider`, `RecordingProvider`, `OpenAIResponsesProvider`, `AnthropicMessagesProvider`, `RoutingProvider`, cassette I/O |
 | `strict_schema` | `to_strict_schema`, `check_strict` |
 | `render`, `untrusted` | jinja rendering, `wrap_untrusted`, `UNTRUSTED_NOTICE` |
 | `retry`, `circuit`, `limits` | backoff policy, circuit breaker, concurrency and RPM limits |
@@ -51,7 +51,7 @@ just budget               # live spend by scope from the ledger
 
 ## Settings it reads
 
-`LLM_MODE`, `ALLOW_LIVE_LLM`, `MDE_FORBID_LIVE`, `OPENAI_API_KEY`, `OPENAI_MODEL`, `MODEL_ROUTES`, `LLM_BUDGET_USD`, `LLM_BUDGET_LEDGER`, `LOG_PROMPTS`, `GATEWAY_SERVICE_TOKEN`, `CASSETTE_DIR` (`Settings.cassette_dir`, default `tests/cassettes` in the main repository, anchored like the ledger) and `MDE_RECORD_CASSETTES=1` (`Settings.record_cassettes`: record cassettes in live mode). The factory reads the two cassette switches from `Settings` (D-034), not from the environment; the `cassette_dir` and `record_cassettes` arguments of `create_gateway` override them.
+`LLM_MODE`, `MDE_FORBID_LIVE`, `OPENAI_API_KEY`, `ANTHROPIC_API_KEY`, `OPENAI_MODEL`, `MODEL_ROUTES` (JSON, `route=model,...` or one model id; see "Model vendors" in the architecture page), `LLM_BUDGET_USD`, `LLM_BUDGET_LEDGER`, `LOG_PROMPTS`, `GATEWAY_SERVICE_TOKEN`, `CASSETTE_DIR` (`Settings.cassette_dir`, default `tests/cassettes` in the main repository, anchored like the ledger) and `MDE_RECORD_CASSETTES=1` (`Settings.record_cassettes`: record cassettes in live mode). The factory reads the two cassette switches from `Settings` (D-034), not from the environment; the `cassette_dir` and `record_cassettes` arguments of `create_gateway` override them.
 
 `GatewayConfig` knobs worth knowing: `breaker_failures` / `breaker_open_seconds` (circuit breakers are keyed by route and tool class: `breaker(route, tool_kinds)`), `concurrency` / `rpm` (per route), and `max_escalated_output_tokens` (ceiling of the one retry of a response that ran out of output tokens; see "Reasoning tokens and the output cap" in the architecture page).
 

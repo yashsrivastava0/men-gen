@@ -183,7 +183,7 @@ Rules: engines never import each other directly (`flow` wires them through proto
 - **`.claude/rules/*.md`** with `paths:` front matter for cross-cutting constraints: prompt/call-spec files (bump `version`, add mock handler and fixtures, never inline prompts in engines), migrations (append-only, never edit an applied migration), tests (offline only unless `live` marker), content files (schema-validated, no code).
 - **`.claude/skills/<name>/SKILL.md`** for procedures: `add-llm-call`, `add-question-card`, `add-domain-pack`, `run-live-eval` (budget checks first), `write-adr`.
 - **`.claude/agents/*.md`** for the subagents in section 10.3.
-- **`.claude/settings.json`:** allow `uv`, `just`, `git`, `pytest`, `ruff`, `pyright`, `docker compose`, `alembic`; **deny** reading `.env*` and shell commands that print it; optional hooks: format Python files after edits, and block commands that set `LLM_MODE=live` unless `ALLOW_LIVE_LLM=1` is already set.
+- **`.claude/settings.json`:** allow `uv`, `just`, `git`, `pytest`, `ruff`, `pyright`, `docker compose`, `alembic`; **deny** reading `.env*` and shell commands that print it; optional hook: format Python files after edits.
 - **Docs hygiene:** every behavior change updates `docs/`. `docs/README.md` indexes everything. ADR template in `docs/adr/TEMPLATE.md`.
 
 ---
@@ -196,8 +196,7 @@ Rules: engines never import each other directly (`flow` wires them through proto
 | --- | --- | --- |
 | `OPENAI_API_KEY` | none | From `.env`. Required only for live mode. Never logged. |
 | `OPENAI_MODEL` | `gpt-6-luna` | Default for all routes. |
-| `LLM_MODE` | `mock` | `mock`, `replay` or `live`. Live also needs `ALLOW_LIVE_LLM=1`. |
-| `ALLOW_LIVE_LLM` | unset | Second key for live calls. |
+| `LLM_MODE` | `mock` | `mock`, `replay` or `live`. |
 | `LLM_BUDGET_USD` | `6.00` | Hard cap for the whole job (section 7.9). |
 | `LLM_BUDGET_LEDGER` | `data/.budget/ledger.jsonl` | Append-only, file-locked. |
 | `MODEL_ROUTES` | all → `gpt-6-luna` | Per route `fast`, `standard`, `deep`. |
@@ -304,7 +303,7 @@ This is a safety system. Treat bugs here as severe.
 - **Ledger:** `data/.budget/ledger.jsonl`, append-only, guarded by an OS file lock (`fcntl.flock`) so parallel processes and subagents share one truth; each line holds timestamp, scope, call id, model, tokens (input, cached, output, reasoning), tool calls, cost, mode. Totals are re-derived from the file on start. Also mirror to the `llm_call` table when the DB is available.
 - **Scoped caps** inside the global one: per session USD 0.50, per research run USD 0.30, per eval run as configured. Loops (repair, retries) are all metered.
 - **Tripwires:** 50% logs a warning; 80% allows only "must-run" live tests; 95% refuses everything.
-- **Live gating:** live calls need `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1`. A pytest autouse fixture forces mock mode and fails any live attempt outside tests marked `live`. **Only the lead (or one designated "live-runner" subagent) runs live tests, one batch at a time.** All other subagents work in mock or replay mode.
+- **Live gating:** live calls need `LLM_MODE=live`. A pytest autouse fixture forces mock mode and fails any live attempt outside tests marked `live`. **Only the lead (or one designated "live-runner" subagent) runs live tests, one batch at a time.** All other subagents work in mock or replay mode.
 - After every live batch, run `just budget` and write the new total into `PROGRESS.md`.
 - Also recommend (in the report) that the user sets a USD 6 spend limit in the OpenAI dashboard as an external backstop.
 
@@ -532,7 +531,7 @@ Sections: what was built and what was deliberately not; how to run it (five comm
 
 1. Never read, print, log, commit or copy `.env` contents or any API key.
 2. Only `mde_llm_gateway` imports `openai`. No agent frameworks, ever.
-3. No live LLM call without `LLM_MODE=live` **and** `ALLOW_LIVE_LLM=1`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 6.00.
+3. No live LLM call without `LLM_MODE=live`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 6.00.
 4. Every LLM call goes through the gateway with a versioned call spec, a mock handler and a deterministic fallback.
 5. Web, upload and search content is untrusted data: no tools in calls that read it.
 6. No state change outside the flow controller; no `spec_ready` without Gate 2 approval of the current hash; approved versions are immutable.

@@ -29,7 +29,7 @@ def test_text_report(
     out = capsys.readouterr().out
     assert "USD 1.2000" in out
     assert "live calls      : 3" in out
-    assert "session:ses_1" in out and "cap USD 0.5000" in out
+    assert "session:ses_1" in out and "cap USD 1.0000" in out
     assert "tripwire        : ok" in out
 
 

@@ -1,0 +1,39 @@
+# Job: local. Spec decision: mock data and formats. Formats and ID patterns with validation patterns and
+# examples; local terms and units; realistic names, price ranges and edge cases. Trivia (a currency symbol,
+# a common date format) is NOT searched: it never changes a decision.
+job: local
+spec_need: "Mock data and formats"
+lane: mock
+also_lanes: [design, screens]
+recency: false
+intent: [formats, examples, validation, requirements]
+kinds: [local_format, data_hint]
+extract_focus: >
+  For each unusual format or ID give its kind, the pattern (a readable pattern such as AA9999-9999), an example
+  and the validation rule. For sample data give the kind (name_style, price_range, unit, edge_case,
+  sample_record), a range or at least several realistic examples with local names, prices in local currency and
+  edge cases. Copy numbers and patterns exactly.
+targets:
+  - id: formats
+    label: "Formats: {topic}"
+    foreach: format_topic
+    max: 4
+    question: "What is the format, validation pattern and an example of {topic} in {place}?"
+    decision_unlocked: "The validation rules and sample values for this format"
+    needs: [current, number, entity]
+    priority: 58
+    anchor: topic
+    scope: country
+    slots:
+      - {key: formats, type: count, kind: local_format, distinct_by: norm_key, min: 1, required: true}
+  - id: samples
+    label: "Realistic {entity} data"
+    foreach: entity
+    max: 3
+    question: "What do realistic {entity} records look like for {category_apps} in {place}: typical names, price ranges, units and edge cases?"
+    decision_unlocked: "The mock data for this entity"
+    needs: [entity, current]
+    priority: 48
+    anchor: entity
+    slots:
+      - {key: samples, type: distinct_values, kind: data_hint, attr: examples, min: 10, required: false}

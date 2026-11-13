@@ -28,3 +28,6 @@ evals/reports/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Research app runtime data (file store, spend record, cassettes, logs)
+/agents/research/.runtime/

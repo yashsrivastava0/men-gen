@@ -1,0 +1,55 @@
+# Batch E: planner quality (build prompt 02, section 6). Five unlike ideas, each in a fresh session, run only to
+# the FIRST question batch (greeting, idea message, playback, first batch). Nothing is answered.
+#
+# The five idea texts are the ones used for the "before" evidence (docs/compass/evidence/before-first-questions.json,
+# agents/compass/evals/before_first_questions.py), so the old and new first questions can be put side by side.
+# One idea differs on purpose: the "before" text says "short games and stories", the live batch says "short stories and
+# quizzes", so the five ideas stay comparable with the first live sessions. (The safety screen once declined it; an app
+# that merely CONTAINS games is no longer declined, so the original wording can be used in a later batch.)
+id: E
+title: Planner quality (first question batches for five unlike ideas)
+allowance_usd: "0.50"
+thresholds:
+  # Where a value is None the check reads InterviewPolicy in config.py (project_term_share_min,
+  # cross_idea_overlap_max). The first-batch latency is reported, never judged (the target is about 10 s).
+  first_batch_latency_target_ms: 10000
+sessions:
+  - id: tiffin_pune
+    kind: first_batch
+    label: Tiffin delivery service in Pune
+    idea: >-
+      I want an app for my tiffin delivery service in Pune. Office workers order a daily home-cooked
+      lunch and my riders deliver it before noon.
+    expected_calls: &first_batch_calls
+      cmp.understand_turn: 1
+      cmp.situate: 1
+      cmp.plan_questions: 2   # the plan and, when questions are rejected, one repair
+      cmp.audit_questions: 2
+  - id: clinic_appointments
+    kind: first_batch
+    label: Clinic appointment booking in Indore
+    idea: >-
+      An appointment booking app for my family clinic in Indore: patients pick a doctor and a time slot,
+      and the receptionist manages the day's schedule.
+    expected_calls: *first_batch_calls
+  - id: pharmacy_inventory_b2b
+    kind: first_batch
+    label: B2B pharmacy inventory tool
+    idea: >-
+      A B2B inventory tool for pharmacies: shop owners track stock and expiry dates, and reorder from
+      their wholesalers when medicines run low.
+    expected_calls: *first_batch_calls
+  - id: kids_language_learning
+    kind: first_batch
+    label: Language learning for children
+    idea: >-
+      A language-learning app for children aged 5 to 10 with short stories and quizzes; parents see their
+      child's progress.
+    expected_calls: *first_batch_calls
+  - id: senior_ride_sharing
+    kind: first_batch
+    label: Ride sharing for senior citizens
+    idea: >-
+      A ride-sharing app for senior citizens: simple booking, trusted drivers, and a family member can
+      follow the trip.
+    expected_calls: *first_batch_calls

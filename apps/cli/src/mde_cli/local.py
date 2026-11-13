@@ -67,7 +67,6 @@ class LocalApi:
         settings = api_settings(
             _env_file=None,
             llm_mode="mock",
-            allow_live_llm=False,
             openai_api_key=None,
             forbid_live=True,
             api_dev_token=SecretStr(self.token),

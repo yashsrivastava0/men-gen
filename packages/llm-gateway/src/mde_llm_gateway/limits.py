@@ -12,8 +12,12 @@ from contextlib import asynccontextmanager
 
 from mde_core.clock import Clock
 
-DEFAULT_CONCURRENCY: Mapping[str, int] = {"fast": 8, "standard": 4, "deep": 2}
-DEFAULT_RPM: Mapping[str, int] = {"fast": 120, "standard": 60, "deep": 30}
+DEFAULT_CONCURRENCY: Mapping[str, int] = {"fast": 8, "standard": 8, "deep": 2}
+DEFAULT_RPM: Mapping[str, int] = {"fast": 120, "standard": 120, "deep": 30}
+
+
+_EPSILON = 1e-9
+_MIN_WAIT = 1e-6
 
 
 class TokenBucket:
@@ -39,12 +43,14 @@ class TokenBucket:
         waited = 0.0
         async with self._lock:
             self._refill()
-            while self._tokens < 1.0:
-                wait = (1.0 - self._tokens) / self.rate
+            # The tolerance matters under a fake clock: float residue such as 0.9999999999999999 tokens would give a
+            # wait too small to move the clock, and the loop would never end.
+            while self._tokens < 1.0 - _EPSILON:
+                wait = max((1.0 - self._tokens) / self.rate, _MIN_WAIT)
                 await self._clock.sleep(wait)
                 waited += wait
                 self._refill()
-            self._tokens -= 1.0
+            self._tokens = max(0.0, self._tokens - 1.0)
         return waited
 
 

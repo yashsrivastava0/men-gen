@@ -1,0 +1,99 @@
+# NEGATIVE corpus: the same generic questions for every idea, like the old engine (docs/compass/evidence/
+# before-first-questions.json). The diversity checks must flag all five batches: low project-term share, high
+# cross-idea overlap, every wording shared verbatim.
+ideas:
+  tiffin_pune:
+    idea: "I want an app for my tiffin delivery service in Pune. Office workers order a daily home-cooked lunch and my riders deliver it before noon."
+    batch: &generic
+      questions:
+        - group_id: G1
+          group_title: Your app
+          intent: learn how the app earns money
+          serves:
+          - idea.business_model
+          type: text
+          text: How will the app earn money?
+          why_we_ask: It decides which payment and plan screens are needed.
+          answer_spec: How money flows.
+          unlocks:
+          - 'Research: pricing'
+          examples:
+          - A small fee on each sale
+        - group_id: G1
+          group_title: Your app
+          intent: learn who the users are
+          serves:
+          - audience.segments
+          type: text
+          text: Who are your users?
+          why_we_ask: It sets how simple the screens and words should be.
+          answer_spec: The users.
+          unlocks:
+          - 'Blueprint: roles'
+          examples:
+          - Everyone
+        - group_id: G1
+          group_title: Your app
+          intent: learn what the app should do
+          serves:
+          - idea.summary
+          type: text
+          text: What would you like your app to do?
+          why_we_ask: Everything else we plan starts from this.
+          answer_spec: What it does.
+          unlocks:
+          - 'Research: kind of app'
+          examples:
+          - Sell things
+        - group_id: G2
+          group_title: Your plan
+          intent: learn which features must be in the first version
+          serves:
+          - scope.priority
+          type: text
+          text: Which features must be in the first version?
+          why_we_ask: It keeps the first release small.
+          answer_spec: The must-have features.
+          unlocks:
+          - 'Blueprint: scope'
+          examples:
+          - Login
+        - group_id: G2
+          group_title: Your plan
+          intent: learn who will use it and in what role
+          serves:
+          - roles.list
+          type: text
+          text: Who will use it, and in what role?
+          why_we_ask: Each role needs its own screens.
+          answer_spec: The roles.
+          unlocks:
+          - 'Blueprint: roles'
+          examples:
+          - Admin
+        - group_id: G2
+          group_title: Your plan
+          intent: learn how the app should feel
+          serves:
+          - look.tone_words
+          type: text
+          text: How should the app feel?
+          why_we_ask: The feel is part of the design.
+          answer_spec: Words for the feel.
+          unlocks:
+          - 'Design: tone'
+          examples:
+          - Simple
+  clinic_appointments:
+    idea: "An appointment booking app for my family clinic in Indore: patients pick a doctor and a time slot, and the receptionist manages the day's schedule."
+    batch: *generic
+  pharmacy_inventory_b2b:
+    idea: "A B2B inventory tool for pharmacies: shop owners track stock and expiry dates, and reorder from their wholesalers when medicines run low."
+    batch: *generic
+  kids_language_learning:
+    idea: "A language-learning app for children aged 5 to 10 with short games and stories; parents see their child's progress."
+    batch: *generic
+  senior_ride_sharing:
+    idea: "A ride-sharing app for senior citizens: simple booking, trusted drivers, and a family member can follow the trip."
+    batch: *generic
+

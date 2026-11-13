@@ -1,0 +1,2211 @@
+{
+ "export": {
+  "format": "compass-full-output",
+  "format_version": 1,
+  "exported_at": "2026-11-10T06:31:26.022421+00:00",
+  "session_id": "ses_01M721YFDA4GA58STDAGY7MHDW",
+  "brief_version": 10,
+  "brief_hash": "e08741d7c34577f9855b8bcdbc393661a9169904ea8cd18e87860d8d8f3ea743",
+  "approved_baseline": null
+ },
+ "brief": {
+  "version": 10,
+  "meta": {
+   "session_id": "ses_01M721YFDA4GA58STDAGY7MHDW",
+   "program_id": "",
+   "mode": "guided",
+   "situation_profile": {
+    "input_richness": "rich",
+    "clarity": "knows_features",
+    "expertise": "product",
+    "size_stakes": "startup",
+    "reference_driven": true,
+    "collaboration": "several",
+    "language": "en",
+    "input_mode": "text",
+    "urgency": "thorough",
+    "formality": "casual"
+   },
+   "plan": {
+    "depth": "standard",
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 7,
+    "minimum_viable": false,
+    "interview_budget": "standard"
+   },
+   "hypothesis": {
+    "label": "hypothesis",
+    "category": "Food ordering and delivery",
+    "subcategory": "Possibly an app for browsing menus and ordering dishes from restaurants in Delhi",
+    "business_model_candidates": [
+     "Revenue from food orders at the owned restaurants",
+     "A delivery fee charged to customers",
+     "Customers pay restaurants for food orders",
+     "Restaurants pay a fee for orders",
+     "Customers pay a delivery fee"
+    ],
+    "likely_families": [
+     "catalog_commerce",
+     "delivery_logistics",
+     "payments_wallet",
+     "workflows",
+     "dashboards_admin"
+    ],
+    "likely_roles": [
+     "customer",
+     "restaurant staff",
+     "delivery agent",
+     "owner or admin",
+     "People ordering food",
+     "Restaurants and their staff",
+     "Delivery agents",
+     "Customers",
+     "Restaurant staff",
+     "Restaurant managers",
+     "Platform administrators"
+    ],
+    "likely_features": [
+     {
+      "family": "catalog_commerce",
+      "name": "Browse the catalog",
+      "intent": "Let customers browse restaurant menus and dishes",
+      "custom": false
+     },
+     {
+      "family": "catalog_commerce",
+      "name": "Item details",
+      "intent": "Show details for Chinese, Indian, and South Indian dishes",
+      "custom": false
+     },
+     {
+      "family": "catalog_commerce",
+      "name": "Cart",
+      "intent": "Let customers collect dishes for an order",
+      "custom": false
+     },
+     {
+      "family": "catalog_commerce",
+      "name": "Checkout",
+      "intent": "Let customers place a food order",
+      "custom": false
+     },
+     {
+      "family": "payments_wallet",
+      "name": "Pay online",
+      "intent": "Allow customers to pay for orders in the app",
+      "custom": false
+     },
+     {
+      "family": "delivery_logistics",
+      "name": "Assign a rider",
+      "intent": "Assign an in-house delivery agent to an order",
+      "custom": false
+     },
+     {
+      "family": "delivery_logistics",
+      "name": "Track on a map",
+      "intent": "Let customers track an order during delivery",
+      "custom": false
+     },
+     {
+      "family": "delivery_logistics",
+      "name": "Delivery status updates",
+      "intent": "Show order progress from pickup through delivery",
+      "custom": false
+     },
+     {
+      "family": "workflows",
+      "name": "Status tracking",
+      "intent": "Track whether restaurant staff have accepted and prepared an order",
+      "custom": false
+     },
+     {
+      "family": "workflows",
+      "name": "Accept and prepare incoming orders",
+      "intent": "Give restaurant staff a way to accept orders and mark them as being prepared",
+      "custom": true
+     },
+     {
+      "family": "dashboards_admin",
+      "name": "Summary dashboard",
+      "intent": "Give the owner or admin an overview of orders across restaurant locations",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Browse restaurant menus",
+      "intent": "Help people find dishes to order",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Place and manage orders",
+      "intent": "Send orders to restaurants and show their progress",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Deliver orders",
+      "intent": "Get prepared food to the person who ordered it",
+      "custom": false
+     },
+     {
+      "family": "",
+      "name": "Arrange delivery or pickup",
+      "intent": "Get orders from restaurants to customers or ready for collection",
+      "custom": false
+     }
+    ],
+    "hard_parts": [
+     "Real-time delivery-agent location and order-status tracking",
+     "Online payment processing",
+     "Coordinating order preparation and delivery-agent dispatch across multiple restaurant locations",
+     "Clarifying whether orders come from one restaurant or many",
+     "Working out who accepts orders and handles delivery",
+     "Understanding who pays and what the app earns from"
+    ],
+    "glossary_candidates": [
+     {
+      "term": "food ordering and delivery app",
+      "synonyms": [
+       "food delivery app",
+       "online food ordering app"
+      ]
+     },
+     {
+      "term": "restaurants",
+      "synonyms": [
+       "restaurant locations",
+       "food outlets"
+      ]
+     },
+     {
+      "term": "delivery agents",
+      "synonyms": [
+       "delivery staff",
+       "delivery riders"
+      ]
+     },
+     {
+      "term": "menus",
+      "synonyms": [
+       "food menus",
+       "dish lists"
+      ]
+     },
+     {
+      "term": "dishes",
+      "synonyms": [
+       "menu items",
+       "food items"
+      ]
+     }
+    ],
+    "confidence": 0.91
+   },
+   "locales": [
+    "en",
+    "hi"
+   ],
+   "schema_version": 1,
+   "depth_profile": "standard",
+   "degraded": true,
+   "probes": {
+    "design": true,
+    "research": true,
+    "blueprint": false
+   },
+   "probe_rounds": 2,
+   "approvals": {},
+   "interview": {
+    "budget": "standard",
+    "ui_mode": "answer_all",
+    "ui_mode_set": false,
+    "questions_asked": 14,
+    "followups": 2,
+    "answered": 14,
+    "skipped": 0,
+    "assumed": 0,
+    "batches": 7,
+    "facts_active": 54,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "coverage": 1,
+    "fallback_count": 0,
+    "question_ids": [
+     "Q-002",
+     "Q-003",
+     "Q-004",
+     "Q-026",
+     "Q-027",
+     "Q-050",
+     "Q-028",
+     "Q-053",
+     "Q-054",
+     "Q-055",
+     "Q-056",
+     "Q-057",
+     "Q-059",
+     "Q-061"
+    ],
+    "stop_reason": "budget_reached",
+    "target": 12,
+    "hard_cap": 15,
+    "tier_set": true,
+    "closing": "answered",
+    "followup_candidates": [],
+    "reopened": 0
+   },
+   "compile_digests": {
+    "text": "502ad89326adc670d5074448",
+    "typical": "6156c21769742b09d8dd4a96",
+    "fill:idea:0": "9d5b35ea1ccfbb8cf25d3be3",
+    "fill:people_and_scope:0": "4380e2362ab078d054bbdcc9",
+    "fill:experience_and_systems:0": "dd4eba03ee8f8a4cc04e8905"
+   }
+  },
+  "idea": {
+   "summary": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "A food ordering and delivery app for my restaurants in Delhi"
+   },
+   "category": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": "food ordering and delivery app"
+   },
+   "subcategory": {
+    "tier": "Locked",
+    "confidence": 0.98,
+    "status": "volunteered",
+    "value": "Customers order dishes from my restaurants, and my own delivery agents deliver them"
+   },
+   "business_model": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "value": "Customer delivery or service fees"
+   }
+  },
+  "context": {
+   "geo": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": {
+     "city": "Delhi"
+    }
+   },
+   "scale_launch": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "pilot_small"
+   }
+  },
+  "audience": {
+   "segments": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": [
+     "Customers",
+     "restaurant staff",
+     "delivery agents"
+    ]
+   }
+  },
+  "apps": [
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "APP-001",
+    "name": "One app for everybody",
+    "purpose": "",
+    "surface": "mobile",
+    "audience": "",
+    "roles": []
+   }
+  ],
+  "roles": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "ROL-003",
+    "name_in_user_words": "Delivery agents",
+    "goal": "Deliver orders",
+    "rough_permissions": [
+     "Deliver orders within 5 km"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "ROL-004",
+    "name_in_user_words": "Customers",
+    "goal": "Browse menus, order, pay and track the order",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "ROL-005",
+    "name_in_user_words": "Restaurant staff",
+    "goal": "Accept and prepare orders",
+    "rough_permissions": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 1,
+    "status": "volunteered",
+    "id": "ROL-006",
+    "name_in_user_words": "Restaurant managers",
+    "goal": "Manage menus and prices",
+    "rough_permissions": []
+   }
+  ],
+  "scope": [
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FTR-007",
+    "name": "Browse menus and order",
+    "intent": "",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FTR-008",
+    "name": "Pay for orders",
+    "intent": "",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FTR-009",
+    "name": "Track orders",
+    "intent": "",
+    "apps": [],
+    "family": null,
+    "scope_status": "in",
+    "priority": "must",
+    "source": "",
+    "size": {
+     "screens": 0,
+     "entities": 0,
+     "integrations": 0
+    },
+    "capability_tier": "A",
+    "custom": false
+   }
+  ],
+  "references": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "label": "Zomato",
+    "borrow": [],
+    "avoid": []
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "label": "Swiggy",
+    "borrow": [],
+    "avoid": []
+   }
+  ],
+  "experience": {
+   "devices": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "phones"
+   },
+   "locales": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "value": [
+     "en",
+     "hi"
+    ]
+   },
+   "tone_words": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": [
+     "calm_simple"
+    ]
+   },
+   "density_mode": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "balanced"
+   }
+  },
+  "access": {
+   "auth_methods": {
+    "tier": "Locked",
+    "confidence": 0.98,
+    "status": "confirmed",
+    "value": [
+     "phone_otp",
+     "email_password"
+    ]
+   },
+   "account_model": {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "value": "individual"
+   },
+   "onboarding_approvals": {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "value": "open_join"
+   }
+  },
+  "integrations": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "name": "payments",
+    "preference": "real_later",
+    "notes": ""
+   }
+  ],
+  "data": {},
+  "constraints": {
+   "scope_priority": {
+    "tier": "Locked",
+    "confidence": 0.85,
+    "status": "volunteered",
+    "value": "must"
+   }
+  },
+  "glossary": [],
+  "domain_facts": [
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-001",
+    "type": "context",
+    "statement": "I own a lot of restaurants in Delhi.",
+    "topics": [
+     "business,location"
+    ],
+    "entities": [
+     "Delhi"
+    ],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "I own a lot of restaurants in Delhi",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-002",
+    "type": "goal",
+    "statement": "I want my own food ordering and delivery app.",
+    "topics": [
+     "app,ordering,delivery"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "I want my own food ordering and delivery app",
+    "kind": "context",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-003",
+    "type": "constraint",
+    "statement": "The app is only for Delhi and only for my restaurants.",
+    "topics": [
+     "location,business"
+    ],
+    "entities": [
+     "Delhi"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "frontend"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "only for Delhi and only for my restaurants",
+    "kind": "constraint",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-005",
+    "type": "context",
+    "statement": "We serve Chinese dishes.",
+    "topics": [
+     "food"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "Chinese",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-006",
+    "type": "context",
+    "statement": "We serve Indian dishes.",
+    "topics": [
+     "food"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "Indian",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-007",
+    "type": "context",
+    "statement": "We serve South Indian dishes.",
+    "topics": [
+     "food"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "South Indian dishes",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-008",
+    "type": "role",
+    "statement": "Customers browse menus, order, pay and track the order.",
+    "topics": [
+     "customers,ordering"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "Customers browse menus, order, pay and track the order",
+    "kind": "flow",
+    "refs": [
+     "FTR-007",
+     "FTR-008",
+     "FTR-009"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-009",
+    "type": "role",
+    "statement": "My own delivery agents pick up from the restaurant and deliver.",
+    "topics": [
+     "delivery"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "my own delivery agents pick up from the restaurant and deliver",
+    "kind": "flow",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-010",
+    "type": "role",
+    "statement": "Restaurant staff accept and prepare orders.",
+    "topics": [
+     "staff,orders"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "restaurant staff accept and prepare orders",
+    "kind": "flow",
+    "refs": [
+     "ROL-005"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.98,
+    "status": "volunteered",
+    "id": "FCT-011",
+    "type": "requirement",
+    "statement": "Kind of app, in detail: Customers order dishes from my restaurants, and my own delivery agents deliver them",
+    "topics": [
+     "idea"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "ui-bb35dc5643adcdec",
+    "quote": "Customers browse menus, order, pay and track the order; my own delivery agents pick up from the restaurant and deliver",
+    "kind": "flow",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "FCT-012",
+    "type": "preference",
+    "statement": "Clarify what kind of food-ordering service this is: A group of our restaurants",
+    "topics": [
+     "domain:restaurant_ordering_model"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-002",
+    "quote": "",
+    "kind": "preference"
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "FCT-013",
+    "type": "preference",
+    "statement": "Find out who needs a separate place to use the service and what each person does.: Customer ordering app, Restaurant staff order screen, Delivery agent screen, Admin management screen",
+    "topics": [
+     "general"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-003",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "APP-001",
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "FCT-014",
+    "type": "preference",
+    "statement": "Clarify how an order gets from a restaurant to the customer, including a key delivery responsibility.: Our delivery agents deliver",
+    "topics": [
+     "domain:order_fulfilment"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-004",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Default",
+    "confidence": 0.4,
+    "status": "assumed",
+    "id": "FCT-015",
+    "type": "preference",
+    "statement": "Clarify who is responsible for getting restaurant orders to customers; an important operational detail for food delivery.: Your delivery agents deliver",
+    "topics": [
+     "domain:delivery_responsibility"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-026",
+    "quote": "",
+    "kind": "context",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "confirmed",
+    "id": "FCT-016",
+    "type": "rule",
+    "statement": "Customer delivery or service fees",
+    "topics": [
+     "pricing"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "source": "Q-027",
+    "quote": "Customer delivery or service fees",
+    "kind": "rule",
+    "refs": [
+     "ROL-004"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-017",
+    "type": "context",
+    "statement": "Delhi only at launch.",
+    "topics": [
+     "location,launch"
+    ],
+    "entities": [
+     "Delhi"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "source": "Q-050",
+    "quote": "Delhi only at launch",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-018",
+    "type": "number",
+    "statement": "About 40 of our own restaurants.",
+    "topics": [
+     "restaurants,scale"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-050",
+    "quote": "about 40 of our own restaurants",
+    "kind": "number"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-019",
+    "type": "context",
+    "statement": "The restaurants serve Chinese, North Indian and South Indian.",
+    "topics": [
+     "food,restaurants"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens"
+    ],
+    "source": "Q-050",
+    "quote": "Chinese, North Indian, South Indian",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-020",
+    "type": "requirement",
+    "statement": "Customers order for delivery.",
+    "topics": [
+     "ordering,delivery"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-050",
+    "quote": "Customers order for delivery",
+    "kind": "flow",
+    "refs": [
+     "FTR-007"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-021",
+    "type": "requirement",
+    "statement": "Customers can pay by UPI, cards or cash on delivery.",
+    "topics": [
+     "payments"
+    ],
+    "entities": [
+     "UPI"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "frontend"
+    ],
+    "source": "Q-050",
+    "quote": "pay by UPI, cards or cash on delivery",
+    "kind": "flow",
+    "refs": [
+     "FTR-008"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-022",
+    "type": "rule",
+    "statement": "Our own delivery agents deliver within 5 km.",
+    "topics": [
+     "delivery"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-050",
+    "quote": "Our own delivery agents deliver within 5 km",
+    "kind": "rule",
+    "refs": [
+     "ROL-003"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-023",
+    "type": "role",
+    "statement": "Restaurant managers manage menus and prices.",
+    "topics": [
+     "staff,menus,pricing"
+    ],
+    "entities": [],
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "source": "Q-050",
+    "quote": "Restaurant managers manage menus and prices",
+    "kind": "flow",
+    "refs": [
+     "ROL-006"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-024",
+    "type": "requirement",
+    "statement": "The app supports English and Hindi.",
+    "topics": [
+     "languages"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend"
+    ],
+    "source": "Q-050",
+    "quote": "English and Hindi",
+    "kind": "constraint",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-025",
+    "type": "context",
+    "statement": "Launch in 3 months.",
+    "topics": [
+     "launch,timing"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify",
+     "change_control",
+     "qa"
+    ],
+    "source": "Q-050",
+    "quote": "Launch in 3 months",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.95,
+    "status": "confirmed",
+    "id": "FCT-026",
+    "type": "preference",
+    "statement": "Which parts of ordering from your restaurants must be ready in the first release?: Browse menus and order / Pay for orders / Track orders",
+    "topics": [
+     "scope,scope"
+    ],
+    "entities": [],
+    "consumers": [
+     "all"
+    ],
+    "source": "Q-028",
+    "quote": "Browse menus and order / Pay for orders / Track orders",
+    "kind": "preference",
+    "refs": [
+     "FTR-007",
+     "FTR-008",
+     "FTR-009"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-027",
+    "type": "constraint",
+    "statement": "Delhi only at launch.",
+    "topics": [
+     "location,launch"
+    ],
+    "entities": [
+     "Delhi"
+    ],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "verify"
+    ],
+    "source": "Q-053",
+    "quote": "Delhi only at launch",
+    "kind": "constraint",
+    "refs": [
+     "APP-001"
+    ]
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-028",
+    "type": "number",
+    "statement": "About 40 of our own restaurants.",
+    "topics": [
+     "restaurants,scale"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "verify"
+    ],
+    "source": "Q-053",
+    "quote": "about 40 of our own restaurants",
+    "kind": "number"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-029",
+    "type": "context",
+    "statement": "The restaurants serve Chinese food.",
+    "topics": [
+     "food"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-053",
+    "quote": "Chinese",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-030",
+    "type": "context",
+    "statement": "The restaurants serve North Indian food.",
+    "topics": [
+     "food"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-053",
+    "quote": "North Indian",
+    "kind": "context"
+   },
+   {
+    "tier": "Locked",
+    "confidence": 0.99,
+    "status": "volunteered",
+    "id": "FCT-031",
+    "type": "context",
+    "statement": "The restaurants serve South Indian food.",
+    "topics": [
+     "food"
+    ],
+    "entities": [],
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "source": "Q-053",
+    "quote": "South Indian",
+    "kind": "context"
+   }
+  ],
+  "assumptions": [],
+  "open_questions": [],
+  "research_requests": [
+   {
+    "id": "RR-001",
+    "topic": "Food delivery market and customer needs in Delhi",
+    "question": "What customer problems do food ordering and delivery apps in Delhi solve, and what needs remain underserved for customers ordering from a restaurant group’s own restaurants?",
+    "decision_unlocked": "Which customer problem and value proposition the app should focus on",
+    "consumer": "research",
+    "entity": "food ordering and delivery apps",
+    "geography": "Delhi, India",
+    "source_languages": [
+     "en",
+     "hi"
+    ],
+    "terms": [
+     "food ordering and delivery app",
+     "customers",
+     "about 40 of our own restaurants",
+     "only for Delhi and only for my restaurants",
+     "Delhi only at launch"
+    ],
+    "references": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "prefer_sources": [
+     "customer research",
+     "market studies",
+     "app reviews"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "What Delhi customers need from food delivery apps",
+    "user_added": false
+   },
+   {
+    "id": "RR-002",
+    "topic": "Features of food ordering apps",
+    "question": "Which features do food ordering and delivery apps in Delhi offer customers, restaurant staff and delivery agents, especially for browsing menus and ordering, paying for orders, and tracking orders?",
+    "decision_unlocked": "Which features and workflows to include for each audience",
+    "consumer": "research",
+    "entity": "food ordering and delivery apps",
+    "geography": "Delhi, India",
+    "source_languages": [
+     "en",
+     "hi"
+    ],
+    "terms": [
+     "food ordering and delivery app",
+     "Customers",
+     "restaurant staff",
+     "delivery agents",
+     "Browse menus and order",
+     "Pay for orders",
+     "Track orders",
+     "own delivery agents"
+    ],
+    "references": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "prefer_sources": [
+     "app store listings",
+     "official websites",
+     "product help pages"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "What similar apps offer in Delhi",
+    "user_added": false
+   },
+   {
+    "id": "RR-003",
+    "topic": "Local food delivery players and differentiation",
+    "question": "Which food ordering and delivery apps serve customers in Delhi, and how do their offerings differ from an app limited to about 40 of its own restaurants with its own delivery agents delivering within 5 km?",
+    "decision_unlocked": "How to position and differentiate the app in Delhi",
+    "consumer": "research",
+    "entity": "food ordering and delivery apps",
+    "geography": "Delhi, India",
+    "source_languages": [
+     "en",
+     "hi"
+    ],
+    "terms": [
+     "food ordering and delivery app",
+     "about 40 of our own restaurants",
+     "our own delivery agents deliver within 5 km",
+     "only for Delhi and only for my restaurants",
+     "What makes it different"
+    ],
+    "references": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "prefer_sources": [
+     "official websites",
+     "app store listings",
+     "company profiles"
+    ],
+    "avoid": [],
+    "depth": "deep",
+    "priority": "high",
+    "shown_to_user_as": "How this app could stand out in Delhi",
+    "user_added": false
+   },
+   {
+    "id": "RR-004",
+    "topic": "Payments and customer fees",
+    "question": "How do food ordering and delivery apps in Delhi typically let customers pay, and how are customer delivery or service fees presented and calculated?",
+    "decision_unlocked": "Which payment methods and fee disclosures to support",
+    "consumer": "research",
+    "entity": "food ordering and delivery apps",
+    "geography": "Delhi, India",
+    "source_languages": [
+     "en",
+     "hi"
+    ],
+    "terms": [
+     "Pay for orders",
+     "Customer delivery or service fees",
+     "food ordering",
+     "delivery fees",
+     "service fees"
+    ],
+    "references": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "prefer_sources": [
+     "official payment and fee help pages",
+     "app checkout flows",
+     "terms and conditions"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "How payments and fees work in Delhi",
+    "user_added": false
+   },
+   {
+    "id": "RR-005",
+    "topic": "Account creation and sign-in practices",
+    "question": "How do food ordering apps in Delhi handle account creation and sign-in for customers, restaurant staff and delivery agents, and what roles or access patterns are used when accounts are admin-created and each person has an account?",
+    "decision_unlocked": "How to structure accounts, sign-in and role-based access",
+    "consumer": "research",
+    "entity": "food ordering and delivery apps",
+    "geography": "Delhi, India",
+    "source_languages": [
+     "en",
+     "hi"
+    ],
+    "terms": [
+     "Admin-created accounts",
+     "Each person has an account",
+     "Customers",
+     "restaurant staff",
+     "delivery agents",
+     "sign in",
+     "accounts"
+    ],
+    "references": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "prefer_sources": [
+     "official help pages",
+     "product documentation",
+     "privacy policies"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "high",
+    "shown_to_user_as": "How accounts and sign-in usually work",
+    "user_added": false
+   },
+   {
+    "id": "RR-006",
+    "topic": "Order messaging and status communication",
+    "question": "How do food ordering and delivery apps in Delhi communicate order updates among customers, restaurant staff and delivery agents, including tracking and any in-app or other messaging?",
+    "decision_unlocked": "Which order updates and communication channels to include",
+    "consumer": "research",
+    "entity": "food ordering and delivery apps",
+    "geography": "Delhi, India",
+    "source_languages": [
+     "en",
+     "hi"
+    ],
+    "terms": [
+     "Track orders",
+     "Customers",
+     "restaurant staff",
+     "delivery agents",
+     "order updates",
+     "messaging"
+    ],
+    "references": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "prefer_sources": [
+     "official help pages",
+     "app store listings",
+     "product documentation"
+    ],
+    "avoid": [],
+    "depth": "standard",
+    "priority": "medium",
+    "shown_to_user_as": "How order updates and messaging work",
+    "user_added": false
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [
+    "Zomato",
+    "Swiggy"
+   ],
+   "synonyms": [
+    "food ordering app",
+    "food delivery app",
+    "meal ordering",
+    "restaurant delivery",
+    "order tracking",
+    "delivery fee",
+    "service fee"
+   ],
+   "local_competitors": [
+    "Zomato",
+    "Swiggy"
+   ],
+   "languages": [
+    "en",
+    "hi"
+   ]
+  },
+  "assets": [],
+  "sources": [],
+  "declined": [],
+  "readiness": {},
+  "ids": {},
+  "summary": "A food ordering and delivery app for my restaurants in Delhi, for customers, restaurant staff, delivery agents and restaurant managers.",
+  "pitch": "This app is for customers, restaurant staff, delivery agents and restaurant managers in Delhi. Customers can browse menus, order and pay for dishes from my restaurants, then track deliveries by my own agents within 5 km. It earns through customer delivery or service fees.",
+  "_hash": "e08741d7c34577f9855b8bcdbc393661a9169904ea8cd18e87860d8d8f3ea743"
+ },
+ "consumer_views": {
+  "research": {
+   "idea": {
+    "summary": "A food ordering and delivery app for my restaurants in Delhi, for customers, restaurant staff, delivery agents and restaurant managers.",
+    "pitch": "This app is for customers, restaurant staff, delivery agents and restaurant managers in Delhi. Customers can browse menus, order and pay for dishes from my restaurants, then track deliveries by my own agents within 5 km. It earns through customer delivery or service fees.",
+    "category": "food ordering and delivery app",
+    "subcategory": "Customers order dishes from my restaurants, and my own delivery agents deliver them",
+    "business_model": "Customer delivery or service fees"
+   },
+   "geography": {
+    "city": "Delhi"
+   },
+   "languages": {
+    "locales": [
+     "en",
+     "hi"
+    ],
+    "meta_locales": [
+     "en",
+     "hi"
+    ],
+    "search_languages": [
+     "en",
+     "hi"
+    ]
+   },
+   "audience": {
+    "segments": [
+     "Customers",
+     "restaurant staff",
+     "delivery agents"
+    ]
+   },
+   "references": [
+    {
+     "label": "Zomato",
+     "borrow": [],
+     "avoid": []
+    },
+    {
+     "label": "Swiggy",
+     "borrow": [],
+     "avoid": []
+    }
+   ],
+   "feature_intents": [
+    {
+     "name": "Browse menus and order",
+     "intent": "",
+     "family": null
+    },
+    {
+     "name": "Pay for orders",
+     "intent": "",
+     "family": null
+    },
+    {
+     "name": "Track orders",
+     "intent": "",
+     "family": null
+    }
+   ],
+   "glossary": [],
+   "research_requests": [
+    {
+     "id": "RR-001",
+     "topic": "Food delivery market and customer needs in Delhi",
+     "question": "What customer problems do food ordering and delivery apps in Delhi solve, and what needs remain underserved for customers ordering from a restaurant group’s own restaurants?",
+     "decision_unlocked": "Which customer problem and value proposition the app should focus on",
+     "consumer": "research",
+     "entity": "food ordering and delivery apps",
+     "geography": "Delhi, India",
+     "source_languages": [
+      "en",
+      "hi"
+     ],
+     "terms": [
+      "food ordering and delivery app",
+      "customers",
+      "about 40 of our own restaurants",
+      "only for Delhi and only for my restaurants",
+      "Delhi only at launch"
+     ],
+     "references": [
+      "Zomato",
+      "Swiggy"
+     ],
+     "prefer_sources": [
+      "customer research",
+      "market studies",
+      "app reviews"
+     ],
+     "avoid": [],
+     "depth": "deep",
+     "priority": "high",
+     "shown_to_user_as": "What Delhi customers need from food delivery apps",
+     "user_added": false
+    },
+    {
+     "id": "RR-002",
+     "topic": "Features of food ordering apps",
+     "question": "Which features do food ordering and delivery apps in Delhi offer customers, restaurant staff and delivery agents, especially for browsing menus and ordering, paying for orders, and tracking orders?",
+     "decision_unlocked": "Which features and workflows to include for each audience",
+     "consumer": "research",
+     "entity": "food ordering and delivery apps",
+     "geography": "Delhi, India",
+     "source_languages": [
+      "en",
+      "hi"
+     ],
+     "terms": [
+      "food ordering and delivery app",
+      "Customers",
+      "restaurant staff",
+      "delivery agents",
+      "Browse menus and order",
+      "Pay for orders",
+      "Track orders",
+      "own delivery agents"
+     ],
+     "references": [
+      "Zomato",
+      "Swiggy"
+     ],
+     "prefer_sources": [
+      "app store listings",
+      "official websites",
+      "product help pages"
+     ],
+     "avoid": [],
+     "depth": "standard",
+     "priority": "high",
+     "shown_to_user_as": "What similar apps offer in Delhi",
+     "user_added": false
+    },
+    {
+     "id": "RR-003",
+     "topic": "Local food delivery players and differentiation",
+     "question": "Which food ordering and delivery apps serve customers in Delhi, and how do their offerings differ from an app limited to about 40 of its own restaurants with its own delivery agents delivering within 5 km?",
+     "decision_unlocked": "How to position and differentiate the app in Delhi",
+     "consumer": "research",
+     "entity": "food ordering and delivery apps",
+     "geography": "Delhi, India",
+     "source_languages": [
+      "en",
+      "hi"
+     ],
+     "terms": [
+      "food ordering and delivery app",
+      "about 40 of our own restaurants",
+      "our own delivery agents deliver within 5 km",
+      "only for Delhi and only for my restaurants",
+      "What makes it different"
+     ],
+     "references": [
+      "Zomato",
+      "Swiggy"
+     ],
+     "prefer_sources": [
+      "official websites",
+      "app store listings",
+      "company profiles"
+     ],
+     "avoid": [],
+     "depth": "deep",
+     "priority": "high",
+     "shown_to_user_as": "How this app could stand out in Delhi",
+     "user_added": false
+    },
+    {
+     "id": "RR-004",
+     "topic": "Payments and customer fees",
+     "question": "How do food ordering and delivery apps in Delhi typically let customers pay, and how are customer delivery or service fees presented and calculated?",
+     "decision_unlocked": "Which payment methods and fee disclosures to support",
+     "consumer": "research",
+     "entity": "food ordering and delivery apps",
+     "geography": "Delhi, India",
+     "source_languages": [
+      "en",
+      "hi"
+     ],
+     "terms": [
+      "Pay for orders",
+      "Customer delivery or service fees",
+      "food ordering",
+      "delivery fees",
+      "service fees"
+     ],
+     "references": [
+      "Zomato",
+      "Swiggy"
+     ],
+     "prefer_sources": [
+      "official payment and fee help pages",
+      "app checkout flows",
+      "terms and conditions"
+     ],
+     "avoid": [],
+     "depth": "standard",
+     "priority": "high",
+     "shown_to_user_as": "How payments and fees work in Delhi",
+     "user_added": false
+    },
+    {
+     "id": "RR-005",
+     "topic": "Account creation and sign-in practices",
+     "question": "How do food ordering apps in Delhi handle account creation and sign-in for customers, restaurant staff and delivery agents, and what roles or access patterns are used when accounts are admin-created and each person has an account?",
+     "decision_unlocked": "How to structure accounts, sign-in and role-based access",
+     "consumer": "research",
+     "entity": "food ordering and delivery apps",
+     "geography": "Delhi, India",
+     "source_languages": [
+      "en",
+      "hi"
+     ],
+     "terms": [
+      "Admin-created accounts",
+      "Each person has an account",
+      "Customers",
+      "restaurant staff",
+      "delivery agents",
+      "sign in",
+      "accounts"
+     ],
+     "references": [
+      "Zomato",
+      "Swiggy"
+     ],
+     "prefer_sources": [
+      "official help pages",
+      "product documentation",
+      "privacy policies"
+     ],
+     "avoid": [],
+     "depth": "standard",
+     "priority": "high",
+     "shown_to_user_as": "How accounts and sign-in usually work",
+     "user_added": false
+    },
+    {
+     "id": "RR-006",
+     "topic": "Order messaging and status communication",
+     "question": "How do food ordering and delivery apps in Delhi communicate order updates among customers, restaurant staff and delivery agents, including tracking and any in-app or other messaging?",
+     "decision_unlocked": "Which order updates and communication channels to include",
+     "consumer": "research",
+     "entity": "food ordering and delivery apps",
+     "geography": "Delhi, India",
+     "source_languages": [
+      "en",
+      "hi"
+     ],
+     "terms": [
+      "Track orders",
+      "Customers",
+      "restaurant staff",
+      "delivery agents",
+      "order updates",
+      "messaging"
+     ],
+     "references": [
+      "Zomato",
+      "Swiggy"
+     ],
+     "prefer_sources": [
+      "official help pages",
+      "app store listings",
+      "product documentation"
+     ],
+     "avoid": [],
+     "depth": "standard",
+     "priority": "medium",
+     "shown_to_user_as": "How order updates and messaging work",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "synonyms": [
+     "food ordering app",
+     "food delivery app",
+     "meal ordering",
+     "restaurant delivery",
+     "order tracking",
+     "delivery fee",
+     "service fee"
+    ],
+    "local_competitors": [
+     "Zomato",
+     "Swiggy"
+    ],
+    "languages": [
+     "en",
+     "hi"
+    ]
+   },
+   "declined": [],
+   "domain_facts": [
+    {
+     "id": "FCT-001",
+     "type": "context",
+     "statement": "I own a lot of restaurants in Delhi.",
+     "topics": [
+      "business,location"
+     ],
+     "entities": [
+      "Delhi"
+     ],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-002",
+     "type": "goal",
+     "statement": "I want my own food ordering and delivery app.",
+     "topics": [
+      "app,ordering,delivery"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-003",
+     "type": "constraint",
+     "statement": "The app is only for Delhi and only for my restaurants.",
+     "topics": [
+      "location,business"
+     ],
+     "entities": [
+      "Delhi"
+     ],
+     "kind": "constraint",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-005",
+     "type": "context",
+     "statement": "We serve Chinese dishes.",
+     "topics": [
+      "food"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-006",
+     "type": "context",
+     "statement": "We serve Indian dishes.",
+     "topics": [
+      "food"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-007",
+     "type": "context",
+     "statement": "We serve South Indian dishes.",
+     "topics": [
+      "food"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-011",
+     "type": "requirement",
+     "statement": "Kind of app, in detail: Customers order dishes from my restaurants, and my own delivery agents deliver them",
+     "topics": [
+      "idea"
+     ],
+     "entities": [],
+     "kind": "flow",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-012",
+     "type": "preference",
+     "statement": "Clarify what kind of food-ordering service this is: A group of our restaurants",
+     "topics": [
+      "domain:restaurant_ordering_model"
+     ],
+     "entities": [],
+     "kind": "preference"
+    },
+    {
+     "id": "FCT-013",
+     "type": "preference",
+     "statement": "Find out who needs a separate place to use the service and what each person does.: Customer ordering app, Restaurant staff order screen, Delivery agent screen, Admin management screen",
+     "topics": [
+      "general"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "APP-001",
+      "ROL-003"
+     ]
+    },
+    {
+     "id": "FCT-014",
+     "type": "preference",
+     "statement": "Clarify how an order gets from a restaurant to the customer, including a key delivery responsibility.: Our delivery agents deliver",
+     "topics": [
+      "domain:order_fulfilment"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "ROL-003"
+     ]
+    },
+    {
+     "id": "FCT-015",
+     "type": "preference",
+     "statement": "Clarify who is responsible for getting restaurant orders to customers; an important operational detail for food delivery.: Your delivery agents deliver",
+     "topics": [
+      "domain:delivery_responsibility"
+     ],
+     "entities": [],
+     "kind": "context",
+     "refs": [
+      "ROL-003"
+     ]
+    },
+    {
+     "id": "FCT-016",
+     "type": "rule",
+     "statement": "Customer delivery or service fees",
+     "topics": [
+      "pricing"
+     ],
+     "entities": [],
+     "kind": "rule",
+     "refs": [
+      "ROL-004"
+     ]
+    },
+    {
+     "id": "FCT-017",
+     "type": "context",
+     "statement": "Delhi only at launch.",
+     "topics": [
+      "location,launch"
+     ],
+     "entities": [
+      "Delhi"
+     ],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-018",
+     "type": "number",
+     "statement": "About 40 of our own restaurants.",
+     "topics": [
+      "restaurants,scale"
+     ],
+     "entities": [],
+     "kind": "number"
+    },
+    {
+     "id": "FCT-019",
+     "type": "context",
+     "statement": "The restaurants serve Chinese, North Indian and South Indian.",
+     "topics": [
+      "food,restaurants"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-021",
+     "type": "requirement",
+     "statement": "Customers can pay by UPI, cards or cash on delivery.",
+     "topics": [
+      "payments"
+     ],
+     "entities": [
+      "UPI"
+     ],
+     "kind": "flow",
+     "refs": [
+      "FTR-008"
+     ]
+    },
+    {
+     "id": "FCT-024",
+     "type": "requirement",
+     "statement": "The app supports English and Hindi.",
+     "topics": [
+      "languages"
+     ],
+     "entities": [],
+     "kind": "constraint",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-025",
+     "type": "context",
+     "statement": "Launch in 3 months.",
+     "topics": [
+      "launch,timing"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-026",
+     "type": "preference",
+     "statement": "Which parts of ordering from your restaurants must be ready in the first release?: Browse menus and order / Pay for orders / Track orders",
+     "topics": [
+      "scope,scope"
+     ],
+     "entities": [],
+     "kind": "preference",
+     "refs": [
+      "FTR-007",
+      "FTR-008",
+      "FTR-009"
+     ]
+    },
+    {
+     "id": "FCT-027",
+     "type": "constraint",
+     "statement": "Delhi only at launch.",
+     "topics": [
+      "location,launch"
+     ],
+     "entities": [
+      "Delhi"
+     ],
+     "kind": "constraint",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-028",
+     "type": "number",
+     "statement": "About 40 of our own restaurants.",
+     "topics": [
+      "restaurants,scale"
+     ],
+     "entities": [],
+     "kind": "number"
+    },
+    {
+     "id": "FCT-029",
+     "type": "context",
+     "statement": "The restaurants serve Chinese food.",
+     "topics": [
+      "food"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-030",
+     "type": "context",
+     "statement": "The restaurants serve North Indian food.",
+     "topics": [
+      "food"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-031",
+     "type": "context",
+     "statement": "The restaurants serve South Indian food.",
+     "topics": [
+      "food"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-033",
+     "type": "requirement",
+     "statement": "Customers can pay by UPI.",
+     "topics": [
+      "payments"
+     ],
+     "entities": [
+      "UPI"
+     ],
+     "kind": "flow",
+     "refs": [
+      "FTR-008"
+     ]
+    },
+    {
+     "id": "FCT-034",
+     "type": "requirement",
+     "statement": "Customers can pay by cards.",
+     "topics": [
+      "payments"
+     ],
+     "entities": [],
+     "kind": "flow",
+     "refs": [
+      "FTR-008"
+     ]
+    },
+    {
+     "id": "FCT-035",
+     "type": "requirement",
+     "statement": "Customers can pay by cash on delivery.",
+     "topics": [
+      "payments,delivery"
+     ],
+     "entities": [],
+     "kind": "flow",
+     "refs": [
+      "FTR-008"
+     ]
+    },
+    {
+     "id": "FCT-039",
+     "type": "context",
+     "statement": "Launch in 3 months.",
+     "topics": [
+      "launch,timing"
+     ],
+     "entities": [],
+     "kind": "context"
+    },
+    {
+     "id": "FCT-044",
+     "type": "constraint",
+     "statement": "Delhi only at launch",
+     "topics": [
+      "location,launch"
+     ],
+     "entities": [
+      "Delhi"
+     ],
+     "kind": "constraint",
+     "refs": [
+      "APP-001"
+     ]
+    },
+    {
+     "id": "FCT-045",
+     "type": "number",
+     "statement": "About 40 of our own restaurants",
+     "topics": [
+      "restaurants,scale"
+     ],
+     "entities": [],
+     "kind": "number"
+    }
+   ]
+  }
+ },
+ "spend": {
+  "by_call": {
+   "cmp.probe_handoff": {
+    "calls": 9,
+    "latency_ms": 43827,
+    "tokens_in": 21390,
+    "tokens_out": 3723,
+    "cost_micros": 2728
+   },
+   "cmp.scan_ambiguity": {
+    "calls": 1,
+    "latency_ms": 20283,
+    "tokens_in": 8871,
+    "tokens_out": 1937,
+    "cost_micros": 1857
+   },
+   "cmp.seed_research": {
+    "calls": 1,
+    "latency_ms": 15205,
+    "tokens_in": 3716,
+    "tokens_out": 2016,
+    "cost_micros": 1264
+   },
+   "cmp.compile_text": {
+    "calls": 1,
+    "latency_ms": 9363,
+    "tokens_in": 4251,
+    "tokens_out": 999,
+    "cost_micros": 926
+   },
+   "cmp.compile_brief": {
+    "calls": 4,
+    "latency_ms": 45516,
+    "tokens_in": 22907,
+    "tokens_out": 5342,
+    "cost_micros": 4082
+   },
+   "cmp.understand_turn": {
+    "calls": 11,
+    "latency_ms": 81514,
+    "tokens_in": 99068,
+    "tokens_out": 7971,
+    "cost_micros": 11174
+   },
+   "cmp.audit_questions": {
+    "calls": 16,
+    "latency_ms": 62861,
+    "tokens_in": 41759,
+    "tokens_out": 4857,
+    "cost_micros": 4439
+   },
+   "cmp.plan_questions": {
+    "calls": 16,
+    "latency_ms": 167143,
+    "tokens_in": 91707,
+    "tokens_out": 18147,
+    "cost_micros": 14651
+   },
+   "cmp.update_summary": {
+    "calls": 3,
+    "latency_ms": 30973,
+    "tokens_in": 10287,
+    "tokens_out": 4150,
+    "cost_micros": 3106
+   },
+   "cmp.situate": {
+    "calls": 1,
+    "latency_ms": 17925,
+    "tokens_in": 2348,
+    "tokens_out": 2132,
+    "cost_micros": 1202
+   }
+  }
+ }
+}

@@ -1,12 +1,14 @@
 # Compass HTTP API (`/v1/compass`)
 
-The HTTP contract of [Compass](../packages/compass.md): sessions, events, the Brief, Gate 1 and the event stream. Hand-written from `packages/compass/src/mde_compass/api/` (`routes.py`, `schemas.py`, `auth.py`, `errors.py`, `middleware.py`, `sse.py`) and checked against the app running in mock mode with the in-memory store. The generated [openapi.json](openapi.json) describes the Context API only; Compass serves its own at `GET /v1/compass/openapi.json` (the interactive docs are off). There is no chat UI in the API: a client sends **inbound events** and renders **outbound events**. A test UI ships with it at `/ui/` ([runbook](../runbooks/compass.md)).
+The HTTP contract of [Compass](../packages/compass.md): sessions, events, the Brief, Gate 1 and the event stream. Hand-written from `agents/compass/src/mde_compass/api/` (`routes.py`, `schemas.py`, `auth.py`, `errors.py`, `middleware.py`, `sse.py`) and the event and card models in `agents/compass/src/mde_compass/domain/` (`events.py`, `cards.py`, `interview.py`, `brief.py`), and checked against the app running in mock mode with the in-memory store. The generated [openapi.json](openapi.json) and the JSON Schemas in `schemas/` describe the Context API and `mde_contracts` only; Compass serves its own OpenAPI at `GET /v1/compass/openapi.json` (the interactive docs are off) and its JSON Schemas are not exported yet. There is no chat UI in the API: a client sends **inbound events** and renders **outbound events**. A test UI ships with it at `/ui/` ([runbook](../runbooks/compass.md)).
+
+Two question engines sit behind the same routes (`InterviewPolicy.engine`, [package page](../packages/compass.md#the-ai-planned-interview)): `legacy` (a rollback) asks one frame card at a time; `planner` (the default) asks project-specific questions in batches. Every shape below is the same for both; the parts that only the planner engine produces or reads are marked **planner**. The engine is chosen with `COMPASS_INTERVIEW_ENGINE=planner|legacy` ([runbook](../runbooks/compass.md#3-run-the-app)).
 
 Base URL in development: `http://127.0.0.1:8110`. Run: `just compass-dev` or `uv run python -m mde_compass --port 8110 [--memory]`.
 
 ## Authentication
 
-Every route except `/healthz`, `/readyz`, `/v1/compass/strings/{lang}`, the static UI and the OpenAPI document needs a bearer token. Any failure (missing, wrong, malformed) is the same `401 {"code":"unauthorized","message":"Authentication is required."}`.
+Every route except `/healthz`, `/readyz`, `/v1/compass/strings/{lang}`, `/v1/compass/size-bands`, the static UI and the OpenAPI document needs a bearer token. Any failure (missing, wrong, malformed) is the same `401 {"code":"unauthorized","message":"Authentication is required."}`.
 
 **Dev headers (the default; local use only).** The token is the shared dev token, compared in constant time; the caller states who it is:
 
@@ -30,7 +32,7 @@ Tenant isolation: a session id from another tenant behaves exactly like a missin
 * Request bodies are limited to 256 KB (`COMPASS_MAX_BODY_BYTES`); larger is `413 payload_too_large`. The `.../uploads` path is exempt from that limit and has its own: 15 MB per file, enforced while the bytes are read (`413 too_large`).
 * JSON replies of the Brief and query routes carry `Cache-Control: no-store`.
 * Money is a decimal string in USD (`"0.0000"`), never a float; timestamps are timezone-aware UTC ISO strings; session ids are `ses_<ulid>`.
-* Events are idempotent by `event_id` (1 to 64 characters of `A-Za-z0-9_.:-`, chosen by the client): a repeat is acknowledged with `duplicate: true` and ignored.
+* Events are idempotent by `event_id` (1 to 64 characters of `A-Za-z0-9_.:-`, chosen by the client): a repeat is acknowledged with `duplicate: true` and ignored. See [Idempotency and chained turns](#idempotency-and-chained-turns) for the internal events the engine adds itself.
 
 ## Endpoints
 
@@ -49,11 +51,18 @@ Tenant isolation: a session id from another tenant behaves exactly like a missin
 | `GET /v1/compass/sessions/{id}/brief/versions` | every saved version | `200 {"versions":[{version, hash, baseline, change_set_id, created_at}]}` |
 | `GET /v1/compass/sessions/{id}/brief/diff?from=A&to=B` | entries between two versions | `200 {from_version, to_version, sections_changed, entries[{path, before, after, kind}]}` |
 | `GET /v1/compass/sessions/{id}/history?after=&limit=&slot=&q=` | the transcript, both directions, paged | `200 {items, next_after_idx, highlighted_turn_ids}` |
+| `GET /v1/compass/sessions/{id}/qa` | every question put to the person, with the answer in plain words, its status and the facts it produced (the Questions-and-answers list; **planner**) | `200 {"items":[QaItem]}` |
 | `GET /v1/compass/sessions/{id}/provenance/{item_id}` | where an item's value came from | `200` |
-| `POST /v1/compass/sessions/{id}/gate` | a `gate_decision` event; answers with the verdict | `200 {accepted, state, version, brief_hash, baseline, blockers}` |
+| `POST /v1/compass/sessions/{id}/gate` | a `gate_decision` or `approve_all` event; answers with the verdict | `200 {accepted, state, version, brief_hash, baseline, blockers}` |
+| `POST /v1/compass/sessions/{id}/decide-preview` | preview AI answers for open cards in the batch without mutating session state | `200 {"session_id": str, "answers": [...]}` |
+| `GET /v1/compass/sessions/{id}/export` | the full output of the session for the next engine (the research agent): one JSON, read-only, sent as an attachment | `200` JSON (`export.format_version` 2): `export`, `session`, `brief` (with `_hash`), `consumer_views` (research, blueprint, design, verify), `structure` (only when the Brief holds one), `brief_versions`, `interview` (`qa`, `facts`, `summary`, `batches`), `sources`, `contributors`, `change_sets`, `spend` |
+| `GET /v1/compass/sessions/{id}/structure?lang=xx` | the Structure page ([ADR 0017](../adr/0017-brief-structure-sections-and-size-bands.md)): the app laid out for review, with the size band, counts, modules with their screens, journeys, data, the role by module matrix and the issues the checks left | `200` `StructureViewModel`: `language`, `session_id`, `enabled`, `drafted`, `band{id,label,source,screens[min,max],open_upper,review,research_depth}`, `counts{modules,screens,flows,entities}`, `verdict` (`fits`/`over`/`under`), `suggested_band`, `unreviewed`, `review_blocks`, `modules[]`, `flows[]`, `entities[]`, `matrix{roles,rows}`, `issues[]` |
+| `GET /v1/compass/sessions/{id}/structure/outline` | ids and names only (about 1-2K tokens for a 60-screen app): the first thing a downstream reader takes | `200 {counts, modules[{id,name,purpose,screens[{id,name}]}], entities[], flows[]}` |
+| `GET /v1/compass/sessions/{id}/structure/modules/{module_id}` | one module with what a call needs to build it, values only: its screens, the journeys that touch them, the data they use, who may do what, the features served and the detail facts routed to it | `200 {module, screens, flows, entities, roles, access, features, details}`; `404` for an unknown module |
 | `GET /v1/compass/sessions/{id}/handoff` | the consumer views of the approved version | `200 {version, brief_hash, views}` or `409` before approval |
 | `GET /v1/compass/sessions/{id}/calls?limit=` | the call log (dev) | `200 {"calls":[{call_id, spec_id, outcome, tokens_in, tokens_out, cost_usd, latency_ms}]}` |
 | `GET /v1/compass/budget` | spend against the Compass cap (dev only; 404 in token mode) | `200 {mode, cap_usd, hard_cap_usd, effective_stop_usd, per_session_cap_usd, spent_usd, remaining_usd, spent_micros, calls}` |
+| `GET /v1/compass/size-bands` | the app sizes the interview tiers map to: public static data from `catalog/size_bands.yaml`, cached 300 s, so a page never hardcodes a number | `200 {bands[{id,tier,screens[min,max],modules[min,max],open_upper,review,research{depth,searches}}], tier_to_band}` |
 | `GET /v1/compass/strings/{lang}` | UI chrome strings, `en` or `hi`, public, cached 300 s | `200 {language, strings}` |
 | `GET /` , `GET /ui/` | redirect to the test UI, the test UI | `307`, `200` |
 
@@ -75,21 +84,123 @@ Query limits: `version` and `from`/`to` at least 1; `history` `limit` 1 to 200 (
 | `card_answer` | `card_id`, `value` (an option id; a list of ids for `pick_many`; ordered ids for `priority`; a form object; text), `custom_text` |
 | `card_skip`, `card_you_decide` | `card_id` |
 | `card_back` | none |
+| `batch_answer` | **planner.** `batch_id`, `answers[]` (at most 12; each `card_id`, `action` `answer` / `skip` / `you_decide` / `none` ("none of these": answered with no content, a follow-up or a visible assumption follows), `value`, `custom_text`, `ai_suggested` (bool, default false; when true and submitted untouched, saved with `origin="assumption"` rather than user fact)), `decide_rest` (every question the form left blank is decided for the person, the interview ends and each decision is listed in "We assumed"): the answers of one batch form, read in one turn ("answer all at once"). Every question of `batch_id` is closed by it: one the form left out counts as skipped, one that is already answered is ignored (a repeated submit changes nothing). An unknown `card_id` is `404`. The legacy engine ignores it |
+| `answer_edit` | **planner.** `card_id`, `value`, `custom_text`: edit an earlier answer. A new answer version is stored, the facts of the old one are superseded (never deleted), the slots they fed are rebuilt and the questions still waiting are planned again. Not allowed once the Brief is approved: the reply carries an `edit_unavailable` notice. During review it reopens the review |
 | `upload_added` | `source_id`. Created by the uploads route, not by clients: a bare `upload_added` event with no bytes behind it is answered with an "upload not ready" notice |
 | `link_added` | `url` (at most 2048): the page is read by the SSRF-safe reader and ingested like a document; a refused or unreachable link is explained in an `assistant_message` |
-| `command` | `name`: `undo`, `back`, `pause`, `resume`, `start_over`, `finish_with_defaults`, `show_what_you_know` |
+| `command` | `name`: `undo`, `back`, `pause`, `resume`, `start_over`, `finish_with_defaults`, `show_what_you_know`, and for the **planner** engine `ask_more` ("Ask me more": drop the waiting questions, raise the budget to `thorough` and plan deeper questions on the least certain areas; a `nothing_more` notice if the planner has none), `mode_answer_all` / `mode_one_at_a_time` (show each batch as one form or one question at a time; the choice is kept), `budget_quick` / `budget_standard` / `budget_thorough` (interview depth: up to 5, 12 or 25 questions including follow-ups), and `prepare_questions` (internal, see below; clients do not send it) |
 | `brief_edit` | `item_id` (a path such as `idea.summary`, `access.account_model`, `scope.FTR-004.priority`), `value` |
 | `brief_feedback` | `target` (section key, row id or path), `reason` (`not_what_i_meant`, `too_much`, `something_missing`, `wrong_tone`, `dont_want_assumption`, `other`), `text` (at most 4000) |
 | `assumption_decision` | `id` (`ASM-###`), `decision` (`accept`/`change`), `value` |
 | `lookup_edit` | `action` (`add`/`remove`), `request_id` (`RR-###`) or `text` (at most 500) |
 | `contributor_switch` | `contributor_id` (required) |
 | `gate_decision` | `decision` (`approve`/`request_changes`), `version`, `brief_hash`, `section_hashes` |
+| `approve_all` | `version`, `brief_hash`: bulk-accepts all pending assumptions, and every part of the structure still proposed, via a single ChangeSet and automatically submits Gate 1 approval if no blockers remain |
+| `structure_action` | **structure** (ADR 0017). `action` (`accept` / `add` / `remove` / `regenerate` / `set_band`), `section` (`modules`, `screens`, `flows` or `entities`), `target` (the record id; empty for `regenerate` means every module that is not accepted or Locked), `text` (`regenerate`: the person's own request, at most 2000, treated as untrusted data), `band` (`set_band`: `small`, `medium` or `large`), `value` (`add`: the new record's fields, no id). One event is ONE change set, so undo restores everything it did: `accept` confirms the record (a module also its screens, its entities and the flows inside it) and never makes anything Locked; `remove` takes what depends on the record with it (a module: its screens, the flow steps that pointed at them, its entities that nothing else uses); `regenerate` redrafts only that module, keeping accepted and Locked records; `set_band` redrafts the structure from the same answers and records the person's choice of size outside the Brief hash. Renaming a record, changing a field or moving a screen to another module is a plain `brief_edit` (`item_id` `screens.SCR-004.name`, `screens.SCR-004.module`, ...) |
 
-**Outbound events** (the `payload` of a `StoredEvent`, `payload.type` repeats `type`): `assistant_message` (`text`, `language`, `chips`), `card` (`card`: `id`, `frame`, `slots`, `type`, `question`, `why_we_ask`, `options[]` with `id`, `label`, `basis`, `recommended`, `reason`, `sets`, `ticked`, plus `custom_input`, `you_decide`, `skip`, `progress{n, of_about}`, `language`, `must_confirm`, `fallback`), `playback` (`title`, `items[]`, `unclear[]`), `notice` (`code`, `text`, `chips`, `severity`), `progress` (`stage`, `n`, `of_about`, `note`), `brief_patch` (`change_set_id`, `from_version`, `to_version`, `summary`, `ops[]`, `voided_sections[]`, `undoable`), `brief_ready` (`version`, `brief_hash`, `section_hashes`, `approvable`, `blockers[]`), `brief_approved` (`version`, `brief_hash`, `baseline`), `lookup_preview` (`requests[]`), `probe_result` (`kind`, `passed`, `gaps[]`, `round`), `error` (`code`, `message`). Defined but never emitted today: `budget_warning`, `assistant_delta`.
+**Outbound events** (the `payload` of a `StoredEvent`, `payload.type` repeats `type`): `assistant_message` (`text`, `language`, `chips`), `card` (`card`: a [Card](#the-card), one question), `question_batch` (**planner**: `batch_id`, `mode`, `ui_mode`, `groups[]`, `total`, `answered`, `progress`; see [Planned batches](#planned-batches)), `playback` (`title`, `items[]` with `key`, `label`, `value`, `basis`, and `unclear[]`), `notice` (`code`, `text`, `chips`, `severity`, and for a notice the page can act on in one tap `command` + `command_label`, e.g. `size_suggestion` offers `budget_standard`), `progress` (`stage`, `n`, `of_about`, `note`), `brief_patch` (`change_set_id`, `from_version`, `to_version`, `summary`, `ops[]`, `voided_sections[]`, `undoable`), `brief_ready` (`version`, `brief_hash`, `section_hashes`, `approvable`, `blockers[]`), `brief_approved` (`version`, `brief_hash`, `baseline`), `lookup_preview` (`requests[]`), `probe_result` (`kind`, `passed`, `gaps[]`, `round`), `error` (`code`, `message`). Defined but never emitted today: `budget_warning`, `assistant_delta`.
 
-**`BriefViewModel`** (`/brief/view`): `language`, `session_id`, `header` (`title`, `idea_line`, `version`, `status` `draft`/`in_review`/`approved`, `status_label`, `readiness[]` chips for research, blueprint and design, `reviewed`, `of_total`, `degraded`), `sections[]` (14 ids; each with `title`, `rows[]` of `id`, `label`, `value{kind,text,items}`, `badges`, `tier`, `editable`, `history_available`, `needs_review`, `changed`, `group`, `status_chip`, `description`), `footer` (`primary_label`, `secondary_label`, `approvable`, `blockers[]`), `brief_hash`, `section_hashes`, `changed_since_approval`. Row `id`s are paths in the change grammar, so they can be sent straight back in `brief_edit`. Use `header.status` and the `brief_ready` event to decide whether to offer approval; `footer.approvable` is only meaningful in `in_review`.
+**`BriefViewModel`** (`/brief/view`): `language`, `session_id`, `header` (`title`, `idea_line`, `version`, `status` `draft`/`in_review`/`approved`, `status_label`, `readiness[]` chips for research, blueprint and design, `reviewed`, `of_total`, `degraded`), `sections[]` (15 ids, plus `structure` after `features` once the Brief records a size band: `idea`, `who`, `apps_roles`, `features`, `structure`, `look`, `access`, `integrations_data`, `limits`, `words`, `details`, `assumed`, `unknown`, `lookup`, `sources`, `cannot_build`; each with `title`, `rows[]` of `id`, `label`, `value{kind,text,items}`, `badges`, `tier`, `editable`, `history_available`, `needs_review`, `changed`, `group`, `status_chip`, `description`), `footer` (`primary_label`, `secondary_label`, `approvable`, `blockers[]`), `brief_hash`, `section_hashes`, `changed_since_approval`. Row `id`s are paths in the change grammar, so they can be sent straight back in `brief_edit`. Use `header.status` and the `brief_ready` event to decide whether to offer approval; `footer.approvable` is only meaningful in `in_review`.
 
-**`POST /gate`** body is a `gate_decision` event (it needs `type`, `event_id`, `decision`, `version`, `brief_hash`). The reply is `{accepted, state, version, brief_hash, baseline, blockers[]}`; `accepted` is true only when the session is `APPROVED`. Outside `BRIEF_REVIEW` the verdict is `accepted: false` with a `gate_blocked` notice in the stream. In an enterprise session the approval counts only from a contributor with the role `approver` (the session creates `approver` and `commenter` contributors): send `"contributor_id": "approver"` in the body; until then the reply lists `Waiting for approval from: approver`, and approving does not change the hash. Approving the same, unchanged approved Brief again is a no-op.
+**`POST /gate`** body is a `gate_decision` or `approve_all` event. When `approve_all` is sent (`type: "approve_all"`, `event_id`, `version`, `brief_hash`), Compass checks that the Brief hash matches (409 Conflict if stale), marks all pending assumptions as accepted in one change set (`source: "approve_all"`), and proceeds to evaluate Gate 1. The reply is `{accepted, state, version, brief_hash, baseline, blockers[]}`; `accepted` is true only when the session is `APPROVED`. Outside `BRIEF_REVIEW` the verdict is `accepted: false` with a `gate_blocked` notice in the stream. In an enterprise session the approval counts only from a contributor with the role `approver` (the session creates `approver` and `commenter` contributors): send `"contributor_id": "approver"` in the body; until then the reply lists `Waiting for approval from: approver`, and approving does not change the hash. Approving the same, unchanged approved Brief again is a no-op.
+
+**`GET /sessions/{id}/export`** returns everything a session produced as one JSON document (the page offers it as "Download full output" and "Copy full output" once the Brief is in review or approved): the Brief with its hash and section hashes, the four consumer views, every Brief version, every question with its answer (all versions), every fact with its verbatim quote, origin and status, the rolling summary, the planner batches, the documents read and their claims, contributors, the change history and what the calls cost. `export.reading_guide` says what each part is for. `export.format_version` is 2 since ADR 0017: the only change is the additive `structure` key (size band and its source, counts, an outline, one slice per module, the role by module matrix, navigation edges taken from the journeys, the issues left and the research guidance), present only when the Brief holds a structure; the research consumer view gains a values-only `guidance` block (category, size band, depth `light` / `standard` / `deep`, search budget, what to look up) and the other views gain the part of the structure they read.
+
+**`POST /sessions/{id}/decide-preview`** previews AI-generated answers for pending cards in the current batch without altering the session. The reply is `{"session_id": id, "answers": [{"card_id": str, "option_ids": [...], "value": ..., "custom_text": ..., "reasoning": str, "confidence": float}]}`. When submitted by the client via `batch_answer` with `ai_suggested: true`, answers that were untouched by the user are recorded as `Default` assumptions (`origin="assumption"`) in the ledger rather than user-confirmed facts.
+
+## Cards, batches and the Interview Memory
+
+### The card
+
+`card` events carry one `Card` (`domain/cards.py`). Fields every card has:
+
+| Field | Meaning |
+| --- | --- |
+| `id` | `Q-###`, unique in the session |
+| `frame` | the frame id (`welcome`, `change_variants` and the catalog frames) or `planned` for a question the planner wrote |
+| `slots` | catalog slot ids the answer fills |
+| `type` | `choose_one`, `pick_many`, `priority`, `confirm`, `look_signals`, `quick_form`, `upload_or_link`, `open_prompt` |
+| `question`, `why_we_ask` | the wording; a planner question is written in the person's language |
+| `options[]` | `id`, `label`, `basis` (`your_document`, `your_words`, `typical`, `suggestion`), `recommended`, `reason`, `sets` (slot values the option sets; empty for planner questions), `ticked`, `description` (a short line under the label; planner questions) |
+| `custom_input` | `enabled`, `placeholder`, `voice`: the type-your-own box |
+| `you_decide`, `skip` | `enabled`; `you_decide.assumes` is the option id it takes |
+| `progress` | `{n, of_about}`: "question n of about N" |
+| `language` | `en`, `hi`, `hi-Latn` |
+| `must_confirm` | risky slots: "You decide" and Skip are refused |
+| `fallback` | **true when code made the card instead of the model** (the catalog's fallback card). A fallback is a failure: show a badge; it must not appear in a live batch |
+
+Added for planned questions (**planner**; all optional or defaulted, so every older card still validates):
+
+| Field | Meaning |
+| --- | --- |
+| `batch_id`, `group_id` | the batch (`BAT-###`) and the themed group (`G1`, `G2`, ...) it belongs to |
+| `need_ids` | the needs it serves: a catalog slot id, or `domain:<topic>` for a project-specific detail |
+| `intent` | what the question wants to learn, in plain words |
+| `unlocks` | the downstream decisions it feeds (a Research query, Blueprint roles, Design tone ...): the text for a "Why am I being asked this?" popover next to `why_we_ask` |
+| `answer_spec`, `followup_hint` | what a good answer contains; what to ask if the answer is vague |
+| `examples` | placeholder hints for a free-text question |
+| `parent_card_id`, `depth` | a follow-up points at the question it refines; `depth` 0 is a base question, 1 or 2 a follow-up |
+| `origin` | `planner`, `followup`, `fallback` (a registry card made by code) or `frame` (the legacy engine) |
+| `rephrased` | how many times the question was re-worded after "I do not understand" or "I do not know" |
+
+A free-text planner question is an `open_prompt` with `examples` and no options; a question with options is a `choose_one` with exactly three, or a `pick_many`, `priority`, `confirm` or `quick_form`. A re-worded or simplified question is sent again as a `card` event with the same `id` and a higher `rephrased`.
+
+### Planned batches
+
+**Planner.** A `question_batch` event carries one planned batch:
+
+| Field | Meaning |
+| --- | --- |
+| `batch_id` | `BAT-###` |
+| `mode` | why it was planned: `initial` (the first batch), `replan` (after a batch, an answer edit, a pivot, a hand-off gap, and the closing question), `followup` (the follow-ups of one submit, as ONE form), `deepen` ("Ask me more"). `simplify` is in the vocabulary but never emitted as a batch |
+| `ui_mode` | `answer_all` (the default: render a form, submit once) or `one_at_a_time` (older clients; the `mode_*` commands switch it) |
+| `groups[]` | `id`, `title` (written by the model in the person's language), `cards[]` (full cards, in the order to ask them); 1 to 2 groups; a batch is 3 (Quick), 4 (Standard) or 5 (Thorough) questions |
+| `progress` | `tier` (`quick` / `standard` / `thorough`), `target` (7 / 12 / 25: say "question 4 of about 7"), `hard_cap` (10 / 15 / 30: never shown), `committed` (questions planned so far, waiting ones included), `closing` (this batch is the reserved last question). Absent on batches written before the tiers existed |
+| `total` | questions in the batch |
+| `answered` | 0 when emitted; it is not updated later (count the answers instead) |
+
+* **One at a time.** The engine emits the `question_batch`, then a `progress` and a `card` for the first question; each answer brings the next as a `card`. A client that ignores `question_batch` still works.
+* **Answer all (the default).** The engine emits the `question_batch` and a `card` for the first question only; the client renders the form from the batch and sends ONE `batch_answer` with every answer (`answer`, `skip`, `you_decide` or `none` per card). Nothing is planned or processed until then: a client that answers the form's cards one by one with `card_answer` plans nothing new until the batch is complete (follow-ups come with the last answer).
+* **Follow-ups are a form too.** The follow-ups of one submit arrive as one `question_batch` with `mode: "followup"`, their cards carry `origin: "followup"`, `parent_card_id` and `depth`.
+* **The closing question.** The last question of every interview is a `priority` card with `origin: "closing"` (and `progress.closing: true`): what matters most for the first version. Nothing is asked after it; if the person says enough, is tired or skips it, the first features they named are listed as an assumption instead.
+* **Tiers.** The person's tier sets the numbers (`budget_quick` / `budget_standard` / `budget_thorough`; Standard when none was chosen): target 7 / 12 / 25, hard cap 10 / 15 / 30. A question counts when it is planned, so a batch on screen already uses its places; follow-ups use only the slack above the target.
+* **Progress.** `progress` events carry `stage: "interview"`, `n` (questions asked so far plus one) and `of_about` (the tier's target).
+* **Domain hypothesis.** There is no separate event. The `playback` of the first turn shows what `cmp.situate` guessed (category, likely roles and features, with a `basis`). The planner's own hypothesis arrives with the first batch and is merged into `meta.hypothesis` of the Brief (`GET /brief`).
+* **Notices of the planner engine** (`notice.code`): `picked_up` (the values just read from an answer, as chips the person can correct), `assumed` (a vague or undecided answer became a visible assumption), `simplified_decided` (a question was re-worded as far as it goes, so "You decide" took over), `edit_unavailable` (an answer cannot be edited after approval), `nothing_more` (the planner has nothing to add to "Ask me more"), `pivot` (the idea changed direction; names the old and new category).
+* **Notices of the structure** (ADR 0017, `notice.code`): `size_suggestion` (the idea sounds bigger than the tier's app size; carries `command` and `command_label` to switch tier in one tap, never switched automatically), `structure_ready` (the draft is in the Brief: counts of areas, screens, journeys and data), `structure_over_band` (more screens than the band usually has; suggests the next band), `structure_floor` (some part came from the deterministic fallback because a call failed), `structure_band_set` (the person chose another band), `structure_nothing_to_do` / `structure_unavailable` (an action changed nothing or is not available), `structure_redrafted` (what a regeneration redrafted).
+
+### Questions and answers: `GET /sessions/{id}/qa`
+
+**Planner.** The data behind a Questions-and-answers list. `{"items": [...]}`, in the order the questions were asked, only the newest version of each question; questions that were dropped or not yet shown are left out. A session on the legacy engine returns `{"items": []}`. Each item:
+
+| Field | Meaning |
+| --- | --- |
+| `card_id`, `version` | the question and its answer version (an edit adds the next version) |
+| `status` | `open` (shown, no answer yet), `answered`, `skipped`, `you_decide` |
+| `batch_id`, `group_id`, `origin`, `depth`, `parent_card_id`, `type`, `fallback` | as on the card |
+| `question`, `why_we_ask`, `unlocks[]`, `need_ids[]`, `options[]` (`id`, `label`) | what was asked |
+| `answer` | the answer in plain words: the labels of the options picked, then the typed text |
+| `value`, `custom_text` | what the client sent (option ids, a form object or text) |
+| `facts[]` | the facts this answer produced: `id` (`FCT-###`), `statement`, `status` (`active`, `superseded`, `disputed`, `not_used`) |
+
+To edit an answer, send an `answer_edit` event with the `card_id`.
+
+### What the Brief payload gains
+
+* `GET /brief`: `domain_facts[]` (each fact: `id` `FCT-###`, `type`, `statement`, `topics`, `entities`, `consumers`, `source`, `quote`, plus the usual `tier`, `provenance[]`, `confidence`, `status`, `history[]`, and, when set, `kind` (`rule`, `number`, `acceptance`, `screen`, `flow`, `entity`, `compliance`, `nfr`, `integration_detail`, `constraint`, `example`, `preference`, `context`, `other`) and `refs[]` (ids of the apps, roles or features the detail is about)); the list is read-only (an edit of it is refused) and is left out of the hash while empty.
+* `GET /brief`, `meta.compile_digests`: bookkeeping (call key to the digest of the facts the Brief was last compiled from; popped from the hash, never content). `assumptions[]` also carries rows without a `slot_id` (ADR 0016): `basis` `typical` (a detail apps like this usually have), `correction` ("We used Y; you first said X"), `review` (a scan finding that does not add up), `document` (two parts of an uploaded document disagree) and `gap` (a handoff-probe gap that stayed open); each has `what_changes`, and an `impact` of `high` blocks Gate 1 until the person decides.
+* `GET /brief`, `meta.interview`: audit counts that never enter the hash or a consumer view: `budget` (`quick`, `standard`, `thorough`), `ui_mode`, `ui_mode_set`, `questions_asked`, `followups`, `answered`, `skipped`, `assumed`, `batches`, `facts_active`, `facts_not_used`, `facts_unreferenced`, `coverage` (0 to 1), `fallback_count`, `question_ids[]`, `stop_reason` (`fatigue`, `budget_reached`, `coverage_reached` or a sentence). **`fallback_count` must be 0 in a live batch**; it counts the planner, auditor, rephraser, summary and compile fallbacks (other calls' fallbacks are only in `GET .../calls`, as `outcome: "fallback"`).
+* `GET /brief`, `meta.plan.interview_budget` (`quick`, `standard`, `thorough` or null) and `meta.hypothesis`.
+* `GET /brief/view`: one more section, `details` ("Details we captured"), one read-only row per fact (row ids `domain_facts.FCT-###`, `editable: false`), grouped by topic.
+* `GET /handoff` and the consumer views: each view gains a `domain_facts` list (`id`, `type`, `statement`, `topics`, `entities`, plus `kind` and `refs` when the fact has them) with the facts that reach that view; never the quote, the provenance or any chat text. All ten catalog consumer tags reach a view (`catalog/fact_kinds.yaml`, `view_routes`): `research`, `blueprint`, `design` and `verify` reach their own view, `screens` reaches `design` and `blueprint`, `frontend` and `backend` reach `blueprint`, `qa` and `change_control` reach `verify`, `all` reaches every view; a fact with no tag gets the default consumers of its `kind`.
+* The `blueprint` view groups the facts that refer to a record: each app, role and feature gains `details` (`{kind: [{id, statement}]}`, only when it has some), and `unlinked_details` (same shape) holds the facts whose `refs` resolve to no app, role or feature (a fact is never dropped). Company (`org.*`) slots appear as `org` (`profile`, `approvers`, `design_system`, `api_catalog`) in the views the catalog gives each slot (consumers `all` reach every view). Drafted details and corrections that are not tied to a slot (assumptions with basis `typical`, `correction` or `review`, unless rejected) appear as `assumed_details` (`id`, `claim`, `basis`, `decision`): `typical` in `blueprint` and `verify`, `correction` and `review` in `verify`.
+
+### Idempotency and chained turns
+
+* Every inbound event has a client-chosen `event_id`; the first copy runs, every repeat is answered with `duplicate: true` and no events. The outbound events a turn produces carry the inbound `event_id` as their `turn_id`.
+* **Round 0 is two chained turns.** The first message of a session produces the `notice` and the `playback`; the engine then runs an **internal** turn, a `command` named `prepare_questions` with an id of the form `int_<24 hex>` derived from the first turn's id, which plans and shows the first batch. The internal event is recorded in the event log like any inbound event (`GET .../history` lists it, direction `in`, type `command`), and its outbound events carry that id as `turn_id`. Both turns run inside the one `POST .../events` request, so the reply carries the events of both; on the stream the playback is visible while the planner works. A retried request is a duplicate and plans nothing twice, and a planner run with identical inputs is found in the stored batches instead of being paid for again.
+* Clients must not send `prepare_questions`; sent after the first batch exists it does nothing.
+* A turn that fails ends with one `error` event, `code: "turn_failed"`, as before.
 
 ## Documents and links
 
@@ -129,7 +240,7 @@ data: {"idx":2,"direction":"out","type":"card","event_id":null,"turn_id":null,"s
 | --- | --- | --- |
 | 400 | any `MdeError` code | an engine error with no more specific mapping |
 | 401 | `unauthorized` | missing or invalid credentials |
-| 404 | `not_found` | unknown session, version, item or language; another tenant's id; `/budget` in token mode |
+| 404 | `not_found` | unknown session, version, item or language; another tenant's id; a card id that was never asked (in `card_answer`, `card_skip`, `card_you_decide` or `batch_answer`); `/budget` in token mode |
 | 405 | `method_not_allowed` | wrong method |
 | 409 | `conflict` | another turn is already running for the session; a stale Brief version |
 | 409 | `gate_error`, `hash_mismatch`, `invalid_transition` | the handoff before approval; an approval for a stale hash; a trigger the state does not allow |
@@ -155,7 +266,7 @@ SID=ses_01...
 # 2. watch the stream in another terminal (add -H "Last-Event-ID: 5" to resume)
 curl -N $B/sessions/$SID/stream "${H[@]}"
 
-# 3. say what you want: runs understand_turn, situate and write_card, answers with the events it produced
+# 3. say what you want (legacy engine: runs understand_turn, situate and write_card), answers with the events it produced
 curl -s -X POST $B/sessions/$SID/events "${H[@]}" -H 'Content-Type: application/json' \
   -d '{"type":"user_message","event_id":"e1","text":"I want a food delivery app for restaurants in Pune, in Hindi and English"}'
 #   {"accepted":true,"duplicate":false,"events":[notice, playback, progress, card]}
@@ -186,6 +297,8 @@ curl -s $B/sessions/$SID/handoff "${H[@]}"
 #   {"version":13,"brief_hash":"...","views":{"research":{...},"blueprint":{...},"design":{...},"verify":{...}}}
 ```
 
+With the planner engine (`COMPASS_INTERVIEW_ENGINE=planner`) step 3 returns the events of both round-0 turns: `[notice, playback, question_batch, progress, card]`. The `question_batch` lists the groups (in mock mode the titles and questions are labelled `[mock]`), the `card` is the first question, and the rest of the interview is: answer each `card` (`card_answer` with an option id or `custom_text`), watch for follow-ups (a `card` with `origin: "followup"`) and further batches, read `GET .../qa` for the list of questions and answers, and approve the way steps 5 to 8 show.
+
 (The ids, version 13 and the hash above are from one mock run; yours differ. Every value in `curl` is a placeholder; do not put real secrets in a command line or a document.) If you approve with a wrong version or hash, or while a blocker stands, the reply is `{"accepted": false, ..., "blockers": [...]}` and nothing changes. A later edit voids only the sections it touches and returns the session to `BRIEF_REVIEW`; `POST .../events` with `{"type":"command","event_id":"u1","name":"undo"}` reverts the latest change as a new version.
 
 ## Known gaps
@@ -193,5 +306,8 @@ curl -s $B/sessions/$SID/handoff "${H[@]}"
 * `GET /brief/view?lang=` is validated but the real service ignores it and uses the session locale.
 * `question_n` and `question_of_about` on `SessionSummary` are always 0.
 * `footer.approvable` in the view model is true outside `in_review`; trust `header.status` and the `brief_ready` event.
-* `budget_warning` and `assistant_delta` events exist in the vocabulary but are never emitted; the Compass spend counter is not reconciled with the gateway ledger (read the ledger with `just budget`).
+* `budget_warning` and `assistant_delta` events exist in the vocabulary but are never emitted. The Compass spend counter is per process; in live mode it starts from the gateway ledger's `cmp.*` total (so `GET /budget` after a restart already includes earlier batches), but spend by other processes during a run is not seen until the next start (read the ledger with `just budget`).
+* With `COMPASS_INTERVIEW_ENGINE=legacy` (the rollback) the **planner** events and routes stay unused (`batch_answer` is ignored, `GET /qa` is empty, `answer_edit` answers `edit_unavailable`).
+* `question_batch.answered` is always 0 (count the answers instead); `mode` `simplify` is never emitted as a batch. A decision for an open question without options uses the catalog default (a model-written answer for those is a later step).
+* `provenance` entries of a fact-backed value show `ref` = `FCT-###` and the copied `quote`; there is no route that returns one fact by id (the facts of an answer are in `GET /qa`).
 * Fixed since the first version of this page: `GET /budget` now answers 200 (the service attribute was renamed `budget_guard`), and the enterprise multi-approver gate completes (`meta.approvals` is excluded from the hash).

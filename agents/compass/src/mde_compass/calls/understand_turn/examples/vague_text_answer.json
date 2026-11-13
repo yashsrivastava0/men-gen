@@ -1,0 +1,192 @@
+{
+  "name": "vague_text_answer",
+  "input": {
+    "text": "mostly families",
+    "input_mode": "text",
+    "language": "en",
+    "pending_card": null,
+    "current_slots": [],
+    "slot_hints": [
+      {
+        "slot_id": "idea.summary",
+        "label": "Your idea in one line",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "idea.category",
+        "label": "Kind of app",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "idea.subcategory",
+        "label": "Kind of app, in detail",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "idea.business_model",
+        "label": "How it earns money",
+        "value_kind": "text",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "context.geo",
+        "label": "Country and city",
+        "value_kind": "geo",
+        "options": [],
+        "fields": [
+          "country",
+          "city",
+          "region"
+        ]
+      },
+      {
+        "slot_id": "audience.segments",
+        "label": "Who it is for",
+        "value_kind": "text_list",
+        "options": [],
+        "fields": []
+      },
+      {
+        "slot_id": "locales",
+        "label": "Languages",
+        "value_kind": "locales",
+        "options": [
+          "en",
+          "hi"
+        ],
+        "fields": [
+          "chat",
+          "app",
+          "right_to_left"
+        ]
+      },
+      {
+        "slot_id": "apps.list",
+        "label": "Apps needed",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "purpose",
+          "surface"
+        ]
+      },
+      {
+        "slot_id": "roles.list",
+        "label": "Roles",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "goal",
+          "permissions"
+        ]
+      },
+      {
+        "slot_id": "scope.features",
+        "label": "Features",
+        "value_kind": "object_list",
+        "options": [],
+        "fields": [
+          "name",
+          "intent",
+          "status",
+          "priority",
+          "tier"
+        ]
+      },
+      {
+        "slot_id": "auth.methods",
+        "label": "How people sign in",
+        "value_kind": "enum_list",
+        "options": [
+          "phone_otp",
+          "email_password",
+          "no_sign_in"
+        ],
+        "fields": []
+      },
+      {
+        "slot_id": "auth.account_model",
+        "label": "Account model",
+        "value_kind": "enum",
+        "options": [
+          "individual",
+          "team",
+          "admin_created"
+        ],
+        "fields": []
+      }
+    ],
+    "recent_turns": [],
+    "focus_card_id": "Q-005",
+    "focus_question": "Who will order from the app every day?",
+    "focus_intent": "learn who the everyday customers are",
+    "focus_need_ids": [
+      "audience.segments"
+    ],
+    "focus_selected_labels": [],
+    "needs": [
+      {
+        "need_id": "audience.segments",
+        "label": "Who it is for",
+        "sufficient": "At least one named segment: who they are, their main goal, and where and how they use the app. Separate the paying customer from the end user when they differ.",
+        "aspects": [
+          "who",
+          "goal",
+          "where_how",
+          "payer_vs_user"
+        ],
+        "state": "missing",
+        "missing_aspects": [
+          "who",
+          "goal",
+          "where_how",
+          "payer_vs_user"
+        ]
+      }
+    ],
+    "fact_digest": "FCT-001 [context|business] Home cooks sell tiffin lunch boxes to offices (from the first message)\nFCT-002 [context|location] Launch in Pune first (from Q-002)"
+  },
+  "output": {
+    "intent": "answer",
+    "slot_updates": [],
+    "references": [],
+    "language": "en",
+    "safety_flags": [],
+    "ambiguous": [],
+    "confidence": 0.5,
+    "facts": [
+      {
+        "type": "context",
+        "statement": "Who it is for: mostly families",
+        "quote": "mostly families",
+        "topics": [
+          "audience"
+        ],
+        "entities": [],
+        "consumers": [
+          "research",
+          "design",
+          "screens"
+        ],
+        "confidence": 0.6,
+        "aspects": [],
+        "effects": [],
+        "corrects": ""
+      }
+    ],
+    "flags": [
+      "vague"
+    ],
+    "glossary_terms": [],
+    "contradicts": []
+  }
+}

@@ -88,7 +88,7 @@ Every state change in steps 1 to 8 is made by `mde_flow.machine.apply`; the engi
 | --- | --- | --- |
 | `mock` (default) | deterministic handlers shipped with every call spec | none; no key, no network |
 | `replay` | recorded cassettes; a missing cassette fails, never goes live | none |
-| `live` | OpenAI Responses API; needs `ALLOW_LIVE_LLM=1` as well, and never under `MDE_FORBID_LIVE=1` | metered against a hard USD 6.00 cap |
+| `live` | OpenAI Responses API; never under `MDE_FORBID_LIVE=1` | metered against a hard USD 8.00 ceiling (default cap in force 6.00) |
 
 The gateway runs in-process or as its own HTTP service (`GATEWAY_MODE=inprocess|http`); engines see only the `GatewayClient` protocol. Everything in the test suite is offline.
 
@@ -98,7 +98,7 @@ The gateway runs in-process or as its own HTTP service (`GATEWAY_MODE=inprocess|
 | --- | --- |
 | No state change outside the flow controller; `spec_ready` only after Gate 2 approval of the current hash; approved versions immutable | [flow-and-gates](flow-and-gates.md), [ADR 0006](../adr/0006-one-spec-hash-rule.md) |
 | One transaction never spans an engine call | [ADR 0004](../adr/0004-transactions-never-span-engine-calls.md) |
-| Live spend never exceeds USD 6.00; the guard fails closed | [llm-gateway](llm-gateway.md), [ADR 0005](../adr/0005-budget-guard-fails-closed.md) |
+| Live spend never exceeds USD 8.00 (default cap in force 6.00); the guard fails closed | [llm-gateway](llm-gateway.md), [ADR 0005](../adr/0005-budget-guard-fails-closed.md) |
 | Web, upload and search text is data, never instructions; secrets never stored or logged | [security](security.md) |
 | Tenants cannot see each other; a stranger gets the same 404 as an unknown id | [data-model](data-model.md), [security](security.md) |
 | The in-memory fake store behaves like PostgreSQL | [ADR 0007](../adr/0007-fake-store-validated-by-contract-suite.md) |

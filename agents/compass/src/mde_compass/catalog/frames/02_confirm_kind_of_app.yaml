@@ -1,0 +1,19 @@
+id: confirm_kind_of_app
+purpose: Confirm the kind of app and its sub-kind that Compass inferred, so research looks at the right
+  examples.
+slots:
+- idea.category
+- idea.subcategory
+card_type: choose_one
+option_source: family
+order: 2
+option_count: 3
+max_question_words: 20
+max_option_words: 8
+guidance: Offer the three most likely kinds, taken from the capability families that match the user's
+  words. Say it as a question to confirm, never as a fact. If the idea mixes kinds, ask which is the main
+  one.
+style_guide: "Turn the model's guess into a yes/no style confirmation phrased in the user's words, never a menu of our categories. Offer the two closest readings only when the idea is genuinely hybrid."
+examples:
+- "It sounds like a booking app for a clinic, where patients choose a doctor and a time. Is that right?"
+- "Is this mainly a shop where people buy, or a service people book?"

@@ -1,0 +1,2720 @@
+{
+ "_fixture": {
+  "note": "Slim fixture extracted by agents/research/scripts/extract_fixtures.py. Same key layout as a Compass format-2 export; histories, provenance quotes and the structure bulk are dropped.",
+  "source": "quick-yoga-studio-bengaluru.json"
+ },
+ "brief": {
+  "_hash": "a621e7b393ac6974e316347c39d70e384f68d5d87fc931735c0053a8963265f6",
+  "_section_hashes": {
+   "access": "f74b1489ea5eedffc5b428038faf21b428cef9b1b55623a568851f18e8c52cf6",
+   "apps": "23fd52762e94c39c2b6957ccf3aae8d0f972696d9ceb7b460fc6e55c975b4e79",
+   "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "assumptions": "8f504f1c88834e75fb6d1f2dbe9f53dbf9df96d30bef2e64a3e798eff5d3dc51",
+   "audience": "7e623f56857acb22189a68d86379090c7c386edeb58375bb8840aa3f028a0399",
+   "constraints": "9f2b7ab1554ffe8c8282d8102c28c9e0a5c01ffbbe806e687f050b763dd4f4a6",
+   "context": "24438ac7197d2b8525d64e52635b8346ed3266c04d98a2a9c70aa60c62cfdd1a",
+   "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+   "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "domain_facts": "7dfcbc7bd253bd295f031681f3279b69b5cef988a26dec2594fad2413592b915",
+   "entities": "52c2bdeb592ce9c0c9a424535e4496d269567030a4ed200986655b4cab360b00",
+   "experience": "fca37060a0234ef543c8685b351fb11c08a74c83eebdade18b36ab68f29eae4c",
+   "flows": "6f6b467e1fc581d358e81ecf7d943a61d147c7152b7be6fd6e3a17a9d55b81e5",
+   "glossary": "cff3ad544df96b20c08d8f282be08c12df0af2c6dd732f47b9ecb21a48483ddd",
+   "idea": "022d3443417bea0b57ee86ecc31bb65226e32d88dc1e98255de3f728187527ae",
+   "integrations": "0696c2c10da5a5d45d37a82a89c2e82b1e24ffc313f63f1b2e7984dd5ea0b61c",
+   "modules": "31282391757777f3b58d13d65731aa24c7d0409cb066675c843ab3d13d6b5c18",
+   "open_questions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+   "research_requests": "0fa20a64903a4278b95ba9b20407b329e8be1f03858a30de4cdc49b5cf41ef7f",
+   "roles": "2af0306b711349dcbef7071e11ac14f128b2722d8c6cce70f3602c738ed700cd",
+   "scope": "975a2927499f96358d78af55f001cc39cc50b8d90ba9f23f9a22d6bfbbb5c70f",
+   "screens": "c28568cec83d760bb689f0cc7b4b54d3064ce90883a98b3fdc02eecd5aa68512",
+   "sources": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+  },
+  "apps": [
+   {
+    "audience": "",
+    "confidence": 0.4,
+    "id": "APP-001",
+    "name": "One app for everybody",
+    "provenance": [
+     {
+      "ref": "express:apps.list",
+      "type": "pattern"
+     }
+    ],
+    "purpose": "",
+    "roles": [],
+    "status": "assumed",
+    "surface": "mobile",
+    "tier": "Default"
+   }
+  ],
+  "audience": {
+   "segments": {
+    "confidence": 0.95,
+    "provenance": [
+     {
+      "ref": "FCT-031",
+      "type": "user_tap"
+     }
+    ],
+    "status": "confirmed",
+    "tier": "Locked",
+    "value": [
+     "Members at home",
+     "Members on the go",
+     "Members at the studio",
+     "Staff at the studio"
+    ]
+   },
+   "usage_context": {
+    "confidence": 0.95,
+    "provenance": [
+     {
+      "ref": "FCT-031",
+      "type": "user_tap"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "on_the_go"
+    ]
+   }
+  },
+  "context": {
+   "geo": {
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-015",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": {
+     "city": "Bengaluru",
+     "region": "Indiranagar"
+    }
+   },
+   "scale_launch": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:context.scale_launch",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": "pilot_small"
+   }
+  },
+  "data": {},
+  "declined": [],
+  "domain_facts": [
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design"
+    ],
+    "entities": [
+     "Sunrise Yoga"
+    ],
+    "id": "FCT-001",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "I run a neighbourhood yoga studio in Bengaluru called Sunrise Yoga.",
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "I run a neighbourhood yoga studio called Sunrise Yoga.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "business"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [
+     "Bengaluru"
+    ],
+    "id": "FCT-002",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "in Bengaluru",
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "The studio is in Bengaluru.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-003",
+    "kind": "screen",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "members can see the weekly class timetable",
+    "refs": [
+     "FTR-001"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Members can see the weekly class timetable.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "classes"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-004",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "book a spot in a class",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Members can book a spot in a class.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "booking"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-005",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "buy class packs",
+    "refs": [
+     "FTR-003"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Members can buy class packs.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "purchases"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-006",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "get reminders",
+    "refs": [
+     "FTR-004"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Members get reminders.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "reminders"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-007",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "I also need to manage classes",
+    "refs": [
+     "FTR-005"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "The studio needs to manage classes.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "classes"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-008",
+    "kind": "screen",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "see who is coming",
+    "refs": [
+     "FTR-006"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "The studio needs to see who is coming.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "attendance"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens"
+    ],
+    "entities": [],
+    "id": "FCT-009",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "members",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "The app is for yoga studio members.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "users"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-010",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "I want an app where members can see the weekly class timetable, book a spot in a class, buy class packs and get reminders. I also need to manage classes and see",
+    "refs": [
+     "FTR-001",
+     "FTR-002",
+     "FTR-003",
+     "FTR-004"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Your idea in one line: An app for Sunrise Yoga members to view the weekly class timetable, book classes, buy class packs, and get reminders, while the studio manages classes and attendance.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "idea"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.97,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-011",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "neighbourhood yoga studio",
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Kind of app: yoga studio app",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "idea"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-012",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-a8c990fd390eda4c",
+      "type": "user_text"
+     }
+    ],
+    "quote": "members can see the weekly class timetable, book a spot in a class, buy class packs",
+    "refs": [
+     "FTR-002",
+     "FTR-003",
+     "FTR-005",
+     "FTR-006"
+    ],
+    "source": "ui-a8c990fd390eda4c",
+    "statement": "Kind of app, in detail: An app for a yoga studio where members book classes and buy class packs, and the studio manages classes and attendance.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "idea"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.85,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-013",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "a monthly unlimited pass for regulars",
+    "refs": [
+     "FTR-003"
+    ],
+    "source": "Q-002",
+    "statement": "There is a monthly unlimited pass for regulars.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-014",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_tap"
+     }
+    ],
+    "quote": "Buy a pack of classes",
+    "refs": [
+     "FTR-003"
+    ],
+    "source": "Q-026",
+    "statement": "Buy a pack of classes",
+    "status": "confirmed",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "entities": [
+     "Indiranagar",
+     "Bengaluru"
+    ],
+    "id": "FCT-015",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "A single studio in Indiranagar, Bengaluru.",
+    "source": "Q-003",
+    "statement": "A single studio in Indiranagar, Bengaluru.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "research",
+     "blueprint",
+     "design",
+     "screens",
+     "verify",
+     "change_control"
+    ],
+    "entities": [],
+    "id": "FCT-016",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Members speak English and Kannada",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "Q-003",
+    "statement": "Members speak English and Kannada.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-017",
+    "kind": "constraint",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "the app should be in both languages",
+    "source": "Q-003",
+    "statement": "The app should be in both languages.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "languages"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-018",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "A member can cancel up to 4 hours before the class and the credit goes back to their pack.",
+    "refs": [
+     "FTR-002",
+     "FTR-003"
+    ],
+    "source": "Q-004",
+    "statement": "A member can cancel up to 4 hours before the class and the credit goes back to their pack.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "cancellations"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-019",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "A later cancellation or a no-show loses the credit.",
+    "refs": [
+     "FTR-002",
+     "FTR-003"
+    ],
+    "source": "Q-004",
+    "statement": "A later cancellation or a no-show loses the credit.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "cancellations"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-020",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "If the class was full, the first person on the waiting list gets the spot",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "Q-004",
+    "statement": "If the class was full, the first person on the waiting list gets the spot.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "waitlist"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-021",
+    "kind": "flow",
+    "provenance": [
+     {
+      "ref": "ui-4d8b7ba1d1e32d2e",
+      "type": "user_text"
+     }
+    ],
+    "quote": "and a notification.",
+    "refs": [
+     "FTR-002"
+    ],
+    "source": "Q-004",
+    "statement": "The first person on the waiting list gets a notification.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "waitlist"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [
+     "Indiranagar"
+    ],
+    "id": "FCT-022",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Only the Indiranagar studio for now",
+    "source": "Q-027",
+    "statement": "Only the Indiranagar studio for now",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-023",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "a second studio may come later",
+    "source": "Q-027",
+    "statement": "A second studio may come later",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "location"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint",
+     "backend"
+    ],
+    "entities": [],
+    "id": "FCT-024",
+    "kind": "integration_detail",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Each member pays the studio directly inside the app by UPI or card",
+    "refs": [
+     "FTR-003"
+    ],
+    "source": "Q-027",
+    "statement": "Each member pays the studio directly inside the app by UPI or card",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "research",
+     "blueprint"
+    ],
+    "entities": [],
+    "id": "FCT-025",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "the app itself is free for members",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "Q-027",
+    "statement": "The app itself is free for members",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "pricing"
+    ],
+    "type": "context"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-026",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Members",
+    "refs": [
+     "ROL-002"
+    ],
+    "source": "Q-028",
+    "statement": "Members need to use the app.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "users"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-027",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Studio owner",
+    "refs": [
+     "ROL-003"
+    ],
+    "source": "Q-028",
+    "statement": "The studio owner needs to use the app.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "users"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.98,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-028",
+    "kind": "context",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Studio staff",
+    "refs": [
+     "ROL-004"
+    ],
+    "source": "Q-028",
+    "statement": "Studio staff need to use the app.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "users"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-029",
+    "kind": "number",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Our 6 instructors",
+    "refs": [
+     "ROL-005"
+    ],
+    "source": "Q-028",
+    "statement": "There are 6 instructors.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "users"
+    ],
+    "type": "number"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "screens",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-030",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "ui-382acbae95a6b75f",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Our 6 instructors, who only need to see who has booked for their class",
+    "refs": [
+     "FTR-002",
+     "ROL-005"
+    ],
+    "source": "Q-028",
+    "statement": "The instructors only need to see who has booked for their class.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "booking"
+    ],
+    "type": "role"
+   },
+   {
+    "confidence": 0.95,
+    "consumers": [
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-031",
+    "kind": "preference",
+    "provenance": [
+     {
+      "ref": "ui-b73276665d5eb5ec",
+      "type": "user_tap"
+     }
+    ],
+    "quote": "Members at home / Members on the go / Members at the studio / Staff at the studio",
+    "refs": [
+     "APP-001"
+    ],
+    "source": "Q-030",
+    "statement": "Where will members and studio staff usually use the Sunrise Yoga app?: Members at home / Members on the go / Members at the studio / Staff at the studio",
+    "status": "confirmed",
+    "tier": "Locked",
+    "topics": [
+     "audience"
+    ],
+    "type": "preference"
+   },
+   {
+    "confidence": 0.94,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-032",
+    "kind": "constraint",
+    "provenance": [
+     {
+      "ref": "ui-b73276665d5eb5ec",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Class booking | Weekly class timetable | Class packs | Class management",
+    "refs": [
+     "FTR-002",
+     "FTR-001",
+     "FTR-003",
+     "FTR-005"
+    ],
+    "source": "Q-031",
+    "statement": "Class booking, the weekly class timetable, class packs, and class management matter for the first version.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "scope"
+    ],
+    "type": "requirement"
+   },
+   {
+    "confidence": 0.99,
+    "consumers": [
+     "blueprint",
+     "design",
+     "screens",
+     "frontend",
+     "backend",
+     "qa"
+    ],
+    "entities": [],
+    "id": "FCT-033",
+    "kind": "constraint",
+    "provenance": [
+     {
+      "ref": "ui-b73276665d5eb5ec",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Reminders and the attendance list can come in the second version",
+    "refs": [
+     "FTR-004",
+     "FTR-006"
+    ],
+    "source": "Q-031",
+    "statement": "Reminders and the attendance list can come in the second version.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "scope"
+    ],
+    "type": "constraint"
+   }
+  ],
+  "entities": [
+   {
+    "id": "ENT-001",
+    "key": "class",
+    "module": "MOD-004",
+    "name": "Class",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-002",
+    "key": "booking",
+    "module": "MOD-002",
+    "name": "Booking",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-003",
+    "key": "class_pack",
+    "module": "MOD-003",
+    "name": "Class Pack",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-004",
+    "key": "payment",
+    "module": "MOD-003",
+    "name": "Payment",
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "id": "ENT-005",
+    "key": "reminder",
+    "module": "MOD-002",
+    "name": "Reminder",
+    "status": "confirmed",
+    "tier": "Default"
+   }
+  ],
+  "experience": {
+   "brand.name": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "Sunrise Yoga"
+   },
+   "density_mode": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:look.density_mode",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": "balanced"
+   },
+   "devices": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:devices.profile",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": "phones"
+   },
+   "locales": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-016",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "en",
+     "kn"
+    ]
+   },
+   "tone_words": {
+    "confidence": 0.4,
+    "provenance": [
+     {
+      "ref": "interview:look.tone_words",
+      "type": "pattern"
+     }
+    ],
+    "status": "assumed",
+    "tier": "Default",
+    "value": [
+     "calm_simple"
+    ]
+   }
+  },
+  "flows": [
+   {
+    "features": [
+     "FTR-001",
+     "FTR-002",
+     "FTR-004"
+    ],
+    "id": "FLW-001",
+    "name": "Book a Class",
+    "role": "ROL-002",
+    "status": "confirmed",
+    "tier": "Locked"
+   },
+   {
+    "features": [
+     "FTR-003"
+    ],
+    "id": "FLW-002",
+    "name": "Buy a Class Pack",
+    "role": "ROL-002",
+    "status": "confirmed",
+    "tier": "Locked"
+   },
+   {
+    "features": [
+     "FTR-005",
+     "FTR-006"
+    ],
+    "id": "FLW-003",
+    "name": "Run Studio Classes",
+    "role": "ROL-003",
+    "status": "confirmed",
+    "tier": "Locked"
+   },
+   {
+    "features": [
+     "FTR-005",
+     "FTR-006"
+    ],
+    "id": "FLW-004",
+    "name": "Check Class Bookings",
+    "role": "ROL-005",
+    "status": "confirmed",
+    "tier": "Default"
+   }
+  ],
+  "glossary": [
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-010",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "class packs",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-010",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "weekly class timetable",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-009",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "members",
+    "tier": "Locked"
+   },
+   {
+    "avoid": [],
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-029",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "synonyms": [],
+    "term": "instructors",
+    "tier": "Locked"
+   }
+  ],
+  "idea": {
+   "business_model": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-014",
+      "type": "user_tap"
+     }
+    ],
+    "status": "confirmed",
+    "tier": "Locked",
+    "value": "Buy a pack of classes"
+   },
+   "category": {
+    "confidence": 0.97,
+    "provenance": [
+     {
+      "ref": "FCT-011",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "yoga studio app"
+   },
+   "subcategory": {
+    "confidence": 0.98,
+    "provenance": [
+     {
+      "ref": "FCT-012",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "An app for a yoga studio where members book classes and buy class packs, and the studio manages classes and attendance."
+   },
+   "summary": {
+    "confidence": 0.99,
+    "provenance": [
+     {
+      "ref": "FCT-010",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "An app for Sunrise Yoga members to view the weekly class timetable, book classes, buy class packs, and get reminders, while the studio manages classes and attendance."
+   }
+  },
+  "ids": {
+   "aliases": {},
+   "counters": {
+    "APP": 1,
+    "ASM": 13,
+    "ENT": 5,
+    "FLW": 4,
+    "FTR": 6,
+    "MOD": 4,
+    "ROL": 5,
+    "RR": 5,
+    "SCR": 13
+   },
+   "tombstones": [
+    "ROL-001",
+    "ASM-004",
+    "ASM-007"
+   ]
+  },
+  "integrations": [
+   {
+    "confidence": 0.98,
+    "name": "payments",
+    "notes": "",
+    "preference": "real_later",
+    "provenance": [
+     {
+      "ref": "FCT-024",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "meta": {
+   "approvals": {},
+   "degraded": false,
+   "depth_profile": "standard",
+   "hypothesis": {
+    "business_model_candidates": [
+     "Class-pack sales",
+     "Drop-in class fees",
+     "Members pay for class packs",
+     "Members pay per class",
+     "The studio offers a membership plan"
+    ],
+    "category": "Guess: booking and class-management app",
+    "confidence": 0.86,
+    "glossary_candidates": [
+     {
+      "synonyms": [
+       "class bundles",
+       "multi-class passes"
+      ],
+      "term": "class packs"
+     },
+     {
+      "synonyms": [
+       "weekly schedule",
+       "class calendar"
+      ],
+      "term": "weekly class timetable"
+     },
+     {
+      "synonyms": [
+       "reserve a place",
+       "book a class"
+      ],
+      "term": "book a spot"
+     }
+    ],
+    "hard_parts": [
+     "Payment processing for class-pack purchases",
+     "Managing class capacity so bookings do not exceed available spots",
+     "How bookings connect to available spots and class capacity",
+     "How class packs or memberships are paid for and used",
+     "How the studio handles cancellations and missed classes"
+    ],
+    "label": "hypothesis",
+    "likely_families": [
+     "health_wellness",
+     "booking_scheduling",
+     "payments_wallet",
+     "dashboards_admin"
+    ],
+    "likely_features": [
+     {
+      "custom": true,
+      "family": "health_wellness",
+      "intent": "Could be adapted for class reminders.",
+      "name": "Reminders to take medicine"
+     },
+     {
+      "custom": false,
+      "family": "booking_scheduling",
+      "intent": "Show the weekly class timetable and available spots.",
+      "name": "Available times"
+     },
+     {
+      "custom": false,
+      "family": "booking_scheduling",
+      "intent": "Let members reserve a spot in a class.",
+      "name": "Book a time"
+     },
+     {
+      "custom": false,
+      "family": "booking_scheduling",
+      "intent": "Potentially let members change or cancel bookings.",
+      "name": "Reschedule or cancel"
+     },
+     {
+      "custom": false,
+      "family": "payments_wallet",
+      "intent": "Allow members to buy class packs.",
+      "name": "Pay online"
+     },
+     {
+      "custom": false,
+      "family": "dashboards_admin",
+      "intent": "Could support managing class listings and schedules.",
+      "name": "Manage content"
+     },
+     {
+      "custom": false,
+      "family": "dashboards_admin",
+      "intent": "Could show who is coming to classes.",
+      "name": "Summary dashboard"
+     },
+     {
+      "custom": true,
+      "family": "dashboards_admin",
+      "intent": "Let the studio see who is coming to each class.",
+      "name": "Manage class attendance"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let members see upcoming yoga classes",
+      "name": "Class timetable"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let members reserve a spot",
+      "name": "Class booking"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Let members buy or use packs of classes",
+      "name": "Class packs"
+     },
+     {
+      "custom": false,
+      "family": "",
+      "intent": "Remind members about booked classes",
+      "name": "Reminders"
+     }
+    ],
+    "likely_roles": [
+     "Member",
+     "Studio administrator",
+     "Instructor",
+     "Studio owner or manager",
+     "Yoga teachers",
+     "Studio members",
+     "Yoga members",
+     "Studio manager"
+    ],
+    "subcategory": "Guess: a Bengaluru yoga studio app for members to find and book classes, buy packs, and receive reminders"
+   },
+   "interview": {
+    "answered": 8,
+    "assumed": 0,
+    "batches": 4,
+    "budget": "quick",
+    "closing": "answered",
+    "coverage": 1,
+    "facts_active": 33,
+    "facts_not_used": 0,
+    "facts_unreferenced": 0,
+    "fallback_count": 0,
+    "followup_candidates": [],
+    "followups": 1,
+    "hard_cap": 10,
+    "question_ids": [
+     "Q-002",
+     "Q-026",
+     "Q-003",
+     "Q-004",
+     "Q-027",
+     "Q-028",
+     "Q-030",
+     "Q-031"
+    ],
+    "questions_asked": 8,
+    "reopened": 0,
+    "size_band": "small",
+    "size_source": "tier",
+    "size_suggested": "medium",
+    "skipped": 0,
+    "stop_reason": "budget_reached",
+    "structure_entities": 5,
+    "structure_flows": 4,
+    "structure_issues": 0,
+    "structure_modules": 4,
+    "structure_screens": 13,
+    "target": 7,
+    "tier_set": true,
+    "ui_mode": "answer_all",
+    "ui_mode_set": false
+   },
+   "locales": [
+    "en",
+    "kn"
+   ],
+   "mode": "guided",
+   "plan": {
+    "depth": "standard",
+    "interview_budget": "quick",
+    "minimum_viable": false,
+    "modules": [
+     "understand",
+     "playback",
+     "gaps",
+     "propose",
+     "seed_research",
+     "probes"
+    ],
+    "question_budget": 7
+   },
+   "probe_rounds": 0,
+   "probes": {
+    "blueprint": true,
+    "design": true,
+    "research": true
+   },
+   "program_id": "",
+   "schema_version": 1,
+   "session_id": "ses_01M72PT1S3G61C9WFTXJPWKC3N",
+   "situation_profile": {
+    "clarity": "knows_features",
+    "collaboration": "one",
+    "expertise": "non_technical",
+    "formality": "casual",
+    "input_mode": "text",
+    "input_richness": "rich",
+    "language": "en",
+    "reference_driven": false,
+    "size_stakes": "startup",
+    "urgency": "thorough"
+   }
+  },
+  "modules": [
+   {
+    "apps": [
+     "APP-001"
+    ],
+    "id": "MOD-001",
+    "kind": "account",
+    "name": "Account",
+    "roles": [
+     "ROL-002",
+     "ROL-003",
+     "ROL-004",
+     "ROL-005"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-001"
+    ],
+    "id": "MOD-002",
+    "kind": "",
+    "name": "Classes",
+    "roles": [
+     "ROL-002"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-001"
+    ],
+    "id": "MOD-003",
+    "kind": "",
+    "name": "Class Packs",
+    "roles": [
+     "ROL-002"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   },
+   {
+    "apps": [
+     "APP-001"
+    ],
+    "id": "MOD-004",
+    "kind": "",
+    "name": "Studio Schedule",
+    "roles": [
+     "ROL-003",
+     "ROL-004",
+     "ROL-005"
+    ],
+    "status": "confirmed",
+    "tier": "Default"
+   }
+  ],
+  "references": [],
+  "research_requests": [
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which features belong in the first release",
+    "depth": "standard",
+    "entity": "yoga studio app apps",
+    "geography": "Bengaluru, Indiranagar",
+    "id": "RR-001",
+    "prefer_sources": [
+     "app store listings",
+     "official websites"
+    ],
+    "priority": "high",
+    "question": "Which features do yoga studio app apps for Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar usually offer?",
+    "references": [],
+    "shown_to_user_as": "What similar yoga studio app apps offer in Bengaluru, Indiranagar",
+    "source_languages": [
+     "en",
+     "kn"
+    ],
+    "terms": [
+     "yoga studio app",
+     "An app for a yoga studio where members book classes and buy",
+     "Members at home, Members on the go, Members at the studio,",
+     "features",
+     "class packs",
+     "weekly class timetable",
+     "members",
+     "instructors"
+    ],
+    "topic": "Features of comparable yoga studio app apps",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which local habits and alternatives the app must fit",
+    "depth": "standard",
+    "entity": "local yoga studio app apps",
+    "geography": "Bengaluru, Indiranagar",
+    "id": "RR-002",
+    "prefer_sources": [
+     "app store listings",
+     "local news",
+     "official websites"
+    ],
+    "priority": "high",
+    "question": "Which yoga studio app apps and services are used by Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar?",
+    "references": [],
+    "shown_to_user_as": "Who else serves Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar",
+    "source_languages": [
+     "en",
+     "kn"
+    ],
+    "terms": [
+     "yoga studio app",
+     "An app for a yoga studio where members book classes and buy",
+     "local apps",
+     "Bengaluru, Indiranagar",
+     "class packs",
+     "weekly class timetable",
+     "members",
+     "instructors"
+    ],
+    "topic": "Local yoga studio app apps and services in Bengaluru, Indiranagar",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which payment methods to plan for",
+    "depth": "standard",
+    "entity": "payment methods",
+    "geography": "Bengaluru, Indiranagar",
+    "id": "RR-003",
+    "prefer_sources": [
+     "official websites",
+     "provider documentation"
+    ],
+    "priority": "medium",
+    "question": "Which payment methods and providers do yoga studio app apps in Bengaluru, Indiranagar use for Buy a pack of classes?",
+    "references": [],
+    "shown_to_user_as": "How people pay in Bengaluru, Indiranagar",
+    "source_languages": [
+     "en",
+     "kn"
+    ],
+    "terms": [
+     "payment",
+     "Buy a pack of classes",
+     "yoga studio app",
+     "class packs",
+     "weekly class timetable",
+     "members",
+     "instructors"
+    ],
+    "topic": "Payment options for yoga studio app apps in Bengaluru, Indiranagar",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which sign-in and notification methods to offer",
+    "depth": "quick",
+    "entity": "sign-in and messaging",
+    "geography": "Bengaluru, Indiranagar",
+    "id": "RR-004",
+    "prefer_sources": [
+     "official websites",
+     "provider documentation"
+    ],
+    "priority": "medium",
+    "question": "How do Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar usually sign in and receive messages from yoga studio app apps?",
+    "references": [],
+    "shown_to_user_as": "How people sign in and get messages in Bengaluru, Indiranagar",
+    "source_languages": [
+     "en",
+     "kn"
+    ],
+    "terms": [
+     "sign in",
+     "SMS",
+     "notifications",
+     "yoga studio app",
+     "class packs",
+     "weekly class timetable",
+     "members",
+     "instructors"
+    ],
+    "topic": "Sign-in and messaging habits in Bengaluru, Indiranagar",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which compliance needs to plan for",
+    "depth": "standard",
+    "entity": "regulation",
+    "geography": "Bengaluru, Indiranagar",
+    "id": "RR-005",
+    "prefer_sources": [
+     "government websites",
+     "official websites"
+    ],
+    "priority": "medium",
+    "question": "Which rules, licences or privacy requirements apply to yoga studio app apps in Bengaluru, Indiranagar?",
+    "references": [],
+    "shown_to_user_as": "Rules to know about in Bengaluru, Indiranagar",
+    "source_languages": [
+     "en",
+     "kn"
+    ],
+    "terms": [
+     "rules",
+     "privacy",
+     "yoga studio app",
+     "Bengaluru, Indiranagar",
+     "class packs",
+     "weekly class timetable",
+     "members",
+     "instructors"
+    ],
+    "topic": "Rules for yoga studio app apps in Bengaluru, Indiranagar",
+    "user_added": false
+   }
+  ],
+  "roles": [
+   {
+    "confidence": 0.85,
+    "goal": "Book a spot in a class and buy class packs",
+    "id": "ROL-002",
+    "name_in_user_words": "Members",
+    "provenance": [
+     {
+      "ref": "FCT-003",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "Manage classes and see who is coming",
+    "id": "ROL-003",
+    "name_in_user_words": "Studio owner",
+    "provenance": [
+     {
+      "ref": "FCT-003",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "Use the app for studio work",
+    "id": "ROL-004",
+    "name_in_user_words": "Studio staff",
+    "provenance": [
+     {
+      "ref": "FCT-003",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.85,
+    "goal": "See who has booked for their class",
+    "id": "ROL-005",
+    "name_in_user_words": "Instructors",
+    "provenance": [
+     {
+      "ref": "FCT-003",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "scope": [
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-001",
+    "intent": "Members can see the weekly class timetable",
+    "name": "Weekly class timetable",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-002",
+    "intent": "Members can book a spot in a class",
+    "name": "Class booking",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-003",
+    "intent": "Members can buy class packs",
+    "name": "Class packs",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-004",
+    "intent": "Members get reminders",
+    "name": "Reminders",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-005",
+    "intent": "The studio can manage classes",
+    "name": "Class management",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "capability_tier": "A",
+    "confidence": 0.99,
+    "custom": false,
+    "family": null,
+    "id": "FTR-006",
+    "intent": "The studio can see who is coming",
+    "name": "Attendance list",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-008",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "size": {
+     "entities": 0,
+     "integrations": 0,
+     "screens": 0
+    },
+    "source": "",
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "languages": [
+    "en",
+    "kn"
+   ],
+   "local_competitors": [],
+   "synonyms": []
+  },
+  "version": 8
+ },
+ "consumer_views": {
+  "research": {
+   "audience": {
+    "segments": [
+     "Members at home",
+     "Members on the go",
+     "Members at the studio",
+     "Staff at the studio"
+    ],
+    "usage_context": [
+     "on_the_go"
+    ]
+   },
+   "declined": [],
+   "domain_facts": [
+    {
+     "entities": [
+      "Sunrise Yoga"
+     ],
+     "id": "FCT-001",
+     "kind": "context",
+     "statement": "I run a neighbourhood yoga studio called Sunrise Yoga.",
+     "topics": [
+      "business"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "Bengaluru"
+     ],
+     "id": "FCT-002",
+     "kind": "context",
+     "statement": "The studio is in Bengaluru.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-010",
+     "kind": "flow",
+     "refs": [
+      "FTR-001",
+      "FTR-002",
+      "FTR-003",
+      "FTR-004"
+     ],
+     "statement": "Your idea in one line: An app for Sunrise Yoga members to view the weekly class timetable, book classes, buy class packs, and get reminders, while the studio manages classes and attendance.",
+     "topics": [
+      "idea"
+     ],
+     "type": "requirement"
+    },
+    {
+     "entities": [],
+     "id": "FCT-011",
+     "kind": "context",
+     "statement": "Kind of app: yoga studio app",
+     "topics": [
+      "idea"
+     ],
+     "type": "requirement"
+    },
+    {
+     "entities": [],
+     "id": "FCT-012",
+     "kind": "context",
+     "refs": [
+      "FTR-002",
+      "FTR-003",
+      "FTR-005",
+      "FTR-006"
+     ],
+     "statement": "Kind of app, in detail: An app for a yoga studio where members book classes and buy class packs, and the studio manages classes and attendance.",
+     "topics": [
+      "idea"
+     ],
+     "type": "requirement"
+    },
+    {
+     "entities": [],
+     "id": "FCT-013",
+     "kind": "rule",
+     "refs": [
+      "FTR-003"
+     ],
+     "statement": "There is a monthly unlimited pass for regulars.",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [],
+     "id": "FCT-014",
+     "kind": "rule",
+     "refs": [
+      "FTR-003"
+     ],
+     "statement": "Buy a pack of classes",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [
+      "Indiranagar",
+      "Bengaluru"
+     ],
+     "id": "FCT-015",
+     "kind": "context",
+     "statement": "A single studio in Indiranagar, Bengaluru.",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-016",
+     "kind": "context",
+     "refs": [
+      "ROL-002"
+     ],
+     "statement": "Members speak English and Kannada.",
+     "topics": [
+      "languages"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [
+      "Indiranagar"
+     ],
+     "id": "FCT-022",
+     "kind": "context",
+     "statement": "Only the Indiranagar studio for now",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-023",
+     "kind": "context",
+     "statement": "A second studio may come later",
+     "topics": [
+      "location"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-024",
+     "kind": "integration_detail",
+     "refs": [
+      "FTR-003"
+     ],
+     "statement": "Each member pays the studio directly inside the app by UPI or card",
+     "topics": [
+      "pricing"
+     ],
+     "type": "rule"
+    },
+    {
+     "entities": [],
+     "id": "FCT-025",
+     "kind": "rule",
+     "refs": [
+      "ROL-002"
+     ],
+     "statement": "The app itself is free for members",
+     "topics": [
+      "pricing"
+     ],
+     "type": "context"
+    },
+    {
+     "entities": [],
+     "id": "FCT-031",
+     "kind": "preference",
+     "refs": [
+      "APP-001"
+     ],
+     "statement": "Where will members and studio staff usually use the Sunrise Yoga app?: Members at home / Members on the go / Members at the studio / Staff at the studio",
+     "topics": [
+      "audience"
+     ],
+     "type": "preference"
+    }
+   ],
+   "entities": [
+    "Class",
+    "Booking",
+    "Class Pack",
+    "Payment",
+    "Reminder"
+   ],
+   "feature_intents": [
+    {
+     "family": null,
+     "intent": "Members can see the weekly class timetable",
+     "name": "Weekly class timetable"
+    },
+    {
+     "family": null,
+     "intent": "Members can book a spot in a class",
+     "name": "Class booking"
+    },
+    {
+     "family": null,
+     "intent": "Members can buy class packs",
+     "name": "Class packs"
+    },
+    {
+     "family": null,
+     "intent": "Members get reminders",
+     "name": "Reminders"
+    },
+    {
+     "family": null,
+     "intent": "The studio can manage classes",
+     "name": "Class management"
+    },
+    {
+     "family": null,
+     "intent": "The studio can see who is coming",
+     "name": "Attendance list"
+    }
+   ],
+   "geography": {
+    "city": "Bengaluru",
+    "region": "Indiranagar"
+   },
+   "glossary": [
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "class packs"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "weekly class timetable"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "members"
+    },
+    {
+     "avoid": [],
+     "synonyms": [],
+     "term": "instructors"
+    }
+   ],
+   "guidance": {
+    "business_model": "Buy a pack of classes",
+    "category": "yoga studio app",
+    "depth": "light",
+    "families": [
+     "health_wellness",
+     "booking_scheduling",
+     "payments_wallet",
+     "dashboards_admin"
+    ],
+    "focus": [
+     {
+      "about": [
+       "Account",
+       "Classes",
+       "Class Packs",
+       "Studio Schedule"
+      ],
+      "topic": "landscape"
+     },
+     {
+      "about": [
+       "Class",
+       "Booking",
+       "Class Pack",
+       "Payment",
+       "Reminder"
+      ],
+      "topic": "domain"
+     },
+     {
+      "about": [
+       "payments"
+      ],
+      "topic": "integrations"
+     },
+     {
+      "about": [
+       "en",
+       "kn"
+      ],
+      "topic": "locales"
+     }
+    ],
+    "gap_fill": false,
+    "max_requests": 6,
+    "search_budget": 6,
+    "size_band": "small",
+    "subcategory": "An app for a yoga studio where members book classes and buy class packs, and the studio manages classes and attendance."
+   },
+   "idea": {
+    "business_model": "Buy a pack of classes",
+    "category": "yoga studio app",
+    "pitch": "The app is for Sunrise Yoga members and studio staff in Indiranagar, Bengaluru. Its first version includes the weekly class timetable, class booking, class packs, and class management. Members can buy class packs and pay the studio in the app by UPI or card.",
+    "subcategory": "An app for a yoga studio where members book classes and buy class packs, and the studio manages classes and attendance.",
+    "summary": "A Sunrise Yoga app for members and studio staff to book classes, buy class packs, and manage classes."
+   },
+   "languages": {
+    "locales": [
+     "en",
+     "kn"
+    ],
+    "meta_locales": [
+     "en",
+     "kn"
+    ],
+    "search_languages": [
+     "en",
+     "kn"
+    ]
+   },
+   "modules": [
+    "Account",
+    "Classes",
+    "Class Packs",
+    "Studio Schedule"
+   ],
+   "references": [],
+   "research_requests": [
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which features belong in the first release",
+     "depth": "standard",
+     "entity": "yoga studio app apps",
+     "geography": "Bengaluru, Indiranagar",
+     "id": "RR-001",
+     "prefer_sources": [
+      "app store listings",
+      "official websites"
+     ],
+     "priority": "high",
+     "question": "Which features do yoga studio app apps for Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar usually offer?",
+     "references": [],
+     "shown_to_user_as": "What similar yoga studio app apps offer in Bengaluru, Indiranagar",
+     "source_languages": [
+      "en",
+      "kn"
+     ],
+     "terms": [
+      "yoga studio app",
+      "An app for a yoga studio where members book classes and buy",
+      "Members at home, Members on the go, Members at the studio,",
+      "features",
+      "class packs",
+      "weekly class timetable",
+      "members",
+      "instructors"
+     ],
+     "topic": "Features of comparable yoga studio app apps",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which local habits and alternatives the app must fit",
+     "depth": "standard",
+     "entity": "local yoga studio app apps",
+     "geography": "Bengaluru, Indiranagar",
+     "id": "RR-002",
+     "prefer_sources": [
+      "app store listings",
+      "local news",
+      "official websites"
+     ],
+     "priority": "high",
+     "question": "Which yoga studio app apps and services are used by Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar?",
+     "references": [],
+     "shown_to_user_as": "Who else serves Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar",
+     "source_languages": [
+      "en",
+      "kn"
+     ],
+     "terms": [
+      "yoga studio app",
+      "An app for a yoga studio where members book classes and buy",
+      "local apps",
+      "Bengaluru, Indiranagar",
+      "class packs",
+      "weekly class timetable",
+      "members",
+      "instructors"
+     ],
+     "topic": "Local yoga studio app apps and services in Bengaluru, Indiranagar",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which payment methods to plan for",
+     "depth": "standard",
+     "entity": "payment methods",
+     "geography": "Bengaluru, Indiranagar",
+     "id": "RR-003",
+     "prefer_sources": [
+      "official websites",
+      "provider documentation"
+     ],
+     "priority": "medium",
+     "question": "Which payment methods and providers do yoga studio app apps in Bengaluru, Indiranagar use for Buy a pack of classes?",
+     "references": [],
+     "shown_to_user_as": "How people pay in Bengaluru, Indiranagar",
+     "source_languages": [
+      "en",
+      "kn"
+     ],
+     "terms": [
+      "payment",
+      "Buy a pack of classes",
+      "yoga studio app",
+      "class packs",
+      "weekly class timetable",
+      "members",
+      "instructors"
+     ],
+     "topic": "Payment options for yoga studio app apps in Bengaluru, Indiranagar",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which sign-in and notification methods to offer",
+     "depth": "quick",
+     "entity": "sign-in and messaging",
+     "geography": "Bengaluru, Indiranagar",
+     "id": "RR-004",
+     "prefer_sources": [
+      "official websites",
+      "provider documentation"
+     ],
+     "priority": "medium",
+     "question": "How do Members at home, Members on the go, Members at the studio, in Bengaluru, Indiranagar usually sign in and receive messages from yoga studio app apps?",
+     "references": [],
+     "shown_to_user_as": "How people sign in and get messages in Bengaluru, Indiranagar",
+     "source_languages": [
+      "en",
+      "kn"
+     ],
+     "terms": [
+      "sign in",
+      "SMS",
+      "notifications",
+      "yoga studio app",
+      "class packs",
+      "weekly class timetable",
+      "members",
+      "instructors"
+     ],
+     "topic": "Sign-in and messaging habits in Bengaluru, Indiranagar",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which compliance needs to plan for",
+     "depth": "standard",
+     "entity": "regulation",
+     "geography": "Bengaluru, Indiranagar",
+     "id": "RR-005",
+     "prefer_sources": [
+      "government websites",
+      "official websites"
+     ],
+     "priority": "medium",
+     "question": "Which rules, licences or privacy requirements apply to yoga studio app apps in Bengaluru, Indiranagar?",
+     "references": [],
+     "shown_to_user_as": "Rules to know about in Bengaluru, Indiranagar",
+     "source_languages": [
+      "en",
+      "kn"
+     ],
+     "terms": [
+      "rules",
+      "privacy",
+      "yoga studio app",
+      "Bengaluru, Indiranagar",
+      "class packs",
+      "weekly class timetable",
+      "members",
+      "instructors"
+     ],
+     "topic": "Rules for yoga studio app apps in Bengaluru, Indiranagar",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [],
+    "languages": [
+     "en",
+     "kn"
+    ],
+    "local_competitors": [],
+    "synonyms": []
+   }
+  }
+ },
+ "export": {
+  "approved_baseline": {
+   "hash": "a621e7b393ac6974e316347c39d70e384f68d5d87fc931735c0053a8963265f6",
+   "section_hashes": {
+    "access": "f74b1489ea5eedffc5b428038faf21b428cef9b1b55623a568851f18e8c52cf6",
+    "apps": "23fd52762e94c39c2b6957ccf3aae8d0f972696d9ceb7b460fc6e55c975b4e79",
+    "assets": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "assumptions": "8f504f1c88834e75fb6d1f2dbe9f53dbf9df96d30bef2e64a3e798eff5d3dc51",
+    "audience": "7e623f56857acb22189a68d86379090c7c386edeb58375bb8840aa3f028a0399",
+    "constraints": "9f2b7ab1554ffe8c8282d8102c28c9e0a5c01ffbbe806e687f050b763dd4f4a6",
+    "context": "24438ac7197d2b8525d64e52635b8346ed3266c04d98a2a9c70aa60c62cfdd1a",
+    "data": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+    "declined": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "domain_facts": "7dfcbc7bd253bd295f031681f3279b69b5cef988a26dec2594fad2413592b915",
+    "entities": "52c2bdeb592ce9c0c9a424535e4496d269567030a4ed200986655b4cab360b00",
+    "experience": "fca37060a0234ef543c8685b351fb11c08a74c83eebdade18b36ab68f29eae4c",
+    "flows": "6f6b467e1fc581d358e81ecf7d943a61d147c7152b7be6fd6e3a17a9d55b81e5",
+    "glossary": "cff3ad544df96b20c08d8f282be08c12df0af2c6dd732f47b9ecb21a48483ddd",
+    "idea": "022d3443417bea0b57ee86ecc31bb65226e32d88dc1e98255de3f728187527ae",
+    "integrations": "0696c2c10da5a5d45d37a82a89c2e82b1e24ffc313f63f1b2e7984dd5ea0b61c",
+    "modules": "31282391757777f3b58d13d65731aa24c7d0409cb066675c843ab3d13d6b5c18",
+    "open_questions": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "references": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+    "research_requests": "0fa20a64903a4278b95ba9b20407b329e8be1f03858a30de4cdc49b5cf41ef7f",
+    "roles": "2af0306b711349dcbef7071e11ac14f128b2722d8c6cce70f3602c738ed700cd",
+    "scope": "975a2927499f96358d78af55f001cc39cc50b8d90ba9f23f9a22d6bfbbb5c70f",
+    "screens": "c28568cec83d760bb689f0cc7b4b54d3064ce90883a98b3fdc02eecd5aa68512",
+    "sources": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945"
+   },
+   "version": 8
+  },
+  "brief_hash": "a621e7b393ac6974e316347c39d70e384f68d5d87fc931735c0053a8963265f6",
+  "brief_version": 8,
+  "format": "compass-full-output",
+  "format_version": 2
+ },
+ "spend": {
+  "by_call": {
+   "cmp.audit_questions": {
+    "calls": 7,
+    "cost_micros": 1612,
+    "latency_ms": 24662,
+    "tokens_in": 17849,
+    "tokens_out": 1549
+   },
+   "cmp.compile_brief": {
+    "calls": 4,
+    "cost_micros": 3207,
+    "latency_ms": 46156,
+    "tokens_in": 22004,
+    "tokens_out": 3775
+   },
+   "cmp.compile_text": {
+    "calls": 1,
+    "cost_micros": 1127,
+    "latency_ms": 11052,
+    "tokens_in": 4871,
+    "tokens_out": 1277
+   },
+   "cmp.draft_module": {
+    "calls": 2,
+    "cost_micros": 2840,
+    "latency_ms": 28579,
+    "tokens_in": 8873,
+    "tokens_out": 4171
+   },
+   "cmp.draft_outline": {
+    "calls": 2,
+    "cost_micros": 611,
+    "latency_ms": 51048,
+    "tokens_in": 5623,
+    "tokens_out": 1105
+   },
+   "cmp.plan_questions": {
+    "calls": 7,
+    "cost_micros": 6537,
+    "latency_ms": 77118,
+    "tokens_in": 36175,
+    "tokens_out": 8954
+   },
+   "cmp.probe_handoff": {
+    "calls": 3,
+    "cost_micros": 1526,
+    "latency_ms": 19012,
+    "tokens_in": 6653,
+    "tokens_out": 1718
+   },
+   "cmp.scan_ambiguity": {
+    "calls": 1,
+    "cost_micros": 0,
+    "latency_ms": 60094,
+    "tokens_in": 0,
+    "tokens_out": 0
+   },
+   "cmp.seed_research": {
+    "calls": 1,
+    "cost_micros": 0,
+    "latency_ms": 60045,
+    "tokens_in": 0,
+    "tokens_out": 0
+   },
+   "cmp.situate": {
+    "calls": 1,
+    "cost_micros": 865,
+    "latency_ms": 13232,
+    "tokens_in": 2328,
+    "tokens_out": 1461
+   },
+   "cmp.understand_turn": {
+    "calls": 8,
+    "cost_micros": 8604,
+    "latency_ms": 58237,
+    "tokens_in": 78990,
+    "tokens_out": 5365
+   }
+  },
+  "calls": 37,
+  "cost_micros": 26929
+ },
+ "structure": {
+  "band": "small",
+  "counts": {
+   "entities": 5,
+   "flows": 4,
+   "modules": 4,
+   "screens": 13
+  },
+  "issues_count": 1,
+  "source": "tier"
+ }
+}

@@ -32,7 +32,7 @@ def test_effective_cap_is_95_percent_of_the_cap(make_guard: GuardFactory) -> Non
 
 def test_default_scope_caps_come_from_budget_yaml(make_guard: GuardFactory) -> None:
     cfg = make_guard().config
-    assert cfg.scope_cap("session:ses_1") == usd("0.50")
+    assert cfg.scope_cap("session:ses_1") == usd("1.00")
     assert cfg.scope_cap("research:run_1") == usd("0.30")
     assert cfg.scope_cap("eval:L1") == usd("1.50")
     assert cfg.scope_cap("test:foo") == usd("0.30")
@@ -109,18 +109,18 @@ def test_a_refused_reserve_leaves_no_trace(make_guard: GuardFactory) -> None:
 # ---------------------------------------------------------------------------- scoped caps
 def test_session_scope_cap_boundary(make_guard: GuardFactory) -> None:
     guard = make_guard()
-    guard.reserve(["session:ses_1"], 400_000, model=MODEL)
+    guard.reserve(["session:ses_1"], 900_000, model=MODEL)
     with pytest.raises(BudgetExceeded) as exc:
         guard.reserve(["session:ses_1"], 100_001, model=MODEL)
     assert exc.value.details["scope"] == "session:ses_1"
-    guard.reserve(["session:ses_1"], 100_000, model=MODEL)  # exactly 0.50
+    guard.reserve(["session:ses_1"], 100_000, model=MODEL)  # exactly 1.00
     guard.reserve(["session:ses_2"], 500_000, model=MODEL)  # other session unaffected
 
 
 def test_scoped_cap_counts_real_spend_not_just_reservations(make_guard: GuardFactory) -> None:
     guard = make_guard()
-    rsv = guard.reserve(["session:ses_1"], 300_000, model=MODEL)
-    guard.commit_cost(rsv, 300_000)
+    rsv = guard.reserve(["session:ses_1"], 800_000, model=MODEL)
+    guard.commit_cost(rsv, 800_000)
     with pytest.raises(BudgetExceeded):
         guard.reserve(["session:ses_1"], 200_001, model=MODEL)
     guard.reserve(["session:ses_1"], 200_000, model=MODEL)

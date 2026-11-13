@@ -1,0 +1,32 @@
+# Integration needs and the words in the Brief (feature intents, glossary, facts, integration names) that
+# reveal them. A need is researched when one of its words occurs. The label is what the user sees.
+needs:
+  payments:
+    label: "online payments"
+    words: [payment, payments, pay, pays, paid, checkout, invoice, billing, subscription, refund, wallet, card, upi, commission, fee, fees, settlement, payout, purchase, buy]
+  messaging:
+    label: "SMS, WhatsApp and push messages"
+    words: [sms, otp, whatsapp, message, messages, notification, notifications, reminder, reminders, alert, alerts, email, push, announcement]
+  maps_location:
+    label: "maps and location"
+    words: [map, maps, location, address, navigation, route, routes, nearby, geocoding, pickup, delivery, directions, distance]
+  tracking_telematics:
+    label: "vehicle and asset tracking"
+    words: [gps, tracking, telematics, track, fleet, vehicle, vehicles, truck, trucks, driver, drivers, fastag, toll]
+  identity:
+    label: "identity and sign-in"
+    words: [login, sign-in, signin, sign, authentication, kyc, identity, aadhaar, verification, verify, passport, id]
+  documents_government:
+    label: "government and compliance portals"
+    words: [gst, e-way, eway, e-invoice, einvoice, tax, permit, permits, licence, license, registration, compliance, regulation, filing, customs, vat]
+  accounting:
+    label: "accounting systems"
+    words: [accounting, accounts, ledger, tally, erp, quickbooks, bookkeeping, reconciliation]
+  calendar_booking:
+    label: "calendar sync"
+    words: [calendar, ical, outlook, gcal]
+  storage_media:
+    label: "file and media storage"
+    words: [upload, photo, photos, image, images, pdf, scan, attachment, video]
+# Words that tell a Brief fact is about a format worth searching (an unusual ID, number or document format).
+format_words: [id, number, licence, license, registration, permit, invoice, plate, code, certificate, receipt, tax, pin]

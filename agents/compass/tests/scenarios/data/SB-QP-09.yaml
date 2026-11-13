@@ -1,0 +1,24 @@
+id: SB-QP-09
+title: A counter-question or an off-topic remark is answered, then the pending question comes back
+tags: [planner, off-topic]
+engines: [planner]
+steps:
+  - say: "I want an app for my tiffin delivery service in Pune"
+    expect:
+      qa: {shown_max: 1, first_serves: [audience.segments]}
+  - say: "How much will this cost me?"
+    expect:
+      event_types: [assistant_message, card]
+      card_text_contains: ["Who orders your tiffins"]
+      qa: {shown_max: 1}
+      calls:
+        counts: {cmp.answer: 1, cmp.plan_questions: 1}
+  - say: "By the way, what is the weather like in Pune today?"
+    expect:
+      event_types: [assistant_message, card]
+      card_text_contains: ["Who orders your tiffins"]
+      qa: {shown_max: 1}
+      calls:
+        counts: {cmp.answer: 2, cmp.plan_questions: 1}
+final:
+  qa: {no_repeats: true, shown_max: 1}

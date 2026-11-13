@@ -1,0 +1,41 @@
+# Job: screens. Spec decision: per-screen content (SCRN). For each usual screen pattern: sections, key
+# components, actions, states (loading, empty, error, success), validations and microcopy conventions.
+job: screens
+spec_need: "Per-screen content"
+lane: screens
+recency: false
+intent: [screen, sections, components, states, validation]
+kinds: [screen_pattern]
+extract_focus: >
+  For each screen pattern give its key, purpose, the role, its sections in order, key components, user actions,
+  its states (loading, empty, error, success) with what each shows, validations on its inputs and microcopy
+  notes (tone and wording conventions). Use only what the page shows or describes.
+targets:
+  - id: module_screens
+    label: "Screens in {module}"
+    foreach: module
+    max: 8
+    question: "What sections, components, actions and states do {module} screens usually have in {category_apps}?"
+    decision_unlocked: "The content of the key screens of this module"
+    needs: [norm, entity]
+    priority: 62
+    anchor: module
+    scope: none
+    slots:
+      # Required: what pages really state (actions, sections). States (loading, empty, error) are asked for but
+      # rarely published: on 7 recorded runs only 0 to 3 of 23 to 43 patterns carried three, so requiring them made
+      # the slot unfillable and the topic kept buying follow-ups (D-160). They stay a wanted, optional slot.
+      - {key: patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, attr: actions, attr_min: 3, extra_attrs: [{attr: sections, min: 2}], required: true}
+      - {key: pattern_states, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, attr: states, attr_min: 3, required: false}
+  - id: key_screens
+    label: "Key screens of {category_apps}"
+    foreach: none
+    question: "What sections, components, actions and states do the most important screens of {category_apps} contain?"
+    decision_unlocked: "The content of the most important screens"
+    needs: [norm]
+    priority: 66
+    anchor: category
+    scope: none
+    slots:
+      - {key: key_patterns, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, deep_min: 5, attr: actions, attr_min: 3, required: true}
+      - {key: key_pattern_states, type: count, kind: screen_pattern, distinct_by: norm_key, min: 3, attr: states, attr_min: 3, required: false}

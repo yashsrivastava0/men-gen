@@ -1,0 +1,16 @@
+id: priorities
+purpose: Force a real first-version boundary when everything is a must.
+slots:
+- scope.priority
+card_type: priority
+option_source: fixed
+order: 8
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: 'Show the user''s own features as chips to place into Must, Nice to have and Later. If everything
+  is a must, ask: ''If you launched with only five features, which ones?''. Never add features.'
+style_guide: "Use only when everything is a must. Ask for the five things that must exist on day one and let the rest fall into later."
+examples:
+- "If you could launch with only five of these, which five would you keep?"
+- "Which of these would you be unhappy to launch without, and which could wait a month?"

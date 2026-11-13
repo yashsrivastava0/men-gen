@@ -1,5 +1,7 @@
 # 09. Roadmap, repo delta and builder prompts
 
+> **Note, 2026-11-10 (doc 12 §10):** roadmap steps 5, 6 and 7 (Blueprint, Design, Screens) become **one Spec agent** (`agents/spec`) built in three phases that share one orchestrator; step 8 is the **Verify agent** (`agents/verify`). The repo-delta rows for `spec-builder` now read: `agents/spec` (lanes `product`, `design`, `screens`, plus join and freeze) and `agents/verify`. Research is `agents/research`.
+
 My role (owner, 2026-11-09): architecture, guidance, prompts and review; the other Claude (Claude Code on the owner's Windows 11 PC) implements. I never write or run code, I do not approve live spend or commits on the owner's behalf, and I cannot see the repo.
 
 ## 1. Operating loop (agent by agent)
@@ -15,7 +17,7 @@ Sizes are relative (S/M/L), not durations. "Gate" refers to doc 07 section 7.
 | 1 | **Backbone:** Spec Graph v3 (nodes, edges, tiers, provenance, status, stable IDs, tombstones, aliases, variants), schema registry, validator framework (V-01 to V-05 first), invariants I-1 to I-12 as property tests, deterministic renderer skeleton, artifact store | 0 | invariants pass; determinism; ADRs written | M | contracts versioning (`contracts-v2` tag vs additive) |
 | 2 | **Gateway + eval skeleton:** Anthropic provider, failover, call-catalog registration (doc 02 §4.1), cassette parity; SpecBench-Mobile harness skeleton in replay mode | 1 | parity tests; harness runs one case | M | live-spend approvals when needed |
 | 3 | **Stage 1 Discovery** incl. document intake, slot graph, domain lens, ambiguity scan, Feature Catalog, Brief View data | 1, 2 | doc 07 gate for Stage 1 | L | confirm Express merged-UI behavior (OI-10) |
-| 4 | **Stage 2 Research** (generic jobs, depth budgets, consumer-grouped output) | 3 | Stage 2 gate | M | search provider and budget |
+| 4 | **Research agent** (`agents/research`, doc 13): port-based search, quote-verified facts, depth budgets, consumer-grouped output | 1, 2, 3 | Research gate (doc 13 §14) | M to L | bake-off spend (about 40 live searches) and the Tavily and Serper accounts (AD-48, AD-52); Compass change prompt `prompts/04` (CR-1 to CR-3) |
 | 5 | **Module Library v1 (~20 modules) + Stage 3 Blueprint + Contract v0** | 4 | Stage 3 gate | L | who reviews modules (OI-5) |
 | 6 | **Stage 4 Design** (tokens, DTCG, `DESIGN.md`, composition rules, directions) | 5 | Stage 4 gate | M | none |
 | 7 | **Stage 5 Screens** (batch writer, global behaviors, copy store, complexity scoring) | 6 | Stage 5 gate | L | none |
@@ -34,7 +36,7 @@ Parallelism between steps: Steps 5 (Module Library authoring) and 4 can overlap,
 | `prompts` | New templates per call catalog; retire archetype-specific prompts |
 | `content` | Capability Modules and recipes replace archetype Domain Packs (migrate the five archetypes into modules); Stack Kit versions; design presets; keep content tests |
 | `discovery` | Add document intake, domain lens, Feature Catalog, ambiguity scan; reuse slot machinery, card engine, intents, safety handling |
-| `research` | Generic jobs, depth budgets without the 10-query ceiling, consumer-grouped output with size cap |
+| `research` | Six jobs, load-based ceilings (20/40/80), worthiness gate, slot-driven parallel workers, `FetchPort`, typed `research.v3` output indexed by Brief ids, live event stream (doc 13) |
 | `spec-builder` | Split into `blueprint`, `design`, `screens`, `verify` packages (new import-linter contracts); reuse baseline-expansion ideas and validators where they fit |
 | `spec-loader` | Becomes the Spec Server (MCP tools plus `AGENTS.md`), keeps slices and budgets |
 | `flow` | Program model, generalized gates (G1, G1.5, G2, G2.5, G3, G4), change controller; keep the pure state machine, gate invariants and property tests |
@@ -43,7 +45,7 @@ Parallelism between steps: Steps 5 (Module Library authoring) and 4 can overlap,
 Known gaps from the Nov 8 status that remain relevant (Master 07 §3): live quality unmeasured beyond L0, token estimates unverified, review-2 coverage gaps. Branch and security items (`feat/apisec`, N3/N4/N6-N11) are **parked** by the owner's de-prioritization of security; Step 0 should still report their state.
 
 ## 4. Step 0: read-only repo audit (prompt draft for the builder)
-> You are auditing the Mobile design engine repo against a new architecture. This is **read-only**: no edits, no commits, no live LLM calls, no printing of `.env` or secrets. Use the Read and Grep tools (not shell commands) to inspect files, because the live-guard hook matches command text. Check free memory before running anything heavy; run at most one offline test suite at a time, in the foreground, and only if memory allows.
+> You are auditing the Mobile design engine repo against a new architecture. This is **read-only**: no edits, no commits, no live LLM calls, no printing of `.env` or secrets. Use the Read and Grep tools (not shell commands) to inspect files. Check free memory before running anything heavy; run at most one offline test suite at a time, in the foreground, and only if memory allows.
 >
 > Read `docs/architecture-v3/00-index-and-decisions.md`, then `03-context-engine.md`, `04-spec-package-and-handoffs.md`, `05-change-management-and-edge-cases.md`, `07-quality-evals-and-models.md`, `09-roadmap-and-repo-delta.md` (the repo-delta table).
 >

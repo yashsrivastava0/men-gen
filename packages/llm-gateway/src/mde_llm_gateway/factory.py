@@ -5,9 +5,15 @@ The provider follows ``settings.llm_mode``:
 * ``mock``   -> :class:`MockProvider` (default; no key, no network)
 * ``replay`` -> :class:`ReplayProvider` over ``settings.cassette_dir`` (env ``CASSETTE_DIR``,
   default ``tests/cassettes`` in the MAIN repository, anchored like the ledger)
-* ``live``   -> :class:`OpenAIResponsesProvider`, ONLY if ``LLM_MODE=live`` AND ``ALLOW_LIVE_LLM=1``
+* ``live``   -> the provider of the vendor(s) the routes need, ONLY if ``LLM_MODE=live``
   and not ``MDE_FORBID_LIVE=1`` (else :class:`LiveCallForbidden`), optionally wrapped in a
   :class:`RecordingProvider` (``settings.record_cassettes``, env ``MDE_RECORD_CASSETTES=1``).
+
+  Which vendor serves a route is configuration, not code (rule 14): ``MODEL_ROUTES`` names a model
+  per route, ``pricing.yaml`` says which vendor serves each model, and ``_VENDORS`` below holds one
+  builder per vendor. One vendor in use -> that provider alone; several -> a :class:`RoutingProvider`
+  that picks per call by the request's model. A vendor whose key is missing is refused only when a
+  route actually uses it, and the error names the route.
 
 The two cassette switches are ``mde_core.Settings`` fields (D-034); the ``cassette_dir`` and
 ``record_cassettes`` arguments of :func:`create_gateway` override them for one gateway.
@@ -25,36 +31,168 @@ see ``ledger.py``) unless the operator resets on purpose with ``MDE_BUDGET_LEDGE
 from __future__ import annotations
 
 import os
+from collections.abc import Callable
 from pathlib import Path
 from typing import cast
 
 from mde_contracts.gateway import LlmCallSink
 from mde_core.clock import Clock, SystemClock
-from mde_core.errors import ConfigError
+from mde_core.errors import ConfigError, UnknownModelPrice
 from mde_core.paths import anchor_to_main_repo
-from mde_core.settings import Settings
+from mde_core.settings import ROUTES, Settings
 from mde_llm_gateway.budget import BudgetConfig, BudgetGuard
 from mde_llm_gateway.gateway import Gateway, GatewayConfig
-from mde_llm_gateway.gating import require_api_key, require_live
+from mde_llm_gateway.gating import VENDOR_KEYS, require_api_key, require_live
 from mde_llm_gateway.ledger import FileLedger, Ledger, MemoryLedger
 from mde_llm_gateway.pricing import Pricing
 from mde_llm_gateway.providers.base import Provider
 from mde_llm_gateway.providers.mock import MockProvider
 from mde_llm_gateway.providers.replay import ReplayProvider
+from mde_llm_gateway.providers.routing import RoutingProvider
 from mde_llm_gateway.registry import SpecRegistry
 
 ENV_CASSETTE_DIR = "CASSETTE_DIR"  # read by ``Settings.cassette_dir``
 ENV_RECORD = "MDE_RECORD_CASSETTES"  # read by ``Settings.record_cassettes``
 ENV_LEDGER_RESET = "MDE_BUDGET_LEDGER_RESET"
-OPENAI_CLIENT_TIMEOUT_S = 600.0  # the per-call timeout is set on every request instead
+CLIENT_TIMEOUT_S = 600.0  # the per-call timeout is set on every request instead
+
+
+def _openai_provider(
+    settings: Settings, client: object | None, needed_by: str, pricing: Pricing
+) -> Provider:
+    from mde_llm_gateway.providers.openai_responses import (  # a vendor SDK is only imported when live
+        OpenAIClientLike,
+        OpenAIResponsesProvider,
+    )
+
+    if client is None:
+        import openai
+
+        client = openai.AsyncOpenAI(
+            api_key=require_api_key(settings, "openai", needed_by=needed_by),
+            max_retries=0,  # the gateway owns retries: every attempt must be metered
+            timeout=CLIENT_TIMEOUT_S,
+        )
+    return OpenAIResponsesProvider(cast("OpenAIClientLike", client), settings=settings)
+
+
+def _anthropic_provider(
+    settings: Settings, client: object | None, needed_by: str, pricing: Pricing
+) -> Provider:
+    from mde_llm_gateway.providers.anthropic_messages import (
+        AnthropicClientLike,
+        AnthropicMessagesProvider,
+    )
+
+    if client is None:
+        import anthropic
+
+        client = anthropic.AsyncAnthropic(
+            api_key=require_api_key(settings, "anthropic", needed_by=needed_by),
+            max_retries=0,  # the gateway owns retries: every attempt must be metered
+            timeout=CLIENT_TIMEOUT_S,
+        )
+    return AnthropicMessagesProvider(
+        cast("AnthropicClientLike", client),
+        settings=settings,
+        effort_floor=lambda model: pricing.price_for(model).effort_floor,
+    )
+
+
+# One builder per vendor: (settings, injected client or None, why this vendor is needed, price list) -> provider.
+# Adding a vendor = a provider module, a builder here, its key in ``gating.VENDOR_KEYS`` and a
+# ``vendor:`` on its rows in ``pricing.yaml``. Nothing else changes.
+_VENDORS: dict[str, Callable[[Settings, object | None, str, Pricing], Provider]] = {
+    "openai": _openai_provider,
+    "anthropic": _anthropic_provider,
+}
+
+
+def vendors_in_use(settings: Settings, pricing: Pricing) -> dict[str, str]:
+    """Vendor -> a short reason (``"route fast uses claude-haiku-5-5"``) for every route's model.
+
+    A model with no price row is refused here, with the route that names it, instead of failing
+    (or silently falling back) call by call later.
+    """
+    out: dict[str, str] = {}
+    for route in ROUTES:
+        model = settings.model_for_route(route)
+        vendor = pricing.vendor_for(model)
+        out.setdefault(vendor, f"route {route} uses {model}")
+    return out
+
+
+def route_problems(settings: Settings, pricing: Pricing | None = None) -> list[str]:
+    """Short phrases naming what must still be set for the routes to run live; empty means ready.
+
+    Names only, never a value (a key is checked for presence). Each phrase names the route that needs it
+    (``"ANTHROPIC_API_KEY (route fast uses claude-haiku-5-5)"``), so an agent's readiness check can say what
+    to fix before a run starts instead of failing call by call.
+    """
+    the_pricing = pricing or Pricing.load()
+    problems: list[str] = []
+    needed: dict[str, str] = {}
+    for route in ROUTES:
+        model = settings.model_for_route(route)
+        try:
+            vendor = the_pricing.vendor_for(model)
+        except UnknownModelPrice:
+            problems.append(f"a price for {model} in the gateway's pricing.yaml (route {route})")
+            continue
+        if vendor not in _VENDORS:
+            problems.append(f"a provider for vendor {vendor} (route {route} uses {model})")
+            continue
+        needed.setdefault(vendor, f"route {route} uses {model}")
+    for vendor, why in needed.items():
+        field, env_name = VENDOR_KEYS[vendor]
+        key = getattr(settings, field, None)
+        if key is None or not key.get_secret_value():
+            problems.append(f"{env_name} ({why})")
+    return problems
+
+
+def routes_share_vendor(
+    settings: Settings, first: str, second: str, pricing: Pricing | None = None
+) -> bool:
+    """True when two routes are served by the same vendor (the same model counts, even if unpriced).
+
+    An agent that labels its output with this (for example "the checker is the same vendor as the
+    writer") learns it here instead of looking at model names (rule 14).
+    """
+    a, b = settings.model_for_route(first), settings.model_for_route(second)
+    if a == b:
+        return True
+    the_pricing = pricing or Pricing.load()
+    try:
+        return the_pricing.vendor_for(a) == the_pricing.vendor_for(b)
+    except UnknownModelPrice:
+        return False
+
+
+def _build_live_provider(
+    settings: Settings, pricing: Pricing, clients: dict[str, object | None]
+) -> Provider:
+    providers: dict[str, Provider] = {}
+    for vendor, needed_by in vendors_in_use(settings, pricing).items():
+        builder = _VENDORS.get(vendor)
+        if builder is None:
+            raise ConfigError(
+                f"pricing.yaml names vendor {vendor!r} but the gateway has no provider for it "
+                f"({needed_by}); known: {', '.join(sorted(_VENDORS))}"
+            )
+        providers[vendor] = builder(settings, clients.get(vendor), needed_by, pricing)
+    if len(providers) == 1:
+        return next(iter(providers.values()))
+    return RoutingProvider(providers, pricing.vendor_for)
 
 
 def _build_provider(
     settings: Settings,
+    pricing: Pricing,
     *,
     cassette_dir: str | Path | None,
     record_cassettes: bool | None,
-    openai_client: object | None,
+    clients: dict[str, object | None],
 ) -> Provider:
     mode = settings.llm_mode
     directory = Path(cassette_dir) if cassette_dir is not None else settings.cassette_dir
@@ -65,22 +203,9 @@ def _build_provider(
     if mode != "live":  # pragma: no cover - Settings validates the literal
         raise ConfigError(f"unknown LLM_MODE {mode!r}")
     require_live(settings)  # raises LiveCallForbidden before anything else happens
-    from mde_llm_gateway.providers.openai_responses import (  # openai is only imported when live
-        OpenAIClientLike,
-        OpenAIResponsesProvider,
-    )
     from mde_llm_gateway.providers.recording import RecordingProvider
 
-    client = openai_client
-    if client is None:
-        import openai
-
-        client = openai.AsyncOpenAI(
-            api_key=require_api_key(settings),
-            max_retries=0,  # the gateway owns retries: every attempt must be metered
-            timeout=OPENAI_CLIENT_TIMEOUT_S,
-        )
-    live: Provider = OpenAIResponsesProvider(cast("OpenAIClientLike", client), settings=settings)
+    live = _build_live_provider(settings, pricing, clients)
     record = record_cassettes if record_cassettes is not None else settings.record_cassettes
     if record:
         return RecordingProvider(live, settings=settings, cassette_dir=directory)
@@ -101,14 +226,21 @@ def create_gateway(
     cassette_dir: str | Path | None = None,
     record_cassettes: bool | None = None,
     openai_client: object | None = None,
+    anthropic_client: object | None = None,
 ) -> Gateway:
-    """Build the gateway for ``settings``. Pass ``provider`` to override the mode's default."""
+    """Build the gateway for ``settings``. Pass ``provider`` to override the mode's default.
+
+    ``openai_client`` / ``anthropic_client`` inject a vendor's SDK client (tests); each is used only
+    when a route needs that vendor.
+    """
     the_clock: Clock = clock or SystemClock()
+    the_pricing = pricing or Pricing.load()
     the_provider = provider or _build_provider(
         settings,
+        the_pricing,
         cassette_dir=cassette_dir,
         record_cassettes=record_cassettes,
-        openai_client=openai_client,
+        clients={"openai": openai_client, "anthropic": anthropic_client},
     )
     the_ledger = ledger
     if the_ledger is None:
@@ -122,7 +254,7 @@ def create_gateway(
         the_ledger.verify_integrity(reset=os.environ.get(ENV_LEDGER_RESET, "") in {"1", "true"})
     guard = BudgetGuard(
         budget_config or BudgetConfig.load(cap_usd=settings.llm_budget_usd),
-        pricing or Pricing.load(),
+        the_pricing,
         the_ledger,
         bills=the_provider.billable,
         clock=the_clock,

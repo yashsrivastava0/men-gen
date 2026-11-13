@@ -148,7 +148,7 @@ async def test_cancellation_token() -> None:
 
 
 def test_settings_defaults_and_live_gate(monkeypatch: pytest.MonkeyPatch) -> None:
-    for name in ("LLM_MODE", "ALLOW_LIVE_LLM", "OPENAI_API_KEY", "MDE_FORBID_LIVE"):
+    for name in ("LLM_MODE", "OPENAI_API_KEY", "MDE_FORBID_LIVE"):
         monkeypatch.delenv(name, raising=False)
     monkeypatch.setenv("MDE_ENV_FILE", "")
     s = load_settings()
@@ -157,8 +157,6 @@ def test_settings_defaults_and_live_gate(monkeypatch: pytest.MonkeyPatch) -> Non
     assert s.llm_budget_usd == Decimal("6.00")
 
     monkeypatch.setenv("LLM_MODE", "live")
-    assert not load_settings().live_enabled  # needs the second key
-    monkeypatch.setenv("ALLOW_LIVE_LLM", "1")
     assert load_settings().live_enabled
     monkeypatch.setenv("MDE_FORBID_LIVE", "1")
     assert not load_settings().live_enabled

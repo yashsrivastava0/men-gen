@@ -99,6 +99,16 @@ async def test_token_bucket_bursts_then_paces(clock: FakeClock) -> None:
     assert waits[:2] == [0.0, 0.0] and waits[2] == pytest.approx(0.5)
 
 
+async def test_token_bucket_always_makes_progress_on_a_fake_clock(clock: FakeClock) -> None:
+    """Float residue (0.9999999999999999 tokens) used to give a wait too small to move the fake clock, so a long
+    mock session could spin forever. Thousands of acquires at a high rate must finish and pace correctly."""
+    bucket = TokenBucket(rpm=60_000, clock=clock)  # 1000 per second, burst 10
+    for _ in range(20_000):
+        await bucket.acquire()
+    # 10 were free; the other 19,990 cost 1 ms each on the injected clock
+    assert clock.monotonic() == pytest.approx(19.99, rel=1e-3)
+
+
 def test_token_bucket_validates(clock: FakeClock) -> None:
     with pytest.raises(ValueError):
         TokenBucket(rpm=0, clock=clock)
@@ -202,9 +212,7 @@ def test_probe_model_reports_availability_and_failures() -> None:
 
     from mde_llm_gateway.doctor import probe_model
 
-    live = make_settings(
-        llm_mode="live", allow_live_llm=True, forbid_live=False, openai_api_key=fake_api_key()
-    )
+    live = make_settings(llm_mode="live", forbid_live=False, openai_api_key=fake_api_key())
 
     def resp(status: int) -> httpx2.Response:
         return httpx2.Response(

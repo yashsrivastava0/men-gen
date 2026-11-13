@@ -1,0 +1,37 @@
+# Job: platform. Spec decision: which permissions, store rules and build setup each capability of the app needs, so the
+# front-end engine does not discover a store rejection or a missing native module at the end (BN-10 and the Expo stack).
+# Targets are NOT a fixed list: one topic per capability the Brief implies (data/capabilities.yaml; at most one each, and
+# at most as many as the size class allows, data/depth.yaml), ranked by priority like any other topic. They are not
+# protected from the topic cap. Official platform pages (the platform owners, the Expo and React Native documentation) are
+# the sources that count: data/authority/global.yaml lists their domains.
+# Output: kind `platform_constraint` (capability, platform, rule, effect_on_build only when the page states it, status).
+job: platform
+spec_need: "Platform rules and build setup"
+lane: integrations
+also_lanes: [screens, verify]
+recency: true
+intent: [permissions, requirements, review, configuration]
+kinds: [platform_constraint]
+extract_focus: >
+  Record each platform requirement as ONE constraint with ONE quote: the capability it is about, the platform it applies
+  to (ios, android, both, expo, react_native or web, as the page states), and the rule in one sentence (what the app must
+  declare, request, configure or avoid). Fill effect_on_build ONLY when the page says what the rule means for building the
+  app: needs_development_build (it does not work in Expo Go), needs_permission (the user must grant a permission),
+  needs_config_plugin (a config plugin or native configuration is required), review_risk (the page says the app can be
+  rejected or removed), or none (the page says there is no extra step). Otherwise it stays null. Copy numbers, version
+  names and dates exactly. Platform pages state requirements; never add what is usual or likely.
+targets:
+  - id: capability_rules
+    label: "Platform rules: {topic}"
+    foreach: capability
+    max: 12
+    question: "What do the app store rules and the Expo or React Native documentation say about {topic} in a mobile app: what the app must declare, which permissions and review rules apply, and what the build needs?"
+    decision_unlocked: "The permissions, store rules and build setup this capability needs"
+    needs: [current, norm]
+    priority: 64
+    anchor: topic
+    scope: none
+    official_first: true
+    slots:
+      - {key: constraints, type: count, kind: platform_constraint, distinct_by: norm_key, min: 1, required: true}
+      - {key: build_effects, type: distinct_values, kind: platform_constraint, attr: effect_on_build, min: 1, required: false}

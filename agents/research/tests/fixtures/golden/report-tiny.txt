@@ -1,0 +1,763 @@
+# Research report (research.v5)
+
+- Status: **complete**
+- Size: focused (load 1) · light mode
+- Signals: none
+- Work: 10 searches, 19 pages, 0 s, USD 0.00
+- Topics: 1 covered, 1 not found, of 2; required slots 2 of 3
+- Items: 32 (main store about 12670 tokens, appendix 0)
+- Provider: fake; models: gpt-6-luna / checker gpt-6-luna (same)
+
+## Lane quality
+
+| Lane | Quality | Required slots filled | Items | Strong share |
+| --- | --- | --- | --- | --- |
+| blueprint | partial | 2 of 3 | 32 | 100% |
+| design | none | 0 of 0 | 0 | 0% |
+| integrations | none | 0 of 0 | 0 | 0% |
+| mock | none | 0 of 0 | 0 | 0% |
+| screens | strong | 0 of 0 | 7 | 100% |
+| verify | none | 0 of 0 | 0 | 0% |
+
+## Builder-need coverage
+
+| Need | Coverage |
+| --- | --- |
+| BN-02 | researched |
+| BN-03 | defaulted_only |
+| BN-04 | defaulted_only |
+| BN-05 | defaulted_only |
+| BN-07 | defaulted_only |
+| BN-08 | defaulted_only |
+| BN-09 | researched |
+| BN-10 | defaulted_only |
+
+## To confirm
+
+- Nothing needs confirming.
+
+## Conflicts
+
+- No conflicts.
+
+## Gaps
+
+- Comparable unit converter apps: not_found (searched: unit converter features pricing; unit converter comparison; customers rate comparison converter features pricing plans features)
+- What changed recently in unit converter apps: not_worthwhile
+- How unit converter apps are navigated: not_worthwhile
+- What User users do: not_worthwhile
+- Journey: Convert units: not_worthwhile
+- Sign-up and first use: not_worthwhile
+- Empty, error and offline states: not_worthwhile
+- Look and feel of unit converter apps: not_worthwhile
+- Platform guidelines: Apple Human Interface Guidelines: not_worthwhile
+- Platform guidelines: Material Design: not_worthwhile
+- Accessibility guidance for mobile apps: not_worthwhile
+- Recent design trends in unit converter apps: not_worthwhile
+- Key screens of unit converter apps: not_worthwhile
+
+## Features and comparable apps
+
+#### Each unit converter comparison record has `RI-007`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each unit converter comparison record has a status, a created date, an owner and a reference number used in comparison. Updated August 2024 for unit converter comparison teams.
+
+> Each unit converter comparison record has a status, a created date, an owner and a reference number used in comparison.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-004`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-011`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-018`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: each unit converter comparison
+- kind: app
+- region: each unit converter comparison
+- platforms: each; unit; converter; comparison; record; has
+- pricing_model: each unit converter comparison
+- features: {"feature_key": "each", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "each"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Each unit converter features record has `RI-008`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each unit converter features record has a status, a created date, an owner and a reference number used in features.
+
+> Each unit converter features record has a status, a created date, an owner and a reference number used in features.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-005`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-013`: docs.unit61.example (official, 2026-09-01) https://docs.unit61.example/unit-converter-features/0
+- Source `S-019`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: each unit converter features
+- kind: app
+- region: each unit converter features
+- platforms: each; unit; converter; features; record; has
+- pricing_model: each unit converter features
+- features: {"feature_key": "each", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "each"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Fees for unit converter features start `RI-010`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Fees for unit converter features start at 2 percent and funds settle in 2 business days after capture.
+
+> Fees for unit converter features start at 2 percent and funds settle in 2 business days after capture.
+> docs.unit61.example, 2026-09-01
+
+- Source `S-013`: docs.unit61.example (official, 2026-09-01) https://docs.unit61.example/unit-converter-features/0
+- name: fees unit converter features
+- kind: app
+- region: fees unit converter features
+- platforms: fees; unit; converter; features; start; percent
+- pricing_model: fees unit converter features
+- features: {"feature_key": "fees", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "fees"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Most unit converter comparison providers list `RI-013`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most unit converter comparison providers list converter and comparison as core features on their pricing page.
+
+> Most unit converter comparison providers list converter and comparison as core features on their pricing page.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-004`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-011`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-018`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: most unit converter comparison
+- kind: app
+- region: most unit converter comparison
+- platforms: most; unit; converter; comparison; providers; list
+- pricing_model: most unit converter comparison
+- features: {"feature_key": "most", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "most"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Most unit converter features providers list `RI-014`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most unit converter features providers list converter and features as core features on their pricing page.
+
+> Most unit converter features providers list converter and features as core features on their pricing page.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-005`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-019`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: most unit converter features
+- kind: app
+- region: most unit converter features
+- platforms: most; unit; converter; features; providers; list
+- pricing_model: most unit converter features
+- features: {"feature_key": "most", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "most"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### The sandbox for unit converter features `RI-018`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+The sandbox for unit converter features supports test keys, webhook events for converter and rate limits of 3 requests per second.
+
+> The sandbox for unit converter features supports test keys, webhook events for converter and rate limits of 3 requests per second.
+> docs.unit61.example, 2026-09-01
+
+- Source `S-013`: docs.unit61.example (official, 2026-09-01) https://docs.unit61.example/unit-converter-features/0
+- name: sandbox unit converter features
+- kind: app
+- region: sandbox unit converter features
+- platforms: sandbox; unit; converter; features; supports; test
+- pricing_model: sandbox unit converter features
+- features: {"feature_key": "sandbox", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "sandbox"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### A typical unit converter comparison screen `RI-022`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+A typical unit converter comparison screen shows converter first, then comparison, with an empty state when nothing is available.
+
+> A typical unit converter comparison screen shows converter first, then comparison, with an empty state when nothing is available.
+> help.unit89.example, 2025-11-01
+
+- Source `S-018`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: typical unit converter comparison
+- kind: app
+- region: typical unit converter comparison
+- platforms: typical; unit; converter; comparison; screen; shows
+- pricing_model: typical unit converter comparison
+- features: {"feature_key": "typical", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "typical"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### A typical unit converter features screen `RI-023`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+A typical unit converter features screen shows converter first, then features, with an empty state when nothing is available.
+
+> A typical unit converter features screen shows converter first, then features, with an empty state when nothing is available.
+> help.unit89.example, 2025-11-01
+
+- Source `S-019`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: typical unit converter features
+- kind: app
+- region: typical unit converter features
+- platforms: typical; unit; converter; features; screen; shows
+- pricing_model: typical unit converter features
+- features: {"feature_key": "typical", "level": "core"}; {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}
+- screens: {"screen_key": "typical"}; {"screen_key": "unit"}; {"screen_key": "converter"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Unit converter comparison apps let members `RI-024`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Unit converter comparison apps let members converter and manage comparison directly from the mobile app.
+
+> Unit converter comparison apps let members converter and manage comparison directly from the mobile app.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-011`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- name: unit converter comparison let
+- kind: app
+- region: unit converter comparison let
+- platforms: unit; converter; comparison; let; members; manage
+- pricing_model: unit converter comparison let
+- features: {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}; {"feature_key": "comparison", "level": "core"}
+- screens: {"screen_key": "unit"}; {"screen_key": "converter"}; {"screen_key": "comparison"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Unit converter features apps let members `RI-025`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+Unit converter features apps let members converter and manage features directly from the mobile app.
+
+> Unit converter features apps let members converter and manage features directly from the mobile app.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-005`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- name: unit converter features let
+- kind: app
+- region: unit converter features let
+- platforms: unit; converter; features; let; members; manage
+- pricing_model: unit converter features let
+- features: {"feature_key": "unit", "level": "core"}; {"feature_key": "converter", "level": "core"}; {"feature_key": "features", "level": "core"}
+- screens: {"screen_key": "unit"}; {"screen_key": "converter"}; {"screen_key": "features"}
+- Applies to: FTR:FTR-001 (expects)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Customers rate comparison and converter as `RI-001`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Customers rate comparison and converter as the most used parts of unit converter comparison products in the region.
+
+> Customers rate comparison and converter as the most used parts of unit converter comparison products in the region.
+> docs.unit28.example, 2026-09-01
+
+- Source `S-004`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- Source `S-011`: docs.unit28.example (official, 2026-09-01) https://docs.unit28.example/unit-converter-comparison/0
+- Source `S-018`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-comparison/2
+- name: customers rate comparison converter
+- kind: app
+- region: customers rate comparison converter
+- platforms: customers; rate; comparison; converter; most; used
+- pricing_model: customers rate comparison converter
+- features: {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}; {"feature_key": "comparison", "level": "core"}
+- screens: {"screen_key": "customers"}; {"screen_key": "rate"}; {"screen_key": "comparison"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Customers rate comparison and rate as `RI-002`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Customers rate comparison and rate as the most used parts of customers rate comparison products in the region.
+
+> Customers rate comparison and rate as the most used parts of customers rate comparison products in the region. Updated September 2026 for customers rate comparison
+> docs.customers36.example, 2026-09-01
+
+- Source `S-002`: developer.customers86.example (official, 2024-08-01) https://developer.customers86.example/customers-rate-comparison/5
+- Source `S-008`: docs.customers36.example (official, 2026-09-01) https://docs.customers36.example/customers-rate-comparison/0
+- Source `S-016`: help.customers49.example (help, 2025-11-01) https://help.customers49.example/customers-rate-comparison/2
+- name: customers rate comparison most
+- kind: app
+- region: customers rate comparison most
+- platforms: customers; rate; comparison; most; used; parts
+- pricing_model: customers rate comparison most
+- features: {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}; {"feature_key": "comparison", "level": "core"}
+- screens: {"screen_key": "customers"}; {"screen_key": "rate"}; {"screen_key": "comparison"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Customers rate features and converter as `RI-003`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Customers rate features and converter as the most used parts of unit converter features products in the region.
+
+> Customers rate features and converter as the most used parts of unit converter features products in the region.
+> developer.unit34.example, 2024-08-01
+
+- Source `S-005`: developer.unit34.example (official, 2024-08-01) https://developer.unit34.example/unit-converter-features/5
+- Source `S-013`: docs.unit61.example (official, 2026-09-01) https://docs.unit61.example/unit-converter-features/0
+- Source `S-019`: help.unit89.example (help, 2025-11-01) https://help.unit89.example/unit-converter-features/2
+- name: customers rate features converter
+- kind: app
+- region: customers rate features converter
+- platforms: customers; rate; features; converter; most; used
+- pricing_model: customers rate features converter
+- features: {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}; {"feature_key": "features", "level": "core"}
+- screens: {"screen_key": "customers"}; {"screen_key": "rate"}; {"screen_key": "features"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Customers rate features and rate as `RI-004`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Customers rate features and rate as the most used parts of customers rate features products in the region.
+
+> Customers rate features and rate as the most used parts of customers rate features products in the region.
+> developer.customers41.example, 2024-08-01
+
+- Source `S-001`: developer.customers41.example (official, 2024-08-01) https://developer.customers41.example/customers-rate-features/5
+- Source `S-009`: docs.customers99.example (official, 2026-09-01) https://docs.customers99.example/customers-rate-features/0
+- name: customers rate features most
+- kind: app
+- region: customers rate features most
+- platforms: customers; rate; features; most; used; parts
+- pricing_model: customers rate features most
+- features: {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}; {"feature_key": "features", "level": "core"}
+- screens: {"screen_key": "customers"}; {"screen_key": "rate"}; {"screen_key": "features"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Each customers rate comparison record has `RI-005`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each customers rate comparison record has a status, a created date, an owner and a reference number used in comparison.
+
+> Each customers rate comparison record has a status, a created date, an owner and a reference number used in comparison.
+> docs.customers36.example, 2026-09-01
+
+- Source `S-002`: developer.customers86.example (official, 2024-08-01) https://developer.customers86.example/customers-rate-comparison/5
+- Source `S-008`: docs.customers36.example (official, 2026-09-01) https://docs.customers36.example/customers-rate-comparison/0
+- Source `S-016`: help.customers49.example (help, 2025-11-01) https://help.customers49.example/customers-rate-comparison/2
+- name: each customers rate comparison
+- kind: app
+- region: each customers rate comparison
+- platforms: each; customers; rate; comparison; record; has
+- pricing_model: each customers rate comparison
+- features: {"feature_key": "each", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "each"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Each customers rate features record has `RI-006`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Each customers rate features record has a status, a created date, an owner and a reference number used in features.
+
+> Each customers rate features record has a status, a created date, an owner and a reference number used in features.
+> developer.customers41.example, 2024-08-01
+
+- Source `S-001`: developer.customers41.example (official, 2024-08-01) https://developer.customers41.example/customers-rate-features/5
+- Source `S-009`: docs.customers99.example (official, 2026-09-01) https://docs.customers99.example/customers-rate-features/0
+- name: each customers rate features
+- kind: app
+- region: each customers rate features
+- platforms: each; customers; rate; features; record; has
+- pricing_model: each customers rate features
+- features: {"feature_key": "each", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "each"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Fees for customers rate comparison start `RI-009`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Fees for customers rate comparison start at 4 percent and funds settle in 4 business days after capture.
+
+> Fees for customers rate comparison start at 4 percent and funds settle in 4 business days after capture.
+> help.customers49.example, 2025-11-01
+
+- Source `S-016`: help.customers49.example (help, 2025-11-01) https://help.customers49.example/customers-rate-comparison/2
+- name: fees customers rate comparison
+- kind: app
+- region: fees customers rate comparison
+- platforms: fees; customers; rate; comparison; start; percent
+- pricing_model: fees customers rate comparison
+- features: {"feature_key": "fees", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "fees"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Most customers rate comparison providers list `RI-011`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: duplicate_source, geo_uncertain
+
+Most customers rate comparison providers list rate and comparison as core features on their pricing page.
+
+> Most customers rate comparison providers list rate and comparison as core features on their pricing page.
+> docs.customers36.example, 2026-09-01
+
+- Source `S-002`: developer.customers86.example (official, 2024-08-01) https://developer.customers86.example/customers-rate-comparison/5
+- Source `S-008`: docs.customers36.example (official, 2026-09-01) https://docs.customers36.example/customers-rate-comparison/0
+- Source `S-016`: help.customers49.example (help, 2025-11-01) https://help.customers49.example/customers-rate-comparison/2
+- name: most customers rate comparison
+- kind: app
+- region: most customers rate comparison
+- platforms: most; customers; rate; comparison; providers; list
+- pricing_model: most customers rate comparison
+- features: {"feature_key": "most", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "most"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Most customers rate features providers list `RI-012`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+Most customers rate features providers list rate and features as core features on their pricing page.
+
+> Most customers rate features providers list rate and features as core features on their pricing page.
+> developer.customers41.example, 2024-08-01
+
+- Source `S-001`: developer.customers41.example (official, 2024-08-01) https://developer.customers41.example/customers-rate-features/5
+- name: most customers rate features
+- kind: app
+- region: most customers rate features
+- platforms: most; customers; rate; features; providers; list
+- pricing_model: most customers rate features
+- features: {"feature_key": "most", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "most"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Recent updates added converter and improved `RI-015`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+Recent updates added converter and improved comparison for unit converter comparison users on Android and iOS.
+
+> Recent updates added converter and improved comparison for unit converter comparison users on Android and iOS.
+> developer.unit19.example, 2024-08-01
+
+- Source `S-004`: developer.unit19.example (official, 2024-08-01) https://developer.unit19.example/unit-converter-comparison/5
+- name: recent updates added converter
+- kind: app
+- region: recent updates added converter
+- platforms: recent; updates; added; converter; improved; comparison
+- pricing_model: recent updates added converter
+- features: {"feature_key": "recent", "level": "core"}; {"feature_key": "updates", "level": "core"}; {"feature_key": "added", "level": "core"}
+- screens: {"screen_key": "recent"}; {"screen_key": "updates"}; {"screen_key": "added"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Recent updates added rate and improved `RI-016`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Recent updates added rate and improved comparison for customers rate comparison users on Android and iOS.
+
+> Recent updates added rate and improved comparison for customers rate comparison users on Android and iOS.
+> docs.customers36.example, 2026-09-01
+
+- Source `S-008`: docs.customers36.example (official, 2026-09-01) https://docs.customers36.example/customers-rate-comparison/0
+- name: recent updates added rate
+- kind: app
+- region: recent updates added rate
+- platforms: recent; updates; added; rate; improved; comparison
+- pricing_model: recent updates added rate
+- features: {"feature_key": "recent", "level": "core"}; {"feature_key": "updates", "level": "core"}; {"feature_key": "added", "level": "core"}
+- screens: {"screen_key": "recent"}; {"screen_key": "updates"}; {"screen_key": "added"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### The sandbox for customers rate features `RI-017`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+The sandbox for customers rate features supports test keys, webhook events for rate and rate limits of 3 requests per second.
+
+> The sandbox for customers rate features supports test keys, webhook events for rate and rate limits of 3 requests per second.
+> docs.customers99.example, 2026-09-01
+
+- Source `S-009`: docs.customers99.example (official, 2026-09-01) https://docs.customers99.example/customers-rate-features/0
+- name: sandbox customers rate features
+- kind: app
+- region: sandbox customers rate features
+- platforms: sandbox; customers; rate; features; supports; test
+- pricing_model: sandbox customers rate features
+- features: {"feature_key": "sandbox", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "sandbox"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Support is available by chat and `RI-019`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+Support is available by chat and email, and the help centre explains rate and comparison step by step.
+
+> Support is available by chat and email, and the help centre explains rate and comparison step by step.
+> developer.customers86.example, 2024-08-01
+
+- Source `S-002`: developer.customers86.example (official, 2024-08-01) https://developer.customers86.example/customers-rate-comparison/5
+- name: support available chat email
+- kind: app
+- region: support available chat email
+- platforms: support; available; chat; email; help; centre
+- pricing_model: support available chat email
+- features: {"feature_key": "support", "level": "core"}; {"feature_key": "available", "level": "core"}; {"feature_key": "chat", "level": "core"}
+- screens: {"screen_key": "support"}; {"screen_key": "available"}; {"screen_key": "chat"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### Teams can export rate reports and `RI-020`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain
+
+Teams can export rate reports and filter features by date, status and owner.
+
+> Teams can export rate reports and filter features by date, status and owner.
+> docs.customers99.example, 2026-09-01
+
+- Source `S-009`: docs.customers99.example (official, 2026-09-01) https://docs.customers99.example/customers-rate-features/0
+- name: teams can export rate
+- kind: app
+- region: teams can export rate
+- platforms: teams; can; export; rate; reports; filter
+- pricing_model: teams can export rate
+- features: {"feature_key": "teams", "level": "core"}; {"feature_key": "can", "level": "core"}; {"feature_key": "export", "level": "core"}
+- screens: {"screen_key": "teams"}; {"screen_key": "can"}; {"screen_key": "export"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+#### A typical customers rate features screen `RI-021`
+**OFFICIAL** · competitor · impact normal · confidence high · flags: geo_uncertain, stale
+
+A typical customers rate features screen shows rate first, then features, with an empty state when nothing is available.
+
+> A typical customers rate features screen shows rate first, then features, with an empty state when nothing is available.
+> developer.customers41.example, 2024-08-01
+
+- Source `S-001`: developer.customers41.example (official, 2024-08-01) https://developer.customers41.example/customers-rate-features/5
+- name: typical customers rate features
+- kind: app
+- region: typical customers rate features
+- platforms: typical; customers; rate; features; screen; shows
+- pricing_model: typical customers rate features
+- features: {"feature_key": "typical", "level": "core"}; {"feature_key": "customers", "level": "core"}; {"feature_key": "rate", "level": "core"}
+- screens: {"screen_key": "typical"}; {"screen_key": "customers"}; {"screen_key": "rate"}
+- Applies to: NEW (suggests)
+- Use: Comparable app: use it to judge which features are usual.
+
+
+## Structure: screens, navigation and roles
+
+#### Each unit converter screens record has `RI-026`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Each unit converter screens record has a status, a created date, an owner and a reference number used in screens.
+
+> Each unit converter roles record has a status, a created date, an owner and a reference number used in roles.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-003`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-006`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-007`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-010`: docs.unit15.example (official, 2026-09-01) https://docs.unit15.example/unit-converter-navigation/0
+- Source `S-012`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-014`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- (+2 more sources)
+- Seen in 1 of 1 (limited evidence)
+- screen_key: each unit converter screens
+- purpose: each unit converter screens
+- role: each unit converter screens
+- sections: each; unit; converter; screens; record; has
+- key_components: each; unit; converter; screens; record; has; screen; roles; navigation
+- actions: each; unit; converter; screens; record; has; screen; roles; navigation
+- states: {"state": "loading", "content": "each unit converter screens"}; {"state": "loading", "content": "each unit converter screens"}; {"state": "loading", "content": "each unit converter screens"}; {"state": "loading", "content": "each unit converter screen"}; {"state": "loading", "content": "each unit converter roles"}; {"state": "loading", "content": "each unit converter navigation"}
+- validations: each; unit; converter; screens; record; has; screen; roles; navigation
+- microcopy_notes: each; unit; converter; screens; record; has; screen; roles; navigation
+- section_variants: ['each', 'unit', 'converter', 'screen', 'record', 'has']; ['each', 'unit', 'converter', 'roles', 'record', 'has']; ['each', 'unit', 'converter', 'navigation', 'record', 'has']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Fees for unit converter roles start `RI-027`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: limited_evidence
+
+Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
+
+> Fees for unit converter roles start at 5 percent and funds settle in 4 business days after capture.
+> help.unit18.example, 2025-11-01
+
+- Source `S-017`: help.unit18.example (help, 2025-11-01) https://help.unit18.example/unit-converter-roles/2
+- Seen in 1 of 1 (limited evidence)
+- screen_key: fees unit converter roles
+- purpose: fees unit converter roles
+- role: fees unit converter roles
+- sections: fees; unit; converter; roles; start; percent
+- key_components: fees; unit; converter; roles; start; percent
+- actions: fees; unit; converter; roles; start; percent
+- states: {"state": "loading", "content": "fees unit converter roles"}; {"state": "loading", "content": "fees unit converter roles"}; {"state": "loading", "content": "fees unit converter roles"}
+- validations: fees; unit; converter; roles; start; percent
+- microcopy_notes: fees; unit; converter; roles; start; percent
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Most unit converter roles providers list `RI-028`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: limited_evidence, stale
+
+Most unit converter roles providers list converter and roles as core features on their pricing page.
+
+> Most unit converter roles providers list converter and roles as core features on their pricing page.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-003`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Seen in 1 of 1 (limited evidence)
+- screen_key: most unit converter roles
+- purpose: most unit converter roles
+- role: most unit converter roles
+- sections: most; unit; converter; roles; providers; list
+- key_components: most; unit; converter; roles; providers; list
+- actions: most; unit; converter; roles; providers; list
+- states: {"state": "loading", "content": "most unit converter roles"}; {"state": "loading", "content": "most unit converter roles"}; {"state": "loading", "content": "most unit converter roles"}
+- validations: most; unit; converter; roles; providers; list
+- microcopy_notes: most; unit; converter; roles; providers; list
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Recent updates added converter and improved `RI-029`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Recent updates added converter and improved screen for unit converter screen users on Android and iOS.
+
+> Recent updates added converter and improved roles for unit converter roles users on Android and iOS.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-003`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-006`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-007`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-010`: docs.unit15.example (official, 2026-09-01) https://docs.unit15.example/unit-converter-navigation/0
+- Source `S-012`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-014`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- (+2 more sources)
+- Seen in 1 of 1 (limited evidence)
+- screen_key: recent updates added converter
+- purpose: recent updates added converter
+- role: recent updates added converter
+- sections: recent; updates; added; converter; improved; screen
+- key_components: recent; updates; added; converter; improved; screen; navigation; screens; roles
+- actions: recent; updates; added; converter; improved; screen; navigation; screens; roles
+- states: {"state": "loading", "content": "recent updates added converter"}; {"state": "loading", "content": "recent updates added converter"}; {"state": "loading", "content": "recent updates added converter"}
+- validations: recent; updates; added; converter; improved; screen; navigation; screens; roles
+- microcopy_notes: recent; updates; added; converter; improved; screen; navigation; screens; roles
+- section_variants: ['recent', 'updates', 'added', 'converter', 'improved', 'navigation']; ['recent', 'updates', 'added', 'converter', 'improved', 'screens']; ['recent', 'updates', 'added', 'converter', 'improved', 'roles']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### The sandbox for unit converter navigation `RI-030`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+The sandbox for unit converter navigation supports test keys, webhook events for converter and rate limits of 3 requests per second.
+
+> The sandbox for unit converter roles supports test keys, webhook events for converter and rate limits of 2 requests per second.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-010`: docs.unit15.example (official, 2026-09-01) https://docs.unit15.example/unit-converter-navigation/0
+- Source `S-014`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- Seen in 1 of 1 (limited evidence)
+- screen_key: sandbox unit converter navigation
+- purpose: sandbox unit converter navigation
+- role: sandbox unit converter navigation
+- sections: sandbox; unit; converter; navigation; supports; test
+- key_components: sandbox; unit; converter; navigation; supports; test; roles
+- actions: sandbox; unit; converter; navigation; supports; test; roles
+- states: {"state": "loading", "content": "sandbox unit converter navigation"}; {"state": "loading", "content": "sandbox unit converter navigation"}; {"state": "loading", "content": "sandbox unit converter navigation"}; {"state": "loading", "content": "sandbox unit converter roles"}
+- validations: sandbox; unit; converter; navigation; supports; test; roles
+- microcopy_notes: sandbox; unit; converter; navigation; supports; test; roles
+- section_variants: ['sandbox', 'unit', 'converter', 'roles', 'supports', 'test']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### A typical unit converter navigation screen `RI-031`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+A typical unit converter navigation screen shows converter first, then navigation, with an empty state when nothing is available.
+
+> A typical unit converter roles screen shows converter first, then roles, with an empty state when nothing is available.
+> developer.unit11.example, 2024-08-01
+
+- Source `S-003`: developer.unit11.example (official, 2024-08-01) https://developer.unit11.example/unit-converter-roles/5
+- Source `S-006`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-007`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-010`: docs.unit15.example (official, 2026-09-01) https://docs.unit15.example/unit-converter-navigation/0
+- Source `S-012`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-014`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-roles/0
+- (+2 more sources)
+- Seen in 1 of 1 (limited evidence)
+- screen_key: typical unit converter navigation
+- purpose: typical unit converter navigation
+- role: typical unit converter navigation
+- sections: typical; unit; converter; navigation; screen; shows
+- key_components: typical; unit; converter; navigation; screen; shows; roles; screens; first
+- actions: typical; unit; converter; navigation; screen; shows; roles; screens; first
+- states: {"state": "loading", "content": "typical unit converter navigation"}; {"state": "loading", "content": "typical unit converter navigation"}; {"state": "loading", "content": "typical unit converter navigation"}; {"state": "loading", "content": "typical unit converter roles"}; {"state": "loading", "content": "typical unit converter screens"}; {"state": "loading", "content": "typical unit converter screen"}
+- validations: typical; unit; converter; navigation; screen; shows; roles; screens; first
+- microcopy_notes: typical; unit; converter; navigation; screen; shows; roles; screens; first
+- section_variants: ['typical', 'unit', 'converter', 'roles', 'screen', 'shows']; ['typical', 'unit', 'converter', 'screens', 'screen', 'shows']; ['typical', 'unit', 'converter', 'screen', 'shows', 'first']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+#### Unit converter screen apps let members `RI-032`
+**OFFICIAL** · screen_pattern · impact normal · confidence high · flags: duplicate_source, limited_evidence
+
+Unit converter screen apps let members converter and manage screen directly from the mobile app.
+
+> Unit converter screens apps let members converter and manage screens directly from the mobile app.
+> docs.unit62.example, 2026-09-01
+
+- Source `S-006`: developer.unit50.example (official, 2024-08-01) https://developer.unit50.example/unit-converter-screens/5
+- Source `S-007`: developer.unit80.example (official, 2024-08-01) https://developer.unit80.example/unit-converter-screen/5
+- Source `S-012`: docs.unit54.example (official, 2026-09-01) https://docs.unit54.example/unit-converter-screen/0
+- Source `S-015`: docs.unit62.example (official, 2026-09-01) https://docs.unit62.example/unit-converter-screens/0
+- Seen in 1 of 1 (limited evidence)
+- screen_key: unit converter screen let
+- purpose: unit converter screen let
+- role: unit converter screen let
+- sections: unit; converter; screen; let; members; manage
+- key_components: unit; converter; screen; let; members; manage; screens
+- actions: unit; converter; screen; let; members; manage; screens
+- states: {"state": "loading", "content": "unit converter screen let"}; {"state": "loading", "content": "unit converter screen let"}; {"state": "loading", "content": "unit converter screen let"}; {"state": "loading", "content": "unit converter screens let"}
+- validations: unit; converter; screen; let; members; manage; screens
+- microcopy_notes: unit; converter; screen; let; members; manage; screens
+- section_variants: ['unit', 'converter', 'screens', 'let', 'members', 'manage']
+- Applies to: NEW (suggests)
+- Use: Typical screen: use it for sections, states and actions.
+
+
+## Validation
+
+- Errors: 0; warnings: 0
+
+## Dropped and flagged
+
+- dropped claim_too_long: 0
+- dropped forbidden_pattern: 0
+- dropped invalid: 0
+- dropped not_supported: 0
+- dropped number_not_in_quote: 0
+- dropped quote_not_found: 0
+- dropped unsupported_field: 0
+- flagged duplicate_source: 15
+- flagged stale: 6
+
+## Queries
+
+- Comparable unit converter apps: 6 queries, e.g. unit converter features pricing
+- Usual screens in unit converter apps: 4 queries, e.g. unit converter screens navigation
+
+## Fallbacks used
+
+- None.

@@ -1,0 +1,14 @@
+# Text that must never appear in a finding (claim, label, field values): web pages can carry instructions
+# or links aimed at an automated reader. A finding that matches is dropped and counted (dropped.forbidden_pattern).
+# Patterns are matched case-insensitively against the normalised text of each string the model returned.
+patterns:
+  - "ignore (all |any |the )?(previous|prior|above) (instructions|prompts?)"
+  - "disregard (all |any |the )?(previous|prior|above)"
+  - "you are (now )?(an? )?(assistant|ai|chatgpt|language model)"
+  - "system prompt"
+  - "(reveal|print|show|output) (your|the) (prompt|instructions|api key|secret)"
+  - "<\\s*/?\\s*(script|iframe|untrusted_content)"
+  - "https?://"
+  - "\\bwww\\.[a-z0-9-]+\\.[a-z]{2,}"
+  - "(?i)\\b(api[_-]?key|secret|password|bearer)\\s*[:=]"
+  - "\\b(curl|wget|rm -rf|sudo|powershell)\\b"

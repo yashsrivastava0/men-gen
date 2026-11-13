@@ -1,0 +1,47 @@
+# Job: data. Spec decision: entities, lifecycles, rules (BLUE-3). Usual entities, fields (type, required, values,
+# validation), relations, statuses and transitions, business rules and formulas, KPIs; regulatory rules as
+# information (flagged legal-adjacent).
+job: data
+spec_need: "Entities, lifecycles and rules"
+lane: blueprint
+recency: false
+intent: [fields, statuses, rules, validation, requirements]
+kinds: [entity_pattern, lifecycle, rule, compliance_note]
+extract_focus: >
+  For an entity list every field with its type, whether it is required, its allowed values (joined with |)
+  and its validation rule; list relations to other entities and the KPIs people track. For a lifecycle list the
+  states and each transition with its trigger. For a rule give the statement, subject, value, unit, formula and
+  the authority that sets it. Numbers, thresholds, fees and dates must be copied exactly as the page states
+  them. Regulatory material is information, never advice: for a compliance note give the regime (the law or scheme
+  by name), the country, who or what it applies to (flows, roles or kinds of data, as the page states), the penalty
+  when the page states one, and the effective date.
+targets:
+  - id: entity_shape
+    label: "What a {entity} record holds"
+    foreach: entity
+    max: 6
+    question: "What fields, statuses and validation rules does a {entity} record have in {category_noun} systems?"
+    decision_unlocked: "The fields, statuses and relations of this entity"
+    needs: [norm, entity]
+    priority: 75
+    anchor: entity
+    scope: none
+    slots:
+      - {key: entity_fields, type: count, kind: entity_pattern, distinct_by: norm_key, min: 1, attr: fields, attr_min: 6, required: true}
+      - {key: lifecycle, type: count, kind: lifecycle, distinct_by: norm_key, min: 1, attr: states, attr_min: 3, required: false}
+  - id: rules
+    label: "Rules and limits: {topic}"
+    foreach: rule_topic
+    max: 8
+    question: "What rules, limits, fees and formulas apply to {topic} in {place}?"
+    decision_unlocked: "The business rules and legal-adjacent limits the app must respect"
+    needs: [current, number, entity]
+    priority: 85
+    per_country: true  # the place stays the city and country; with several countries, one topic per country
+    risk: regulation
+    risk_from_candidate: true
+    official_first: true
+    anchor: topic
+    slots:
+      - {key: rules, type: count, kind: rule, distinct_by: norm_key, min: 1, required: true}
+      - {key: compliance, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}

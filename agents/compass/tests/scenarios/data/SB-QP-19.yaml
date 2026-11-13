@@ -1,0 +1,24 @@
+id: SB-QP-19
+title: When the budget runs out with must-needs still open they become visible assumptions and Gate 1 flags the important ones
+tags: [planner, budget, assumptions, gate]
+engines: [planner]
+steps:
+  - command: budget_quick
+  - say: "I run a tiffin service and want an app for it"
+    expect:
+      batch: {mode: initial, total_min: 3, total_max: 3}
+      interview: {budget: quick}
+  - drive: {mode: tap_recommended, max: 14}
+    expect:
+      state: BRIEF_REVIEW
+      interview: {stop_reason: budget, fallback_count: 0}
+      assumptions_min: 4
+      blockers_contain: ["important assumptions"]
+      approvable: false
+  - accept_all: true
+    note: the person reviews the flagged assumptions and accepts them
+    expect:
+      blockers_contain: []
+final:
+  interview: {budget: quick}
+  qa: {no_repeats: true}

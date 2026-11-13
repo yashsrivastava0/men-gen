@@ -45,10 +45,38 @@ compass-migrate:
     uv run python -m mde_compass.store.migrate
 
 compass-test:
-    uv run pytest packages/compass -m "not integration and not live" -q
+    uv run pytest agents/compass -m "not integration and not live" -q
 
 compass-test-int: db-up
-    uv run pytest packages/compass -m integration -q
+    uv run pytest agents/compass -m integration -q
+
+# Research (the second agent): the standalone app (API and front end on 127.0.0.1:8120, live only)
+research-dev:
+    uv run python -m mde_research_agent --port 8120
+
+research-app-start:
+    uv run python scripts/research_app.py start
+
+research-app-stop:
+    uv run python scripts/research_app.py stop
+
+research-app-restart:
+    uv run python scripts/research_app.py restart
+
+research-app-status:
+    uv run python scripts/research_app.py status
+
+research-app-logs:
+    uv run python scripts/research_app.py logs
+
+research-migrate:
+    uv run python -m mde_research_agent.store.migrate
+
+research-test:
+    uv run pytest agents/research -m "not integration and not live" -q
+
+research-test-int: db-up
+    uv run pytest agents/research -m integration -q
 
 # --- quality --------------------------------------------------------------
 lint:
@@ -78,12 +106,12 @@ test-e2e: db-up
 scan-secrets:
     uv run pytest tests/security -q
 
-# Live batches: the lead / live-runner only. Needs ALLOW_LIVE_LLM=1 in the OUTER environment,
+# Live batches: the lead / live-runner only. Needs LLM_MODE=live in the OUTER environment,
 # otherwise every live test skips itself (see root conftest.py).
 live-smoke:
     uv run pytest tests/live -m live -k smoke -q
 
-# BATCH is L1, L2, L3 or L4 (see docs/evals/eval-plan.md); lead only, needs the live switches.
+# BATCH is L1, L2, L3 or L4 (see docs/evals/eval-plan.md); lead only, needs LLM_MODE=live.
 live-eval BATCH:
     uv run python -m evals.runners.live_batch --batch {{BATCH}}
 

@@ -1,0 +1,94 @@
+# Platform capabilities (the `platform` job; plan/candidates.py `capability_candidates`).
+#
+# A capability is something the app does that the mobile platforms and the Expo or React Native toolchain regulate or
+# configure: a store rule, a permission, a build requirement. The job researches ONE topic per capability the Brief implies
+# and records platform constraints (kind `platform_constraint`). Nothing here names a company or an app type.
+#
+# A capability is implied when
+#   * one of its `signals` is active (data/signals.yaml, computed by plan/signals.py), or
+#   * one of its `strong` words is in a feature, fact, role, app, integration or glossary entry of the Brief, or
+#   * its `weak` words are in at least `weak_units` different entries.
+# A phrase matches when all its words are in one entry (stems: plural and singular are one word). The Brief's own words and
+# signals only DECIDE whether to research; what a rule says always comes from an official page.
+#
+# `bonus` raises the topic's priority a little for capabilities where a store rejection costs most. `terms` steer which
+# passages of a page are read. How many capabilities a run researches depends on the size class (data/depth.yaml).
+weak_units: 2
+capabilities:
+  - id: store_payments
+    label: "in-app payments and store purchase rules"
+    signals: [payments]
+    strong: ["in-app purchase", "digital content", "digital goods", "premium plan", "paid plan", "paid subscription", "unlock paid"]
+    weak: [subscription, premium, purchase, payment, checkout]
+    bonus: 6
+    terms: [payments, purchase, subscription, digital, physical, goods, billing, review, guideline, external]
+  - id: push_notifications
+    label: "push notifications"
+    signals: []
+    strong: ["push notification", "push alert", "push message"]
+    weak: [notification, reminder, alert, announcement]
+    bonus: 2
+    terms: [push, notification, permission, token, background, delivery, channel, opt-in]
+  - id: background_location
+    label: "background location and tracking"
+    signals: [tracking]
+    strong: ["background location", "live location", "live tracking", "location tracking", geofence, geofencing, telematics, "track vehicle", "track driver"]
+    weak: [gps, tracking, route, trip, fleet]
+    bonus: 5
+    terms: [location, background, foreground, permission, always, accuracy, battery, review, justification]
+  - id: camera_photo_upload
+    label: "camera, photo and file upload"
+    signals: [media_upload]
+    strong: [camera, "take photo", "photo upload", "scan document", "barcode scan", "qr code scan", "scan receipt"]
+    weak: [photo, image, upload, attachment, scan]
+    bonus: 1
+    terms: [camera, photo, library, permission, picker, upload, storage, scan]
+  - id: offline_sync
+    label: "offline use and data sync"
+    signals: []
+    strong: ["work offline", "offline mode", "offline use", "offline first", "low connectivity", "poor network", "poor connectivity", "sync data"]
+    weak: [offline, sync, connectivity, "field staff"]
+    bonus: 0
+    terms: [offline, sync, storage, queue, connectivity, background, retry, conflict]
+  - id: biometric_signin
+    label: "biometric sign-in"
+    signals: []
+    strong: [biometric, fingerprint, "face unlock", "face recognition"]
+    weak: ["sign in", login, passcode, pin]
+    bonus: 1
+    terms: [biometric, authentication, permission, fallback, keychain, secure, credential]
+  - id: bluetooth_devices
+    label: "Bluetooth and connected devices"
+    signals: []
+    strong: [bluetooth, wearable, "smart watch", smartwatch, nfc, beacon, "card reader", "barcode scanner", "iot device", "connected device"]
+    weak: [device, printer, sensor, hardware]
+    bonus: 3
+    terms: [bluetooth, device, permission, pairing, background, hardware, connection, nfc]
+  - id: health_data_policies
+    label: "health and fitness data policies"
+    signals: [health_data]
+    strong: ["health record", "fitness data", "step count", "heart rate", workout, "wellness data"]
+    weak: [health, medical, patient]
+    bonus: 6
+    terms: [health, data, policy, privacy, permission, review, sensitive, consent, storage]
+  - id: children_data
+    label: "apps for children and children's data"
+    signals: [minors]
+    strong: ["children's app", "kids app", "parental consent", "under 13", "under 18", "child account"]
+    weak: [child, children, kid, minor, student, school]
+    bonus: 6
+    terms: [children, kids, family, policy, privacy, consent, advertising, review, age]
+  - id: deep_links
+    label: "deep links and shared links"
+    signals: []
+    strong: ["deep link", "universal link", "app link", "share link", "invite link", "referral link", "open link"]
+    weak: [share, referral, invite, link]
+    bonus: 0
+    terms: [link, deep, universal, association, domain, routing, install, scheme]
+  - id: map_sdks
+    label: "map SDKs and location permission"
+    signals: [maps_location]
+    strong: ["map view", "show map", "store locator", "map sdk", "live map", geocoding, directions]
+    weak: [map, address, nearby, location, pickup, delivery]
+    bonus: 2
+    terms: [map, sdk, key, permission, location, billing, config, plugin, native]

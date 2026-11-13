@@ -1,6 +1,6 @@
 # LLM Gateway
 
-The gateway is the only code that talks to an LLM and the only package that imports `openai`. It is a library (`mde_llm_gateway`, package `packages/llm-gateway`) plus an HTTP service (`mde_llm_gateway_api`, `apps/llm-gateway-api`) with one interface, `mde_contracts.gateway.GatewayClient`. Brief section 7 is the specification; this page records how it was built, what was confirmed about the OpenAI API and what could not be.
+The gateway is the only code that talks to an LLM and the only package that imports a model vendor's SDK (`openai`, `anthropic`). It is a library (`mde_llm_gateway`, package `packages/llm-gateway`) plus an HTTP service (`mde_llm_gateway_api`, `apps/llm-gateway-api`) with one interface, `mde_contracts.gateway.GatewayClient`. Brief section 7 is the specification; this page records how it was built, what was confirmed about the OpenAI API and what could not be.
 
 Package page: [llm-gateway](../packages/llm-gateway.md). Operations: [live LLM budget runbook](../runbooks/live-llm-budget.md).
 
@@ -11,12 +11,46 @@ engines ──► GatewayClient ─┬─ InProcessGatewayClient ─► Gateway 
                            └─ HttpGatewayClient ──► gateway API (FastAPI) ─► Gateway ─► Provider
 
 Provider = MockProvider (default) | ReplayProvider | ScriptedProvider (tests)
-         | OpenAIResponsesProvider (live) | RecordingProvider(OpenAIResponsesProvider)
+         | OpenAIResponsesProvider (live) | AnthropicMessagesProvider (live)
+         | RoutingProvider(one provider per vendor, picked by the call's model)
+         | RecordingProvider(any live provider)
 ```
 
 * `CallSpec`, `CallContext`, `CallResult`, `Usage`, `GatewayClient` live in `mde_contracts` (D-007); the gateway never imports `mde_prompts`. It receives a `SpecRegistry` (`get`, `catalog`) at construction; `mde_prompts.registry.PromptRegistry` implements it.
 * `create_gateway(settings, registry, *, provider, ledger, sink, clock, config, ...)` chooses the provider from `settings.llm_mode` and the ledger from the provider's billing (live: shared file ledger; everything else: in-memory, cost 0, so tests never touch `data/.budget`).
-* `openai` is imported only in `providers/openai_responses.py`, `doctor.py` and lazily in `factory.py` (live branch). Mock and replay never load the SDK. The SDK client is built with `max_retries=0`: the gateway owns retries and every attempt must be metered.
+* A vendor SDK is imported only in its provider module (`providers/openai_responses.py`, `providers/anthropic_messages.py`), `doctor.py` and lazily in `factory.py` (live branch). Mock and replay never load an SDK. Each SDK client is built with `max_retries=0`: the gateway owns retries and every attempt must be metered.
+
+## Model vendors (rule 14, D-171)
+
+Engines are independent of the model vendor. They name a **route** (`fast`, `standard`, `deep`); everything below that is gateway configuration:
+
+```
+call spec.route ──► Settings.model_routes[route]  (MODEL_ROUTES)      -> a model id
+model id        ──► pricing.yaml  models.<id>.vendor                    -> "openai" | "anthropic" | ...
+vendor          ──► factory._VENDORS[vendor]  -> Provider  (key: gating.VENDOR_KEYS)
+```
+
+* `MODEL_ROUTES` accepts JSON, `fast=a,standard=b,deep=c` or one model id for all three routes. Switching Research from `gpt-6-luna` to Claude, or one route (say the checker) to another vendor, is that one variable.
+* `factory.vendors_in_use` computes the vendors the three routes need and refuses an unpriced model or a vendor with no provider at build time. One vendor -> that provider alone (so `gateway.provider.name` and the client are unchanged for single-vendor setups); several -> `RoutingProvider`, which makes no call and no retry of its own and refuses a model whose vendor has no provider before anything is billed.
+* A vendor's key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) is needed only when a route uses one of its models; the error names the route (`ANTHROPIC_API_KEY is not set; live mode needs it (route fast uses claude-haiku-5-5)`). A key is a credential, not a gate: `LLM_MODE=live` alone turns live calls on (rule 13).
+* The vendor-specific parts live inside the provider and nowhere else:
+
+| | OpenAI (Responses) | Anthropic (Messages) |
+| --- | --- | --- |
+| Call | `responses.create` | `messages.create` (non-streaming; our largest cap is 12,000 tokens) |
+| Structured output | `text.format = json_schema, strict` | `output_config.format = json_schema` over a **sanitised** schema: numeric bounds, string length bounds, `pattern`, `maxItems`, `uniqueItems`, `minItems` above 1 are removed and written into the field's description; the gateway re-validates every answer locally either way |
+| Effort | `reasoning.effort` none/low/medium/high | `output_config.effort` low/medium/high; `none` is sent as `low` (the larger models cannot turn thinking off) |
+| Never sent | | `temperature`, `top_p`, `top_k`, `thinking`, `tool_choice`, assistant prefill, cache markers |
+| `input_tokens` | includes cached tokens | **excludes** cache reads and writes; the provider adds them back (`input = input + cache_read + cache_write`, `cached = cache_read`) so budget code sees one shape |
+| Reasoning | `output_tokens_details.reasoning_tokens` | `output_tokens_details.thinking_tokens` (already inside `output_tokens`) |
+| Out of tokens | `incomplete: max_output_tokens` | `stop_reason: max_tokens` -> `incomplete: max_output_tokens` (same escalation) |
+| Refusal | refusal content part | `stop_reason: refusal` (+ `stop_details`) |
+| Errors | 408, 429, 5xx retryable | 408, 429, 5xx incl. 529 overloaded retryable; `retry-after` honoured; a spent balance (402, or a 400 saying so) is non-retryable status 402 and counts toward the circuit breaker |
+| Tools (web search) | yes (`S1`) | not yet: a spec with tools is refused before any call |
+
+* Cassette keys contain the model id, so a Claude cassette never replays for a GPT call and the reverse. The ledger records the model of every call.
+* Prices: `pricing.yaml`, one row per model with its `vendor`; Haiku 5.5 has the same long-context rule as a threshold (100,000 prompt tokens, x5 on the whole request).
+* Adding a vendor: a provider module, a builder in `factory._VENDORS`, its key in `gating.VENDOR_KEYS`, `vendor:` rows with prices, the provider tests (copy `tests/test_anthropic_provider.py`), and its SDK name in `.importlinter`, the ruff `banned-api` list and `MODEL_SDKS` in `tests/security/test_repo_hygiene.py`.
 
 ## Pipeline for one call (`Gateway.run`)
 
@@ -70,10 +104,10 @@ Observed at L0 (2026-11-08, lead, `test:l0-smoke`; see "Verified live" below): o
 
 Timeouts: fast 30 s, standard 60 s, deep 120 s, doubled for calls with tools, capped by `ctx.deadline`.
 
-## Budget guard and ledger (the USD 6.00 rule)
+## Budget guard and ledger (the USD 8.00 ceiling, D-125)
 
 * **Pricing** (`pricing.yaml`, package data): gpt-6-luna input 0.10, cached input 0.01, output 0.50 USD per 1M tokens; above 272000 input tokens the whole request is billed at 2.0x input and 1.5x output; `web_search` 0.01 USD per call plus content tokens at the model input rate. Unknown model, unknown tool or a missing/non-positive price raises `UnknownModelPrice` and the call is refused. Costs are integer micro-dollars, each component rounded up.
-* **Effective cap** = 95% of `LLM_BUDGET_USD` (5,700,000 micros of 6,000,000). The cap itself is not caller- or operator-influenced: `HARD_CAP_USD = 6.00` clamps `LLM_BUDGET_USD` (a value above it logs `budget_cap_clamped` and the cap becomes 6.00; smaller values still work) and the effective cap is never above `HARD_EFFECTIVE_CAP_USD = 5.70`, whatever `effective_cap_fraction` says in `budget.yaml`.
+* **Effective cap** = 95% of `LLM_BUDGET_USD` (default 6.00: 5,700,000 micros of 6,000,000; at 8.00: 7,600,000 of 8,000,000). The cap itself is not caller- or operator-influenced: `HARD_CAP_USD = 8.00` clamps `LLM_BUDGET_USD` (a value above it logs `budget_cap_clamped` and the cap becomes 8.00; smaller values still work) and the effective cap is never above `HARD_EFFECTIVE_CAP_USD = 7.60`, whatever `effective_cap_fraction` says in `budget.yaml`. The ceiling was raised from 6.00 by the owner (D-125); the default cap in force stays 6.00 until `LLM_BUDGET_USD` is set.
 * **`reserve(scopes, worst_case)`** refuses (`BudgetExceeded`) when `spent + reserved + worst_case` exceeds the effective cap globally or any scoped cap (`budget.yaml`: session 0.50, research 0.30, eval 1.50, test 0.30 USD by scope kind, exact-scope overrides allowed) or when a scope kind is unknown: only `session`, `research`, `eval`, `test` and kinds added through `budget.yaml` (`scope_caps_usd` keys, or the `scope_kinds` list for an uncapped kind) are accepted, because an unknown kind used to get no scope cap at all (`details.reason = unknown_scope_kind`). A refused reserve writes nothing. The check and the append happen in one critical section (file lock), so parallel processes cannot overshoot.
 * **Worst case** = (`chars / 3.0` + 64) input tokens (system + user + schema JSON) at the uncached input price + `max_output_tokens` at the output price + for each allowed tool call (0.01 USD + 3000 content tokens at the input price). The estimator calibrates from real usage and only ever becomes more conservative (floor 1.5 chars per token). Long-context multipliers are assumed from 80% of the threshold.
 * **`commit(reservation, usage)`** records the real cost and closes the reservation (idempotent). Cost above the reservation is recorded in full and logged as `budget_reservation_overrun`. **Settlement fails closed** (a cost that is lost is the one bug this module must not have):
@@ -84,7 +118,7 @@ Timeouts: fast 30 s, standard 60 s, deep 120 s, doubled for calls with tools, ca
   * A failing settlement never masks a cancellation: the `CancelledError` is re-raised and the open reservation keeps counting.
 * **Tripwires** on `spent + reserved` as a share of the cap: 50% logs a warning once; 80% allows only calls whose `ctx.purpose` starts with `must-run`; 95% refuses everything. `must-run` is a privilege of trusted in-process code (the lead's batches, the flow controller): the **HTTP API strips it** from any caller-supplied purpose (it becomes `api:<purpose>`), because HTTP callers are untrusted.
 * **Stale reservations count as SPENT, not released**: an unclosed reservation older than 10 minutes (`reservation_ttl_seconds`) is folded into `spent` at its worst case (`stale_micros` / `stale_reservations` in the snapshot and in `just budget`). A crashed process, or a call whose commit could not be written, therefore *burns* its reservation: deliberately conservative, because that request may have been billed and the old rule ("counts as released") made real spend vanish from the total. The budget is only freed by an explicit `release`, or by a late `commit`, which replaces the worst case with the real cost (counted once).
-* **Live gating**: a live provider is constructible only with `LLM_MODE=live` and `ALLOW_LIVE_LLM=1` and without `MDE_FORBID_LIVE=1` (the pytest autouse fixture sets it) -> else `LiveCallForbidden`. `RecordingProvider` has the same gate.
+* **Live gating**: a live provider is constructible only with `LLM_MODE=live` and without `MDE_FORBID_LIVE=1` (the pytest autouse fixture sets it) -> else `LiveCallForbidden`. `RecordingProvider` has the same gate.
 
 ### Ledger location and guard file (`LLM_BUDGET_LEDGER`, default `data/.budget/ledger.jsonl`)
 

@@ -1,0 +1,14 @@
+Language: {{ language }}
+
+Project card:
+{{ project_card }}
+
+Domain hypothesis:
+{{ hypothesis or "(none)" }}
+
+Facts so far:
+{{ fact_digest or "(none yet)" }}
+
+Questions to decide ({{ items | length }}), one decision for each, with the same card_id:
+{% for item in items %}{{ item }}
+{% endfor %}

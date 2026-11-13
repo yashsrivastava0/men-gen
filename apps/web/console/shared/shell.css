@@ -1,0 +1,23 @@
+/* Mobigen console shell: the agent switcher and the two mount points. Agent screens style themselves;
+   everything here uses the tokens in tokens.css. */
+.agent-switch { display: inline-flex; align-items: center; font-weight: 600; }
+.agent-topbar, .agent-mount { display: contents; }
+.shell-error {
+  margin: var(--s3); padding: var(--s2); border: 1px solid var(--danger); border-radius: var(--radius-sm);
+  background: var(--danger-soft); color: var(--danger); font-family: var(--font); font-size: 14px;
+}
+.toasts {
+  position: fixed; bottom: var(--s3); right: var(--s3); display: flex; flex-direction: column;
+  gap: var(--s1); z-index: 1000; pointer-events: none; max-width: 420px;
+}
+.toast {
+  pointer-events: auto; display: flex; align-items: center; justify-content: space-between;
+  gap: var(--s2); padding: var(--s1) var(--s2); background: var(--surface); color: var(--text);
+  border: 1px solid var(--border); border-radius: var(--radius-sm); box-shadow: var(--shadow);
+  font-family: var(--font); font-size: 13px;
+}
+.toast button {
+  background: var(--accent); color: var(--accent-text); border: none; border-radius: var(--radius-sm);
+  padding: 4px 10px; font-family: var(--font); font-size: 12px; font-weight: 600; cursor: pointer;
+}
+.toast button:hover { opacity: 0.9; }

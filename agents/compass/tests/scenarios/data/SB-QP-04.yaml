@@ -1,0 +1,33 @@
+id: SB-QP-04
+title: A long message that closes several needs makes the questions still waiting for them disappear
+tags: [planner, facts, monologue]
+# this scenario is about dropping waiting questions: it keeps a 5 question batch (the tier sizes are pinned by SB-QP-03)
+policy: {standard_first_batch: [5, 5]}
+engines: [planner]
+steps:
+  - say: "I run a tiffin service and want an app for it"
+    expect:
+      batch: {mode: initial, total_min: 5, total_max: 5}
+      qa: {shown_max: 1}
+  - say: "We deliver about 200 tiffins a day around Baner and Hinjewadi in Pune to office workers. They pay for a monthly meal plan in advance, and our own riders do the deliveries in the 11 to 12 slot"
+    expect:
+      facts:
+        active_min: 5
+        active_contains: ["monthly meal plan", "Baner and Hinjewadi", "own riders"]
+        unverified_max: 0
+      qa:
+        dropped_min: 3
+        statuses: {Q-003: dropped, Q-004: dropped, Q-005: dropped}
+        shown_contains: ["riders get"]
+        not_asked_needs: [audience.segments, idea.business_model, context.geo]
+      card_text_contains: ["riders get"]
+      slots:
+        audience.segments: {filled: true, contains: office workers}
+        context.geo: {contains: pune}
+        idea.business_model: {contains: monthly}
+      notice_code: picked_up
+      calls:
+        counts: {cmp.plan_questions: 1}
+final:
+  facts: {ids_gapless: true}
+  qa: {no_repeats: true}

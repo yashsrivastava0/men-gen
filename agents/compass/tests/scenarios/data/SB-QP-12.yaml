@@ -1,0 +1,25 @@
+id: SB-QP-12
+title: A dictated message has its names, numbers and places read back, and a spoken correction replaces the mis-heard place
+tags: [planner, voice]
+engines: [planner]
+steps:
+  - say_voice: "I want an app for my tiffin service in Poona for 200 customers, called Dabba Wala"
+    expect:
+      notice_code: voice_echo
+      text_contains: [Poona, Dabba Wala, "200"]
+      facts:
+        active_contains: ["Poona"]
+        unverified_max: 0
+      slots:
+        context.geo: {contains: poona}
+      batch: {mode: initial, total_min: 3, total_max: 3}
+  - say_voice: "no, the city is Pune, the transcript got it wrong"
+    expect:
+      notice_code: picked_up
+      facts:
+        superseded_contains: ["Poona"]
+        active_contains: ["Pune"]
+      slots:
+        context.geo: {contains: pune, not_contains: poona, history_min: 1}
+final:
+  facts: {ids_gapless: true, superseded_min: 1}

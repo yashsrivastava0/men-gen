@@ -1,0 +1,17 @@
+id: features
+purpose: Propose the features as a checklist the user adjusts, each with the job it does.
+slots:
+- scope.features
+card_type: pick_many
+option_source: family
+order: 7
+option_count: null
+max_question_words: 20
+max_option_words: 8
+guidance: 'A conservative checklist: tick only features the user or documents mentioned, or that are strongly
+  typical for this family; leave extras unticked. Group by app. Label each by its job in plain words.
+  Flag anything outside the families as custom.'
+style_guide: "Propose features as the job each one does, in the user's words, never as technical names. Tick only what the user clearly asked for; mark the rest as suggestions."
+examples:
+- "For ordering a tiffin: should people pick a meal each day, subscribe to a weekly plan, or both?"
+- "When stock runs low, should the tool only warn you or also prepare the reorder?"

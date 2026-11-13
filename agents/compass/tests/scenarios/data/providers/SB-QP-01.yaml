@@ -1,0 +1,54 @@
+# The model knows nothing about this business yet, so it opens with broad questions (a typical day, what the
+# business does, where its customers are) and defers the detailed ones. Every question serves a universal need
+# (idea.summary, context.geo, locales): with no project word to quote yet, a detailed question could not pass
+# the project-term rule, and the model is told so. Everything else runs its mock handler.
+calls:
+  cmp.understand_turn:
+    - mock: true
+  cmp.plan_questions:
+    - defer_rest: "the idea is one line: too early for detailed questions"
+      domain_hypothesis:
+        confidence: 0.15
+      questions:
+        - group_id: G1
+          group_title: Understanding your business
+          intent: describe one typical day of the business and its customers
+          serves: [idea.summary]
+          unlocks: ["Research: which similar businesses to study"]
+          answer_spec: A short story of one ordinary day, who comes, what they ask for, what you do.
+          type: text
+          text: "Can you walk me through a typical day in your business, from the first customer to closing time?"
+          why_we_ask: We know very little yet, so a real day shows us what the app must help with.
+          examples: ["In the morning customers call to order, then we pack and deliver..."]
+        - group_id: G1
+          group_title: Understanding your business
+          intent: learn in plain words what the business sells or does
+          serves: [idea.summary]
+          unlocks: ["Research: which comparable apps to study"]
+          answer_spec: What is sold or done, in a few words.
+          type: text
+          text: "In a few words, what does your business sell or do for people?"
+          why_we_ask: This lets us study apps from the same kind of business.
+          examples: ["We sell sarees from a small shop in Surat"]
+        - group_id: G2
+          group_title: Where and for whom
+          intent: learn where the customers are
+          serves: [context.geo]
+          unlocks: ["Research: local competitors and rules"]
+          answer_spec: Country and city, or nationwide.
+          type: text
+          text: "Where are most of your customers, which city or area?"
+          why_we_ask: Place decides which rules and rivals we should look at.
+          examples: ["Mostly in Surat, some in Mumbai"]
+        - group_id: G2
+          group_title: Where and for whom
+          intent: learn which languages the customers speak
+          serves: [locales]
+          unlocks: ["Design: language of the app"]
+          answer_spec: The languages people use with you.
+          type: text
+          text: "Which languages do your customers usually speak with you?"
+          why_we_ask: The app should talk the way your customers do.
+          examples: ["Gujarati and Hindi, a little English"]
+  cmp.audit_questions:
+    - pass_all: true

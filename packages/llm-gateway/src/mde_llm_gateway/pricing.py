@@ -30,12 +30,16 @@ _LONG_CONTEXT_MARGIN = Decimal("0.8")  # worst case applies multipliers from 80%
 @dataclass(frozen=True)
 class ModelPrice:
     model: str
+    vendor: str  # which provider serves this model (a key of the factory's vendor table)
     input_per_m: Decimal
     cached_input_per_m: Decimal
     output_per_m: Decimal
     long_context_threshold: int
     long_input_multiplier: Decimal
     long_output_multiplier: Decimal
+    # The lowest reasoning effort worth sending to this model (neutral scale none/low/medium/high), "" for none.
+    # Measured, not assumed: see the row's comment in pricing.yaml.
+    effort_floor: str = ""
 
 
 @dataclass(frozen=True)
@@ -88,6 +92,7 @@ class Pricing:
             try:
                 price = ModelPrice(
                     model=name,
+                    vendor=str(body.get("vendor", "")).strip().lower(),
                     input_per_m=_decimal(body["input_usd_per_million"], f"{name}.input"),
                     cached_input_per_m=_decimal(
                         body["cached_input_usd_per_million"], f"{name}.cached_input"
@@ -98,6 +103,7 @@ class Pricing:
                     long_output_multiplier=_decimal(
                         lc.get("output_multiplier", 1), f"{name}.lc_out"
                     ),
+                    effort_floor=str(body.get("effort_floor", "")).strip().lower(),
                 )
             except KeyError as exc:
                 raise UnknownModelPrice(f"pricing for {name}: missing {exc.args[0]}") from exc
@@ -105,6 +111,14 @@ class Pricing:
                 raise UnknownModelPrice(f"pricing for {name}: prices must be positive")
             if price.long_input_multiplier < 1 or price.long_output_multiplier < 1:
                 raise ConfigError(f"pricing for {name}: long-context multipliers must be >= 1")
+            if price.effort_floor not in ("", "none", "low", "medium", "high"):
+                raise ConfigError(
+                    f"pricing for {name}: effort_floor must be none, low, medium or high"
+                )
+            if not price.vendor:
+                raise ConfigError(
+                    f"pricing for {name}: missing vendor (the provider that serves the model)"
+                )
             models[name] = price
         tools: dict[str, ToolPrice] = {}
         for name, raw in _as_dict(data.get("tools", {}), "tools").items():
@@ -128,6 +142,10 @@ class Pricing:
                 f"no price on file for model {model!r}; the call is refused",
                 details={"model": model},
             ) from None
+
+    def vendor_for(self, model: str) -> str:
+        """The vendor that serves ``model`` (from the price list: one row per model, one place to add)."""
+        return self.price_for(model).vendor
 
     def tool_price(self, tool: str) -> ToolPrice:
         try:
@@ -153,7 +171,8 @@ class Pricing:
     ) -> int:
         """Real cost of one provider response, rounded up to whole micro-dollars.
 
-        ``input_tokens`` includes the cached ones (OpenAI reports cached tokens as a subset).
+        ``input_tokens`` includes the cached ones: a provider that reports cache reads separately
+        (Anthropic) is normalised to this shape inside its provider, never here.
         ``output_tokens`` includes reasoning tokens (billed as output).
         """
         if min(input_tokens, cached_input_tokens, output_tokens, tool_calls) < 0:

@@ -28,3 +28,7 @@ Compass is the first agent a person meets. It replaces the older Discover behavi
 - Duplicated small utilities (slot rules, lexicon) until the old package is retired; recorded in the report.
 - Compass tests run in an isolated database and cannot disturb persistence tests.
 - Mounting into the Context API later needs only `include_router` plus a composition-root entry; no Compass code changes.
+
+## Amendment, 2026-11-09 (D-092)
+
+Compass moved from `packages/compass/` to `agents/compass/` (global rules B: one self-contained folder per agent; `packages/*` stays shared infrastructure and legacy packages). Nothing else in this decision changes: the import name is still `mde_compass`, the layer and the `compass-isolated` contract in `.importlinter` are module-name based and were not edited, and the dependency rules above hold. Wherever this page says `packages/compass/` read `agents/compass/`.

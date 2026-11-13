@@ -1,0 +1,14 @@
+id: SB-DC-12
+title: A competitor named as the user's own business is confirmed before it is treated as a reference
+engines: [legacy]
+engines_reason: "asserts that the legacy apps_you_like frame names the competitor the user said they own; on the planner path only the reference_check notice is code (the question wording belongs to the model)"
+tags: [references, competitor]
+steps:
+  - say: "I own Swiggy and want a new delivery app for Pune restaurants"
+    expect:
+      slots:
+        references: {not_tier: Locked}
+      text_any: [swiggy]
+  - drive: {until_frame: apps_you_like}
+    expect:
+      card_text_contains: [swiggy]

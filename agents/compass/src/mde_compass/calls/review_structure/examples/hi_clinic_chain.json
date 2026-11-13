@@ -1,0 +1,23 @@
+{
+  "name": "hi_clinic_chain",
+  "input": {
+    "language": "hi",
+    "band": "medium",
+    "outline": "MOD-001 Account and privacy (SCR-001 Sign in, SCR-002 Verify code, SCR-003 Profile)\nMOD-002 Appointments (SCR-006 My appointments [list; ROL-001], SCR-008 Book a slot [form; ROL-001], SCR-010 Day schedule [calendar; ROL-002 ROL-003])\nFLW-001 Book an appointment (ROL-001): SCR-007 > SCR-008 > SCR-009\nENT-001 Appointment: ROL-001 create, ROL-002 edit, ROL-003 manage\nENT-002 Visit note: ROL-001 view, ROL-002 edit\nROL-001 Patient, ROL-002 Doctor, ROL-003 Receptionist",
+    "facts": "FCT-001 [rule] Patients can only see their own visit notes\nFCT-004 [constraint] There is no separate admin app: the head office uses the doctor app",
+    "permissions": "ROL-001 Patient: book and see my own visits\nROL-003 Receptionist: manage the daily schedule"
+  },
+  "output": {
+    "findings": [
+      {
+        "code": "inconsistent_permission",
+        "ids": [
+          "ROL-001",
+          "ENT-002"
+        ],
+        "fact_id": "FCT-001",
+        "note": "मरीज़ को अपने ही नोट देखने हैं, पर संरचना सबके नोट खोलने देती है।"
+      }
+    ]
+  }
+}

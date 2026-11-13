@@ -1,0 +1,21 @@
+id: SB-QP-11-b
+title: A Hinglish session gets Hinglish questions in Latin letters, and a tapped option is stored under its key
+tags: [planner, language, hinglish]
+engines: [planner]
+steps:
+  - say: "mujhe pune me apni tiffin delivery service ke liye app chahiye"
+    expect:
+      batch: {mode: initial, total_min: 3, total_max: 3, texts_contain: ["tiffin"]}
+      calls:
+        input_contains: {cmp.plan_questions: ['"language":"hi"', "tiffin"]}
+      interview: {fallback_count: 0, rejected_min: 0}
+  - answer_texts: ["hamare customers office me kaam karne wale log hain jo roz lunch mangate hain"]
+    expect:
+      facts: {active_contains: ["office me kaam karne wale log"], unverified_max: 0}
+  - tap_label: "OTP"
+    expect:
+      facts: {unverified_max: 0}
+      slots:
+        access.auth_methods: {contains: phone_otp}
+final:
+  facts: {ids_gapless: true}

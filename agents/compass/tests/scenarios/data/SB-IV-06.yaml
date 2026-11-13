@@ -1,0 +1,21 @@
+id: SB-IV-06
+title: Wants everything, the interview forces a first-release priority card
+engines: [legacy]
+engines_reason: "asserts the legacy forced priority frame after a message that wants everything; on the planner path the model decides to rank (a mock planner asks needs by impact, so it never would)"
+tags: [interview, scope, priority]
+steps:
+  - say: "I want a food delivery app in Pune with everything: ordering, payments, live tracking, chat, loyalty points, reviews, offers, analytics, scheduled orders, subscriptions and gift cards. Everything is a must."
+    expect:
+      state: [PLAYBACK, INTERVIEWING]
+  - drive: {until_frame: priorities}
+    note: a forced ranking card appears before the Brief is compiled
+    expect:
+      card_frame: priorities
+      card_type: priority
+  - tap_first: 5
+    expect:
+      no_event_types: [brief_approved]
+  - drive: {}
+    expect: {state: BRIEF_REVIEW}
+final:
+  questions_max: 10

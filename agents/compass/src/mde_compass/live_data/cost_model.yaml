@@ -1,0 +1,36 @@
+# Planning estimates for the live batches (build prompt 02, phase 7). Data, not logic: the batch runner prints
+# an expected cost and a worst-case ceiling BEFORE it calls anything, from these tokens per call and the
+# gateway price list (``mde_llm_gateway/pricing.yaml``, read at run time, never copied here).
+#
+# These are estimates, not measurements: nothing has run against the real model yet. After batch E, replace
+# them with the per-call table of ``live-E.json`` (its ``calls`` list has the measured tokens).
+version: 1
+
+# The ceiling assumes more calls than planned (repairs, retries, an extra replan), and a longer prompt.
+ceiling_call_factor: "1.5"
+ceiling_input_factor: "2.0"
+
+# input_tokens: what the prompt carries; output_tokens: what the model writes INCLUDING its reasoning.
+# The ceiling uses the call's own max_output_tokens (``config.CALL_PROFILES``) instead of output_tokens.
+calls:
+  cmp.understand_turn: { input_tokens: 3000, output_tokens: 1200 }
+  cmp.situate: { input_tokens: 2500, output_tokens: 2500 }
+  cmp.plan_questions: { input_tokens: 7000, output_tokens: 4500 }
+  cmp.audit_questions: { input_tokens: 3500, output_tokens: 1500 }
+  cmp.update_summary: { input_tokens: 3000, output_tokens: 1200 }
+  cmp.compile_brief: { input_tokens: 9000, output_tokens: 5000 }
+  cmp.compile_text: { input_tokens: 4000, output_tokens: 1500 }
+  cmp.rephrase_question: { input_tokens: 2000, output_tokens: 800 }
+  cmp.seed_research: { input_tokens: 4000, output_tokens: 2500 }
+  cmp.probe_handoff: { input_tokens: 2500, output_tokens: 800 }
+  cmp.scan_ambiguity: { input_tokens: 4000, output_tokens: 1500 }
+  cmp.read_chunk: { input_tokens: 3000, output_tokens: 1500 }
+  cmp.merge_claims: { input_tokens: 4000, output_tokens: 2500 }
+  cmp.answer: { input_tokens: 2000, output_tokens: 600 }
+  cmp.interpret_change: { input_tokens: 3000, output_tokens: 1200 }
+  cmp.make_variants: { input_tokens: 2500, output_tokens: 1200 }
+  cmp.write_card: { input_tokens: 2500, output_tokens: 1500 }
+  # the structure of the app (ADR 0017): estimates to replace with the measured table of the first live structure batch
+  cmp.draft_outline: { input_tokens: 6000, output_tokens: 2000 }
+  cmp.draft_module: { input_tokens: 4000, output_tokens: 1700 }
+  cmp.review_structure: { input_tokens: 5000, output_tokens: 800 }

@@ -1,0 +1,836 @@
+{
+ "_fixture": {
+  "note": "Hand-written synthetic Brief for the generality tests.",
+  "source": "synthetic:dental-clinic-dubai-ar-en"
+ },
+ "brief": {
+  "_hash": "dbac7be72de6f8b656f7e9adffdc6ce31e50ddac764d4ebcd60efad1894538bb",
+  "_section_hashes": {},
+  "apps": [
+   {
+    "audience": "",
+    "confidence": 0.9,
+    "id": "APP-001",
+    "name": "Patient app",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "purpose": "Book visits and see records",
+    "roles": [],
+    "status": "volunteered",
+    "surface": "mobile",
+    "tier": "Default"
+   },
+   {
+    "audience": "",
+    "confidence": 0.9,
+    "id": "APP-002",
+    "name": "Clinic app",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "purpose": "Run the clinic day",
+    "roles": [],
+    "status": "volunteered",
+    "surface": "mobile",
+    "tier": "Default"
+   }
+  ],
+  "audience": {
+   "segments": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "Patients",
+     "Reception staff",
+     "Dentists"
+    ]
+   }
+  },
+  "context": {
+   "geo": {
+    "confidence": 0.95,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": {
+     "city": "Dubai",
+     "country": "United Arab Emirates"
+    }
+   }
+  },
+  "data": {
+   "sensitive": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": [
+     "health",
+     "personal_ids"
+    ]
+   }
+  },
+  "declined": [],
+  "domain_facts": [
+   {
+    "confidence": 0.9,
+    "consumers": [
+     "research",
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-001",
+    "kind": "rule",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Patients can cancel an appointment free of charge up to 24 hours before it.",
+    "refs": [],
+    "statement": "Patients can cancel an appointment free of charge up to 24 hours before it.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "cancellations"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.9,
+    "consumers": [
+     "research",
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-002",
+    "kind": "compliance",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "quote": "The clinic must follow the health authority rules for patient records in Dubai.",
+    "refs": [],
+    "statement": "The clinic must follow the health authority rules for patient records in Dubai.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "compliance"
+    ],
+    "type": "rule"
+   },
+   {
+    "confidence": 0.9,
+    "consumers": [
+     "research",
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-003",
+    "kind": "number",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "quote": "A standard check-up visit is 30 minutes.",
+    "refs": [],
+    "statement": "A standard check-up visit is 30 minutes.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "scheduling"
+    ],
+    "type": "number"
+   },
+   {
+    "confidence": 0.9,
+    "consumers": [
+     "research",
+     "all"
+    ],
+    "entities": [],
+    "id": "FCT-004",
+    "kind": "integration_detail",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "quote": "Insurance claims are submitted electronically to the insurer.",
+    "refs": [],
+    "statement": "Insurance claims are submitted electronically to the insurer.",
+    "status": "volunteered",
+    "tier": "Locked",
+    "topics": [
+     "insurance"
+    ],
+    "type": "context"
+   }
+  ],
+  "entities": [
+   {
+    "confidence": 0.9,
+    "id": "ENT-001",
+    "key": "patient",
+    "module": null,
+    "name": "Patient",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-002",
+    "key": "appointment",
+    "module": null,
+    "name": "Appointment",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-003",
+    "key": "treatment",
+    "module": null,
+    "name": "Treatment",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-004",
+    "key": "invoice",
+    "module": null,
+    "name": "Invoice",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "confidence": 0.9,
+    "id": "ENT-005",
+    "key": "insurance claim",
+    "module": null,
+    "name": "Insurance claim",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Default"
+   }
+  ],
+  "experience": {
+   "brand.name": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "Smile Corner"
+   }
+  },
+  "flows": [],
+  "glossary": [],
+  "idea": {
+   "category": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "dental clinic app"
+   },
+   "summary": {
+    "confidence": 0.9,
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked",
+    "value": "A booking and patient app for a dental clinic in Dubai, in Arabic and English."
+   }
+  },
+  "ids": {
+   "counters": {}
+  },
+  "integrations": [
+   {
+    "confidence": 0.9,
+    "name": "payments",
+    "notes": "",
+    "preference": "real_later",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.9,
+    "name": "messaging",
+    "notes": "",
+    "preference": "real_later",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "meta": {
+   "degraded": false,
+   "interview": {
+    "fallback_count": 0
+   },
+   "locales": [
+    "ar",
+    "en"
+   ],
+   "probes": {
+    "blueprint": true,
+    "design": true,
+    "research": true
+   },
+   "program_id": "",
+   "session_id": "ses_synthetic_dental-clinic-dubai-ar-en"
+  },
+  "modules": [
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "id": "MOD-001",
+    "name": "Appointments",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "roles": [],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "id": "MOD-002",
+    "name": "Patients",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "roles": [],
+    "status": "volunteered",
+    "tier": "Default"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "id": "MOD-003",
+    "name": "Billing",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "roles": [],
+    "status": "volunteered",
+    "tier": "Default"
+   }
+  ],
+  "references": [],
+  "research_requests": [
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "Which features belong in the first release",
+    "depth": "standard",
+    "entity": "dental clinic booking apps",
+    "geography": "Dubai, United Arab Emirates",
+    "id": "RR-001",
+    "prefer_sources": [],
+    "priority": "high",
+    "question": "Which features do dental clinic booking apps in Dubai usually offer?",
+    "references": [],
+    "shown_to_user_as": "Dental clinic booking apps in Dubai",
+    "source_languages": [
+     "ar",
+     "en"
+    ],
+    "terms": [
+     "dental clinic",
+     "booking",
+     "Dubai"
+    ],
+    "topic": "Dental clinic booking apps in Dubai",
+    "user_added": false
+   },
+   {
+    "avoid": [],
+    "consumer": "research",
+    "decision_unlocked": "How to model claims",
+    "depth": "standard",
+    "entity": "dental insurance claims UAE",
+    "geography": "Dubai, United Arab Emirates",
+    "id": "RR-002",
+    "prefer_sources": [],
+    "priority": "high",
+    "question": "How are dental insurance claims submitted electronically in the UAE?",
+    "references": [],
+    "shown_to_user_as": "Insurance claim submission in the UAE",
+    "source_languages": [
+     "ar",
+     "en"
+    ],
+    "terms": [
+     "insurance",
+     "claims",
+     "UAE"
+    ],
+    "topic": "Insurance claim submission in the UAE",
+    "user_added": false
+   }
+  ],
+  "roles": [
+   {
+    "confidence": 0.9,
+    "goal": "Book and manage visits",
+    "id": "ROL-001",
+    "name_in_user_words": "Patient",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.9,
+    "goal": "Manage the daily schedule and check patients in",
+    "id": "ROL-002",
+    "name_in_user_words": "Receptionist",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.9,
+    "goal": "See the schedule and update treatment notes",
+    "id": "ROL-003",
+    "name_in_user_words": "Dentist",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "confidence": 0.9,
+    "goal": "See reports and manage staff",
+    "id": "ROL-004",
+    "name_in_user_words": "Clinic manager",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "rough_permissions": [],
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "scope": [
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-001",
+    "intent": "Appointment booking",
+    "name": "Appointment booking",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-002",
+    "intent": "Patient records",
+    "name": "Patient records",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-003",
+    "intent": "Appointment reminders",
+    "name": "Appointment reminders",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-004",
+    "intent": "Insurance claim submission",
+    "name": "Insurance claim submission",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-005",
+    "intent": "Doctor schedules",
+    "name": "Doctor schedules",
+    "priority": "must",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   },
+   {
+    "apps": [],
+    "confidence": 0.9,
+    "family": null,
+    "id": "FTR-006",
+    "intent": "Treatment plans and invoices",
+    "name": "Treatment plans and invoices",
+    "priority": "nice",
+    "provenance": [
+     {
+      "ref": "FCT-001",
+      "type": "user_text"
+     }
+    ],
+    "scope_status": "in",
+    "status": "volunteered",
+    "tier": "Locked"
+   }
+  ],
+  "search_hints": {
+   "disambiguated_names": [],
+   "languages": [
+    "ar",
+    "en"
+   ],
+   "local_competitors": [],
+   "synonyms": [
+    "حجز موعد عيادة أسنان",
+    "عيادة أسنان دبي"
+   ]
+  },
+  "version": 1
+ },
+ "consumer_views": {
+  "research": {
+   "audience": {
+    "segments": [
+     "Patients",
+     "Reception staff",
+     "Dentists"
+    ],
+    "usage_context": []
+   },
+   "declined": [],
+   "domain_facts": [],
+   "entities": [
+    "Patient",
+    "Appointment",
+    "Treatment",
+    "Invoice",
+    "Insurance claim"
+   ],
+   "feature_intents": [
+    {
+     "family": null,
+     "intent": "Appointment booking",
+     "name": "Appointment booking"
+    },
+    {
+     "family": null,
+     "intent": "Patient records",
+     "name": "Patient records"
+    },
+    {
+     "family": null,
+     "intent": "Appointment reminders",
+     "name": "Appointment reminders"
+    },
+    {
+     "family": null,
+     "intent": "Insurance claim submission",
+     "name": "Insurance claim submission"
+    },
+    {
+     "family": null,
+     "intent": "Doctor schedules",
+     "name": "Doctor schedules"
+    },
+    {
+     "family": null,
+     "intent": "Treatment plans and invoices",
+     "name": "Treatment plans and invoices"
+    }
+   ],
+   "geography": {
+    "city": "Dubai",
+    "country": "United Arab Emirates"
+   },
+   "glossary": [],
+   "guidance": {
+    "category": "dental clinic app",
+    "depth": "light",
+    "focus": [],
+    "gap_fill": false,
+    "max_requests": 6,
+    "search_budget": 6,
+    "size_band": "small"
+   },
+   "idea": {
+    "business_model": "Patients pay per visit; insurance claims for covered treatments",
+    "category": "dental clinic app",
+    "pitch": "",
+    "subcategory": "",
+    "summary": "A booking and patient app for a dental clinic in Dubai, in Arabic and English."
+   },
+   "languages": {
+    "locales": [
+     "ar",
+     "en"
+    ],
+    "meta_locales": [
+     "ar",
+     "en"
+    ],
+    "search_languages": [
+     "ar",
+     "en"
+    ]
+   },
+   "modules": [
+    "Appointments",
+    "Patients",
+    "Billing"
+   ],
+   "references": [],
+   "research_requests": [
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "Which features belong in the first release",
+     "depth": "standard",
+     "entity": "dental clinic booking apps",
+     "geography": "Dubai, United Arab Emirates",
+     "id": "RR-001",
+     "prefer_sources": [],
+     "priority": "high",
+     "question": "Which features do dental clinic booking apps in Dubai usually offer?",
+     "references": [],
+     "shown_to_user_as": "Dental clinic booking apps in Dubai",
+     "source_languages": [
+      "ar",
+      "en"
+     ],
+     "terms": [
+      "dental clinic",
+      "booking",
+      "Dubai"
+     ],
+     "topic": "Dental clinic booking apps in Dubai",
+     "user_added": false
+    },
+    {
+     "avoid": [],
+     "consumer": "research",
+     "decision_unlocked": "How to model claims",
+     "depth": "standard",
+     "entity": "dental insurance claims UAE",
+     "geography": "Dubai, United Arab Emirates",
+     "id": "RR-002",
+     "prefer_sources": [],
+     "priority": "high",
+     "question": "How are dental insurance claims submitted electronically in the UAE?",
+     "references": [],
+     "shown_to_user_as": "Insurance claim submission in the UAE",
+     "source_languages": [
+      "ar",
+      "en"
+     ],
+     "terms": [
+      "insurance",
+      "claims",
+      "UAE"
+     ],
+     "topic": "Insurance claim submission in the UAE",
+     "user_added": false
+    }
+   ],
+   "search_hints": {
+    "disambiguated_names": [],
+    "languages": [
+     "ar",
+     "en"
+    ],
+    "local_competitors": [],
+    "synonyms": [
+     "حجز موعد عيادة أسنان",
+     "عيادة أسنان دبي"
+    ]
+   }
+  }
+ },
+ "export": {
+  "approved_baseline": {
+   "hash": "dbac7be72de6f8b656f7e9adffdc6ce31e50ddac764d4ebcd60efad1894538bb",
+   "section_hashes": {},
+   "version": 1
+  },
+  "brief_hash": "dbac7be72de6f8b656f7e9adffdc6ce31e50ddac764d4ebcd60efad1894538bb",
+  "brief_version": 1,
+  "format": "compass-full-output",
+  "format_version": 2,
+  "session_id": "ses_synthetic_dental-clinic-dubai-ar-en"
+ },
+ "spend": {
+  "by_call": {},
+  "calls": 0,
+  "cost_micros": 0
+ },
+ "structure": {
+  "band": null,
+  "counts": null,
+  "issues_count": 0,
+  "source": null
+ }
+}

@@ -30,11 +30,11 @@ from mde_core.settings import Settings
 from mde_llm_gateway import StaticRegistry, create_gateway
 from mde_llm_gateway.gateway import Gateway
 
-LIVE_ENV = {"ALLOW_LIVE_LLM": "1", "LLM_MODE": "live"}
+LIVE_ENV = {"LLM_MODE": "live"}
 
 
 def settings(**fields: Any) -> Settings:
-    base: dict[str, Any] = {"llm_mode": "live", "allow_live_llm": True, "forbid_live": False}
+    base: dict[str, Any] = {"llm_mode": "live", "forbid_live": False}
     return Settings(_env_file=None, **{**base, **fields})  # type: ignore[call-arg]
 
 
@@ -67,29 +67,16 @@ def persona(**fields: Any) -> Persona:
 # --------------------------------------------------------------------------- the money gate
 
 
-def test_the_command_refuses_without_both_switches_and_plays_nothing(
+def test_the_command_refuses_without_live_mode_and_plays_nothing(
     runner: CliRunner, tmp_path: Path
 ) -> None:
     result = runner.invoke(app, ["sim", "--llm", "--local", "--memory", "--persona", "P01"])
     assert result.exit_code == EXIT_REFUSED
-    assert "needs ALLOW_LIVE_LLM=1 and LLM_MODE=live in the environment" in result.stderr
+    assert "needs LLM_MODE=live in the environment" in result.stderr
     assert "P01-hi-only" not in result.stdout  # no persona ran, no session was created
 
 
-def test_each_missing_switch_is_named(runner: CliRunner, monkeypatch: pytest.MonkeyPatch) -> None:
-    monkeypatch.setenv("ALLOW_LIVE_LLM", "1")
-    only_allow = runner.invoke(app, ["sim", "--llm", "--local", "--memory"])
-    assert only_allow.exit_code == EXIT_REFUSED
-    assert "needs LLM_MODE=live in the environment" in only_allow.stderr
-    monkeypatch.delenv("ALLOW_LIVE_LLM")
-    monkeypatch.setenv("LLM_MODE", "live")
-    only_mode = runner.invoke(app, ["sim", "--llm", "--local", "--memory"])
-    assert "needs ALLOW_LIVE_LLM=1 in the environment" in only_mode.stderr
-    monkeypatch.setenv("ALLOW_LIVE_LLM", "yes")  # only the exact value 1 counts
-    assert runner.invoke(app, ["sim", "--llm", "--local", "--memory"]).exit_code == EXIT_REFUSED
-
-
-def test_both_switches_are_still_refused_while_live_is_forbidden(
+def test_live_mode_is_still_refused_while_live_is_forbidden(
     runner: CliRunner, monkeypatch: pytest.MonkeyPatch
 ) -> None:
     for name, value in LIVE_ENV.items():
@@ -100,7 +87,7 @@ def test_both_switches_are_still_refused_while_live_is_forbidden(
     assert "MDE_FORBID_LIVE=1" in result.stderr and "P01-hi-only" not in result.stdout
 
 
-def test_a_run_is_allowed_when_the_switches_and_the_budget_agree() -> None:
+def test_a_run_is_allowed_when_live_mode_and_the_budget_agree() -> None:
     check_live_allowed(settings(), env=LIVE_ENV, ledger=FakeLedger())  # type: ignore[arg-type]
     check_live_allowed(  # 50% of the cap is the warn line: still open
         settings(llm_budget_usd="6.00"),
@@ -119,8 +106,8 @@ def test_a_run_is_refused_at_the_must_run_tripwire_or_on_a_damaged_ledger() -> N
         check_live_allowed(settings(), env=LIVE_ENV, ledger=FakeLedger(problem="truncated"))  # type: ignore[arg-type]
 
 
-def test_the_environment_not_the_settings_object_decides_the_switches() -> None:
-    with pytest.raises(LiveRefused, match="ALLOW_LIVE_LLM=1 and LLM_MODE=live"):
+def test_the_environment_not_the_settings_object_decides_live_mode() -> None:
+    with pytest.raises(LiveRefused, match="LLM_MODE=live"):
         check_live_allowed(settings(), env={}, ledger=FakeLedger())  # type: ignore[arg-type]
     with pytest.raises(LiveRefused, match="MDE_FORBID_LIVE"):
         check_live_allowed(settings(forbid_live=True), env=LIVE_ENV, ledger=FakeLedger())  # type: ignore[arg-type]

@@ -1,0 +1,24 @@
+{
+  "name": "hinglish_kids_rephrase",
+  "input": {
+    "language": "hi-Latn",
+    "mode": "rephrase",
+    "intent": "learn a typical session: when, where and with whom the child uses the app",
+    "answer_spec": "A typical use: the problem, who has it, and the current workaround",
+    "question": "Ek normal din socho: bachcha app kab aur kahan kholta hai, aur uske saath kaun hota hai?",
+    "why_we_ask": "Isse pata chalta hai ki games kitne lambe hone chahiye aur screen kaisi.",
+    "type": "open_prompt",
+    "options": [],
+    "project_terms": ["bachche", "games", "kahaniyan", "parents"],
+    "recent_user_words": "samajh nahi aaya, normal din matlab?"
+  },
+  "output": {
+    "question": "Kal shaam ka socho: bachcha app kab kholta hai, kahan baithkar, aur paas mein kaun hota hai?",
+    "why_we_ask": "Isse pata chalta hai ki games kitne lambe hone chahiye aur screen kaisi.",
+    "options": [],
+    "examples": [
+      "jaise: shaam ko ghar par, mummy ke phone par",
+      "jaise: school ke baad tablet par, akele"
+    ]
+  }
+}

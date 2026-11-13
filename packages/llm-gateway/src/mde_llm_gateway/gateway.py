@@ -84,7 +84,8 @@ MAX_ESCALATED_OUTPUT_TOKENS = 32_768
 TOOL_CALL_RESERVE_FACTOR = 2
 MAX_LOGGED_PROMPT_CHARS = 4_000
 _PREVIOUS_OUTPUT_CHARS = 8_000
-_STATUS_COUNTS_FOR_BREAKER = frozenset({401, 403})
+# 402 is a spent balance: every following call would fail the same way, so it opens the breaker.
+_STATUS_COUNTS_FOR_BREAKER = frozenset({401, 402, 403})
 
 
 def escalate_cap(cap: int, ceiling: int = MAX_ESCALATED_OUTPUT_TOKENS) -> int:

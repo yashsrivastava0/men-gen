@@ -1,0 +1,14 @@
+# How common is a choice? Computed by code from the items (never by a model).
+#   seen_in = distinct sources (competitors or registrable domains) that show it; of = how many were checked.
+min_sources: 3            # fewer distinct sources -> limited_evidence
+core_share: 0.6           # share >= this -> core
+common_share: 0.3         # share >= this -> common; below -> advanced
+emerging_max_age_months: 12   # newest source this recent, seen in few sources, and a rising trend -> emerging
+emerging_max_seen: 2
+# Staleness (RV-07): months after which a source date makes an item stale.
+stale_months:
+  default: 60
+  recency_jobs: 24        # features, design and services prefer the last 24 months (AD-53)
+  fees: 24
+recency_jobs: [features, design, services]
+fee_words: [fee, fees, price, pricing, charge, commission, tariff, rate]

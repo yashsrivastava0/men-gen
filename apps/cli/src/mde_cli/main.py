@@ -265,9 +265,7 @@ def budget(
 def doctor(
     live: Annotated[
         bool,
-        typer.Option(
-            "--live", help="Also check the model (only in live mode with both switches set)."
-        ),
+        typer.Option("--live", help="Also check the model (only in live mode)."),
     ] = False,
     url: Annotated[
         str | None, typer.Option("--url", help="Also check the Context API at this URL.")

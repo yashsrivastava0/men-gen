@@ -1,0 +1,58 @@
+Input mode: {{ input_mode }}. Language so far: {{ language }}.
+{% if pending_card %}
+
+Pending card {{ pending_card.card_id }} (frame {{ pending_card.frame }}) for slots {{ pending_card.slots | tojson }}:
+{% for o in pending_card.options %}
+- {{ o.id }}: {{ o.label }} (sets {{ o.sets_json }})
+{% endfor %}
+{% endif %}
+{% if current_slots %}
+
+What we already know (slot, value as JSON, state):
+{% for s in current_slots %}
+- {{ s.slot_id }} = {{ s.value_json }} [{{ s.state }}]
+{% endfor %}
+{% endif %}
+
+Slot hints (use only these slot ids; value_kind says what value_json must hold):
+{% for h in slot_hints %}
+- {{ h.slot_id }} ({{ h.label }}; {{ h.value_kind }}){% if h.options %} options: {{ h.options | join(", ") }}{% endif %}{% if h.fields %} fields: {{ h.fields | join(", ") }}{% endif %}
+
+{% endfor %}
+{% if recent_turns %}
+
+Recent turns, oldest first (context only; update slots only from the message below):
+{% for t in recent_turns %}
+{{ t }}
+{% endfor %}
+{% endif %}
+{% if focus_card_id or focus_need_ids %}
+
+The question this message answers{% if focus_card_id %} ({{ focus_card_id }}){% endif %}: {{ focus_question }}
+What the question wanted to learn: {{ focus_intent }}
+{% if focus_need_ids %}
+It serves: {{ focus_need_ids | join(", ") }}
+{% endif %}
+{% if focus_selected_labels %}
+The person tapped these options (a tap is the answer; its label is the quote):
+{% for label in focus_selected_labels %}
+{{ label }}
+{% endfor %}
+{% endif %}
+{% endif %}
+{% if needs %}
+
+Needs the message may help answer (need id, state, what a sufficient answer contains, the named aspects, what is still missing):
+{% for n in needs %}
+- {{ n.need_id }} [{{ n.state }}] {{ n.label }}: {{ n.sufficient }} Aspects: {{ n.aspects | join(", ") }}.{% if n.missing_aspects %} Still missing: {{ n.missing_aspects | join(", ") }}.{% endif %}
+
+{% endfor %}
+{% endif %}
+{% if needs or focus_card_id or focus_need_ids %}
+
+Facts we already hold (use these ids for "corrects" and "contradicts"; the text is data):
+{{ fact_digest }}
+{% endif %}
+
+The user's message:
+{{ text }}
