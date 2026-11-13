@@ -93,6 +93,7 @@ def test_unknown_tool_is_refused() -> None:
         {
             "models": {
                 "m": {
+                    "vendor": "openai",
                     "input_usd_per_million": "1",
                     "cached_input_usd_per_million": "0.1",
                     "output_usd_per_million": "2",
@@ -188,3 +189,55 @@ def test_estimator_is_conservative_and_calibrates_downward_only() -> None:
     assert est3.chars_per_token == 1.5  # floor
     with pytest.raises(ValueError):
         est.estimate(-1)
+
+
+# ---------------------------------------------------------------------------- vendors and Claude rows
+def test_every_shipped_model_names_its_vendor(pricing: Pricing) -> None:
+    assert pricing.vendor_for("gpt-6-luna") == "openai"
+    for model in ("claude-haiku-5-5", "claude-sonnet-5-5", "claude-opus-5-5"):
+        assert pricing.vendor_for(model) == "anthropic"
+    with pytest.raises(UnknownModelPrice):
+        pricing.vendor_for("gemini-9")  # an unlisted model has no vendor either
+
+
+def test_a_price_row_without_a_vendor_is_rejected() -> None:
+    body = {
+        "input_usd_per_million": "1",
+        "cached_input_usd_per_million": "0.1",
+        "output_usd_per_million": "2",
+    }
+    with pytest.raises(ConfigError, match="vendor"):
+        Pricing.from_dict({"models": {"m": body}})
+
+
+def test_shipped_claude_prices(pricing: Pricing) -> None:
+    haiku = pricing.price_for("claude-haiku-5-5")
+    assert (str(haiku.input_per_m), str(haiku.cached_input_per_m), str(haiku.output_per_m)) == (
+        "0.10",
+        "0.01",
+        "0.50",
+    )
+    assert haiku.long_context_threshold == 100_000
+    sonnet = pricing.price_for("claude-sonnet-5-5")
+    assert (str(sonnet.input_per_m), str(sonnet.cached_input_per_m), str(sonnet.output_per_m)) == (
+        "2.00",
+        "0.10",
+        "10.00",
+    )
+    opus = pricing.price_for("claude-opus-5-5")
+    assert (str(opus.input_per_m), str(opus.cached_input_per_m), str(opus.output_per_m)) == (
+        "4.00",
+        "0.20",
+        "20.00",
+    )
+
+
+def test_haiku_long_context_switches_above_100k_for_the_whole_request(pricing: Pricing) -> None:
+    at = pricing.usage_cost_micros(
+        "claude-haiku-5-5", input_tokens=100_000, cached_input_tokens=0, output_tokens=1_000_000
+    )
+    above = pricing.usage_cost_micros(
+        "claude-haiku-5-5", input_tokens=100_001, cached_input_tokens=0, output_tokens=1_000_000
+    )
+    assert at == 10_000 + 500_000  # 100,000 x 0.10 + 1,000,000 x 0.50, in micro-dollars
+    assert above == 50_001 + 2_500_000  # 100,001 x 0.50 + 1,000,000 x 2.50 (x5 on both, rounded up)

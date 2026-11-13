@@ -32,5 +32,9 @@ def _llm_live_guard(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPa
         return
     monkeypatch.setenv("LLM_MODE", "mock")
     monkeypatch.delenv("OPENAI_API_KEY", raising=False)
+    monkeypatch.delenv("ANTHROPIC_API_KEY", raising=False)
+    monkeypatch.delenv(
+        "MODEL_ROUTES", raising=False
+    )  # a route set in the outer shell must not leak in
     monkeypatch.setenv("MDE_FORBID_LIVE", "1")
     monkeypatch.setenv("MDE_ENV_FILE", "")  # never read .env in offline tests

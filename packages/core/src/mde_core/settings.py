@@ -6,20 +6,22 @@ for a safe "is it set?" report (used by ``scripts/doctor.py`` and ``mde doctor``
 
 from __future__ import annotations
 
+import json
 import os
 from decimal import Decimal
 from pathlib import Path
-from typing import Literal
+from typing import Annotated, Literal
 from urllib.parse import urlsplit
 
 from pydantic import AliasChoices, Field, SecretStr, field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 from mde_core.paths import anchor_to_main_repo
 
 LlmMode = Literal["mock", "replay", "live"]
 Route = Literal["fast", "standard", "deep"]
 ResearchDepth = Literal["light", "standard", "deep"]
+ROUTES: tuple[Route, ...] = ("fast", "standard", "deep")
 
 DEFAULT_MODEL = "gpt-6-luna"
 
@@ -31,7 +33,10 @@ def _default_routes() -> dict[str, str]:
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(extra="ignore", case_sensitive=False, env_file=None)
 
+    # One key per model vendor the gateway has a provider for; a vendor's key is only needed when a
+    # route uses one of its models (rule 14). The gateway, not an engine, decides which is which.
     openai_api_key: SecretStr | None = None
+    anthropic_api_key: SecretStr | None = None
     openai_model: str = DEFAULT_MODEL
     llm_mode: LlmMode = "mock"
     llm_budget_usd: Decimal = Decimal("6.00")
@@ -39,7 +44,9 @@ class Settings(BaseSettings):
     llm_budget_ledger: Path = Field(
         default=Path("data/.budget/ledger.jsonl"), validate_default=True
     )
-    model_routes: dict[str, str] = Field(default_factory=_default_routes)
+    # route (fast | standard | deep) -> model id. Env ``MODEL_ROUTES`` takes JSON
+    # (``{"fast": "claude-haiku-5-5", ...}``), ``fast=a,standard=b,deep=c`` or one model id for all three.
+    model_routes: Annotated[dict[str, str], NoDecode] = Field(default_factory=_default_routes)
 
     # The URL carries the database password: keep it out of repr() and model_dump().
     database_url: str = Field(
@@ -81,6 +88,30 @@ class Settings(BaseSettings):
         its own private hand-off repositories or cassettes). Absolute values are untouched."""
         return anchor_to_main_repo(value)
 
+    @field_validator("model_routes", mode="before")
+    @classmethod
+    def _parse_model_routes(cls, value: object) -> object:
+        """Accept the three spellings of ``MODEL_ROUTES`` (see the field); a dict passes through."""
+        if not isinstance(value, str):
+            return value
+        text = value.strip()
+        if not text:
+            return _default_routes()
+        if text.startswith("{"):
+            try:
+                return json.loads(text)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"MODEL_ROUTES is not valid JSON: {exc.msg}") from None
+        if "=" not in text:
+            return dict.fromkeys(ROUTES, text)
+        routes: dict[str, str] = {}
+        for part in text.split(","):
+            name, sep, model = part.partition("=")
+            if not sep or not name.strip() or not model.strip():
+                raise ValueError("MODEL_ROUTES entries look like route=model, separated by commas")
+            routes[name.strip()] = model.strip()
+        return routes
+
     @field_validator("record_cassettes", mode="before")
     @classmethod
     def _blank_record_flag_is_off(cls, value: object) -> object:
@@ -100,7 +131,12 @@ class Settings(BaseSettings):
     def secret_values(self) -> list[str]:
         """Secret values for log scrubbing. Never log the return value."""
         out: list[str] = []
-        for s in (self.openai_api_key, self.gateway_service_token, self.api_dev_token):
+        for s in (
+            self.openai_api_key,
+            self.anthropic_api_key,
+            self.gateway_service_token,
+            self.api_dev_token,
+        ):
             if s is not None and s.get_secret_value():
                 out.append(s.get_secret_value())
         password = _url_password(self.database_url)
@@ -128,9 +164,10 @@ def load_settings(**overrides: object) -> Settings:
 def describe_presence(settings: Settings) -> dict[str, str]:
     """Safe report: whether each setting is present/overridden. Never includes values."""
     report: dict[str, str] = {}
-    for name in ("openai_api_key", "gateway_service_token"):
+    for name in ("openai_api_key", "anthropic_api_key", "gateway_service_token"):
         report[name.upper()] = "present" if getattr(settings, name) is not None else "absent"
     report["OPENAI_MODEL"] = "default" if settings.openai_model == DEFAULT_MODEL else "custom"
+    report["MODEL_ROUTES"] = ", ".join(f"{r}={settings.model_for_route(r)}" for r in ROUTES)
     report["LLM_MODE"] = settings.llm_mode
     report["LLM_BUDGET_USD"] = str(settings.llm_budget_usd)
     report["DATABASE_URL"] = "set"

@@ -1,6 +1,6 @@
 # LLM Gateway
 
-The gateway is the only code that talks to an LLM and the only package that imports `openai`. It is a library (`mde_llm_gateway`, package `packages/llm-gateway`) plus an HTTP service (`mde_llm_gateway_api`, `apps/llm-gateway-api`) with one interface, `mde_contracts.gateway.GatewayClient`. Brief section 7 is the specification; this page records how it was built, what was confirmed about the OpenAI API and what could not be.
+The gateway is the only code that talks to an LLM and the only package that imports a model vendor's SDK (`openai`, `anthropic`). It is a library (`mde_llm_gateway`, package `packages/llm-gateway`) plus an HTTP service (`mde_llm_gateway_api`, `apps/llm-gateway-api`) with one interface, `mde_contracts.gateway.GatewayClient`. Brief section 7 is the specification; this page records how it was built, what was confirmed about the OpenAI API and what could not be.
 
 Package page: [llm-gateway](../packages/llm-gateway.md). Operations: [live LLM budget runbook](../runbooks/live-llm-budget.md).
 
@@ -11,12 +11,46 @@ engines ──► GatewayClient ─┬─ InProcessGatewayClient ─► Gateway 
                            └─ HttpGatewayClient ──► gateway API (FastAPI) ─► Gateway ─► Provider
 
 Provider = MockProvider (default) | ReplayProvider | ScriptedProvider (tests)
-         | OpenAIResponsesProvider (live) | RecordingProvider(OpenAIResponsesProvider)
+         | OpenAIResponsesProvider (live) | AnthropicMessagesProvider (live)
+         | RoutingProvider(one provider per vendor, picked by the call's model)
+         | RecordingProvider(any live provider)
 ```
 
 * `CallSpec`, `CallContext`, `CallResult`, `Usage`, `GatewayClient` live in `mde_contracts` (D-007); the gateway never imports `mde_prompts`. It receives a `SpecRegistry` (`get`, `catalog`) at construction; `mde_prompts.registry.PromptRegistry` implements it.
 * `create_gateway(settings, registry, *, provider, ledger, sink, clock, config, ...)` chooses the provider from `settings.llm_mode` and the ledger from the provider's billing (live: shared file ledger; everything else: in-memory, cost 0, so tests never touch `data/.budget`).
-* `openai` is imported only in `providers/openai_responses.py`, `doctor.py` and lazily in `factory.py` (live branch). Mock and replay never load the SDK. The SDK client is built with `max_retries=0`: the gateway owns retries and every attempt must be metered.
+* A vendor SDK is imported only in its provider module (`providers/openai_responses.py`, `providers/anthropic_messages.py`), `doctor.py` and lazily in `factory.py` (live branch). Mock and replay never load an SDK. Each SDK client is built with `max_retries=0`: the gateway owns retries and every attempt must be metered.
+
+## Model vendors (rule 14, D-171)
+
+Engines are independent of the model vendor. They name a **route** (`fast`, `standard`, `deep`); everything below that is gateway configuration:
+
+```
+call spec.route ──► Settings.model_routes[route]  (MODEL_ROUTES)      -> a model id
+model id        ──► pricing.yaml  models.<id>.vendor                    -> "openai" | "anthropic" | ...
+vendor          ──► factory._VENDORS[vendor]  -> Provider  (key: gating.VENDOR_KEYS)
+```
+
+* `MODEL_ROUTES` accepts JSON, `fast=a,standard=b,deep=c` or one model id for all three routes. Switching Research from `gpt-6-luna` to Claude, or one route (say the checker) to another vendor, is that one variable.
+* `factory.vendors_in_use` computes the vendors the three routes need and refuses an unpriced model or a vendor with no provider at build time. One vendor -> that provider alone (so `gateway.provider.name` and the client are unchanged for single-vendor setups); several -> `RoutingProvider`, which makes no call and no retry of its own and refuses a model whose vendor has no provider before anything is billed.
+* A vendor's key (`OPENAI_API_KEY`, `ANTHROPIC_API_KEY`) is needed only when a route uses one of its models; the error names the route (`ANTHROPIC_API_KEY is not set; live mode needs it (route fast uses claude-haiku-5-5)`). A key is a credential, not a gate: `LLM_MODE=live` alone turns live calls on (rule 13).
+* The vendor-specific parts live inside the provider and nowhere else:
+
+| | OpenAI (Responses) | Anthropic (Messages) |
+| --- | --- | --- |
+| Call | `responses.create` | `messages.create` (non-streaming; our largest cap is 12,000 tokens) |
+| Structured output | `text.format = json_schema, strict` | `output_config.format = json_schema` over a **sanitised** schema: numeric bounds, string length bounds, `pattern`, `maxItems`, `uniqueItems`, `minItems` above 1 are removed and written into the field's description; the gateway re-validates every answer locally either way |
+| Effort | `reasoning.effort` none/low/medium/high | `output_config.effort` low/medium/high; `none` is sent as `low` (the larger models cannot turn thinking off) |
+| Never sent | | `temperature`, `top_p`, `top_k`, `thinking`, `tool_choice`, assistant prefill, cache markers |
+| `input_tokens` | includes cached tokens | **excludes** cache reads and writes; the provider adds them back (`input = input + cache_read + cache_write`, `cached = cache_read`) so budget code sees one shape |
+| Reasoning | `output_tokens_details.reasoning_tokens` | `output_tokens_details.thinking_tokens` (already inside `output_tokens`) |
+| Out of tokens | `incomplete: max_output_tokens` | `stop_reason: max_tokens` -> `incomplete: max_output_tokens` (same escalation) |
+| Refusal | refusal content part | `stop_reason: refusal` (+ `stop_details`) |
+| Errors | 408, 429, 5xx retryable | 408, 429, 5xx incl. 529 overloaded retryable; `retry-after` honoured; a spent balance (402, or a 400 saying so) is non-retryable status 402 and counts toward the circuit breaker |
+| Tools (web search) | yes (`S1`) | not yet: a spec with tools is refused before any call |
+
+* Cassette keys contain the model id, so a Claude cassette never replays for a GPT call and the reverse. The ledger records the model of every call.
+* Prices: `pricing.yaml`, one row per model with its `vendor`; Haiku 5.5 has the same long-context rule as a threshold (100,000 prompt tokens, x5 on the whole request).
+* Adding a vendor: a provider module, a builder in `factory._VENDORS`, its key in `gating.VENDOR_KEYS`, `vendor:` rows with prices, the provider tests (copy `tests/test_anthropic_provider.py`), and its SDK name in `.importlinter`, the ruff `banned-api` list and `MODEL_SDKS` in `tests/security/test_repo_hygiene.py`.
 
 ## Pipeline for one call (`Gateway.run`)
 

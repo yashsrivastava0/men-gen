@@ -21,9 +21,25 @@ def require_live(settings: Settings) -> None:
         raise LiveCallForbidden("live LLM calls need LLM_MODE=live")
 
 
-def require_api_key(settings: Settings) -> str:
-    """The API key for a live client. Never log or echo the return value."""
-    key = settings.openai_api_key
+# Which Settings field holds each vendor's key, and the environment variable it is read from.
+VENDOR_KEYS: dict[str, tuple[str, str]] = {
+    "openai": ("openai_api_key", "OPENAI_API_KEY"),
+    "anthropic": ("anthropic_api_key", "ANTHROPIC_API_KEY"),
+}
+
+
+def require_api_key(settings: Settings, vendor: str = "openai", *, needed_by: str = "") -> str:
+    """The API key of ``vendor`` for a live client. Never log or echo the return value.
+
+    ``needed_by`` (for example ``"route fast uses claude-haiku-5-5"``) makes the error say why.
+    """
+    if vendor not in VENDOR_KEYS:
+        raise ConfigError(
+            f"no provider is known for vendor {vendor!r} (known: {', '.join(sorted(VENDOR_KEYS))})"
+        )
+    field, env_name = VENDOR_KEYS[vendor]
+    key = getattr(settings, field, None)
     if key is None or not key.get_secret_value():
-        raise ConfigError("OPENAI_API_KEY is not set; live mode needs it")
-    return key.get_secret_value()
+        why = f" ({needed_by})" if needed_by else ""
+        raise ConfigError(f"{env_name} is not set; live mode needs it{why}")
+    return str(key.get_secret_value())

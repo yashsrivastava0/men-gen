@@ -48,8 +48,8 @@ modules =
     mde_persistence
     mde_spec_loader
 
-[importlinter:contract:only-gateway-imports-openai]
-name = Only mde_llm_gateway may import openai
+[importlinter:contract:only-gateway-imports-model-sdks]
+name = Only mde_llm_gateway may import a model vendor SDK (openai, anthropic; rule 14)
 type = forbidden
 source_modules =
     mde_core
@@ -69,6 +69,7 @@ source_modules =
     mde_cli
 forbidden_modules =
     openai
+    anthropic
 allow_indirect_imports = True
 
 [importlinter:contract:no-agent-frameworks-no-sqlite]
@@ -112,6 +113,7 @@ source_modules =
     mde_core
 forbidden_modules =
     openai
+    anthropic
     httpx
     requests
     sqlalchemy

@@ -88,13 +88,14 @@ ignore = [
 "scripts/**" = ["T20", "S603", "S607", "S404"]
 "apps/cli/**" = ["T20"]
 ".claude/hooks/**" = ["T20", "S603", "S607"]
-"packages/llm-gateway/**" = ["TID251"]   # the only package allowed to import openai
+"packages/llm-gateway/**" = ["TID251"]   # the only package allowed to import a model vendor SDK
 "packages/persistence/**/migrations/**" = ["E402"]
 "agents/compass/**/migrations/**" = ["E402"]
 "agents/research/**/migrations/**" = ["E402"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
-"openai".msg = "Only mde_llm_gateway may import openai (brief section 2)."
+"openai".msg = "Only mde_llm_gateway may import a model vendor SDK (brief section 2, rule 14)."
+"anthropic".msg = "Only mde_llm_gateway may import a model vendor SDK (brief section 2, rule 14)."
 "langchain".msg = "Agent frameworks are forbidden."
 "langgraph".msg = "Agent frameworks are forbidden."
 "llama_index".msg = "Agent frameworks are forbidden."
