@@ -1,0 +1,217 @@
+"""One place that runs a Spec model call (doc 18 4, doc 19 5).
+
+* Every call goes through `SpendGuard` (reserve the worst case, reconcile, fail closed): there is no other path to a
+  model, so the USD cap cannot be bypassed (a test uses a scripted gateway that tries to overspend).
+* A model-side failure (timeout, provider error, invalid output, a local validator saying no) uses ONE re-ask per NODE in
+  the whole run (batched per call kind by the caller), then the deterministic fallback with `flagged=True`.
+* A budget refusal, a stop request, a missing cassette, a forbidden live call and a cancellation are NOT model failures
+  and are never hidden behind a fallback: they propagate so the step checkpoints and the run ends `partial`.
+* Truncation is reported as `Truncated` so the caller splits the batch (a fused call splits back into its parts).
+"""
+
+from __future__ import annotations
+
+import asyncio
+import time
+from collections.abc import Callable, Sequence
+from dataclasses import dataclass, field
+from typing import Any, Generic, TypeVar
+
+from pydantic import BaseModel, ConfigDict
+
+from mde_contracts.gateway import CallContext, CallSpec, GatewayClient
+from mde_core.cancel import CancellationToken, NeverCancelled
+from mde_core.errors import (
+    BudgetExceeded,
+    CallCancelled,
+    CassetteMissing,
+    GatewayError,
+    LiveCallForbidden,
+)
+from mde_core.ids import new_id
+from mde_spec_agent.config import RUN_SCOPE_KIND
+from mde_spec_agent.spend import SpendGuard, SpendRefused, StopRequested
+from mde_spec_core.callkit import ReaskLedger
+from mde_spec_core.canon import canonical_json
+from mde_spec_core.render import TokenCounter
+
+I = TypeVar("I", bound="CallInput")  # noqa: E741
+O = TypeVar("O", bound=BaseModel)  # noqa: E741
+
+PROPAGATE: tuple[type[BaseException], ...] = (
+    BudgetExceeded,
+    CassetteMissing,
+    LiveCallForbidden,
+    CallCancelled,
+    SpendRefused,
+    StopRequested,
+)
+Validator = Callable[[Any, Any], list[str]]
+TEMPLATE_SLACK_TOKENS = 2500  # rules, vocabularies and schema text around the input
+
+
+class Truncated(RuntimeError):
+    """The model's output hit its limit: the caller redoes the unfinished items in smaller batches."""
+
+
+class CallInput(BaseModel):
+    """Base of every call input. `reask` carries the validator messages of ONE targeted re-ask, word for word."""
+
+    model_config = ConfigDict(extra="forbid")
+    reask: list[str] = []
+
+
+@dataclass(frozen=True)
+class SpecCallSpec(Generic[I, O]):
+    spec: CallSpec[I, O]
+    kind: str  # the call kind ("PROD-MODULE"): re-asks are batched per kind
+    timeout_s: float
+    fallback: Callable[[I], O]
+    validators: tuple[Validator, ...] = ()
+
+    @property
+    def id(self) -> str:
+        return self.spec.id
+
+
+@dataclass
+class RunResult(Generic[O]):
+    output: O
+    used_fallback: bool = False
+    flagged: bool = (
+        False  # the fallback or a failed re-ask: shown at G2 as degraded, never an unmarked hole
+    )
+    reasked: bool = False
+    repaired: bool = False
+    reason: str = ""
+    errors: list[str] = field(default_factory=list)
+    tokens_in: int = 0
+    tokens_out: int = 0
+    cost_micros: int = 0
+    latency_ms: int = 0
+    live: bool = False
+    model: str = ""
+
+
+class CallRunner:
+    def __init__(
+        self,
+        gateway: GatewayClient,
+        guard: SpendGuard,
+        *,
+        run_id: str,
+        tenant_id: str = "spec",
+        ledger: ReaskLedger | None = None,
+        cancel: CancellationToken | None = None,
+        on_call: Callable[[str, str, RunResult[Any]], None] | None = None,
+        extra_scopes: tuple[str, ...] = (),
+        counter: TokenCounter | None = None,
+    ) -> None:
+        self._gateway = gateway
+        self._guard = guard
+        self._run_id = run_id
+        self._tenant = tenant_id
+        self.ledger = ledger or ReaskLedger()
+        self._cancel = cancel or NeverCancelled()
+        self._on_call = on_call
+        self._extra = extra_scopes
+        self._counter = counter or TokenCounter(3.0)
+        self.calls: list[tuple[str, RunResult[Any]]] = []
+
+    def context(self, cs: SpecCallSpec[Any, Any]) -> CallContext:
+        return CallContext(
+            request_id=new_id("call"),
+            budget_scope=f"{RUN_SCOPE_KIND}:{self._run_id}",
+            extra_scopes=self._extra,
+            purpose=f"spec.{cs.id}",
+            session_id=self._run_id,
+            tenant_id=self._tenant,
+            cancel=self._cancel,
+        )
+
+    def estimate_input_tokens(self, inp: BaseModel) -> int:
+        return (
+            self._counter.count(canonical_json(inp.model_dump(mode="json"))) + TEMPLATE_SLACK_TOKENS
+        )
+
+    async def _once(self, cs: SpecCallSpec[I, O], inp: I) -> Any:
+        ctx = self.context(cs)
+
+        async def go() -> Any:
+            return await asyncio.wait_for(
+                self._gateway.run(cs.spec, inp, ctx), timeout=cs.timeout_s + 5.0
+            )
+
+        return await self._guard.call(
+            go,
+            cost_of=lambda r: int(getattr(getattr(r, "usage", None), "cost_micros", 0) or 0),
+            input_tokens=self.estimate_input_tokens(inp),
+            max_output_tokens=int(cs.spec.max_output_tokens),
+            label=cs.id,
+            run_id=self._run_id,
+        )
+
+    async def run(
+        self, cs: SpecCallSpec[I, O], inp: I, *, node_ids: Sequence[str] = (), step: str = ""
+    ) -> RunResult[O]:
+        started = time.monotonic()
+        self._cancel.check()
+        errors: list[str] = []
+        result: Any = None
+        try:
+            result = await self._once(cs, inp)
+        except PROPAGATE:
+            raise
+        except (GatewayError, TimeoutError) as exc:
+            if "truncat" in str(exc).lower():
+                raise Truncated(str(exc)) from exc
+            errors = [type(exc).__name__]
+        out = getattr(result, "output", None) if result is not None else None
+        if out is not None:
+            for v in cs.validators:
+                errors.extend(v(inp, out))
+        reasked = False
+        if errors and node_ids and not any(self.ledger.has_used(n) for n in node_ids):
+            reasked = True
+            for n in node_ids:
+                self.ledger.mark(n)
+            try:
+                result2 = await self._once(cs, inp.model_copy(update={"reask": errors[:20]}))
+                out2 = getattr(result2, "output", None)
+                errs2: list[str] = []
+                if out2 is not None:
+                    for v in cs.validators:
+                        errs2.extend(v(inp, out2))
+                if out2 is not None and not errs2:
+                    result, out, errors = result2, out2, []
+            except PROPAGATE:
+                raise
+            except (GatewayError, TimeoutError):
+                pass
+        if out is None or errors:
+            res: RunResult[O] = RunResult(
+                output=cs.fallback(inp),
+                used_fallback=True,
+                flagged=True,
+                reasked=reasked,
+                reason="; ".join(errors)[:300] or "empty_output",
+                errors=errors,
+                latency_ms=int((time.monotonic() - started) * 1000),
+            )
+        else:
+            u = getattr(result, "usage", None)
+            res = RunResult(
+                output=out,
+                reasked=reasked,
+                repaired=bool(getattr(result, "repaired", False)),
+                tokens_in=int(getattr(u, "input_tokens", 0) or 0),
+                tokens_out=int(getattr(u, "output_tokens", 0) or 0),
+                cost_micros=int(getattr(u, "cost_micros", 0) or 0),
+                latency_ms=int((time.monotonic() - started) * 1000),
+                live=getattr(result, "mode", "") == "live",
+                model="",
+            )
+        self.calls.append((cs.id, res))
+        if self._on_call:
+            self._on_call(step, cs.kind, res)
+        return res
