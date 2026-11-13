@@ -1,0 +1,110 @@
+{
+ "tasks": [
+  {
+   "task": "features",
+   "need": "BN-02",
+   "A": {
+    "supported": 0,
+    "assumed": 8,
+    "invented": 0,
+    "statements": 8,
+    "findings_cited": 0
+   },
+   "B": {
+    "supported": 1,
+    "assumed": 0,
+    "invented": 8,
+    "statements": 9,
+    "findings_cited": 3
+   }
+  },
+  {
+   "task": "entities",
+   "need": "BN-04",
+   "A": {
+    "supported": 0,
+    "assumed": 13,
+    "invented": 0,
+    "statements": 13,
+    "findings_cited": 0
+   },
+   "B": {
+    "supported": 12,
+    "assumed": 2,
+    "invented": 1,
+    "statements": 15,
+    "findings_cited": 9
+   }
+  },
+  {
+   "task": "integrations",
+   "need": "BN-10",
+   "A": {
+    "supported": 0,
+    "assumed": 7,
+    "invented": 0,
+    "statements": 7,
+    "findings_cited": 0
+   },
+   "B": {
+    "supported": 24,
+    "assumed": 1,
+    "invented": 1,
+    "statements": 26,
+    "findings_cited": 25
+   }
+  },
+  {
+   "task": "screens",
+   "need": "BN-09",
+   "A": {
+    "supported": 0,
+    "assumed": 18,
+    "invented": 0,
+    "statements": 18,
+    "findings_cited": 0
+   },
+   "B": {
+    "supported": 4,
+    "assumed": 16,
+    "invented": 10,
+    "statements": 30,
+    "findings_cited": 8
+   }
+  },
+  {
+   "task": "sample_data",
+   "need": "BN-07",
+   "A": {
+    "supported": 0,
+    "assumed": 13,
+    "invented": 0,
+    "statements": 13,
+    "findings_cited": 0
+   },
+   "B": {
+    "supported": 11,
+    "assumed": 5,
+    "invented": 3,
+    "statements": 19,
+    "findings_cited": 12
+   }
+  }
+ ],
+ "cost_micros": 40146,
+ "brief_given": true,
+ "totals": {
+  "A": {
+   "supported": 0,
+   "assumed": 59,
+   "invented": 0
+  },
+  "B": {
+   "supported": 52,
+   "assumed": 24,
+   "invented": 23
+  }
+ },
+ "passed": false,
+ "cost_usd": "0.040146"
+}

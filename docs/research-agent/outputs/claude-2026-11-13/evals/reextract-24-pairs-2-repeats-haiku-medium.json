@@ -1,0 +1,331 @@
+{
+ "pairs": 24,
+ "topics_not_rebuilt": 0,
+ "repeats": 2,
+ "arms": {
+  "B": {
+   "what": "v3 checker, tighten and re-check once",
+   "partial_share": {
+    "min": 0.1172,
+    "median": 0.1236,
+    "max": 0.1301
+   },
+   "unverified_share": {
+    "min": 0.1092,
+    "median": 0.1127,
+    "max": 0.1161
+   },
+   "verified_atoms": {
+    "min": 123.0,
+    "median": 125.5,
+    "max": 128.0
+   },
+   "tightened": {
+    "min": 18.0,
+    "median": 19.5,
+    "max": 21.0
+   },
+   "rejected_not_supported": {
+    "min": 0.0,
+    "median": 0.5,
+    "max": 1.0
+   },
+   "repeats": [
+    {
+     "atoms": 131,
+     "verified": 123,
+     "rejected_not_supported": 0,
+     "rejected_unsupported_field": 8,
+     "checked": 123,
+     "partial": 16,
+     "partial_share": 0.1301,
+     "tightened": 18,
+     "items": 112,
+     "unverified_items": 13,
+     "unverified_share": 0.1161,
+     "partial_by_kind": {
+      "competitor": [
+       1,
+       2
+      ],
+      "compliance_note": [
+       0,
+       2
+      ],
+      "navigation_pattern": [
+       0,
+       2
+      ],
+      "platform_constraint": [
+       0,
+       6
+      ],
+      "provider_fact": [
+       1,
+       27
+      ],
+      "role_pattern": [
+       0,
+       1
+      ],
+      "rule": [
+       0,
+       15
+      ],
+      "screen_pattern": [
+       5,
+       16
+      ],
+      "service_option": [
+       1,
+       8
+      ],
+      "workflow": [
+       8,
+       44
+      ]
+     }
+    },
+    {
+     "atoms": 135,
+     "verified": 128,
+     "rejected_not_supported": 1,
+     "rejected_unsupported_field": 6,
+     "checked": 128,
+     "partial": 15,
+     "partial_share": 0.1172,
+     "tightened": 21,
+     "items": 119,
+     "unverified_items": 13,
+     "unverified_share": 0.1092,
+     "partial_by_kind": {
+      "competitor": [
+       2,
+       2
+      ],
+      "compliance_note": [
+       1,
+       3
+      ],
+      "navigation_pattern": [
+       0,
+       2
+      ],
+      "platform_constraint": [
+       1,
+       8
+      ],
+      "provider_fact": [
+       0,
+       24
+      ],
+      "role_pattern": [
+       2,
+       2
+      ],
+      "rule": [
+       0,
+       17
+      ],
+      "screen_pattern": [
+       2,
+       16
+      ],
+      "service_option": [
+       2,
+       7
+      ],
+      "workflow": [
+       5,
+       47
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "tightened_sample": [
+  {
+   "kind": "competitor",
+   "before": "",
+   "after": "Fitnexsolutions offers yoga studio management software for classes, staff and sales, connecting studios with students through a branded iOS and Android app.",
+   "quote": "Yoga Business management Software Classes, Staff & Sales power your studio with the best solution and connect with students worldwide through your branded iOS &"
+  },
+  {
+   "kind": "rule",
+   "before": "",
+   "after": "Stockholders above the prescribed limit must bring stocks down to the limit within 30 days.",
+   "quote": "to bring the stocks down to the prescribed limit within 30 days, in case the stock held by them exceeds the limit."
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "The government imposed stock limits on some pulses in July 2021, requiring stockholders to declare stock positions on the consumer affairs portal.",
+   "quote": "the Government imposed stock limits on some pulses under the Essential Commodities Act, 1955 in July 2021"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students visit the booking page, select a class, choose an available time slot, and receive instant confirmation.",
+   "quote": "students visit your booking page, select their desired class, choose an available time slot, and receive instant confirmation."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students can reserve classes, workshops and private sessions online at any time, without contacting the front desk, and receive confirmation automatically.",
+   "quote": "Students can check open classes, choose an instructor or class style, add themselves to a waitlist, and receive confirmation without contacting the front desk."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Studios can set reminder timing differently for booking types, such as one sequence for recurring classes and another for higher-value workshops or private instruction.",
+   "quote": "Studios can also tailor reminder timing to different booking types, such as sending one sequence for recurring classes and another for higher-value workshops or private"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Without structured booking rules, studios can end up with classes exceeding capacity, two instructors assigned to one room, or sessions without enough transition time.",
+   "quote": "studios can end up with classes that exceed capacity, two instructors assigned to the same room, or sessions scheduled without enough transition time."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students can reserve a class, workshop, or private session and secure their spot immediately by paying online or a deposit in the booking flow.",
+   "quote": "supports online payments and deposits right in the booking flow, so students can reserve a class, workshop, or private session and secure their spot immediately."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Clients can book a time slot directly through the Bobclass Go app, or the studio can book it on their behalf.",
+   "quote": "The client books a time slot directly through the Bobclass Go app, or you book it on their behalf."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When a class is full, clients can join the waitlist via the Bobclass Go client app, and the studio decides who gets an open spot.",
+   "quote": "When a class is full, clients can join the waitlist via the Bobclass Go client app."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When a payment fails, Gymdesk retries the charge on a schedule the studio sets and emails the member to update their card.",
+   "quote": "Gymdesk retries the charge automatically on a schedule you set, and emails the member to update their card."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A member opens the schedule, selects a class, checks its details, and reserves a place; the reservation then appears in the member's account.",
+   "quote": "A student opens the schedule, selects a class, checks its details, and reserves a place. The reservation appears in the member\u2019s account, making it easier"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "For rescheduling, the existing reservation should be easy to find and available alternatives shown without another full schedule search.",
+   "quote": "For rescheduling, make the existing reservation easy to find and show available alternatives without requiring another search through the full schedule."
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "The Reserve Bank of India enacted a new framework on processing e-mandates for recurring transactions starting October 1st, 2021.",
+   "quote": "Starting October 1st, 2021, the Reserve Bank of India (RBI) has enacted a new regulatory framework, the Directive of Processing e-mandates."
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "When a place opens, the studio can notify waitlisted members and explain how to claim it.",
+   "quote": "If a place opens, the studio can notify waitlisted members and explain how to claim it."
+  },
+  {
+   "kind": "role_pattern",
+   "before": "",
+   "after": "Clients use the app to browse the schedule, book classes, receive reminders, manage bookings and join waitlists.",
+   "quote": "students can browse the schedule, book a class on their phone in 1-2 minutes, and receive a reminder 2 hours before class"
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "A yoga app should include a login and signup page for users.",
+   "quote": "Login/Sign up page"
+  },
+  {
+   "kind": "navigation_pattern",
+   "before": "",
+   "after": "Bravo's tab menu templates can create bottom navigation for Home, Videos, Profile and similar items.",
+   "quote": "Use Figma\u2019s prototyping tools or Bravo\u2019s tab menu templates to create bottom navigation for Home, Videos, Profile, etc."
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "Infobip's error code reference lists delivery error codes for DLT (India).",
+   "quote": "Error code reference: Delivery error codes by channel, including DLT (India)"
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "The Legal Metrology (Packaged Commodities) Rules were amended, deleting one rule and adding a Unit Sale Price for consumer benefit.",
+   "quote": "was amended vide GSR NO.779(E) dated 2nd November,2021"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Bookeo supports online payments and deposits within the booking flow, so students can reserve a class, workshop, or private session and secure their spot immediately.",
+   "quote": "supports online payments and deposits right in the booking flow, so students can reserve a class, workshop, or private session"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "If a studio accepts payments in person, Bookeo can work with Square POS so staff take card payments at the front desk, synced with the corresponding bookings.",
+   "quote": "letting staff take tap/dip/swipe payments at the front desk while keeping those transactions synced with the corresponding bookings"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students visit the booking page, select a class, choose an available time slot, and receive instant confirmation.",
+   "quote": "students visit your booking page, select their desired class, choose an available time slot, and receive instant confirmation."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students can reserve classes, workshops and private sessions online at any time, without contacting the front desk. The self-booking connects to the live schedule, instructor availability, room capacity, service menus and membership eligibility.",
+   "quote": "Online self-booking connects the studio's live schedule with instructor availability, room capacity, service menus, and membership eligibility."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When a class is fully booked, students can join a waitlist and the platform monitors the schedule for openings. If a spot opens, eligible students are notified according to the studio's waitlist rules.",
+   "quote": "Students can join a list for a fully booked class, workshop, or preferred instructor, allowing the platform to track interest while monitoring the schedule for"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students can reserve a class, workshop, or private session and secure their spot immediately with online payments and deposits in the booking flow.",
+   "quote": "so students can reserve a class, workshop, or private session and secure their spot immediately"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When a class is full, clients can join the waitlist via the Bobclass Go client app, and the studio decides who gets an opened spot.",
+   "quote": "When a class is full, clients can join the waitlist via the Bobclass Go client app."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students without enough credits can buy a pack inside the booking, so the sale is not lost.",
+   "quote": "Students without enough credits buy a pack inside the booking, so the sale isn\u2019t lost."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Students can join waitlists and claim a space the moment one opens.",
+   "quote": "Join waitlists and claim a space the moment one opens"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "New students sign up, sign the waiver, buy and book in one flow in the studio's own app.",
+   "quote": "Sign up, sign the waiver, buy and book in one flow, in your own app."
+  }
+ ],
+ "cost_micros": 153848,
+ "cost_usd": "0.153848"
+}

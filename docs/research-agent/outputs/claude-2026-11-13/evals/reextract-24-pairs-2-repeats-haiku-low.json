@@ -1,0 +1,237 @@
+{
+ "pairs": 24,
+ "topics_not_rebuilt": 0,
+ "repeats": 2,
+ "arms": {
+  "B": {
+   "what": "v3 checker, tighten and re-check once",
+   "partial_share": {
+    "min": 0.3193,
+    "median": 0.3349,
+    "max": 0.3505
+   },
+   "unverified_share": {
+    "min": 0.3143,
+    "median": 0.3145,
+    "max": 0.3146
+   },
+   "verified_atoms": {
+    "min": 97.0,
+    "median": 108.0,
+    "max": 119.0
+   },
+   "tightened": {
+    "min": 6.0,
+    "median": 7.5,
+    "max": 9.0
+   },
+   "rejected_not_supported": {
+    "min": 0.0,
+    "median": 0.0,
+    "max": 0.0
+   },
+   "repeats": [
+    {
+     "atoms": 121,
+     "verified": 97,
+     "rejected_not_supported": 0,
+     "rejected_unsupported_field": 24,
+     "checked": 97,
+     "partial": 34,
+     "partial_share": 0.3505,
+     "tightened": 6,
+     "items": 89,
+     "unverified_items": 28,
+     "unverified_share": 0.3146,
+     "partial_by_kind": {
+      "competitor": [
+       2,
+       2
+      ],
+      "compliance_note": [
+       2,
+       2
+      ],
+      "platform_constraint": [
+       0,
+       3
+      ],
+      "provider_fact": [
+       7,
+       31
+      ],
+      "role_pattern": [
+       2,
+       2
+      ],
+      "rule": [
+       2,
+       12
+      ],
+      "screen_pattern": [
+       5,
+       17
+      ],
+      "service_option": [
+       3,
+       3
+      ],
+      "workflow": [
+       11,
+       25
+      ]
+     }
+    },
+    {
+     "atoms": 130,
+     "verified": 119,
+     "rejected_not_supported": 0,
+     "rejected_unsupported_field": 11,
+     "checked": 119,
+     "partial": 38,
+     "partial_share": 0.3193,
+     "tightened": 9,
+     "items": 105,
+     "unverified_items": 33,
+     "unverified_share": 0.3143,
+     "partial_by_kind": {
+      "competitor": [
+       3,
+       4
+      ],
+      "compliance_note": [
+       1,
+       2
+      ],
+      "navigation_pattern": [
+       1,
+       2
+      ],
+      "platform_constraint": [
+       2,
+       3
+      ],
+      "provider_fact": [
+       2,
+       32
+      ],
+      "role_pattern": [
+       1,
+       1
+      ],
+      "rule": [
+       1,
+       14
+      ],
+      "screen_pattern": [
+       7,
+       14
+      ],
+      "service_option": [
+       5,
+       6
+      ],
+      "workflow": [
+       15,
+       41
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "tightened_sample": [
+  {
+   "kind": "provider_fact",
+   "before": "",
+   "after": "Direct integration connects straight to the WhatsApp Business Platform and sends messages from the business's own phone number, requiring developers.",
+   "quote": "Connect directly to the WhatsApp Business Platform and send from your own phone number."
+  },
+  {
+   "kind": "rule",
+   "before": "",
+   "after": "Retailers face a stock limit of 5 MT.",
+   "quote": "Retailers: 5 MT"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A member opens the schedule, selects a class, checks its details, and reserves a place, and the reservation then appears in the member's account.",
+   "quote": "A student opens the schedule, selects a class, checks its details, and reserves a place. The reservation appears in the member\u2019s account, making it easier"
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Members can browse the schedule in the client app before booking a class.",
+   "quote": "students can browse the schedule, book a class on their phone in 1-2 minutes"
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Members can review upcoming bookings in the app without searching old emails.",
+   "quote": "students planning a week of practice can review upcoming bookings without searching old emails"
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "The app should make clear whether it records interest or confirms a booking.",
+   "quote": "Make clear whether the app records interest or confirms a booking"
+  },
+  {
+   "kind": "competitor",
+   "before": "",
+   "after": "Fitnexsolutions offers 30 days free to start.",
+   "quote": "Enjoy 30 days free start now"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "When clients book an online yoga class or lesson, they automatically receive a meeting link through Bookeo's Zoom integration.",
+   "quote": "When your clients book a yoga class or lesson offered online, they automatically receive a meeting link, thanks to Bookeo's Zoom integration."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Studios can set reminder timing per booking type, such as one sequence for recurring classes and another for workshops or private instruction.",
+   "quote": "Studios can also tailor reminder timing to different booking types, such as sending one sequence for recurring classes and another for higher-value workshops or private"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Online payments and deposits are taken inside the booking flow so a student secures a spot immediately.",
+   "quote": "supports online payments and deposits right in the booking flow"
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A late cancel does not get its class credit back, and the late-cancel fee is charged automatically.",
+   "quote": "A late cancel doesn\u2019t get its credit back, and your late-cancel fee is charged automatically."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "No-show fees are charged when staff mark the no-show.",
+   "quote": "No-show fees are charged when staff mark the no-show."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "New students sign up, sign the waiver, buy and book in one flow in the studio's own app.",
+   "quote": "Sign up, sign the waiver, buy and book in one flow, in your own app."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Studio staff can process in-person payments for class packs at the front desk.",
+   "quote": "Yes, you can process in-person payments for memberships, class packs, and merchandise at the front desk."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "A member opens the schedule, selects a class, checks its details, and reserves a place; the reservation then appears in the member's account.",
+   "quote": "A student opens the schedule, selects a class, checks its details, and reserves a place. The reservation appears in the member\u2019s account, making it easier"
+  }
+ ],
+ "cost_micros": 92494,
+ "cost_usd": "0.092494"
+}

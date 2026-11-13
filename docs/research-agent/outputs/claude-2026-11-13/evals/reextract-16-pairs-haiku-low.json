@@ -1,0 +1,160 @@
+{
+ "pairs": 16,
+ "topics_not_rebuilt": 0,
+ "repeats": 1,
+ "arms": {
+  "B": {
+   "what": "v3 checker, tighten and re-check once",
+   "partial_share": {
+    "min": 0.2951,
+    "median": 0.2951,
+    "max": 0.2951
+   },
+   "unverified_share": {
+    "min": 0.2642,
+    "median": 0.2642,
+    "max": 0.2642
+   },
+   "verified_atoms": {
+    "min": 61.0,
+    "median": 61.0,
+    "max": 61.0
+   },
+   "tightened": {
+    "min": 10.0,
+    "median": 10.0,
+    "max": 10.0
+   },
+   "rejected_not_supported": {
+    "min": 0.0,
+    "median": 0.0,
+    "max": 0.0
+   },
+   "repeats": [
+    {
+     "atoms": 78,
+     "verified": 61,
+     "rejected_not_supported": 0,
+     "rejected_unsupported_field": 17,
+     "checked": 61,
+     "partial": 18,
+     "partial_share": 0.2951,
+     "tightened": 10,
+     "items": 53,
+     "unverified_items": 14,
+     "unverified_share": 0.2642,
+     "partial_by_kind": {
+      "competitor": [
+       2,
+       2
+      ],
+      "compliance_note": [
+       1,
+       2
+      ],
+      "navigation_pattern": [
+       0,
+       1
+      ],
+      "platform_constraint": [
+       0,
+       11
+      ],
+      "provider_fact": [
+       3,
+       12
+      ],
+      "role_pattern": [
+       1,
+       1
+      ],
+      "rule": [
+       1,
+       4
+      ],
+      "screen_pattern": [
+       1,
+       7
+      ],
+      "service_option": [
+       2,
+       3
+      ],
+      "trend": [
+       0,
+       1
+      ],
+      "workflow": [
+       7,
+       17
+      ]
+     }
+    }
+   ]
+  }
+ },
+ "tightened_sample": [
+  {
+   "kind": "provider_fact",
+   "before": "",
+   "after": "WhatsApp Business Platform lists multi-factor authentication or one-time passwords as a supported use for verifying accounts and users.",
+   "quote": "Enable multi-factor authentication or one-time passwords to verify accounts and users"
+  },
+  {
+   "kind": "provider_fact",
+   "before": "",
+   "after": "WhatsApp Business Platform sends messages at scale using approved templates, automated flows and AI tools.",
+   "quote": "Approved templates, automated flows, and Al tools let you message at scale."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "For rescheduling, the existing reservation should be easy to find and available alternatives should be shown without another full schedule search.",
+   "quote": "For rescheduling, make the existing reservation easy to find and show available alternatives without requiring another search through the full schedule."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "Existing client lists and schedules can be imported at no charge by sending timetable screenshots to the import address.",
+   "quote": "Just send screenshots of your current timetable to import@bobclass.com and we'll handle it."
+  },
+  {
+   "kind": "workflow",
+   "before": "",
+   "after": "The waitlist journey covers joining the list, receiving an update, and returning to the booking details.",
+   "quote": "join the list, receive an update, and return to the booking details."
+  },
+  {
+   "kind": "screen_pattern",
+   "before": "",
+   "after": "Members can browse the studio schedule in the app, labelled 'Schedule', with class names, times and instructor details beside session details.",
+   "quote": "Use familiar labels such as \u201cSchedule\u201d and \u201cMy bookings,\u201d"
+  },
+  {
+   "kind": "compliance_note",
+   "before": "",
+   "after": "The All India Tourist Permit lets tourist vehicle operators move freely across state borders without paying extra fees at each checkpoint, and permits are to be granted within 7 days under the new online process.",
+   "quote": "with permits to be granted within 7 days"
+  },
+  {
+   "kind": "platform_constraint",
+   "before": "",
+   "after": "Subscription apps are recommended to enable Billing Grace Period in App Store Connect.",
+   "quote": "For subscription apps, enable Billing Grace Period in App Store Connect."
+  },
+  {
+   "kind": "platform_constraint",
+   "before": "",
+   "after": "Purchases handled by the Advanced Commerce API cannot be promoted on the App Store and cannot use subscription offers, Family Sharable IAPs, or StoreKit Testing in Xcode.",
+   "quote": "purchases handled by the Advanced Commerce API can\u2019t be promoted on the App Store and are unable to use certain App Store features at this"
+  },
+  {
+   "kind": "platform_constraint",
+   "before": "",
+   "after": "When submitting for App Review, developers should mention in review notes that the app uses the Advanced Commerce API.",
+   "quote": "please mention in your review notes that your app uses the Advanced Commerce API."
+  }
+ ],
+ "cost_micros": 31660,
+ "cost_usd": "0.03166"
+}

@@ -240,3 +240,14 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] P7 Robustness: fetch retries, bounded extraction, timeouts at scale, failover cool-down, circuit wait (D-167, D-170); resume decided against; the Serper retest was one run (D-170)
 - [x] P8 Docs: as-built note `docs/research-agent/depth-overhaul-as-built-2026-11-13.md`, evidence note, discovery note, spec contract, compass contract; `CURRENT_STATE.md` updated
 - [ ] Live proof: done for the planted-error test, the re-extraction experiment, Small (Tavily x2, Serper), Medium (old ceilings), Big (Serper); **not done** (OpenAI credits exhausted, D-170): Medium on the final code, the consumer probe, Porto, Big on Tavily
+
+## Model-vendor independence and the Research agent on Claude (owner instruction 2026-11-13; branch `feat/llm-providers`, safe-point tag `pre/llm-providers-20261113-2128`; decisions D-171, D-172)
+
+- [x] W0 Checkpoint (8dadd8a), tag, branch; two stale doc edits kept out of the commit (they contradicted the spend record)
+- [x] W1 Rule 14 in `CLAUDE.md` (rule 2 widened), gateway `CLAUDE.md`, gateway docs, Research README, `.env.example` (7578254, 5e6bba4)
+- [x] W2 Gateway: `AnthropicMessagesProvider`, `RoutingProvider`, vendor on every `pricing.yaml` row, Claude prices, `ANTHROPIC_API_KEY` and `MODEL_ROUTES` spellings, vendor-aware doctor probe, import-linter and ruff bans, hygiene test (5e6bba4); structured-output limits (73fcd90); per-model `effort_floor` (7d198f1)
+- [x] W3 Research: readiness and Preflight name what the routes need, `checker_vendor` from the gateway, no vendor name in the Research source (500f5c8)
+- [x] W4 Live: smoke test; planted-error test for the checker (Haiku low, Sonnet low, Haiku medium); re-extraction experiments (Haiku, Sonnet, effort); schema checks of all 18 Research specs
+- [x] W5 Live runs on Claude (Haiku 5.5): Small yoga (x3, final 19 of 19 slots), Porto, Medium Nashik (78%), Big freight (90%), consumer probe (not passed)
+- [x] W6 Report `docs/research-agent/claude-provider-test-report-2026-11-13.md`, outputs saved in `docs/research-agent/outputs/claude-2026-11-13/`
+- [ ] Not done (money, USD 4.66 of 4.95 booked): Medium and Big on Tavily, Dakar, Pune, hospital and Central America; Claude against the OpenAI model on the same day; a cross-vendor checker (needs OpenAI credits); Sonnet as checker at a higher effort; the hand spot-check of 60 facts per run; Compass still names the OpenAI model (rule 14 debt, listed in the report)

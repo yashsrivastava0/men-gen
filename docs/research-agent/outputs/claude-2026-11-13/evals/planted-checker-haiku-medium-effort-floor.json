@@ -1,0 +1,118 @@
+{
+ "clean_items": 49,
+ "planted": 207,
+ "caught_overall": 0.9758,
+ "per_kind": {
+  "number_changed": {
+   "planted": 11,
+   "caught_by_code": 11,
+   "caught_by_checker": 0,
+   "checker_not_supported": 0,
+   "checker_partial": 0,
+   "missed": 0,
+   "gated": true,
+   "caught_rate": 1.0
+  },
+  "entity_swapped": {
+   "planted": 49,
+   "caught_by_code": 0,
+   "caught_by_checker": 44,
+   "checker_not_supported": 44,
+   "checker_partial": 0,
+   "missed": 5,
+   "gated": true,
+   "caught_rate": 0.898
+  },
+  "condition_flipped": {
+   "planted": 49,
+   "caught_by_code": 0,
+   "caught_by_checker": 49,
+   "checker_not_supported": 16,
+   "checker_partial": 33,
+   "missed": 0,
+   "gated": true,
+   "caught_rate": 1.0
+  },
+  "region_swapped": {
+   "planted": 35,
+   "caught_by_code": 35,
+   "caught_by_checker": 0,
+   "checker_not_supported": 0,
+   "checker_partial": 0,
+   "missed": 0,
+   "gated": true,
+   "caught_rate": 1.0
+  },
+  "unsupported_attribute_added": {
+   "planted": 49,
+   "caught_by_code": 15,
+   "caught_by_checker": 34,
+   "checker_not_supported": 0,
+   "checker_partial": 34,
+   "missed": 0,
+   "gated": true,
+   "caught_rate": 1.0
+  },
+  "currency_swapped": {
+   "planted": 3,
+   "caught_by_code": 3,
+   "caught_by_checker": 0,
+   "checker_not_supported": 0,
+   "checker_partial": 0,
+   "missed": 0,
+   "gated": false,
+   "caught_rate": 1.0
+  },
+  "period_changed": {
+   "planted": 1,
+   "caught_by_code": 0,
+   "caught_by_checker": 1,
+   "checker_not_supported": 1,
+   "checker_partial": 0,
+   "missed": 0,
+   "gated": false,
+   "caught_rate": 1.0
+  },
+  "qualifier_dropped": {
+   "planted": 10,
+   "caught_by_code": 0,
+   "caught_by_checker": 10,
+   "checker_not_supported": 0,
+   "checker_partial": 10,
+   "missed": 0,
+   "gated": true,
+   "caught_rate": 1.0
+  }
+ },
+ "clean_wrongly_rejected": 0,
+ "clean_rejected_rate": 0.0,
+ "clean_flagged": 6,
+ "clean_flagged_rate": 0.1224,
+ "discrimination": 0.8534,
+ "degenerate_checker": false,
+ "partial_recheck": {
+  "items": 18,
+  "still_partial": 15,
+  "now_supported": 3,
+  "now_not_supported": 0
+ },
+ "passed": true,
+ "needs_second_vendor": false,
+ "thresholds": {
+  "overall": 0.9,
+  "per_kind": 0.8,
+  "clean_rejected_max": 0.05,
+  "discrimination_min": 0.3
+ },
+ "protocol": {
+  "flagged_partial": 77,
+  "tried": 44,
+  "climbed": 0,
+  "climbed_with_error_still_in_claim": 0,
+  "through_ids": [],
+  "caught_overall_after_protocol": 0.9758
+ },
+ "checker": "v3",
+ "cost_micros": 37511,
+ "cost_usd": "0.037511"
+}
