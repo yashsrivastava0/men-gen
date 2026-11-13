@@ -150,6 +150,14 @@ class SeedData(_M):
     integration_defaults: IntegrationDefaults
     assumed_behaviors: dict[str, str]
     placeholders: Placeholders
+    system_effects: dict[str, list[str]]
+    system_links: list[list[str]]
+    home_links: list[str]
+    non_home_types: list[str]
+    open_types: list[str]
+    web_form_inputs: int
+    max_key_fields: int
+    max_entities_per_screen: int
 
 
 @cache

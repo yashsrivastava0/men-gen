@@ -26,6 +26,13 @@ _EVIDENCE_KINDS = {"user", "compass", "policy"}
 _RESEARCH_LABELS_OK = {"official", "corroborated"}
 
 
+def _get(item: object, key: str, default: str = "") -> str:
+    """A research item may be a dict (the file) or an object (the reader): read either."""
+    if isinstance(item, dict):
+        return str(item.get(key, default))
+    return str(getattr(item, key, default))
+
+
 def _prov_ref(n: Envelope) -> str:
     return ",".join(p.ref for p in n.provenance)
 
@@ -302,7 +309,7 @@ def v36(ctx: Context) -> list[Finding]:
                 "C",
             )
         ]
-    labels = {it["id"]: it.get("evidence", "unverified") for it in getattr(rv, "items", [])}
+    labels = {_get(it, "id"): _get(it, "evidence", "unverified") for it in getattr(rv, "items", [])}
     for n in ctx.graph.all_nodes():
         claims = getattr(n, "claims_used", [])
         research_prov = [p for p in n.provenance if p.kind == "research"]

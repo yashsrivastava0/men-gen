@@ -444,8 +444,25 @@ def _locales(
     )
 
 
+def _screen_phases(block: Mapping[str, Any]) -> dict[str, str]:
+    """Screen id -> ``core`` / ``extended``, from the structure block's per-module slices.
+
+    The Brief's own screen records carry no ``phase``; Compass puts it on the screens of ``structure.slices[]`` (and of the
+    blueprint view's modules). Missing or malformed slices give an empty map (the screen then has no phase).
+    """
+    phases: dict[str, str] = {}
+    slices = block.get("slices")
+    for sl in slices if isinstance(slices, list) else []:
+        for r in rows(m(sl).get("screens"), "id"):
+            phase = s(r.get("phase"))
+            if phase:
+                phases[str(r["id"])] = phase
+    return phases
+
+
 def _structure(norm: Normalised, brief: Mapping[str, Any]) -> StructureProposal:
     block = norm.structure_block
+    phases = _screen_phases(block)
     screens = tuple(
         Screen(
             id=str(r["id"]),
@@ -460,7 +477,7 @@ def _structure(norm: Normalised, brief: Mapping[str, Any]) -> StructureProposal:
                 for u in rows(r.get("entities"), "entity")
             ),
             pattern=s(r.get("pattern")),
-            phase=s(r.get("phase")),
+            phase=s(r.get("phase")) or phases.get(str(r["id"]), ""),
         )
         for r in rows(brief.get("screens"), "id")
     )

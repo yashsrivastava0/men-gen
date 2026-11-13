@@ -163,7 +163,7 @@ screens:
     actions:
       - {key: accept_terms, intent: confirm, what: "agree to the terms where agreement is required", importance: primary}
     link_out_allowed: true
-    provenance: {kind: policy, ref: policy:store.legal_links}
+    provenance: {kind: policy, ref: policy:POL-APPLE-PRIVACY-POLICY}
   - id: privacy
     name: Privacy policy
     screen_type: legal
@@ -174,7 +174,7 @@ screens:
     actions:
       - {key: view_policy, intent: view, what: "read the policy", importance: primary}
     link_out_allowed: true
-    provenance: {kind: policy, ref: policy:store.privacy_policy}
+    provenance: {kind: policy, ref: policy:POL-APPLE-PRIVACY-POLICY}
   - id: account_deletion
     name: Delete account
     screen_type: form
@@ -188,7 +188,7 @@ screens:
     actions:
       - {key: delete_account, intent: confirm, what: "delete the account and end every session", importance: primary, destructive: true, irreversible: true}
       - {key: keep_account, intent: cancel, what: "leave the account as it is", importance: secondary}
-    provenance: {kind: policy, ref: policy:store.account_deletion}
+    provenance: {kind: policy, ref: policy:POL-APPLE-DELETION}
   - id: consent_age_gate
     name: Consent and age
     screen_type: form
@@ -203,7 +203,7 @@ screens:
     actions:
       - {key: give_consent, intent: confirm, what: "record the consent with its version", importance: primary}
       - {key: decline, intent: cancel, what: "decline and leave the data uncollected", importance: secondary}
-    provenance: {kind: policy, ref: policy:store.sensitive_data_consent}
+    provenance: {kind: policy, ref: policy:POL-APPLE-DATA-MINIMIZATION}
   - id: onboarding
     name: Welcome
     screen_type: onboarding
@@ -227,7 +227,7 @@ screens:
     actions:
       - {key: allow, intent: grant_permission, what: "go on to the system's own question", importance: primary}
       - {key: continue_without, intent: cancel, what: "continue without the ability", importance: secondary}
-    provenance: {kind: policy, ref: policy:store.permission_purpose}
+    provenance: {kind: policy, ref: policy:POL-APPLE-PURPOSE-STRINGS}
 # Not screens: states and global behaviours (doc 15 4.3). `behavior_category` is in vocab/behavior_categories.yaml.
 not_screens:
   - {name: launch, kind: configuration, note: "the launch image and first loading are configuration, not a screen"}

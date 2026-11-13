@@ -88,6 +88,7 @@ assumed_behaviors:
   background_work: "Work that continues while the app is closed (uploads, location) is limited to what a feature needs, resumes after a restart, and says plainly when it is paused."
   interrupted_external_flow: "{flow}"
   pending_timeouts: "{pending_timeout}"
+  state: "Data shown on several screens comes from one place and is refreshed when the user returns to a screen or after an action changes it; saved data is never shown as fresh when it may be stale."
 # placeholder text where a model writes prose later
 placeholders:
   purpose_with_entities: "The user works with {entities} on this screen."
@@ -95,3 +96,44 @@ placeholders:
   story_so_that: "the app does what the Brief describes"
   unhappy_path: "A step fails or the network drops: the user keeps what was entered and can try again from where they stopped."
   persona_goal: "get the job done in the app"
+
+# What the actions of a system screen do. "<system id>.<action key>" -> steps: "go:<system id>" (that system screen when it
+# is in the release), "go:@home" (the app's home screen) or "stay". An action not listed here stays on its screen.
+system_effects:
+  sign_in.submit_credentials: ["go:@home"]
+  sign_in.go_forgot_password: ["go:forgot_password"]
+  verify_code.submit_code: ["go:@home"]
+  verify_code.change_number: ["go:sign_in"]
+  forgot_password.request_reset: ["go:reset_password"]
+  forgot_password.back_to_sign_in: ["go:sign_in"]
+  reset_password.save_secret: ["go:sign_in"]
+  role_chooser.choose_account: ["go:@home"]
+  profile.sign_out: ["go:sign_in"]
+  settings.go_account_deletion: ["go:account_deletion"]
+  account_deletion.delete_account: ["go:sign_in"]
+  account_deletion.keep_account: ["go:settings"]
+  consent_age_gate.give_consent: ["go:@home"]
+  onboarding.continue_onboarding: ["go:@home"]
+  onboarding.skip_onboarding: ["go:@home"]
+# Edges between system screens that code adds so each is reachable (from -> to), in addition to the actions above.
+system_links:
+  - [sign_in, verify_code]
+  - [sign_in, forgot_password]
+  - [forgot_password, reset_password]
+  - [reset_password, sign_in]
+  - [profile, settings]
+  - [settings, language]
+  - [settings, notification_settings]
+  - [settings, help_support]
+  - [settings, account_deletion]
+# the screens a home screen leads to (system screens every signed-in user may open)
+home_links: [profile, settings, help_support, notifications_inbox, role_chooser, onboarding]
+# Screen types whose first screen of an app is not a sensible home
+non_home_types: [auth, onboarding, legal, permission, profile, settings, notifications, confirmation, status, checkout, form, wizard]
+# Screen types that need no sign-in guard
+open_types: [auth, onboarding, legal]
+# Words that mark a lifecycle state that follows a positive state (kept in `inventory.yaml` negative_states)
+# Phone limits come from spec-config checks.mobile_fit; a web surface may use this many inputs on one form
+web_form_inputs: 14
+max_key_fields: 5
+max_entities_per_screen: 2
