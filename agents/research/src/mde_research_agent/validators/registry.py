@@ -1,4 +1,4 @@
-"""Validators RV-01..RV-23 over a finished run. Each returns violations; none raises.
+"""Validators RV-01..RV-28 over a finished run. Each returns violations; none raises.
 
 What each does when it fails is decided by the caller (``commit_gate``): item-level problems are repaired or the
 item dropped BEFORE commit (the assembler already enforces most of them, so a violation here is a bug signal);
@@ -13,14 +13,18 @@ import re
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from datetime import date
-from typing import Any
+from typing import Any, get_args
 
 import jsonschema
 
+from mde_research_agent.assemble.decisions import build_decisions
+from mde_research_agent.assemble.dossier import build_dossiers
 from mde_research_agent.assemble.items import LOW_CLASSES, evidence_of
 from mde_research_agent.assemble.notes import openers
+from mde_research_agent.assemble.platform import build_platform_constraints
 from mde_research_agent.assemble.quality import TargetInfo, bn_coverage, lane_quality
 from mde_research_agent.assemble.quality import lane_items as lane_items_of
+from mde_research_agent.assemble.register import build_register
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.anatomy import check_query, hygiene_problems
 from mde_research_agent.core.applies import BriefIndex
@@ -32,7 +36,7 @@ from mde_research_agent.core.quotes import normalize_with_offsets, verify_quote
 from mde_research_agent.core.slots import evaluate_target
 from mde_research_agent.core.sources import can_support_high_impact, independent_count
 from mde_research_agent.core.text import stem_set, tokens
-from mde_research_agent.domain.atoms import is_identifying, validate_payload
+from mde_research_agent.domain.atoms import EffectOnBuild, is_identifying, validate_payload
 from mde_research_agent.domain.events import DETAIL_ALLOWLIST, Event
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan
@@ -711,17 +715,205 @@ def rv23_recomputed(v: ValidationContext) -> list[Violation]:
     return out
 
 
+# --- D-159 / D-162: aggregates built by code from the checked items (dossiers, platform constraints, register, decisions) ---
+
+EFFECTS = frozenset(get_args(EffectOnBuild))
+
+
+def _items_models(v: ValidationContext) -> list[Item]:
+    return [Item.model_validate(i) for i in v.output.get("items", [])]
+
+
+def _dumped(models: list[Any]) -> list[dict[str, Any]]:
+    return [m.model_dump(mode="json", by_alias=True) for m in models]
+
+
+def rv24_dossiers(v: ValidationContext) -> list[Violation]:
+    """Every dossier field points at existing provider facts, every empty field has a reason, a conflict keeps both values,
+    completeness is the share of required fields that hold a usable value, and the dossiers recomputed from the items
+    equal the stored ones."""
+    out: list[Violation] = []
+    items = _items_by_id(v)
+    for d in v.output.get("dossiers", []):
+        for key, f in d.get("fields", {}).items():
+            where = f"{d.get('id')}.{key}"
+            for iid in f.get("item_ids", []):
+                if items.get(iid, {}).get("kind") != "provider_fact" and key != "official_docs":
+                    out.append(
+                        Violation(
+                            "RV-24", f"{where} names {iid}, which is not a provider fact", iid
+                        )
+                    )
+                elif iid not in items:
+                    out.append(Violation("RV-24", f"{where} names the unknown item {iid}"))
+            if f.get("value") is None and not f.get("null_reason"):
+                out.append(Violation("RV-24", f"{where} is empty without a null_reason"))
+            if f.get("value") is not None and f.get("null_reason"):
+                out.append(Violation("RV-24", f"{where} has a value and a null_reason"))
+            if (
+                f.get("null_reason") == "conflict"
+                and sum(1 for x in f.get("values", []) if x.get("conflict")) < 2
+            ):
+                out.append(
+                    Violation("RV-24", f"{where} is a conflict without two conflicting values")
+                )
+        required = d.get("required", [])
+        filled = sum(
+            1
+            for k in required
+            if d["fields"].get(k, {}).get("value") is not None
+            and d["fields"][k].get("evidence") not in (None, "unverified")
+        )
+        c = d.get("completeness", {})
+        if c.get("required") != len(required) or c.get("filled") != filled:
+            out.append(
+                Violation(
+                    "RV-24", f"{d.get('id')} completeness {c} is not {filled} of {len(required)}"
+                )
+            )
+    if not out:
+        got, index = build_dossiers(_items_models(v), v.catalog)
+        if _dumped(got) != v.output.get("dossiers", []) or index != v.output.get(
+            "dossiers_by_integration", {}
+        ):
+            out.append(
+                Violation("RV-24", "dossiers differ from the dossiers recomputed from the items")
+            )
+    return out
+
+
+def rv25_platform(v: ValidationContext) -> list[Violation]:
+    """Platform constraints name existing platform_constraint items, ``effect_on_build`` is from the closed list (or null), and
+    the list recomputed from the items equals the stored one."""
+    out: list[Violation] = []
+    items = _items_by_id(v)
+    for row in v.output.get("platform_constraints", []):
+        item = items.get(row.get("item_id"))
+        if item is None or item.get("kind") != "platform_constraint":
+            out.append(
+                Violation("RV-25", f"{row.get('item_id')} is not a platform_constraint item")
+            )
+        eff = row.get("effect_on_build")
+        if eff is not None and eff not in EFFECTS:
+            out.append(
+                Violation(
+                    "RV-25",
+                    f"effect_on_build {eff!r} is not in the closed list",
+                    row.get("item_id"),
+                )
+            )
+    for item in items.values():
+        eff = (item.get("data") or {}).get("effect_on_build")
+        if item.get("kind") == "platform_constraint" and eff is not None and eff not in EFFECTS:
+            out.append(
+                Violation("RV-25", f"effect_on_build {eff!r} is not in the closed list", item["id"])
+            )
+    if not out:
+        got = build_platform_constraints(_items_models(v), v.catalog.capabilities)
+        if _dumped(got) != v.output.get("platform_constraints", []):
+            out.append(
+                Violation(
+                    "RV-25", "platform_constraints differ from the list recomputed from the items"
+                )
+            )
+    return out
+
+
+def rv26_register(v: ValidationContext) -> list[Violation]:
+    """Every compliance-register entry is a compliance note on the owner's confirm list, and the register recomputed from
+    the items equals the stored one."""
+    out: list[Violation] = []
+    items = _items_by_id(v)
+    confirm = {c.get("item_id") for c in v.output.get("confirm", [])}
+    for country in v.output.get("compliance_register", []):
+        for regime in country.get("regimes", []):
+            for e in regime.get("entries", []):
+                iid = e.get("item_id")
+                if items.get(iid, {}).get("kind") != "compliance_note":
+                    out.append(Violation("RV-26", f"{iid} is not a compliance note", iid))
+                elif iid not in confirm:
+                    out.append(
+                        Violation(
+                            "RV-26", "a compliance register entry is not on the confirm list", iid
+                        )
+                    )
+    if not out:
+        got = build_register(_items_models(v))
+        if _dumped(got) != v.output.get("compliance_register", []):
+            out.append(
+                Violation(
+                    "RV-26",
+                    "the compliance register differs from the one recomputed from the items",
+                )
+            )
+    return out
+
+
+def rv27_lane_decisions(v: ValidationContext) -> list[Violation]:
+    """Every decision of the data file is listed once; a decision without a usable item has a gap with a reason and one with
+    items has none; the table recomputed from the items, the lane slices and the topic states equals the stored one."""
+    out: list[Violation] = []
+    expected = {d.id for ds in v.catalog.lanes.decisions.values() for d in ds}
+    rows = v.output.get("lane_decisions", [])
+    got_ids = [r.get("id") for r in rows]
+    if set(got_ids) != expected or len(got_ids) != len(set(got_ids)):
+        out.append(
+            Violation(
+                "RV-27", "lane_decisions does not list every decision of the data file exactly once"
+            )
+        )
+    for r in rows:
+        if bool(r.get("item_ids")) == bool(r.get("gap")):
+            out.append(Violation("RV-27", f"{r.get('id')} must have either usable items or a gap"))
+    if not out:
+        topics = [(t["job"], t["status"]) for t in v.evidence.get("targets", [])]
+        lanes = {lane: sl.get("item_ids", []) for lane, sl in v.output.get("slices", {}).items()}
+        got = build_decisions(_items_models(v), lanes, v.catalog, topics)
+        if _dumped(got) != rows:
+            out.append(
+                Violation("RV-27", "lane_decisions differ from the table recomputed from the items")
+            )
+    return out
+
+
+def rv28_brief_link(v: ValidationContext) -> list[Violation]:
+    """Every item names at least one Brief id or ``NEW`` in ``applies_to`` (Spec selects by it and never misses an item)."""
+    return [
+        Violation("RV-28", "an item has no applies_to entry (a Brief id or NEW)", i["id"])
+        for i in v.output.get("items", [])
+        if not i.get("applies_to")
+    ]
+
+
 REGISTRY: dict[str, Validator] = {
     "RV-01": rv01_schema, "RV-02": rv02_quotes, "RV-03": rv03_sources, "RV-04": rv04_tier, "RV-05": rv05_no_new_facts,
     "RV-06": rv06_query_hygiene, "RV-07": rv07_corroboration, "RV-08": rv08_support, "RV-09": rv09_caps, "RV-10": rv10_coverage,
     "RV-11": rv11_private_terms, "RV-12": rv12_budget, "RV-13": rv13_binding, "RV-14": rv14_anatomy, "RV-15": rv15_slots,
     "RV-16": rv16_applies, "RV-17": rv17_events, "RV-18": rv18_numbers, "RV-19": rv19_independence,
     "RV-20": rv20_region_entity, "RV-21": rv21_checked, "RV-22": rv22_store, "RV-23": rv23_recomputed,
+    "RV-24": rv24_dossiers, "RV-25": rv25_platform, "RV-26": rv26_register, "RV-27": rv27_lane_decisions,
+    "RV-28": rv28_brief_link,
 }  # fmt: skip
 
 REFUSE_COMMIT = frozenset({"RV-04", "RV-13"})
 # A violation of one of these is a bug in the assembler: the commit goes ahead but the run is marked ``partial``.
-ENFORCED = frozenset({"RV-05", "RV-09", "RV-18", "RV-19", "RV-20", "RV-21", "RV-22", "RV-23"})
+ENFORCED = frozenset(
+    {
+        "RV-05",
+        "RV-09",
+        "RV-18",
+        "RV-19",
+        "RV-20",
+        "RV-21",
+        "RV-22",
+        "RV-23",
+        "RV-24",
+        "RV-25",
+        "RV-26",
+        "RV-27",
+        "RV-28",
+    }
+)
 
 
 def run_all(v: ValidationContext, only: list[str] | None = None) -> list[Violation]:

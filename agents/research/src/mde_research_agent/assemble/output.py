@@ -20,7 +20,10 @@ import yaml
 from mde_core.money import micros_to_usd
 from mde_research_agent import SCHEMA_VERSION
 from mde_research_agent.assemble import digest as dg
-from mde_research_agent.assemble.items import BuiltItem, build_items
+from mde_research_agent.assemble.confirm import rank_confirm
+from mde_research_agent.assemble.decisions import build_decisions
+from mde_research_agent.assemble.dossier import build_dossiers
+from mde_research_agent.assemble.items import BuiltItem, build_items, canonical_amount
 from mde_research_agent.assemble.norms import (
     apply_norms,
     build_suggestions,
@@ -28,6 +31,7 @@ from mde_research_agent.assemble.norms import (
     detect_conflicts,
 )
 from mde_research_agent.assemble.notes import openers
+from mde_research_agent.assemble.platform import build_platform_constraints
 from mde_research_agent.assemble.quality import (
     TargetInfo,
     bn_coverage,
@@ -35,7 +39,14 @@ from mde_research_agent.assemble.quality import (
     lane_quality,
 )
 from mde_research_agent.assemble.quality import lane_items as lane_items_of
-from mde_research_agent.assemble.store import assign_store, compact_item, tokens_of
+from mde_research_agent.assemble.register import build_register
+from mde_research_agent.assemble.store import (
+    assign_store,
+    chunk_ids,
+    compact_dossier,
+    compact_item,
+    tokens_of,
+)
 from mde_research_agent.calls import assemble as asm_call
 from mde_research_agent.catalog.loader import DATA_DIR
 from mde_research_agent.core.applies import BriefIndex
@@ -86,13 +97,22 @@ def _confirm(built: list[BuiltItem], reasons: dict[str, str]) -> list[Confirm]:
         d = it.data
         if "conflict" in flags:
             why = reasons["conflict"]
-        elif (it.kind in ("rule",) and it.impact == "high" and d.get("value")) or (
-            it.kind == "service_option"
-            and it.impact == "high"
-            and (d.get("fees") or d.get("limits"))
+        elif (
+            (it.kind in ("rule",) and it.impact == "high" and d.get("value"))
+            or (
+                it.kind == "service_option"
+                and it.impact == "high"
+                and (d.get("fees") or d.get("limits"))
+            )
+            or (it.kind == "provider_fact" and canonical_amount(d.get("typed")))
         ):
             why = reasons["number"]
-        elif it.job == "trust" or ("legal-adjacent" in flags and it.impact == "high"):
+        elif (
+            it.job == "trust"
+            or it.kind
+            == "compliance_note"  # every entry of the compliance register is on the list (RV-26)
+            or ("legal-adjacent" in flags and it.impact == "high")
+        ):
             why = reasons["legal"]
         elif "single-source" in flags and it.impact == "high":
             why = reasons["single_source"]
@@ -306,9 +326,28 @@ async def assemble_output(
     norms = compute_norms(built, ctx.input, cat.prevalence, ctx.as_of)
     built = apply_norms(built, norms)
     conflicts = detect_conflicts(built, ctx.input)
-    confirm = _confirm(built, defaults["confirm_reasons"])
+    confirm = rank_confirm(
+        _confirm(built, defaults["confirm_reasons"]), [b.item for b in built], cat.confirm
+    )
     suggestions = build_suggestions(built, norms)
     default_notes = asm_call.default_notes()
+
+    # --- the aggregates built from the items (D-159): their size is part of the store, so they are built first ---------
+    pre = [b.item for b in built]
+    dossiers, dossier_index = build_dossiers(pre, cat)
+    platform_rows = build_platform_constraints(pre, cat.capabilities)
+    register = build_register(pre)
+    topics = [(ts.target.job, ts.status) for ts in ctx.targets.values()]
+    possible: dict[str, list[str]] = {lane: [] for lane in cat.lanes.lanes}
+    for b in built:  # every item in every lane it could be in: an upper bound of the slices the store plan will leave
+        for lane in _lanes_of(b, ctx, targets):
+            if lane in possible:
+                possible[lane].append(b.item.id)
+        if (
+            any(f in b.item.flags for f in ("needs-confirm", "legal-adjacent"))
+            and b.item.id not in possible["verify"]
+        ):
+            possible["verify"].append(b.item.id)
 
     # --- the main store and the appendix (AD-55): nothing is deleted to fit a size -------------------------------
     sources_table = {s.id: s.model_dump(mode="json") for b in built for s in b.item.sources}
@@ -319,6 +358,11 @@ async def assemble_output(
             [c.model_dump(mode="json") for c in confirm],
             [c.model_dump(mode="json") for c in conflicts],
             sources_table,
+            [compact_dossier(d.model_dump(mode="json")) for d in dossiers],
+            dossier_index,
+            [r.model_dump(mode="json") for r in platform_rows],
+            [r.model_dump(mode="json") for r in register],
+            [d.model_dump(mode="json") for d in build_decisions(pre, possible, cat, topics)],
         ]
     )
     splan = assign_store(
@@ -392,9 +436,12 @@ async def assemble_output(
         ids = [b.item.id for b in ordered.get(lane, [])]
         slices[lane] = Slice(
             item_ids=ids,
-            chunks=[ids[i : i + cs.chunk_items] for i in range(0, len(ids), cs.chunk_items)],
+            chunks=chunk_ids(ids, cs.chunk_items),
             digest=digests.get(lane, ""),
         )
+    lane_decisions = build_decisions(
+        [b.item for b in built], {lane: sl.item_ids for lane, sl in slices.items()}, cat, topics
+    )
     idx = _indexes(built)
     states = [ts.status for ts in ctx.targets.values()]
     required = sum(ts.slots_required for ts in ctx.targets.values())
@@ -417,6 +464,8 @@ async def assemble_output(
             appendix_items=sum(1 for b in built if b.item.store == "appendix"),
             store_over_limit=splan.protected_over_limit,
             digest_tokens=sum(tokens_of(s.digest) for s in slices.values()),
+            digest_tokens_total=sum(tokens_of(s.digest) for s in slices.values()),
+            digest_tokens_cap_per_lane=cs.digest_tokens,
         ),
         input_quality=iq,
         budget=Budget(
@@ -446,6 +495,11 @@ async def assemble_output(
         confirm=confirm,
         gaps=gaps,
         conflicts=conflicts,
+        dossiers=dossiers,
+        dossiers_by_integration=dossier_index,
+        platform_constraints=platform_rows,
+        compliance_register=register,
+        lane_decisions=lane_decisions,
         slices=slices,
         claims_used=[],
         dropped=drops,

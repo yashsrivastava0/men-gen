@@ -12,7 +12,9 @@ kinds: [compliance_note, rule, service_option]
 extract_focus: >
   Record each requirement as information: the topic, the authority that states it (a regulator, a platform owner or
   a standards body), what it requires in one sentence, and any number, deadline or condition exactly as the page
-  states it. Do not give advice. Prefer the authority's own pages.
+  states it. For each requirement also give the regime (the law, scheme or policy by name), the country, what it
+  applies to (flows, roles or kinds of data, as the page states), the penalty when the page states one and the effective
+  date. Do not give advice. Prefer the authority's own pages.
 targets:
   - id: data_protection_law
     label: "Data-protection rules for {place}"

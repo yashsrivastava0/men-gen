@@ -20,6 +20,7 @@ from pydantic.fields import FieldInfo
 
 from mde_contracts.gateway import CallSpec
 from mde_research_agent.calls.base import ResearchCallSpec
+from mde_research_agent.catalog.content import dossier_config
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.core.passages import SEPARATOR, windows
 from mde_research_agent.core.text import STOP_WORDS, tokens
@@ -30,12 +31,31 @@ JOB_KINDS: dict[str, tuple[str, ...]] = {
     "structure": ("screen_pattern", "navigation_pattern", "role_pattern"),
     "flows": ("workflow",),
     "data": ("entity_pattern", "lifecycle", "rule", "compliance_note"),
-    "services": ("service_option", "compliance_note"),
+    "services": ("provider_fact", "service_option", "compliance_note"),
     "design": ("design_convention", "script_need", "trend"),
     "screens": ("screen_pattern",),
     "local": ("local_format", "data_hint"),
     "trust": ("compliance_note", "rule", "service_option"),
+    "platform": ("platform_constraint",),
 }
+SPEC_VERSION = 2  # v2: provider_fact and platform_constraint kinds, the compliance register fields (D-159, D-162)
+
+
+def _provider_fact_guide() -> str:
+    """The guide for ``provider_fact``: the field keys and what each means come from ``data/dossiers.yaml``."""
+    fields = "; ".join(f"{k} ({v.text})" for k, v in dossier_config().extractable().items())
+    return (
+        "provider_fact: ONE fact about a provider with ONE quote, never two facts in one item. provider: the name as the page "
+        "writes it. need: what the provider is for (payments, messaging, maps ...). field: exactly one of these keys, the one "
+        f"the fact belongs to: {fields}. value: the fact as the page states it, in a short phrase. typed: ONLY for a fee, a "
+        "limit or a time, else null: amount is the number exactly as the quote writes it (2.9 for 2.9%, 0.30 for $0.30; plain "
+        "digits, never a calculation), currency is the ISO code and only when the quote shows the currency, unit and period "
+        "use the words of the quote (percent, transaction, month), condition is what the amount depends on. countries: the "
+        "countries or regions the fact is stated for, as the page writes them (empty when it does not say). The quote is the "
+        "sentence that states THAT fact and contains its number."
+    )
+
+
 KIND_GUIDE: dict[str, str] = {
     "competitor": "competitor: one comparable app or product: its name, kind, region, platforms, pricing model, and every feature it lists (feature_key short lowercase, level core/standard/premium) and screens it shows.",
     "reference_check": "reference_check: what the page says about a named app the person mentioned: status found, not_found or ambiguous, candidates, its features and flows.",
@@ -46,8 +66,10 @@ KIND_GUIDE: dict[str, str] = {
     "entity_pattern": "entity_pattern: one data entity: its fields (the name; the type, whether it is required, the allowed values joined with | and the validation ONLY when the passages state them, else null), relations to other entities, KPIs.",
     "lifecycle": "lifecycle: an entity's states and the transitions between them with the trigger of each, only as the passages give them.",
     "rule": "rule: one business or regulatory rule: statement, subject, value, unit, formula, authority. Copy numbers exactly; the value must be in the quote.",
-    "service_option": "service_option: one provider or portal for a need: provider, region fit, auth method, endpoints or webhook events, sandbox, constraints, fees, limits, integration notes, current status: each only when the passages state it, else null.",
-    "compliance_note": "compliance_note: a regulatory or compliance requirement as information: topic, authority, summary, effective date.",
+    "service_option": "service_option: a one-sentence summary of one provider or portal for a need (provider, need, region fit, current status). When the job also offers provider_fact, put each detailed fact (authentication, events, sandbox, fees, limits) in its own provider_fact; fill the other fields only when the passages state them, else null.",
+    "provider_fact": _provider_fact_guide(),
+    "platform_constraint": "platform_constraint: ONE platform or toolchain rule for one capability, with ONE quote: capability (push notifications, background location ...), platform (ios, android, both, expo, react_native or web, as the page states; null when it does not say), rule (what the app must declare, request, configure or avoid, in one sentence), effect_on_build ONLY when the page says what the rule means for the build (needs_development_build, needs_permission, needs_config_plugin, review_risk, none; else null), status (required, deprecated ... only when stated).",
+    "compliance_note": "compliance_note: a regulatory or compliance requirement as information: topic, authority, summary, effective date; also regime (the law or scheme by name), country, applies_to (flows, roles or kinds of data it covers, as the page states them) and penalty (only when the page states one): each only when the passages state it, else null or empty.",
     "design_convention": "design_convention: one UI/UX convention with its aspect (layout, navigation, onboarding, components, color_mood, typography, density, iconography, motion, accessibility), the convention and examples.",
     "script_need": "script_need: font, direction and text-expansion needs of a script: script, languages, direction, font notes, text expansion.",
     "local_format": "local_format: an unusual format or ID: kind (currency, phone, address, date, number, id_format), pattern, example, validation.",
@@ -163,6 +185,15 @@ def synthesize_payload(kind: str, sentence: str) -> dict[str, Any]:
         if name in COMMON_FIELDS:
             continue
         out[name] = _fill(info.annotation, sentence)
+    if (
+        kind == "provider_fact"
+    ):  # the field key is checked against data/dossiers.yaml and a typed value against the quote
+        keys = sorted(dossier_config().extractable())
+        out["field"] = keys[sum(map(ord, sentence)) % len(keys)]
+        out["typed"] = None
+    if kind == "platform_constraint":
+        out["platform"] = "both"
+        out["effect_on_build"] = None
     return out
 
 
@@ -195,7 +226,8 @@ def mock_extract(inp: ExtractIn) -> BaseModel:
             "quote": _quote_of(sentence),
             "impact": "high"
             if any(c.isdigit() for c in sentence)
-            and kind in {"rule", "compliance_note", "service_option", "local_format"}
+            and kind
+            in {"rule", "compliance_note", "service_option", "provider_fact", "local_format"}
             else "normal",
             "about_region": "unknown",
             "about_entity": None,
@@ -216,7 +248,7 @@ def _spec_for(job: str) -> ResearchCallSpec[ExtractIn, Any]:
     return ResearchCallSpec(
         spec=CallSpec(
             id=f"rsch.extract.{job}",
-            version=1,
+            version=SPEC_VERSION,
             input_model=ExtractIn,
             output_model=extract_out_model(job),
             system_template="extract.system.jinja",
@@ -238,5 +270,13 @@ def _spec_for(job: str) -> ResearchCallSpec[ExtractIn, Any]:
 
 SPECS: dict[str, ResearchCallSpec[ExtractIn, Any]] = {job: _spec_for(job) for job in JOB_NAMES}
 
-__all__ = ["JOB_KINDS", "KIND_GUIDE", "SPECS", "ExtractIn", "extract_out_model", "mock_extract"]
+__all__ = [
+    "JOB_KINDS",
+    "KIND_GUIDE",
+    "SPECS",
+    "SPEC_VERSION",
+    "ExtractIn",
+    "extract_out_model",
+    "mock_extract",
+]
 _ = (AtomCommon, PAYLOADS)  # re-exported for callers that build atoms

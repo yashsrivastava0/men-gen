@@ -1,5 +1,7 @@
 """RV-01 must hold after the checker nulls a field the page does not state (Small run 2026-11-11: purpose null x4)."""
 
+import typing
+
 import pytest
 
 from mde_research_agent.calls.extract import synthesize_payload
@@ -50,6 +52,8 @@ def test_nulling_an_attribute_inside_a_list_element_keeps_the_payload_valid() ->
     for kind, model in sorted(PAYLOADS.items()):
         data = synthesize_payload(kind, "A quoted sentence of the page.")
         for name, info in model.model_fields.items():
+            if typing.get_origin(info.annotation) is not list:
+                continue  # a single nested object (``typed``) is nulled as a whole: see test_typed_values.py
             args = getattr(info.annotation, "__args__", ())
             nested = next((a for a in args if hasattr(a, "model_fields")), None)
             if nested is None:

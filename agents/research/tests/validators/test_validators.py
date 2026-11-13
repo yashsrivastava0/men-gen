@@ -1,4 +1,4 @@
-"""Every validator RV-01..RV-23 has a passing and a failing test."""
+"""Every validator RV-01..RV-28 has a passing and a failing test."""
 
 import asyncio
 import copy
@@ -7,6 +7,7 @@ from collections.abc import Callable
 from typing import Any
 
 import pytest
+from support.content import combine, compliance_extractor, fact_extractor, platform_extractor
 from support.testing import load_fixture, rule_extractor, run_engine
 
 from mde_research_agent.catalog import load_catalog
@@ -24,6 +25,21 @@ def good():
         run_engine(
             load_fixture("standard-produce-marketplace-nashik"),
             overrides={"rsch.extract.data": rule_extractor()},
+        )
+    )
+
+
+@pytest.fixture(scope="module")
+def rich():
+    """A run with provider facts, platform constraints, compliance notes and a conflicting fee (scripted extraction)."""
+    return asyncio.run(
+        run_engine(
+            load_fixture("standard-produce-marketplace-nashik"),
+            overrides={
+                "rsch.extract.services": fact_extractor(),
+                "rsch.extract.platform": platform_extractor(),
+                "rsch.extract.data": combine(rule_extractor(), compliance_extractor()),
+            },
         )
     )
 
@@ -59,7 +75,7 @@ def rules_of(violations) -> set[str]:
 
 def test_a_good_run_passes_every_validator(good) -> None:
     assert run_all(vctx(good)) == []
-    assert set(REGISTRY) == {f"RV-{i:02d}" for i in range(1, 24)}
+    assert set(REGISTRY) == {f"RV-{i:02d}" for i in range(1, 29)}
 
 
 def high_item(out: dict[str, Any]) -> dict[str, Any]:
@@ -310,3 +326,115 @@ def test_rv21_does_not_call_a_removed_list_element_a_leftover() -> None:
     # a scalar the checker flagged but that is still set IS a leftover
     atom["data"] = {"steps": ["second"], "purpose": "still here", "role": None}
     assert [v.rule for v in rv21_checked(ctx)] == ["RV-21"]  # type: ignore[arg-type]
+
+
+# --- RV-24..RV-28: the aggregates built from the items (D-159, D-162) -----------------------------------------------------
+
+
+def test_the_new_validators_pass_on_a_run_with_real_content(rich) -> None:
+    assert run_all(vctx(rich), only=["RV-24", "RV-25", "RV-26", "RV-27", "RV-28"]) == []
+
+
+def _empty_field(d: dict[str, Any]) -> dict[str, Any]:
+    return next(
+        f for f in d["fields"].values() if f["value"] is None and f["null_reason"] != "conflict"
+    )
+
+
+def _fees_conflict(d: dict[str, Any]) -> dict[str, Any] | None:
+    f = d["fields"].get("fees")
+    return f if f and f["null_reason"] == "conflict" else None
+
+
+@pytest.mark.parametrize(
+    ("rule", "mutate"),
+    [
+        ("RV-24", lambda o, e, ev: _empty_field(o["dossiers"][0]).update(null_reason=None)),
+        (
+            "RV-24",
+            lambda o, e, ev: o["dossiers"][0]["completeness"].update(
+                filled=o["dossiers"][0]["completeness"]["filled"] + 1
+            ),
+        ),
+        ("RV-24", lambda o, e, ev: _empty_field(o["dossiers"][0]).update(item_ids=["RI-9999"])),
+        (
+            "RV-24",
+            lambda o, e, ev: _empty_field(o["dossiers"][0]).update(
+                value="invented", null_reason="not_researched"
+            ),
+        ),
+        (
+            "RV-24",
+            lambda o, e, ev: [
+                v.update(conflict=False)
+                for d in o["dossiers"]
+                if _fees_conflict(d)
+                for v in d["fields"]["fees"]["values"]
+            ],
+        ),
+        ("RV-24", lambda o, e, ev: o["dossiers"][0].update(provider="Somebody Else")),
+        ("RV-24", lambda o, e, ev: o["dossiers_by_integration"].clear()),
+        (
+            "RV-25",
+            lambda o, e, ev: o["platform_constraints"][0].update(effect_on_build="makes_coffee"),
+        ),
+        ("RV-25", lambda o, e, ev: o["platform_constraints"].pop()),
+        (
+            "RV-25",
+            lambda o, e, ev: o["platform_constraints"][0].update(item_id=o["items"][0]["id"]),
+        ),
+        (
+            "RV-26",
+            lambda o, e, ev: o.update(
+                confirm=[
+                    c
+                    for c in o["confirm"]
+                    if c["item_id"]
+                    != o["compliance_register"][0]["regimes"][0]["entries"][0]["item_id"]
+                ]
+            ),
+        ),
+        (
+            "RV-26",
+            lambda o, e, ev: o["compliance_register"][0]["regimes"][0]["entries"][0].update(
+                statement="rewritten by hand"
+            ),
+        ),
+        ("RV-26", lambda o, e, ev: o["compliance_register"].pop()),
+        ("RV-27", lambda o, e, ev: o["lane_decisions"].pop()),
+        (
+            "RV-27",
+            lambda o, e, ev: next(d for d in o["lane_decisions"] if d["gap"]).update(gap=None),
+        ),
+        (
+            "RV-27",
+            lambda o, e, ev: next(d for d in o["lane_decisions"] if d["item_ids"]).update(
+                item_ids=[], gap=None
+            ),
+        ),
+        (
+            "RV-27",
+            lambda o, e, ev: next(d for d in o["lane_decisions"] if d["item_ids"]).update(
+                best_evidence="unverified"
+            ),
+        ),
+        ("RV-28", lambda o, e, ev: o["items"][0].update(applies_to=[])),
+    ],
+)
+def test_each_new_validator_catches_its_failure(rich, rule: str, mutate) -> None:
+    got = run_all(vctx(rich, mutate), only=[rule])
+    assert rule in rules_of(got), f"{rule} did not fire: {got}"
+
+
+def test_a_run_without_content_has_empty_aggregates_and_passes(good) -> None:
+    """The aggregates are additive: a run that found no provider facts, constraints or notes has empty lists and still passes."""
+    out = good.research
+    for key in ("dossiers", "platform_constraints", "compliance_register"):
+        assert key in out
+    assert run_all(vctx(good), only=["RV-24", "RV-25", "RV-26", "RV-27", "RV-28"]) == []
+
+
+def test_the_new_validators_are_enforced_bugs_in_assembly() -> None:
+    from mde_research_agent.validators.registry import ENFORCED
+
+    assert {"RV-24", "RV-25", "RV-26", "RV-27", "RV-28"} <= ENFORCED

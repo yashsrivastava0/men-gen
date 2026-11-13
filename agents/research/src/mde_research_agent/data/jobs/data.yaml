@@ -12,7 +12,9 @@ extract_focus: >
   and its validation rule; list relations to other entities and the KPIs people track. For a lifecycle list the
   states and each transition with its trigger. For a rule give the statement, subject, value, unit, formula and
   the authority that sets it. Numbers, thresholds, fees and dates must be copied exactly as the page states
-  them. Regulatory material is information, never advice.
+  them. Regulatory material is information, never advice: for a compliance note give the regime (the law or scheme
+  by name), the country, who or what it applies to (flows, roles or kinds of data, as the page states), the penalty
+  when the page states one, and the effective date.
 targets:
   - id: entity_shape
     label: "What a {entity} record holds"

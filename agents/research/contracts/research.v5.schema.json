@@ -85,12 +85,67 @@
       "title": "Budget",
       "type": "object"
     },
+    "Completeness": {
+      "additionalProperties": false,
+      "properties": {
+        "filled": {
+          "title": "Filled",
+          "type": "integer"
+        },
+        "required": {
+          "title": "Required",
+          "type": "integer"
+        },
+        "share": {
+          "title": "Share",
+          "type": "number"
+        },
+        "unverified": {
+          "default": 0,
+          "title": "Unverified",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "filled",
+        "required",
+        "share"
+      ],
+      "title": "Completeness",
+      "type": "object"
+    },
     "Confirm": {
       "additionalProperties": false,
       "properties": {
+        "class": {
+          "default": "other",
+          "enum": [
+            "money",
+            "legal",
+            "identity",
+            "other"
+          ],
+          "title": "Class",
+          "type": "string"
+        },
+        "group": {
+          "default": "",
+          "title": "Group",
+          "type": "string"
+        },
         "item_id": {
           "title": "Item Id",
           "type": "string"
+        },
+        "rank": {
+          "default": 0,
+          "title": "Rank",
+          "type": "integer"
+        },
+        "top": {
+          "default": false,
+          "title": "Top",
+          "type": "boolean"
         },
         "why": {
           "title": "Why",
@@ -163,6 +218,31 @@
       "title": "Coverage",
       "type": "object"
     },
+    "DecisionGap": {
+      "additionalProperties": false,
+      "properties": {
+        "note": {
+          "default": "",
+          "title": "Note",
+          "type": "string"
+        },
+        "reason": {
+          "enum": [
+            "not_planned",
+            "not_found",
+            "not_run",
+            "unverified_only"
+          ],
+          "title": "Reason",
+          "type": "string"
+        }
+      },
+      "required": [
+        "reason"
+      ],
+      "title": "DecisionGap",
+      "type": "object"
+    },
     "DefaultProposed": {
       "additionalProperties": false,
       "properties": {
@@ -194,6 +274,258 @@
         "default"
       ],
       "title": "DefaultProposed",
+      "type": "object"
+    },
+    "Dossier": {
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Capability"
+        },
+        "completeness": {
+          "$ref": "#/$defs/Completeness"
+        },
+        "fields": {
+          "additionalProperties": {
+            "$ref": "#/$defs/DossierField"
+          },
+          "title": "Fields",
+          "type": "object"
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "integrations": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Integrations",
+          "type": "array"
+        },
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "needs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Needs",
+          "type": "array"
+        },
+        "official_share": {
+          "default": 0.0,
+          "title": "Official Share",
+          "type": "number"
+        },
+        "official_url": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Official Url"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "required": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Required",
+          "type": "array"
+        },
+        "service_option_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Service Option Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "provider",
+        "completeness"
+      ],
+      "title": "Dossier",
+      "type": "object"
+    },
+    "DossierField": {
+      "additionalProperties": false,
+      "description": "One field of a provider dossier. ``value`` is the single value (a scalar, one typed figure) or the usable values\njoined with `` | `` (a list field); it is null, with a ``null_reason``, when no item states the field or when usable\nvalues conflict. ``evidence`` is the WEAKEST label among the values in ``value``. ``values`` keeps every value.",
+      "properties": {
+        "evidence": {
+          "anyOf": [
+            {
+              "enum": [
+                "official",
+                "corroborated",
+                "single_source",
+                "unverified"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Evidence"
+        },
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "null_reason": {
+          "anyOf": [
+            {
+              "enum": [
+                "not_stated_by_sources",
+                "not_researched",
+                "conflict"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Null Reason"
+        },
+        "typed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Value"
+        },
+        "values": {
+          "items": {
+            "$ref": "#/$defs/DossierValue"
+          },
+          "title": "Values",
+          "type": "array"
+        }
+      },
+      "title": "DossierField",
+      "type": "object"
+    },
+    "DossierValue": {
+      "additionalProperties": false,
+      "properties": {
+        "conflict": {
+          "default": false,
+          "title": "Conflict",
+          "type": "boolean"
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "evidence": {
+          "enum": [
+            "official",
+            "corroborated",
+            "single_source",
+            "unverified"
+          ],
+          "title": "Evidence",
+          "type": "string"
+        },
+        "item_id": {
+          "title": "Item Id",
+          "type": "string"
+        },
+        "newest_source": {
+          "anyOf": [
+            {
+              "format": "date",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Newest Source"
+        },
+        "source_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Source Ids",
+          "type": "array"
+        },
+        "typed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/TypedValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "value",
+        "item_id",
+        "evidence"
+      ],
+      "title": "DossierValue",
       "type": "object"
     },
     "Dropped": {
@@ -432,6 +764,44 @@
             "properties": {
               "data": {
                 "$ref": "#/$defs/data__navigation_pattern"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "platform_constraint"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__platform_constraint"
+              }
+            }
+          }
+        },
+        {
+          "if": {
+            "properties": {
+              "kind": {
+                "const": "provider_fact"
+              }
+            },
+            "required": [
+              "kind"
+            ]
+          },
+          "then": {
+            "properties": {
+              "data": {
+                "$ref": "#/$defs/data__provider_fact"
               }
             }
           }
@@ -704,6 +1074,8 @@
             "lifecycle",
             "local_format",
             "navigation_pattern",
+            "platform_constraint",
+            "provider_fact",
             "reference_check",
             "role_pattern",
             "rule",
@@ -821,6 +1193,16 @@
           "default": "",
           "title": "Use Note",
           "type": "string"
+        },
+        "variants": {
+          "additionalProperties": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "title": "Variants",
+          "type": "object"
         }
       },
       "required": [
@@ -832,6 +1214,81 @@
         "claim"
       ],
       "title": "Item",
+      "type": "object"
+    },
+    "LaneDecisionOut": {
+      "additionalProperties": false,
+      "properties": {
+        "best_evidence": {
+          "anyOf": [
+            {
+              "enum": [
+                "official",
+                "corroborated",
+                "single_source",
+                "unverified"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Best Evidence"
+        },
+        "gap": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/DecisionGap"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "id": {
+          "title": "Id",
+          "type": "string"
+        },
+        "item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Item Ids",
+          "type": "array"
+        },
+        "lane": {
+          "enum": [
+            "blueprint",
+            "integrations",
+            "design",
+            "screens",
+            "mock",
+            "verify"
+          ],
+          "title": "Lane",
+          "type": "string"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "unverified_item_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Unverified Item Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "lane",
+        "text"
+      ],
+      "title": "LaneDecisionOut",
       "type": "object"
     },
     "LaneQuality": {
@@ -934,6 +1391,104 @@
       "title": "Norm",
       "type": "object"
     },
+    "PlatformConstraint": {
+      "additionalProperties": false,
+      "properties": {
+        "capability": {
+          "title": "Capability",
+          "type": "string"
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "effect_on_build": {
+          "anyOf": [
+            {
+              "enum": [
+                "needs_development_build",
+                "needs_permission",
+                "review_risk",
+                "needs_config_plugin",
+                "none"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effect On Build"
+        },
+        "evidence": {
+          "enum": [
+            "official",
+            "corroborated",
+            "single_source",
+            "unverified"
+          ],
+          "title": "Evidence",
+          "type": "string"
+        },
+        "item_id": {
+          "title": "Item Id",
+          "type": "string"
+        },
+        "platform": {
+          "anyOf": [
+            {
+              "enum": [
+                "ios",
+                "android",
+                "both",
+                "expo",
+                "react_native",
+                "web"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Platform"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        }
+      },
+      "required": [
+        "item_id",
+        "capability",
+        "rule",
+        "evidence"
+      ],
+      "title": "PlatformConstraint",
+      "type": "object"
+    },
     "Prevalence": {
       "additionalProperties": false,
       "properties": {
@@ -976,6 +1531,16 @@
         "digest_tokens": {
           "default": 0,
           "title": "Digest Tokens",
+          "type": "integer"
+        },
+        "digest_tokens_cap_per_lane": {
+          "default": 0,
+          "title": "Digest Tokens Cap Per Lane",
+          "type": "integer"
+        },
+        "digest_tokens_total": {
+          "default": 0,
+          "title": "Digest Tokens Total",
           "type": "integer"
         },
         "light": {
@@ -1067,6 +1632,140 @@
         }
       },
       "title": "Recency",
+      "type": "object"
+    },
+    "RegisterCountry": {
+      "additionalProperties": false,
+      "properties": {
+        "country": {
+          "title": "Country",
+          "type": "string"
+        },
+        "regimes": {
+          "items": {
+            "$ref": "#/$defs/RegisterRegime"
+          },
+          "title": "Regimes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "country",
+        "regimes"
+      ],
+      "title": "RegisterCountry",
+      "type": "object"
+    },
+    "RegisterEntry": {
+      "additionalProperties": false,
+      "properties": {
+        "applies_to": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Applies To",
+          "type": "array"
+        },
+        "authority": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authority"
+        },
+        "domain": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Domain"
+        },
+        "effective_date": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effective Date"
+        },
+        "evidence": {
+          "enum": [
+            "official",
+            "corroborated",
+            "single_source",
+            "unverified"
+          ],
+          "title": "Evidence",
+          "type": "string"
+        },
+        "item_id": {
+          "title": "Item Id",
+          "type": "string"
+        },
+        "penalty": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Penalty"
+        },
+        "statement": {
+          "title": "Statement",
+          "type": "string"
+        },
+        "topic": {
+          "title": "Topic",
+          "type": "string"
+        }
+      },
+      "required": [
+        "item_id",
+        "topic",
+        "statement",
+        "evidence"
+      ],
+      "title": "RegisterEntry",
+      "type": "object"
+    },
+    "RegisterRegime": {
+      "additionalProperties": false,
+      "properties": {
+        "entries": {
+          "items": {
+            "$ref": "#/$defs/RegisterEntry"
+          },
+          "title": "Entries",
+          "type": "array"
+        },
+        "regime": {
+          "title": "Regime",
+          "type": "string"
+        }
+      },
+      "required": [
+        "regime",
+        "entries"
+      ],
+      "title": "RegisterRegime",
       "type": "object"
     },
     "RunInfo": {
@@ -1348,6 +2047,74 @@
       "title": "Suggestions",
       "type": "object"
     },
+    "TypedValue": {
+      "additionalProperties": false,
+      "description": "A figure the page states, in parts. Every part is optional and only filled when the quote states it; code checks\nthe amount and the currency against the quote (``domain/typed.py``). ``amount`` is a decimal STRING, never a float.",
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
+        "period": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Period"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "title": "TypedValue",
+      "type": "object"
+    },
     "Validation": {
       "additionalProperties": false,
       "properties": {
@@ -1513,6 +2280,13 @@
     "data__compliance_note": {
       "additionalProperties": false,
       "properties": {
+        "applies_to": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Applies To",
+          "type": "array"
+        },
         "authority": {
           "anyOf": [
             {
@@ -1524,6 +2298,18 @@
           ],
           "default": null,
           "title": "Authority"
+        },
+        "country": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Country"
         },
         "effective_date": {
           "anyOf": [
@@ -1541,6 +2327,30 @@
           "default": true,
           "title": "Legal Adjacent",
           "type": "boolean"
+        },
+        "penalty": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Penalty"
+        },
+        "regime": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Regime"
         },
         "summary": {
           "title": "Summary",
@@ -1811,6 +2621,126 @@
         "typical_items"
       ],
       "title": "NavigationPatternData",
+      "type": "object"
+    },
+    "data__platform_constraint": {
+      "additionalProperties": false,
+      "description": "One platform or toolchain rule for one capability (push, background location, in-app payments ...).",
+      "properties": {
+        "capability": {
+          "title": "Capability",
+          "type": "string"
+        },
+        "effect_on_build": {
+          "anyOf": [
+            {
+              "enum": [
+                "needs_development_build",
+                "needs_permission",
+                "review_risk",
+                "needs_config_plugin",
+                "none"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Effect On Build"
+        },
+        "platform": {
+          "anyOf": [
+            {
+              "enum": [
+                "ios",
+                "android",
+                "both",
+                "expo",
+                "react_native",
+                "web"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Platform"
+        },
+        "rule": {
+          "title": "Rule",
+          "type": "string"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Status"
+        }
+      },
+      "required": [
+        "capability",
+        "rule"
+      ],
+      "title": "PlatformConstraintData",
+      "type": "object"
+    },
+    "data__provider_fact": {
+      "additionalProperties": false,
+      "description": "ONE fact about a provider with ONE quote (D-159): the dossier of a provider is assembled by code from these.",
+      "properties": {
+        "countries": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Countries",
+          "type": "array"
+        },
+        "field": {
+          "title": "Field",
+          "type": "string"
+        },
+        "need": {
+          "title": "Need",
+          "type": "string"
+        },
+        "provider": {
+          "title": "Provider",
+          "type": "string"
+        },
+        "typed": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/provider_fact__TypedValue"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "provider",
+        "need",
+        "field",
+        "value",
+        "countries"
+      ],
+      "title": "ProviderFactData",
       "type": "object"
     },
     "data__reference_check": {
@@ -2445,6 +3375,74 @@
       "title": "Transition",
       "type": "object"
     },
+    "provider_fact__TypedValue": {
+      "additionalProperties": false,
+      "description": "A figure the page states, in parts. Every part is optional and only filled when the quote states it; code checks\nthe amount and the currency against the quote (``domain/typed.py``). ``amount`` is a decimal STRING, never a float.",
+      "properties": {
+        "amount": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Amount"
+        },
+        "condition": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Condition"
+        },
+        "currency": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Currency"
+        },
+        "period": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Period"
+        },
+        "unit": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Unit"
+        }
+      },
+      "title": "TypedValue",
+      "type": "object"
+    },
     "reference_check__FeatureLevel": {
       "additionalProperties": false,
       "properties": {
@@ -2592,6 +3590,13 @@
       "title": "Claims Used",
       "type": "array"
     },
+    "compliance_register": {
+      "items": {
+        "$ref": "#/$defs/RegisterCountry"
+      },
+      "title": "Compliance Register",
+      "type": "array"
+    },
     "confirm": {
       "items": {
         "$ref": "#/$defs/Confirm"
@@ -2615,6 +3620,23 @@
       },
       "title": "Defaults Proposed",
       "type": "array"
+    },
+    "dossiers": {
+      "items": {
+        "$ref": "#/$defs/Dossier"
+      },
+      "title": "Dossiers",
+      "type": "array"
+    },
+    "dossiers_by_integration": {
+      "additionalProperties": {
+        "items": {
+          "type": "string"
+        },
+        "type": "array"
+      },
+      "title": "Dossiers By Integration",
+      "type": "object"
     },
     "dropped": {
       "$ref": "#/$defs/Dropped"
@@ -2646,6 +3668,13 @@
       "title": "Items",
       "type": "array"
     },
+    "lane_decisions": {
+      "items": {
+        "$ref": "#/$defs/LaneDecisionOut"
+      },
+      "title": "Lane Decisions",
+      "type": "array"
+    },
     "lane_quality": {
       "additionalProperties": {
         "$ref": "#/$defs/LaneQuality"
@@ -2658,6 +3687,13 @@
         "$ref": "#/$defs/Norm"
       },
       "title": "Norms",
+      "type": "array"
+    },
+    "platform_constraints": {
+      "items": {
+        "$ref": "#/$defs/PlatformConstraint"
+      },
+      "title": "Platform Constraints",
       "type": "array"
     },
     "profile": {

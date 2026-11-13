@@ -1,0 +1,22 @@
+# How the confirm list is ranked (assemble/confirm.py; D-156 P6). Every entry gets a `class`, a `rank` and a `group` by CODE; the
+# front end decides how to show them. The classes are tried in this order and the first that matches wins; their order is also
+# the order of the list: money first, then legal, then identity, then the rest. Inside a class: high impact first, conflicts
+# first, then the strongest evidence, then the item id.
+#
+# A class matches an item when ANY of its rules holds: the item's kind is in `kinds`, its job is in `jobs`, a flag is in `flags`,
+# a provider fact's dossier field is in `fields`, a typed value has a currency (`typed_currency`), or one of `words` (stems) is in
+# its label, claim or main text fields (`needs_figure`: and the text also holds a figure). Words are generic, never a company or place.
+top: 20
+classes:
+  money:
+    fields: [fees]
+    typed_currency: true
+    needs_figure: true
+    words: [fee, price, pricing, charge, commission, tariff, cost, payout, refund, tax, penalty, fine, subscription, salary, wage, invoice]
+  legal:
+    kinds: [compliance_note]
+    jobs: [trust]
+    flags: [legal-adjacent]
+  identity:
+    words: [identity, kyc, verification, passport, login, signin, authentication, biometric, otp, credential]
+  other: {}

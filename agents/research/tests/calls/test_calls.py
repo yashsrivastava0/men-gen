@@ -30,7 +30,7 @@ def runner(gateway: Any) -> CallRunner:
 
 def test_every_spec_is_registered_versioned_and_strict_schema_safe() -> None:
     ids = [s.id for s in SPECS]
-    assert len(ids) == len(set(ids)) == 17 and all(i.startswith("rsch.") for i in ids)
+    assert len(ids) == len(set(ids)) == 18 and all(i.startswith("rsch.") for i in ids)
     for s in SPECS:
         to_strict_schema(s.spec.output_model)  # pyright: ignore[reportArgumentType]
         assert s.spec.version >= 1 and s.spec.mock_handler and s.fallback

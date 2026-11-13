@@ -346,6 +346,70 @@ def script_locale_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate
     return _dedupe(out)
 
 
+def _capability_units(inp: ResearchInput) -> list[tuple[frozenset[str], Links]]:
+    """Stem sets of the pieces of the Brief that can reveal a platform capability, with the Brief ids they carry."""
+    items = [(text, links) for text, links, _ in _corpus(inp)]
+    items += [
+        (f"{r.name} {r.goal}", Links(roles=(r.id,))) for r in inp.roles if r.duplicate_of is None
+    ]
+    items += [(f"{a.name} {a.purpose}", Links(apps=(a.id,))) for a in inp.apps if a.is_real]
+    items.append((f"{inp.idea.summary} {inp.idea.category} {inp.idea.subcategory}", Links()))
+    return [(stem_set(text), links) for text, links in items if text.strip()]
+
+
+def capability_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
+    """Platform capabilities the Brief implies (``data/capabilities.yaml``), best-evidenced first.
+
+    A capability is implied when one of its signals is active (``plan/signals.py``), when one of its strong words is in a
+    piece of the Brief, or when its weak words are in at least ``weak_units`` different pieces. Each gets ONE candidate
+    (one topic), linked to the Brief ids of the pieces that matched. How many a run plans depends on the size class
+    (``data/depth.yaml``): the best-evidenced first, then the order of the data file.
+    """
+    cfg = cat.capabilities
+    signals = set(compute_signals(inp, cat.signals))
+    units = _capability_units(inp)
+
+    def hit(words: tuple[str, ...], unit: frozenset[str]) -> bool:
+        return any((stems := stem_set(w)) and stems <= unit for w in words)
+
+    scored: list[tuple[int, int, Candidate]] = []
+    for order, cap in enumerate(cfg.capabilities):
+        strong = [ln for u, ln in units if hit(cap.strong, u)]
+        weak = [ln for u, ln in units if hit(cap.weak, u)]
+        signalled = bool(set(cap.signals) & signals)
+        if not (signalled or strong or len(weak) >= cfg.weak_units):
+            continue
+        # a capability implied by a signal is linked to the pieces of the Brief that carry the signal's own words
+        sig_words = tuple(
+            w
+            for sig in cap.signals
+            if sig in cat.signals.signals
+            for w in (*cat.signals.signals[sig].strong, *cat.signals.signals[sig].weak)
+        )
+        via_signal = [ln for u, ln in units if hit(sig_words, u)] if signalled else []
+        links = Links()
+        for ln in strong + via_signal + (weak if len(weak) >= cfg.weak_units else []):
+            links = _merge_links(links, ln)
+        score = 3 * signalled + 2 * len(strong) + (len(weak) if len(weak) >= cfg.weak_units else 0)
+        scored.append(
+            (
+                -score,
+                order,
+                Candidate(
+                    cap.label,
+                    links=links,
+                    bonus=cap.bonus + min(3, score // 2),
+                    terms=tuple(cap.terms[:8]),
+                    extra={"capability": cap.id},
+                ),
+            )
+        )
+    scored.sort(key=lambda t: (t[0], t[1]))
+    klass = inp.load.load_class if inp.load else "standard"
+    limit = cat.depth.for_class(klass).platform_capabilities
+    return [c for _, _, c in scored][:limit]
+
+
 def candidates_for(foreach: str, inp: ResearchInput, cat: Catalog) -> list[Candidate]:
     match foreach:
         case "reference":
@@ -368,4 +432,6 @@ def candidates_for(foreach: str, inp: ResearchInput, cat: Catalog) -> list[Candi
             return platform_candidates(cat)
         case "script_locale":
             return script_locale_candidates(inp, cat)
+        case "capability":
+            return capability_candidates(inp, cat)
     return []

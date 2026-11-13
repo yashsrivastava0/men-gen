@@ -15,6 +15,8 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
+from mde_research_agent.domain.atoms import EffectOnBuild, Platform, TypedValue
+
 SCHEMA = "research.v5"
 Status = Literal["complete", "partial", "failed", "skipped"]
 Level = Literal["core", "common", "advanced", "emerging", "limited_evidence"]
@@ -117,6 +119,9 @@ class Item(Model):
     request_ids: list[str] = Field(default_factory=list)
     target_id: str = ""
     data: dict[str, Any] = Field(default_factory=dict)
+    # Figure-bearing text fields on which another merged source states a DIFFERENT figure than ``data``: field -> the other
+    # sources' text. Both are kept; the item is flagged ``conflict`` (D-159: a conflicting scalar never collapses silently).
+    variants: dict[str, list[str]] = Field(default_factory=dict)
     # The main store keeps what Spec reads; everything else is the appendix: nothing is deleted to fit (AD-55).
     store: Literal["main", "appendix"] = "main"
     appendix_reason: str | None = None
@@ -156,9 +161,137 @@ class DefaultProposed(Model):
     state: Literal["defaulted"] = "defaulted"
 
 
+ConfirmClass = Literal["money", "legal", "identity", "other"]
+
+
 class Confirm(Model):
     item_id: str
     why: str
+    # Added by code (P6): the order the owner should read the list in. Display is the front end's job.
+    rank: int = (
+        0  # 1 is first: money, then legal, then identity, then the rest, by impact inside a class
+    )
+    group: str = ""  # the topic the item belongs to (its job and kind, or the provider or capability it is about)
+    class_: ConfirmClass = Field(default="other", alias="class")
+    top: bool = False  # one of the 20 first
+
+    model_config = ConfigDict(extra="forbid", populate_by_name=True)
+
+
+# --- provider dossiers, platform constraints, the compliance register and the lane decisions (D-159, D-162) -----------
+# All four are built by CODE from the checked items (assemble/dossier.py, platform.py, register.py, decisions.py): the model
+# never writes them. Each value points at the items that state it, with the evidence label of those items.
+
+NullReason = Literal["not_stated_by_sources", "not_researched", "conflict"]
+
+
+class DossierValue(Model):
+    value: str
+    typed: TypedValue | None = None
+    item_id: str
+    evidence: Evidence
+    newest_source: date | None = None
+    domain: str | None = None  # the domain of the item's best source
+    source_ids: list[str] = Field(default_factory=list)
+    conflict: bool = False  # another usable value of the same field, unit, period, condition, currency and country differs
+
+
+class DossierField(Model):
+    """One field of a provider dossier. ``value`` is the single value (a scalar, one typed figure) or the usable values
+    joined with `` | `` (a list field); it is null, with a ``null_reason``, when no item states the field or when usable
+    values conflict. ``evidence`` is the WEAKEST label among the values in ``value``. ``values`` keeps every value."""
+
+    value: str | None = None
+    typed: TypedValue | None = None  # the typed value when the field has exactly one value
+    values: list[DossierValue] = Field(default_factory=list)
+    item_ids: list[str] = Field(default_factory=list)
+    evidence: Evidence | None = None
+    null_reason: NullReason | None = None
+
+
+class Completeness(Model):
+    filled: int  # required fields with a usable (not unverified, not conflicting) value
+    required: int
+    share: float
+    unverified: int = 0  # required fields whose only values are unverified
+
+
+class Dossier(Model):
+    id: str
+    provider: str
+    capability: str | None = (
+        None  # the integration need (a key of need_keywords.yaml) the provider serves
+    )
+    needs: list[str] = Field(default_factory=list)  # as the pages state them
+    official_url: str | None = (
+        None  # the provider's own documentation page, set by code from the sources
+    )
+    fields: dict[str, DossierField] = Field(
+        default_factory=dict
+    )  # the layout's fields, then any other field with values
+    required: list[str] = Field(default_factory=list)  # field keys that count into completeness
+    completeness: Completeness
+    official_share: float = 0.0  # filled fields whose evidence is official over all filled fields
+    item_ids: list[str] = Field(default_factory=list)  # every provider fact of the dossier
+    service_option_ids: list[str] = Field(
+        default_factory=list
+    )  # service_option items of the same provider
+    integrations: list[str] = Field(default_factory=list)  # INT keys of its items' applies_to
+
+
+class PlatformConstraint(Model):
+    item_id: str
+    capability: str  # a capability id of capabilities.yaml when the stated text matches one, else the stated text
+    platform: Platform | None = None
+    rule: str
+    effect_on_build: EffectOnBuild | None = None
+    status: str | None = None
+    evidence: Evidence
+    domain: str | None = None
+
+
+class RegisterEntry(Model):
+    item_id: str
+    topic: str
+    statement: str
+    authority: str | None = None
+    effective_date: str | None = None
+    applies_to: list[str] = Field(default_factory=list)
+    penalty: str | None = None
+    domain: str | None = None
+    evidence: Evidence
+
+
+class RegisterRegime(Model):
+    regime: str
+    entries: list[RegisterEntry]
+
+
+class RegisterCountry(Model):
+    country: str  # lowercase ISO code, ``global`` or ``unknown``
+    regimes: list[RegisterRegime]
+
+
+DecisionGapReason = Literal["not_planned", "not_found", "not_run", "unverified_only"]
+
+
+class DecisionGap(Model):
+    reason: DecisionGapReason
+    note: str = ""
+
+
+class LaneDecisionOut(Model):
+    id: str
+    lane: Lane
+    text: str
+    item_ids: list[str] = Field(
+        default_factory=list
+    )  # main-store items of the lane with a usable (not unverified) label
+    unverified_item_ids: list[str] = Field(default_factory=list)
+    best_evidence: Evidence | None = None
+    gap: DecisionGap | None = (
+        None  # set exactly when ``item_ids`` is empty: Spec assumes this decision
+    )
 
 
 class Gap(Model):
@@ -191,7 +324,11 @@ class Profile(Model):
     signals: list[str] = Field(default_factory=list)
     store_tokens: int = 0  # main store, measured on the compact view
     appendix_items: int = 0
-    digest_tokens: int = 0
+    digest_tokens: int = 0  # kept for compatibility: the same number as digest_tokens_total
+    digest_tokens_total: int = 0  # the six lane digests together, as measured
+    digest_tokens_cap_per_lane: int = (
+        0  # the cap of ONE lane digest; the six lanes can together use up to six times it
+    )
     store_over_limit: bool = (
         False  # the protected items alone were over store_tokens: nothing was moved
     )
@@ -295,6 +432,11 @@ class ResearchOutput(Model):
     confirm: list[Confirm] = Field(default_factory=list)
     gaps: list[Gap] = Field(default_factory=list)
     conflicts: list[Conflict] = Field(default_factory=list)
+    dossiers: list[Dossier] = Field(default_factory=list)
+    dossiers_by_integration: dict[str, list[str]] = Field(default_factory=dict)
+    platform_constraints: list[PlatformConstraint] = Field(default_factory=list)
+    compliance_register: list[RegisterCountry] = Field(default_factory=list)
+    lane_decisions: list[LaneDecisionOut] = Field(default_factory=list)
     slices: dict[str, Slice] = Field(default_factory=dict)
     claims_used: list[str] = Field(default_factory=list)
     dropped: Dropped = Field(default_factory=Dropped)

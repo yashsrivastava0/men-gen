@@ -9,6 +9,7 @@ from support.testing import load_fixture, run_engine
 from mde_research_agent.assemble.store import (
     APPENDIX_REASON,
     assign_store,
+    chunk_ids,
     compact_item,
     compact_view,
     is_protected,
@@ -99,15 +100,74 @@ def test_rank_prefers_brief_linked_then_high_impact_then_evidence_with_level_onl
     None
 ):
     linked = item(
-        1, applies_to=[{"kind": "FTR", "id": "FTR-1", "relation": "expects"}], evidence="unverified"
+        1,
+        applies_to=[{"kind": "FTR", "id": "FTR-1", "relation": "expects"}],
+        evidence="single_source",
     )
-    high = item(2, impact="high", evidence="unverified")
+    high = item(2, impact="high", evidence="single_source")
     official = item(
         3, evidence="official", prevalence={"seen_in": 1, "of": 9, "level": "limited_evidence"}
     )
     core = item(4, evidence="single_source", prevalence={"seen_in": 9, "of": 9, "level": "core"})
     ordered = sorted([core, official, high, linked], key=rank_key)
     assert [i["id"] for i in ordered] == ["RI-001", "RI-002", "RI-003", "RI-004"]
+
+
+def test_every_verified_item_ranks_before_any_unverified_one() -> None:
+    """P6: unverified is last of all, so the appendix takes it first, even when it is Brief-linked and high impact."""
+    linked_unverified = item(
+        1,
+        impact="high",
+        applies_to=[{"kind": "FTR", "id": "FTR-1", "relation": "expects"}],
+        evidence="unverified",
+    )
+    plain_single = item(2, evidence="single_source")
+    plain_unverified = item(3, evidence="unverified")
+    ordered = sorted([plain_unverified, linked_unverified, plain_single], key=rank_key)
+    assert [i["id"] for i in ordered] == ["RI-002", "RI-001", "RI-003"]
+
+
+def test_an_unverified_item_is_not_protected_unless_it_is_a_conflict_or_needs_confirming() -> None:
+    link = [{"kind": "FTR", "id": "FTR-1", "relation": "constrains"}]
+    assert is_protected(item(1, kind="rule", impact="high", applies_to=link, evidence="official"))
+    assert not is_protected(
+        item(2, kind="rule", impact="high", applies_to=link, evidence="unverified")
+    )
+    assert is_protected(
+        item(3, kind="rule", applies_to=link, evidence="unverified", flags=["conflict"])
+    )
+    assert is_protected(item(4, evidence="unverified", flags=["needs-confirm"]))
+
+
+def test_under_a_tight_limit_the_appendix_takes_unverified_items_before_verified_ones() -> None:
+    link = [{"kind": "FTR", "id": "FTR-1", "relation": "constrains"}]
+    verified = [
+        item(i, kind="rule", impact="high", applies_to=link, evidence="single_source")
+        for i in range(1, 6)
+    ]
+    weak = [
+        item(i, kind="rule", impact="high", applies_to=link, evidence="unverified")
+        for i in range(6, 11)
+    ]
+    budget = sum(tokens_of(compact_item(v, NOTES)) for v in verified) + 5
+    plan = assign_store(
+        [*weak, *verified], overhead_tokens=0, store_tokens=budget, default_notes=NOTES
+    )
+    main = {k for k, d in plan.decisions.items() if d.store == "main"}
+    assert {v["id"] for v in verified} <= main, "the verified items stay"
+    assert not {w["id"] for w in weak} & main, "the unverified ones went to the appendix first"
+    assert not plan.protected_over_limit
+
+
+def test_the_best_two_of_a_kind_are_verified_ones() -> None:
+    items = [
+        item(1, evidence="unverified"),
+        item(2, evidence="unverified"),
+        item(3, evidence="official"),
+    ]
+    plan = assign_store(items, overhead_tokens=0, store_tokens=1, default_notes=NOTES)
+    main = {k for k, d in plan.decisions.items() if d.store == "main"}
+    assert main == {"RI-003"}
 
 
 def test_a_protected_rule_needs_a_brief_link() -> None:
@@ -179,3 +239,55 @@ async def test_without_a_limit_problem_the_whole_output_is_main_store_and_slices
         run.research["profile"]["store_tokens"] > 0
         and run.research["profile"]["appendix_items"] == 0
     )
+
+
+# --- chunking by lane: never truncate ------------------------------------------------------------------------------------------
+
+
+def test_chunks_split_a_big_lane_at_chunk_items_and_join_back_to_the_whole_list() -> None:
+    ids = [f"RI-{i:04d}" for i in range(1, 481)]  # a Big-sized lane: 480 items
+    chunks = chunk_ids(ids, 120)
+    assert [len(c) for c in chunks] == [120, 120, 120, 120]
+    assert [i for c in chunks for i in c] == ids, "nothing is cut, nothing is reordered"
+    odd = chunk_ids(ids[:301], 120)
+    assert [len(c) for c in odd] == [120, 120, 61] and [i for c in odd for i in c] == ids[:301]
+    assert chunk_ids([], 120) == [] and chunk_ids(ids[:1], 120) == [["RI-0001"]]
+
+
+def test_a_chunk_size_below_one_is_refused() -> None:
+    import pytest
+
+    with pytest.raises(ValueError):
+        chunk_ids(["a"], 0)
+
+
+async def test_every_lane_of_a_deep_run_is_chunked_whole() -> None:
+    run = await run_engine(load_fixture("thorough-freight-fleet-india"))
+    r = run.research
+    assert r["profile"]["load_class"] == "deep"
+    size = run.ctx.catalog.ceilings.for_class("deep").chunk_items
+    assert size == 120
+    for lane, sl in r["slices"].items():
+        assert sl["chunks"] == chunk_ids(sl["item_ids"], size), lane
+        assert all(len(c) <= size for c in sl["chunks"]), lane
+        assert [i for c in sl["chunks"] for i in c] == sl["item_ids"], (
+            f"{lane}: chunks join back to the lane"
+        )
+    assert run.violations == []
+
+
+async def test_a_big_run_with_a_small_chunk_size_splits_every_lane_and_cuts_nothing() -> None:
+    """The real assembly path with several chunks per lane (the fake web gives ~110 items, so the size is lowered)."""
+    run = await run_engine(load_fixture("thorough-freight-fleet-india"), chunk_items=20)
+    r = run.research
+    split = 0
+    for lane, sl in r["slices"].items():
+        assert all(len(c) <= 20 for c in sl["chunks"]), lane
+        assert [i for c in sl["chunks"] for i in c] == sl["item_ids"], (
+            f"{lane}: chunks join back to the lane"
+        )
+        split += len(sl["chunks"]) > 1
+    assert split >= 3, "several lanes needed more than one chunk"
+    main = {i["id"] for i in r["items"] if i["store"] == "main"}
+    assert {i for sl in r["slices"].values() for i in sl["item_ids"]} <= main
+    assert run.violations == [], "RV-09 (chunks add up to the lane list, none over the size) holds"
