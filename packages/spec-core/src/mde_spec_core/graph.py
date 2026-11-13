@@ -388,6 +388,7 @@ class Direction(Envelope):
     type_personality: str = "neutral"
     seed_hue: float | None = None
     seed_colour: str | None = None  # a seed, never a per-screen colour
+    brand_locked: bool = False  # the user gave this colour: it stays Locked and the text on it is derived
     delight_budget: int = 2
     dark_stance: str = "supported"
     avoid: list[str] = Field(default_factory=list)
@@ -424,6 +425,7 @@ class GraphMeta(Node):
     program_id: str = ""
     profile: Literal["compact", "standard", "deep"] = "standard"
     source_language: str = "en"
+    country: str = ""  # ISO country of the main market; locale pools follow it when set
     languages: list[str] = Field(default_factory=lambda: ["en"])
     frozen: bool = False
     inputs_hash: str = ""
