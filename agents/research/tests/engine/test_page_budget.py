@@ -77,7 +77,11 @@ async def test_a_spare_takes_the_place_of_a_page_that_cannot_be_read() -> None:
     ]
     # the three unreadable pages rank first for every query, the readable ones follow
     w.route(r".", [*walled, *good])
-    run = await run_engine(load_fixture(QUICK), world=w)
+    # more topics now share the Small ceiling: give the run the searches the old plan had room for per topic, so that the later
+    # rounds (where the readable pages are used up and the walled ones are tried) are reached
+    run = await run_engine(
+        load_fixture(QUICK), world=w, ceilings={"hard": {"searches": 200, "pages": 300}}
+    )
     per_topic = {}
     for e in run.events:
         if e.type == "page.read" and e.round == 1:

@@ -71,6 +71,9 @@ class Rejected:
     norm_key: str
     reason: str  # quote_not_found | number_not_in_quote | claim_too_long | forbidden_pattern | invalid | empty
     label: str = ""
+    detail: str = (
+        ""  # number_not_in_quote only: "currency_mismatch" when every missing figure is a currency
+    )
 
 
 def _clip(text: str, n: int) -> str:
@@ -205,7 +208,8 @@ def check_candidate(
         return replace(c, quote=wide, flags=(*c.flags, "number_widened"))
     kept = drop_unverified_figures(c, droppable.get(c.kind, ()) if droppable else ())
     if kept is None:
-        return Rejected(c.kind, c.norm_key, "number_not_in_quote", c.label)
+        why = "currency_mismatch" if all(f.key.startswith("c:") for f in missing) else ""
+        return Rejected(c.kind, c.norm_key, "number_not_in_quote", c.label, why)
     return kept
 
 

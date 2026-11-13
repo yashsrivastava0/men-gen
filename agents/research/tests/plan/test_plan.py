@@ -29,8 +29,14 @@ def test_every_fixture_gets_a_valid_plan(path: Path) -> None:
     assert plan.targets, "a plan always has topics"
     ids = [t.id for t in plan.targets]
     assert ids == [f"T-{i:02d}" for i in range(1, len(ids) + 1)]
-    cap = CAT.ceilings.for_class(inp.load.load_class).soft.targets  # type: ignore[union-attr]
-    assert len(plan.targets) <= cap
+    ceiling = CAT.ceilings.for_class(inp.load.load_class)  # type: ignore[union-attr]
+    risk = [t for t in plan.targets if t.risk]
+    assert (
+        len(plan.targets) - len(risk) <= ceiling.soft.targets
+    )  # the cap applies to the non-risk topics
+    assert (
+        len(plan.targets) <= ceiling.soft.targets + ceiling.risk_topics
+    )  # the valve bounds the rest
     for t in plan.targets:
         assert t.anchors and t.decision_unlocked and t.intent and t.needs, t
         assert t.spec_need and t.lane and t.slots is not None
@@ -168,7 +174,15 @@ def test_over_budget_topics_become_visible_unrun_targets_and_every_job_keeps_one
     _, plan = plan_for("quick-yoga-studio-bengaluru")
     assert plan.unrun and all(t.id.startswith("U-") for t in plan.unrun)
     for job in {t.job for t in (*plan.targets, *plan.unrun)}:
-        assert any(t.job == job for t in plan.targets), job
+        best = next(
+            t
+            for t in sorted((*plan.targets, *plan.unrun), key=lambda x: -x.priority)
+            if t.job == job
+        )
+        if any(
+            s.required for s in best.slots
+        ):  # a job keeps its best topic only when that topic has a required slot
+            assert any(t.job == job for t in plan.targets), job
 
 
 def test_garbage_or_missing_requests_still_give_a_plan() -> None:

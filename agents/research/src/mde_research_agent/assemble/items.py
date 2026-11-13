@@ -30,7 +30,18 @@ from mde_research_agent.engine.checking import passage_window
 from mde_research_agent.engine.context import RunContext
 from mde_research_agent.engine.state import AtomRecord, PageRecord
 
-CLASS_RANK = {"official": 0, "help": 1, "press": 2, "store": 3, "blog": 4, "forum": 5, "seo": 6}
+# official_inferred ranks with official (it counts as official for the evidence ladder and for confidence); the rest keep
+# their old numbers, which ``confidence_of`` compares against (<= 1 authoritative, <= 3 not a low class)
+CLASS_RANK = {
+    "official": 0,
+    "official_inferred": 0,
+    "help": 1,
+    "press": 2,
+    "store": 3,
+    "blog": 4,
+    "forum": 5,
+    "seo": 6,
+}
 RELATION = {
     "rule": "constrains", "compliance_note": "constrains", "entity_pattern": "refines", "lifecycle": "refines",
     "screen_pattern": "refines", "workflow": "refines", "role_pattern": "refines", "navigation_pattern": "refines",
@@ -233,7 +244,9 @@ def evidence_of(
         return "unverified"
     if "number_widened" in flags and independent < 2:
         return "unverified"
-    if any(c in ("official", "help") for c in classes):
+    # official_inferred (official by public-suffix pattern, or a provider's own domain) counts as official here; it stays
+    # visible as the source class of the item's sources, so Spec and the owner can tell it from a registry match
+    if any(c in ("official", "official_inferred", "help") for c in classes):
         return "official"
     if independent_non_low >= 2:
         return "corroborated"

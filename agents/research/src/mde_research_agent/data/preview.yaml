@@ -24,4 +24,4 @@ dropped:
   over_budget: "Over the budget for this size."
 
 # Why a topic is planned but not run: its rank against what this size runs.
-not_run: "Ranked {rank} of {total} planned topics; this size runs the top {cap}."
+not_run: "Ranked {rank} of {total} planned topics; this size runs the top {cap} besides the regulation, provider, identity, data-protection and payments topics, which are never left out."

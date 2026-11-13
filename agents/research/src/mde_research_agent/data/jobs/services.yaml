@@ -22,7 +22,10 @@ targets:
     decision_unlocked: "Which provider and contract to use for this integration"
     needs: [current, entity, number]
     priority: 88
+    risk: integration
+    official_first: true
+    engines: both
     anchor: need
-    scope: country
+    scope: country_each
     slots:
       - {key: providers, type: count, kind: service_option, distinct_by: provider, min: 2, attr: endpoints_or_events, attr_min: 1, required: true}

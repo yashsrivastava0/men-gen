@@ -1,0 +1,9 @@
+# Senegal. Official sources checked on 2026-11-13 (see pt.yaml for what `fetch` and `verified_on` mean). bceao.int is the
+# central bank of the West African Monetary Union (it also governs payments for the other UEMOA states).
+country: sn
+language: fr
+entries:
+  - {domain: cdp.sn, topics: [data protection, privacy, personal data, consent], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: bceao.int, topics: [payments, banking, bank, regulation, wallet, mobile money, payment institution, e-money], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: artp.sn, topics: [telecom, sms, messaging, regulation, licence, postal], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: dgid.sn, topics: [tax, vat, invoice, invoicing, land], class: official, fetch: ok, verified_on: 2026-11-13}

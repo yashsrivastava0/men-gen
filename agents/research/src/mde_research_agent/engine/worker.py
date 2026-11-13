@@ -36,9 +36,15 @@ from mde_research_agent.core.language import guess_language
 from mde_research_agent.core.norm_keys import clean_key
 from mde_research_agent.core.passages import bm25_scores, render, select_passages
 from mde_research_agent.core.privacy import find_private
-from mde_research_agent.core.rrf import FusedHit, fuse
+from mde_research_agent.core.rrf import FusedHit, fuse, fuse_engines
 from mde_research_agent.core.slots import Coverage, evaluate_target
-from mde_research_agent.core.sources import classify_source, own_site
+from mde_research_agent.core.sources import (
+    authority_language,
+    classify_source,
+    is_walled,
+    official_domains_for,
+    own_site,
+)
 from mde_research_agent.core.text import repair_mojibake, stem, tokens
 from mde_research_agent.core.urls import canonical_url, is_public_url, registrable_domain
 from mde_research_agent.domain.plan import Target
@@ -69,6 +75,7 @@ from mde_research_agent.ports.search import SearchError, SearchRequest, SearchRe
 STOP_RUN: tuple[type[BaseException], ...] = (BudgetExceeded, CassetteMissing, LiveCallForbidden)
 CLASS_WEIGHT = {
     "official": 1.0,
+    "official_inferred": 0.9,
     "help": 0.8,
     "press": 0.6,
     "store": 0.5,
@@ -88,6 +95,9 @@ class FollowupQuery:
     domain: str | None = None  # an entity's own domain: restrict the search to it
     seed: bool = False
     variant: str = "descriptive"
+    # Official-first: authority domains the search prefers (or is restricted to), chosen by code from the registry
+    domains: tuple[str, ...] = ()
+    domain_mode: str = "none"
 
 
 # --- coverage helpers -----------------------------------------------------------------------------------
@@ -95,8 +105,12 @@ class FollowupQuery:
 
 def update_coverage(ts: TargetState) -> Coverage:
     cov = evaluate_target(ts.target.slots, ts.verified)
-    ts.slots_required = cov.required_total
-    ts.slots_filled = cov.required_filled
+    if ts.gate_excluded:  # not_found for good: its required slots are out of the gate (D-163)
+        ts.slots_required = 0
+        ts.slots_filled = 0
+    else:
+        ts.slots_required = cov.required_total
+        ts.slots_filled = cov.required_filled
     return cov
 
 
@@ -132,6 +146,17 @@ def focus_terms(ts: TargetState, cov: Coverage, ctx: RunContext) -> list[str]:
         if s.required and not f.filled and s.attr:
             words.append(s.attr)
     return list(dict.fromkeys(words))[:8]
+
+
+def pages_wanted(ctx: RunContext, round_no: int) -> int:
+    """Pages a topic reads in this round. Round one gives every topic the usual number (``pages_per_topic.max``) unless the
+    plan is so large that this would use more than three quarters of the hard page ceiling, in which case every topic gets an
+    equal share of that (never below ``pages_per_topic.min``): the topics that start last must not read nothing."""
+    cap = ctx.catalog.ceilings.pages_per_topic
+    if round_no != 1:
+        return min(cap.max, 3)
+    share = (ctx.budget.hard.pages * 3 // 4) // max(1, len(ctx.targets))
+    return max(cap.min, min(cap.max, share))
 
 
 # --- queries -------------------------------------------------------------------------------------------
@@ -171,6 +196,42 @@ def _check(
     return res.ok
 
 
+def topic_countries(ctx: RunContext, t: Target) -> list[str]:
+    """The country codes a topic is about: its own (a per-country topic), else every country the Brief names."""
+    if t.place is None:
+        return []
+    if t.country_code:
+        return [t.country_code]
+    codes = [c.code for c in t.place.countries if c.code]
+    return codes or ([t.place.country_code] if t.place.country_code else [])
+
+
+def official_plan(ctx: RunContext, t: Target, round_no: int) -> tuple[str, tuple[str, ...]] | None:
+    """``(domain mode, domains)`` for the official variant of an ``official_first`` topic in round one, else None.
+
+    A platform topic names its owner's domain (``domain_restrict``): both providers can restrict to it. Other topics
+    take the registry domains that fit the topic (``official_domains_for``): Tavily PREFERS them, a provider with no
+    prefer mode (Serper) gets a ``site:``-restricted query only on topics of a risk class (provider, rule and regulation
+    topics), where an empty answer is relaxed by the failover and a wrong restriction costs one variant, not the topic."""
+    if not t.official_first or round_no != 1:
+        return None
+    caps = ctx.search.capabilities
+    if t.domain_restrict:
+        return ("restrict", t.domain_restrict) if caps.domain_restrict else None
+    domains = official_domains_for(
+        ctx.catalog,
+        [t.label, t.question, *t.anchors, *t.terms],
+        topic_countries(ctx, t),
+    )
+    if not domains:
+        return None
+    if caps.domain_prefer:
+        return ("prefer", domains)
+    if caps.domain_restrict and t.risk:
+        return ("restrict", domains)
+    return None
+
+
 def build_query_in(
     ctx: RunContext, ts: TargetState, round_no: int, cov: Coverage, want: int
 ) -> q_calls.QueryIn:
@@ -184,6 +245,10 @@ def build_query_in(
     seeds = (
         list(ctx.plan.discovery_names[:2]) if round_no == 1 and t.template_id == "landscape" else []
     )
+    official = official_plan(ctx, t, round_no)
+    code = (topic_countries(ctx, t) or [None])[0]
+    language = authority_language(ctx.catalog, code) if official else "en"
+    off_info = ctx.catalog.intent_words.languages.get(language) if official else None
     return q_calls.QueryIn(
         job=t.job,
         question=t.question,
@@ -200,6 +265,9 @@ def build_query_in(
         round=round_no,
         focus_terms=focus_terms(ts, cov, ctx) if round_no > 1 else [],
         seed_names=seeds,
+        language=language,
+        official_intent=list(off_info.words[:4]) if off_info else [],
+        official_domains=list(official[1]) if official else [],
     )
 
 
@@ -218,24 +286,58 @@ async def write_variants(
     if res.failed:
         ctx.failures.record("llm", res.reason or "failed", t.id)
         await ctx.warn("model_failed", target_id=t.id)
-    for v in res.output.variants:
+    official = official_plan(ctx, t, round_no)
+
+    def make(v: q_calls.Variant) -> FollowupQuery:
+        if v.style == "official" and official is not None:
+            return FollowupQuery(
+                v.text, v.language, False, None, False, "official", official[1], official[0]
+            )
+        style = (
+            "descriptive" if v.style == "official" else v.style
+        )  # no official plan: a plain variant
+        return FollowupQuery(v.text, v.language, v.exact, None, v.seed, style)
+
+    def accept(v: q_calls.Variant) -> bool:
         extra = [*inp.local_terms] if v.style == "local" else [*inp.seed_names] if v.seed else []
-        if not is_repeat(v.text, [*ts.queries, *(x.text for x in valid)]) and _check(
+        return not is_repeat(v.text, [*ts.queries, *(x.text for x in valid)]) and _check(
             ctx, t, v.text, extra_anchors=extra, named=inp.seed_names if v.seed else ()
-        ):
-            valid.append(FollowupQuery(v.text, v.language, v.exact, None, v.seed, v.style))
+        )
+
+    for v in res.output.variants:
+        if accept(v):
+            valid.append(make(v))
     if not valid:
         for v in q_calls.deterministic_variants(inp).variants:
-            extra = (
-                [*inp.local_terms] if v.style == "local" else [*inp.seed_names] if v.seed else []
-            )
-            if not is_repeat(v.text, [*ts.queries, *(x.text for x in valid)]) and _check(
-                ctx, t, v.text, extra_anchors=extra, named=inp.seed_names if v.seed else ()
-            ):
-                valid.append(FollowupQuery(v.text, v.language, v.exact, None, v.seed, v.style))
+            if accept(v):
+                valid.append(make(v))
+    if official is not None and not any(x.variant == "official" for x in valid):
+        # the model wrote no official variant (or it failed the gate): the deterministic one takes the place of the last
+        # descriptive variant, so the number of searches is the same
+        for v in q_calls.deterministic_variants(inp).variants:
+            if v.style == "official" and accept(v):
+                swap = next(
+                    (i for i in range(len(valid) - 1, 0, -1) if valid[i].variant == "descriptive"),
+                    None,
+                )
+                if swap is not None:
+                    valid[swap] = make(v)
+                elif len(valid) < want + 1:
+                    valid.append(make(v))
+                break
     if ctx.failures.private_blocked > blocked_before:
         await ctx.warn("private_term", target_id=t.id)
-    return valid[: want + 1]
+    return _keep_official(valid, want + 1)
+
+
+def _keep_official(valid: list[FollowupQuery], n: int) -> list[FollowupQuery]:
+    """The first ``n`` variants, but the official one is never the one cut (it REPLACES a variant; it is not extra)."""
+    kept = valid[:n]
+    official = next((v for v in valid if v.variant == "official"), None)
+    if official is not None and official not in kept:
+        slot = next((i for i in range(len(kept) - 1, -1, -1) if not kept[i].seed), len(kept) - 1)
+        kept[slot] = official
+    return kept
 
 
 # --- search --------------------------------------------------------------------------------------------
@@ -264,8 +366,8 @@ async def search_one(
         query=fq.text,
         country=place.country_code if place else None,
         language=fq.language,
-        domain_mode="restrict" if fq.domain else "none",
-        domains=(fq.domain,) if fq.domain else (),
+        domain_mode=fq.domain_mode if fq.domains else ("restrict" if fq.domain else "none"),  # type: ignore[arg-type]
+        domains=fq.domains or ((fq.domain,) if fq.domain else ()),
         exact=fq.exact,
         recency_months=t.recency_months,
         want_content=bool(getattr(ctx.search.capabilities, "page_content", False)),
@@ -285,6 +387,7 @@ async def search_one(
             "country": req.country or "",
             "provider": ctx.search.name,
             "domain": fq.domain or "",
+            "domains": ",".join(fq.domains[:8]),
         },
     )
     result: SearchResult | None = None
@@ -354,11 +457,82 @@ async def search_one(
     return result
 
 
+async def search_second(
+    ctx: RunContext, ts: TargetState, fq: FollowupQuery, round_no: int
+) -> SearchResult | None:
+    """One extra query on the OTHER configured provider for a ``engines: both`` topic (vendor topics: payments, messaging,
+    maps, tracking, identity, accounting), so that a page both engines return rises in the fusion. Cheap by design: the
+    topic's first query only, no retry, and any failure is counted and ignored (the primary result stands). It is admitted
+    with the primary search (the pair counts as ONE search against the ceiling) and both providers' cost is booked."""
+    second = ctx.second_search
+    if second is None or not ctx.active() or ts.cancel.cancelled:
+        return None
+    t = ts.target
+    place = t.place
+    req = SearchRequest(
+        query=fq.text,
+        country=place.country_code if place else None,
+        language=fq.language,
+        domain_mode="none",  # the second opinion is the plain query: official-first is the primary's variant
+        exact=fq.exact,
+        recency_months=t.recency_months,
+        want_content=bool(getattr(second.capabilities, "page_content", False)),
+        max_results=10,
+    )
+    try:
+        with ctx.stage("search"):
+            res = await asyncio.wait_for(second.search(req), timeout=SEARCH_TIMEOUT_S)
+    except (SearchError, TimeoutError) as err:
+        reason = err.kind if isinstance(err, SearchError) else "timeout"
+        ctx.failures.record("search_second", reason, t.id)
+        return None
+    ctx.budget.add_second_search_cost(res.cost_micros, res.provider)
+    ctx.count("second_engine_queries")
+    rec = QueryRecord(
+        id=ctx.ids.new("qry"),
+        target_id=t.id,
+        round=round_no,
+        text=fq.text,
+        variant=fq.variant,
+        language=fq.language,
+        country=req.country,
+        provider=second.name,
+        exact=fq.exact,
+        results=len(res.hits),
+        urls=[canonical_url(h.url) for h in res.hits],
+        cost_micros=res.cost_micros,
+        cached=res.cached,
+        applied=dict(res.applied),
+        locale_weak=res.locale_weak,
+    )
+    ctx.queries.append(rec)
+    await ctx.events.emit(
+        "query.issued",
+        target_id=t.id,
+        round_=round_no,
+        phase="search",
+        params={"query": fq.text},
+        detail={
+            "query": fq.text,
+            "variant": "second_engine",
+            "lang": fq.language,
+            "country": req.country or "",
+            "provider": second.name,
+            "domain": "",
+        },
+    )
+    return res
+
+
 # --- triage --------------------------------------------------------------------------------------------
 
 
 def triage(
-    ctx: RunContext, ts: TargetState, fused: list[FusedHit], limit: int
+    ctx: RunContext,
+    ts: TargetState,
+    fused: list[FusedHit],
+    limit: int,
+    per_domain: int | None = None,
 ) -> list[tuple[FusedHit, str]]:
     """The best pages for this topic: ``[(hit, source_class)]``, at most ``limit`` and few per domain."""
     t = ts.target
@@ -370,13 +544,19 @@ def triage(
     scored: list[tuple[float, FusedHit, str]] = []
     country = t.place.country_code if t.place else None
     anchor = t.entity or (t.anchors[0] if t.anchors else None)
+    names = [
+        e.name for e in ctx.entities.values()
+    ]  # a provider's own domain speaks for itself, whoever asked
     for h, r in zip(fused, rel, strict=True):
         if not is_public_url(h.url):
             continue
-        cls = classify_source(h.url, ctx.catalog, title=h.hit.title, entity=anchor, country=country)
+        cls = classify_source(
+            h.url, ctx.catalog, title=h.hit.title, entity=anchor, country=country, entities=names
+        )
         authority = (
             1.0
-            if ("current" in t.needs or "number" in t.needs) and cls in ("official", "help")
+            if ("current" in t.needs or "number" in t.needs)
+            and cls in ("official", "official_inferred", "help")
             else 0.0
         )
         score = 2.0 * CLASS_WEIGHT.get(cls, 0.3) + 20.0 * h.score + r / top + authority
@@ -393,9 +573,11 @@ def triage(
         if h.url in ctx.unreadable:
             continue  # the reader already failed on it in this run
         dom = registrable_domain(h.url)
-        if dom in walled and len(h.hit.content or "") < MIN_PROVIDER_TEXT:
+        if (dom in walled or is_walled(h.url, ctx.catalog)) and len(
+            h.hit.content or ""
+        ) < MIN_PROVIDER_TEXT:
             continue  # it refuses our reader and the provider gave no text: not worth a page attempt
-        if seen_domains.get(dom, 0) >= cfg.max_per_domain:
+        if seen_domains.get(dom, 0) >= (per_domain or cfg.max_per_domain):
             continue
         seen_domains[dom] = seen_domains.get(dom, 0) + 1
         picks.append((h, cls))
@@ -657,6 +839,10 @@ async def extract_page(
                     )  # one retry ("quote exactly"); still failing after it is counted below
                     continue
                 ctx.count_drop(checked.reason)
+                if (
+                    checked.detail
+                ):  # a currency the quote does not state: counted apart (internal counters)
+                    ctx.count(checked.detail)
                 await ctx.events.emit(
                     "fact.rejected",
                     target_id=t.id,
@@ -753,6 +939,8 @@ async def run_topic(
     *,
     followups: Sequence[FollowupQuery] | None = None,
     quota: int | None = None,
+    pages: int | None = None,
+    per_domain: int | None = None,
 ) -> int:
     """Run one round for one topic; returns the number of newly verified items. Never raises for model or web failures."""
     t = ts.target
@@ -797,14 +985,32 @@ async def run_topic(
             ):  # no distinct follow-up left is a normal end; no first-round query is a failure
                 ctx.failures.record("plan", "no_query", t.id)
             return 0
-        results = await asyncio.gather(*[search_one(ctx, ts, v, round_no) for v in variants])
+        both = t.engines == "both" and ctx.second_search is not None and followups is None
+        first = next((v for v in variants if not v.seed and v.variant != "official"), variants[0])
+        second_holder: list[SearchResult] = []
+
+        async def primary(v: FollowupQuery) -> SearchResult | None:
+            res = await search_one(ctx, ts, v, round_no)
+            if (
+                both and v is first and res is not None
+            ):  # admitted and answered: now the second opinion
+                extra = await search_second(ctx, ts, v, round_no)
+                if extra is not None:
+                    second_holder.append(extra)
+            return res
+
+        results = await asyncio.gather(*[primary(v) for v in variants])
+        second_result = second_holder[0] if second_holder else None
         usable = [(v, r) for v, r in zip(variants, results, strict=True) if r is not None]
         if not usable:
             return 0
-        fused = fuse([list(r.hits) for _, r in usable])
-        cap = ctx.catalog.ceilings.pages_per_topic
-        want_pages = cap.max if round_no == 1 else min(cap.max, 3)
-        ranked = triage(ctx, ts, fused, want_pages + BACKFILL_SPARES)
+        if second_result is not None and second_result.hits:
+            # both engines answered: fuse per engine, agreement between the engines counts (core/rrf.fuse_engines)
+            fused = fuse_engines([[list(r.hits) for _, r in usable], [list(second_result.hits)]])
+        else:
+            fused = fuse([list(r.hits) for _, r in usable])
+        want_pages = pages or pages_wanted(ctx, round_no)
+        ranked = triage(ctx, ts, fused, want_pages + BACKFILL_SPARES, per_domain)
         picks, spares = ranked[:want_pages], ranked[want_pages:]
         seed_urls = {canonical_url(h.url) for v, r in usable if v.seed for h in r.hits}
         non_seed_urls = {canonical_url(h.url) for v, r in usable if not v.seed for h in r.hits}

@@ -36,7 +36,10 @@ def keys(text: str, **kw: bool) -> set[str]:
         ("valid until 12 March 2026", "valid until March 12, 2026"),
         ("updated March 2026", "last updated on 12 March 2026"),
         ("updated 2026-03", "Updated 2026-03-12"),
-        ("fee ₹५,०००", "the fee is 5000"),  # Devanagari digits
+        (
+            "fee ₹५,०००",
+            "the fee is ₹5000",
+        ),  # Devanagari digits (the claim names a currency, so the quote must too)
         ("fee ٥٠٠٠", "the fee is 5000"),  # Arabic-Indic digits
         ("２.５％ fee", "the fee is 2.5%"),  # full-width forms
     ],

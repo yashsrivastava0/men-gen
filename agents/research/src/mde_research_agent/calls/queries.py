@@ -4,6 +4,11 @@ The model sees only its topic, anchors and place (no page text, so no untrusted 
 it writes is checked by CODE against the anatomy gate (anchor + place + intent word, short, no URL or key, never a
 repeat); variants that fail are dropped, and when none survives the deterministic builder below runs. That builder is
 also the mock handler and the fallback.
+
+Official-first: on a topic flagged ``official_first`` in the job data, ``official_domains`` lists the authority domains
+the registry holds for the topic (chosen by code) and ONE variant is of style ``official``: written in ``language`` (the
+language the country's authorities write in) with that language's intent words. It REPLACES a descriptive variant, so the
+number of searches does not change. The model never chooses the domains; the worker attaches them to the search request.
 """
 
 from __future__ import annotations
@@ -41,6 +46,11 @@ class QueryIn(W):
     round: int
     focus_terms: list[str]  # what is still missing (follow-up rounds)
     seed_names: list[str]  # names from model memory: discovery queries only
+    # the language the topic's authorities write in (rules and official pages), and the intent words in it
+    language: str = "en"
+    official_intent: list[str] = []
+    # authority domains the registry holds for this topic (round one of an official_first topic only), set by code
+    official_domains: list[str] = []
     text: str = ""  # the topic as ONE untrusted block for the prompt (built from the fields above)
 
     @model_validator(mode="after")
@@ -55,6 +65,7 @@ class QueryIn(W):
                 f"Named entity: {self.entity or 'none'}",
                 f"Focus terms (still missing): {', '.join(self.focus_terms)}",
                 f"Seed names from memory: {', '.join(self.seed_names)}",
+                f"Official domains asked for first (written by code): {', '.join(self.official_domains[:8])}",
                 "Earlier queries, do not repeat:",
                 *[f"- {q}" for q in self.earlier],
             ]
@@ -64,7 +75,7 @@ class QueryIn(W):
 
 class Variant(W):
     text: str
-    style: Literal["literal", "descriptive", "local"]
+    style: Literal["literal", "descriptive", "local", "official"]
     language: str
     exact: bool
     seed: bool
@@ -90,7 +101,7 @@ def deterministic_variants(inp: QueryIn) -> QueryOut:
 
     def add(
         text: str,
-        style: Literal["literal", "descriptive", "local"],
+        style: Literal["literal", "descriptive", "local", "official"],
         lang: str,
         exact: bool = False,
         seed: bool = False,
@@ -128,11 +139,30 @@ def deterministic_variants(inp: QueryIn) -> QueryOut:
                 exact=True,
                 seed=True,
             )
+    if inp.official_domains and inp.round == 1:
+        official = official_variant(inp, [v.text for v in out])
+        if official is not None:
+            # it REPLACES the second variant (or comes second when only one was written): the search count never grows
+            keep = [v for v in out if not v.seed]
+            seeds = [v for v in out if v.seed]
+            out = [*keep[:1], official, *keep[2:], *seeds]
     plain = [v for v in out if not v.seed][: max(1, inp.want)]
     seeds = [v for v in out if v.seed][
         :1
     ]  # discovery from a model-memory name: one extra variant at most
     return QueryOut(variants=[*plain, *seeds])
+
+
+def official_variant(inp: QueryIn, earlier: list[str]) -> Variant | None:
+    """The deterministic ``official`` variant: the topic's anchor, the intent words of the authority's language, the word
+    "official" and the place. English when ``language`` is English or no words of that language are known."""
+    anchor = inp.anchors[0] if inp.anchors else ""
+    words = (inp.official_intent or inp.intent[2:4] or inp.intent[:2])[:2]
+    lead = "official " if inp.language == "en" or not inp.official_intent else ""
+    text = _clip(f"{lead}{anchor} {' '.join(words)} {inp.place}".split())
+    if not text or is_repeat(text, [*inp.earlier, *earlier]):
+        return None
+    return Variant(text=text, style="official", language=inp.language, exact=False, seed=False)
 
 
 def handle(inp: QueryIn) -> QueryOut:
@@ -148,7 +178,7 @@ def validate(inp: QueryIn, out: QueryOut) -> list[str]:
 SPEC: ResearchCallSpec[QueryIn, QueryOut] = ResearchCallSpec(
     spec=CallSpec(
         id=CALL_ID,
-        version=1,
+        version=2,
         input_model=QueryIn,
         output_model=QueryOut,
         system_template="queries.system.jinja",

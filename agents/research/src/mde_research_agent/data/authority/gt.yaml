@@ -1,0 +1,7 @@
+# Guatemala. Official sources checked on 2026-11-13 (see pt.yaml for what `fetch` and `verified_on` mean).
+country: gt
+language: es
+entries:
+  - {domain: mintrabajo.gob.gt, topics: [labor, labour, employment, workplace safety, safety, health at work, working hours, incident, inspection], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: sat.gob.gt, topics: [tax, invoice, invoicing, e-invoice, fel, vat], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: sib.gob.gt, topics: [payments, banking, bank, regulation, wallet, supervision], class: official, fetch: blocked, verified_on: 2026-11-13}

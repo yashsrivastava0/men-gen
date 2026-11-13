@@ -1,6 +1,12 @@
-# Source classes: official | store | help | press | blog | forum | seo.
 # Order of rules: authority registry, TLD patterns, documentation subdomains, store domains, then heuristics.
-official_tld_suffixes: [gov, gov.in, nic.in, edu, ac.in, gov.uk, gov.ae, go.ke, gov.sg, gov.au, gouv.fr, europa.eu, int]
+# Source classes: official | official_inferred | store | help | press | blog | forum | seo.
+# `official_inferred` is official BY PATTERN: the host's public suffix looks like a government, an education body or an
+# intergovernmental one, but the domain is not in the authority registry (data/authority). Code decides it, never the model.
+# A pattern is dotted labels matched against the END of the host; `*` is exactly one two-letter label (a country code), so
+# `gov.*` matches gov.in, gov.uk and gov.ae and `go.*` matches go.ke and go.cr but not x.go.com.
+official_suffix_patterns: [gov, "gov.*", "gob.*", "gouv.*", "govt.*", "go.*", nic.in, edu, "edu.*", "ac.*", europa.eu, int]
+# Only where a country code is part of the pattern: the page counts for a topic of THAT country (a Brazilian ministry says
+# nothing official about an Indian rule). Without a country in the topic the pattern alone decides.
 doc_subdomain_prefixes: [docs, developer, developers, api, dev, reference, support-docs]
 help_subdomain_prefixes: [help, support, helpcenter, faq, learn, kb]
 store_domains: [apps.apple.com, play.google.com, appgallery.huawei.com, microsoft.com/store]

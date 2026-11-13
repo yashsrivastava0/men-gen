@@ -79,6 +79,21 @@ class Target(Frozen):
     terms: tuple[str, ...] = ()  # words for passage selection
     domain_restrict: tuple[str, ...] = ()  # read this entity's own site (entity deepening)
     seed_names: tuple[str, ...] = ()  # entity names from model memory: discovery queries only
+    risk: str | None = (
+        None  # regulation | integration | identity | data_protection | payments: kept outside the cap
+    )
+    official_first: bool = (
+        False  # one variant asks for the official pages (data/authority) of the topic
+    )
+    engines: Literal["one", "both"] = (
+        "one"  # both: the topic is also searched on the second provider
+    )
+    country_code: str | None = (
+        None  # a per-country topic (scope country_each) is about this country only
+    )
+    need_key: str | None = (
+        None  # the integration need a provider topic is about (payments, messaging, ...)
+    )
 
 
 class Dropped(Frozen):

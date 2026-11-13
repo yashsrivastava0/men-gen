@@ -20,6 +20,9 @@ priority_bonus:
   request_medium: 4
   generic_entity: -20
   generic_module: -15
+  # An entity the Brief names and a record of it is worth a topic of its own ("what a X record holds"): it outranks the
+  # navigation, roles and module-screen topics so that it runs before them (D-163).
+  brief_entity: 12
   geo_uncertain: 0
   template_request: 0
 # Platform guideline sources: named official documentation, researched as design conventions (restrict to the domain).
@@ -50,3 +53,24 @@ max_extra_targets: 6
 max_discovery_names: 6
 # Terms mixed into a topic's query terms for passage selection, in addition to its anchors and slot terms.
 base_terms_max: 24
+# A provider topic whose need is listed here belongs to that risk class (a template's own `risk:` is the default). Risk
+# classes (regulation, integration, identity, data_protection, payments) are never evicted by the topic cap: a Brief that
+# asks for a regulation, a provider or a payments rule gets it researched (D-163, plan finding 3).
+risk_by_need:
+  payments: payments
+  identity: identity
+  documents_government: regulation
+# Needs whose provider topics are searched on both configured engines when a second one is set (D-163, item 4).
+vendor_needs: [payments, messaging, maps_location, tracking_telematics, identity, accounting]
+# "job:template" ids of topics about ONE app or product the person named. When it has no public footprint, the topic ends
+# `not_found` after two formulations and its required slot no longer counts against the run's required-slot total.
+named_reference_templates: ["features:references"]
+# Measured on the seven recorded runs (about 2.2 searches a topic, about 0.02 USD a topic including its model calls). The
+# preview shows it beside each topic that is not run, so the caps are visibly data-driven.
+topic_cost: {searches: 2.2, usd_micros: 20000}
+# A template with `scope: country_each` is expanded once per country the Brief names, for its best N candidates only (the
+# rest stay one shared topic in the primary country): three countries and eight rule topics are not twenty-four topics.
+per_country_max: 3
+# After round one every discovered provider that a services topic needs (up to `provider_followups` of the load class, see
+# ceilings.yaml) gets one query per phrase here, restricted to its own domain: documentation, pricing and help.
+entity_followup_words: ["documentation api sandbox", "pricing fees", "help center limits"]

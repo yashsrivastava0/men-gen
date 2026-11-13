@@ -85,8 +85,12 @@ def _authority(data_dir: Path) -> tuple[AuthorityEntry, ...]:
     for path in sorted((data_dir / "authority").glob("*.yaml")):
         raw = _yaml(path)
         country = str(raw.get("country", path.stem)).lower()
+        language = raw.get("language")
         for item in raw.get("entries", []):
-            out.append(AuthorityEntry.model_validate({**item, "country": country}))
+            merged: dict[str, Any] = {**item, "country": country}
+            if language and "language" not in merged:
+                merged["language"] = str(language).lower()
+            out.append(AuthorityEntry.model_validate(merged))
     return tuple(out)
 
 
@@ -134,6 +138,16 @@ def _validate(cat_parts: dict[str, Any]) -> None:
     for kind in lanes.high_impact_kinds + lanes.legal_adjacent_kinds:
         if kind not in lanes.kinds:
             problems.append(f"lanes.yaml: unknown kind {kind!r}")
+    known_languages = set(cat_parts["languages"])
+    for entry in cat_parts["authority"]:
+        if entry.language and entry.language not in known_languages:
+            problems.append(
+                f"authority/{entry.country}.yaml: language {entry.language!r} is not in languages.yaml"
+            )
+        if entry.fetch != "ok" and entry.verified_on is None:
+            problems.append(
+                f"authority/{entry.country}.yaml: {entry.domain} is {entry.fetch} but has no verified_on date"
+            )
     if "en" not in labels:
         problems.append("labels/en.yaml is required")
     for lang, lab in labels.items():

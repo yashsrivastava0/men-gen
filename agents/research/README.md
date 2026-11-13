@@ -40,8 +40,8 @@ The test doubles (fake search and fetch, the in-memory store, a scripted gateway
 
 | Path | What |
 | --- | --- |
-| `src/mde_research_agent/core/` | pure code: load score, query anatomy, fusion, passages, quote normalisation and verification, **numbers and dates (RV-18)**, URL safety, source classes and independence, prevalence and recency, norm keys, slots, hashing |
-| `src/mde_research_agent/catalog/`, `data/` | the data files (jobs and slot schemas incl. `trust`, ceilings and the three caps, load rules, **signals**, authority registry, intent words, template patterns, quality thresholds, estimates, eval tasks, provider prices) and their validating loader |
+| `src/mde_research_agent/core/` | pure code: load score, query anatomy, fusion, passages, quote normalisation and verification, **numbers and dates (RV-18)**, URL safety, source classes (registry, public-suffix patterns, `official_inferred`) and independence, currencies, prevalence and recency, norm keys, slots, hashing |
+| `src/mde_research_agent/catalog/`, `data/` | the data files (jobs and slot schemas incl. `trust`, ceilings and the three caps, load rules, **signals**, authority registry (per country: `fetch`, `verified_on`, `language`), currencies and number words, intent words, template patterns, quality thresholds, estimates, eval tasks, provider prices) and their validating loader |
 | `src/mde_research_agent/intake/`, `plan/`, `inputs/` | export reader and trust flags; target plan builder and signals; inputs discovery and the zero-cost preview |
 | `src/mde_research_agent/calls/` | the model calls (plan, queries, gap analyst, extract per job, assemble, check v2, bake-off judge, eval probe and judge): specs, mocks, fallbacks, `templates/*.jinja` |
 | `src/mde_research_agent/engine/` | director, worker, **in-topic checking**, budget, limiters, verification, spend booking |

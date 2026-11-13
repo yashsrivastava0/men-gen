@@ -152,7 +152,11 @@ def entity_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
         Candidate(
             e.name,
             links=Links(entities=(e.id,)),
-            bonus=_bonus(cat, "generic_entity") if " ".join(tokens(e.name)) in generic else 0,
+            bonus=(
+                _bonus(cat, "generic_entity")
+                if " ".join(tokens(e.name)) in generic
+                else _bonus(cat, "brief_entity")
+            ),
         )
         for e in inp.entities
         if e.name
@@ -279,6 +283,8 @@ def rule_topic_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
             tag,
             bonus=min(10, 2 * len(stmts)) + (5 if tag in compliance else 0),
             terms=tuple(dict.fromkeys(w for s in stmts[:3] for w in tokens(s) if len(w) > 4))[:8],
+            # a compliance fact says the Brief is about a regulation: that topic is a risk topic (kept outside the cap)
+            extra={"risk": "regulation"} if tag in compliance else {},
         )
         for tag, stmts in groups.items()
     ]
@@ -292,6 +298,9 @@ def rule_topic_candidates(inp: ResearchInput, cat: Catalog) -> list[Candidate]:
                     bonus=_bonus(cat, "request_high" if r.priority == "high" else "request_medium"),
                     anchors=(short_phrase(r.topic, 5),),
                     label_override=r.shown_to_user_as or None,
+                    extra={
+                        "risk": "regulation"
+                    },  # the person asked for it: a Brief request about rules
                 )
             )
     cands.sort(key=lambda c: (-c.bonus, c.name.casefold()))

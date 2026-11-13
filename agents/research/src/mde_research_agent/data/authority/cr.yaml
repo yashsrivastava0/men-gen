@@ -1,0 +1,8 @@
+# Costa Rica. Official sources checked on 2026-11-13 (see pt.yaml for what `fetch` and `verified_on` mean).
+country: cr
+language: es
+entries:
+  - {domain: mtss.go.cr, topics: [labor, labour, employment, workplace safety, safety, health at work, working hours, incident, inspection], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: ccss.sa.cr, topics: [social security, employer, labor, labour, employees, contributions, health insurance], class: official, fetch: blocked, verified_on: 2026-11-13}
+  - {domain: bccr.fi.cr, topics: [payments, banking, bank, sinpe, wallet, regulation, payment institution], class: official, fetch: ok, verified_on: 2026-11-13}
+  - {domain: prodhab.go.cr, topics: [data protection, privacy, personal data, consent], class: official, fetch: blocked, verified_on: 2026-11-13}

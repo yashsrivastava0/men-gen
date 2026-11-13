@@ -12,7 +12,18 @@ from collections import Counter
 from dataclasses import dataclass
 from typing import Any
 
-CLASS_RANK = {"official": 0, "help": 1, "press": 2, "store": 3, "blog": 4, "forum": 5, "seo": 6}
+# official_inferred ranks with official (it counts as official for the evidence ladder and for confidence); the rest keep
+# their old numbers, which ``confidence_of`` compares against (<= 1 authoritative, <= 3 not a low class)
+CLASS_RANK = {
+    "official": 0,
+    "official_inferred": 0,
+    "help": 1,
+    "press": 2,
+    "store": 3,
+    "blog": 4,
+    "forum": 5,
+    "seo": 6,
+}
 MAX_LIMIT = 200
 
 

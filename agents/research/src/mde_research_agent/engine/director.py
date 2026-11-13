@@ -24,7 +24,9 @@ from mde_research_agent.calls import plan as plan_call
 from mde_research_agent.catalog.models import Catalog
 from mde_research_agent.core.anatomy import is_repeat
 from mde_research_agent.core.slots import Coverage
+from mde_research_agent.core.sources import own_site
 from mde_research_agent.core.text import tokens
+from mde_research_agent.core.urls import registrable_domain
 from mde_research_agent.domain.input import ResearchInput
 from mde_research_agent.domain.plan import Plan, Target
 from mde_research_agent.engine.context import RunContext
@@ -272,10 +274,91 @@ class Director:
     def _remaining(self, open_: list[TargetState]) -> int:
         return sum(ts.slots_required - ts.slots_filled for ts in open_)
 
+    def resolve_entity_domains(self) -> int:
+        """Give every discovered entity its own domain when a search returned it: the domains the searches returned, most
+        often returned first, are matched against EVERY entity of the run with ``own_site`` (not only the entity of the
+        topic that asked, which a provider topic never has). Returns how many entities got a domain now."""
+        ctx = self.ctx
+        counts: dict[str, int] = {}
+        for q in ctx.queries:
+            for dom in {registrable_domain(u) for u in q.urls}:
+                if dom:
+                    counts[dom] = counts.get(dom, 0) + 1
+        ordered = sorted(counts, key=lambda d: (-counts[d], d))
+        found = 0
+        for ent in ctx.entities.values():
+            if ent.domain:
+                continue
+            dom = next((d for d in ordered if own_site(ent.name, d)), None)
+            if dom:
+                ent.domain = dom
+                found += 1
+        return found
+
+    async def _provider_followups(self) -> None:
+        """After round one, for each discovered provider a services topic needs (up to ``provider_followups`` of the load
+        class): documentation, pricing and help queries RESTRICTED to the provider's own domain, read as part of the topic
+        that found it. Covered topics follow up too: a covered topic only means its slot is filled, not that the provider's
+        own pages were read. The searches and pages count against the run's ceilings like any other (``try_search``,
+        ``try_page``); the gap analyst's follow-ups after this are unchanged."""
+        ctx = self.ctx
+        load = ctx.input.load.load_class if ctx.input.load else "standard"
+        cap = ctx.catalog.ceilings.for_class(load).provider_followups
+        words = ctx.catalog.plan.entity_followup_words
+        if cap <= 0 or not words:
+            return
+        self.resolve_entity_domains()
+        services = [
+            ts
+            for ts in ctx.targets.values()
+            if ts.target.job == "services" and ts.status != "cancelled"
+        ]
+        ranked = sorted(
+            (e for e in ctx.entities.values() if e.kind == "provider" and e.domain),
+            key=lambda e: (-len(e.target_ids), e.name.casefold()),
+        )
+        by_topic: dict[str, list[EntityRecord]] = {}
+        for ent in ranked[:cap]:
+            owner = next(
+                (
+                    ts
+                    for ts in sorted(services, key=lambda s: s.target.id)
+                    if ts.target.id in ent.target_ids
+                ),
+                None,
+            )
+            if owner is not None:
+                by_topic.setdefault(owner.target.id, []).append(ent)
+        if not by_topic:
+            return
+        pages = ctx.catalog.ceilings.pages_per_topic.max
+
+        async def one_topic(topic_id: str, ents: list[EntityRecord]) -> None:
+            ts = ctx.targets[topic_id]
+            for ent in ents:
+                if not ctx.active():
+                    return
+                queries = [
+                    FollowupQuery(
+                        f"{ent.name} {w}",
+                        "en",
+                        False,
+                        ent.domain,
+                        False,
+                        "literal",
+                    )
+                    for w in words
+                ]
+                await run_topic(ctx, ts, 1, followups=queries, pages=pages, per_domain=pages)
+                ctx.count("provider_followups")
+
+        await asyncio.gather(*[one_topic(tid, ents) for tid, ents in by_topic.items()])
+
     async def _gap_followups(
         self, open_: list[TargetState], round_no: int
     ) -> dict[str, list[FollowupQuery]]:
         ctx = self.ctx
+        self.resolve_entity_domains()
         cap = ctx.budget.hard.followups_per_topic
         topics: list[gap_call.GapTopic] = []
         entity_domains: dict[str, dict[int, str | None]] = {}
@@ -360,7 +443,11 @@ class Director:
                     for ts in ctx.targets.values()
                 ]
             )
+            if ctx.active() and not ctx.provider_down:
+                await self._provider_followups()
             open_ = await self._audit(1)
+            open_ = await self._end_no_footprint(open_, 1)
+            self._last_gain = self._filled() / max(1, self._required())
             if ctx.verified_count() == 0 and budget.searches_used >= 4 and not ctx.provider_down:
                 # nothing came back for ANY topic: a broken provider or locale, not a niche idea. Stop and say so.
                 await ctx.warn("no_results")
@@ -383,7 +470,7 @@ class Director:
             while open_ and ctx.active() and round_no < budget.hard.rounds:
                 if round_no >= max_rounds and not self._improving():
                     break
-                if budget.time_up_soft() and not self._improving():
+                if self._time_stop():
                     break
                 if budget.exhausted():
                     ctx.budget_stopped = True
@@ -427,6 +514,7 @@ class Director:
                     ]
                 )
                 open_ = await self._audit(round_no)
+                open_ = await self._end_no_footprint(open_, round_no)
                 gained = self._filled() - filled_before
                 await ctx.events.emit(
                     "round.completed",
@@ -460,7 +548,59 @@ class Director:
     _last_gain: float = 1.0
 
     def _improving(self) -> bool:
+        """The last round filled at least ``min_round_gain`` of what was still missing (round one: of all the required
+        slots). Past the soft time a run keeps going, up to the hard time, only while this holds."""
         return self._last_gain >= self.ctx.catalog.ceilings.min_round_gain
+
+    def _time_stop(self) -> bool:
+        """Past the soft time the run stops unless the last round still paid; then it goes on up to the hard time (the
+        time watch drains at that limit). A run that never passed the soft time is not asked."""
+        return self.ctx.budget.time_up_soft() and not self._improving()
+
+    async def _end_no_footprint(self, open_: list[TargetState], round_no: int) -> list[TargetState]:
+        """A topic about ONE named thing (``plan.named_reference_templates``) that has been searched in two formulations and
+        found nothing at all ends ``not_found`` now and leaves the required-slot gate: it is a thing with no public footprint,
+        not a run that failed. Topics stopped by a budget, the provider or a skip are not touched (they are ``partial``)."""
+        ctx = self.ctx
+        named = set(ctx.catalog.plan.named_reference_templates)
+        if (
+            not named
+            or ctx.budget_stopped
+            or ctx.drain
+            or ctx.provider_down
+            or ctx.run_cancel.cancelled
+        ):
+            return open_
+        rest: list[TargetState] = []
+        for ts in open_:
+            t = ts.target
+            if (
+                f"{t.job}:{t.template_id}" in named
+                and not ts.verified
+                and ts.reason != "budget_stop"
+                and len({q.casefold() for q in ts.queries}) >= 2
+            ):
+                ts.status = "not_found"
+                ts.reason = "no_public_footprint"
+                ts.gate_excluded = True
+                update_coverage(ts)
+                await ctx.events.emit(
+                    "target.not_found",
+                    target_id=t.id,
+                    round_=round_no,
+                    phase="audit",
+                    params={"topic": t.label},
+                    detail={
+                        "job": t.job,
+                        "slots_filled": 0,
+                        "slots_required": 0,
+                        "queries": ts.queries[-6:],
+                        "topic": t.label,
+                    },
+                )
+            else:
+                rest.append(ts)
+        return rest
 
     def _filled(self) -> int:
         return sum(ts.slots_filled for ts in self.ctx.targets.values())

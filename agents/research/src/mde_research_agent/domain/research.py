@@ -18,7 +18,9 @@ from pydantic import BaseModel, ConfigDict, Field
 SCHEMA = "research.v5"
 Status = Literal["complete", "partial", "failed", "skipped"]
 Level = Literal["core", "common", "advanced", "emerging", "limited_evidence"]
-SourceClass = Literal["official", "store", "help", "press", "blog", "forum", "seo"]
+SourceClass = Literal[
+    "official", "official_inferred", "store", "help", "press", "blog", "forum", "seo"
+]
 Impact = Literal["normal", "high"]
 Confidence = Literal["high", "medium", "low"]
 Trend = Literal["stable", "rising", "declining", "unknown"]

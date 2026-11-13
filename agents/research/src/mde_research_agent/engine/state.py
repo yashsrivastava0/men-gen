@@ -123,8 +123,11 @@ class TargetState:
     slots_filled: int = 0
     cancel: CancellationToken = field(default_factory=CancellationToken)
     reason: str | None = (
-        None  # why not covered: not_found | budget_stop | provider_down | user_cancelled
+        None  # why not covered: not_found | budget_stop | provider_down | user_cancelled | no_public_footprint
     )
+    # A named thing with no public footprint (searched twice, nothing found) is a finding, not a failure: it stays a gap
+    # (``not_found``) but its required slots no longer count against the run's required-slot total.
+    gate_excluded: bool = False
 
     @property
     def verified(self) -> list[AtomRecord]:

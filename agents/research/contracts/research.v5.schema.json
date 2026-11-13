@@ -1241,6 +1241,7 @@
         "source_class": {
           "enum": [
             "official",
+            "official_inferred",
             "store",
             "help",
             "press",

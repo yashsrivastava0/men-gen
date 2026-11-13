@@ -194,6 +194,7 @@ async def run_engine(
     watch_interval: float = 0.01,
     search_port=None,
     fetch_port=None,
+    second_search=None,
 ) -> EngineRun:
     """Plan, run, assemble and validate one run in process (no HTTP, no store) over fakes."""
     cat = load_catalog()
@@ -227,6 +228,7 @@ async def run_engine(
         checker_vendor=checker_vendor,
         sleep=sleep or no_sleep,
         ceilings_override=ceilings,
+        second_search=second_search,
     )
     director = Director(ctx)
     director.watch_interval = watch_interval

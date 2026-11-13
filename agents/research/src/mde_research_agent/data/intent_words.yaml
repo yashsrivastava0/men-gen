@@ -20,6 +20,15 @@ languages:
   sw:
     reviewed: false
     words: [vipengele, skrini, hatua, ada, bei, kamisheni, sheria, kanuni, mipaka, muundo, ulinganisho, mahitaji, jinsi, malipo, nyaraka, huduma]
+  fr:
+    reviewed: false
+    words: [fonctionnalités, écrans, parcours, étapes, frais, tarifs, tarif, commission, règles, règlement, réglementation, loi, obligations, conditions, documentation, limites, plafonds, délais, sanctions, exigences, conformité, protection, données, consentement, conservation, formats, validation, paiement, paiements, déclaration, licence, autorisation, agrément]
+  pt:
+    reviewed: false
+    words: [funcionalidades, ecrãs, ecrã, fluxo, passos, taxas, taxa, preços, preço, comissão, regras, regulamento, regulamentação, lei, obrigações, requisitos, documentação, limites, prazos, coimas, sanções, conformidade, proteção, dados, consentimento, conservação, formatos, validação, pagamento, pagamentos, declaração, licença, autorização]
+  es:
+    reviewed: false
+    words: [funcionalidades, pantallas, flujo, pasos, tarifas, tarifa, precios, precio, comisión, comisiones, reglas, reglamento, regulación, ley, obligaciones, requisitos, documentación, límites, plazos, sanciones, multas, cumplimiento, protección, datos, consentimiento, conservación, formatos, validación, pago, pagos, declaración, licencia, autorización, permiso]
 # Words that make a query useless on their own (category-only words, filler). A query whose only
 # distinctive terms come from this list has no anchor.
 generic_words: [app, apps, application, applications, software, mobile, android, ios, platform, system, solution, solutions, best, top, good, new, the, a, an, for, of, in, and, or, to, with, using, how, what, which, is, are]

@@ -7,6 +7,8 @@
 #             sending a value Tavily would reject with a 400. Fill `name` in once it is checked against the spec.
 #   label:    the display name when `name` is null (English, lowercase). Defaults to `name`.
 #   tld:      the country-code top-level domain, without the dot (used to prefer local sites).
+#   bloc:     a legal bloc the country belongs to (`eu`): the bloc's authority file (authority/eu.yaml) applies to its
+#             members too.
 #   language: ISO 639-1 code of the main language of the country's consumer web, used only when nothing else
 #             says which language to search in (a language chosen in the session always wins). English where
 #             English is the everyday language of local business content on the web.
@@ -35,25 +37,25 @@ cn: {name: china, tld: cn, language: zh}
 au: {name: australia, tld: au, language: en}
 nz: {name: new zealand, tld: nz, language: en}
 ca: {name: canada, tld: ca, language: en}
-ie: {name: ireland, tld: ie, language: en}
-de: {name: germany, tld: de, language: de}
-fr: {name: france, tld: fr, language: fr}
-es: {name: spain, tld: es, language: es}
-it: {name: italy, tld: it, language: it}
-nl: {name: netherlands, tld: nl, language: nl}
-be: {name: belgium, tld: be, language: nl}
-pt: {name: portugal, tld: pt, language: pt}
+ie: {name: ireland, tld: ie, language: en, bloc: eu}
+de: {name: germany, tld: de, language: de, bloc: eu}
+fr: {name: france, tld: fr, language: fr, bloc: eu}
+es: {name: spain, tld: es, language: es, bloc: eu}
+it: {name: italy, tld: it, language: it, bloc: eu}
+nl: {name: netherlands, tld: nl, language: nl, bloc: eu}
+be: {name: belgium, tld: be, language: nl, bloc: eu}
+pt: {name: portugal, tld: pt, language: pt, bloc: eu}
 ch: {name: switzerland, tld: ch, language: de}
-at: {name: austria, tld: at, language: de}
-se: {name: sweden, tld: se, language: sv}
+at: {name: austria, tld: at, language: de, bloc: eu}
+se: {name: sweden, tld: se, language: sv, bloc: eu}
 "no": {name: norway, tld: "no", language: "no"}  # quoted: a bare `no` is a YAML boolean
-dk: {name: denmark, tld: dk, language: da}
-fi: {name: finland, tld: fi, language: fi}
-pl: {name: poland, tld: pl, language: pl}
-cz: {name: czech republic, tld: cz, language: cs}
-hu: {name: hungary, tld: hu, language: hu}
-ro: {name: romania, tld: ro, language: ro}
-gr: {name: greece, tld: gr, language: el}
+dk: {name: denmark, tld: dk, language: da, bloc: eu}
+fi: {name: finland, tld: fi, language: fi, bloc: eu}
+pl: {name: poland, tld: pl, language: pl, bloc: eu}
+cz: {name: czech republic, tld: cz, language: cs, bloc: eu}
+hu: {name: hungary, tld: hu, language: hu, bloc: eu}
+ro: {name: romania, tld: ro, language: ro, bloc: eu}
+gr: {name: greece, tld: gr, language: el, bloc: eu}
 tr: {name: turkey, tld: tr, language: tr}
 ua: {name: ukraine, tld: ua, language: uk}
 ru: {name: russia, tld: ru, language: ru}

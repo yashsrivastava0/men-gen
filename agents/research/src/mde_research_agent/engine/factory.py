@@ -38,6 +38,7 @@ def new_context(
     checker_vendor: str = "none",
     sleep: Callable[[float], Awaitable[None]] | None = None,
     ceilings_override: dict[str, dict[str, int]] | None = None,
+    second_search: SearchPort | None = None,
 ) -> RunContext:
     rid = run_id or ids.new("rrn")
     klass = inp.load.load_class if inp.load else "standard"
@@ -60,6 +61,10 @@ def new_context(
         inp.private
     ):  # the last line of the privacy guard (the first is the query gate in engine/worker.py)
         search = GuardedSearch(search, inp.private, on_block=failures.count_private)
+        if second_search is not None:
+            second_search = GuardedSearch(
+                second_search, inp.private, on_block=failures.count_private
+            )
     holder: dict[str, RunContext] = {}
     writer = EventWriter(
         rid,
@@ -88,6 +93,7 @@ def new_context(
         lanes_search=soft.lanes_search,
         lanes_extract=soft.lanes_extract,
         checker_vendor=checker_vendor,
+        second_search=second_search,
         **({"sleep": sleep} if sleep else {}),  # type: ignore[arg-type]
     )
     holder["ctx"] = ctx

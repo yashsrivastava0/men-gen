@@ -55,6 +55,9 @@ class RunContext:
     run_cancel: CancellationToken
     lanes_search: int = 6
     lanes_extract: int = 8
+    # The OTHER configured search provider (the failover's second one), or None. Topics flagged ``engines: both`` send one
+    # extra query to it and fuse the two lists (engine/worker.py ``search_second``). Never used for anything else.
+    second_search: SearchPort | None = None
     sleep: Callable[[float], Awaitable[None]] = asyncio.sleep
     targets: dict[str, TargetState] = field(default_factory=dict)
     pages: dict[str, PageRecord] = field(default_factory=dict)

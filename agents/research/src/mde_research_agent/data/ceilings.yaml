@@ -4,23 +4,35 @@
 # 0.05 of a search (one extraction call), so the hard page ceiling must let every planned topic read its pages_per_topic.max
 # in round one and still leave room for round two; the loader refuses data that does not (the Small run of 2026-11-11
 # ran out of pages at 40 with ten topics, starved a topic and paid seven searches that could read nothing).
+# `targets` (soft) is the cap on the topics that are NOT of a risk class. Topics of a risk class (regulation, integrations,
+# identity, data protection, payments: `risk:` in data/jobs and plan.yaml `risk_by_need`) run outside that cap, as many as the
+# Brief asks for; `risk_topics` is only a safety valve for a Brief that asks for far too many, set so that cap + valve topics
+# still get about 1.6 round-one searches each from the 70% pool the director spends first (0.7 x hard searches / 1.6 - targets:
+# focused 28 / 1.6 - 12 = 5, standard 67 / 1.6 - 24 = 18, deep 119 / 1.6 - 38 = 36). A risk topic past the valve competes under
+# the cap like any other. D-163: Small 12, Medium 24, Big 38 topics; searches and pages as set here.
 # The three caps (store_tokens, chunk_items, digest_tokens) replace the old silent size cap: items above the store limit
 # move to an appendix, none is deleted.
 focused:
-  soft: {searches: 20, pages: 32, seconds: 180, rounds: 2, lanes_search: 6, lanes_extract: 8, targets: 10, followups_per_topic: 2}
-  hard: {searches: 32, pages: 64, seconds: 330, rounds: 3, followups_per_topic: 3}
+  soft: {searches: 28, pages: 44, seconds: 180, rounds: 2, lanes_search: 6, lanes_extract: 8, targets: 12, followups_per_topic: 2}
+  hard: {searches: 40, pages: 64, seconds: 330, rounds: 3, followups_per_topic: 3}
+  risk_topics: 5
+  provider_followups: 3
   store_tokens: 40000
   chunk_items: 120
   digest_tokens: 4000
 standard:
-  soft: {searches: 40, pages: 60, seconds: 360, rounds: 3, lanes_search: 8, lanes_extract: 12, targets: 16, followups_per_topic: 2}
-  hard: {searches: 64, pages: 96, seconds: 600, rounds: 3, followups_per_topic: 3}
+  soft: {searches: 64, pages: 90, seconds: 360, rounds: 3, lanes_search: 8, lanes_extract: 12, targets: 24, followups_per_topic: 2}
+  hard: {searches: 96, pages: 130, seconds: 600, rounds: 3, followups_per_topic: 3}
+  risk_topics: 18
+  provider_followups: 5
   store_tokens: 40000
   chunk_items: 120
   digest_tokens: 7000
 deep:
-  soft: {searches: 80, pages: 140, seconds: 600, rounds: 3, lanes_search: 10, lanes_extract: 16, targets: 26, followups_per_topic: 2}
-  hard: {searches: 120, pages: 210, seconds: 960, rounds: 4, followups_per_topic: 3}
+  soft: {searches: 120, pages: 170, seconds: 600, rounds: 3, lanes_search: 10, lanes_extract: 16, targets: 38, followups_per_topic: 2}
+  hard: {searches: 170, pages: 230, seconds: 960, rounds: 4, followups_per_topic: 3}
+  risk_topics: 36
+  provider_followups: 8
   store_tokens: 40000
   chunk_items: 120
   digest_tokens: 11000
