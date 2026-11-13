@@ -185,14 +185,14 @@ export function mount(root, ctx) {
           typeof row.on_topic_share === "number"
             ? (row.on_topic_share * 100).toFixed(1) + "%"
             : typeof row.ontopic_share === "number"
-            ? (row.ontopic_share * 100).toFixed(1) + "%"
-            : "–";
+              ? (row.ontopic_share * 100).toFixed(1) + "%"
+              : "–";
         const speed =
           typeof row.latency_ms_mean === "number"
             ? (row.latency_ms_mean / 1000).toFixed(2) + " s"
             : typeof row.avg_latency_s === "number"
-            ? row.avg_latency_s.toFixed(2) + " s"
-            : "–";
+              ? row.avg_latency_s.toFixed(2) + " s"
+              : "–";
         const cost = row.total_cost_usd ? "USD " + row.total_cost_usd : row.cost_usd ? "USD " + row.cost_usd : "–";
 
         return h(

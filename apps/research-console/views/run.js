@@ -267,10 +267,10 @@ export function mount(root, ctx, params) {
         state.status === "complete"
           ? "All planned topics are complete and verified. Findings are saved in the result."
           : state.status === "partial"
-          ? "Finished with gaps. Some topics could not be completed; verified findings are saved."
-          : state.status === "skipped"
-          ? "Stopped early. Research was skipped; findings verified so far are saved."
-          : "Run ended (" + runWord(state.status) + ").";
+            ? "Finished with gaps. Some topics could not be completed; verified findings are saved."
+            : state.status === "skipped"
+              ? "Stopped early. Research was skipped; findings verified so far are saved."
+              : "Run ended (" + runWord(state.status) + ").";
       setText(ui.now, summaryText);
       ui.now.hidden = false;
       setText(ui.nowNote, "");
