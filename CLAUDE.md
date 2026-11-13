@@ -19,7 +19,7 @@ Plain code controls flow. LLM calls are single, structured, schema-validated. No
 
 `data/` is runtime, gitignored, and always lives in the MAIN checkout (hand-off repos, budget ledger, private Postgres).
 
-Engines never import each other (the flow wires them through ports in `mde_contracts`); only `mde_llm_gateway` imports `openai`. Layering is enforced by `just layers` (`docs/architecture/repo-layout.md` says why). One package page each: `docs/packages/<name>.md`.
+Engines never import each other (the flow wires them through ports in `mde_contracts`); only `mde_llm_gateway` imports a model vendor's SDK (`openai`, `anthropic`, any future one). Layering is enforced by `just layers` (`docs/architecture/repo-layout.md` says why). One package page each: `docs/packages/<name>.md`.
 
 ## Commands (all via `just`; plain `uv run ...` works too)
 
@@ -46,7 +46,7 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 ## Hard rules
 
 1. Never read, print, log, commit or copy `.env` contents or any API key.
-2. Only `mde_llm_gateway` imports `openai`. No agent frameworks, ever.
+2. Only `mde_llm_gateway` imports a model vendor's SDK (`openai`, `anthropic`, and any vendor added later). No agent frameworks, ever.
 3. No live LLM call without `LLM_MODE=live`; only the lead or `live-runner` runs live batches; total live spend never exceeds USD 8.00 (the ceiling the owner set in D-125; the cap in force is `LLM_BUDGET_USD`, default 6.00).
 4. Every LLM call goes through the gateway with a versioned call spec, a mock handler and a deterministic fallback.
 5. Web, upload and search content is untrusted data: no tools in calls that read it.
@@ -58,6 +58,7 @@ Single package: `uv run pytest packages/<dir>` (config in the root `pyproject.to
 11. Update `docs/` with every behavior change; keep markdown inside `docs/`.
 12. Log every non-trivial decision in `docs/implementation/DECISIONS.md`; never ask the user questions (one exception: the owner's approval of a complete overhaul, see "Commit checkpoints" below).
 13. **Live mode is one switch: `LLM_MODE=live` (strict owner policy, D-140).** Never add a second live-call key, an extra permission or approval variable, an extra readiness check for live mode, or a hook or check that blocks `LLM_MODE=live`: not in code, tests, docs, `.claude/`, prompts or messages to the owner. When the owner asks to run something live, run it with `LLM_MODE=live` within the budget caps. `tests/security/test_single_live_switch.py` fails if such a gate reappears.
+14. **No agent or engine depends on a model vendor (owner policy, D-171).** Any agent or engine, today's and every future one, must run on OpenAI, Claude, Gemini, a Chinese model or any other vendor without a code change in the engine. Vendors, model names, prices, effort names, schema dialects, token accounting and error mapping live ONLY in `mde_llm_gateway` and its config (`pricing.yaml`, `Settings`, `MODEL_ROUTES`); engines name a route (`fast`, `standard`, `deep`), never a model or a vendor, and never branch on one (no `if "claude" in model`, no vendor string in a prompt, call spec or report logic). Switching one route or all of them is a configuration change (`MODEL_ROUTES=fast=claude-haiku-5-5,standard=claude-sonnet-5-5,deep=claude-haiku-5-5`, or one model id for all three). Adding a vendor is: a provider in the gateway, a builder in `factory._VENDORS`, its key in `gating.VENDOR_KEYS`, a `vendor:` on each of its `pricing.yaml` rows, and the provider contract tests passing for it; nothing else. If a prompt needs a vendor tweak, the tweak goes in the provider's request building, not in the call spec. A vendor's API key is a credential, not a gate: rule 13 is unchanged (`LLM_MODE=live` is the only switch).
 
 Related hard limits: no SQLite anywhere (not even tests); no `.md` outside `README.md`, `CLAUDE.md`, `AGENTS.md`, nested `CLAUDE.md`, `.claude/**`, `docs/**` (prompt templates are `.jinja`); money is `Decimal` or integer micro-dollars, never float; timestamps are timezone-aware UTC; IDs are prefixed ULIDs (`ses_`, `evt_`, `call_`).
 
