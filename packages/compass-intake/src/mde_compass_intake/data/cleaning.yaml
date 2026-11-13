@@ -1,0 +1,35 @@
+# Words the Spec intake uses to grade and clean a Compass export. Content lives here, not in code (hard rule 8).
+
+# Provenance types that are the person's own words (a quote under one of these can make a value Locked).
+user_provenance_types: [user_text, user_tap, document]
+
+# A Locked value below this confidence is graded Default (doc 15 section 3.4).
+min_confidence: 0.7
+
+# The values a clean export uses; anything else is an "enum_changed" drift flag, never an error.
+priorities: [must, nice, later]
+scope_statuses: [in, later, out]
+tiers: [locked, default, open]
+
+# Role and app names that are junk: a heading or a placeholder, not a person or a product.
+junk_role_names: [role, roles, user, users, people, person, everyone, other, others, misc, tbd, unknown, test, n/a, none]
+junk_app_names: [app, apps, application, the app, my app, test, tbd, unknown, n/a, none]
+
+# A role named with one of these words is really the name of an app ("Fleet maintenance screens").
+app_name_words: [screens]
+
+# When the Brief has no usable role: derive roles from the audience, else from the features (marked assumed).
+derived_role_prefix: "ROL-S"
+default_role_name: User
+admin_role_name: Administrator
+admin_cues: [manage, admin, approve, approval, moderate, review, report, dashboard, configure]
+
+# Fact kinds that are rules, numbers and limits (the "rules_and_numbers" of doc 15 section 3.1).
+rule_fact_kinds: [rule, number, compliance, nfr, constraint]
+
+# "All or most priorities nice" (SPC-IN-08): at least this many features, at least this share of them nice.
+mostly_nice_min_features: 3
+mostly_nice_share: 0.75
+
+# Slot-value junk that leaks into open questions (never read as content); same list as Research.
+junk_open_question_tokens: [pilot_small, pilot_medium, pilot_large, scale_small, scale_large]
