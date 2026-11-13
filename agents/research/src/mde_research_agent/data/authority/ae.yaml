@@ -1,5 +1,6 @@
 # United Arab Emirates. Seed; confirm before relying on it.
 country: ae
+language: en
 entries:
   - {domain: u.ae, topics: [government services, regulations], class: official}
   - {domain: centralbank.ae, topics: [payments, banking, regulation, wallet], class: official}

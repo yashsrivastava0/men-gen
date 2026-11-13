@@ -138,11 +138,16 @@ async def test_fields_the_page_does_not_state_are_nulled_and_an_item_below_its_m
             ]
         )
 
+    # the Medium plan has about three times the topics it had: a mock web that never fills a slot would use up the search
+    # ceiling before the last items are checked, and an item the budget stop left unchecked is kept (flagged), not dropped
     run2 = await run_engine(
         load_fixture(STANDARD),
         overrides={"rsch.extract.data": rule_extractor(), "rsch.check": drop_all},
+        ceilings={"hard": {"searches": 600, "pages": 900}},
     )
-    assert not [i for i in run2.research["items"] if i["kind"] == "rule"]
+    # only the data job's rules come from the scripted extractor (the Medium plan now also runs trust topics, whose rules do
+    # not carry these fields)
+    assert not [i for i in run2.research["items"] if i["kind"] == "rule" and i["job"] == "data"]
     assert run2.research["dropped"]["unsupported_field"] >= 1
 
 

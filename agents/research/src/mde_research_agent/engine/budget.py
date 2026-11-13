@@ -71,6 +71,9 @@ class RunBudget:
         self._clock = clock
         self._t0 = clock.monotonic()
         self.searches_used = 0
+        # Extra queries sent to the second engine on both-engine topics. They are NOT admitted against the search ceiling
+        # (the pair counts as one search, the one the first engine's admission already counted) but their cost is booked.
+        self.second_searches = 0
         self.pages_read = 0  # pages admitted and not refunded: what counts against the hard ceiling
         self.page_attempts = 0  # every admission, refunded or not
         self.llm_micros = 0
@@ -113,6 +116,11 @@ class RunBudget:
         micros = max(0, micros)
         self.llm_micros += micros
         self._booked(step, micros)
+
+    def add_second_search_cost(self, micros: int, provider: str) -> None:
+        """Book the cost of the second engine's query of a both-engine pair (counted once as a search, paid twice)."""
+        self.second_searches += 1
+        self.add_search_cost(micros, provider)
 
     def add_search_cost(self, micros: int, provider: str) -> None:
         micros = max(0, micros)

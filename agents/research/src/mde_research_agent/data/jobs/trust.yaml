@@ -22,8 +22,10 @@ targets:
     decision_unlocked: "Consent, data-subject rights, retention and breach-notice requirements"
     needs: [current, number]
     priority: 45
+    risk: data_protection
+    official_first: true
     anchor: category
-    scope: country
+    scope: country_each
     slots:
       - {key: law, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
   - id: store_disclosure
@@ -35,6 +37,7 @@ targets:
     decision_unlocked: "The privacy and data-safety declaration the app must publish"
     needs: [current, norm]
     priority: 45
+    official_first: true
     anchor: platform
     place: global
     slots:
@@ -59,8 +62,10 @@ targets:
     decision_unlocked: "What the payment integration must and must not store"
     needs: [current, number]
     priority: 45
+    risk: payments
+    official_first: true
     anchor: category
-    scope: country
+    scope: country_each
     slots:
       - {key: payment_security, type: count, kind: compliance_note, distinct_by: norm_key, min: 1, required: false}
       - {key: payment_providers, type: count, kind: service_option, distinct_by: norm_key, min: 1, required: false}

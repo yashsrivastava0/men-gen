@@ -82,9 +82,14 @@ def request_rows(inp: ResearchInput, plan: Plan) -> list[dict[str, Any]]:
     return rows
 
 
-def not_run_rows(plan: Plan) -> list[dict[str, Any]]:
-    """Topics that were planned but are not run at this size, each with its rank and a one-line reason."""
+def not_run_rows(
+    plan: Plan, catalog: Catalog, load_class: str = "standard"
+) -> list[dict[str, Any]]:
+    """Topics that were planned but are not run at this size, each with its rank, a one-line reason and what running it
+    would cost (``plan.topic_cost`` in the data: searches and USD), so the caps are visibly data-driven."""
     total = len(plan.targets) + len(plan.unrun)
+    cost = catalog.plan.topic_cost
+    cap = catalog.ceilings.for_class(load_class).soft.targets  # type: ignore[arg-type]
     return [
         {
             "id": t.id,
@@ -93,12 +98,29 @@ def not_run_rows(plan: Plan) -> list[dict[str, Any]]:
             "priority": t.priority,
             "requests": list(t.links.requests),
             "reason": "over_cap",
-            "text": _text(
-                "not_run", "", rank=len(plan.targets) + i, total=total, cap=len(plan.targets)
-            ),
+            "est_searches": cost.searches,
+            "est_usd_micros": cost.usd_micros,
+            "text": _text("not_run", "", rank=len(plan.targets) + i, total=total, cap=cap),
         }
         for i, t in enumerate(plan.unrun, start=1)
     ]
+
+
+def not_run_cost(plan: Plan, catalog: Catalog) -> dict[str, Any]:
+    """What running every topic that is not run would add: the sum of the per-topic estimates."""
+    cost = catalog.plan.topic_cost
+    n = len(plan.unrun)
+    return {
+        "topics": n,
+        "est_searches": round(n * cost.searches, 1),
+        "est_usd_micros": n * cost.usd_micros,
+    }
+
+
+def risk_topics(plan: Plan) -> dict[str, Any]:
+    """The topics kept outside the cap because they belong to a risk class, by class (the Brief decides how many)."""
+    by_class = Counter(t.risk for t in plan.targets if t.risk)
+    return {"total": sum(by_class.values()), "by_class": dict(sorted(by_class.items()))}
 
 
 def compass_info(data: dict[str, Any]) -> dict[str, Any]:
@@ -196,9 +218,12 @@ def build_preview(
                 job: {"count": len(labels), "labels": labels} for job, labels in by_job.items()
             },
             "not_run": [t.label for t in plan.unrun],
+            "cap": catalog.ceilings.for_class(klass).soft.targets,
         },
         "declined": list(inp.declined),
-        "not_run": not_run_rows(plan),
+        "not_run": not_run_rows(plan, catalog, klass),
+        "not_run_cost": not_run_cost(plan, catalog),
+        "risk_topics": risk_topics(plan),
         "dropped": [
             {
                 "label": d.label,

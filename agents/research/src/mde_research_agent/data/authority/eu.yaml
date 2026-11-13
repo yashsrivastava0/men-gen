@@ -1,0 +1,6 @@
+# European Union. These entries apply to every country that belongs to the bloc (`bloc: eu` in countries.yaml) as well as to a
+# Brief that names the EU itself. Checked on 2026-11-13 (see pt.yaml for what `fetch` and `verified_on` mean).
+country: eu
+language: en
+entries:
+  - {domain: eur-lex.europa.eu, topics: [regulation, directive, law, legislation, gdpr, data protection, privacy, payments, psd2, vat, e-invoice, consumer protection, eprivacy], class: official, fetch: ok, verified_on: 2026-11-13}

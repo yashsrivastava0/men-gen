@@ -1,5 +1,8 @@
 Job: {{ job }}
 Round: {{ round }}
+Official variant language: {{ language }}
+Intent words in that language: {{ official_intent | join(", ") }}
+Official domains (set by code): {{ official_domains | join(", ") }}
 Languages to also search in: {{ languages | join(", ") }}
 Intent words in that language: {{ local_intent | join(", ") }}
 Intent words (English): {{ intent | join(", ") }}

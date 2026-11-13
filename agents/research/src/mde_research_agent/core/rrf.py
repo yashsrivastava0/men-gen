@@ -22,6 +22,7 @@ class FusedHit:
     hit: SearchHit  # the richest copy (one with page content, else the best ranked)
     score: float
     lists: int  # how many result lists contained it
+    engines: int = 1  # how many search engines (providers) returned it (``fuse_engines``)
 
 
 def _richer(hit: SearchHit) -> tuple[int, int, str, str]:
@@ -52,3 +53,33 @@ def fuse(results: Sequence[Sequence[SearchHit]], *, k: int = RRF_K) -> list[Fuse
                 best[url] = hit
     ordered = sorted(scores, key=lambda u: (-round(scores[u], 12), u))
     return [FusedHit(u, best[u], round(scores[u], 12), seen_in[u]) for u in ordered]
+
+
+def fuse_engines(
+    per_engine: Sequence[Sequence[Sequence[SearchHit]]], *, k: int = RRF_K
+) -> list[FusedHit]:
+    """Fuse the results of several search ENGINES so that agreement between engines counts.
+
+    ``per_engine[i]`` holds the result lists engine ``i`` returned (one per query variant it was asked). Each engine's lists
+    are fused first and its scores are averaged over its own lists, so an engine that was asked three variants does not
+    outweigh one that was asked one; the engines' scores are then ADDED. A page both engines return therefore scores about
+    twice a page only one of them returns at the same rank, whatever the number of variants each was asked. One engine gives
+    the same order as ``fuse``. Pure and deterministic (scores rounded, ties by URL).
+    """
+    live = [lists for lists in per_engine if lists]
+    if len(live) <= 1:
+        return fuse(live[0], k=k) if live else []
+    score: dict[str, float] = {}
+    lists_in: dict[str, int] = {}
+    engines_in: dict[str, int] = {}
+    best: dict[str, SearchHit] = {}
+    for lists in live:
+        for fh in fuse(lists, k=k):
+            score[fh.url] = score.get(fh.url, 0.0) + fh.score / len(lists)
+            lists_in[fh.url] = lists_in.get(fh.url, 0) + fh.lists
+            engines_in[fh.url] = engines_in.get(fh.url, 0) + 1
+            cur = best.get(fh.url)
+            if cur is None or _richer(fh.hit) < _richer(cur):
+                best[fh.url] = fh.hit
+    ordered = sorted(score, key=lambda u: (-round(score[u], 12), u))
+    return [FusedHit(u, best[u], round(score[u], 12), lists_in[u], engines_in[u]) for u in ordered]

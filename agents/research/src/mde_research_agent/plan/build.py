@@ -16,7 +16,7 @@ from collections.abc import Iterable
 from mde_research_agent.catalog.loader import JOB_NAMES
 from mde_research_agent.catalog.models import Catalog, JobSpec, TargetTemplate
 from mde_research_agent.core.text import same_thing, stem_set, tokens
-from mde_research_agent.domain.input import Request, ResearchInput
+from mde_research_agent.domain.input import Country, Request, ResearchInput
 from mde_research_agent.domain.plan import Dropped, Links, Place, Plan, Target
 from mde_research_agent.plan.candidates import (
     Candidate,
@@ -119,10 +119,11 @@ def _make_target(
     category: str,
     cat: Catalog,
     inp: ResearchInput,
+    country: Country | None = None,
 ) -> Target:
     name = cand.name
     noun = category_noun(category)
-    target_place = scoped_place(place, tpl.place_scope)
+    target_place = scoped_place(place, tpl.place_scope, country)
     values = {
         "category": category,
         "category_noun": noun,
@@ -159,6 +160,18 @@ def _make_target(
         flags.append("geo_uncertain")
     domain = cand.extra.get("domain")
     is_entity = tpl.foreach == "reference"
+    need_key = cand.extra.get("need_key") if tpl.foreach == "need" else None
+    risk = cat.plan.risk_by_need.get(need_key or "", tpl.risk) if need_key else tpl.risk
+    if tpl.risk_from_candidate and not cand.extra.get("risk"):
+        risk = None
+    engines = (
+        "both"
+        if tpl.engines == "both" and (need_key in cat.plan.vendor_needs or not need_key)
+        else "one"
+    )
+    label = _fmt(cand.label_override or tpl.label, values)
+    if country is not None and country.name.casefold() not in label.casefold():
+        label = f"{label} ({country.name})"
     return Target(
         id="",
         job=job.job,
@@ -166,7 +179,7 @@ def _make_target(
         spec_need=job.spec_need,
         lane=job.lane,
         also_lanes=job.also_lanes,
-        label=_fmt(cand.label_override or tpl.label, values),
+        label=label,
         question=_fmt(tpl.question, values),
         decision_unlocked=tpl.decision_unlocked,
         anchors=anchors,
@@ -187,6 +200,11 @@ def _make_target(
         origin="request" if cand.links.requests and not cand.links.features else "template",
         terms=terms,
         domain_restrict=(domain,) if domain else (),
+        risk=risk,
+        official_first=tpl.official_first,
+        engines=engines,
+        country_code=country.code if country is not None else None,
+        need_key=need_key,
     )
 
 
@@ -205,9 +223,29 @@ def _expand(
         cands = [Candidate(category)]
     else:
         cands = candidates_for(tpl.foreach, inp, cat)[: tpl.max]
-    return [
-        _make_target(job, tpl, c, place=place, category=category, cat=cat, inp=inp) for c in cands
-    ]
+    countries = _named_countries(place) if tpl.per_country else ()
+    out: list[Target] = []
+    expanded = 0
+    for c in cands:
+        # A topic that carries a Brief request stays ONE topic (a request is never spread over the countries).
+        if len(countries) > 1 and expanded < cat.plan.per_country_max and not c.links.requests:
+            # regulation and provider availability differ by country: one topic per named country (the best few
+            # candidates only), each carrying its own country's code. The rest stay one shared topic.
+            expanded += 1
+            out += [
+                _make_target(
+                    job, tpl, c, place=place, category=category, cat=cat, inp=inp, country=ctry
+                )
+                for ctry in countries
+            ]
+        else:
+            out.append(_make_target(job, tpl, c, place=place, category=category, cat=cat, inp=inp))
+    return out
+
+
+def _named_countries(place: Place) -> tuple[Country, ...]:
+    """The countries a per-country topic is expanded over: every one the Brief names (code or not), in order."""
+    return tuple(c for c in place.countries if c.name)
 
 
 MIN_FALLBACK_OVERLAP = (
@@ -380,6 +418,7 @@ def _merge_same(targets: list[Target]) -> list[Target]:
                 for i, o in enumerate(out)
                 if o.job == t.job
                 and o.template_id == t.template_id
+                and o.country_code == t.country_code
                 and any(same_thing(a, b) for a in o.anchors for b in t.anchors)
             ),
             None,
@@ -400,33 +439,57 @@ def _merge_same(targets: list[Target]) -> list[Target]:
     return out
 
 
-def _trim(targets: list[Target], cap: int) -> tuple[list[Target], list[Target]]:
-    """Keep the ``cap`` best, but never leave a job with targets without at least one of them."""
-    ordered = sorted(
-        targets, key=lambda x: (-x.priority, -len(x.links.requests), x.job, x.template_id, x.label)
+def _rank_key(x: Target) -> tuple[int, int, str, str, str, str]:
+    return (
+        -x.priority,
+        -len(x.links.requests),
+        x.job,
+        x.template_id,
+        x.label,
+        x.country_code or "",
     )
-    if len(ordered) <= cap:
-        return ordered, []
-    kept = ordered[:cap]
-    by_job: dict[str, list[Target]] = defaultdict(list)
-    for t in kept:
-        by_job[t.job].append(t)
-    for job in JOB_NAMES:
-        if by_job.get(job) or not any(t.job == job for t in ordered):
-            continue
-        best = next(t for t in ordered if t.job == job)
-        donor = min(
-            (t for t in kept if len(by_job[t.job]) > 1),
-            key=lambda x: (x.priority, x.label),
-            default=None,
-        )
-        if donor is None:
-            break
-        kept.remove(donor)
-        by_job[donor.job].remove(donor)
-        kept.append(best)
-        by_job[job].append(best)
-    kept.sort(key=lambda x: (-x.priority, -len(x.links.requests), x.job, x.template_id, x.label))
+
+
+def _has_required_slot(t: Target) -> bool:
+    return any(s.required for s in t.slots)
+
+
+def _trim(targets: list[Target], cap: int, risk_cap: int = 99) -> tuple[list[Target], list[Target]]:
+    """The topics that run, and the ones that do not (``rest``), each in rank order.
+
+    Topics of a risk class (regulation, integrations, identity, data protection, payments) are kept OUTSIDE ``cap``: the
+    number of them is what the Brief asks for (``risk_cap`` is only a safety valve). The cap applies to the others. A job
+    keeps its best topic against the cap only when that topic has a required slot: a job whose best topic would run empty
+    (nothing required to find) does not push a researched topic out (finding 3: a data-protection topic of priority 45
+    and no required slot used to evict two provider topics and two reference topics)."""
+    ordered = sorted(targets, key=_rank_key)
+    risk = [t for t in ordered if t.risk][:risk_cap]
+    plain = [t for t in ordered if not t.risk or t not in risk]
+    if len(plain) <= cap:
+        kept_plain = plain
+    else:
+        kept_plain = plain[:cap]
+        by_job: dict[str, int] = defaultdict(int)
+        for t in (*kept_plain, *risk):
+            by_job[t.job] += 1
+        for job in JOB_NAMES:
+            if by_job.get(job):
+                continue
+            best = next((t for t in plain if t.job == job), None)
+            if best is None or not _has_required_slot(best):
+                continue
+            donor = min(
+                (t for t in kept_plain if by_job[t.job] > 1),
+                key=lambda x: (x.priority, x.label),
+                default=None,
+            )
+            if donor is None:
+                break
+            kept_plain.remove(donor)
+            by_job[donor.job] -= 1
+            kept_plain.append(best)
+            by_job[job] += 1
+    kept = sorted([*risk, *kept_plain], key=_rank_key)
     rest = [t for t in ordered if t not in kept]
     return kept, rest
 
@@ -462,8 +525,8 @@ def build_plan(inp: ResearchInput, cat: Catalog, *, proposal: PlanProposal | Non
     dropped += gate_dropped + light_dropped
     targets = _merge_same(targets)
     load_class = inp.load.load_class if inp.load else "standard"
-    cap = cat.ceilings.for_class(load_class).soft.targets
-    kept, rest = _trim(targets, cap)
+    ceiling = cat.ceilings.for_class(load_class)
+    kept, rest = _trim(targets, ceiling.soft.targets, ceiling.risk_topics)
     numbered = tuple(t.model_copy(update={"id": f"T-{i:02d}"}) for i, t in enumerate(kept, start=1))
     unrun = tuple(t.model_copy(update={"id": f"U-{i:02d}"}) for i, t in enumerate(rest, start=1))
     plan_source = "rebuilt" if not trusted_requests(inp) else inp.quality.plan_source

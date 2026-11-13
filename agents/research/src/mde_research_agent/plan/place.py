@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from mde_research_agent.catalog.models import Catalog
-from mde_research_agent.core.countries import code_for_name, country_name
+from mde_research_agent.core.countries import code_for_name, country_language, country_name
 from mde_research_agent.domain.input import Country, ResearchInput
 from mde_research_agent.domain.plan import Place
 from mde_research_agent.plan.proposal import PlanProposal
@@ -64,14 +64,35 @@ def build_place(inp: ResearchInput, cat: Catalog, proposal: PlanProposal | None 
     )
 
 
-def scoped_place(place: Place, scope: str) -> Place | None:
+def scoped_place(place: Place, scope: str, country: Country | None = None) -> Place | None:
     """The part of the Brief's place a topic's queries carry: all of it (``city``), the country only, or none.
 
     A city name finds local shops, not API documentation: "payments webhook authentication documentation <city>
     <country>" is a worse query than the same words without the city. Country scope falls back to the whole place when no
-    country is known, and a place nothing was stated for is never added."""
+    country is known, and a place nothing was stated for is never added.
+
+    ``country`` makes the place that ONE country's (a per-country topic, ``scope: country_each``): its name carries the
+    query words and its code the search filter, whatever the Brief's primary country is."""
     if place.unknown or scope == "none":
         return None
+    if country is not None:
+        return place.model_copy(
+            update={
+                "phrases": (country.name,),
+                "country_code": country.code,
+                "country_name": country.name,
+                "countries": (country,),
+                "languages": country_languages(country.code, place.languages),
+            }
+        )
     if scope == "country" and place.country_name:
         return place.model_copy(update={"phrases": (place.country_name,)})
     return place
+
+
+def country_languages(code: str | None, brief_languages: tuple[str, ...]) -> tuple[str, ...]:
+    """The non-English search languages for one country's topics: the country's own main language (from
+    ``countries.yaml``) first, then the Brief's other languages. A single-country Brief keeps the Brief's languages."""
+    own = country_language(code)
+    first = [own] if own and own != "en" else []
+    return tuple(dict.fromkeys([*first, *brief_languages]))

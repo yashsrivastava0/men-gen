@@ -342,6 +342,8 @@ def compose_app(
         from mde_research_agent.adapters.search.failover import FailoverSearch
 
         search = FailoverSearch(search, second)
+    else:
+        second = None
     uploads = data / "uploads"
     estimates = Estimates()
     inputs = InputsStore(inputs_dir(cfg), catalog, estimates, uploads=uploads)
@@ -369,6 +371,7 @@ def compose_app(
         own_store=own_store,
         credits=credits,
         credits_http=http,
+        second_search=second,  # the other provider: one extra query on `engines: both` topics
     )
 
     def providers(client: httpx.AsyncClient) -> list[SearchPort]:

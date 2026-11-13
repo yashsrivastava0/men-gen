@@ -123,7 +123,12 @@ def test_windows_split_on_the_devanagari_danda() -> None:
         ("https://services.gst.gov.in/x", "", None, "official"),
         ("https://developer.apple.com/design/human-interface-guidelines/", "", None, "official"),
         ("https://docs.razorpay.com/api", "", None, "official"),
-        ("https://razorpay.com/pricing", "", "Razorpay", "official"),
+        (
+            "https://razorpay.com/pricing",
+            "",
+            "Razorpay",
+            "official_inferred",
+        ),  # a provider's own site, by name
         ("https://razorpay.com/pricing", "", None, "blog"),
         ("https://help.example.com/article", "", None, "help"),
         ("https://apps.apple.com/in/app/x/id1", "", None, "store"),

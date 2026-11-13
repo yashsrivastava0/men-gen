@@ -148,12 +148,15 @@ class ResearchService:
         own_store: bool = False,
         credits: CreditLedger | None = None,
         credits_http: Any = None,
+        second_search: SearchPort | None = None,
     ) -> None:
         self.store = store
         self.catalog = catalog
         self.settings = settings
         self.gateway = gateway
         self.search = search
+        # the other configured provider: one extra query on `engines: both` topics (engine/worker.py search_second)
+        self.second_search = second_search
         self.fetch = fetch
         self.clock = clock or SystemClock()
         self.ids = ids or UlidIds()
@@ -358,6 +361,7 @@ class ResearchService:
             row_cap = self._remaining_budget()
             period_scope = self.control.period_scope if self.control is not None else None
             search: Any = self.search or cast("SearchPort", _NoSearch())
+            second: Any = self.second_search if self.search is not None else None
             fetch: Any = self.fetch
             if self.data_dir is not None and self.search is not None and self.mode == "live":
                 from mde_research_agent.adapters.recording import RecordingFetch, RecordingSearch
@@ -365,6 +369,8 @@ class ResearchService:
                 cassettes = self.data_dir / "runs" / rid / "cassettes"
                 search = RecordingSearch(search, cassettes)
                 fetch = RecordingFetch(fetch, cassettes)
+                if second is not None:  # its own folder: a request is keyed without the provider
+                    second = RecordingSearch(second, cassettes / "second")
             run_gateway = self.gateway
             if (
                 self.gateway_factory is not None
@@ -391,6 +397,7 @@ class ResearchService:
                 language=self.language,
                 checker_vendor=self.checker_vendor,
                 sleep=self.sleep,
+                second_search=second,
             )
             live.ctx = ctx
             if self.record is not None and self.mode == "live":

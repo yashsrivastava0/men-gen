@@ -8,6 +8,7 @@ place; a new country, language or job is a data change.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
@@ -56,6 +57,8 @@ Condition = Literal[
 Anchor = Literal[
     "category", "entity", "role", "flow", "module", "need", "topic", "platform", "language"
 ]
+# Topics that must not be traded away for a smaller run (D-163): they are kept outside the topic cap.
+RiskClass = Literal["regulation", "integration", "identity", "data_protection", "payments"]
 
 
 class Frozen(BaseModel):
@@ -148,6 +151,11 @@ class CeilingSet(Frozen):
     store_tokens: int  # the main store, measured on the compact view
     chunk_items: int  # a lane slice is split into chunks of at most this many items
     digest_tokens: int  # each lane digest (an index, outside store_tokens)
+    # Topics of a risk class (regulation, integrations, identity, data protection, payments) are kept OUTSIDE the target
+    # cap: the number the Brief asks for runs. This is only a safety valve for a Brief that asks for far too many.
+    risk_topics: int = 99
+    # How many discovered providers get their own-site follow-up (documentation, pricing, help) after round one.
+    provider_followups: int = 3
 
 
 class PagesPerTopic(Frozen):
@@ -214,12 +222,33 @@ class TargetTemplate(Frozen):
     place: Literal["brief", "global"] = "brief"
     # How much of the Brief's place the topic's queries carry: the city and country (``city``, the default), the country
     # only, or none (a technical doc, a flow, a screen pattern or a global vendor is not found by a city name).
-    scope: Literal["city", "country", "none"] | None = None
+    # ``country_each`` is ``country`` scope, expanded ONCE PER COUNTRY the Brief names (regulation, provider availability);
+    # norms, design and screens stay shared (plan/build.py ``_expand``).
+    scope: Literal["city", "country", "country_each", "none"] | None = None
+    # ``per_country: true`` does the same for a template whose place breadth is not ``country`` (it keeps its own ``scope``
+    # for a single-country Brief and takes the country's name for each named country).
+    per_country_flag: bool = Field(default=False, alias="per_country")
+    # Which risk class the topic belongs to, if any (see ``RiskClass``): a risk topic is not evicted by the cap.
+    risk: RiskClass | None = None
+    # With ``risk_from_candidate`` the template's ``risk`` applies only to the candidates that carry evidence of it (a rule
+    # topic backed by a compliance fact or by a Brief request about rules); the others are ordinary topics under the cap.
+    risk_from_candidate: bool = False
+    # Ask for the official pages of the topic's country first: a query variant restricted to the authority domains the
+    # registry lists for the topic (provider documentation, rules, platform rules). It replaces one descriptive variant.
+    official_first: bool = False
+    # ``both``: the topic is also searched on the OTHER configured provider and the two lists are fused (the worker).
+    engines: Literal["one", "both"] = "one"
     slots: tuple[SlotSpec, ...]
 
     @property
     def place_scope(self) -> Literal["city", "country", "none"]:
+        if self.scope == "country_each":
+            return "country"
         return self.scope or ("none" if self.place == "global" else "city")
+
+    @property
+    def per_country(self) -> bool:
+        return self.scope == "country_each" or self.per_country_flag
 
     @model_validator(mode="after")
     def _scope_agrees_with_place(self) -> TargetTemplate:
@@ -244,16 +273,27 @@ class JobSpec(Frozen):
 
 
 class AuthorityEntry(Frozen):
+    """One official source of the registry (``data/authority/<country>.yaml``).
+
+    ``fetch`` records what happened when a person checked the domain with a plain page request: ``ok`` (it answers and
+    names itself), ``blocked`` (a real official site that refuses our reader: its text must come from the search
+    provider, never from our fetcher) or ``unresolved`` (it did not answer as written; the entry is kept only when the
+    domain was confirmed another way). ``verified_on`` is the date it was checked. ``language`` is the language the
+    authority writes in (from the country file), used for rules queries."""
+
     domain: str
     topics: tuple[str, ...] = ()
     class_: Literal["official", "help", "press"] = Field(default="official", alias="class")
     country: str = "global"
+    fetch: Literal["ok", "blocked", "unresolved"] = "ok"
+    verified_on: date | None = None
+    language: str | None = None
 
     model_config = ConfigDict(frozen=True, extra="forbid", populate_by_name=True)
 
 
 class SourceClassRules(Frozen):
-    official_tld_suffixes: tuple[str, ...]
+    official_suffix_patterns: tuple[str, ...]
     doc_subdomain_prefixes: tuple[str, ...]
     help_subdomain_prefixes: tuple[str, ...]
     store_domains: tuple[str, ...]
@@ -351,6 +391,11 @@ class PlatformSource(Frozen):
     domain: str
 
 
+class TopicCost(Frozen):
+    searches: float
+    usd_micros: int
+
+
 class PlanConfig(Frozen):
     generic_entities: tuple[str, ...]
     generic_modules: tuple[str, ...]
@@ -365,6 +410,22 @@ class PlanConfig(Frozen):
     max_extra_targets: int
     max_discovery_names: int
     base_terms_max: int
+    # A provider topic whose need is listed here is that risk class instead of the template's own (a payments provider
+    # is a payments topic, an identity provider an identity topic).
+    risk_by_need: dict[str, RiskClass] = Field(default_factory=dict)
+    # Needs whose provider topics are searched on both configured engines (``engines: both`` on the template).
+    vendor_needs: tuple[str, ...] = ()
+    # "job:template" ids of topics about ONE named thing from the Brief (an app the person named): when the thing has no
+    # public footprint it ends ``not_found`` after two formulations and no longer counts against the required slots.
+    named_reference_templates: tuple[str, ...] = ()
+    # How many of a per-country template's best candidates are expanded once per named country (``scope: country_each``);
+    # the other candidates stay one shared topic. Bounds the plan of a Brief that names several countries.
+    per_country_max: int = 3
+    # What one more topic costs (measured on the recorded runs): shown beside each topic that is not run.
+    topic_cost: TopicCost
+    # The queries of a provider's own-site follow-up: words after its name, restricted to its domain (data, per language
+    # of the intent words; the anatomy gate needs an intent word in each).
+    entity_followup_words: tuple[str, ...] = ()
 
 
 class Labels(Frozen):

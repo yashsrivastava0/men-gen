@@ -35,6 +35,10 @@ targets:
     decision_unlocked: "The business rules and legal-adjacent limits the app must respect"
     needs: [current, number, entity]
     priority: 85
+    per_country: true  # the place stays the city and country; with several countries, one topic per country
+    risk: regulation
+    risk_from_candidate: true
+    official_first: true
     anchor: topic
     slots:
       - {key: rules, type: count, kind: rule, distinct_by: norm_key, min: 1, required: true}

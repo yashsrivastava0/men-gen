@@ -74,6 +74,12 @@ def country_name(code: str | None) -> str | None:
     return info.get("label") if info else None
 
 
+def country_language(code: str | None) -> str | None:
+    """The main language of a country's consumer web (ISO 639-1, ``countries.yaml``), or None when not known."""
+    info = countries().get((code or "").lower())
+    return info.get("language") if info else None
+
+
 @lru_cache(maxsize=1)
 def _names_with_connective() -> tuple[tuple[str, str], ...]:
     """Known names that contain a joining word themselves ("trinidad and tobago"), longest first, so a list split

@@ -9,8 +9,9 @@ from typing import Any
 
 from mde_research_agent.catalog import load_catalog
 from mde_research_agent.inputs.estimates import Estimates
-from mde_research_agent.inputs.preview import build_preview
+from mde_research_agent.inputs.preview import build_preview, request_rows
 from mde_research_agent.intake import read_export
+from mde_research_agent.plan.build import build_plan
 
 ROOT = Path(__file__).resolve().parents[4]
 INPUTS = ROOT / "docs" / "compass" / "research-inputs"
@@ -45,8 +46,20 @@ def test_each_request_names_its_topic_and_the_counts_keep_their_old_keys() -> No
 def test_a_request_whose_topic_is_planned_but_ranked_too_low_is_not_run_with_that_topic_named() -> (
     None
 ):
-    pv = preview_of(raw("synthetic-big-site-safety-central-america"))
-    waiting = [i for i in pv["requests"]["items"] if i["status"] == "not_run"]
+    # Since the planner keeps every risk topic outside the cap, a request that is not run has to be built by moving its topic
+    # behind the cap by hand: the row logic (request_rows) is what this test is about.
+    data = raw("synthetic-medium-school-parents-dakar")
+    inp = read_export(data, CAT)
+    plan = build_plan(inp, CAT)
+    carried = next(t for t in plan.targets if t.links.requests)
+    moved = plan.model_copy(
+        update={
+            "targets": tuple(t for t in plan.targets if t is not carried),
+            "unrun": (carried.model_copy(update={"id": "U-01"}), *plan.unrun),
+        }
+    )
+    rows = request_rows(inp, moved)
+    waiting = [i for i in rows if i["status"] == "not_run"]
     assert waiting and all(i["topics"][0]["id"].startswith("U-") for i in waiting)
     assert all("ranked below" in i["text"] for i in waiting)
 
@@ -92,10 +105,20 @@ def test_not_run_topics_list_a_rank_a_job_and_a_one_line_reason() -> None:
     )  # the old label list is kept next to it
     first, last = rows[0], rows[-1]
     total = pv["topics"]["total"] + len(rows)
-    assert (
-        first["text"]
-        == f"Ranked {pv['topics']['total'] + 1} of {total} planned topics; this size runs the top {pv['topics']['total']}."
+    cap = pv["topics"]["cap"]
+    assert first["text"].startswith(
+        f"Ranked {pv['topics']['total'] + 1} of {total} planned topics; this size runs the top {cap}"
     )
+    assert "never left out" in first["text"]  # the risk topics run outside the cap
+    cost = CAT.plan.topic_cost
+    assert all(
+        r["est_searches"] == cost.searches and r["est_usd_micros"] == cost.usd_micros for r in rows
+    )
+    assert pv["not_run_cost"] == {
+        "topics": len(rows),
+        "est_searches": round(len(rows) * cost.searches, 1),
+        "est_usd_micros": len(rows) * cost.usd_micros,
+    }
     assert last["text"].startswith(f"Ranked {total} of {total}")
     assert all(
         r["id"].startswith("U-") and r["job"] and r["label"] and r["reason"] == "over_cap"

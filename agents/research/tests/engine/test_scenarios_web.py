@@ -345,7 +345,7 @@ async def test_rs30_a_round_that_adds_almost_nothing_ends_the_run() -> None:
             date(2026, 9, 1),
         )
     )
-    run = await run_engine(load_fixture(QUICK), world=w)
+    run = await run_engine(load_fixture(QUICK), world=w, ceilings={"hard": {"searches": 200}})
     assert run.result.rounds <= 2 and run.ctx.budget.searches_used < run.ctx.budget.hard.searches
 
 
