@@ -151,6 +151,34 @@ def route_problems(settings: Settings, pricing: Pricing | None = None) -> list[s
     return problems
 
 
+def route_fingerprint(settings: Settings, pricing: Pricing | None = None) -> str:
+    """An OPAQUE hash of what the three routes resolve to (rule 14: engines never see model or vendor names).
+
+    Built from each route's model id, its vendor and effort floor; it changes when any route is remapped, so result
+    caches and checkpoints keyed on it are never served across a route change (doc 18 4.2, FN-34). The engine records
+    it as ``produced_with``; it cannot be reversed to a name by the engine.
+    """
+    import hashlib
+    import json
+
+    the_pricing = pricing or Pricing.load()
+    parts: dict[str, dict[str, str]] = {}
+    for route in ROUTES:
+        model = settings.model_for_route(route)
+        try:
+            vendor = the_pricing.vendor_for(model)
+        except UnknownModelPrice:
+            vendor = "unpriced"
+        floor = ""
+        try:
+            floor = the_pricing.price_for(model).effort_floor
+        except UnknownModelPrice:
+            floor = ""
+        parts[route] = {"model": model, "vendor": vendor, "floor": floor}
+    raw = json.dumps(parts, sort_keys=True, separators=(",", ":"))
+    return hashlib.sha256(raw.encode("utf-8")).hexdigest()[:24]
+
+
 def routes_share_vendor(
     settings: Settings, first: str, second: str, pricing: Pricing | None = None
 ) -> bool:
