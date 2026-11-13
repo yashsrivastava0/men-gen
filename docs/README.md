@@ -24,6 +24,8 @@ Start with [../CLAUDE.md](../CLAUDE.md) (commands, hard rules) and [../README.md
 - [specs/frontend-consumption.md](specs/frontend-consumption.md): how the frontend engine reads it (build sequence, slices, `raise_decision`)
 - [specs/events-and-api.md](specs/events-and-api.md): the Context API: auth, routes, SSE, errors, event catalog
 - [api/compass.md](api/compass.md): the Compass HTTP API (`/v1/compass`): auth, events, Brief, Gate 1, SSE replay, errors, curl walk-through
+- [spec-agent/README.md](spec-agent/README.md): the Spec agent in one page and where everything is
+- [packages/spec-core.md](packages/spec-core.md), [packages/compass-intake.md](packages/compass-intake.md), [packages/spec-agent.md](packages/spec-agent.md), [packages/verify-agent.md](packages/verify-agent.md): the Spec engine's package pages
 - [spec-agent/BUILD-PLAN.md](spec-agent/BUILD-PLAN.md): the Spec agent build plan (prompt 12 v4): phases, exit checks, resume point
 - [api/research-agent.md](api/research-agent.md): the Research agent HTTP API (`/v1/research`): runs, snapshot, resumable SSE events, skip, per-topic cancel, review, reject, errors
 - [specs/question-cards.md](specs/question-cards.md): cards, the `ask_if` language, the slot vocabulary
