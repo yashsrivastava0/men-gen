@@ -83,3 +83,22 @@ runs end to end and prints the run folder, gate results and the pack hash. Both 
 
 ## Files under `agents/spec/.runtime/`
 `runs/<run_id>/{run.json, input.json.gz, events.jsonl, graph.json, checkpoints/, pack/, evidence/}`, `spend-record.json` (+ `.lock`), `inputs/`, `logs/`, `app.pid`.
+
+## Response shapes the Bench front end reads (the backend must produce these)
+The front end tolerates missing fields; these are the shapes it was built and tested against (`apps/spec-bench/tests`).
+- `GET /api/inputs` -> `{compass:[{id, path, format, tier, size_band, profile, readiness{ready, missing[]}, drift_flags[], research_matches[ids]}], research:[{id, path, status, input_hash}]}`. `GET /api/inputs/auto` -> one proposal `{compass_id, research_id|null, reason, gaps[]}` or 404 when a size has none.
+- `POST /api/runs` -> `{run_id, joined?}`; the run starts at once and pauses at G1.5 (`paused_g15`) for deep apps or when a capacity deferral is proposed, so Preview and G1.5 work on an existing run. `refused_estimate` carries `error.message` and `error.fix`.
+- `GET /api/runs` -> `{runs:[{id, status, profile, spend_micros, created_at, pack_hash}]}`. Snapshot adds `gates:{g15, g2}` ("open"|"closed"), `last_seq`, `partial_reason`, `checked_by[]`, `critic_vendor`, `content_hash`.
+- `GET /api/profiles` -> `{profiles:[{id, label?, capability_class, effective_window, whole_pack_tokens, k, unset[]}]}`.
+- `GET /api/runs/{id}/preview` -> `{profile{id,label,why}, inventory_count, phases[{name, screens, note}], estimate{low_micros, high_micros}, calls_by_step:{step:n}}`.
+- Events: `gate.opened`/`gate.closed` carry `data.gate`; `banner` carries `data.code`; `validators.done` carries `data.gate`, `data.blockers`, `data.warnings`; `run.partial` carries `data.reason`; `call.finished` carries `kind`, `tokens` (number or `{in, out}`), `cost_micros`, `repaired`; `run.finished` carries `data.status`.
+- `POST /g15` -> `moves[]` as `{item, to}`; `POST /g2` also accepts `suggestion_choices:{id: bool}` (the include/exclude toggles).
+- `GET /views/g15` -> `{app_map[{name, screens, modules[]}], roles[{name, access[], home}], entities[{name, plain, fields[]}], inventory[{id, title, module, phase}], phases[{name, count|items, why, pulled_in[]}], pull_in_rule}`.
+- `GET /views/g2` -> `{summary{text}, content_hash, app_map, flows[{id, title, roles[], steps[]}], content_maps[] (the /views/screen shape), data[{entity, plain}], differences_from_brief[], assumptions[], confirm_list[{category: money|legal|identity|other, text, why}], capability_tiers[], store_rules[{store, plain}], suggestions[{id, text, why}], degraded_nodes[], code_fixes[], flags[], risks[{text, severity}], blocking_needs[]?}`. It must stay readable after approval (the hand-off views use it).
+- `GET /views/screen/{sid}` -> `{id, title, purpose, regions[{name, importance, text, items[]}], actions[{label, intent, effect}], states[{name, text}], copy[{key, text}], hero_records[]}` (importance `must|usually|could` for the voice, or separate arrays).
+- `GET /views/journey/{flow}` -> `{title, role, stories[], emotion_line[{label, level, feeling}], moments_that_matter[], unhappy_paths[{what, recovery}], steps[{screen_id, title, says, entries[], exits[{label, to}]}]}`.
+- `GET /views/graph` -> `{roles[], entries[], nodes[{id, title, app, in: true|"later"}], edges[{from, to, label}], unreachable[], dead_ends[]}`.
+- `GET /views/data` -> `{entities[{name, plain, lifecycle[], fields[]}], operations[], fixtures[], mock_behaviours[], integrations[]}`; `GET /views/needs` -> `{needs, blocks, assets, motion_intents, stories, opportunities}` (lists of objects).
+- Pack: `/pack/tree` -> `{files[{path, tokens}], tasks[{id, title, read_tokens, budget}], task_read_budget}`; `/pack/tasks` -> `{waves[{wave, tasks[{id, title, tokens}]}]}`; `/pack/budget`, `/pack/selfcheck`, `/pack/verify` free-form objects (verify: `{enabled:false}` or 404 when it did not run); `/pack/checks` -> `{results[{code, severity, where, why, fix}], builder_needs[], coverage}`; `/diff/{b}` -> `{files[{path, status}]}`.
+- `GET /simulate`: `all` -> `{allowed, reason, pack_tokens, whole_pack_tokens}`; `one` -> `{files[{part: prefix|card|closure, path, bytes, tokens}], total_tokens, budget_tokens}`; `parallel` -> `{slots, waves[{wave, tasks[{id, title, tokens, slot?, start?, end?}]}]}`.
+- `POST /api/inputs/upload` takes the raw JSON text of one Compass export; `/api/health.reasons` is a list of strings.
