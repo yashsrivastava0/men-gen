@@ -1,0 +1,6 @@
+{
+  "name": "spec-bench",
+  "private": true,
+  "type": "module",
+  "description": "Static front end of the Spec Bench: plain ES modules, no build step, no dependencies."
+}

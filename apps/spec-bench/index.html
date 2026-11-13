@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Spec Bench</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="style.css">
+<script type="module" src="app.js"></script>
+</head>
+<body>
+<button type="button" class="skip" id="skip">Skip to content</button>
+<div id="fake-banner" class="fake-banner" role="alert" hidden>TEST FAKE: scripted answers, no real spec is being made</div>
+<header class="bar" id="bar">
+  <div class="bar-row">
+    <h1 class="brand">Spec Bench</h1>
+    <p class="mode" id="mode-pill">Checking&hellip;</p>
+    <button type="button" class="linkish" id="theme-toggle">Theme: auto</button>
+  </div>
+  <div class="money money-unknown" id="money">
+    <p class="money-text" id="money-text">Money: loading&hellip;</p>
+    <div class="meter" id="money-meter" role="progressbar" aria-label="Money used" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+      <div class="meter-fill" id="money-fill"></div>
+      <div class="meter-hold" id="money-hold"></div>
+      <div class="meter-trip" id="money-trip"></div>
+    </div>
+  </div>
+</header>
+<div id="notices" class="notices"></div>
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="The journey"></nav>
+  <main id="view" tabindex="-1"><p class="muted pad">Loading&hellip;</p></main>
+</div>
+<div id="announcer" class="sr-only" role="status" aria-live="polite"></div>
+<noscript><p class="pad">This page needs JavaScript. It uses no outside scripts and no tracking.</p></noscript>
+</body>
+</html>
