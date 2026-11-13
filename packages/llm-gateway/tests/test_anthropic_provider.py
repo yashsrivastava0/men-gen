@@ -559,3 +559,160 @@ async def test_gateway_escalates_once_on_max_tokens_and_repairs_bad_json(
     assert result.status == "repaired" and len(client.messages.calls) == 3
     first, second = client.messages.calls[0], client.messages.calls[1]
     assert second["max_tokens"] > first["max_tokens"]  # type: ignore[operator]
+
+
+# ---------------------------------------------------------------------------- the 16-union limit
+def _nullable_schema(n: int, required_extra: int = 0) -> dict[str, object]:
+    props: dict[str, object] = {
+        f"f{i}": {"anyOf": [{"type": "string", "description": f"d{i}"}, {"type": "null"}]}
+        for i in range(n)
+    }
+    names = list(props)
+    for i in range(required_extra):
+        props[f"r{i}"] = {"type": "string"}
+        names.append(f"r{i}")
+    return {
+        "type": "object",
+        "properties": props,
+        "required": names,
+        "additionalProperties": False,
+    }
+
+
+def _unions(node: object) -> int:
+    from mde_llm_gateway.providers.anthropic_messages import _count_unions
+
+    return _count_unions(node)  # type: ignore[arg-type]
+
+
+def test_a_schema_within_the_union_limit_is_left_alone() -> None:
+    schema = _nullable_schema(16)
+    out = to_anthropic_schema(schema)
+    assert out["required"] == schema["required"] and _unions(out) == 16
+
+
+def test_a_schema_over_the_limit_is_unwrapped_down_to_the_target() -> None:
+    schema = _nullable_schema(20, required_extra=2)
+    before = json.dumps(schema, sort_keys=True)
+    out = to_anthropic_schema(schema)
+    assert json.dumps(schema, sort_keys=True) == before  # the caller's schema is untouched
+    assert _unions(out) == 12
+    required = out["required"]
+    assert isinstance(required, list) and len(required) == 22 - 8
+    props = out["properties"]
+    assert props["f0"] == {"type": "string", "description": "d0"}  # type: ignore[index]  # unwrapped, description kept
+    assert (
+        "f0" not in required and "f19" in required and "r0" in required
+    )  # the first eight, in order
+
+
+def test_missing_nullables_are_put_back_as_null_including_inside_arrays() -> None:
+    from mde_llm_gateway.providers.anthropic_messages import restore_omitted_nulls
+
+    row = _nullable_schema(3)
+    schema: dict[str, object] = {
+        "type": "object",
+        "additionalProperties": False,
+        "required": ["rows", "note"],
+        "properties": {
+            "rows": {"type": "array", "items": row},
+            "note": {"anyOf": [row, {"type": "null"}]},
+        },
+    }
+    text = '{"rows": [{"f1": "x"}, {}], "note": {"f2": "y"}}'
+    got = json.loads(restore_omitted_nulls(text, schema))
+    assert got["rows"] == [
+        {"f0": None, "f1": "x", "f2": None},
+        {"f0": None, "f1": None, "f2": None},
+    ]
+    assert got["note"] == {"f0": None, "f1": None, "f2": "y"}
+    complete = '{"rows": [], "note": null}'
+    assert restore_omitted_nulls(complete, schema) == complete  # nothing to add: text unchanged
+    assert restore_omitted_nulls("not json", schema) == "not json"
+
+
+async def test_the_provider_returns_text_that_matches_the_original_schema(
+    tmp_path: Path, clock: FakeClock
+) -> None:
+    schema = _nullable_schema(20)
+    omitted = {
+        f"f{i}": "v" for i in range(10, 20)
+    }  # the model skipped the 10 unwrapped-or-not nullables f0..f9
+    client = StubClient(make_message(text=json.dumps(omitted)))
+    provider = AnthropicMessagesProvider(client, settings=live_settings())
+    resp = await provider.complete(_request(schema=schema))
+    doc = json.loads(resp.text)
+    assert set(doc) == set(schema["properties"])  # type: ignore[arg-type]
+    assert all(doc[f"f{i}"] is None for i in range(10)) and doc["f19"] == "v"
+    sent = client.messages.calls[0]["output_config"]["format"]["schema"]  # type: ignore[index]
+    assert _unions(sent) == 12
+
+
+# ---------------------------------------------------------------------------- schemas the API cannot compile
+GRAMMAR_REFUSED = anthropic.BadRequestError(
+    "The compiled grammar is too large, which would cause performance issues. Simplify your schema.",
+    response=_response(400),
+    body=None,
+)
+
+
+def test_unconstrained_kwargs_carry_the_schema_in_the_instructions_instead_of_a_format() -> None:
+    kwargs = build_create_kwargs(_request(), constrained=False)
+    assert kwargs["output_config"] == {"effort": "low"}
+    system = kwargs["system"]
+    assert isinstance(system, str) and system.startswith("SYSTEM\n\n")
+    assert json.dumps(SCHEMA, separators=(",", ":")) in system and "no markdown fence" in system
+    assert "system" in build_create_kwargs(
+        _request(system=""), constrained=False
+    )  # schema alone is a system text
+
+
+def test_unfence_json_strips_fences_and_prose_but_never_invents() -> None:
+    from mde_llm_gateway.providers.anthropic_messages import unfence_json
+
+    doc = '{"a": 1}'
+    assert unfence_json(doc) == doc
+    assert unfence_json("```json\n" + doc + "\n```") == doc
+    assert unfence_json("Here you go:\n" + doc + "\nHope that helps") == doc
+    assert unfence_json("no document here") == "no document here"
+    assert unfence_json('{"a": ') == '{"a": '  # broken stays broken: the gateway repairs it
+
+
+async def test_a_refused_schema_is_retried_once_without_constrained_decoding_and_remembered() -> (
+    None
+):
+    client = StubClient(
+        GRAMMAR_REFUSED,
+        make_message(text='```json\n{"a": "x"}\n```'),
+        make_message(text='{"a": "y"}'),
+    )
+    provider = AnthropicMessagesProvider(client, settings=live_settings())
+    first = await provider.complete(_request())
+    assert first.text == '{"a": "x"}'  # fence stripped
+    calls = client.messages.calls
+    assert "format" in calls[0]["output_config"] and "format" not in calls[1]["output_config"]  # type: ignore[operator]
+    second = await provider.complete(
+        _request()
+    )  # remembered: no second attempt at constrained decoding
+    assert second.text == '{"a": "y"}' and len(calls) == 3
+    assert "format" not in calls[2]["output_config"]  # type: ignore[operator]
+
+
+async def test_other_bad_requests_are_not_retried_unconstrained() -> None:
+    client = StubClient(
+        anthropic.BadRequestError("max_tokens too large", response=_response(400), body=None)
+    )
+    provider = AnthropicMessagesProvider(client, settings=live_settings())
+    with pytest.raises(ProviderCallError) as exc:
+        await provider.complete(_request())
+    assert exc.value.status == 400 and len(client.messages.calls) == 1
+
+
+async def test_a_schema_that_fails_even_unconstrained_surfaces_the_error() -> None:
+    client = StubClient(
+        GRAMMAR_REFUSED, anthropic.BadRequestError("bad key", response=_response(400), body=None)
+    )
+    provider = AnthropicMessagesProvider(client, settings=live_settings())
+    with pytest.raises(ProviderCallError) as exc:
+        await provider.complete(_request())
+    assert exc.value.status == 400 and len(client.messages.calls) == 2

@@ -24,6 +24,15 @@ Parsing:
   cached) is rebuilt: ``input = input_tokens + cache_read + cache_creation``, ``cached = cache_read``;
 * ``usage.output_tokens`` includes the model's thinking; ``output_tokens_details.thinking_tokens``
   is reported as ``reasoning_tokens`` (information only: billing already counts it as output);
+* the API refuses a schema with more than 16 union-typed (nullable) parameters or 24 optional ones; the strict
+  schema makes every optional field ``anyOf [X, null]``, so when there are too many the provider turns just
+  enough of them into plain optional properties and puts ``null`` back into the answer for every field the
+  model left out (``restore_omitted_nulls``), so the gateway still sees a document valid for its own schema;
+* the compiler behind ``output_config.format`` also refuses a schema that is simply too large ("compiled grammar
+  is too large"), whatever its union count: `extract.data` is such a schema. The provider then makes the call
+  WITHOUT constrained decoding, once, with the schema written into the instructions, remembers that this schema
+  needs it (by ``schema_hash``, for the life of the provider) and strips markdown fences from the answer; the
+  gateway still validates every answer locally and repairs it as for any vendor;
 * ``stop_reason == "max_tokens"`` -> ``incomplete`` with the reason the gateway escalates on
   (``max_output_tokens``); ``"refusal"`` -> a refusal; anything that would need another call
   (``tool_use``, ``pause_turn``) is an error, because a provider makes exactly one call.
@@ -31,6 +40,8 @@ Parsing:
 
 from __future__ import annotations
 
+import dataclasses
+import json
 import re
 from collections.abc import Mapping
 from contextlib import suppress
@@ -68,6 +79,11 @@ _DROPPED_KEYWORDS = (
     "pattern",
 )
 _FORMATS = {"date-time", "time", "date", "duration", "email", "hostname", "ipv4", "ipv6", "uuid"}
+# Limits the API enforces on one schema (a 400 otherwise, which lost 39 of 150 extraction calls in the first Small run).
+MAX_UNION_PARAMS = 16
+MAX_OPTIONAL_PARAMS = 24
+# Unwrapping goes below the limit, not to it: the grammar compiler refused a schema of exactly 16 unions that it took at 14.
+UNION_TARGET = 12
 _SCHEMA_LISTS = ("anyOf", "oneOf", "allOf")
 _SCHEMA_MAPS = ("properties", "$defs", "definitions")
 
@@ -89,9 +105,137 @@ def to_anthropic_schema(schema: Mapping[str, object]) -> dict[str, object]:
 
     Numeric bounds, string length bounds, ``pattern``, ``maxItems``, ``uniqueItems`` and a
     ``minItems`` above 1 are removed and described in words; ``format`` is kept only when listed.
-    Property NAMES are never touched (a field called ``pattern`` is a field).
+    Property NAMES are never touched (a field called ``pattern`` is a field). When the schema has more
+    than ``MAX_UNION_PARAMS`` nullable parameters, the first ones in document order become optional
+    properties, down to ``UNION_TARGET`` (the answer is completed with ``null`` by :func:`restore_omitted_nulls`).
     """
-    return _clean_node(dict(schema))
+    out = _clean_node(dict(schema))
+    unions = _count_unions(out)
+    if unions > MAX_UNION_PARAMS:
+        _unwrap_nullables(
+            out, [max(0, min(unions - UNION_TARGET, MAX_OPTIONAL_PARAMS - _count_optionals(out)))]
+        )
+    return out
+
+
+def _obj(value: object) -> dict[str, object] | None:
+    return cast("dict[str, object]", value) if isinstance(value, dict) else None
+
+
+def _arr(value: object) -> list[object] | None:
+    return cast("list[object]", value) if isinstance(value, list) else None
+
+
+def _nullable_branch(node: object) -> dict[str, object] | None:
+    """The non-null branch of ``anyOf [X, null]`` (the strict schema's form of an optional value), else None."""
+    branches = _arr((_obj(node) or {}).get("anyOf"))
+    if branches is None or len(branches) != 2:
+        return None
+    objs = [_obj(b) for b in branches]
+    if any(o is None for o in objs):
+        return None
+    pair = [o for o in objs if o is not None]
+    if [o.get("type") for o in pair].count("null") != 1:
+        return None
+    return next(o for o in pair if o.get("type") != "null")
+
+
+def _child_schemas(node: dict[str, object]) -> list[dict[str, object]]:
+    kids: list[dict[str, object]] = []
+    for key in _SCHEMA_MAPS:
+        table = _obj(node.get(key))
+        if table is not None:
+            kids += [o for o in map(_obj, table.values()) if o is not None]
+    for key in _SCHEMA_LISTS:
+        branches = _arr(node.get(key))
+        if branches is not None:
+            kids += [o for o in map(_obj, branches) if o is not None]
+    items = _obj(node.get("items"))
+    if items is not None:
+        kids.append(items)
+    return kids
+
+
+def _count_unions(node: dict[str, object]) -> int:
+    here = 1 if isinstance(node.get("anyOf"), list) or isinstance(node.get("type"), list) else 0
+    return here + sum(_count_unions(kid) for kid in _child_schemas(node))
+
+
+def _required_names(node: dict[str, object]) -> set[str]:
+    return {r for r in (_arr(node.get("required")) or []) if isinstance(r, str)}
+
+
+def _count_optionals(node: dict[str, object]) -> int:
+    props = _obj(node.get("properties"))
+    here = len(set(props) - _required_names(node)) if props is not None else 0
+    return here + sum(_count_optionals(kid) for kid in _child_schemas(node))
+
+
+def _unwrap_nullables(node: dict[str, object], budget: list[int]) -> None:
+    """Make up to ``budget[0]`` nullable properties optional, in document order (mutates the NEW tree only)."""
+    props = _obj(node.get("properties"))
+    if props is not None:
+        for name in list(props):
+            branch = _nullable_branch(props[name])
+            if branch is None or budget[0] <= 0:
+                continue
+            wrapper = _obj(props[name]) or {}
+            unwrapped = dict(branch)
+            if "description" in wrapper and "description" not in unwrapped:
+                unwrapped["description"] = wrapper["description"]
+            props[name] = unwrapped
+            if "required" in node:  # a new list: the caller's schema is never touched
+                node["required"] = [r for r in (_arr(node["required"]) or []) if r != name]
+            budget[0] -= 1
+    for kid in _child_schemas(node):
+        _unwrap_nullables(kid, budget)
+
+
+def restore_omitted_nulls(text: str, schema: Mapping[str, object]) -> str:
+    """Put ``null`` back for every nullable property the model left out (the inverse of the unwrapping above).
+
+    ``schema`` is the gateway's ORIGINAL strict schema. Text that is not a JSON document, or that needs nothing,
+    is returned unchanged; nothing else in the document is touched.
+    """
+    try:
+        data: object = json.loads(text)
+    except ValueError:
+        return text
+    changed: list[bool] = [False]
+    fixed = _fill_nulls(data, dict(schema), changed)
+    return json.dumps(fixed, ensure_ascii=False) if changed[0] else text
+
+
+def _fill_nulls(value: object, schema: dict[str, object], changed: list[bool]) -> object:
+    branches = _arr(schema.get("anyOf"))
+    if branches is not None:  # a union: descend into the branch that fits the value's shape
+        for branch in map(_obj, branches):
+            if branch is None:
+                continue
+            kind = branch.get("type")
+            if (_obj(value) is not None and kind == "object") or (
+                _arr(value) is not None and kind == "array"
+            ):
+                return _fill_nulls(value, branch, changed)
+        return value
+    doc = _obj(value)
+    if doc is not None:
+        props = _obj(schema.get("properties"))
+        for name, sub in (props or {}).items():
+            sub_schema = _obj(sub)
+            if sub_schema is None:
+                continue
+            if name in doc:
+                doc[name] = _fill_nulls(doc[name], sub_schema, changed)
+            elif _nullable_branch(sub_schema) is not None:
+                doc[name] = None
+                changed[0] = True
+        return doc
+    rows = _arr(value)
+    items = _obj(schema.get("items"))
+    if rows is not None and items is not None:
+        return [_fill_nulls(row, items, changed) for row in rows]
+    return value
 
 
 def _clean_node(node: dict[str, object]) -> dict[str, object]:
@@ -131,11 +275,23 @@ def _clean_value(value: object) -> object:
 
 
 # ----------------------------------------------------------------------------- request
-def build_create_kwargs(req: ProviderRequest) -> dict[str, object]:
-    """The keyword arguments for ``client.messages.create`` (pure; unit-tested)."""
+def build_create_kwargs(req: ProviderRequest, *, constrained: bool = True) -> dict[str, object]:
+    """The keyword arguments for ``client.messages.create`` (pure; unit-tested).
+
+    ``constrained=False`` leaves out ``output_config.format`` and writes the schema into the system text.
+    """
     output_config: dict[str, object] = {"effort": _EFFORT[req.effort]}
+    system = req.system
     if req.schema is not None:
-        output_config["format"] = {"type": "json_schema", "schema": to_anthropic_schema(req.schema)}
+        if constrained:
+            output_config["format"] = {
+                "type": "json_schema",
+                "schema": to_anthropic_schema(req.schema),
+            }
+        else:
+            system = (system + "\n\n" if system else "") + _PROMPTED_JSON.format(
+                schema=json.dumps(req.schema, ensure_ascii=False, separators=(",", ":"))
+            )
     kwargs: dict[str, object] = {
         "model": req.model,
         "messages": [{"role": "user", "content": req.user}],
@@ -143,9 +299,37 @@ def build_create_kwargs(req: ProviderRequest) -> dict[str, object]:
         "output_config": output_config,
         "timeout": req.timeout_s,
     }
-    if req.system:
-        kwargs["system"] = req.system
+    if system:
+        kwargs["system"] = system
     return kwargs
+
+
+_PROMPTED_JSON = (
+    "Answer with ONE JSON document and nothing else: no prose, no markdown fence. It must be valid for this "
+    "JSON Schema, with every property present (use null where the schema allows null and you have no value):\n"
+    "{schema}"
+)
+_FENCE = re.compile(r"^\s*```(?:json)?\s*(.*?)\s*```\s*$", re.DOTALL | re.IGNORECASE)
+
+
+def unfence_json(text: str) -> str:
+    """A JSON document out of a reply that may be wrapped in a markdown fence or in a sentence (no change if it already
+    parses, or if no document can be found)."""
+    try:
+        json.loads(text)
+        return text
+    except ValueError:
+        pass
+    fenced = _FENCE.match(text)
+    candidate = fenced.group(1) if fenced else text
+    start, end = candidate.find("{"), candidate.rfind("}")
+    if start != -1 and end > start:
+        candidate = candidate[start : end + 1]
+    try:
+        json.loads(candidate)
+    except ValueError:
+        return text
+    return candidate
 
 
 # ----------------------------------------------------------------------------- response parsing
@@ -206,6 +390,9 @@ def parse_response(msg: Message) -> ProviderResponse:
 
 
 # ----------------------------------------------------------------------------- errors
+_SCHEMA_REFUSED = re.compile(
+    r"compiled grammar|too many parameters|schemas? contains?", re.IGNORECASE
+)
 _BILLING_WORDS = re.compile(r"credit balance|billing|spend limit|insufficient", re.IGNORECASE)
 
 
@@ -257,7 +444,22 @@ class AnthropicMessagesProvider:
         require_live(settings)  # LLM_MODE=live, never under MDE_FORBID_LIVE
         self.mode: CallMode = "live"
         self._client = client
+        self._prompted: set[str] = (
+            set()
+        )  # schema hashes the API refused to compile: sent as instructions instead
         register_secrets(settings.secret_values())
+
+    async def _create(self, request: ProviderRequest, *, constrained: bool) -> Message:
+        """One ``messages.create``; SDK failures become :class:`ProviderCallError`, other exceptions pass through."""
+        kwargs = build_create_kwargs(request, constrained=constrained)
+        try:
+            return await self._client.messages.create(**kwargs)
+        except ProviderCallError:
+            raise
+        except Exception as exc:
+            if isinstance(exc, (anthropic.AnthropicError, OSError, TimeoutError)):
+                raise map_error(exc) from None
+            raise
 
     async def complete(self, request: ProviderRequest) -> ProviderResponse:
         if request.tools:
@@ -266,17 +468,28 @@ class AnthropicMessagesProvider:
                 "whose provider does (the call was not made)",
                 retryable=False,
             )
-        kwargs = build_create_kwargs(request)
+        constrained = request.schema is not None and request.schema_hash not in self._prompted
         try:
-            msg = await self._client.messages.create(**kwargs)
-        except ProviderCallError:
-            raise
-        except Exception as exc:
-            if isinstance(exc, (anthropic.AnthropicError, OSError, TimeoutError)):
-                raise map_error(exc) from None
-            raise
+            msg = await self._create(request, constrained=constrained)
+        except ProviderCallError as exc:
+            if not (constrained and exc.status == 400 and _SCHEMA_REFUSED.search(str(exc))):
+                raise
+            # The API cannot compile this schema: one call without constrained decoding, remembered per schema.
+            self._prompted.add(request.schema_hash)
+            msg = await self._create(request, constrained=False)
         try:
-            return parse_response(msg)
+            parsed = parse_response(msg)
+            if request.schema is not None and request.schema_hash in self._prompted:
+                parsed = dataclasses.replace(parsed, text=unfence_json(parsed.text))
+            if (
+                request.schema is not None
+                and parsed.status == "completed"
+                and parsed.refusal is None
+            ):
+                text = restore_omitted_nulls(parsed.text, request.schema)
+                if text != parsed.text:
+                    parsed = dataclasses.replace(parsed, text=text)
+            return parsed
         except ProviderCallError:
             raise
         except Exception as exc:

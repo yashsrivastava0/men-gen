@@ -81,3 +81,41 @@ def test_the_checker_label_follows_the_routes_vendors(routes: dict[str, str], sa
     from mde_llm_gateway.factory import routes_share_vendor
 
     assert routes_share_vendor(_core(model_routes=routes), "standard", "fast") is same
+
+
+def test_every_research_call_spec_fits_every_providers_schema_limits() -> None:
+    """The first Claude run lost 39 extraction calls to a 400: two schemas had 18 nullable fields, the limit is 16.
+    Each spec's schema, as the provider would send it, must stay inside the limits, and an answer with the
+    unwrapped fields left out must come back valid for the spec's own output model."""
+    import json
+
+    from mde_llm_gateway.providers.anthropic_messages import (
+        MAX_OPTIONAL_PARAMS,
+        MAX_UNION_PARAMS,
+        _count_optionals,
+        _count_unions,
+        restore_omitted_nulls,
+        to_anthropic_schema,
+    )
+    from mde_llm_gateway.strict_schema import to_strict_schema
+    from mde_research_agent.calls.registry import all_specs
+
+    checked = 0
+    for spec in all_specs():
+        model = spec.spec.output_model
+        if model is None:
+            continue
+        strict = to_strict_schema(model)
+        sent = to_anthropic_schema(strict)
+        assert _count_unions(sent) <= MAX_UNION_PARAMS, spec.id
+        assert _count_optionals(sent) <= MAX_OPTIONAL_PARAMS, spec.id
+        checked += 1
+    assert checked >= 10  # the extraction jobs, plan, queries, gaps, assemble, check, judges
+
+    # a model that leaves out every optional field: the restored answer still has the original shape
+    spec = next(s for s in all_specs() if s.id == "rsch.extract.data")
+    assert spec.spec.output_model is not None
+    strict = to_strict_schema(spec.spec.output_model)
+    required_only = {"items": []}
+    restored = json.loads(restore_omitted_nulls(json.dumps(required_only), strict))
+    assert restored == required_only
