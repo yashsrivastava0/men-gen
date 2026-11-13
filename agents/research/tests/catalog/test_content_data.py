@@ -110,11 +110,6 @@ def test_the_platform_job_is_a_normal_job_with_a_capability_topic_that_is_not_pr
     assert {s.kind for s in tpl.slots} == {"platform_constraint"}
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-2: official_first is added to TargetTemplate by the discovery task; once it lands set `official_first: true` on "
-    "the capability_rules topic in data/jobs/platform.yaml (the lead does it at the merge) and remove this pin",
-)
 def test_the_platform_topic_asks_official_sources_first() -> None:
     (tpl,) = CAT.jobs["platform"].targets
     assert getattr(tpl, "official_first", False) is True

@@ -256,6 +256,8 @@ NUMERIC_FIELDS = frozenset(
         "currency",
         "period",
         "unit",
+        "condition",  # a typed value's condition and a compliance note's penalty may state figures too
+        "penalty",
     }
 )
 _MARKED = re.compile(

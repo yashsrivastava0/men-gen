@@ -233,10 +233,10 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] P0 Checkpoint (9efd933), tag, branch cut and pushed; decisions D-156..D-160
 - [x] P1 Intake adapter (any Compass format), nine inputs previewed at zero cost, privacy guard, `compass-contract.md` (merged 17a6998; all nine inputs load: delhi unverified_no_baseline, the rest verified)
 - [x] P2 Global provider-credit tracker (Tavily, Serper) and its panel in the console (merged 0ac0b11; the real `/usage` call and the browser check are still to do)
-- [ ] P3 Evidence quality: measuring tools fixed, quote-first atomic extraction, tighten and re-check, slots fixed, corroboration, recency
-- [ ] P4 Discovery: official-first, entity follow-up, both engines on vendor topics, registries, languages and numbers, multi-country, planner and ceilings
-- [ ] P5 Build-grade content: provider dossiers, platform constraints, compliance register, typed values, lane decisions, depth by size, `research.v6`
-- [ ] P6 Output shaping: ranking, digests, reference `pack(need_card)`, ranked confirm list
-- [ ] P7 Robustness: fetch retries, outage handling, resume, Serper retest
+- [x] P3 Evidence quality: measuring tools fixed, checker v3, tighten and re-check, slots fixed (quote-first extraction and the bounded second-source pass were not built: D-167; recency stays as the existing stale and conflict flags)
+- [x] P4 Discovery: official-first, entity follow-up, both engines on vendor topics, registries, languages and numbers, multi-country, planner and ceilings (merged 8fccfab)
+- [x] P5 Build-grade content: provider dossiers, platform constraints, compliance register, typed values, lane decisions, depth by size (additive on `research.v5`, D-162; merged 6e1d062)
+- [x] P6 Output shaping: ranking, digests, reference `pack(need_card)`, ranked confirm list (merged 6e1d062)
+- [ ] P7 Robustness: fetch retries and the failover cool-down are done (1054ca6); the worker side (fetch timeouts counted, attempt cap) and the Serper retest are open; resume was decided against (D-167)
 - [ ] P8 Docs, as-built note, `CURRENT_STATE.md`, owner's final note
 - [ ] Live proof, staged (plan "Live proof"): planted-error test, harness, first-round queries, Small, Serper retest, Porto, Medium, probe, Big

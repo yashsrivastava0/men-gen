@@ -922,7 +922,7 @@ def _entity_names(c: Candidate) -> list[tuple[str, str]]:
     data: dict[str, Any] = c.data
     if c.kind == "competitor" and data.get("name"):
         return [(str(data["name"]), "competitor")]
-    if c.kind == "service_option" and data.get("provider"):
+    if c.kind in ("service_option", "provider_fact") and data.get("provider"):
         return [(str(data["provider"]), "provider")]
     if c.kind == "reference_check" and data.get("name") and data.get("status") == "found":
         return [(str(data["name"]), "reference")]

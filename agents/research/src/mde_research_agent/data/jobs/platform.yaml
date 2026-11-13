@@ -31,6 +31,7 @@ targets:
     priority: 64
     anchor: topic
     scope: none
+    official_first: true
     slots:
       - {key: constraints, type: count, kind: platform_constraint, distinct_by: norm_key, min: 1, required: true}
       - {key: build_effects, type: distinct_values, kind: platform_constraint, attr: effect_on_build, min: 1, required: false}

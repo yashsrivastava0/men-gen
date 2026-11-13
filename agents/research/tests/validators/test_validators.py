@@ -201,7 +201,12 @@ def high_item(out: dict[str, Any]) -> dict[str, Any]:
                 [i.update(flags=[f for f in i["flags"] if f != "unchecked"]) for i in o["items"]],
             ],
         ),
-        ("RV-22", lambda o, e, ev: o["profile"].update(store_tokens=10_000_000)),
+        (
+            "RV-22",
+            # the plans are bigger now (D-163), so the fixture run may already be flagged over the limit on its own:
+            # the rule fires when the store is over the limit and the file does not say so
+            lambda o, e, ev: o["profile"].update(store_tokens=10_000_000, store_over_limit=False),
+        ),
         (
             "RV-22",
             lambda o, e, ev: o["items"].append(

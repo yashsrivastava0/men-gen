@@ -230,24 +230,15 @@ def test_a_wrong_typed_value_rejects_only_that_item_not_the_whole_page() -> None
     assert got[1].reason == "invalid"  # type: ignore[union-attr]
 
 
-# --- registration in the number check (GAP-1: core/numbers.py belongs to the discovery task) ----------------------------
+# --- registration in the number check ---------------------------------------------------------------------------------
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-1: core/numbers.py NUMERIC_FIELDS does not yet list the typed-value keys, so RV-18 does not check them "
-    "against the quote; the lead registers them at the merge and removes this pin",
-)
 def test_typed_value_keys_are_registered_in_the_number_check() -> None:
     from mde_research_agent.core.numbers import NUMERIC_FIELDS
 
     assert {"amount", "period", "unit", "condition", "penalty"} <= set(NUMERIC_FIELDS)
 
 
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-1: until the typed-value keys are registered, check_candidate accepts a typed amount that is not in the quote",
-)
 def test_check_candidate_rejects_a_typed_amount_the_quote_lacks() -> None:
     from datetime import date
 

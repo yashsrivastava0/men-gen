@@ -447,7 +447,9 @@ def build_items(ctx: RunContext, index: BriefIndex) -> list[BuiltItem]:
         if is_stale(age, job=primary.job, is_fee=fee, cfg=cat.prevalence):
             flags.add("stale")
         verdicts = [a.verdict for a in src_members if a.verdict]
-        if not any(a.checked for a in src_members):
+        if not all(a.checked for a in src_members):
+            # One member the checker never saw (the run stopped first) puts its words in the item unchecked: the item
+            # says so, and the ladder calls it unverified (RV-21: every verified atom is checked or its item flagged)
             flags.add("unchecked")
         elif impact == "high" and ctx.checker_vendor == "same":
             flags.add("checker_same_vendor")

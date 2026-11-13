@@ -172,7 +172,10 @@ def test_the_official_variant_is_written_in_the_authoritys_language() -> None:
 
 async def test_rules_for_a_french_speaking_country_are_asked_in_french() -> None:
     run = await run_engine(research_input("synthetic-medium-school-parents-dakar"))
-    sent = official_requests(run)
+    # platform topics ask the store and framework documentation (global registry domains), which is English by design;
+    # this test is about the rules of the country
+    global_domains = {e.domain for e in CAT.authority if e.country == "global"}
+    sent = [r for r in official_requests(run) if not set(r.domains) <= global_domains]
     assert sent
     assert all(r.language == "fr" for r in sent), {r.language for r in sent}
     domains = {d for r in sent for d in r.domains}
