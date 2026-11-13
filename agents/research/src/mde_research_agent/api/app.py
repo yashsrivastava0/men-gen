@@ -13,6 +13,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 from collections.abc import AsyncIterator
+from concurrent.futures import ThreadPoolExecutor
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Any
@@ -237,6 +238,10 @@ def create_app(
             from mde_research_agent.compose import compose_app
 
             app.state.service = compose_app(cfg, the_core)
+        # Name lookups and page text extraction both run in the loop's default thread pool (min(32, cpus + 4) workers). A
+        # wide run (10 fetch lanes, 16 extraction lanes) can queue name lookups behind long extractions, which shows up as
+        # fetch timeouts (first live Big run, 2026-11-13): a larger pool costs nothing when it is not used.
+        asyncio.get_running_loop().set_default_executor(ThreadPoolExecutor(max_workers=64))
         await app.state.service.recover()
         sweeper = asyncio.create_task(_sweep_loop(app, sweep_seconds))
         # Provider credits: ask Tavily for its own count once at start (a no-op without a key or a client). Never

@@ -30,8 +30,12 @@ from mde_research_agent.ids import Ids
 from mde_research_agent.ports.fetch import FetchPort
 from mde_research_agent.ports.search import SearchPort
 
-SEARCH_TIMEOUT_S = 8.0
-FETCH_TIMEOUT_S = 12.0
+# 2026-11-13: the first live Big run (Serper, 54 topics, 10 search lanes) read 15 pages and recorded 375 fetch timeouts and 20
+# search timeouts. The outer fetch wait includes the per-host queue (two at a time per host), the robots.txt load, the page
+# itself with one retry (10 s each, plus a backoff) and the text extraction; 12 s was shorter than that. The fetcher's own
+# 10 s limit still bounds each real attempt; this one only stops a fetch that never returns.
+SEARCH_TIMEOUT_S = 15.0
+FETCH_TIMEOUT_S = 45.0
 SEARCH_TRANSPORT_ATTEMPTS = 3
 RATE_LIMIT_WAIT_CAP_S = 20.0
 PASSAGE_CHARS = {"focused": 6000, "standard": 7500, "deep": 9000}

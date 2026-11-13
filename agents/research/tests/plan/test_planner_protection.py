@@ -131,8 +131,16 @@ def test_the_cap_sizes_are_the_ones_d163_sets() -> None:
         52,
         36,
     )  # 40/28 in D-163; raised after the first live Small run
-    assert (s.hard.searches, s.soft.searches, s.hard.pages) == (130, 90, 180)  # 96/64/130 in D-163; raised after the first live Medium run
-    assert (d.hard.searches, d.soft.searches, d.hard.pages) == (220, 160, 300)  # 170/120/230 in D-163; sized from the Medium run
+    assert (s.hard.searches, s.soft.searches, s.hard.pages) == (
+        130,
+        90,
+        180,
+    )  # 96/64/130 in D-163; raised after the first live Medium run
+    assert (d.hard.searches, d.soft.searches, d.hard.pages) == (
+        220,
+        160,
+        300,
+    )  # 170/120/230 in D-163; sized from the Medium run
 
 
 def test_medium_and_big_run_the_provider_and_entity_topics_they_used_to_leave_out() -> None:
