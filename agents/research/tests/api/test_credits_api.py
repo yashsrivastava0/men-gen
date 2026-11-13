@@ -75,7 +75,7 @@ async def test_credits_start_unknown_with_the_expected_need_per_size(tmp_path: P
     # money-free: nothing in the body is a dollar amount
     assert "usd" not in str(body["providers"]).lower() and "micros" not in str(body["providers"])
     small = body["estimate_hint"]["small"]
-    assert small["tavily"]["high"] == 41 and small["serper"]["mid"] == 26
+    assert small["tavily"]["high"] == 56 and small["serper"]["mid"] == 30
     assert set(body["estimate_hint"]) == {"tiny", "small", "medium", "big"}
     await svc.aclose()
 

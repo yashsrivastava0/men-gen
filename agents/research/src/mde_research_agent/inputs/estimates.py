@@ -46,6 +46,9 @@ class Estimates:
                 e.get("kind") == "run"
                 and e.get("status") in ("complete", "partial")
                 and meta.get("size_class") == size_class
+                and meta.get(
+                    "credits"
+                )  # a run of the current code (credits are booked per run); older ones are not measurements
                 and int(e.get("total_micros", 0)) > 0
             ):
                 measured.append(int(e["total_micros"]))

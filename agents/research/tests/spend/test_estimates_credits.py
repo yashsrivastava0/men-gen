@@ -47,11 +47,13 @@ def test_high_allows_for_retries_billing_a_search_twice() -> None:
             assert est.for_class(cls)["credits"][provider]["high"] == math.ceil(1.2 * searches_high)
 
 
-def test_small_is_seeded_from_the_seven_measured_runs() -> None:
+def test_small_is_the_plans_expected_size_until_a_run_of_the_current_code_exists() -> None:
+    # 2026-11-13 (D-163, D-168): the old code's 27 to 32 searches grew by the platform topics, the provider follow-ups
+    # and the second engine on vendor topics; these are expectations, not measurements
     est = Estimates().for_class("small")
-    assert est["searches"] == {"low": 26, "mid": 29, "high": 34}  # measured 27 to 32, median 29
-    assert 31 <= est["credits"]["tavily"]["mid"] <= 34  # Tavily billed 31 to 34
-    assert 23 <= est["credits"]["serper"]["mid"] <= 29  # Serper billed 23 to 29
+    assert est["searches"] == {"low": 30, "mid": 38, "high": 46}
+    assert est["credits"]["tavily"] == {"low": 32, "mid": 42, "high": 56}
+    assert est["credits"]["serper"] == {"low": 24, "mid": 30, "high": 56}
     assert est["credits_measured_runs"] == {"tavily": 0, "serper": 0}  # no run in this record yet
 
 
@@ -62,14 +64,14 @@ def test_the_measured_median_replaces_mid_and_the_range_stays() -> None:
         run("small", {"tavily": 33, "serper": 2}),
     ]
     est = Estimates().for_class("small", entries)
-    assert est["credits"]["tavily"] == {"low": 28, "mid": 33, "high": 41}
+    assert est["credits"]["tavily"] == {"low": 31, "mid": 33, "high": 56}
     assert est["credits"]["serper"]["mid"] == 2 and est["credits"]["serper"]["low"] == 2
     assert est["credits_measured_runs"] == {"tavily": 3, "serper": 1}
 
 
 def test_a_measured_run_outside_the_range_widens_it() -> None:
-    est = Estimates().for_class("small", [run("small", {"tavily": 55})])
-    assert est["credits"]["tavily"] == {"low": 28, "mid": 55, "high": 55}
+    est = Estimates().for_class("small", [run("small", {"tavily": 70})])
+    assert est["credits"]["tavily"] == {"low": 32, "mid": 70, "high": 70}
 
 
 def test_only_finished_runs_of_the_same_size_and_provider_count() -> None:
@@ -84,7 +86,7 @@ def test_only_finished_runs_of_the_same_size_and_provider_count() -> None:
         {"kind": "run", "status": "complete", "total_micros": 1},
     ]
     est = Estimates().for_class("small", entries)
-    assert est["credits"]["tavily"] == {"low": 28, "mid": 32, "high": 41}
+    assert est["credits"]["tavily"] == {"low": 32, "mid": 42, "high": 56}
     assert est["credits_measured_runs"] == {"tavily": 0, "serper": 0}
 
 
@@ -93,4 +95,17 @@ def test_credits_never_change_the_money_estimate() -> None:
     entries = [run("small", {"tavily": 31})]
     with_credits = Estimates().for_class("small", entries)
     assert with_credits["usd_micros"]["mid"] == 100_000  # from total_micros, as before
-    assert plain["usd_micros"] == {"low": 200000, "mid": 380000, "high": 650000}
+    assert plain["usd_micros"] == {"low": 300000, "mid": 420000, "high": 600000}
+
+
+def test_runs_recorded_before_credits_were_tracked_are_not_measurements_of_the_money_either() -> (
+    None
+):
+    old = {
+        "kind": "run",
+        "status": "complete",
+        "total_micros": 75_000,
+        "meta": {"size_class": "small"},
+    }
+    est = Estimates().for_class("small", [old])
+    assert est["usd_micros"]["mid"] == 420000 and est["basis"] == "estimate"

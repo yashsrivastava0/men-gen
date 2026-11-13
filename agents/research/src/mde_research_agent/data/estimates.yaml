@@ -10,9 +10,12 @@
 # * Small CREDITS are measured too: the Tavily runs billed 31 to 34 credits (a little above their searches: a failed
 #   attempt that is retried, and a thin answer that gets a relaxed retry, are each billed again) and the Serper runs
 #   23 to 29 credits (a search answered from the cache is billed nothing).
-# * TINY, MEDIUM and BIG have never been measured with the current code: their searches and pages are the old
-#   dry-run figures, kept as they are until a real run of that size exists (the app then uses the measured median).
-#   Their credits are derived by the same rule as Small's (below).
+# * 2026-11-13 (D-163, D-168): the planner now runs 15 to 17 topics for Small, 34 to 38 for Medium and 54 to 69 for Big
+#   (risk topics sit outside the caps) and the ceilings were raised (hard searches 40 / 96 / 170). The Small, Medium and
+#   Big rows are therefore the PLAN's expected sizes (about 2.2 to 2.75 searches a topic plus the provider follow-ups and
+#   the second engine on vendor topics), NOT measurements, until a real run of that size on the new code exists; the app then
+#   uses the measured median. Runs recorded before credits were tracked are not used as measurements.
+#   TINY is the old dry-run figure. Credits are derived by the same rule as before (below).
 # * `credits` are integer provider credits, not money (a Tavily basic search is 1 credit, a Serper query 1 credit):
 #   `mid` is the searches' mid (x 1.1 for Tavily, whose billed credits ran about 10% above its searches), `low` the
 #   searches' low, and `high` is 1.2 x the searches' HIGH. The 1.2 is deliberate: a search can be billed more than once,
@@ -30,29 +33,29 @@ classes:
       tavily: {low: 4, mid: 8, high: 10}
       serper: {low: 4, mid: 7, high: 10}
   small:
-    searches: {low: 26, mid: 29, high: 34}
-    pages: {low: 30, mid: 56, high: 66}
-    minutes: {low: 2, mid: 3, high: 5}
-    usd_micros: {low: 200000, mid: 380000, high: 650000}
+    searches: {low: 30, mid: 38, high: 46}
+    pages: {low: 40, mid: 60, high: 80}
+    minutes: {low: 3, mid: 4, high: 6}
+    usd_micros: {low: 300000, mid: 420000, high: 600000}
     credits:
-      tavily: {low: 28, mid: 32, high: 41}
-      serper: {low: 22, mid: 26, high: 41}
+      tavily: {low: 32, mid: 42, high: 56}
+      serper: {low: 24, mid: 30, high: 56}
   medium:
-    searches: {low: 28, mid: 40, high: 56}
-    pages: {low: 40, mid: 58, high: 80}
-    minutes: {low: 4, mid: 7, high: 10}
-    usd_micros: {low: 450000, mid: 850000, high: 1400000}
-    credits:
-      tavily: {low: 28, mid: 44, high: 68}
-      serper: {low: 28, mid: 40, high: 68}
-  big:
-    searches: {low: 60, mid: 85, high: 115}
-    pages: {low: 100, mid: 140, high: 190}
+    searches: {low: 60, mid: 80, high: 96}
+    pages: {low: 80, mid: 110, high: 130}
     minutes: {low: 8, mid: 12, high: 16}
-    usd_micros: {low: 1200000, mid: 2000000, high: 3200000}
+    usd_micros: {low: 650000, mid: 950000, high: 1300000}
     credits:
-      tavily: {low: 60, mid: 94, high: 138}
-      serper: {low: 60, mid: 85, high: 138}
+      tavily: {low: 60, mid: 88, high: 116}
+      serper: {low: 60, mid: 80, high: 116}
+  big:
+    searches: {low: 100, mid: 135, high: 170}
+    pages: {low: 150, mid: 200, high: 230}
+    minutes: {low: 14, mid: 20, high: 28}
+    usd_micros: {low: 1100000, mid: 1600000, high: 2300000}
+    credits:
+      tavily: {low: 100, mid: 148, high: 204}
+      serper: {low: 100, mid: 135, high: 204}
 # How the Research size classes are named for the person using the app.
 labels:
   tiny: Tiny
