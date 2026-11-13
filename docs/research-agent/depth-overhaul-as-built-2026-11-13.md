@@ -42,7 +42,7 @@ corroborated), and at the build-grade shapes the engine needs: provider dossiers
 * **Robustness**: fetch retries, bounded text extraction, longer timeouts at scale, a failover cool-down, a model call that
   waits out an open circuit, a bounded "to confirm" protection in the main pack.
 
-## 4. Live runs on the new code (all booked in the spend record; USD 4.57 of 5.50 in total, including the earlier 1.10)
+## 4. Live runs on the new code (all booked in the spend record; USD 4.68 of 5.50 in total, including the earlier 1.10)
 
 | Run | Input and provider | Status | Searches / pages / seconds | USD | Credits | Required slots | Facts: official / single / unverified |
 | --- | --- | --- | --- | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ corroborated), and at the build-grade shapes the engine needs: provider dossiers
 | 4 | Small yoga, Serper | partial (ceiling) | 52 / 79 / 241 | 0.135 | Serper 52 | 11 of 19 (58%) | 89 / 78 / 23 (12%) |
 | 5, 6 | Big freight, Serper (fetch broken) | partial | 196, 189 / 15, 27 pages | 0.24, 0.31 | Serper 179, 181 | 7, 10 of 66 | 58, 99 facts |
 | 7 | Big freight, Serper (after the fetch fix) | partial (page ceiling) | 199 / 300 / 434 | 0.517 | Serper 199, Tavily 12 | 55 of 67 (82%) | 307 / 205 / 61 (11%) |
-| 8, 9 | Medium Nashik, Serper | **failed** | 68 / 95 | 0.11 each | | | none |
+| 8, 9, 10 | Medium Nashik, Serper | **failed** (three attempts) | 68 / 95 | 0.11 each | | | none |
 
 Runs 8 and 9 failed for a reason outside the research code: **OpenAI answered "You have no credits remaining"** (HTTP 429) to
 every call, which opened the gateway's circuit breaker and stopped both runs after one minute. No further live call is
@@ -103,7 +103,7 @@ provider documentation. That is what Spec needs for integrations, but it is why 
 * Porto, Dakar, Pune, hospital, Delhi and Central America were previewed (zero cost) and not run live.
 
 Money to finish the proof, once OpenAI credits are added: Medium on Tavily about USD 1.1 (or 0.4 on Serper), the consumer probe
-0.15, Porto 0.45, Big on Tavily about 1.9. The new live runs used 4.57 of the 5.50 total, and the Tavily plan has about 680 of
+0.15, Porto 0.45, Big on Tavily about 1.9. The new live runs used 4.68 of the 5.50 total, and the Tavily plan has about 680 of
 1,000 credits left this cycle.
 
 ## 8. How to run and read it
