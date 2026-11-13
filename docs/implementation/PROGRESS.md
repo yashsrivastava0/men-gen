@@ -237,6 +237,6 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] P4 Discovery: official-first, entity follow-up, both engines on vendor topics, registries, languages and numbers, multi-country, planner and ceilings (merged 8fccfab)
 - [x] P5 Build-grade content: provider dossiers, platform constraints, compliance register, typed values, lane decisions, depth by size (additive on `research.v5`, D-162; merged 6e1d062)
 - [x] P6 Output shaping: ranking, digests, reference `pack(need_card)`, ranked confirm list (merged 6e1d062)
-- [ ] P7 Robustness: fetch retries and the failover cool-down are done (1054ca6); the worker side (fetch timeouts counted, attempt cap) and the Serper retest are open; resume was decided against (D-167)
-- [ ] P8 Docs, as-built note, `CURRENT_STATE.md`, owner's final note
-- [ ] Live proof, staged (plan "Live proof"): planted-error test, harness, first-round queries, Small, Serper retest, Porto, Medium, probe, Big
+- [x] P7 Robustness: fetch retries, bounded extraction, timeouts at scale, failover cool-down, circuit wait (D-167, D-170); resume decided against; the Serper retest was one run (D-170)
+- [x] P8 Docs: as-built note `docs/research-agent/depth-overhaul-as-built-2026-11-13.md`, evidence note, discovery note, spec contract, compass contract; `CURRENT_STATE.md` updated
+- [ ] Live proof: done for the planted-error test, the re-extraction experiment, Small (Tavily x2, Serper), Medium (old ceilings), Big (Serper); **not done** (OpenAI credits exhausted, D-170): Medium on the final code, the consumer probe, Porto, Big on Tavily
