@@ -5,7 +5,7 @@
 - Signals: none
 - Work: 10 searches, 19 pages, 0 s, USD 0.00
 - Topics: 1 covered, 1 not found, of 2; required slots 2 of 3
-- Items: 32 (main store about 10923 tokens, appendix 0)
+- Items: 32 (main store about 12670 tokens, appendix 0)
 - Provider: fake; models: gpt-6-luna / checker gpt-6-luna (same)
 
 ## Lane quality

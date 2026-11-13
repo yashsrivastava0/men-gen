@@ -32,7 +32,7 @@ Reader: the Spec lanes (Blueprint, Integrations, Design, Screens, Mock, Verify) 
 | `conflicts[]` | Topics where sources disagree; both items are kept | Never default a conflicting value |
 | `items[]`, `norms[]`, `by_*` | The findings with prevalence, recency, sources and `data` by kind; indexes by Brief id and integration | The evidence behind everything above |
 | `slices{}` | Per lane: every main-store item (`item_ids`), split into chunks of at most `chunk_items` (120) and never truncated; a digest (an index) outside the store size | Whole-store reading; chunks per lane |
-| `profile` | `store_tokens`, `appendix_items`, `digest_tokens_total` (all six lane digests together; `digest_tokens` is the same number, kept for compatibility), `digest_tokens_cap_per_lane` (the cap of ONE lane digest: the six together can use up to six times it) | Route without reading the file |
+| `profile` | `store_tokens` (the compact view: items, norms, confirm, conflicts, sources and the aggregates above), `appendix_items`, `digest_tokens_total` (all six lane digests together; `digest_tokens` is the same number, kept for compatibility), `digest_tokens_cap_per_lane` (the cap of ONE lane digest: the six together can use up to six times it) | Route without reading the file |
 
 ## Ranking and the main store
 

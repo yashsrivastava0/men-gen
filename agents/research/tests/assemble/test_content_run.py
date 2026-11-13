@@ -10,6 +10,7 @@ import pytest
 from support.content import combine, compliance_extractor, fact_extractor, platform_extractor
 from support.testing import atom, extractor, load_fixture, rule_extractor, run_engine
 
+from mde_research_agent.assemble.store import compact_dossier, tokens_of
 from mde_research_agent.domain.atoms import payload_from_wire, wire_atom_model
 
 
@@ -256,3 +257,21 @@ def test_the_wire_check_is_the_same_function_the_pipeline_uses() -> None:
     )
     with pytest.raises(ValueError):
         payload_from_wire("provider_fact", wire_atom_model("provider_fact").model_validate(a))
+
+
+def test_the_store_size_counts_the_aggregates_the_compact_view_carries(rich) -> None:
+    """Dossiers, platform constraints, the register and the lane decisions are part of what Spec reads, so they are inside
+    ``profile.store_tokens`` (and the store plan reserved room for them), not outside it."""
+    r = rich.research
+    aggregates = tokens_of(
+        [
+            [compact_dossier(d) for d in r["dossiers"]],
+            r["dossiers_by_integration"],
+            r["platform_constraints"],
+            r["compliance_register"],
+            r["lane_decisions"],
+        ]
+    )
+    items = sum(i["tokens_est"] for i in r["items"] if i["store"] == "main")
+    assert aggregates > 0 and r["profile"]["store_tokens"] >= items + aggregates * 0.8
+    assert rich.violations == []

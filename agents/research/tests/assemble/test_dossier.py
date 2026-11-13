@@ -290,3 +290,37 @@ def test_a_front_end_engineer_can_see_every_required_field_in_the_dossier_alone(
 @pytest.mark.parametrize("field", ["fees", "limits", "settlement", "onboarding_lead_time"])
 def test_typed_fields_are_marked_typed_in_the_layout(field: str) -> None:
     assert CAT.dossiers.fields[field].kind == "typed"
+
+
+def test_the_compact_dossier_drops_what_repeats_but_keeps_every_unknown_and_every_conflicting_value() -> (
+    None
+):
+    from mde_research_agent.assemble.store import compact_dossier
+
+    d, _ = one(
+        [
+            fee("RI-001", "2.9"),
+            fee(
+                "RI-002",
+                "3.4",
+                domain="blog.example",
+                source_class="blog",
+                evidence="single_source",
+            ),
+            make_item("RI-003", "Payco", "products", "cards"),
+        ]
+    )
+    fields = compact_dossier(d.model_dump(mode="json"))["fields"]
+    assert fields["products"].get("value") == "cards" and "values" not in fields["products"], (
+        "one value is not repeated"
+    )
+    assert (
+        fields["products"]["item_ids"] == ["RI-003"]
+        and fields["products"]["evidence"] == "official"
+    )
+    assert fields["fees"]["null_reason"] == "conflict" and len(fields["fees"]["values"]) == 2, (
+        "a conflict keeps both"
+    )
+    assert fields["sandbox"] == {"null_reason": "not_stated_by_sources"}, (
+        "an unknown stays an explicit null with its reason"
+    )

@@ -231,7 +231,7 @@ async def test_a_small_store_limit_moves_items_to_the_appendix_and_conserves_eve
 async def test_without_a_limit_problem_the_whole_output_is_main_store_and_slices_split_by_chunk_items() -> (
     None
 ):
-    run = await run_engine(load_fixture("quick-yoga-studio-bengaluru"))
+    run = await run_engine(load_fixture("quick-yoga-studio-bengaluru"), store_tokens=200_000)
     assert all(i["store"] == "main" and i["tokens_est"] > 0 for i in run.research["items"])
     assert (
         run.research["profile"]["store_tokens"] > 0

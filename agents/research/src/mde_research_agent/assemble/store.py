@@ -198,16 +198,23 @@ def _present(value: Any) -> Any:
     return value
 
 
+def _compact_field(f: dict[str, Any]) -> dict[str, Any]:
+    if f.get("value") is None and not f.get("values"):
+        return {"null_reason": f.get("null_reason")}  # an explicit unknown (R27)
+    out = _present(f)
+    values = f.get("values") or []
+    if len(values) == 1 and not values[0].get("conflict"):
+        out.pop(
+            "values", None
+        )  # the single value is already ``value``; its item is in ``item_ids``
+    return out
+
+
 def compact_dossier(d: dict[str, Any]) -> dict[str, Any]:
-    """A dossier in the compact view: empty parts are dropped, but a field that is empty keeps its ``null_reason`` (an
-    explicit unknown, R27) and a conflict keeps every value."""
+    """A dossier in the compact view: empty parts are dropped, a field that is empty keeps its ``null_reason`` (an explicit
+    unknown, R27), a field with one value does not repeat it, and a conflict or several values keep every value."""
     out = _present({k: v for k, v in d.items() if k != "fields"})
-    out["fields"] = {
-        key: _present(f)
-        if f.get("value") is not None or f.get("values")
-        else {"null_reason": f.get("null_reason")}
-        for key, f in d.get("fields", {}).items()
-    }
+    out["fields"] = {key: _compact_field(f) for key, f in d.get("fields", {}).items()}
     return out
 
 
