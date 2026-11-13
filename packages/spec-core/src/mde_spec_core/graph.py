@@ -467,7 +467,7 @@ class SpecGraph(Node):
     assets: dict[str, AssetNeed] = Field(default_factory=dict)
     hero: dict[str, HeroRecord] = Field(default_factory=dict)
     glossary: dict[str, str] = Field(default_factory=dict)  # term -> source-language term
-    copy: dict[str, dict[str, str]] = Field(default_factory=dict)  # locale -> key -> text
+    locale_copy: dict[str, dict[str, str]] = Field(default_factory=dict)  # locale -> key -> text
     tokens: dict[str, Any] = Field(
         default_factory=dict
     )  # direction id -> DTCG tree (built by code)
