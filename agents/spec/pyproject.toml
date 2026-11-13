@@ -1,0 +1,34 @@
+[project]
+name = "mde-spec-agent"
+version = "0.1.0"
+description = "Spec: the third engine. Compass Brief + Research -> one static Spec Pack for the front-end engine; standalone Spec Bench app"
+requires-python = ">=3.12,<3.14"
+dependencies = [
+  "mde-core",
+  "mde-contracts",
+  "mde-llm-gateway",
+  "mde-spec-core",
+  "mde-compass-intake",
+  "pydantic>=2.9",
+  "pydantic-settings>=2.5",
+  "pyyaml>=6.0",
+  "fastapi>=0.115",
+  "uvicorn>=0.30",
+  "httpx>=0.27",
+  "jinja2>=3.1",
+  "jsonschema>=4.23",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mde_spec_agent"]
+
+[tool.uv.sources]
+mde-core = { workspace = true }
+mde-contracts = { workspace = true }
+mde-llm-gateway = { workspace = true }
+mde-spec-core = { workspace = true }
+mde-compass-intake = { workspace = true }

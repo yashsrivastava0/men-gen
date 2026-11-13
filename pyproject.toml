@@ -18,6 +18,10 @@ dependencies = [
   "mde-flow",
   "mde-compass",
   "mde-research-agent",
+  "mde-spec-core",
+  "mde-compass-intake",
+  "mde-spec-agent",
+  "mde-verify-agent",
   "mde-context-api",
   "mde-llm-gateway-api",
   "mde-cli",
@@ -28,7 +32,7 @@ package = false
 
 [tool.uv.workspace]
 members = ["packages/*", "apps/*", "agents/*"]
-exclude = ["apps/web", "apps/research-console"]  # front ends are static files, not Python members
+exclude = ["apps/web", "apps/research-console", "apps/spec-bench"]  # front ends are static files, not Python members
 
 [tool.uv.sources]
 mde-core = { workspace = true }
@@ -44,6 +48,10 @@ mde-spec-builder = { workspace = true }
 mde-flow = { workspace = true }
 mde-compass = { workspace = true }
 mde-research-agent = { workspace = true }
+mde-spec-core = { workspace = true }
+mde-compass-intake = { workspace = true }
+mde-spec-agent = { workspace = true }
+mde-verify-agent = { workspace = true }
 mde-context-api = { workspace = true }
 mde-llm-gateway-api = { workspace = true }
 mde-cli = { workspace = true }
@@ -92,6 +100,7 @@ ignore = [
 "packages/persistence/**/migrations/**" = ["E402"]
 "agents/compass/**/migrations/**" = ["E402"]
 "agents/research/**/migrations/**" = ["E402"]
+"agents/spec/**/tests/**" = ["S105", "S106"]
 
 [tool.ruff.lint.flake8-tidy-imports.banned-api]
 "openai".msg = "Only mde_llm_gateway may import a model vendor SDK (brief section 2, rule 14)."
@@ -113,6 +122,7 @@ known-first-party = [
   "mde_core", "mde_contracts", "mde_llm_gateway", "mde_prompts", "mde_content",
   "mde_persistence", "mde_spec_loader", "mde_discovery", "mde_research",
   "mde_spec_builder", "mde_flow", "mde_compass", "mde_research_agent", "mde_context_api",
+  "mde_spec_core", "mde_compass_intake", "mde_spec_agent", "mde_verify_agent",
   "mde_llm_gateway_api", "mde_cli",
 ]
 
@@ -154,5 +164,6 @@ branch = true
 source = [
   "packages/flow/src", "packages/llm-gateway/src", "packages/spec-loader/src",
   "packages/spec-builder/src", "packages/discovery/src", "agents/compass/src",
-  "agents/research/src",
+  "agents/research/src", "packages/spec-core/src", "packages/compass-intake/src",
+  "agents/spec/src", "agents/verify/src",
 ]

@@ -13,6 +13,10 @@ root_packages =
     mde_flow
     mde_compass
     mde_research_agent
+    mde_spec_core
+    mde_compass_intake
+    mde_spec_agent
+    mde_verify_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -23,11 +27,11 @@ name = Package layering (brief 5.2)
 type = layers
 layers =
     mde_cli
-    mde_context_api | mde_llm_gateway_api | mde_compass | mde_research_agent
+    mde_context_api | mde_llm_gateway_api | mde_compass | mde_research_agent | mde_spec_agent | mde_verify_agent
     mde_flow
     mde_discovery | mde_research | mde_spec_builder
     mde_prompts
-    mde_llm_gateway | mde_content | mde_persistence | mde_spec_loader
+    mde_llm_gateway | mde_content | mde_persistence | mde_spec_loader | mde_spec_core | mde_compass_intake
     mde_contracts
     mde_core
 
@@ -47,6 +51,8 @@ modules =
     mde_content
     mde_persistence
     mde_spec_loader
+    mde_spec_core
+    mde_compass_intake
 
 [importlinter:contract:only-gateway-imports-model-sdks]
 name = Only mde_llm_gateway may import a model vendor SDK (openai, anthropic; rule 14)
@@ -64,6 +70,10 @@ source_modules =
     mde_flow
     mde_compass
     mde_research_agent
+    mde_spec_core
+    mde_compass_intake
+    mde_spec_agent
+    mde_verify_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -89,6 +99,10 @@ source_modules =
     mde_flow
     mde_compass
     mde_research_agent
+    mde_spec_core
+    mde_compass_intake
+    mde_spec_agent
+    mde_verify_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -136,6 +150,10 @@ forbidden_modules =
     mde_prompts
     mde_content
     mde_spec_loader
+    mde_spec_core
+    mde_compass_intake
+    mde_spec_agent
+    mde_verify_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
@@ -156,7 +174,78 @@ forbidden_modules =
     mde_content
     mde_spec_loader
     mde_persistence
+    mde_spec_core
+    mde_compass_intake
+    mde_spec_agent
+    mde_verify_agent
     mde_context_api
     mde_llm_gateway_api
     mde_cli
+allow_indirect_imports = True
+
+[importlinter:contract:spec-agent-isolated]
+name = The Spec agent imports only core, contracts, llm_gateway, spec_core and compass_intake (no other agent, no Verify, no app, no legacy spec packages)
+type = forbidden
+source_modules =
+    mde_spec_agent
+forbidden_modules =
+    mde_compass
+    mde_discovery
+    mde_research
+    mde_research_agent
+    mde_spec_builder
+    mde_spec_loader
+    mde_flow
+    mde_prompts
+    mde_content
+    mde_persistence
+    mde_verify_agent
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+allow_indirect_imports = True
+
+[importlinter:contract:verify-agent-isolated]
+name = The Verify agent imports only core, contracts, llm_gateway and spec_core (never the Spec agent or any other agent)
+type = forbidden
+source_modules =
+    mde_verify_agent
+forbidden_modules =
+    mde_compass
+    mde_compass_intake
+    mde_discovery
+    mde_research
+    mde_research_agent
+    mde_spec_builder
+    mde_spec_loader
+    mde_spec_agent
+    mde_flow
+    mde_prompts
+    mde_content
+    mde_persistence
+    mde_context_api
+    mde_llm_gateway_api
+    mde_cli
+allow_indirect_imports = True
+
+[importlinter:contract:spec-core-is-foundation]
+name = spec_core and compass_intake import only core and contracts (no gateway, no agent, no I/O stack)
+type = forbidden
+source_modules =
+    mde_spec_core
+    mde_compass_intake
+forbidden_modules =
+    mde_llm_gateway
+    mde_compass
+    mde_research_agent
+    mde_spec_agent
+    mde_verify_agent
+    mde_spec_builder
+    mde_spec_loader
+    mde_flow
+    mde_context_api
+    mde_cli
+    fastapi
+    uvicorn
+    httpx
 allow_indirect_imports = True
