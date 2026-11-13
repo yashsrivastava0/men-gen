@@ -427,6 +427,9 @@ class GraphMeta(Node):
     languages: list[str] = Field(default_factory=lambda: ["en"])
     frozen: bool = False
     inputs_hash: str = ""
+    facts: list[str] = Field(
+        default_factory=list
+    )  # predicate facts that hold (vocab/predicates.yaml)
 
 
 NODE_TYPES: dict[str, type[Envelope]] = {

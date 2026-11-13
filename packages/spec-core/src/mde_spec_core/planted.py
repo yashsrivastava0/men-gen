@@ -12,7 +12,8 @@ from dataclasses import dataclass, field
 
 from .graph import Feature, Prov, Rule, Screen, SpecGraph, StateSpec
 from .pack import Pack, assemble
-from .validators import Context, Finding, VocabView, run_all
+from .validators import Finding, VocabView, run_all
+from .validators.context import make_context
 
 
 @dataclass
@@ -298,26 +299,16 @@ class PlantedResult:
 
 
 def default_vocab() -> VocabView:
-    """A small vocabulary view for the proof (the real one is built from the data files)."""
-    return VocabView(
-        required_states={
-            "list": ["loading", "empty", "error", "offline", "forbidden", "not_found"],
-            "detail": ["loading", "error", "offline", "forbidden", "not_found"],
-            "form": ["loading", "error", "offline", "forbidden", "not_found"],
-        },
-        form_words={
-            "button",
-            "sticky",
-            "top",
-            "bottom",
-            "carousel",
-            "modal",
-            "toast",
-            "banner",
-            "slide",
-        },
-        shapes=set(),
-    )
+    """The vocabulary view the proof uses: built from the real data files."""
+    from .validators.context import vocab_view
+
+    return vocab_view()
+
+
+def vocab_view_for(g: SpecGraph) -> VocabView:
+    from .validators.context import vocab_view
+
+    return vocab_view(set(g.meta.facts))
 
 
 def run_planted(
@@ -333,9 +324,9 @@ def run_planted(
         pack2 = assemble(g) if d.id not in ("volatile_data_in_body", "task_over_budget") else pack
         if d.id == "volatile_data_in_body":
             pack2.files = plant.pack_files or pack.files
-        ctx = Context(
+        ctx = make_context(
             g,
-            vocab=vocab or default_vocab(),
+            vocab=vocab or vocab_view_for(g),
             pack=pack2,
             research=_research(plant.ctx_kwargs.get("research_items")),
             brand_names=plant.ctx_kwargs.get("brand_names", set()),

@@ -51,7 +51,7 @@ def v14(ctx: Context) -> list[Finding]:
     langs = g.meta.languages or [g.meta.source_language]
     for s in g.screens.values():
         for k in s.copy_keys:
-            if not k.startswith(namespaced_copy_key(s.id, "")):
+            if not (k.startswith(namespaced_copy_key(s.id, "")) or k.startswith("lib.")):
                 out.append(
                     Finding(
                         "V-14",
@@ -198,25 +198,23 @@ def v24(ctx: Context) -> list[Finding]:
 
 @validator("V-25", "Form-vocabulary lint on free text and identifiers (warning in v1)")
 def v25(ctx: Context) -> list[Finding]:
+    from mde_spec_core.libraries import form_word_findings
+
     out = []
-    deny = {w.lower() for w in ctx.vocab.form_words}
-    allow = {w.lower() for w in ctx.vocab.form_word_allow}
     suffixes = tuple(ctx.config.checks.widget_key_suffixes)
     for s in ctx.graph.screens.values():
         per_card = 0
         for where, text in _free_text(s):
-            low = text.lower()
-            hits = sorted(
-                {w for w in deny if re.search(rf"\b{re.escape(w)}\b", low) and w not in allow}
-            )
-            if hits or _HEX.search(text) or _UNITS.search(text):
+            hits = form_word_findings(text, s.screen_type)
+            if hits:
                 per_card += 1
+                words = ", ".join(sorted({h.word.lower() for h in hits}))
                 out.append(
                     Finding(
                         "V-25",
                         "warning",
                         where,
-                        f"form words in free text: {', '.join(hits) or 'hex or unit'}",
+                        f"form words in free text: {words}",
                         "say what it communicates, not how it looks",
                         "B",
                     )

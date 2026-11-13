@@ -15,6 +15,7 @@ from .graph import (
     AccessRow,
     Action,
     App,
+    Behavior,
     Entity,
     FieldDef,
     Flow,
@@ -33,12 +34,14 @@ from .graph import (
     Screen,
     SpecGraph,
     Stage,
-    StateSpec,
     Step,
     Story,
     Transition,
 )
 from .ids import namespaced_copy_key
+from .libraries import state_library_for
+from .rcode import instantiate_behaviors
+from .vocab import behavior_categories_for
 
 _NOUNS = [
     "order",
@@ -389,7 +392,10 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                 namespaced_copy_key(sid, k)
                 for k in ("title", "purpose", "empty", *[a.key for a in acts])
             ]
+            lib = state_library_for(stype, sp.profile)
             for loc in sp.locales:
+                for t in lib.states:
+                    g.locale_copy.setdefault(loc, {})[t.copy_key] = t.copy_text
                 for k in ckeys:
                     g.locale_copy.setdefault(loc, {})[k] = f"{k.split('.')[1]} text ({loc})"
             g.add(
@@ -415,11 +421,8 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                     ),
                     regions=reg,
                     actions=acts,
-                    states=[
-                        StateSpec(kind=k, message=f"{k} message")
-                        for k in ("loading", "empty", "error", "offline", "forbidden", "not_found")
-                    ],
-                    copy_keys=ckeys,
+                    states=[t.to_state_spec() for t in lib.states],
+                    copy_keys=ckeys + [t.copy_key for t in lib.states],
                     acceptance=[
                         Acceptance(
                             given="a signed in user",
@@ -483,4 +486,20 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
             AccessRow(role_id=r, actions=["view"]) for r in role_ids[1:3]
         ]
     g.glossary = {"order": "order"}
+    g.meta.facts = sorted(
+        {"accounts", "always"} | ({"provider_side_flow", "payments"} if sp.integrations else set())
+    )
+    instantiate_behaviors(g, set(g.meta.facts))
+    have = {b.category for b in g.behaviors.values()}
+    for cat in behavior_categories_for(
+        sp.profile, set(g.meta.facts)
+    ):  # app-specific ones the model would write
+        if cat.name not in have:
+            bid = f"BHV-{len(g.behaviors) + 1:03d}"
+            g.behaviors[bid] = Behavior(
+                id=bid,
+                category=cat.name,
+                text=f"synthetic {cat.name} behaviour",
+                provenance=[Prov(kind="library", ref="synth")],
+            )
     return g
