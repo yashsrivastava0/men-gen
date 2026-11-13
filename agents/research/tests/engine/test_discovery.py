@@ -443,3 +443,25 @@ def test_the_flags_come_from_the_data_not_from_code() -> None:
         "identity",
         "accounting",
     }
+
+
+async def test_a_vendor_topic_starts_with_a_discovery_query_that_replaces_a_descriptive_one() -> (
+    None
+):
+    run = await run_engine(research_input("quick-yoga-studio-bengaluru"))
+    services = [ts for ts in run.ctx.targets.values() if ts.target.engines == "both"]
+    assert services, "the yoga plan has vendor topics"
+    for ts in services:
+        first_round = [q for q in run.ctx.queries if q.target_id == ts.target.id and q.round == 1]
+        assert first_round
+        disc = [
+            q for q in first_round if " providers " in f" {q.text} " and "alternatives" in q.text
+        ]
+        assert len(disc) == 1, (ts.target.label, [q.text for q in first_round])
+        assert ts.target.anchors[0].split()[0].casefold() in disc[0].text.casefold()
+        assert not disc[0].text.casefold().startswith("official")
+    other = [ts for ts in run.ctx.targets.values() if ts.target.engines != "both"]
+    for ts in other:
+        assert not any(
+            "alternatives" in q.text for q in run.ctx.queries if q.target_id == ts.target.id
+        )

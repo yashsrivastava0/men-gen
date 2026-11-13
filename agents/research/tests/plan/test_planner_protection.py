@@ -127,7 +127,10 @@ def test_the_cap_sizes_are_the_ones_d163_sets() -> None:
         38,
     ]
     f, s, d = (CAT.ceilings.for_class(c) for c in ("focused", "standard", "deep"))
-    assert (f.hard.searches, f.soft.searches) == (40, 28)
+    assert (f.hard.searches, f.soft.searches) == (
+        52,
+        36,
+    )  # 40/28 in D-163; raised after the first live Small run
     assert (s.hard.searches, s.soft.searches, s.hard.pages) == (96, 64, 130)
     assert (d.hard.searches, d.soft.searches, d.hard.pages) == (170, 120, 230)
 

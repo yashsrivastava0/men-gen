@@ -313,20 +313,35 @@ class Director:
             for ts in ctx.targets.values()
             if ts.target.job == "services" and ts.status != "cancelled"
         ]
+
+        def owner_of(ent: EntityRecord) -> TargetState | None:
+            # the services topic that matters most among those that found the provider (payments before calendar sync)
+            mine = [ts for ts in services if ts.target.id in ent.target_ids]
+            return (
+                max(mine, key=lambda s: (s.target.priority, s.target.id), default=None)
+                if mine
+                else None
+            )
+
+        owners = {
+            e.name: owner_of(e) for e in ctx.entities.values() if e.kind == "provider" and e.domain
+        }
+
+        def owner_priority(e: EntityRecord) -> int:
+            owner = owners.get(e.name)
+            return owner.target.priority if owner is not None else 0
+
         ranked = sorted(
             (e for e in ctx.entities.values() if e.kind == "provider" and e.domain),
-            key=lambda e: (-len(e.target_ids), e.name.casefold()),
+            key=lambda e: (
+                -owner_priority(e),
+                -len(e.target_ids),
+                e.name.casefold(),
+            ),
         )
         by_topic: dict[str, list[EntityRecord]] = {}
         for ent in ranked[:cap]:
-            owner = next(
-                (
-                    ts
-                    for ts in sorted(services, key=lambda s: s.target.id)
-                    if ts.target.id in ent.target_ids
-                ),
-                None,
-            )
+            owner = owners.get(ent.name)
             if owner is not None:
                 by_topic.setdefault(owner.target.id, []).append(ent)
         if not by_topic:

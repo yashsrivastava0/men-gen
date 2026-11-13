@@ -119,7 +119,9 @@ def handle(inp: AssembleIn) -> AssembleOut:
 
 def validate(inp: AssembleIn, out: AssembleOut) -> list[str]:
     lanes = {lane.lane: {i.id for i in lane.items} for lane in inp.lanes}
-    errors = [f"unknown lane {lo.lane!r}" for lo in out.lanes if lo.lane not in lanes]
+    # a lane the run has no items for may come back empty (the model lists all six): that is harmless, only a lane that
+    # orders items the input never had is wrong
+    errors = [f"unknown lane {lo.lane!r}" for lo in out.lanes if lo.lane not in lanes and lo.order]
     for lo in out.lanes:
         known = lanes.get(lo.lane, set())
         errors += [f"id {i} not in lane {lo.lane}" for i in lo.order if i not in known]

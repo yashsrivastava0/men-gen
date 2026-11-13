@@ -325,9 +325,42 @@ async def write_variants(
                 elif len(valid) < want + 1:
                     valid.append(make(v))
                 break
+    if t.engines == "both" and round_no == 1:
+        _put_discovery_first(ctx, ts, valid, want)
     if ctx.failures.private_blocked > blocked_before:
         await ctx.warn("private_term", target_id=t.id)
     return _keep_official(valid, want + 1)
+
+
+def discovery_text(t: Target) -> str:
+    """The query that finds who the providers ARE in the place ("best online payments providers India alternatives"):
+    a comparison query surfaces the local leaders that a documentation query leaves to the global giants (Run on the
+    yoga input of 2026-11-13: payments in India came back as Visa and PayPal)."""
+    anchor = t.anchors[0] if t.anchors else ""
+    place = t.place.text if t.place else ""
+    return " ".join(f"best {anchor} providers {place} alternatives".split())
+
+
+def _put_discovery_first(
+    ctx: RunContext, ts: TargetState, valid: list[FollowupQuery], want: int
+) -> None:
+    """On a vendor topic (``engines: both``) the first query is a discovery query. It REPLACES a descriptive variant, so
+    the number of searches does not change; being first it is also the one the second engine answers."""
+    t = ts.target
+    text = discovery_text(t)
+    if (
+        not text
+        or not _check(ctx, t, text)
+        or is_repeat(text, [*ts.queries, *(x.text for x in valid)])
+    ):
+        return
+    q = FollowupQuery(text, "en", False, None, False, "descriptive")
+    swap = next((i for i, x in enumerate(valid) if x.variant == "descriptive" and not x.seed), None)
+    if swap is not None:
+        valid.pop(swap)
+    elif len(valid) >= want + 1:
+        return
+    valid.insert(0, q)
 
 
 def _keep_official(valid: list[FollowupQuery], n: int) -> list[FollowupQuery]:
