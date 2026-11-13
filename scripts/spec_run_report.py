@@ -45,12 +45,15 @@ def report(run: Path) -> dict:
         k["calls"] += 1
         k["repaired"] += 1 if d.get("repaired") else 0
         k["fallback"] += 1 if d.get("fallback") else 0
+        k["clean"] = k.get("clean", 0) + (0 if (d.get("repaired") or d.get("fallback")) else 1)
+        if d.get("fallback") and d.get("reason"):
+            k.setdefault("reasons", []).append(d["reason"][:160])
         k["tokens_in"] += int((d.get("tokens") or {}).get("in", 0))
         k["tokens_out"] += int((d.get("tokens") or {}).get("out", 0))
         k["cost_micros"] += int(d.get("cost_micros", 0))
     for k in kinds.values():
         n = max(1, k["calls"])
-        k["first_try_pass"] = round((n - k["repaired"] - k["fallback"]) / n, 3)
+        k["first_try_pass"] = round(k.get("clean", 0) / n, 3)
         k["repair_rate"] = round(k["repaired"] / n, 3)
     sc = load(run / "evidence" / "self-check.json") or {}
     man = load(run / "pack" / "MANIFEST.json") or {}

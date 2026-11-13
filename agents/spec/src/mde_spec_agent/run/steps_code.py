@@ -165,7 +165,10 @@ async def assemble_and_check(ctx: RunContext) -> None:
         if ctx.derived
         else set(),
     )
-    banner = weak_route_banner(len(reasked), max(1, len(ctx.graph.screens)), "screens", ctx.config)
+    reasked_screens = {n for n in reasked if str(n).startswith("SCR-")}
+    banner = weak_route_banner(
+        len(reasked_screens), max(1, len(ctx.graph.screens)), "screens", ctx.config
+    )
     if banner:
         ctx.banners.append({"code": banner.code, "message": banner.message, "step": banner.step})
         ctx.emit("banner", code=banner.code, message=banner.message)

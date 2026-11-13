@@ -1,0 +1,156 @@
+{
+ "banners": [
+  {
+   "code": "weak_route",
+   "message": "this route needed many repairs for step screens (108 of 18 nodes); consider a stronger route for it"
+  }
+ ],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "cost_micros": 0,
+   "fallback": 1,
+   "first_try_pass": -1.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 0,
+   "tokens_out": 0
+  },
+  "COPY-L": {
+   "calls": 1,
+   "cost_micros": 6098,
+   "fallback": 0,
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 11217,
+   "tokens_out": 9952
+  },
+  "DSGN": {
+   "calls": 1,
+   "cost_micros": 0,
+   "fallback": 1,
+   "first_try_pass": -1.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 0,
+   "tokens_out": 0
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "cost_micros": 0,
+   "fallback": 1,
+   "first_try_pass": -1.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 0,
+   "tokens_out": 0
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "cost_micros": 2476,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4482,
+   "tokens_out": 4053
+  },
+  "MOCK-HERO": {
+   "calls": 2,
+   "cost_micros": 3351,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10108,
+   "tokens_out": 4677
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "cost_micros": 3962,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 31889,
+   "tokens_out": 1545
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "cost_micros": 4707,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 29303,
+   "tokens_out": 3552
+  },
+  "PROD-MODULE": {
+   "calls": 4,
+   "cost_micros": 10411,
+   "fallback": 2,
+   "first_try_pass": 0.0,
+   "repair_rate": 0.5,
+   "repaired": 2,
+   "tokens_in": 48108,
+   "tokens_out": 11199
+  },
+  "SCRN": {
+   "calls": 3,
+   "cost_micros": 7766,
+   "fallback": 1,
+   "first_try_pass": 0.0,
+   "repair_rate": 0.667,
+   "repaired": 2,
+   "tokens_in": 28613,
+   "tokens_out": 9807
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "cost_micros": 2579,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 9495,
+   "tokens_out": 3257
+  }
+ },
+ "calls_total": 17,
+ "cost_usd": 0.0413,
+ "events": 80,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "e66043c942ed435b1a86b7c1dcea0b045f6919805f90ceaae327e430d470da88",
+  "critic_vendor": null,
+  "files": 69,
+  "tokens": 78438
+ },
+ "partial_reason": null,
+ "profile": "compact",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7BMPMABTRBPDM6JWP3KKXBZ",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 5,
+  "max_read_tokens": 22036,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": true
+ }
+}

@@ -41,7 +41,14 @@ def gateway_config(*, offline: bool) -> GatewayConfig:
         if offline
         else {"fast": 600, "standard": 240, "deep": 120}
     )
-    return GatewayConfig(concurrency=conc, rpm=rpm, max_untrusted_chars=UNTRUSTED_CHARS)
+    # Long structured outputs take minutes on a fast model: the gateway's default route timeouts (30 to 120 s) cut real
+    # calls off (measured on the first live run) and every timed-out attempt is booked at its worst case.
+    return GatewayConfig(
+        concurrency=conc,
+        rpm=rpm,
+        timeout_s={"fast": 240.0, "standard": 300.0, "deep": 420.0},
+        max_untrusted_chars=UNTRUSTED_CHARS,
+    )
 
 
 def build_gateway(
@@ -55,7 +62,9 @@ def build_gateway(
 ) -> InProcessGatewayClient:
     """The in-process gateway with Spec's own budget scopes. Offline = mock mode (each call's mock handler)."""
     if not offline and core.llm_mode != "live":
-        raise RuntimeError("a live run needs LLM_MODE=live in the launch environment (CLAUDE.md rule 13)")
+        raise RuntimeError(
+            "a live run needs LLM_MODE=live in the launch environment (CLAUDE.md rule 13)"
+        )
     mode_core = core.model_copy(update={"llm_mode": "mock" if offline else "live"})
     cap = guard_cap_usd(core.llm_budget_usd, settings.spec_live_budget_usd)
     mode_core = mode_core.model_copy(update={"llm_budget_usd": cap})

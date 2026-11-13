@@ -44,7 +44,13 @@ from mde_spec_agent.bench.inputs import (
     synth_name,
 )
 from mde_spec_agent.calls.base import CallRunner, RunResult, SpecCallSpec
-from mde_spec_agent.compose import build_context, build_gateway, prices_of, spend_record
+from mde_spec_agent.compose import (
+    build_context,
+    build_gateway,
+    period_ledger_path,
+    prices_of,
+    spend_record,
+)
 from mde_spec_agent.config import (
     SpecSettings,
     data_dir,
@@ -740,7 +746,11 @@ class SpecService:
     def _gateway(self, offline: bool) -> Any:
         if offline not in self._gateways:
             self._gateways[offline] = build_gateway(
-                self.core, self.settings, self.clock, offline=offline
+                self.core,
+                self.settings,
+                self.clock,
+                offline=offline,
+                ledger_path=None if offline else period_ledger_path(self.record),
             )
         return self._gateways[offline]
 
@@ -756,6 +766,7 @@ class SpecService:
                     "cost_micros": res.cost_micros,
                     "repaired": bool(res.repaired or res.reasked),
                     "fallback": res.used_fallback,
+                    "reason": (res.reason or "")[:300],
                 },
             )
 

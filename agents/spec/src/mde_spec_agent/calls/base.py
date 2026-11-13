@@ -165,7 +165,7 @@ class CallRunner:
         except (GatewayError, TimeoutError) as exc:
             if "truncat" in str(exc).lower():
                 raise Truncated(str(exc)) from exc
-            errors = [type(exc).__name__]
+            errors = [f"{type(exc).__name__}: {str(exc)[:160]}"]
         out = getattr(result, "output", None) if result is not None else None
         if out is not None:
             for v in cs.validators:
