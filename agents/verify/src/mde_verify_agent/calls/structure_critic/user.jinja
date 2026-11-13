@@ -1,0 +1,26 @@
+The approved Brief (data):
+{{ brief }}
+
+Locked facts of the Brief and the node that must carry each (data):
+{% for chunk in facts %}
+{{ chunk }}
+{% endfor %}
+
+The frozen structure (data):
+{% for chunk in digest %}
+{{ chunk }}
+{% endfor %}
+
+Already found by code (do not repeat):
+{% for chunk in code_findings %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return the findings and a one-sentence summary.

@@ -1,0 +1,20 @@
+Task card {{ task_id }}: {{ title }}
+
+Acceptance criteria (data):
+{% for c in criteria %}
+{{ c }}
+{% endfor %}
+
+The files of the card, exactly these {{ read_paths | length }} (data):
+{% for r in reads %}
+{{ r }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return the outline, the blocking questions, the assumptions and the coverage of every criterion.

@@ -1,0 +1,46 @@
+The approved Brief (data):
+{{ brief }}
+
+Locked facts of the Brief (data):
+{% for chunk in facts %}
+{{ chunk }}
+{% endfor %}
+
+The finished structure (data):
+{% for chunk in digest %}
+{{ chunk }}
+{% endfor %}
+
+The coverage matrix (data):
+{% for chunk in coverage %}
+{{ chunk }}
+{% endfor %}
+
+The freedom checks that fired (data):
+{% for chunk in freedom %}
+{{ chunk }}
+{% endfor %}
+
+The ranked confirm list, rank|category|id|text (data):
+{% for chunk in confirm %}
+{{ chunk }}
+{% endfor %}
+
+What Spec says differs from the Brief (data):
+{% for chunk in differs %}
+{{ chunk }}
+{% endfor %}
+
+Already found by code (do not repeat):
+{% for chunk in code_findings %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return the findings, the confirm moves, the differences and a one-sentence summary.
