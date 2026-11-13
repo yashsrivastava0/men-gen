@@ -62,6 +62,8 @@ class Feature(Envelope):
     app_ids: list[str] = Field(default_factory=list)
     outline: str = ""  # kept for `later` features (V-19: no screen nodes)
     consent_id: str | None = None  # G1.5 consent record when a must is deferred (I-4)
+    capability: str | None = None  # capability sheet id, e.g. cap.nfc
+    capability_tier: Literal["A", "B", "C"] | None = None
 
 
 class Role(Envelope):

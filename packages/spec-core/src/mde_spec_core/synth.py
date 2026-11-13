@@ -274,8 +274,8 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                     name=f"{verb}_{eid.lower()}",
                     entity=eid,
                     method=method,  # type: ignore[arg-type]
-                    path=f"/{eid.lower()}",
-                    roles=role_ids[:2],
+                    path=f"/{eid.lower()}" + ("" if verb == "list" else f"/{verb}"),
+                    roles=list(role_ids),
                     paged=verb == "list",
                     errors=[
                         OpError(code="network", recovery="offline"),
@@ -298,7 +298,7 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                 method="POST",
                 kind="custom",
                 path=f"/{ent_ids[0].lower()}/checkout/{c + 1}",
-                roles=role_ids[:2],
+                roles=list(role_ids),
                 idempotent=True,
                 errors=[
                     OpError(code="payment_declined", recovery="stay"),
@@ -346,7 +346,7 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
             eid = ent_ids[(a + s) % len(ent_ids)]
             ent = g.entities[eid]
             mod = mod_ids[(a + s) % sp.modules]
-            stype = _TYPES[s % len(_TYPES)]
+            stype = "auth" if s == 0 else _TYPES[(s - 1) % len(_TYPES)]
             checkout = stype == "checkout"
             reg: list[Region] = []
             n_reg = 3 + rnd.randint(0, 3)
@@ -371,7 +371,7 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                 Action(
                     key=f"act_{i}",
                     importance="primary" if i == 0 else "secondary",
-                    intent="pay" if checkout else "view",
+                    intent="pay" if checkout else ("confirm" if i == 0 else "navigate"),
                     what="do the main thing" if i == 0 else "go elsewhere",
                     effect=[
                         Step(verb="call", target=ops[i % len(ops)]),
@@ -386,7 +386,8 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                 for i in range(2 + (len(ops) if checkout else 0))
             ]
             ckeys = [
-                namespaced_copy_key(sid, k) for k in ("title", "purpose", "empty", "act_0", "act_1")
+                namespaced_copy_key(sid, k)
+                for k in ("title", "purpose", "empty", *[a.key for a in acts])
             ]
             for loc in sp.locales:
                 for k in ckeys:
@@ -400,7 +401,12 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                     module_id=mod,
                     screen_type=stype,
                     surface=g.apps[app_id].surface,
-                    role_ids=g.apps[app_id].role_ids[:2],
+                    role_ids=sorted(
+                        {
+                            g.apps[app_id].role_ids[s % len(g.apps[app_id].role_ids)],
+                            g.apps[app_id].role_ids[(s + 1) % len(g.apps[app_id].role_ids)],
+                        }
+                    ),
                     purpose=f"The user handles a {ent.name.lower()} so the job gets done.",
                     route=Route(
                         name=sid.lower(),
@@ -425,6 +431,7 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                         )
                     ],
                     leads_to=[f"SCR-{(n_scr % (sp.screens_per_app * sp.apps)) + 1:03d}"],
+                    stories=["US-001"],
                     provenance=[Prov(kind="library", ref="synth")],
                 ),
             )
@@ -470,6 +477,8 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
         ),
     )
     for e in g.entities.values():
+        for t in e.lifecycle.transitions:
+            t.roles = [role_ids[0]]
         e.access = [AccessRow(role_id=role_ids[0], actions=["manage"])] + [
             AccessRow(role_id=r, actions=["view"]) for r in role_ids[1:3]
         ]
