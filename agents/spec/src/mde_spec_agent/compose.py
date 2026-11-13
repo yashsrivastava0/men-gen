@@ -54,6 +54,8 @@ def build_gateway(
     ledger_path: Path | None = None,
 ) -> InProcessGatewayClient:
     """The in-process gateway with Spec's own budget scopes. Offline = mock mode (each call's mock handler)."""
+    if not offline and core.llm_mode != "live":
+        raise RuntimeError("a live run needs LLM_MODE=live in the launch environment (CLAUDE.md rule 13)")
     mode_core = core.model_copy(update={"llm_mode": "mock" if offline else "live"})
     cap = guard_cap_usd(core.llm_budget_usd, settings.spec_live_budget_usd)
     mode_core = mode_core.model_copy(update={"llm_budget_usd": cap})

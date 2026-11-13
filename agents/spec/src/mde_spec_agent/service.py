@@ -282,6 +282,8 @@ class SpecService:
         if self._readiness is not None:
             return list(self._readiness())
         problems = route_problems(self.core)
+        if getattr(self.core, "llm_mode", "mock") != "live":
+            problems.insert(0, "LLM_MODE=live in the launch environment (the one live switch)")
         try:
             prices_of(self.profiles.get("weak-default"))
         except (ValueError, KeyError) as exc:
