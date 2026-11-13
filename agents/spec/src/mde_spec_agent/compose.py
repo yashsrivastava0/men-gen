@@ -51,11 +51,17 @@ def build_gateway(
     *,
     offline: bool,
     extra_specs: list[Any] | None = None,
+    ledger_path: Path | None = None,
 ) -> InProcessGatewayClient:
     """The in-process gateway with Spec's own budget scopes. Offline = mock mode (each call's mock handler)."""
     mode_core = core.model_copy(update={"llm_mode": "mock" if offline else "live"})
     cap = guard_cap_usd(core.llm_budget_usd, settings.spec_live_budget_usd)
     mode_core = mode_core.model_copy(update={"llm_budget_usd": cap})
+    if ledger_path is not None and not offline:
+        # Spec's own ledger file for the budget period: the shared ledger (the archive of everything spent before)
+        # is never touched, so the owner's USD 5.00 for Spec is really available (same arrangement as Research).
+        ledger_path.parent.mkdir(parents=True, exist_ok=True)
+        mode_core = mode_core.model_copy(update={"llm_budget_ledger": ledger_path})
     specs = [c.spec for c in all_calls()] + list(extra_specs or [])
     return InProcessGatewayClient(
         create_gateway(
@@ -81,6 +87,14 @@ def prices_of(profile: ConsumerProfile) -> Prices:
         p.long_prompt_threshold_tokens,
         p.long_prompt_multiplier,
     )
+
+
+def period_ledger_path(record: SpendRecord) -> Path:
+    """data/.budget/spec/ledger-<period>.jsonl in the MAIN checkout (what scripts/spec_spend_check.py also sums)."""
+    from mde_core.paths import main_repo_root
+
+    root = main_repo_root() or Path(__file__).resolve().parents[4]
+    return root / "data" / ".budget" / "spec" / f"ledger-{record.snapshot()['period_id']}.jsonl"
 
 
 def spend_record(settings: SpecSettings, data_dir: Path, clock: Clock | None = None) -> SpendRecord:
@@ -138,7 +152,9 @@ def build_context(
     writer = ps.get("weak-default")
     consumer = ps.get(consumer_id)
     clock = clock or SystemClock()
-    gw = gateway or build_gateway(core, settings, clock, offline=offline)
+    gw = gateway or build_gateway(
+        core, settings, clock, offline=offline, ledger_path=period_ledger_path(record)
+    )
     guard = SpendGuard(record, prices_of(writer) if not offline else Prices("0", "0"))
     runner = CallRunner(gw, guard, run_id=run_id, on_call=on_call)
     k = compute_k(writer, avg_input_tokens=20_000, call_seconds=50, cfg=cfg)
