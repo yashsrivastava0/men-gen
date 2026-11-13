@@ -24,16 +24,19 @@ focused:
   chunk_items: 120
   digest_tokens: 4000
 standard:
-  soft: {searches: 64, pages: 90, seconds: 360, rounds: 3, lanes_search: 8, lanes_extract: 12, targets: 24, followups_per_topic: 2}
-  hard: {searches: 96, pages: 130, seconds: 600, rounds: 3, followups_per_topic: 3}
+  # 2026-11-13, first live Medium run on the new plan (34 topics): it used 91 of 96 searches and all 130 pages in 244 s
+  # and left 13 topics unfinished (20 of 40 required slots). Round one alone reads about 3 pages for each of 34 topics.
+  soft: {searches: 90, pages: 130, seconds: 600, rounds: 3, lanes_search: 8, lanes_extract: 12, targets: 24, followups_per_topic: 2}
+  hard: {searches: 130, pages: 180, seconds: 900, rounds: 3, followups_per_topic: 3}
   risk_topics: 18
   provider_followups: 5
   store_tokens: 40000
   chunk_items: 120
   digest_tokens: 7000
 deep:
-  soft: {searches: 120, pages: 170, seconds: 600, rounds: 3, lanes_search: 10, lanes_extract: 16, targets: 38, followups_per_topic: 2}
-  hard: {searches: 170, pages: 230, seconds: 960, rounds: 4, followups_per_topic: 3}
+  # sized from the Medium run the same day: 54 to 69 topics need about 3 pages each in round one
+  soft: {searches: 160, pages: 230, seconds: 900, rounds: 3, lanes_search: 10, lanes_extract: 16, targets: 38, followups_per_topic: 2}
+  hard: {searches: 220, pages: 300, seconds: 1500, rounds: 4, followups_per_topic: 3}
   risk_topics: 36
   provider_followups: 8
   store_tokens: 40000
