@@ -1,0 +1,66 @@
+# Tables for the code-made mock profiles and behaviours (doc 17 4, doc 18 5). Numbers here are configuration.
+version: 1
+
+busy:
+  rows_primary: 60              # a heavy user's list of a primary entity (doc 17 4.7: "60 orders over six months")
+  rows_other: 24
+  date_spread_days: 180
+  quantity_scale: [0.5, 3.0]    # a number is scaled by a seeded factor in this range
+
+typical:
+  rows_cap_primary: 20          # a normal user sees at most this many rows of a primary entity
+  rows_cap_other: 5
+
+extreme:
+  rows_per_entity: 12
+  long_text_chars: 420          # very long text, built from the locale pool
+  large_amounts: [0, 1, 99999999, 1234567890, 9876543210123]   # shown through the locale's number format
+  many_count: 10000             # a virtual list of this size is described by a recipe, never written out
+  edge_classes: [zero, one, many, long_text, emoji, right_to_left, two_byte, zalgo, quotes, special_characters, reserved, scunthorpe, mixed_script, large_number]
+  category_by_class:            # which allow-listed BLNS category feeds which edge class
+    emoji: [Emoji]
+    right_to_left: [Right-To-Left Strings]
+    two_byte: [Two-Byte Characters]
+    zalgo: [Zalgo Text]
+    quotes: [Quotation Marks]
+    special_characters: [Special Characters, Unicode Symbols]
+    reserved: [Reserved Strings]
+    scunthorpe: [Scunthorpe Problem]
+    numeric: [Numeric Strings]
+  # An RTL sample pool used when the app has no Arabic pool: Arabic words from the curated pool are used instead.
+
+date_keys_in_future: [due, expiry, expires, expire, scheduled, delivery, deadline, valid_until, ends, end_date, eta, renewal]
+date_spread_days_hero: 90
+
+recipes:
+  edge_class_share: 0.08        # share of generated rows that are edge cases
+  state_weights: decreasing     # earlier lifecycle states get more rows (decreasing | uniform)
+
+behaviours:
+  latency_ms:
+    fast: {min: 80, max: 250}
+    normal: {min: 250, max: 900}
+    slow: {min: 1500, max: 4000}
+  latency_by_kind: {read: fast, write: normal, upload: slow, custom: normal}
+  paging: {page_size: 20, total_pages_busy: 3}
+  auth_expiry: {after_ms: 120000, refresh_ok: true}
+  realtime:
+    step_ms: 4000               # a delivery advancing stage by stage: one lifecycle step every few seconds
+    max_steps: 6
+  provider_callbacks:
+    delay_ms: {succeeded: 2500, failed: 3000, pending: 1000}
+    outcomes: [succeeded, failed]
+
+demo_accounts:
+  email_domain: example.com
+  code_prefix: DEMO
+  records_per_entity: 5
+
+# Key words (split at underscores) that say what a text field holds, so volume rows use a person or a place from
+# the locale pool rather than a placeholder. Content, not logic: extend here.
+text_key_hints:
+  person: [name, owner, customer, buyer, seller, farmer, driver, contact, author, member, patient, student, user, manager, agent, partner, employee, guest, tenant]
+  place: [address, city, place, location, village, town, area, pickup, dropoff, destination, origin, region, district, street, locality, market]
+
+# A phone number in mock data is only ever shown masked: the first digits, bullets, the last digits.
+phone_mask: {country_code_default: "+91", first_digits: 2, last_digits: 3}

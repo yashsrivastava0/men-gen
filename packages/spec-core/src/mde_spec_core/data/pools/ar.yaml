@@ -1,0 +1,63 @@
+# Arabic name and place pool (small, curated). People are invented combinations of common given names and
+# family names; places are well-known cities of the Arabic-speaking world. All synthetic mock data.
+version: 1
+locale: ar
+language: ar
+script: Arabic
+rtl: true
+source: authored
+needs_native_review: true
+authored_on: "2026-11-14"
+
+people:
+  - أحمد الحداد
+  - فاطمة النجار
+  - محمد السعدي
+  - ليلى المنصور
+  - عمر الخطيب
+  - سارة العلي
+  - يوسف الفارس
+  - مريم الشامي
+  - خالد البغدادي
+  - نور الهاشمي
+  - حسن الكردي
+  - هدى القاسم
+  - إبراهيم الصباغ
+  - رنا الجبوري
+  - طارق العمري
+  - دينا الحلبي
+  - سامي التميمي
+  - ريم الزعبي
+  - ماجد الشريف
+  - آمنة الدباغ
+  - بلال المصري
+  - لينا العطار
+  - عادل الحسيني
+  - سلمى القرشي
+  - كريم الأنصاري
+  - جميلة الرفاعي
+  - فارس العنزي
+  - زينب الموسوي
+  - وليد الخوري
+  - هالة السقا
+places:
+  - القاهرة
+  - الإسكندرية
+  - عمّان
+  - دبي
+  - أبوظبي
+  - الرياض
+  - جدة
+  - الدوحة
+  - مسقط
+  - بيروت
+  - دمشق
+  - بغداد
+  - الرباط
+  - الدار البيضاء
+  - تونس
+  - الجزائر
+  - الكويت
+  - المنامة
+  - مراكش
+  - صفاقس

@@ -1,0 +1,17 @@
+# Error taxonomy for the `broken` mock profile (doc 17 4.3, doc 18 5): failure injection per operation.
+# `applies` selects operations; `applies_when` can name: any, read, write, by_id, role_gated, idempotent, paged.
+# `trigger` says when the front end's mock adapter injects it: `always` (every call in the broken profile),
+# `nth:<n>` (the n-th call), `after_ms:<n>` (n ms after the session starts).
+version: 1
+kinds:
+  - {code: network_down,   status: 0,   applies_when: any,        trigger: "nth:1", recovery: offline,       delay_ms: 0}
+  - {code: timeout,        status: 504, applies_when: any,        trigger: "nth:2", recovery: retry,         delay_ms: 15000}
+  - {code: server_error,   status: 500, applies_when: write,      trigger: "nth:1", recovery: retry,         delay_ms: 800}
+  - {code: session_expired, status: 401, applies_when: any,       trigger: "after_ms:120000", recovery: sign_in_again, delay_ms: 0}
+  - {code: forbidden,      status: 403, applies_when: role_gated, trigger: "nth:1", recovery: stay,          delay_ms: 200}
+  - {code: not_found,      status: 404, applies_when: by_id,      trigger: "nth:1", recovery: go_back,       delay_ms: 200}
+  - {code: conflict,       status: 409, applies_when: write,      trigger: "nth:3", recovery: reload,        delay_ms: 300}
+  - {code: validation,     status: 422, applies_when: write,      trigger: "nth:2", recovery: stay,          delay_ms: 200}
+  - {code: rate_limited,   status: 429, applies_when: paged,      trigger: "nth:4", recovery: retry,         delay_ms: 500}
+  - {code: duplicate,      status: 409, applies_when: idempotent, trigger: "nth:2", recovery: stay,          delay_ms: 300}
+operation_error_trigger: "nth:1"     # an error the operation itself declares (Operation.errors) fires on the first call

@@ -1,0 +1,44 @@
+# Rules for data-bound and unbound asset needs made by code (doc 17 2.7, doc 18 5). A need states subject, count and
+# an avoid-list; it never states lighting, placement, size, crop or variant.
+version: 1
+data_bound_count_cap: 6
+# Field-key words (lower case, split at underscores) that pick the asset kind of a media field.
+kind_by_key_word:
+  avatar: avatar
+  profile: avatar
+  photo: photo
+  image: photo
+  picture: photo
+  thumbnail: photo
+  cover: photo
+  logo: brand_mark
+  video: video
+  clip: video
+default_kind: photo
+purpose_primary_entity: primary_visual
+purpose_other: supporting
+avoid_default: [brand marks, logos, readable text]
+avoid_by_kind:
+  avatar: [real people, brand marks, readable text]
+  photo: [brand marks, logos, readable text, real people]
+  video: [brand marks, logos, real people]
+license_rule_by_policy:
+  user_upload: "Uploaded by the people who use the app; the app owner is responsible for the rights."
+  generate: "Generated for this app; no third-party rights are used."
+  licensed_stock: "Licensed stock; the licence and source are recorded for each picture."
+  none: "No asset is used."
+alt_text_rule: "Describe the subject in the language of the record, in one short sentence."
+subject_template: "{entity}: {field}"
+# Words that belong to the front end (lighting, placement, crop, size, variant); a brief containing any is a fault.
+forbidden_brief_words: [lighting, golden hour, soft light, backlit, studio light, crop, cropped, aspect ratio, centred, centered, left of, right of, top left, top right, bottom, margin, padding, pixels, px, "16:9", "4:3", square crop, variant, hover]
+unbound:
+  brand_mark: {purpose: primary_visual, subject: "{app} brand mark", count: 1, avoid: [other companies' logos, readable small print]}
+  app_icon: {purpose: primary_visual, subject: "{app} app icon", count: 1, avoid: [other companies' logos, readable small print]}
+  adaptive_icon: {purpose: supporting, subject: "{app} adaptive icon, foreground and background as separate layers", count: 1, avoid: [other companies' logos, readable small print]}
+  splash: {purpose: supporting, subject: "{app} launch screen image", count: 1, avoid: [other companies' logos, readable small print]}
+  fallback_when_missing: "The app's name set in the brand typeface."
+# Which unbound needs each surface gets.
+unbound_by_surface:
+  phone: [brand_mark, app_icon, adaptive_icon, splash]
+  tablet: [brand_mark, app_icon, adaptive_icon, splash]
+  web: [brand_mark]

@@ -17,4 +17,4 @@ Resume point for any session. Branch `feat/spec-agent`, safe-point tag `pre/spec
 - [ ] **Report**: `docs/spec-agent/REPORT-<date>.md`, `docs/api/spec-agent.md`, CURRENT_STATE, PROGRESS, Bench left running on 8130.
 
 ## Rules that bite
-Meaning is Spec's, expression is the front end's. No vendor or model name in Spec code. No web call from Spec. `LLM_MODE=live` is the only live switch. Money is integer micro-USD. Do not read `.env`. Do not merge into `main`. Nothing is Proven until its gate passes.
+Meaning is Spec's, expression is the front end's. No vendor or model name in Spec code. No web call from Spec. Live runs follow CLAUDE.md rule 13. Money is integer micro-USD. Do not read `.env`. Do not merge into `main`. Nothing is Proven until its gate passes.

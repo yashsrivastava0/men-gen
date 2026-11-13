@@ -1,0 +1,46 @@
+# Swahili name and place pool (small, curated). Invented combinations of common given and family names;
+# places are real towns of Kenya and Tanzania. All synthetic mock data.
+version: 1
+locale: sw
+language: sw
+script: Latin
+source: authored
+needs_native_review: true
+authored_on: "2026-11-14"
+
+people:
+  - Juma Mwinyi
+  - Amina Hassan
+  - Baraka Mushi
+  - Neema Kimaro
+  - Salim Abdalla
+  - Zawadi Mrema
+  - Hamisi Ally
+  - Rehema Mwakyusa
+  - Rashidi Kombo
+  - Mwanaisha Omar
+  - Daudi Mollel
+  - Furaha Lyimo
+  - Said Bakari
+  - Halima Juma
+  - Elimu Massawe
+  - Upendo Mallya
+  - Yusufu Mbwana
+  - Asha Mtumwa
+  - Kassim Mohamed
+  - Pili Shirima
+places:
+  - Dar es Salaam
+  - Mombasa
+  - Arusha
+  - Dodoma
+  - Zanzibar
+  - Mwanza
+  - Kisumu
+  - Nakuru
+  - Eldoret
+  - Moshi
+  - Tanga
+  - Mbeya
+  - Malindi
+  - Lamu

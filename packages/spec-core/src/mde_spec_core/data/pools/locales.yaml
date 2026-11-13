@@ -1,0 +1,16 @@
+# Which name and place pool serves which app language (doc 17 4.6, doc 18 FN-09).
+# `faker` pools are generated with a seeded Faker locale (person names and places only: never its ssn, bank or phone
+# providers). `file` pools are curated YAML files in this folder. `script` is the writing system the check
+# `script_share` expects; `currency` and `number_locale` feed the Babel formatters (FN-14).
+# A language not listed here takes `default`.
+version: 1
+default: en
+languages:
+  en: {source: faker, locale: en_IN, script: Latin, number_locale: en_IN, currency: INR}
+  hi: {source: faker, locale: hi_IN, script: Devanagari, number_locale: hi_IN, currency: INR}
+  mr: {source: faker, locale: mr_IN, script: Devanagari, number_locale: mr_IN, currency: INR}
+  kn: {source: file, file: kn_IN.yaml, script: Kannada, number_locale: kn_IN, currency: INR}
+  ar: {source: file, file: ar.yaml, script: Arabic, number_locale: ar, currency: AED}
+  fr: {source: file, file: fr_SN.yaml, script: Latin, number_locale: fr_SN, currency: XOF}
+  sw: {source: file, file: sw.yaml, script: Latin, number_locale: sw_KE, currency: KES}
+  es: {source: file, file: es_419.yaml, script: Latin, number_locale: es_419, currency: USD}

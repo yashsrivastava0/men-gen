@@ -1,0 +1,10 @@
+# Which fields may show the same value in two related entities (doc 18 5, FN-32). When an entity has a reference
+# field to a parent, a field of the child that belongs to one of these groups with the same type as a field of the
+# parent is DERIVED by code from the parent record and never written twice (an amount, a person's name).
+# Keys are compared after lower-casing. Add a group here to extend the rule (data, not code).
+version: 1
+groups:
+  - {kind: amount, type: money, keys: [amount, total, grand_total, total_amount, amount_due, amount_paid, order_total, price_total]}
+  - {kind: person_name, type: text, keys: [name, full_name, customer_name, person_name, display_name, buyer_name, member_name, patient_name, student_name, user_name]}
+  - {kind: contact_email, type: email, keys: [email, contact_email, customer_email]}
+  - {kind: address, type: text, keys: [address, delivery_address, billing_address, pickup_address]}

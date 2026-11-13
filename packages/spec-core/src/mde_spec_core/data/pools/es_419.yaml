@@ -1,0 +1,53 @@
+# Spanish name and place pool for Central America (small, curated). Invented combinations of common given and
+# family names; places are real towns of Guatemala, Honduras, El Salvador, Nicaragua, Costa Rica and Panama.
+# All synthetic mock data.
+version: 1
+locale: es_419
+language: es
+script: Latin
+source: authored
+needs_native_review: true
+authored_on: "2026-11-14"
+
+people:
+  - José Hernández
+  - María Morales
+  - Carlos Ramírez
+  - Ana Castillo
+  - Luis Mejía
+  - Carmen Argueta
+  - Jorge Alvarado
+  - Rosa Cardona
+  - Miguel Orellana
+  - Sofía Zelaya
+  - Fernando Calderón
+  - Lucía Rojas
+  - Diego Vargas
+  - Gabriela Espinoza
+  - Ricardo Pineda
+  - Andrea Solís
+  - Héctor Quesada
+  - Daniela Barrios
+  - Manuel Aguilar
+  - Valeria Montenegro
+  - Óscar Tijerino
+  - Paola Batres
+  - Pedro Ávila
+  - Mónica Salazar
+places:
+  - San José
+  - Tegucigalpa
+  - Ciudad de Guatemala
+  - Managua
+  - San Salvador
+  - Ciudad de Panamá
+  - Antigua Guatemala
+  - Cartago
+  - León
+  - Granada
+  - Quetzaltenango
+  - San Pedro Sula
+  - Santa Ana
+  - Alajuela
+  - David
+  - Colón

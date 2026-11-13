@@ -1,0 +1,75 @@
+# Big List of Naughty Strings, vendored for the `extreme` mock profile (doc 18 section 6, FN-10).
+# The loader reads the repo copy `blns.txt`; there is no network access at run time.
+# The file was downloaded once, at authoring time, from the raw GitHub URL below (pinned to one commit).
+version: 1
+source_repo: https://github.com/minimaxir/big-list-of-naughty-strings
+pinned_commit: db33ec7b1d5d9616a88c76394b7d0897bd0b97eb
+pinned_commit_date: "2021-04-17"
+raw_url: https://raw.githubusercontent.com/minimaxir/big-list-of-naughty-strings/db33ec7b1d5d9616a88c76394b7d0897bd0b97eb/blns.txt
+licence: MIT
+licence_holder: "Copyright (c) 2015-2020 Max Woolf"
+licence_url: https://raw.githubusercontent.com/minimaxir/big-list-of-naughty-strings/db33ec7b1d5d9616a88c76394b7d0897bd0b97eb/LICENSE
+file: blns.txt
+sha256: e87d3889599277616e183d4cf806bdf5b8cc408636c9bbba2b0701a211d98f7e
+downloaded_on: "2026-11-14"
+
+# A section starts with a line `#<tab or spaces>Title` that follows a blank line (or the file start) and is
+# followed by a line that is exactly `#`. Other comment lines inside a section are descriptions or credits.
+# The headings the pinned file has today, in order (a test fails when they change):
+headings:
+  - Reserved Strings
+  - Numeric Strings
+  - Special Characters
+  - Unicode Symbols
+  - Unicode Subscript/Superscript/Accents
+  - Quotation Marks
+  - Two-Byte Characters
+  - Special Unicode Characters Union
+  - Changing length when lowercased
+  - Japanese Emoticons
+  - Emoji
+  - Regional Indicator Symbols
+  - Unicode Numbers
+  - Right-To-Left Strings
+  - Ogham Text
+  - Trick Unicode
+  - Zalgo Text
+  - Unicode Upsidedown
+  - Unicode font
+  - Script Injection
+  - SQL Injection
+  - Server Code Injection
+  - Command Injection (Ruby)
+  - XXE Injection (XML)
+  - Unwanted Interpolation
+  - File Inclusion
+  - Known CVEs and Vulnerabilities
+  - MSDOS/Windows Special Filenames
+  - IRC specific strings
+  - Scunthorpe Problem
+  - Human injection
+  - Terminal escape codes
+  - iOS Vulnerabilities
+  - Persian special characters
+  - jinja2 injection
+
+# ONLY these categories may enter mock data (display-safe). Everything else, above all every injection
+# category, Known CVEs, terminal escape codes, iOS vulnerabilities, trick and special Unicode, MSDOS and
+# Windows filenames, IRC and human injection, stays out.
+allowed_categories:
+  - Reserved Strings
+  - Numeric Strings
+  - Special Characters
+  - Unicode Symbols
+  - Quotation Marks
+  - Two-Byte Characters
+  - Emoji
+  - Right-To-Left Strings
+  - Zalgo Text
+  - Scunthorpe Problem
+
+# Extra filters applied inside the allowed categories (the loader drops an entry that matches any of them).
+entry_filters:
+  max_length: 260          # characters (the Zalgo strings run to about 210); long text is built by code from pools
+  drop_urls: true          # no http(s) URLs and no bare domain names (hero and mock text never carry URLs)
+  drop_digit_runs_of: 9    # mirrors config.checks.digit_run_deny_length; the loader also reads the config

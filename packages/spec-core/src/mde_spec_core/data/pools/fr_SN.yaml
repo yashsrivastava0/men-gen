@@ -1,0 +1,52 @@
+# French name and place pool for Dakar and French-speaking West Africa (small, curated). Invented combinations of
+# common given and family names; places are real districts and towns of Senegal. All synthetic mock data.
+version: 1
+locale: fr_SN
+language: fr
+script: Latin
+source: authored
+needs_native_review: true
+authored_on: "2026-11-14"
+
+people:
+  - Moussa Diop
+  - Awa Ndiaye
+  - Ibrahima Fall
+  - Fatou Sow
+  - Cheikh Gueye
+  - Aminata Ba
+  - Mamadou Sarr
+  - Khady Diallo
+  - Ousmane Faye
+  - Mariama Sy
+  - Abdoulaye Mbaye
+  - Astou Thiam
+  - Modou Seck
+  - Coumba Cissé
+  - Pape Ndoye
+  - Ndèye Diouf
+  - Babacar Kane
+  - Sokhna Samb
+  - Lamine Badji
+  - Rokhaya Camara
+  - Samba Niang
+  - Bineta Toure
+  - Idrissa Gomis
+  - Dieynaba Sène
+places:
+  - Plateau
+  - Médina
+  - Yoff
+  - Ouakam
+  - Almadies
+  - Pikine
+  - Guédiawaye
+  - Rufisque
+  - Thiès
+  - Saint-Louis
+  - Ziguinchor
+  - Kaolack
+  - Touba
+  - Mbour
+  - Diourbel
+  - Louga
