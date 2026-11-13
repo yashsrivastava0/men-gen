@@ -37,6 +37,11 @@ def tokens_of(obj: Any) -> int:
     return len(json.dumps(obj, ensure_ascii=False, separators=(",", ":"), default=str)) // 4
 
 
+CONFIRM_PROTECTED_MAX = (
+    60  # items to confirm that are always in the main pack; the owner reads the top 20 first
+)
+
+
 def brief_linked(item: dict[str, Any]) -> bool:
     return any(a.get("id") and a.get("kind") != "NEW" for a in item.get("applies_to", []))
 
@@ -46,9 +51,11 @@ def unverified(item: dict[str, Any]) -> bool:
 
 
 def is_protected(item: dict[str, Any]) -> bool:
-    """Always in the main store. A conflict or an item to confirm is always protected; an unverified item never is otherwise
+    """Always in the main store. A conflict is always protected (an item to confirm only up to ``CONFIRM_PROTECTED_MAX``,
+    see ``assign_store``: on the first live Big run 422 of 430 main-store items were "to confirm", so the store was 4 times
+    its limit); an unverified item never is otherwise
     (D-159: Spec never defaults from it, so it must not crowd out a verified one)."""
-    if set(item.get("flags", [])) & {"conflict", "needs-confirm"}:
+    if "conflict" in item.get("flags", []):
         return True
     if unverified(item):
         return False
@@ -157,6 +164,10 @@ def assign_store(
     cost = {i["id"]: tokens_of(compact_item(i, default_notes)) + note_allowance for i in ordered}
     rank = {i["id"]: n for n, i in enumerate(ordered, start=1)}
     protected = {i["id"] for i in ordered if is_protected(i)}
+    # the items the owner must confirm, best first (verified, Brief-linked, high impact, strongest evidence), up to a bound;
+    # the rest stay on the confirm list and go to the appendix like any other item
+    to_confirm = [i for i in ordered if "needs-confirm" in i.get("flags", [])]
+    protected |= {i["id"] for i in to_confirm[:CONFIRM_PROTECTED_MAX]}
     best: dict[str, int] = {}
     for i in ordered:  # the best two VERIFIED items of every kind always stay
         if unverified(i):

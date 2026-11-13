@@ -595,6 +595,9 @@ _ELEMENT_PATH = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*\[\d+\]$")
 _NESTED_PATH = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\[\d+\]\.([A-Za-z_][A-Za-z0-9_]*)$")
 
 
+_PATH_LIST = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\[\d+\]")
+
+
 def _removes_an_element(kind: str, path: str) -> bool:
     """Does this path take an element OUT of a list (``steps[0]``, or ``features[0].feature_key``, a required attribute)?
     Re-applying such a path hits the next element, so RV-21 cannot check it after the fact."""
@@ -622,10 +625,19 @@ def rv21_checked(v: ValidationContext) -> list[Violation]:
         # A removed list element ("steps[0]") shifts the list, so applying the path again would remove the NEXT element and
         # look like a leftover: only paths that are idempotent (a scalar, a list emptied, "field[i].sub") can be checked
         # after the fact. The first live run with many checked items had 10 false RV-21 errors and was marked partial.
+        all_paths = list(a.get("unsupported_fields") or [])
+        # a list that lost an element ("fields[0]") shifted every later index: a nested path into it ("fields[1].validation")
+        # would now hit the NEXT element and look like a leftover (first live Big run, 2026-11-13)
+        shifted = {
+            m[1]
+            for p in all_paths
+            if _removes_an_element(a.get("kind", ""), p) and (m := _PATH_LIST.match(p.strip()))
+        }
         paths = [
             p
-            for p in (a.get("unsupported_fields") or [])
+            for p in all_paths
             if not _removes_an_element(a.get("kind", ""), p)
+            and not ((m := _PATH_LIST.match(p.strip())) and m[1] in shifted)
         ]
         if paths:
             rest, _applied = null_paths(a.get("data") or {}, paths)

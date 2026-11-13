@@ -301,3 +301,18 @@ def test_what_survives_a_drop_holds_no_unverified_figure() -> None:
     )
     assert isinstance(out, Candidate)
     assert not missing_figures(claim_figures(out.claim, out.label, out.data), figures(out.quote))
+
+
+def test_a_label_that_contains_the_whole_quote_is_cut_so_no_event_carries_page_text() -> None:
+    from mde_research_agent.engine.verify import _label_not_page_text
+
+    quote = "Per minute per user per project | 600"
+    assert _label_not_page_text(quote, quote) == "Per minute per user per"
+    assert _label_not_page_text("Calendar quota", quote) == "Calendar quota"  # a name is left alone
+    assert (
+        _label_not_page_text("Short", "tiny quote") == "Short"
+    )  # a quote of 30 characters or fewer cannot trip RV-17
+    long_label = (
+        "Each unit converter comparison record has"  # a stretch OF the quote, not containing it
+    )
+    assert _label_not_page_text(long_label, long_label + " a price and a plan") == long_label

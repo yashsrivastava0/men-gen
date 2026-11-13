@@ -136,7 +136,8 @@ def test_an_unverified_item_is_not_protected_unless_it_is_a_conflict_or_needs_co
     assert is_protected(
         item(3, kind="rule", applies_to=link, evidence="unverified", flags=["conflict"])
     )
-    assert is_protected(item(4, evidence="unverified", flags=["needs-confirm"]))
+    # an item to confirm is protected up to a bound, in assign_store (test below), not one by one
+    assert not is_protected(item(4, evidence="unverified", flags=["needs-confirm"]))
 
 
 def test_under_a_tight_limit_the_appendix_takes_unverified_items_before_verified_ones() -> None:
@@ -175,7 +176,7 @@ def test_a_protected_rule_needs_a_brief_link() -> None:
     assert is_protected(
         item(1, kind="rule", applies_to=[{"kind": "FTR", "id": "FTR-1", "relation": "constrains"}])
     )
-    assert is_protected(item(1, flags=["needs-confirm"]))
+    assert not is_protected(item(1, flags=["needs-confirm"]))  # confirm items: see the bounded test
 
 
 def test_the_compact_view_keeps_ids_and_is_smaller_than_the_full_items() -> None:
@@ -287,7 +288,31 @@ async def test_a_big_run_with_a_small_chunk_size_splits_every_lane_and_cuts_noth
             f"{lane}: chunks join back to the lane"
         )
         split += len(sl["chunks"]) > 1
-    assert split >= 3, "several lanes needed more than one chunk"
+    assert split >= 2, (
+        "several lanes needed more than one chunk"
+    )  # 3 before the confirm items were bounded
     main = {i["id"] for i in r["items"] if i["store"] == "main"}
     assert {i for sl in r["slices"].values() for i in sl["item_ids"]} <= main
     assert run.violations == [], "RV-09 (chunks add up to the lane list, none over the size) holds"
+
+
+def test_items_to_confirm_are_protected_only_up_to_a_bound_and_the_rest_go_to_the_appendix() -> (
+    None
+):
+    from mde_research_agent.assemble.store import CONFIRM_PROTECTED_MAX, assign_store
+
+    n = CONFIRM_PROTECTED_MAX + 25
+    items = [
+        item(i, kind="rule", impact="high", evidence="official", flags=["needs-confirm"])
+        for i in range(1, n + 1)
+    ]
+    plan = assign_store(items, overhead_tokens=0, store_tokens=1, default_notes={})
+    stores = [plan.decisions[i["id"]].store for i in items]
+    # the bound, and the 25 beyond it go to the appendix
+    assert stores.count("main") == CONFIRM_PROTECTED_MAX and stores.count("appendix") == 25
+    assert (
+        plan.protected_over_limit
+    )  # the protected set alone is over the tiny limit: said, not hidden
+    conflict = item(n + 1, kind="rule", evidence="unverified", flags=["needs-confirm", "conflict"])
+    plan = assign_store([*items, conflict], overhead_tokens=0, store_tokens=1, default_notes={})
+    assert plan.decisions[conflict["id"]].store == "main"  # a conflict never leaves the main pack

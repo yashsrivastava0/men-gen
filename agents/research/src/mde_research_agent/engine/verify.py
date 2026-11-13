@@ -76,6 +76,17 @@ class Rejected:
     )
 
 
+def _label_not_page_text(label: str, quote: str) -> str:
+    """A label is a name, not a copy of the page. When it contains the whole quote and the quote is 31 or more characters (a
+    table row copied as the label, seen on the first live Big run) RV-17 would call the event page text: the label is cut to
+    its first words, at most 30 characters."""
+    flat, q = " ".join(label.split()), " ".join(quote.split())
+    if len(q) > 30 and q.casefold() in flat.casefold():
+        words = flat[:30].rsplit(" ", 1)[0] if len(flat) > 30 and " " in flat[:30] else flat[:30]
+        return words.rstrip(" ,;:|-") or flat[:30]
+    return label
+
+
 def _clip(text: str, n: int) -> str:
     words = text.split()
     return " ".join(words[:n])
@@ -115,7 +126,7 @@ def candidates_from_output(output: BaseModel, page: PageRecord) -> list[Candidat
                 out.append(Rejected(kind, str(raw.get("norm_key", "")), "invalid"))
                 continue
             key = clean_key(atom.norm_key)
-            label = _clip(atom.label, MAX_LABEL_WORDS)
+            label = _label_not_page_text(_clip(atom.label, MAX_LABEL_WORDS), atom.quote)
             if not key or not atom.quote.strip() or not atom.claim.strip():
                 out.append(Rejected(kind, key, "empty", label))
                 continue
