@@ -1,0 +1,26 @@
+# Consumer / writer profiles. Values are filled from each provider's CURRENT documentation, dated, with
+# source_url (S0 data task); a field nobody verified stays unset and is listed in unset_fields.
+# Placeholder until the data task replaces the numbers: only what the repo already records (D-171, D-172).
+version: 1
+profiles:
+  - id: weak-default
+    capability_class: weak
+    max_output_tokens: null
+    schema_limits: {max_nullable_fields: 16, max_union_params: 16}
+    price: {input_usd_per_million: "0.10", output_usd_per_million: "0.50", cached_input_usd_per_million: "0.01", long_prompt_threshold_tokens: 100000, long_prompt_multiplier: "5.0"}
+    caching: none
+    source_url: "packages/llm-gateway/src/mde_llm_gateway/pricing.yaml (read 2026-11-13, D-171, D-172)"
+    checked_on: "2026-11-13"
+    unset_fields: [nominal_context_tokens, effective_context_tokens, max_output_tokens, output_tokens_per_second, limits]
+  - id: standard-default
+    capability_class: standard
+    caching: none
+    source_url: ""
+    checked_on: ""
+    unset_fields: [nominal_context_tokens, effective_context_tokens, max_output_tokens, price, limits]
+  - id: large-context-default
+    capability_class: strong
+    caching: none
+    source_url: ""
+    checked_on: ""
+    unset_fields: [nominal_context_tokens, effective_context_tokens, max_output_tokens, price, limits]

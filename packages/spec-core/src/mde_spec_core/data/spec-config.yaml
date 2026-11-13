@@ -1,0 +1,122 @@
+# Every number from docs 15-19 marked [J] lives here and nowhere else (never a constant in logic).
+# The loader (config.py) REFUSES an inconsistent budget set: the caps must sum to task_read_budget.
+version: 1
+
+budgets:            # tokens (doc 15 5.3, 6.2)
+  index_cap: 6000
+  common_global_cap: 4000        # prefix = index + common global files = 10k
+  task_shards_cap: 6000
+  module_cap: 3000
+  card_target: 2500
+  card_hard: 3000
+  slice_cap: 5000
+  front_end_allowance: 4000
+  task_read_budget: 28000
+  task_card_cap: 1500
+  global_shard_cap: 4000
+  contract_resource_cap: 4000
+  build_plan_cap: 8000
+  glossary_max: 700
+  delight_block_max: 400
+  one_file_min_consumer_window: 80000
+  token_factor_chars_per_token: 3.0     # conservative factor until a profile gives a counter
+
+scope:
+  scope_cap_per_app_phase: 60
+  lookups_before_raise: 3
+
+profiles:           # detail profiles (doc 15 4.1, doc 17 7): floors from the tier, raised by content
+  tier_floor: {quick: compact, standard: standard, thorough: deep}
+  raise_to_standard_if:
+    apps_at_least: 2
+    sensitive_data: true
+    integrations_at_least: 3
+    locales_at_least: 3
+    right_to_left: true
+    offline_first: true
+  raise_to_deep_if:
+    apps_at_least: 4
+    modules_at_least: 8
+  acceptance_scenarios_min: {compact: 3, standard: 5, deep: 8}
+  could_cap_per_app: {compact: 5, standard: 12, deep: 30}
+  could_cap_per_screen: 3
+  directions: {compact: 1, standard: 3, deep: 3}
+  hero_per_primary_entity: {compact: [8, 12], standard: [12, 20], deep: [12, 30]}
+  hero_per_other_entity: [3, 5]
+  mock_profiles:
+    compact: [empty, typical, broken, offline]
+    standard: [empty, typical, busy, broken, offline]
+    deep: [empty, typical, busy, extreme, broken, offline]
+  pilot_screens_per_app: {compact: 0, standard: 3, deep: 5}
+  verify_profiles: [deep]
+
+fusion:             # doc 18 1.2, doc 19 1
+  max_output_share: 0.5
+  input_cap_share_of_effective_window: 0.5
+  unfuse_first_try_pass_below: {compact: 0.85, standard: 0.85, deep: 0.90}
+  cards_per_call_max: 4
+  strings_per_locale_call: 300
+  entities_per_call_max: 5
+  flows_per_journey_call: 4
+  integrations_per_call: 5
+
+checks:
+  weak_route_banner_share: 0.15
+  v45_downgrade_enabled: false          # flag-only until PS-7 shows <= 5% false positives
+  v45_false_positive_target: 0.05
+  mobile_fit:
+    max_primary_regions: 3
+    max_regions: 8
+    max_form_inputs: 7
+    max_phone_columns: 4
+    long_text_chars: 600
+    gross_breach_factor: 2.0
+  freedom_lint_warnings_per_card_max: 3
+  widget_key_suffixes: [_button, _btn, _cta, _modal, _sheet, _tab, _banner, _toast, _chip, _now]
+  wcag_body_text_ratio: 4.5
+  min_seed_hue_gap_degrees: 60
+  min_direction_axis_differences: 2
+  locale_script_share_min: 0.6
+  digit_run_deny_length: 9
+
+repair:
+  max_reasks_per_node: 1
+  verify_max_llm_rounds: 2
+  class_a_max_passes: 3
+
+verify:
+  profiles: [deep]
+  canary_share: {compact: 0.0, standard: 1.0, deep: 1.0}
+  max_llm_rounds: 2
+  canary_blocking_questions_per_screen_max: 0.3
+
+money:              # integer micro-USD (doc 19 5)
+  cap_micro_usd: 5000000
+  tripwire_micro_usd: 4500000
+  estimate_drift_alert: 0.30
+  price_check_abort_factor: 3.0
+
+concurrency:
+  initial: 4
+  min: 1
+  additive_increase: 1
+  multiplicative_decrease: 0.5
+  fair_queue_weights: {interactive: 3, resume: 2, background: 1}
+  quota_runs_per_day: 20
+  quota_tokens_per_day: 10000000
+
+proof:              # thresholds of doc 16 (kept as data so reports compare against them)
+  blocking_questions_per_screen_max: 0.3
+  assumptions_per_screen_max: 1
+  acceptance_satisfiable_min: 0.90
+  first_try_pass_min: 0.85
+  repair_rate_max: 0.15
+  degraded_max: 0.05
+  planted_catch_min: 0.90
+  planted_catch_per_kind_min: 0.80
+  false_positive_max: 0.05
+  freedom_probe_distinct_layout_min: 0.30
+  lookup_recall_at_3_min: 0.90
+  wrong_gap_max: 0.10
+  estimate_error_max: 1.5
+  mobile_fit_hit_rate_max: 0.10
