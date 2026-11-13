@@ -1,0 +1,428 @@
+# Store-policy sheet (doc 15 7.2, 7.4; doc 17 5.5): dated store and platform rules that affect a build, plus the
+# accessibility floors. Locked may rest on `policy:<id>@<checked_on>` (policy evidence, V-33 / V-17).
+#
+# RULE of this file: a rule appears only if its source page was read on `checked_on` and says it. A rule that could not be
+# verified is OMITTED and listed under `omitted_unverified` with the reason; nothing here is from memory.
+# `statement` is a plain-language paraphrase, not a quotation. `source_section` points at the clause in the source.
+# `applies_when` is a structured predicate over the `facts` below (all / any / not, or one fact); a missing fact is false,
+# except `always`. `effect.ref` is a stable token that other code and the Plan view use.
+version: 1
+checked_on: "2026-11-14"
+
+facts:
+  - {id: always, description: "True for every app."}
+  - {id: accounts_created_in_app, description: "People can create an account from inside the app."}
+  - {id: has_login, description: "The app has a sign-in."}
+  - {id: has_significant_account_features, description: "The app has features that really need an account."}
+  - {id: uses_third_party_login, description: "A third-party or social login sets up or signs in the primary account."}
+  - {id: login_exempt_from_equivalent_option, description: "Only the company's own accounts, or an education or enterprise sign-in, or a government ID system."}
+  - {id: supports_sign_in_with_apple, description: "The app offers Sign in with Apple."}
+  - {id: sells_digital_goods, description: "The app unlocks digital features, content or subscriptions for payment."}
+  - {id: requests_protected_permission, description: "The app asks for a protected resource (camera, photos, contacts, location, microphone ...)."}
+  - {id: collects_user_data, description: "Data leaves the device in a way the developer or a partner can read it."}
+  - {id: shares_personal_data_with_third_parties, description: "Personal data is shared with a third party, including a third-party AI service."}
+  - {id: tracks_users_across_apps, description: "Data is linked with other companies' data for advertising, measurement or sale to a data broker."}
+  - {id: uses_required_reason_apis, description: "The app code calls an API on Apple's list that needs an approved reason."}
+  - {id: has_user_generated_content, description: "People can post content that other people see."}
+  - {id: has_push_notifications, description: "The app sends push notifications."}
+  - {id: sends_marketing_push, description: "Push is used for promotion or direct marketing."}
+  - {id: uses_location, description: "The app reads the device location."}
+  - {id: uses_background_location, description: "The app reads location while it is closed or not in use."}
+  - {id: uses_background_modes, description: "The app keeps running in the background (audio, location, VoIP, tasks)."}
+
+rules:
+  # ------------------------------------------------------------------ Apple (App Review Guidelines and Apple developer pages)
+  - id: POL-APPLE-DELETION
+    platform: apple
+    category: account
+    statement: An app that supports account creation must let people start deletion of the whole account and its personal data from inside the app; deactivation alone is not enough, and the option must be easy to find.
+    source_url: https://developer.apple.com/support/offering-account-deletion-in-your-app/
+    source_section: "Guideline 5.1.1(v); Apple's account deletion page"
+    checked_on: "2026-11-14"
+    applies_when: {fact: accounts_created_in_app}
+    effect: {kind: screen, ref: "screen:account_deletion", detail: "In-app deletion of the full account record and personal data, easy to find (usually account settings), with a confirmation step, a notice when it takes time, and a link to the web page if the user must finish there. Guest accounts and user-generated content are included."}
+  - id: POL-APPLE-DELETION-SUBSCRIPTIONS
+    platform: apple
+    category: account
+    statement: When the person has an auto-renewable subscription, deletion must tell them billing continues through Apple and ask them to cancel first; deletion at expiry is allowed only if immediate deletion is also offered.
+    source_url: https://developer.apple.com/support/offering-account-deletion-in-your-app/
+    source_section: "Apple's account deletion page, Subscriptions"
+    checked_on: "2026-11-14"
+    applies_when: {all: [{fact: accounts_created_in_app}, {fact: sells_digital_goods}]}
+    effect: {kind: behaviour, ref: "behaviour:deletion_subscription_notice", detail: "Deletion flow warns about the active subscription and links to subscription management."}
+  - id: POL-APPLE-DELETION-SIWA-REVOKE
+    platform: apple
+    category: account
+    statement: An app that supports Sign in with Apple should use the Sign in with Apple REST API to revoke the user's tokens when the account is deleted.
+    source_url: https://developer.apple.com/support/offering-account-deletion-in-your-app/
+    source_section: "Apple's account deletion page, Sign in with Apple"
+    checked_on: "2026-11-14"
+    applies_when: {all: [{fact: accounts_created_in_app}, {fact: supports_sign_in_with_apple}]}
+    effect: {kind: requirement, ref: "requirement:revoke_siwa_tokens_on_deletion", detail: "The delete-account operation calls the token revocation endpoint."}
+  - id: POL-APPLE-ACCOUNT-OPTIONAL
+    platform: apple
+    category: account
+    statement: If the app has no significant account-based features, people must be able to use it without logging in.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.1(v) Account Sign-In"
+    checked_on: "2026-11-14"
+    applies_when: {all: [{fact: has_login}, {not: {fact: has_significant_account_features}}]}
+    effect: {kind: requirement, ref: "requirement:usable_without_login", detail: "The app opens to its content without a sign-in wall."}
+  - id: POL-APPLE-LOGIN-EQUIVALENT
+    platform: apple
+    category: account
+    statement: An app that uses a third-party or social login for the primary account must also offer an equivalent login option that limits data to name and email, lets people keep the email private, and does not collect app interactions for advertising without consent.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "4.8 Login Services (the page states the criteria, it does not name a product); exemptions listed there: own account system only, education or enterprise sign-in, government or industry ID system"
+    checked_on: "2026-11-14"
+    applies_when: {all: [{fact: uses_third_party_login}, {not: {fact: login_exempt_from_equivalent_option}}]}
+    effect: {kind: requirement, ref: "requirement:equivalent_privacy_login_option", detail: "The sign-in screen offers a second login service meeting the three criteria."}
+  - id: POL-APPLE-IAP
+    platform: apple
+    category: payments
+    statement: Unlocking features or content in the app (subscriptions, premium content, a full version) must use in-app purchase, not license keys, QR codes or other own mechanisms; purchased credits must not expire and restorable purchases need a restore mechanism.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "3.1.1 In-App Purchase"
+    checked_on: "2026-11-14"
+    applies_when: {fact: sells_digital_goods}
+    effect: {kind: requirement, ref: "requirement:platform_billing_for_digital_goods", detail: "Digital unlocks go through the store billing system; the app has a Restore purchases action."}
+  - id: POL-APPLE-PURPOSE-STRINGS
+    platform: apple
+    category: permissions
+    statement: Apps that collect user or usage data need the person's consent, the purpose strings must clearly and completely describe the use of the data, and there must be an easy way to withdraw consent.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.1(ii) Permission"
+    checked_on: "2026-11-14"
+    applies_when: {any: [{fact: requests_protected_permission}, {fact: collects_user_data}]}
+    effect: {kind: artifact, ref: "artifact:permission_purpose_strings", detail: "One purpose string per permission, written for this app and its feature; a way to withdraw consent in settings."}
+  - id: POL-APPLE-DATA-MINIMIZATION
+    platform: apple
+    category: permissions
+    statement: Request only data relevant to the core function; where possible use the out-of-process picker or a share sheet instead of full access to protected resources such as Photos or Contacts.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.1(iii) Data Minimization"
+    checked_on: "2026-11-14"
+    applies_when: {fact: requests_protected_permission}
+    effect: {kind: requirement, ref: "requirement:minimal_permission_scope", detail: "Prefer a picker over full library access; ask at the moment the feature is first used."}
+  - id: POL-APPLE-PRIVACY-POLICY
+    platform: apple
+    category: privacy
+    statement: Every app needs a link to its privacy policy in the store metadata and inside the app in an easily accessible place; the policy must say what data is collected, how, and for what, and explain retention, deletion and revoking consent.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.1(i) Privacy Policies"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: screen, ref: "screen:privacy_policy_access", detail: "A reachable in-app link (usually settings and sign-up) to the privacy policy."}
+  - id: POL-APPLE-PRIVACY-LABELS
+    platform: apple
+    category: privacy
+    statement: The developer must give App Privacy details in App Store Connect for every new app and update, including the practices of third-party SDKs and partners whose code is in the app; a privacy policy URL is required.
+    source_url: https://developer.apple.com/app-store/app-privacy-details/
+    source_section: "App Privacy Details on the App Store"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: artifact, ref: "artifact:app_privacy_details", detail: "A data inventory per data type: collected or not, linked to identity or not, used for tracking or not, purpose; built from the app and from every SDK."}
+  - id: POL-APPLE-PRIVACY-MANIFEST-REASONS
+    platform: apple
+    category: privacy
+    statement: Since 2024-05-01 an upload to App Store Connect must include approved reasons, in the app's privacy manifest, for each listed API its code uses; an SDK on Apple's commonly used list needs its own manifest and signature.
+    source_url: https://developer.apple.com/news/?id=3d8a9yyh
+    source_section: "Privacy updates for App Store submissions, 2024-02-29"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: artifact, ref: "artifact:privacy_manifest_reasons", detail: "A privacy manifest in the build that declares an approved reason for every listed API the code or an SDK uses."}
+  - id: POL-APPLE-TRACKING-PERMISSION
+    platform: apple
+    category: privacy
+    statement: Tracking people's activity needs explicit permission through the App Tracking Transparency APIs.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.2(i) Data Use and Sharing"
+    checked_on: "2026-11-14"
+    applies_when: {fact: tracks_users_across_apps}
+    effect: {kind: behaviour, ref: "behaviour:tracking_permission_before_tracking", detail: "The tracking prompt appears before any tracking starts; nothing tracks if it is declined."}
+  - id: POL-APPLE-THIRD-PARTY-AI-DISCLOSURE
+    platform: apple
+    category: privacy
+    statement: Where personal data is shared with third parties, including third-party AI, the app must say so clearly and get explicit permission first.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.2(i) Data Use and Sharing"
+    checked_on: "2026-11-14"
+    applies_when: {fact: shares_personal_data_with_third_parties}
+    effect: {kind: behaviour, ref: "behaviour:disclose_and_consent_before_sharing", detail: "A clear disclosure and an explicit consent step before the first share."}
+  - id: POL-APPLE-PUSH
+    platform: apple
+    category: notifications
+    statement: Push notifications must not be required for the app to work and should not carry sensitive personal or confidential information.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "4.5.4"
+    checked_on: "2026-11-14"
+    applies_when: {fact: has_push_notifications}
+    effect: {kind: behaviour, ref: "behaviour:push_optional_and_non_sensitive", detail: "Every flow works with notifications off; message text carries no private details."}
+  - id: POL-APPLE-PUSH-MARKETING
+    platform: apple
+    category: notifications
+    statement: Push must not be used for promotion or direct marketing unless customers opted in through consent language in the app and the app has a way to opt out.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "4.5.4"
+    checked_on: "2026-11-14"
+    applies_when: {fact: sends_marketing_push}
+    effect: {kind: screen, ref: "screen:notification_preferences", detail: "An opt-in with consent wording and a place to opt out of marketing messages."}
+  - id: POL-APPLE-BACKGROUND-SERVICES
+    platform: apple
+    category: background
+    statement: Background services may only be used for their intended purposes (VoIP, audio playback, location, task completion, local notifications and the like).
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "2.5.4"
+    checked_on: "2026-11-14"
+    applies_when: {fact: uses_background_modes}
+    effect: {kind: requirement, ref: "requirement:background_mode_matches_feature", detail: "Each declared background mode maps to a feature that needs it."}
+  - id: POL-APPLE-LOCATION
+    platform: apple
+    category: location
+    statement: Use location services only when directly relevant to the app's features, and notify the person and get consent before collecting, sending or using location data.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "5.1.5"
+    checked_on: "2026-11-14"
+    applies_when: {fact: uses_location}
+    effect: {kind: behaviour, ref: "behaviour:location_consent_in_context", detail: "A reason is shown with the feature, then the system prompt; the feature degrades gracefully when denied."}
+  - id: POL-APPLE-UGC
+    platform: apple
+    category: user_generated_content
+    statement: An app with user-generated content needs a way to filter objectionable material, a way to report offensive content with timely responses, the ability to block abusive users, and published contact information.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "1.2 User-Generated Content"
+    checked_on: "2026-11-14"
+    applies_when: {fact: has_user_generated_content}
+    effect: {kind: behaviour, ref: "behaviour:report_block_filter_contact", detail: "Report content, block a user, filtering of objectionable posts, and a visible contact route, plus an operator side to act on reports."}
+  - id: POL-APPLE-DEMO-ACCOUNT
+    platform: apple
+    category: review
+    statement: An app with a login must give App Review an active demo account or a fully featured demo mode, with the back end switched on.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "2.1(a) and App Review information"
+    checked_on: "2026-11-14"
+    applies_when: {fact: has_login}
+    effect: {kind: artifact, ref: "artifact:review_demo_access", detail: "A demo account (or demo mode) that shows the full features, listed in the review notes."}
+  - id: POL-APPLE-AGE-RATING
+    platform: apple
+    category: review
+    statement: The age rating questions in App Store Connect must be answered honestly so the app aligns with parental controls.
+    source_url: https://developer.apple.com/app-store/review/guidelines/
+    source_section: "2.3.6"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: artifact, ref: "artifact:age_rating_answers", detail: "Answers derived from the features and content of the app, kept with the spec."}
+
+  # ------------------------------------------------------------------ Google Play and Android
+  - id: POL-GOOGLE-DELETION
+    platform: google
+    category: account
+    statement: An app that lets people create an account in the app must give an in-app path to delete the account and its data and a web link where deletion can be requested.
+    source_url: https://support.google.com/googleplay/android-developer/answer/13327111
+    source_section: "Play Console Help: account deletion requirements"
+    checked_on: "2026-11-14"
+    volatile: true
+    applies_when: {fact: accounts_created_in_app}
+    effect: {kind: screen, ref: "screen:account_deletion", detail: "The same in-app deletion screen as for the other store, plus a public web page to request deletion, whose URL goes in the store listing."}
+  - id: POL-GOOGLE-DATA-SAFETY
+    platform: google
+    category: privacy
+    statement: Every published app must complete the Data safety form and keep it accurate; a privacy policy is required, even for an app that collects nothing.
+    source_url: https://support.google.com/googleplay/android-developer/answer/10787469
+    source_section: "Play Console Help: Data safety section"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: artifact, ref: "artifact:data_safety_form", detail: "Data types collected or shared, whether required or optional, why, encryption in transit and deletion options; SDKs and webviews included."}
+  - id: POL-GOOGLE-PAYMENTS
+    platform: google
+    category: payments
+    statement: Apps that charge for digital features, services or content must use Google Play's billing system (physical goods and services are exempt) and must not steer people to other payment methods; in-app prices must match the Play billing interface.
+    source_url: https://support.google.com/googleplay/android-developer/answer/9858738
+    source_section: "Play Console Help: Payments policy"
+    checked_on: "2026-11-14"
+    volatile: true
+    applies_when: {fact: sells_digital_goods}
+    effect: {kind: requirement, ref: "requirement:platform_billing_for_digital_goods", detail: "Digital unlocks go through the store billing system, with no links or text pointing to another payment method."}
+  - id: POL-GOOGLE-BACKGROUND-LOCATION
+    platform: google
+    category: location
+    statement: Background location is allowed only when it is core to the app and gives a significant benefit; it needs a permissions declaration (one feature, with a short video), a prominent in-app disclosure shown before the runtime prompt, and a privacy policy that covers it.
+    source_url: https://support.google.com/googleplay/android-developer/answer/9799150
+    source_section: "Play Console Help: use of the background location permission"
+    checked_on: "2026-11-14"
+    applies_when: {fact: uses_background_location}
+    effect: {kind: screen, ref: "screen:background_location_disclosure", detail: "A disclosure in normal use (not only in the policy) that says location, says it is used when the app is closed or not in use, and lists each feature that uses it; shown before the system prompt."}
+  - id: POL-GOOGLE-UGC
+    platform: google
+    category: user_generated_content
+    statement: An app with user-generated content must make people accept terms before posting, define and prohibit objectionable content, moderate it on an ongoing basis, and give an in-app way to report and block (public feeds need both; direct messaging needs blocking; closed communities need reporting).
+    source_url: https://support.google.com/googleplay/android-developer/answer/9876937
+    source_section: "Play Console Help: user generated content policy"
+    checked_on: "2026-11-14"
+    applies_when: {fact: has_user_generated_content}
+    effect: {kind: behaviour, ref: "behaviour:report_block_filter_contact", detail: "Terms acceptance before first post, in-app report and block, and a moderation route."}
+  - id: POL-GOOGLE-REVIEW-ACCESS
+    platform: google
+    category: review
+    statement: Sign-in details for review must give access to all app functionality, be reusable, valid regardless of location, not expire, and be written in English; verification codes need a reusable bypass.
+    source_url: https://support.google.com/googleplay/android-developer/answer/15748846
+    source_section: "Play Console Help: requirements for providing sign in details for review"
+    checked_on: "2026-11-14"
+    applies_when: {fact: has_login}
+    effect: {kind: artifact, ref: "artifact:review_demo_access", detail: "Reusable demo credentials, in English, with setup instructions for any PIN or code step."}
+  - id: POL-GOOGLE-CONTENT-RATING
+    platform: google
+    category: review
+    statement: Each app needs a content rating from the rating questionnaire in Play Console; answers must be accurate because misrepresentation can lead to removal or suspension.
+    source_url: https://support.google.com/googleplay/android-developer/answer/9859655
+    source_section: "Play Console Help: content ratings"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: artifact, ref: "artifact:age_rating_answers", detail: "Answers derived from the features and content of the app, kept with the spec."}
+  - id: POL-GOOGLE-TARGET-API
+    platform: google
+    category: build
+    statement: From 2026-08-31 new apps and app updates must target Android 16 (API level 36) or higher to be submitted to Google Play (an extension to 2026-11-01 could be requested, now passed).
+    source_url: https://support.google.com/googleplay/android-developer/answer/11926878
+    source_section: "Play Console Help: target API level requirements"
+    checked_on: "2026-11-14"
+    volatile: true
+    applies_when: {fact: always}
+    effect: {kind: requirement, ref: "requirement:android_target_api_36_or_higher", detail: "The build pins a stack version whose Android target is at least API 36; checked again each year."}
+  - id: POL-ANDROID-NOTIFICATION-PERMISSION
+    platform: google
+    category: notifications
+    statement: On Android 13 and higher a new install has notifications off until the app asks for the POST_NOTIFICATIONS permission and the person allows it; an app that targets Android 13 or higher controls when the prompt appears.
+    source_url: https://developer.android.com/develop/ui/views/notifications/notification-permission
+    source_section: "Notification runtime permission"
+    checked_on: "2026-11-14"
+    applies_when: {fact: has_push_notifications}
+    effect: {kind: behaviour, ref: "behaviour:ask_notification_permission_in_context", detail: "Explain the value, then ask after a user action (follow, order, alert bell); work without it if denied."}
+  - id: POL-ANDROID-EDGE-TO-EDGE
+    platform: google
+    category: build
+    statement: Once an app targets Android 15 (API 35) or higher it is displayed edge to edge on Android 15 and later, drawing behind the system bars, so the app must handle insets.
+    source_url: https://developer.android.com/develop/ui/views/layout/edge-to-edge
+    source_section: "Display content edge-to-edge in views"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: behaviour, ref: "behaviour:handle_system_bar_insets", detail: "Content and tappable controls stay clear of the status bar, navigation bar and display cutout."}
+
+  # ------------------------------------------------------------------ accessibility floors (standards and platform guidance)
+  - id: POL-A11Y-CONTRAST-BODY
+    platform: standard
+    category: accessibility_floor
+    statement: Text has a contrast ratio of at least 4.5 to 1 against its background.
+    source_url: https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
+    source_section: "WCAG 2.2 success criterion 1.4.3 Contrast (Minimum), level AA"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: contrast_ratio, value: "4.5", unit: ratio, applies_to: "body text"}
+    effect: {kind: constraint, ref: "constraint:contrast_body", detail: "Every text and background colour pair in both light and dark schemes measures at least 4.5:1."}
+  - id: POL-A11Y-CONTRAST-LARGE
+    platform: standard
+    category: accessibility_floor
+    statement: Large-scale text (at least 18 point, or 14 point bold) has a contrast ratio of at least 3 to 1.
+    source_url: https://www.w3.org/WAI/WCAG22/Understanding/contrast-minimum.html
+    source_section: "WCAG 2.2 success criterion 1.4.3, large-scale text"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: contrast_ratio, value: "3.0", unit: ratio, applies_to: "large text (18 pt, or 14 pt bold)"}
+    effect: {kind: constraint, ref: "constraint:contrast_large_text", detail: "Large display text pairs measure at least 3:1."}
+  - id: POL-A11Y-CONTRAST-NONTEXT
+    platform: standard
+    category: accessibility_floor
+    statement: Visual information needed to identify interface components and their states, and parts of graphics needed to understand content, has a contrast ratio of at least 3 to 1 against adjacent colours.
+    source_url: https://www.w3.org/WAI/WCAG22/Understanding/non-text-contrast.html
+    source_section: "WCAG 2.2 success criterion 1.4.11 Non-text Contrast, level AA"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: contrast_ratio, value: "3.0", unit: ratio, applies_to: "component boundaries, state indicators and meaningful graphics"}
+    effect: {kind: constraint, ref: "constraint:contrast_non_text", detail: "Input borders, selected states, icons that carry meaning and chart marks measure at least 3:1."}
+  - id: POL-A11Y-CONTRAST-BOTH-SCHEMES
+    platform: apple
+    category: accessibility_floor
+    statement: If the app supports Dark Mode, check the minimum contrast in both the light and the dark appearance; if the default does not meet it, provide a higher-contrast scheme when the system Increase Contrast setting is on.
+    source_url: https://developer.apple.com/design/human-interface-guidelines/accessibility
+    source_section: "Human Interface Guidelines, Accessibility, Color and effects (read through Apple's HIG content data)"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: constraint, ref: "constraint:contrast_checked_in_both_schemes", detail: "The contrast check runs on the light and dark token sets separately."}
+  - id: POL-A11Y-TEXT-SCALE-200
+    platform: standard
+    category: accessibility_floor
+    statement: Text can be resized up to 200 percent without loss of content or functionality; Apple likewise asks that people can enlarge text by at least 200 percent.
+    source_url: https://www.w3.org/WAI/WCAG22/Understanding/resize-text.html
+    source_section: "WCAG 2.2 success criterion 1.4.4 Resize Text, level AA; Apple HIG Accessibility, Text size"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: text_scale, value: "200", unit: percent, applies_to: "all text"}
+    effect: {kind: constraint, ref: "constraint:text_scales_to_200_percent", detail: "No clipped or overlapping text at 200 percent; fixed-height containers for text are not allowed."}
+  - id: POL-A11Y-TARGET-IOS
+    platform: apple
+    category: accessibility_floor
+    statement: Apple's default control size on iPhone and iPad is 44 by 44 points (its stated absolute minimum is 28 by 28); the sheet sets 44 as the floor and Apple asks apps to strive for the recommended size.
+    source_url: https://developer.apple.com/design/human-interface-guidelines/accessibility
+    source_section: "Human Interface Guidelines, Accessibility, Controls (default 44x44 pt, minimum 28x28 pt on iOS and iPadOS; read through Apple's HIG content data)"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: touch_target, value: "44", unit: pt, applies_to: "every tappable control on iOS", hard_minimum: "28"}
+    effect: {kind: constraint, ref: "constraint:touch_target_ios", detail: "Every tappable control has a hit area of at least 44 by 44 points."}
+  - id: POL-A11Y-TARGET-ANDROID
+    platform: google
+    category: accessibility_floor
+    statement: Touch targets should be at least 48 by 48 dp, separated by 8 dp or more.
+    source_url: https://support.google.com/accessibility/android/answer/7101858
+    source_section: "Android Accessibility Help, Touch target size (design and implementation)"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: touch_target, value: "48", unit: dp, applies_to: "every tappable control on Android", spacing: "8"}
+    effect: {kind: constraint, ref: "constraint:touch_target_android", detail: "Every tappable control has a hit area of at least 48 by 48 dp with at least 8 dp between neighbours."}
+  - id: POL-A11Y-TARGET-WCAG
+    platform: standard
+    category: accessibility_floor
+    statement: Pointer targets are at least 24 by 24 CSS pixels, with exceptions for spacing, equivalent controls, inline links and essential cases (a floor beneath the two platform sizes, kept for web previews).
+    source_url: https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html
+    source_section: "WCAG 2.2 success criterion 2.5.8 Target Size (Minimum), level AA"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    floor: {metric: touch_target, value: "24", unit: css_px, applies_to: "pointer targets in the web preview"}
+    effect: {kind: constraint, ref: "constraint:touch_target_web_preview", detail: "Targets in the web preview are at least 24 by 24 CSS pixels."}
+  - id: POL-A11Y-REDUCE-MOTION
+    platform: apple
+    category: accessibility_floor
+    statement: When the Reduce Motion setting is on, the app reduces automatic and repetitive animation (zooming, scaling, peripheral motion) and may replace movement along any axis with fades.
+    source_url: https://developer.apple.com/design/human-interface-guidelines/accessibility
+    source_section: "Human Interface Guidelines, Accessibility, Motion (read through Apple's HIG content data)"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: behaviour, ref: "behaviour:respect_reduce_motion", detail: "Every motion intent states what replaces it when reduced motion is on; decorative motion may simply stop."}
+  - id: POL-A11Y-MOTION-NOT-ONLY-SIGNAL
+    platform: apple
+    category: accessibility_floor
+    statement: Motion must not be the only way to communicate important information, and haptics must be optional so the app can be enjoyed without them.
+    source_url: https://developer.apple.com/design/human-interface-guidelines/motion
+    source_section: "Human Interface Guidelines, Motion, Make motion optional; Playing haptics, Make haptics optional (read through Apple's HIG content data)"
+    checked_on: "2026-11-14"
+    applies_when: {fact: always}
+    effect: {kind: constraint, ref: "constraint:feedback_not_motion_or_haptic_only", detail: "Every outcome is also shown in text or state; haptics only complement it and can be switched off."}
+
+omitted_unverified:
+  - topic: "Apple privacy manifest file keys and the list of required-reason API categories"
+    reason: "Apple's documentation page for privacy manifest files returned no body text to the fetch tools on 2026-11-14 (only the title). Only the dated 2024 news post was read, so only the upload requirement is recorded."
+  - topic: "Apple: Sign in with Apple named as the mandatory equivalent login"
+    reason: "Guideline 4.8 as fetched states criteria for an equivalent login service and does not name a product. The rule is recorded as the criteria; Sign in with Apple is mentioned only where Apple's own deletion page mentions it."
+  - topic: "Apple: background location Info.plist keys and 'Always' usage string wording"
+    reason: "Only guidelines 2.5.4 and 5.1.5 were read; no Apple page on the Always authorization strings was read."
+  - topic: "Apple: Live Activities requirements (minimum iOS version, 8-hour limit)"
+    reason: "Apple's ActivityKit page returned no body text. The capability sheet records Live Activities only from the Expo widgets page."
+  - topic: "Apple: age rating question set and the newer age categories"
+    reason: "Only guideline 2.3.6 was read; the App Store Connect age rating pages were not."
+  - topic: "Google: unrated apps being treated as unrated or removed"
+    reason: "The content-rating page was read and does not say this; only misrepresentation leading to removal is stated."
+  - topic: "Google: permission rationale and sensitive-permission declarations other than background location"
+    reason: "Play's page on permissions and APIs that access sensitive information was not read."
+  - topic: "Material Design 3 motion principles and reduced-motion behaviour on Android"
+    reason: "The Material 3 motion page returned no body text, and no Android page on removing animations was read."
+  - topic: "Apple: Apple Pay and wallet payment requirements"
+    reason: "No Apple page on Apple Pay review rules was read; only the Expo-hosted payments library page, recorded in the capability sheet."

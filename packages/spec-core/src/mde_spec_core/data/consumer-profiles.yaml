@@ -1,26 +1,104 @@
-# Consumer / writer profiles. Values are filled from each provider's CURRENT documentation, dated, with
-# source_url (S0 data task); a field nobody verified stays unset and is listed in unset_fields.
-# Placeholder until the data task replaces the numbers: only what the repo already records (D-171, D-172).
+# Consumer / writer profiles (doc 15 11.4). Values are read from each provider's CURRENT official documentation on
+# `checked_on`; a field nobody verified is null (or left at its default) and is named in `unset_fields`. Model and vendor
+# names appear here only in `notes` and `source_url`, never in code (rule 14, D-171).
+#
+# Fields the model in profiles.py has no place for (the profile loader forbids extra keys, so they are in `notes`):
+# optional-parameter and strict-tool limits, cache minimums and lifetimes, the date a price changes. Requested additions
+# are listed in the data task report (max_optional_params, max_strict_tools, cache_min_tokens, cache_ttls).
 version: 1
 profiles:
+  # ---------------------------------------------------------------------------- weak-default: the small, fast route
   - id: weak-default
     capability_class: weak
-    max_output_tokens: null
+    nominal_context_tokens: 1000000
+    effective_context_tokens: null
+    max_output_tokens: 128000
+    output_tokens_per_second: null
+    tokenizer_chars_per_token: 2.5
+    caching: explicit_breakpoints
+    structured_output: schema
     schema_limits: {max_nullable_fields: 16, max_union_params: 16}
+    limits: {requests_per_minute: 4000, input_tokens_per_minute: 2000000, output_tokens_per_minute: 400000}
     price: {input_usd_per_million: "0.10", output_usd_per_million: "0.50", cached_input_usd_per_million: "0.01", long_prompt_threshold_tokens: 100000, long_prompt_multiplier: "5.0"}
-    caching: none
-    source_url: "packages/llm-gateway/src/mde_llm_gateway/pricing.yaml (read 2026-11-13, D-171, D-172)"
-    checked_on: "2026-11-13"
-    unset_fields: [nominal_context_tokens, effective_context_tokens, max_output_tokens, output_tokens_per_second, limits]
+    source_url: "https://platform.claude.com/docs/en/models/haiku-5-5/overview ; https://platform.claude.com/docs/en/about-claude/models/overview ; https://platform.claude.com/docs/en/api/rate-limits ; https://platform.claude.com/docs/en/build-with-claude/prompt-caching ; https://platform.claude.com/docs/en/build-with-claude/structured-outputs ; packages/llm-gateway/src/mde_llm_gateway/pricing.yaml (D-171, D-172)"
+    checked_on: "2026-11-14"
+    notes: |
+      Route in the repo: model id claude-haiku-5-5 (pricing.yaml, vendor anthropic). All figures read 2026-11-14.
+      Context 1M tokens (nominal); max output 128K tokens on the synchronous Messages API (300K on the Batch API with a beta header).
+      Limits are the Start tier, the lowest listed tier (the docs now call tiers Start, Build, Scale): 4,000 RPM, 2,000,000 ITPM,
+      400,000 OTPM; Build 10,000 / 5,000,000 / 1,000,000; Scale 13,000 / 10,000,000 / 2,000,000. ITPM counts only uncached input
+      (cache reads do not count); a sharp usage increase can also trigger a separate ramp limit.
+      Tokenizer: the docs say 1M tokens is about 2.5M Unicode characters (English; about 30 percent more tokens than the previous Haiku);
+      2.5 is that average, so scripts other than Latin will use more tokens per character: budget them lower.
+      Price per million tokens: input 0.10, output 0.50, 5-minute cache write 0.125, 1-hour cache write 0.20, cache read 0.01;
+      prompts over 100,000 tokens are billed for the whole request at input 0.50, output 2.50, cache read 0.05 (5x on both, so the
+      multiplier below is exact). Batch API 50 percent off.
+      Caching: explicit breakpoints (up to 4 per request) or one top-level marker that moves forward; minimum cacheable prompt 512 tokens;
+      lifetime 5 minutes (default, refreshed on use) or 1 hour; cache write 1.25x or 2x input, read 0.1x. The repo's provider sends no cache markers today.
+      Structured output (schema-constrained): up to 16 parameters using union types or type arrays such as ["string","null"] in total
+      across all strict schemas in a request (this is the repo's D-172 figure, confirmed on the page), 24 optional parameters in
+      total, 20 strict tools; further internal grammar-size limits give a 400 "Schema is too complex"; 180 second compile timeout;
+      no minItems above 1, no min/max length or numeric bounds, additionalProperties must be false; the first use of a schema adds
+      compile latency and compiled grammars are cached 24 hours; enum casing is not guaranteed. Thinking is adaptive, default effort medium
+      (pricing.yaml sets a floor of medium for this route).
+      Not verified and left null: effective (probe-quality) context, output speed, parallelism limit, whether thinking tokens are
+      listed as output tokens on the pages read, max nesting depth, enum size limit.
+    unset_fields: [effective_context_tokens, output_tokens_per_second, limits.max_parallel, price.reasoning_billed_as_output, schema_limits.max_depth, schema_limits.max_enum_size, schema_limits.max_grammar_chars]
+  # ---------------------------------------------------------------------------- standard-default: a mid-tier route from another vendor
   - id: standard-default
     capability_class: standard
-    caching: none
-    source_url: ""
-    checked_on: ""
-    unset_fields: [nominal_context_tokens, effective_context_tokens, max_output_tokens, price, limits]
+    nominal_context_tokens: 1050000
+    effective_context_tokens: null
+    max_output_tokens: 128000
+    output_tokens_per_second: null
+    tokenizer_chars_per_token: null
+    caching: automatic_prefix
+    structured_output: schema
+    limits: {requests_per_minute: 5000}
+    price: {input_usd_per_million: "2.00", output_usd_per_million: "10.00", cached_input_usd_per_million: "0.10", long_prompt_threshold_tokens: 272000, long_prompt_multiplier: "2.0"}
+    source_url: "https://developers.openai.com/api/docs/models/gpt-6.1-sol ; https://developers.openai.com/api/docs/models ; https://developers.openai.com/api/docs/guides/prompt-caching ; https://developers.openai.com/api/docs/guides/rate-limits"
+    checked_on: "2026-11-14"
+    notes: |
+      Model id gpt-6.1-sol (the page calls it the balance of intelligence and cost; the family on the models page is Astra 10/50,
+      Sol 2/10, Terra 1/5, Luna 0.10/0.50 dollars per million input/output tokens, every model 1.05M context and 128K output).
+      Context window 1,050,000 tokens, of which at most 922,000 may be input; knowledge cutoff 2026-04-30. Price per million tokens:
+      input 2, cached input 0.10, cache write 2.50, output 10. Prompts over 272K input tokens are billed for the whole request at 2x input and
+      cache rates and 1.5x output: the single multiplier field below carries the input rate, the output multiplier (1.5) is only here.
+      Rate limits: the first paid tier is called Build ($5 total credit purchases): 5,000 RPM and 1,000,000 TPM for the Astra/Sol/Terra
+      group (the page does not say whether TPM counts input and output together, so no token field is set); there is no tier named "tier 1".
+      Caching is automatic: for the newest models the minimum is 1,024 tokens, lifetime at least 30 minutes by default or 12 hours
+      through a request option, cache reads 0.05x the input rate on this model (the cached price above is exactly 0.05 x 2.00 = 0.10), cache writes
+      1.25x (30 minutes) or 2.5x (12 hours). Structured outputs and prompt caching are marked supported on the model page.
+      Not verified and left null: effective context, tokens-per-minute split, output speed, tokenizer ratio, schema-complexity limits
+      (the page lists none), whether reasoning tokens are billed as output.
+    unset_fields: [effective_context_tokens, output_tokens_per_second, tokenizer_chars_per_token, limits.input_tokens_per_minute, limits.output_tokens_per_minute, limits.max_parallel, price.reasoning_billed_as_output, schema_limits]
+  # ---------------------------------------------------------------------------- large-context-default: a long-window route from a third vendor
   - id: large-context-default
     capability_class: strong
-    caching: none
-    source_url: ""
-    checked_on: ""
-    unset_fields: [nominal_context_tokens, effective_context_tokens, max_output_tokens, price, limits]
+    nominal_context_tokens: 1000000
+    effective_context_tokens: null
+    max_output_tokens: null
+    output_tokens_per_second: null
+    tokenizer_chars_per_token: null
+    caching: automatic_prefix
+    structured_output: schema
+    price: {input_usd_per_million: "4.00", output_usd_per_million: "20.00", cached_input_usd_per_million: "0.20"}
+    source_url: "https://aistudio.google.com/docs/models ; https://aistudio.google.com/docs/pricing ; https://aistudio.google.com/docs/rate-limits ; https://aistudio.google.com/docs/caching ; https://aistudio.google.com/docs/structured-output"
+    checked_on: "2026-11-14"
+    notes: |
+      Model id gemini-4-argon (described as an efficient reasoning model with quicker replies and lower per-turn token use than
+      Gemini 4 Carbon, same price as Carbon). The docs host moved from ai.google.dev (redirects 301 to aistudio.google.com/docs).
+      Input limit 1M tokens. The output limit is shown as "64K / 1M tokens" without saying which is the default and which is the
+      maximum, so max_output_tokens is left null.
+      PRICES CHANGE ON 2026-12-01: through 2026-11-30 the page lists input 2.00, output 10.00 (thinking included) and context caching
+      0.10 per million tokens; from 2026-12-01 input 4.00, output 20.00, caching 0.20. The profile carries the higher, later values so a
+      budget is never too low; use 2.00 / 10.00 / 0.10 for runs before that date. No long-context tier is listed above 200K tokens.
+      Caching is implicit only for Gemini 4 (explicit caching is not supported for these models): enabled by default, minimum 4,096 tokens,
+      and the whole previous request is reused only when the new request adds at least 2,050 tokens; the page gives no default lifetime
+      and no discount percentage.
+      Rate limits: Tier 1 needs an active linked billing account (cap $250); per-model requests, tokens and daily limits are not on the
+      page (they are shown in AI Studio), so limits stay null. The only Tier 1 figure listed is batch enqueued tokens, 5,000,000 for this model.
+      Structured output: schema supported, with no numeric complexity limits stated (the page says limits on states, branching and
+      nesting exist and rejects with 400 INVALID_ARGUMENT); string length and object property-count bounds are not enforced.
+      Not verified and left null: effective context, maximum output, rate limits, output speed, tokenizer ratio, cache lifetime.
+    unset_fields: [effective_context_tokens, max_output_tokens, output_tokens_per_second, tokenizer_chars_per_token, limits, price.long_prompt_threshold_tokens, price.long_prompt_multiplier, price.reasoning_billed_as_output, schema_limits]

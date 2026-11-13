@@ -1,0 +1,230 @@
+# Delight patterns (doc 17 5.3, doc 15 freedom contract): named moments where care pays off. Each says the user moment, the
+# intent and the effect ONLY: no layout, no component names, no animation libraries; the front end chooses how.
+# `basis` is public guidance read on `checked_on`; `says` paraphrases it. A pattern with no basis read is not here.
+# `capability_ref` points into platform/capability_sheet.yaml when the pattern needs a capability; `tier` is that tier
+# (A when none is needed). Every pattern says what happens when the person asks for reduced motion.
+version: 1
+checked_on: "2026-11-14"
+
+patterns:
+  - id: DLT-INSTANT-CONTENT
+    name: Something on screen at once
+    moment: A screen opens and its data is still on the way.
+    intent: The person never wonders whether the app is broken.
+    effect: Stand-in shapes of the coming content appear immediately and are replaced in place as real content arrives.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/loading", says: "Show something as soon as possible, with placeholders replaced as content becomes available; the best loading finishes before people notice."}
+    reduced_motion_alternative: The stand-in shapes stay still (no shimmer) and swap to content without a transition.
+    checked_on: "2026-11-14"
+  - id: DLT-HONEST-PROGRESS
+    name: Progress that tells the truth
+    moment: A task takes more than a moment (upload, export, payment confirmation).
+    intent: The person can judge how long it will take and trusts that it is moving.
+    effect: A steady, accurate sense of advancement; switches from open-ended to measured as soon as the length is known; never sits still without a stated reason.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/progress-indicators", says: "Prefer measured progress, keep it moving, and even out the pace so ninety percent in five seconds and the rest in minutes does not look deceptive."}
+    reduced_motion_alternative: Progress is shown as a changing value in words or a filling measure with no looping movement.
+    checked_on: "2026-11-14"
+  - id: DLT-USEFUL-WAIT
+    name: A useful wait
+    moment: A wait that cannot be shortened (first sync, a long import).
+    intent: Waiting feels worthwhile instead of wasted.
+    effect: A short tip or a preview of what is coming, sized to the expected wait and not repeated.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/loading", says: "For unavoidably long waits, give people something interesting to view such as tips or new features, gauged to the remaining time."}
+    reduced_motion_alternative: Tips change only when the person moves on, not on a timer.
+    checked_on: "2026-11-14"
+  - id: DLT-QUIET-SUCCESS
+    name: Quiet confirmation of what matters
+    moment: A significant task finishes (order placed, payment sent, booking made).
+    intent: The person knows it worked without being interrupted.
+    effect: A brief, clear acknowledgement near where the action happened, with a short matching haptic where the device supports it; routine actions get none.
+    tier: A
+    capability_ref: haptics
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/feedback", says: "Confirm significant actions, match the weight of the feedback to the importance, and keep feedback accessible through more than one channel."}
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/playing-haptics", says: "Prefer short haptics that complement other feedback, keep them consistent and make them optional."}
+    reduced_motion_alternative: The acknowledgement appears as a still message; the haptic stays if haptics are on.
+    checked_on: "2026-11-14"
+  - id: DLT-OUTCOME-HAPTIC
+    name: Outcome you can feel
+    moment: A task ends in success, a warning or an error.
+    intent: The result registers even when the person is not looking.
+    effect: One distinct short haptic per outcome kind, used the same way everywhere, always paired with a visible message.
+    tier: A
+    capability_ref: haptics
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/playing-haptics", says: "Notification haptics report the outcome of a task as success, warning or error; use patterns for their documented meaning and consistently."}
+      - {source_url: "https://developer.android.com/develop/ui/views/haptics/haptics-principles", says: "Confirm a state change after a user action; be consistent; frequency and importance set the strength."}
+    reduced_motion_alternative: Not motion; the haptic is skipped when haptics are off and the visible message carries the outcome.
+    checked_on: "2026-11-14"
+  - id: DLT-VALUE-TICK
+    name: A tick as a value changes
+    moment: The person drags through values (a quantity, a time, a rating) or snaps something into place.
+    intent: The control feels physical and the steps are felt.
+    effect: A very light tick for each step and a firmer one when the target is reached; stronger events feel stronger than frequent ones.
+    tier: A
+    capability_ref: haptics
+    basis:
+      - {source_url: "https://developer.android.com/develop/ui/views/haptics/haptics-principles", says: "Very frequent events should be very subtle and more important events stronger; ticks can grow as a drag nears its target."}
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/playing-haptics", says: "Selection feedback is for a value that is changing."}
+    reduced_motion_alternative: Not motion; ticks stop when haptics are off and the value is always also shown as text.
+    checked_on: "2026-11-14"
+  - id: DLT-LEARN-BY-DOING
+    name: First run that teaches by doing
+    moment: A first launch, when the person has not yet done anything.
+    intent: The person gets to value fast and remembers what they learned.
+    effect: A short optional first run in which the person tries the main action safely; skippable, never shown again once skipped, and easy to find later.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/onboarding", says: "Keep onboarding fast, fun and optional, teach through interactivity, give sensible defaults, and let people skip it and find it later."}
+    reduced_motion_alternative: Steps advance with a plain cross-fade or an instant change; no movement is needed to understand them.
+    checked_on: "2026-11-14"
+  - id: DLT-TIP-IN-PLACE
+    name: A tip where it is needed
+    moment: The person reaches a feature they have not used before.
+    intent: Help appears at the point of need, not in a lecture up front.
+    effect: A short hint attached to the thing it explains, shown once, dismissible and re-readable from settings.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/onboarding", says: "Prefer context-specific tips over a single flow and show instructions near the area they refer to."}
+    reduced_motion_alternative: The hint appears without movement.
+    checked_on: "2026-11-14"
+  - id: DLT-ASK-IN-CONTEXT
+    name: Ask for access when it earns its keep
+    moment: The person first reaches a feature that needs a permission (camera, location, notifications).
+    intent: The request makes sense, so it is far more likely to be granted.
+    effect: A one-line reason shown with the feature, then the system prompt after a deliberate action; the feature degrades gracefully if refused.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/onboarding", says: "Request permission when people first use the function that needs it, unless the app cannot work without it."}
+      - {source_url: "https://developer.android.com/develop/ui/views/notifications/notification-permission", says: "Let people explore first, then ask after a user action such as following, ordering or choosing alerts, and explain why."}
+    reduced_motion_alternative: No motion is involved; the reason is plain text.
+    checked_on: "2026-11-14"
+  - id: DLT-PICK-UP-WHERE-LEFT
+    name: Pick up where you left off
+    moment: The app is reopened after being closed or interrupted.
+    intent: The person never retraces steps.
+    effect: The app returns to the previous place and state (position, draft, filters) without a replay of earlier screens.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/launching", says: "Restore the previous state on restart so people continue where they left off and avoid retracing steps."}
+    reduced_motion_alternative: The restore is an instant state, not an animated replay.
+    checked_on: "2026-11-14"
+  - id: DLT-SEAMLESS-LAUNCH
+    name: Launch that flows into the first screen
+    moment: The app opens from cold.
+    intent: Opening feels instant and calm.
+    effect: The opening frame looks nearly the same as the first real screen, with no text or advertising, and content takes over in place.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/launching", says: "Design the launch screen to be nearly identical to the first screen, avoid text, and do not advertise."}
+    reduced_motion_alternative: The hand-over is a direct swap with no fade or scale.
+    checked_on: "2026-11-14"
+  - id: DLT-EARNED-REVIEW-ASK
+    name: Ask for a rating after a win
+    moment: The person has just finished something meaningful and is at a natural pause.
+    intent: Feedback is requested when it is welcome and the person has an opinion.
+    effect: One rating request after demonstrated engagement, never on first launch or mid-task, spaced a week or two apart, using the system's own request.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/ratings-and-reviews", says: "Ask only after engagement, not during a task or onboarding, avoid pestering, and wait a week or two between requests."}
+    reduced_motion_alternative: No motion is involved.
+    checked_on: "2026-11-14"
+  - id: DLT-UNDO-WITH-CONFIDENCE
+    name: Undo that shows what came back
+    moment: The person removes or changes something and may regret it.
+    intent: Mistakes are cheap, so the person acts without fear.
+    effect: A time-limited chance to reverse the action that names what will be reversed and, once done, makes the restored item visible.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/undo-and-redo", says: "Help people predict the result of undo, describe the operation briefly and highlight the result so it is not mistaken for no effect."}
+    reduced_motion_alternative: The restored item is marked with a still highlight instead of movement.
+    checked_on: "2026-11-14"
+  - id: DLT-GESTURE-WITH-WAY-OUT
+    name: A gesture shortcut that is never the only way
+    moment: A frequent action could be faster with a swipe or drag.
+    intent: Power users get speed and everyone else loses nothing.
+    effect: A familiar gesture speeds the action up, the same action is reachable another visible way, and the gesture is hinted once.
+    tier: A
+    capability_ref: gesture_handling
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/gestures", says: "Give more than one way to interact, supplement standard gestures rather than replace them, and make custom gestures discoverable."}
+    reduced_motion_alternative: The same action stays available as a plain control; the gesture hint is static.
+    checked_on: "2026-11-14"
+  - id: DLT-KIND-FAILURE
+    name: Failure that explains itself
+    moment: Something cannot be done (no network, declined payment, invalid input).
+    intent: The person understands why and what to do next, and does not blame themselves.
+    effect: A plain message at the point of failure with the reason and one clear next step; the person's input is kept.
+    tier: A
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/feedback", says: "Show when a command cannot be carried out and help people understand why; use interruptions sparingly."}
+    reduced_motion_alternative: No motion is needed; any shake or bounce is dropped.
+    checked_on: "2026-11-14"
+  - id: DLT-WORTH-A-NUDGE
+    name: A notification worth opening
+    moment: Something time-sensitive happens while the app is closed.
+    intent: Notifications are trusted, so they stay switched on.
+    effect: One short, high-value message per event with no private details, sent only after the person agreed and adjustable by them.
+    tier: B
+    capability_ref: push_remote
+    basis:
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/notifications", says: "Get consent, give timely high-value information at a glance, avoid duplicates and sensitive content."}
+    reduced_motion_alternative: No motion is involved.
+    checked_on: "2026-11-14"
+  - id: DLT-SMALL-CELEBRATION
+    name: A small celebration for a real milestone
+    moment: A long-awaited goal is reached (first order delivered, streak kept, target met).
+    intent: The person feels rewarded and wants to return.
+    effect: A brief flourish of sight and a short matching haptic, once per milestone, easy to dismiss and never blocking the next step.
+    tier: A
+    capability_ref: haptics
+    basis:
+      - {source_url: "https://developer.android.com/develop/ui/views/haptics/haptics-principles", says: "A stated purpose for haptics is to delight: effects that enhance an ongoing action, in step with visuals, used sparingly."}
+      - {source_url: "https://developer.apple.com/design/human-interface-guidelines/motion", says: "Make motion optional and never the only way to communicate; do not make people wait for it to finish."}
+    reduced_motion_alternative: A still congratulatory message and a changed state of the achievement; no flourish.
+    checked_on: "2026-11-14"
+  - id: DLT-NEW-MATERIAL
+    name: Depth on the newest system
+    moment: Primary surfaces are shown on a device with the latest system release.
+    intent: The app feels native and current on devices that support it.
+    effect: A translucent, light-catching material on a few key surfaces where the system supports it, and a plain solid surface everywhere else with the same meaning.
+    tier: A
+    capability_ref: glass_materials
+    basis:
+      - {source_url: "https://docs.expo.dev/versions/latest/sdk/glass-effect/", says: "The glass effect needs iOS 26 or later and falls back to a plain view elsewhere."}
+    reduced_motion_alternative: The material is static (no shimmer or parallax) and the plain surface is used when transparency is reduced.
+    checked_on: "2026-11-14"
+  - id: DLT-STATUS-OFF-APP
+    name: Status you can see without opening the app
+    moment: A long wait is in progress that the person watches (a delivery, a ride, a timer).
+    intent: The person gets reassurance at a glance without going back into the app.
+    effect: A live, glanceable status outside the app that updates as the wait progresses and ends cleanly when it is over.
+    tier: B
+    capability_ref: live_activities
+    basis:
+      - {source_url: "https://docs.expo.dev/versions/latest/sdk/widgets/", says: "Live status outside the app is available on iOS through the widgets module, with a development build."}
+    reduced_motion_alternative: The status changes value without animated transitions.
+    checked_on: "2026-11-14"
+  - id: DLT-ITEM-BECOMES-DETAIL
+    name: The thing you tapped becomes the detail
+    moment: The person opens an item from a list and later goes back.
+    intent: The person keeps their sense of place; the same thing is visibly the same thing.
+    effect: The chosen item appears to grow into its detail and shrink back into place on return, following the back gesture where it exists.
+    tier: B
+    capability_ref: shared_element_transitions
+    basis:
+      - {source_url: "https://developer.android.com/design/ui/mobile/guides/patterns/predictive-back", says: "Shared-element transitions with the back gesture let the person preview and commit or cancel; they suit dismissing a detail back to a list."}
+      - {source_url: "https://docs.swmansion.com/react-native-reanimated/docs/shared-element-transitions/overview/", says: "In the stack's animation library this is experimental and not recommended for production."}
+    reduced_motion_alternative: A plain cross-fade between list and detail.
+    checked_on: "2026-11-14"
+
+omitted_unverified:
+  - topic: "Pull-to-refresh and empty-state delight patterns"
+    reason: "Apple's pull-to-refresh guidance page returned 404 and no empty-state guidance was read; no basis, so no pattern."
+  - topic: "Material Design 3 motion guidance as a basis"
+    reason: "The Material 3 motion page returned no body text, so no pattern cites it."

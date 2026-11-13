@@ -1,0 +1,168 @@
+# Free tools Spec may use (doc 18 6, AD-89): only free, only local, no network in Spec's run path except the model gateway.
+# The installed version is NOT written here: tests read it with importlib.metadata. `licence_tokens` are words the package
+# metadata licence text must contain (read from the installed package metadata on `checked_on`), so a licence change fails a test.
+# Each tool names ONE smoke test (`smoke.id`, implemented in tooling.py, run by tests offline); `smoke.one_line` and
+# `smoke.expect` document what it does. A caveat the research found goes in `caveat`.
+version: 1
+checked_on: "2026-11-14"
+
+tools:
+  - id: faker
+    distribution: faker
+    import_name: faker
+    purpose: Seeded filler names, addresses and dates for mock data (volume and the busy profile).
+    licence_expected: MIT
+    licence_tokens: [MIT]
+    copyleft: false
+    source_url: https://pypi.org/project/faker
+    checked_on: "2026-11-14"
+    smoke:
+      id: faker_indian_locales
+      one_line: "Faker('en_IN'), Faker('hi_IN'), Faker('mr_IN') give names; Faker('kn_IN') raises"
+      expect: "en_IN, hi_IN, mr_IN work; kn_IN raises AttributeError (no Kannada provider)"
+    caveat: "Faker('kn_IN') raises AttributeError in the installed version (the doc 18 text said a missing provider silently falls back to English; that is true only for a missing provider inside a known locale). Kannada needs a curated pool. Never use its ssn or bank providers or random phone numbers."
+  - id: babel
+    distribution: babel
+    import_name: babel
+    purpose: Number, currency and date formats and plural rules per locale (Indian digit grouping).
+    licence_expected: BSD-3-Clause
+    licence_tokens: [BSD]
+    copyleft: false
+    source_url: https://pypi.org/project/babel
+    checked_on: "2026-11-14"
+    smoke:
+      id: babel_indian_grouping
+      one_line: "format_decimal(1234567.891, locale='en_IN')"
+      expect: "12,34,567.891"
+    caveat: ""
+  - id: phonenumbers
+    distribution: phonenumbers
+    import_name: phonenumbers
+    purpose: Format validation of phone numbers; in mock data numbers appear only masked.
+    licence_expected: Apache-2.0
+    licence_tokens: [Apache]
+    copyleft: false
+    source_url: https://pypi.org/project/phonenumbers
+    checked_on: "2026-11-14"
+    smoke:
+      id: phonenumbers_parse_in
+      one_line: "parse('+91 98765 43210') is a valid Indian number and formats internationally"
+      expect: "valid, '+91 98765 43210'"
+    caveat: "Validation and formatting only. A documented example number is not promised to be unassigned and a generator's number can belong to a real subscriber: show numbers only masked."
+  - id: python-stdnum
+    distribution: python-stdnum
+    import_name: stdnum
+    purpose: Structure and checksum checks for ID numbers, used to FAIL a fixture that contains a value passing validate().
+    licence_expected: LGPL-2.1-or-later
+    licence_tokens: [LGPL]
+    copyleft: true
+    source_url: https://pypi.org/project/python-stdnum
+    checked_on: "2026-11-14"
+    smoke:
+      id: stdnum_aadhaar_validator
+      one_line: "stdnum.in_.aadhaar.validate exists and is callable"
+      expect: "callable"
+    caveat: "LGPL (weak copyleft): used as an unmodified dependency, which the licence allows; record it in the notices of any distribution. It checks structure and checksum, so a valid-looking number passes: that is the danger it is used to catch."
+  - id: coloraide
+    distribution: coloraide
+    import_name: coloraide
+    purpose: Colour science for tonal ramps, dark schemes and real contrast ratios.
+    licence_expected: MIT
+    licence_tokens: [MIT]
+    copyleft: false
+    source_url: https://pypi.org/project/coloraide
+    checked_on: "2026-11-14"
+    smoke:
+      id: coloraide_wcag_contrast
+      one_line: "Color('black').contrast('white') rounds to 21"
+      expect: "21"
+    caveat: "The contrast it reports for black on white is 20.999999999999996 (floating point): always round before comparing to a floor and assert the real ratio, not a tone proxy."
+  - id: jsonschema
+    distribution: jsonschema
+    import_name: jsonschema
+    purpose: JSON Schema validation of model output and data files.
+    licence_expected: MIT
+    licence_tokens: [MIT]
+    copyleft: false
+    source_url: https://pypi.org/project/jsonschema
+    checked_on: "2026-11-14"
+    smoke:
+      id: jsonschema_validate
+      one_line: "validate({'a': 1}, integer schema) passes and validate({'a': 'x'}, ...) raises"
+      expect: "pass and ValidationError"
+    caveat: ""
+  - id: pydantic
+    distribution: pydantic
+    import_name: pydantic
+    purpose: Typed models for every data file and call result.
+    licence_expected: MIT
+    licence_tokens: [MIT]
+    copyleft: false
+    source_url: https://pypi.org/project/pydantic
+    checked_on: "2026-11-14"
+    smoke:
+      id: pydantic_model
+      one_line: "a model with extra='forbid' accepts a good dict and refuses an extra key"
+      expect: "accept and ValidationError"
+    caveat: ""
+  - id: openapi-spec-validator
+    distribution: openapi-spec-validator
+    import_name: openapi_spec_validator
+    purpose: Lint of the generated API contract (Python only; Spectral and Redocly need Node).
+    licence_expected: Apache-2.0
+    licence_tokens: [Apache]
+    copyleft: false
+    source_url: https://pypi.org/project/openapi-spec-validator
+    checked_on: "2026-11-14"
+    smoke:
+      id: openapi_31_minimal
+      one_line: "validate() accepts a minimal OpenAPI 3.1.0 document and rejects one with no info"
+      expect: "accept and an error"
+    caveat: ""
+  - id: pyyaml
+    distribution: pyyaml
+    import_name: yaml
+    purpose: Loading every data file (safe_load only).
+    licence_expected: MIT
+    licence_tokens: [MIT]
+    copyleft: false
+    source_url: https://pypi.org/project/pyyaml
+    checked_on: "2026-11-14"
+    smoke:
+      id: yaml_safe_load
+      one_line: "safe_load('a: [1, 2]') gives {'a': [1, 2]} and refuses a python object tag"
+      expect: "dict and ConstructorError"
+    caveat: "Never yaml.load without a safe loader."
+  - id: jinja2
+    distribution: jinja2
+    import_name: jinja2
+    purpose: Prompt and file templates (sandboxed environment for anything that touches model text).
+    licence_expected: BSD-3-Clause
+    licence_tokens: [BSD]
+    copyleft: false
+    source_url: https://pypi.org/project/jinja2
+    checked_on: "2026-11-14"
+    smoke:
+      id: jinja2_render
+      one_line: "a sandboxed Template('Hello {{ name }}').render(name='x') gives 'Hello x'"
+      expect: "Hello x"
+    caveat: "Template text comes from our own files; user and model text is passed only as data, never as the template (rule 9)."
+  - id: promptfoo
+    distribution: null
+    import_name: null
+    purpose: Provider-switch test and prompt regression, proof harness only (not in Spec's run path).
+    licence_expected: MIT
+    licence_tokens: [MIT]
+    copyleft: false
+    proof_only: true
+    node_requirement: ">=22.22.0"
+    source_url: https://www.promptfoo.dev/docs/installation/
+    checked_on: "2026-11-14"
+    smoke: null
+    caveat: "Needs Node.js 22.22.0 or newer (the install page recommends Node 24 LTS); the same floor is in the package's engines field on its main branch; licence MIT from that package.json. Not a Python dependency and not run in tests; verify the installed version's CI exit-code behaviour before relying on it."
+
+not_used:
+  - id: pycountry
+    reason: "Not a dependency of spec-core and not installed in the project environment on 2026-11-14; if added, its licence (LGPL per the research note) is unverified and must be recorded here first."
+  - id: python-holidays
+    reason: "Not a dependency and not installed; not evaluated."

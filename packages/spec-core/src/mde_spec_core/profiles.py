@@ -26,6 +26,8 @@ class SchemaLimits(_M):
     max_enum_size: int | None = None
     max_union_params: int | None = None
     max_grammar_chars: int | None = None
+    max_optional_params: int | None = None
+    max_strict_tools: int | None = None
 
 
 class ProfilePrice(_M):
@@ -35,6 +37,8 @@ class ProfilePrice(_M):
     long_prompt_threshold_tokens: int | None = None
     long_prompt_multiplier: str | None = None
     reasoning_billed_as_output: bool | None = None
+    long_prompt_output_multiplier: str | None = None  # when it differs from the input multiplier
+    price_effective_until: str | None = None  # a known price change date
 
 
 class Limits(_M):
@@ -54,6 +58,8 @@ class ConsumerProfile(_M):
     tokenizer_chars_per_token: float | None = None  # a conservative factor until a counter exists
     caching: Literal["explicit_breakpoints", "automatic_prefix", "cached_object", "none"] = "none"
     cache_share: float = 0.0
+    cache_min_tokens: int | None = None
+    cache_ttls: list[str] = []
     structured_output: Literal["schema", "json_mode", "none"] = "schema"
     schema_limits: SchemaLimits = SchemaLimits()
     limits: Limits = Limits()

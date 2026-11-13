@@ -83,4 +83,4 @@ def test_profiles_load_and_say_what_is_unset():
     ps = load_profiles()
     weak = ps.weakest()
     assert weak.id == "weak-default" and weak.schema_limits.max_nullable_fields == 16
-    assert "max_output_tokens" in weak.unset_fields
+    assert "effective_context_tokens" in weak.unset_fields  # needs measuring, not guessed

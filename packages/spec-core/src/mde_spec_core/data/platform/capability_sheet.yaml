@@ -1,0 +1,273 @@
+# Platform capability sheet (doc 17 5.4, doc 15 7.3): what the platforms and the fixed stack can do, at what tier.
+#   A  standard Expo flow: an Expo SDK module, a library bundled with the SDK, or an app-config property; no custom native code of our own.
+#   B  needs a development build, a config plugin, a library outside the SDK's bundled set, or a store review step.
+#   C  not supportable in the fixed stack (the Stack Kit lists the app types it cannot build).
+# Every entry cites a page read on `checked_on`. A claim that could not be verified is left null (`expo_go`) or listed
+# under `omitted_unverified`; nothing is from memory.
+# `expo_go` says what the page says about the stock preview client: true, false, or null when the page is silent.
+# `in_sdk_bundled_modules` is read from Expo's bundledNativeModules.json on the sdk-58 branch (what the SDK pins).
+version: 1
+checked_on: "2026-11-14"
+
+stack:
+  expo_sdk_read: "58.0.0"        # "You are here: Reference (v58.0.0)" on docs.expo.dev/versions/latest, 2026-11-14
+  expo_package_version_read: "58.0.25"  # packages/expo/package.json on the sdk-58 branch
+  react_native_read: "0.88"      # compatibility table for SDK 58 (docs); bundledNativeModules pins 0.88.1
+  source_url: https://docs.expo.dev/versions/latest/
+  bundled_modules_url: https://github.com/expo/expo/blob/sdk-58/packages/expo/bundledNativeModules.json
+  project_stack_kit: packages/content/src/mde_content/data/stack-profile.yaml
+  project_stack_kit_pinned: false
+  project_stack_kit_note: "The Stack Kit never writes version numbers: `pinned_at_build` lists expo_sdk, react_native, expo_router and typescript for the build step to pin. The versions above are what the docs showed on checked_on and must be re-read when the build step pins a version."
+
+capabilities:
+  - id: haptics
+    label: Haptic feedback
+    tier: A
+    expo_go: null
+    in_sdk_bundled_modules: true
+    platforms: [ios, android, web]
+    source_url: https://docs.expo.dev/versions/latest/sdk/haptics/
+    checked_on: "2026-11-14"
+    note: "Expo SDK module. iOS does nothing when Low Power Mode is on, the user disabled the Taptic Engine, the camera is active or dictation is active; web uses the Vibration API where present. Haptics are never the only signal."
+  - id: shared_element_transitions
+    label: Shared-element transitions between screens
+    tier: B
+    expo_go: null
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    production_recommended: false
+    source_url: https://docs.swmansion.com/react-native-reanimated/docs/shared-element-transitions/overview/
+    checked_on: "2026-11-14"
+    note: "Experimental, behind the feature flag enable_shared_element_transitions, and the page says it is not recommended for production. Native stack only (tab navigator not supported yet), no custom animation functions, not on web. Treat as Could-have with a plain-transition fallback."
+  - id: gesture_handling
+    label: Native-driven gestures (swipe, drag, long-press)
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android, web]
+    source_url: https://docs.expo.dev/versions/latest/sdk/gesture-handler/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go; recognition runs on the native side. Every gesture still needs a non-gesture alternative (Apple HIG, Gestures)."
+  - id: animated_transitions
+    label: Native-driven animation and layout transitions
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/reanimated/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go (recommended version 4.7.1 on this page). The Expo page does not cover layout animations; do not assume more than basic value-driven animation from this entry."
+  - id: canvas_2d_graphics
+    label: Canvas drawing (2D graphics)
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android, web, tvos]
+    source_url: https://docs.expo.dev/versions/latest/sdk/skia/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go. Web needs a separate step to load the drawing engine's wasm. Runtime shader effects were not confirmed from any page read (see omitted_unverified)."
+  - id: vector_animation_clips
+    label: Vector animation clips (exported After Effects JSON)
+    tier: A
+    expo_go: null
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://github.com/lottie-react-native/lottie-react-native
+    checked_on: "2026-11-14"
+    note: "Pinned in the SDK's bundled module list. The library README says current releases need React Native 0.84 or newer and the New Architecture and that not every After Effects feature is supported; the Expo docs page for it returned 404, so Expo Go inclusion is not confirmed."
+  - id: biometrics
+    label: Face or fingerprint unlock
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/local-authentication/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go, except that Face ID on iOS is not supported in Expo Go (needs a development build). iOS needs a usage description (config plugin option faceIDPermission); Android permissions are added by the library."
+  - id: passkeys
+    label: Passkey sign-in
+    tier: B
+    expo_go: null
+    in_sdk_bundled_modules: false
+    platforms: [ios, android]
+    source_url: https://github.com/peterferguson/react-native-passkeys
+    checked_on: "2026-11-14"
+    note: "A library outside the SDK's bundled set, built with prebuild and a native build. iOS needs deployment target 15 and webcredentials in associated domains with a hosted apple-app-site-association file; Android needs assetlinks.json (with the get_login_creds relation) on the same domain. Android's own passkey support runs on Android 9 (API 28) and higher. The Expo guide URL for passkeys returned 404."
+  - id: wallet_payments
+    label: Apple Pay and Google Pay
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/stripe/
+    checked_on: "2026-11-14"
+    note: "The payments library is included in Expo Go, but Apple Pay and Google Pay are not supported there; both need a development build. Apple's own Apple Pay review rules were not read (see omitted_unverified)."
+  - id: dynamic_type
+    label: Text that follows the system text size (Dynamic Type, font scale)
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://reactnative.dev/docs/text
+    checked_on: "2026-11-14"
+    note: "Text scales with the system setting by default (allowFontScaling is true); maxFontSizeMultiplier can cap it per node, and the global default is no cap. A separate iOS-only prop picks the Dynamic Type ramp. Do not cap below the 200 percent floor."
+  - id: predictive_back
+    label: Predictive back gesture (Android 13 and later)
+    tier: A
+    expo_go: null
+    in_sdk_bundled_modules: true
+    platforms: [android]
+    source_url: https://docs.expo.dev/versions/latest/config/app/
+    checked_on: "2026-11-14"
+    note: "An app-config property (android.predictiveBackGestureEnabled), default false, applied at build. Android's design guide: opt in for default back navigation to get the built-in back animations; custom transitions follow the stated motion specs."
+  - id: edge_to_edge
+    label: Edge-to-edge display (content behind the system bars)
+    tier: A
+    expo_go: null
+    in_sdk_bundled_modules: true
+    platforms: [android]
+    source_url: https://developer.android.com/develop/ui/views/layout/edge-to-edge
+    checked_on: "2026-11-14"
+    note: "Android enforces it for apps targeting API 35 or higher on Android 15 and later. Expo's system-bars guide says that with edge-to-edge on Android content must use safe areas so it does not overlap the system bars. The Expo SDK default and configuration of edge-to-edge was not stated on the page read."
+  - id: glass_materials
+    label: Glass-like translucent materials (native iOS)
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios]
+    source_url: https://docs.expo.dev/versions/latest/sdk/glass-effect/
+    checked_on: "2026-11-14"
+    note: "Real glass needs iOS 26 or later; elsewhere the component falls back to a plain view, so the design must read well without it."
+  - id: live_activities
+    label: Live Activities (lock screen and Dynamic Island)
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: true
+    platforms: [ios]
+    source_url: https://docs.expo.dev/versions/latest/sdk/widgets/
+    checked_on: "2026-11-14"
+    note: "Provided by the Expo widgets module, iOS only; needs a development build and its config plugin. Remote start needs iOS 17.2 or later. The page does not label the module alpha or beta."
+  - id: home_screen_widgets
+    label: Home screen widgets
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/widgets/
+    checked_on: "2026-11-14"
+    note: "Expo widgets module: iOS widgets (interactive and configurable ones need iOS 17), Android widgets must be switched on in the plugin. Widget components can use only the module's own UI components; no hooks, no async work, no outside imports. Not in Expo Go."
+  - id: background_location
+    label: Location while the app is closed
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/location/
+    checked_on: "2026-11-14"
+    note: "Needs a development build and config-plugin flags for each platform; foreground first, then background ('Always' on iOS). Android needs store review access for the foreground-service and background-location permissions. Store rules: POL-GOOGLE-BACKGROUND-LOCATION, POL-APPLE-BACKGROUND-SERVICES."
+  - id: nfc
+    label: NFC reading
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: false
+    platforms: [ios, android]
+    source_url: https://github.com/revtel/react-native-nfc-manager
+    checked_on: "2026-11-14"
+    note: "A library outside the SDK's bundled set; the README says Expo Go cannot load it, it needs a development build, ships its own config plugin, needs React Native 0.76 or newer with the New Architecture, and a physical NFC-capable device. Apple's NFC entitlement rules were not read."
+  - id: bluetooth
+    label: Bluetooth (BLE peripherals)
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: false
+    platforms: [ios, android]
+    source_url: https://github.com/dotintent/react-native-ble-plx
+    checked_on: "2026-11-14"
+    note: "A library outside the SDK's bundled set; cannot run in Expo Go (custom native code); config plugin plus prebuild. iOS needs NSBluetoothAlwaysUsageDescription; Android 12 and later needs BLUETOOTH_SCAN and BLUETOOTH_CONNECT. The README lists Expo 51 as supported and tested against SDK 49; compatibility with SDK 58 is not stated."
+  - id: push_remote
+    label: Remote push notifications
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/notifications/
+    checked_on: "2026-11-14"
+    note: "The page says remote push is unavailable in Expo Go on Android from SDK 53 and that a development build is required to use push notifications; it needs push credentials set up. Android 13 and later adds a runtime permission (POL-ANDROID-NOTIFICATION-PERMISSION)."
+  - id: push_local
+    label: Local (in-app scheduled) notifications
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/notifications/
+    checked_on: "2026-11-14"
+    note: "The page says local notifications remain available in Expo Go. iOS needs no usage description; the permission prompt asks for alerts, badge and sound."
+  - id: camera
+    label: Camera (photo, video, barcode)
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android, web]
+    source_url: https://docs.expo.dev/versions/latest/sdk/camera/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go; Android and iOS need a physical device. Only one preview can be active at a time; returned image URIs are temporary. Usage text per permission via config plugin options."
+  - id: maps
+    label: Maps with markers
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/versions/latest/sdk/map-view/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go; no key needed to test there. A release build using Google as the map provider needs a platform key restricted to the app, set through the config plugin, and a rebuild. Not on web."
+  - id: offline_storage
+    label: Offline storage (local database and key-value)
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android, web, macos, tvos]
+    source_url: https://docs.expo.dev/versions/latest/sdk/sqlite/
+    checked_on: "2026-11-14"
+    note: "A local database that persists across restarts, plus a drop-in key-value store. Encryption (SQLCipher) is not supported in Expo Go. Web needs extra setup. Offline sync logic is ours to specify; the library only stores."
+  - id: secure_storage
+    label: Secure storage for tokens
+    tier: A
+    expo_go: true
+    in_sdk_bundled_modules: true
+    platforms: [ios, android, tvos]
+    source_url: https://docs.expo.dev/versions/latest/sdk/securestore/
+    checked_on: "2026-11-14"
+    note: "Included in Expo Go (authentication-gated values are unsupported there). Android data is removed on uninstall; iOS keychain data may survive a reinstall. Not for the only copy of data that cannot be recreated."
+  - id: in_app_purchases
+    label: In-app purchases and subscriptions
+    tier: B
+    expo_go: false
+    in_sdk_bundled_modules: false
+    platforms: [ios, android]
+    source_url: https://docs.expo.dev/guides/in-app-purchases/
+    checked_on: "2026-11-14"
+    note: "Expo's guide names two libraries (a managed-service wrapper and an open-spec one); both need custom native code, so a development build. The guide does not say Expo Go is unsupported in so many words. Store rules: POL-APPLE-IAP, POL-GOOGLE-PAYMENTS."
+  - id: real_time_game_engine
+    label: Games and real-time 3D engines
+    tier: C
+    expo_go: null
+    in_sdk_bundled_modules: false
+    platforms: []
+    source_url: packages/content/src/mde_content/data/stack-profile.yaml
+    checked_on: "2026-11-14"
+    note: "Project Stack Kit, `unsupported_types` entry `game`: games need a real-time graphics engine and a game loop; the builder makes standard screens, lists and forms. Closest option: a companion app around the game. This is the project's own scope decision, not a vendor claim."
+
+omitted_unverified:
+  - topic: "Runtime shader effects on the canvas"
+    reason: "The Expo page for the canvas library does not cover shaders and the library's pages that would (docs site, README) returned 404, 503 or no mention."
+  - topic: "Gesture-driven screen transitions as a distinct capability"
+    reason: "Only the gesture library's own page was read; no page read describes gesture-driven navigation transitions in the Expo stack."
+  - topic: "Apple Live Activities platform limits (minimum iOS, time limits)"
+    reason: "Apple's ActivityKit page returned no body text; the Expo page is the only source."
+  - topic: "Apple NFC entitlement and Core NFC device requirements"
+    reason: "Not stated on the library page and no Apple page was read."
+  - topic: "Expo SDK default for edge-to-edge on Android and its app-config key"
+    reason: "The Expo system-bars guide read does not state the default or the key; Android's own page states only the platform behaviour."
+  - topic: "Expo Go inclusion of haptics, vector animation clips, passkeys, predictive back and edge-to-edge"
+    reason: "The pages read are silent on Expo Go for these; `expo_go` is null on each."
+  - topic: "Any tier C entry other than games"
+    reason: "No page read declares another capability unsupportable in the stack; the Stack Kit's list of unsupported app types is the only source."

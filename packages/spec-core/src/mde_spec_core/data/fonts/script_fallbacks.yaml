@@ -1,0 +1,154 @@
+# Per-script fallback fonts for the type tokens (doc 17, doc 18 6). Free families only.
+# Read on `checked_on` from the Google Fonts source repository (github.com/google/fonts, directory ofl/<family>):
+#   METADATA.pb gives name, `license: "OFL"`, `primary_script` and the subsets; OFL.txt in the same directory opens with
+#   "This Font Software is licensed under the SIL Open Font License, Version 1.1." (read for Noto Sans, Noto Sans Kannada,
+#   Noto Sans SC and Noto Sans Arabic; the other families carry `license: "OFL"` in METADATA.pb).
+# The official licence text (openfontlicense.org) was read and is version 1.1 of 2007-02-26.
+# `rtl` is a property of the script. `coverage_note` says only what METADATA.pb says; it is not a glyph audit.
+# A script with no verified family is not listed (see omitted_unverified).
+version: 1
+checked_on: "2026-11-14"
+
+licence_text_source: https://openfontlicense.org/open-font-license-official-text/
+
+scripts:
+  - script: Latin
+    iso15924: [Latn]
+    rtl: false
+    family: Noto Sans
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt
+    coverage_note: "Subsets in METADATA.pb: latin, latin-ext, vietnamese (plus cyrillic, greek and devanagari subsets). Variable font file NotoSans[wdth,wght].ttf."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Cyrillic
+    iso15924: [Cyrl]
+    rtl: false
+    family: Noto Sans
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/OFL.txt
+    coverage_note: "Subsets in METADATA.pb include cyrillic and cyrillic-ext in the same family as Latin."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosans/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Devanagari
+    iso15924: [Deva]
+    rtl: false
+    family: Noto Sans Devanagari
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansdevanagari/OFL.txt
+    coverage_note: "primary_script Deva; subsets devanagari, latin, latin-ext. 78 languages listed, including hi_Deva (Hindi), mr_Deva (Marathi) and ne_Deva (Nepali). Variable font NotoSansDevanagari[wdth,wght].ttf."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansdevanagari/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Kannada
+    iso15924: [Knda]
+    rtl: false
+    family: Noto Sans Kannada
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskannada/OFL.txt
+    coverage_note: "primary_script Knda; subsets kannada, latin, latin-ext; languages kn_Knda and tcy_Knda. Variable font NotoSansKannada[wdth,wght].ttf."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanskannada/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Tamil
+    iso15924: [Taml]
+    rtl: false
+    family: Noto Sans Tamil
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanstamil/OFL.txt
+    coverage_note: "primary_script Taml; subsets tamil, latin, latin-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanstamil/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Telugu
+    iso15924: [Telu]
+    rtl: false
+    family: Noto Sans Telugu
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanstelugu/OFL.txt
+    coverage_note: "primary_script Telu; subsets telugu, latin, latin-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanstelugu/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Bengali
+    iso15924: [Beng]
+    rtl: false
+    family: Noto Sans Bengali
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansbengali/OFL.txt
+    coverage_note: "primary_script Beng; subsets bengali, latin, latin-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansbengali/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Gujarati
+    iso15924: [Gujr]
+    rtl: false
+    family: Noto Sans Gujarati
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgujarati/OFL.txt
+    coverage_note: "primary_script Gujr; subsets gujarati, latin, latin-ext (also math and symbols)."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgujarati/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Gurmukhi
+    iso15924: [Guru]
+    rtl: false
+    family: Noto Sans Gurmukhi
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgurmukhi/OFL.txt
+    coverage_note: "primary_script Guru; subsets gurmukhi, latin, latin-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansgurmukhi/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Malayalam
+    iso15924: [Mlym]
+    rtl: false
+    family: Noto Sans Malayalam
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmalayalam/OFL.txt
+    coverage_note: "primary_script Mlym; subsets malayalam, latin, latin-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansmalayalam/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Arabic
+    iso15924: [Arab]
+    rtl: true
+    family: Noto Sans Arabic
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansarabic/OFL.txt
+    coverage_note: "primary_script Arab; subsets arabic, latin, latin-ext, math, symbols. 81 languages listed. Variable font NotoSansArabic[wdth,wght].ttf."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansarabic/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Hebrew
+    iso15924: [Hebr]
+    rtl: true
+    family: Noto Sans Hebrew
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanshebrew/OFL.txt
+    coverage_note: "primary_script Hebr; subsets hebrew, latin, latin-ext, cyrillic-ext, greek-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanshebrew/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: Thai
+    iso15924: [Thai]
+    rtl: false
+    family: Noto Sans Thai
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansthai/OFL.txt
+    coverage_note: "primary_script Thai; subsets thai, latin, latin-ext."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosansthai/METADATA.pb
+    checked_on: "2026-11-14"
+  - script: CJK
+    iso15924: [Hans, Jpan, Kore]
+    rtl: false
+    family: Noto Sans SC
+    variants:
+      Hans: Noto Sans SC
+      Jpan: Noto Sans JP
+      Kore: Noto Sans KR
+    licence: OFL-1.1
+    licence_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/OFL.txt
+    coverage_note: "Google Fonts ships one family per region: Noto Sans SC (primary_script Hans, subset chinese-simplified), Noto Sans JP (Jpan, japanese), Noto Sans KR (Kore, korean). The spec must pick the variant for the locale; the default family is Simplified Chinese. A Traditional Chinese family was not read."
+    source_url: https://raw.githubusercontent.com/google/fonts/main/ofl/notosanssc/METADATA.pb
+    checked_on: "2026-11-14"
+
+omitted_unverified:
+  - topic: "Traditional Chinese (Hant) fallback family"
+    reason: "Only the SC, JP and KR families were read; the Traditional Chinese family's metadata was not."
+  - topic: "Colour emoji and symbol fallback"
+    reason: "Not in the requested script list; not read."
+  - topic: "Glyph-level coverage (conjuncts, rare letters) for any script"
+    reason: "METADATA.pb lists scripts, subsets and languages, not individual glyphs; no glyph audit was run."
+  - topic: "Google Fonts website specimen pages as a source"
+    reason: "The pages are rendered by script and returned only their titles; the source repository files were read instead."
