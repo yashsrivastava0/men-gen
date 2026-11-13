@@ -41,7 +41,7 @@ from mde_research_agent.calls.base import CallRunner
 from mde_research_agent.calls.queries import QueryIn, deterministic_variants
 from mde_research_agent.catalog import load_catalog
 from mde_research_agent.catalog.loader import DATA_DIR
-from mde_research_agent.config import keys_present, load_research_settings
+from mde_research_agent.config import keys_present, load_research_settings, model_route_problems
 from mde_research_agent.core.countries import countries
 from mde_research_agent.core.sources import classify_source
 from mde_research_agent.core.urls import registrable_domain
@@ -90,6 +90,10 @@ def preflight_live(environ: dict[str, str] | None = None) -> list[str]:
         )
     if env.get("MDE_FORBID_LIVE", "").strip() in ("1", "true"):
         problems.append("MDE_FORBID_LIVE is set")
+    if (
+        environ is None
+    ):  # the real process: the routes' models must be priced and their vendor keys set
+        problems.extend(model_route_problems())
     return problems
 
 

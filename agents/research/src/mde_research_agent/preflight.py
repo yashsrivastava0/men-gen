@@ -151,6 +151,18 @@ def run_preflight(
             ", ".join(f"{k}={v}" for k, v in routes.items()),
         )
     )
+    # What the model routes still need (a vendor key, a price) is decided by the gateway when the app is composed
+    # and kept in ``service.missing``; the search-key line is already shown by the checks above.
+    model_missing = [m for m in service.missing if "SERPER_API_KEY" not in m]
+    checks.append(
+        _check(
+            "models",
+            "Models are priced and their keys are set",
+            not model_missing,
+            "yes" if not model_missing else "missing: " + "; ".join(model_missing),
+            "Set what is named in the app's environment (a key of the vendor a route uses, or MODEL_ROUTES).",
+        )
+    )
     checks.extend(_credit_checks(service, keys))
     # Credits are information only: whatever they say, they are not part of "ready".
     ready = all(

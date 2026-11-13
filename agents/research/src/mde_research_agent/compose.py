@@ -20,6 +20,7 @@ from mde_core.clock import Clock, SystemClock
 from mde_core.money import usd_to_micros
 from mde_core.settings import Settings, load_settings
 from mde_llm_gateway import InProcessGatewayClient, StaticRegistry, create_gateway
+from mde_llm_gateway.factory import route_problems, routes_share_vendor
 from mde_research_agent.calls.registry import all_specs
 from mde_research_agent.catalog import load_catalog
 from mde_research_agent.config import (
@@ -178,7 +179,8 @@ def assemble_service(
         from mde_research_agent.adapters.search.caching import CachingSearch
 
         search = CachingSearch(search, fee_words=catalog.prevalence.fee_words)
-    same = core.model_for_route("standard") == core.model_for_route("fast")
+    # "same" when the checker route is served by the same vendor as the writer route (the gateway knows; rule 14).
+    same = routes_share_vendor(core, "standard", "fast")
     return ResearchService(
         store=store,
         catalog=catalog,
@@ -259,12 +261,18 @@ class LiveNotReady(RuntimeError):
         self.missing = missing
 
 
-def readiness(cfg: ResearchSettings) -> list[str]:
-    """Plain names of what must still be set before a run can start (empty means ready). Booleans, never values."""
+def readiness(cfg: ResearchSettings, core: Settings | None = None) -> list[str]:
+    """Plain names of what must still be set before a run can start (empty means ready). Booleans, never values.
+
+    With ``core`` it also names what the model routes need (the key of each vendor a route uses, a missing price):
+    the gateway knows which vendor that is, the app does not (rule 14).
+    """
     missing: list[str] = []
     keys = keys_present(cfg)
     if not any(keys.values()):
         missing.append("TAVILY_API_KEY or SERPER_API_KEY")
+    if core is not None:
+        missing.extend(route_problems(core))
     return missing
 
 
@@ -327,7 +335,7 @@ def compose_app(
         )
         return build_gateway(scoped, cfg, the_clock, cassette_dir=cassette_dir)
 
-    missing = readiness(cfg)
+    missing = readiness(cfg, core)
     primary_pref = _saved_provider(data) or cfg.research_search_provider
     chosen = primary_pref if primary_pref != "auto" else choose_provider(cfg, DEFAULT_PROVIDER)
     http = httpx.AsyncClient(timeout=15.0, trust_env=False)
@@ -351,7 +359,7 @@ def compose_app(
         store=store,
         search=search,
         fetch=fetch,
-        gateway=None if core.forbid_live else make_gateway(control),
+        gateway=None if core.forbid_live or route_problems(core) else make_gateway(control),
         core=core,
         cfg=cfg,
         mode="live",

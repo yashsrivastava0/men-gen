@@ -80,6 +80,17 @@ def keys_present(settings: ResearchSettings | None = None) -> dict[str, bool]:
     }
 
 
+def model_route_problems() -> list[str]:
+    """What the process's model routes still need to run live (a vendor key, a price), as ``"set <what>"`` lines.
+
+    Asked of the gateway, which knows the vendor of each routed model; the agent never looks at a model name (rule 14).
+    """
+    from mde_core.settings import load_settings
+    from mde_llm_gateway.factory import route_problems
+
+    return [f"set {item}" for item in route_problems(load_settings(llm_mode="live"))]
+
+
 def choose_provider(settings: ResearchSettings, default: str = "tavily") -> str:
     """The search provider for a run: an explicit choice, else the measured default if its key is set, else the other."""
     want = settings.research_search_provider

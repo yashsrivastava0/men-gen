@@ -37,12 +37,12 @@ from typing import cast
 
 from mde_contracts.gateway import LlmCallSink
 from mde_core.clock import Clock, SystemClock
-from mde_core.errors import ConfigError
+from mde_core.errors import ConfigError, UnknownModelPrice
 from mde_core.paths import anchor_to_main_repo
 from mde_core.settings import ROUTES, Settings
 from mde_llm_gateway.budget import BudgetConfig, BudgetGuard
 from mde_llm_gateway.gateway import Gateway, GatewayConfig
-from mde_llm_gateway.gating import require_api_key, require_live
+from mde_llm_gateway.gating import VENDOR_KEYS, require_api_key, require_live
 from mde_llm_gateway.ledger import FileLedger, Ledger, MemoryLedger
 from mde_llm_gateway.pricing import Pricing
 from mde_llm_gateway.providers.base import Provider
@@ -112,6 +112,53 @@ def vendors_in_use(settings: Settings, pricing: Pricing) -> dict[str, str]:
         vendor = pricing.vendor_for(model)
         out.setdefault(vendor, f"route {route} uses {model}")
     return out
+
+
+def route_problems(settings: Settings, pricing: Pricing | None = None) -> list[str]:
+    """Short phrases naming what must still be set for the routes to run live; empty means ready.
+
+    Names only, never a value (a key is checked for presence). Each phrase names the route that needs it
+    (``"ANTHROPIC_API_KEY (route fast uses claude-haiku-5-5)"``), so an agent's readiness check can say what
+    to fix before a run starts instead of failing call by call.
+    """
+    the_pricing = pricing or Pricing.load()
+    problems: list[str] = []
+    needed: dict[str, str] = {}
+    for route in ROUTES:
+        model = settings.model_for_route(route)
+        try:
+            vendor = the_pricing.vendor_for(model)
+        except UnknownModelPrice:
+            problems.append(f"a price for {model} in the gateway's pricing.yaml (route {route})")
+            continue
+        if vendor not in _VENDORS:
+            problems.append(f"a provider for vendor {vendor} (route {route} uses {model})")
+            continue
+        needed.setdefault(vendor, f"route {route} uses {model}")
+    for vendor, why in needed.items():
+        field, env_name = VENDOR_KEYS[vendor]
+        key = getattr(settings, field, None)
+        if key is None or not key.get_secret_value():
+            problems.append(f"{env_name} ({why})")
+    return problems
+
+
+def routes_share_vendor(
+    settings: Settings, first: str, second: str, pricing: Pricing | None = None
+) -> bool:
+    """True when two routes are served by the same vendor (the same model counts, even if unpriced).
+
+    An agent that labels its output with this (for example "the checker is the same vendor as the
+    writer") learns it here instead of looking at model names (rule 14).
+    """
+    a, b = settings.model_for_route(first), settings.model_for_route(second)
+    if a == b:
+        return True
+    the_pricing = pricing or Pricing.load()
+    try:
+        return the_pricing.vendor_for(a) == the_pricing.vendor_for(b)
+    except UnknownModelPrice:
+        return False
 
 
 def _build_live_provider(

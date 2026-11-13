@@ -55,7 +55,7 @@ The test doubles (fake search and fetch, the in-memory store, a scripted gateway
 | `tests/` | unit, scenario, validator, determinism, generality, contract, store, API and CLI tests; `support/` (doubles), `e2e/` (the fake app), `fixtures/` |
 | `.runtime/` | the app's data (git-ignored): runs, spend record, uploads, spot-checks, logs |
 
-`rsch.plan`, `rsch.write_queries`, `rsch.gap_analyst`, `rsch.extract.<job>` for the ten jobs (the tenth is `platform`), `rsch.assemble`, `rsch.check`, `rsch.bakeoff_judge`, `rsch.eval_probe`, `rsch.eval_judge`. Routes: writers use `fast` and `deep`; the **`standard` route is reserved for the checker** (D-127), flagged `checker_vendor: same`. Untrusted page text travels as one `text` field with no tools and no URL, action or tool fields in any output schema. The gateway's cap on untrusted text is raised to 120,000 characters (a checker batch is longer than the 20,000 default).
+`rsch.plan`, `rsch.write_queries`, `rsch.gap_analyst`, `rsch.extract.<job>` for the ten jobs (the tenth is `platform`), `rsch.assemble`, `rsch.check`, `rsch.bakeoff_judge`, `rsch.eval_probe`, `rsch.eval_judge`. Routes: writers use `fast` and `deep`; the **`standard` route is reserved for the checker** (D-127), flagged `checker_vendor: same` when the gateway serves the checker route and the writer route from one vendor (a Haiku writer with a Sonnet checker is still "same"; a cross-vendor checker is `different`). Untrusted page text travels as one `text` field with no tools and no URL, action or tool fields in any output schema. The gateway's cap on untrusted text is raised to 120,000 characters (a checker batch is longer than the 20,000 default).
 
 ## Configuration (environment, never code)
 
@@ -64,3 +64,16 @@ The test doubles (fake search and fetch, the in-memory store, a scripted gateway
 ## Validators
 
 RV-01..RV-28 in `validators/registry.py`, one pass test and one fail test each: schema, quotes, sources, tier, no new facts, query hygiene, corroboration, support, caps, coverage, **no private term in a query (RV-11: the owner's rule of 2026-11-13, replacing AD-54)**, budget ceilings, the Brief binding (RV-13: an error on a changed output hash, a warning when the input could not be verified), query anatomy, slots, `applies_to`, the event allowlist, **numbers in the quote (RV-18), independence by content (RV-19), region and entity fit (RV-20), every item checked (RV-21), the store and appendix (RV-22), recomputed evidence, lane quality and builder-need coverage (RV-23), the content aggregates recomputed from the items (RV-24 dossiers, RV-25 platform constraints, RV-26 compliance register, RV-27 lane decisions) and `applies_to` on every item (RV-28)**. RV-04 and RV-13 refuse a commit; a violation of RV-05, 09, 18 to 28 is a bug in assembly: the run still commits but as `partial`.
+
+## Choosing the model (and the vendor)
+
+The agent names routes (`fast`, `standard`, `deep`) and nothing else; it holds no model or vendor name (`tests/test_model_independence.py` fails if one appears). The gateway decides which model serves a route and which vendor serves the model (root rule 14, D-171). To switch, set `MODEL_ROUTES` in the launch environment, never in `.env`:
+
+```
+MODEL_ROUTES=fast=claude-haiku-5-5,standard=claude-sonnet-5-5,deep=claude-haiku-5-5   # Claude (needs ANTHROPIC_API_KEY)
+MODEL_ROUTES=fast=gpt-6-luna,standard=gpt-6-luna,deep=gpt-6-luna                      # OpenAI (needs OPENAI_API_KEY), the default
+MODEL_ROUTES=claude-haiku-5-5                                                          # one model for all three routes
+```
+
+The app refuses to start a run, and the Preflight page says why, when a route's model has no price in the gateway's `pricing.yaml` or its vendor's key is not set (names only, never values). Cassettes carry the model id in their key, so a run recorded on one model does not replay on another. The budget is its own period (`RESEARCH_LIVE_BUDGET_USD`, `RESEARCH_TRIPWIRE_USD`, restart on the Budget page) and counts model calls and search together.
+

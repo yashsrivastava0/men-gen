@@ -16,7 +16,7 @@ Total live spend for the whole job never exceeds USD 8.00 (the ceiling, raised f
 
 1. **Set an external backstop**: in the OpenAI dashboard set a USD 6 monthly spend limit on the project that owns the key (and an email alert at USD 3). The in-repo guard cannot see spend by other tools or retries it did not make; the dashboard limit can.
 2. `uv run python scripts/doctor.py` reports key presence only. Make sure the main checkout's `data/.budget/` is writable and `just budget` prints USD 0.0000 (or the total so far). The ledger always lives in the **main repository** (`<main checkout>/data/.budget/ledger.jsonl`), whichever worktree or directory you run from; `uv run python -m mde_llm_gateway.budget_cli init` creates it with its guard file (a first live call does the same).
-3. Confirm `LLM_BUDGET_USD` is what you intend (6.00 default; at most 8.00) and that `pricing.yaml` still matches the model page (gpt-6-luna 0.10 / 0.01 / 0.50 per 1M tokens, web search 0.01 per call).
+3. Confirm `LLM_BUDGET_USD` is what you intend (6.00 default; at most 8.00) and that `pricing.yaml` still matches the model pages (gpt-6-luna 0.10 / 0.01 / 0.50 per 1M tokens; claude-haiku-5-5 0.10 / 0.01 / 0.50, claude-sonnet-5-5 2 / 0.10 / 10, claude-opus-5-5 4 / 0.20 / 20; web search 0.01 per call). Which vendor serves a route is `MODEL_ROUTES` plus the `vendor:` of each `pricing.yaml` row (rule 14); a vendor's key is only needed when a route uses it.
 
 ## Running a batch (lead, or the user in their own terminal)
 

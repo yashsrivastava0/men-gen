@@ -39,7 +39,7 @@ from mde_research_agent.adapters.recording import (
     ReplaySearch,
 )
 from mde_research_agent.catalog import load_catalog
-from mde_research_agent.config import keys_present, load_research_settings
+from mde_research_agent.config import keys_present, load_research_settings, model_route_problems
 from mde_research_agent.devtools import fake_world, script_service
 from mde_research_agent.engine.spend import research_spent_micros
 from mde_research_agent.intake import read_export
@@ -85,6 +85,10 @@ def preflight_live(environ: dict[str, str] | None = None) -> list[str]:
         problems.append("MDE_FORBID_LIVE is set")
     if not any(keys_present(load_research_settings()).values()):
         problems.append("no search key is set (TAVILY_API_KEY or SERPER_API_KEY)")
+    if (
+        environ is None
+    ):  # the real process: the routes' models must be priced and their vendor keys set
+        problems.extend(model_route_problems())
     return problems
 
 
