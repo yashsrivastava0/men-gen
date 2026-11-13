@@ -28,8 +28,13 @@ THREE = {
     "quick": "quick-yoga-studio-bengaluru",
     "standard": "standard-produce-marketplace-nashik",
     "thorough": "thorough-freight-fleet-india",
+    "delhi": "delhi-restaurant-delivery",
+    "pune": "pune-clinic-appointments",
+    "hospital": "hospital-chain-enterprise",
+    "bike": "synthetic-small-bike-repair-porto",
+    "school": "synthetic-medium-school-parents-dakar",
+    "site": "synthetic-big-site-safety-central-america",
 }
-PROFILE = {"quick": "compact", "standard": "standard", "thorough": "deep"}
 LANE_SRC = ROOT / "agents" / "spec" / "src" / "mde_spec_agent" / "lanes" / "product"
 
 
@@ -135,7 +140,7 @@ def env(tmp_path: Path) -> Env:
     return Env(tmp_path)
 
 
-@pytest.fixture(params=["quick", "standard", "thorough"])
+@pytest.fixture(params=list(THREE))
 def key(request: pytest.FixtureRequest) -> str:
     return request.param
 
@@ -145,4 +150,20 @@ def baseline(key: str):
     return derive_graph(load_input(key))
 
 
-__all__ = ["CallRunner", "Env", "ScriptedGateway", "baseline", "load_input"]
+def profile_of(key: str) -> str:
+    return baseline(key).decision.profile
+
+
+def is_compact(key: str) -> bool:
+    return profile_of(key) == "compact"
+
+
+__all__ = [
+    "CallRunner",
+    "Env",
+    "ScriptedGateway",
+    "baseline",
+    "is_compact",
+    "load_input",
+    "profile_of",
+]

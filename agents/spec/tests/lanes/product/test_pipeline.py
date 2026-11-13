@@ -10,7 +10,7 @@ from mde_spec_core import libraries
 from mde_spec_core.validators.base import blockers, run_all
 from mde_spec_core.validators.context import make_context
 
-from .conftest import PROFILE, baseline
+from .conftest import baseline, is_compact, profile_of
 
 JOIN = {
     "V-01", "V-02", "V-03", "V-05", "V-06", "V-08", "V-09", "V-10", "V-11", "V-17", "V-19", "V-28",
@@ -23,7 +23,7 @@ def test_the_two_steps_finish_and_the_graph_passes_gate_1_and_the_join_checks(en
     out = env.run(ctx)
     assert out.status == "awaiting_g2", out
     g = ctx.graph
-    assert g.meta.profile == PROFILE[key]
+    assert g.meta.profile == profile_of(key)
     gate1 = run_all(make_context(g.model_copy(deep=True)), gate=1)
     assert [f.code for f in blockers(gate1)] == []
     join = run_all(make_context(g.model_copy(deep=True)), gate=3, only=JOIN)
@@ -58,7 +58,8 @@ def test_every_provider_side_integration_has_interruption_and_pending_timeout(en
     ctx = env.ctx(key)
     env.run(ctx)
     provider_side = [i for i in ctx.graph.integrations.values() if i.provider_side_flow]
-    assert provider_side  # all three exports take payments
+    if key in ("quick", "standard", "thorough"):
+        assert provider_side  # these three exports take payments
     for i in provider_side:
         assert i.interruption.strip() and i.pending_timeout.strip() and i.flow.strip(), i.id
         assert i.events, i.id
@@ -70,6 +71,10 @@ def test_custom_operations_are_typed_gated_and_use_the_closed_error_codes(env, k
     env.run(ctx)
     g = ctx.graph
     custom = [o for o in g.operations.values() if o.kind == "custom"]
+    if not any(e.lifecycle.transitions for e in g.entities.values()):
+        # a Compass export without structure gives the derivation no entity (doc 15 3.5): nothing to write operations for
+        assert custom == []
+        return
     assert custom
     from mde_spec_agent.lanes.product.kit import vocab
 
@@ -137,7 +142,7 @@ def test_compact_apps_get_the_fused_call_and_the_others_one_call_per_part(env, k
     ctx = env.ctx(key)
     env.run(ctx)
     gw = env.gateway(ctx)
-    if key == "quick":
+    if is_compact(key):
         assert ctx.plan["fused"] is True
         assert gw.count("spec.plan_fused") == 1
         assert gw.count("spec.plan") == gw.count("spec.prod_module") == 0
@@ -147,7 +152,8 @@ def test_compact_apps_get_the_fused_call_and_the_others_one_call_per_part(env, k
             gw.count("spec.plan") == 1
             and gw.count("spec.prod_module") >= len(ctx.graph.modules) - 1
         )
-        assert gw.count("spec.prod_journeys") >= 1 and gw.count("spec.prod_integ") >= 1
+        assert (gw.count("spec.prod_journeys") >= 1) == bool(ctx.graph.flows)
+        assert (gw.count("spec.prod_integ") >= 1) == bool(ctx.graph.integrations)
 
 
 def test_the_plan_step_leaves_what_g15_needs_in_ctx_plan(env, key):
@@ -155,7 +161,9 @@ def test_the_plan_step_leaves_what_g15_needs_in_ctx_plan(env, key):
     env.run(ctx, "plan")
     p = ctx.plan
     assert (
-        p["release"].features and p["inventory"].screens and p["decision"].profile == PROFILE[key]
+        p["release"].features
+        and p["inventory"].screens
+        and p["decision"].profile == profile_of(key)
     )
     assert p["proposal"] and all(
         not r["differs_from_code"] for r in p["proposal"]

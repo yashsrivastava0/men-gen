@@ -9,6 +9,8 @@ import pytest
 
 from mde_core.errors import ProviderError
 
+from .conftest import is_compact
+
 
 def test_a_killed_batch_resumes_to_the_same_bytes(env, key):
     ref = env.ctx(key)
@@ -33,7 +35,7 @@ def test_a_killed_batch_resumes_to_the_same_bytes(env, key):
 
     gw.raise_on = boom
     out = env.run(ctx)
-    if key == "quick":  # the fused call is one batch: kill it instead (nothing finished yet)
+    if is_compact(key):  # the fused call is one batch: kill it instead (nothing finished yet)
         assert out.status == "awaiting_g2"
         return
     assert out.status == "failed" and out.stage == "product"

@@ -308,3 +308,18 @@ def test_gate_1_accepts_the_mock_plan(env, key):
     patch = build_plan_patch(e, inp, copy.deepcopy(out), Minter.for_batch(e.graph, 0), False)
     assert gate_of(ctx, e).errors(patch) == []
     assert PlanOut.model_validate(out.model_dump()) == out
+
+
+def test_code_made_provenance_is_kept_when_echoed_and_refused_when_the_model_writes_it(env):
+    """A module the derivation minted (no Compass modules) carries `code:MOD-S001`: the plan echoes it and stays valid; a
+    model that writes `code:` itself is refused (it may not claim to be code)."""
+    _, e, inp, _ = setup(env, "delhi")
+    minted = [m for m in e.graph.modules.values() if any(p.kind == "code" for p in m.provenance)]
+    assert minted  # the older export has no modules of its own
+    out = handle(inp)
+    assert validate(inp, out) == []
+    row = next(m for m in out.modules if m.id == minted[0].id)
+    row.prov = [*row.prov, "code:MOD-S999"]
+    assert any("must be kind:ref" in m for m in validate(inp, out))
+    patch = build_plan_patch(e, inp, handle(inp), Minter.for_batch(e.graph, 0), False)
+    assert any(p["kind"] == "code" for p in patch["tables"]["modules"][minted[0].id]["provenance"])

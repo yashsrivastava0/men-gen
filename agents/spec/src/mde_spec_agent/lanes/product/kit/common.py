@@ -30,6 +30,9 @@ class W(BaseModel):
 # ------------------------------------------------------------------------------------------------ provenance
 _POLICY = re.compile(r"^policy:[A-Za-z0-9_.\-]+@\d{4}-\d{2}-\d{2}$")
 EVIDENCE_KINDS = ("user", "compass", "policy")
+# Kinds the code's own draft may carry (a module the derivation minted is `code:MOD-S001`). They are read and kept when the
+# answer echoes the draft's own string, and refused when the model writes one itself.
+CODE_KINDS = ("code", "model")
 
 
 def parse_prov(text: str) -> tuple[str, str] | None:
@@ -38,7 +41,7 @@ def parse_prov(text: str) -> tuple[str, str] | None:
     if _POLICY.match(s):
         return ("policy", s)
     kind, sep, ref = s.partition(":")
-    if not sep or kind not in vocab.provenance_kinds():
+    if not sep or kind not in (*vocab.provenance_kinds(), *CODE_KINDS):
         return None
     return (kind, ref.strip())
 
@@ -60,13 +63,37 @@ class ProvAllowed:
     research: frozenset[str]
     labels: Mapping[str, str]
     policy: frozenset[str]
+    echoed: frozenset[str] = (
+        frozenset()
+    )  # provenance strings of the draft itself (code-made, kept word for word)
 
     @classmethod
     def of(cls, inp: ProvIn) -> ProvAllowed:
         labels = dict(x.split("=", 1) for x in inp.research_labels if "=" in x)
+        draft = getattr(inp, "baseline", None)
+        echoed = frozenset(_draft_prov(draft.model_dump())) if draft is not None else frozenset()
         return cls(
-            frozenset(inp.ref_ids), frozenset(inp.research_ids), labels, frozenset(inp.policy_refs)
+            frozenset(inp.ref_ids),
+            frozenset(inp.research_ids),
+            labels,
+            frozenset(inp.policy_refs),
+            echoed,
         )
+
+
+def _draft_prov(obj: object) -> list[str]:
+    """Every provenance string in a draft (the `prov` lists of its records)."""
+    out: list[str] = []
+    if isinstance(obj, dict):
+        for k, v in obj.items():
+            if k == "prov" and isinstance(v, list):
+                out += [x for x in v if isinstance(x, str)]
+            else:
+                out += _draft_prov(v)
+    elif isinstance(obj, list):
+        for v in obj:
+            out += _draft_prov(v)
+    return out
 
 
 def check_prov(
@@ -81,8 +108,10 @@ def check_prov(
             else []
         )
     for raw in prov:
+        if raw in allowed.echoed:
+            continue  # the draft's own provenance, echoed
         parsed = parse_prov(raw)
-        if parsed is None:
+        if parsed is None or parsed[0] in CODE_KINDS:
             errors.append(
                 f"{where}: provenance {raw!r} must be kind:ref with kind one of {list(vocab.provenance_kinds())}"
             )
