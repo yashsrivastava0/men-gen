@@ -53,9 +53,10 @@ def test_the_checker_only_kinds_change_what_the_number_check_cannot_see() -> Non
         assert (
             bad is not None and bad["claim"] == claim and bad["quote"] == ITEM_WITH_MONEY["quote"]
         )
-        assert (
-            code_catches(bad, {"place": "in"}) == []
-        )  # the figure 699 is still in the quote: only the checker can know
+        # the figure 699 is still in the quote: only the checker can know the period or the qualifier changed. A swapped currency
+        # is the one thing the number check now sees too (D-163: a claim that states a currency needs the same one in the quote).
+        caught = code_catches(bad, {"place": "in"})
+        assert caught == (["number_not_in_quote"] if kind == "currency_swapped" else [])
         assert (
             corrupt(ITEM, kind, 1) is None
         )  # nothing to change in a claim with no currency, period or qualifier

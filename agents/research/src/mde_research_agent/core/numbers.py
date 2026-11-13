@@ -7,7 +7,14 @@ digits, ``1.234,56`` is one thousand two hundred thirty-four and fifty-six hundr
 ``crore`` stay as written (a figure ``1.2`` next to the word lakh is NOT turned into 120000: the quote has to say it
 the same way). Dates are kept whole (``d:2026-03-12``, ``d:2026-03``) and matched by the parts the claim states.
 
-Pure functions, no I/O.
+Across languages (pt-PT, fr-SN, es-MX, en-IN, hi): a decimal comma is a decimal (``12,50`` and ``2,5%`` are 12.5 and 2.5),
+a thousands separator is a comma, a dot between groups of three (``1.234.567``), or a thin, no-break, narrow no-break or plain
+space between groups of exactly three digits after one to three leading ones (``5 000``, ``1 234 567``; ``2024 500`` is two
+numbers), and a currency written next to an amount is a figure of its own (``c:INR``): when a claim states a currency the quote
+must state the same one (``core/currencies.py``), so ``$350`` is never backed by ``₹350``. Number words of English, French,
+Spanish and Portuguese on the quote side satisfy a digit.
+
+Pure functions; the currency and number-word tables are data files read once.
 """
 
 from __future__ import annotations
@@ -15,27 +22,35 @@ from __future__ import annotations
 import re
 import unicodedata
 from collections.abc import Iterable, Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from decimal import Decimal, InvalidOperation
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
-_WORDS = {
-    "one": 1,
-    "two": 2,
-    "three": 3,
-    "four": 4,
-    "five": 5,
-    "six": 6,
-    "seven": 7,
-    "eight": 8,
-    "nine": 9,
-    "ten": 10,
-    "eleven": 11,
-    "twelve": 12,
-}
-# "one" is far too common as a pronoun to demand it in a quote; it still counts on the QUOTE side (so a claim digit 1
-# is matched by the word one).
-_CLAIM_WORDS = {w: v for w, v in _WORDS.items() if v >= 2}
+import yaml
+
+from mde_research_agent.core import currencies
+
+NUMBER_WORDS_FILE = Path(__file__).resolve().parent.parent / "data" / "number_words.yaml"
+
+
+@lru_cache(maxsize=1)
+def _word_tables() -> tuple[dict[str, int], dict[str, int]]:
+    """``(quote-side words, claim-side words)``: every language's number words satisfy a digit in a quote; only the English
+    words 2 to 12 are demanded of a claim ("one" is far too common as a pronoun to demand it)."""
+    try:
+        raw = yaml.safe_load(NUMBER_WORDS_FILE.read_text(encoding="utf-8")) or {}
+    except OSError:
+        raw = {}
+    every: dict[str, int] = {}
+    for words in raw.values():
+        every.update({str(w).casefold(): int(v) for w, v in (words or {}).items()})
+    claim = {str(w).casefold(): int(v) for w, v in (raw.get("en") or {}).items() if int(v) >= 2}
+    return every, claim
+
+
+_WORDS, _CLAIM_WORDS = _word_tables()
 _MONTHS = {
     m: i
     for i, names in enumerate(
@@ -64,18 +79,30 @@ _ISO_MONTH = re.compile(r"(?<![\d-])(\d{4})-(\d{2})(?![\d-])")
 _DMY = re.compile(rf"\b(\d{{1,2}})(?:st|nd|rd|th)?\s+({_MONTH_RX})\.?,?\s+(\d{{4}})\b", re.I)
 _MDY = re.compile(rf"\b({_MONTH_RX})\.?\s+(\d{{1,2}})(?:st|nd|rd|th)?,?\s+(\d{{4}})\b", re.I)
 _MY = re.compile(rf"\b({_MONTH_RX})\.?,?\s+(\d{{4}})\b", re.I)
-_EURO = re.compile(r"(?<![\d.,])\d{1,3}(?:\.\d{3})+,\d{1,2}(?![\d.,])")
-_INDIAN = re.compile(r"(?<![\d.,])\d{1,2}(?:,\d{2})+,\d{3}(?:\.\d+)?(?![\d,])")
-_WESTERN = re.compile(r"(?<![\d.,])\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d,])")
+_SP = "[\u202f\u2009\u00a0 ]"  # narrow no-break, thin, no-break and plain space
+_EURO = re.compile(r"(?<![\d.,])\d{1,3}(?:\.\d{3})+,\d{1,2}(?![\d.,])")  # 1.234,56
+_DOTS = re.compile(
+    r"(?<![\d.,])\d{1,3}(?:\.\d{3}){2,}(?![\d.,])"
+)  # 1.234.567 (one group, 1.234, stays a decimal)
+_INDIAN = re.compile(r"(?<![\d.,])\d{1,2}(?:,\d{2})+,\d{3}(?:\.\d+)?(?![\d,])")  # 1,23,456
+# 5 000 and 1 234 567 (and 1 234,56): a leading group of ONE TO THREE digits, then groups of exactly three. "2024 500" is two
+# numbers: the join only happens when the leading group is not itself the tail of a longer number.
+_SPACED = re.compile(r"(?<![\d.,])\d{1,3}(?:" + _SP + r"\d{3})+(?:[.,]\d{1,2})?(?![\d])")
+_WESTERN = re.compile(r"(?<![\d.,])\d{1,3}(?:,\d{3})+(?:\.\d+)?(?![\d,])")  # 5,000 and 1,234.50
+_COMMA_DECIMAL = re.compile(
+    r"(?<![\d.,])\d+,(?:\d{1,2}(?!\d)|\d{4,})(?![\d]|,\d)"
+)  # 12,50  2,5  3,14159
 _PLAIN = re.compile(r"(?<![\d.])\d+(?:\.\d+)?")
-_WORD_RX = re.compile(r"\b(" + "|".join(_WORDS) + r")\b", re.I)
-_SPACED = re.compile(r"(?<=\d)[    ](?=\d{3}(?!\d))")  # 5 000 -> 5000 (thin and no-break spaces)
+_WORD_RX = re.compile(r"\b(" + "|".join(sorted(_WORDS, key=len, reverse=True)) + r")\b", re.I)
 
 
 @dataclass(frozen=True)
 class Figure:
-    key: str  # "n:2.5" or "d:2026-03-12" / "d:2026-03"
+    key: str  # "n:2.5", "d:2026-03-12" / "d:2026-03", or "c:INR" (a currency stated next to an amount)
     raw: str  # as written, for messages
+    codes: frozenset[str] = field(
+        default_factory=frozenset
+    )  # currency figures: every ISO code the token can mean
 
 
 def to_ascii_digits(text: str) -> str:
@@ -161,10 +188,13 @@ def figures(text: str, *, claim_side: bool = False) -> list[Figure]:
                 out.append(Figure(f"n:{key}", m.group(0)))
         t = rx.sub(lambda m: " " * len(m.group(0)), t)
 
-    t = _SPACED.sub("", t)
+    out += [Figure(m.key, m.raw, m.codes) for m in currencies.mentions(t)]
     grab(_EURO, lambda s: s.replace(".", "").replace(",", "."))
     grab(_INDIAN, lambda s: s.replace(",", ""))
+    grab(_DOTS, lambda s: s.replace(".", ""))
+    grab(_SPACED, lambda s: re.sub(_SP, "", s).replace(",", "."))
     grab(_WESTERN, lambda s: s.replace(",", ""))
+    grab(_COMMA_DECIMAL, lambda s: s.replace(",", "."))
     grab(_PLAIN, lambda s: s)
     words = _CLAIM_WORDS if claim_side else _WORDS
     for m in _WORD_RX.finditer(t):
@@ -188,13 +218,18 @@ def missing_figures(claim_figs: Iterable[Figure], quote_figs: Iterable[Figure]) 
     quote_list = list(quote_figs)
     quote_keys = {f.key for f in quote_list}
     quote_dates = [f.key for f in quote_list if f.key.startswith("d:")]
+    quote_currencies = [f.codes for f in quote_list if f.key.startswith("c:")]
     missing: list[Figure] = []
     seen: set[str] = set()
     for f in claim_figs:
         if f.key in seen:
             continue
         seen.add(f.key)
-        if f.key.startswith("d:"):
+        if f.key.startswith("c:"):
+            # the claim states a currency: the quote must state the same one (currency_mismatch), a swap never passes
+            if not currencies.agree(f.codes, quote_currencies):
+                missing.append(f)
+        elif f.key.startswith("d:"):
             if not _date_covered(f.key, quote_dates):
                 missing.append(f)
         elif f.key not in quote_keys:
@@ -215,9 +250,18 @@ NUMERIC_FIELDS = frozenset(
         "since",
         "example",
         "validation",
+        # the typed value of a fee, limit, duration or percentage (D-162): {amount, currency, period, unit, condition}. It is
+        # registered here so a typed value cannot slip past RV-18 (amounts are strings or Decimal, never float).
+        "amount",
+        "currency",
+        "period",
+        "unit",
     }
 )
-_MARKED = re.compile(r"[%$€£₹¥]|\b(?:rs|inr|usd|eur|gbp|aed|per ?cent|percent)\b", re.I)
+_MARKED = re.compile(
+    r"[%$€£₹¥₦₡]|\b(?:rs|inr|usd|eur|gbp|aed|mxn|gtq|crc|xof|xaf|fcfa|brl|per ?cent|percent)\b",
+    re.I,
+)
 
 
 def data_figure_texts(data: Mapping[str, Any]) -> list[str]:
@@ -231,7 +275,7 @@ def data_figure_texts(data: Mapping[str, Any]) -> list[str]:
                 out.append(value)
         elif isinstance(value, bool):
             return
-        elif isinstance(value, (int, float)):
+        elif isinstance(value, (int, float, Decimal)):
             if key in NUMERIC_FIELDS:
                 out.append(str(value))
         elif isinstance(value, Mapping):
@@ -246,12 +290,35 @@ def data_figure_texts(data: Mapping[str, Any]) -> list[str]:
     return out
 
 
+def typed_currencies(data: Mapping[str, Any]) -> list[Figure]:
+    """The currency of every typed value in ``data`` (a mapping with an ``amount`` and a ``currency`` token, anywhere in the
+    item's data): a typed ``currency`` is a token with no number beside it, so it is read here and not by ``figures``."""
+    out: list[Figure] = []
+
+    def walk(value: Any) -> None:
+        if isinstance(value, Mapping):
+            cur = value.get("currency")
+            if "amount" in value and isinstance(cur, str):
+                codes = currencies.codes_of(cur)
+                if codes:
+                    out.append(Figure("c:" + "/".join(sorted(codes)), cur, codes))
+            for v in value.values():
+                walk(v)
+        elif isinstance(value, (list, tuple)):
+            for v in value:
+                walk(v)
+
+    walk(data)
+    return out
+
+
 def claim_figures(claim: str, label: str, data: Mapping[str, Any]) -> list[Figure]:
-    """Everything a claim states that a quote must back: the claim, the label and the numeric data."""
+    """Everything a claim states that a quote must back: the claim, the label, the numeric data and the currency of a
+    typed value."""
     out = figures(claim, claim_side=True) + figures(label, claim_side=True)
     for text in data_figure_texts(data):
         out += figures(text, claim_side=True)
-    return out
+    return out + typed_currencies(data)
 
 
 def strip_unverified(
@@ -263,17 +330,23 @@ def strip_unverified(
     ``only`` limits it to those top-level fields (a figure anywhere else stays, and the caller's re-check fails)."""
     qfigs = list(quote_figs)
     allowed = None if only is None else frozenset(only)
+    quote_currencies = [f.codes for f in qfigs if f.key.startswith("c:")]
 
     def bad(text: str) -> bool:
         return bool(missing_figures(figures(text, claim_side=True), qfigs))
 
     def walk(key: str, value: Any) -> Any:
         if isinstance(value, str):
+            if (
+                key == "currency"
+            ):  # a typed currency is a token on its own: the quote must state the same currency
+                codes = currencies.codes_of(value)
+                return None if codes and not currencies.agree(codes, quote_currencies) else value
             grounded = key in NUMERIC_FIELDS or _MARKED.search(value)
             return None if grounded and bad(value) else value
         if isinstance(value, bool):
             return value
-        if isinstance(value, (int, float)):
+        if isinstance(value, (int, float, Decimal)):
             return None if key in NUMERIC_FIELDS and bad(str(value)) else value
         if isinstance(value, Mapping):
             return {str(k): walk(str(k), v) for k, v in value.items()}
