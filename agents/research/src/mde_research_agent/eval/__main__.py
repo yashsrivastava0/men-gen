@@ -1,7 +1,7 @@
 """``python -m mde_research_agent.eval planted|probe``: the evaluation harness for the owner to run later.
 
     planted --run RUN_ID [--seed N]     plant errors in a recorded run's items and measure what the checks catch
-    reextract --run-dir DIR [--arms A,A3,B] [--repeats 3]
+    reextract --run-dir DIR [--arms A,A3,B] [--repeats 3] [--max-pairs N]
                                         re-run extraction and checking on a recorded run's stored pages (model calls
                                         only; no search, no fetch) and compare checker arms by ranges
     probe   --run RUN_ID                stand-in Spec with and without the research, judged; it is given the run's real
@@ -128,6 +128,7 @@ async def _run(args: argparse.Namespace) -> int:
                 run_input,
                 arms=[x.strip() for x in args.arms.split(",") if x.strip()],
                 repeats=args.repeats,
+                max_pairs=args.max_pairs,
             )
         elif args.what == "planted":
             report = await planted_mod.run_planted(
@@ -160,6 +161,12 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--arms", default="A,A3,B", help="reextract: checker arms to compare")
     p.add_argument(
         "--repeats", type=int, default=3, help="reextract: repeats per arm (ranges, not one run)"
+    )
+    p.add_argument(
+        "--max-pairs",
+        type=int,
+        default=None,
+        help="reextract: use only this many (topic, page) pairs, evenly spread (a cheaper sample)",
     )
     p.add_argument(
         "--tenant", default="demo", help="the tenant the run was made under (the app's default)"

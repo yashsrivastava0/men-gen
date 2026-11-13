@@ -25,6 +25,13 @@ models:
   # premium rate) never occur; a stray cache write would be booked at the plain input rate.
   claude-haiku-5-5:
     vendor: anthropic
+    # Never send less than medium reasoning effort. Measured 2026-11-13 on the same stored Small-run pages (Research
+    # re-extraction, 24 topic-page pairs, 2 repeats): at the engines' "low" the extracted items needed a second look
+    # (partial or unsupported) 33% of the time and 31% of items stayed unverified; one level up 12% and 11%, with
+    # 6 to 8 fields rejected for being unsupported by the quote instead of 11 to 24. The planted-error test on the
+    # checker improved too (caught 92.3% to 97.6%, clean items flagged 41% to 12%). Cost: about 1.7x the model spend
+    # of a run, which is cents at this price.
+    effort_floor: medium
     input_usd_per_million: "0.10"
     cached_input_usd_per_million: "0.01"
     output_usd_per_million: "0.50"

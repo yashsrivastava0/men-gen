@@ -21,7 +21,7 @@ from anthropic.types import Message
 
 from mde_contracts.gateway import WebSearchTool
 from mde_core.clock import FakeClock
-from mde_core.errors import LiveCallForbidden, ProviderError
+from mde_core.errors import ConfigError, LiveCallForbidden, ProviderError
 from mde_core.settings import Settings
 from mde_llm_gateway.gateway import _STATUS_COUNTS_FOR_BREAKER, GatewayConfig
 from mde_llm_gateway.ledger import FileLedger
@@ -716,3 +716,52 @@ async def test_a_schema_that_fails_even_unconstrained_surfaces_the_error() -> No
     with pytest.raises(ProviderCallError) as exc:
         await provider.complete(_request())
     assert exc.value.status == 400 and len(client.messages.calls) == 2
+
+
+# ---------------------------------------------------------------------------- the model's effort floor
+def test_a_floor_raises_low_effort_and_never_lowers_a_higher_one() -> None:
+    from mde_llm_gateway.providers.anthropic_messages import effective_effort
+
+    assert [effective_effort(e, "medium") for e in ("none", "low", "medium", "high")] == [
+        "medium",
+        "medium",
+        "medium",
+        "high",
+    ]
+    assert [effective_effort(e, "") for e in ("none", "low", "medium", "high")] == [
+        "low",
+        "low",
+        "medium",
+        "high",
+    ]
+    assert effective_effort("low", "none") == "low" and effective_effort("low", "low") == "low"
+
+
+async def test_the_provider_applies_the_floor_of_the_requested_model() -> None:
+    client = StubClient(make_message(text="{}"), make_message(text="{}"))
+    provider = AnthropicMessagesProvider(
+        client,
+        settings=live_settings(),
+        effort_floor=lambda model: "medium" if model == "claude-haiku-5-5" else "",
+    )
+    await provider.complete(_request(effort="low"))
+    await provider.complete(_request(effort="low", model="claude-sonnet-5-5"))
+    sent = [c["output_config"]["effort"] for c in client.messages.calls]  # type: ignore[index]
+    assert sent == ["medium", "low"]
+
+
+def test_the_shipped_floor_is_haiku_only_and_a_bad_floor_is_refused(pricing) -> None:  # type: ignore[no-untyped-def]
+    assert pricing.price_for("claude-haiku-5-5").effort_floor == "medium"
+    assert pricing.price_for("claude-sonnet-5-5").effort_floor == ""
+    assert pricing.price_for("gpt-6-luna").effort_floor == ""
+    body = {
+        "vendor": "anthropic",
+        "input_usd_per_million": "1",
+        "cached_input_usd_per_million": "0.1",
+        "output_usd_per_million": "2",
+        "effort_floor": "extreme",
+    }
+    from mde_llm_gateway.pricing import Pricing
+
+    with pytest.raises(ConfigError, match="effort_floor"):
+        Pricing.from_dict({"models": {"m": body}})

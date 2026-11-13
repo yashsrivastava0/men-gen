@@ -57,7 +57,9 @@ ENV_LEDGER_RESET = "MDE_BUDGET_LEDGER_RESET"
 CLIENT_TIMEOUT_S = 600.0  # the per-call timeout is set on every request instead
 
 
-def _openai_provider(settings: Settings, client: object | None, needed_by: str) -> Provider:
+def _openai_provider(
+    settings: Settings, client: object | None, needed_by: str, pricing: Pricing
+) -> Provider:
     from mde_llm_gateway.providers.openai_responses import (  # a vendor SDK is only imported when live
         OpenAIClientLike,
         OpenAIResponsesProvider,
@@ -74,7 +76,9 @@ def _openai_provider(settings: Settings, client: object | None, needed_by: str) 
     return OpenAIResponsesProvider(cast("OpenAIClientLike", client), settings=settings)
 
 
-def _anthropic_provider(settings: Settings, client: object | None, needed_by: str) -> Provider:
+def _anthropic_provider(
+    settings: Settings, client: object | None, needed_by: str, pricing: Pricing
+) -> Provider:
     from mde_llm_gateway.providers.anthropic_messages import (
         AnthropicClientLike,
         AnthropicMessagesProvider,
@@ -88,13 +92,17 @@ def _anthropic_provider(settings: Settings, client: object | None, needed_by: st
             max_retries=0,  # the gateway owns retries: every attempt must be metered
             timeout=CLIENT_TIMEOUT_S,
         )
-    return AnthropicMessagesProvider(cast("AnthropicClientLike", client), settings=settings)
+    return AnthropicMessagesProvider(
+        cast("AnthropicClientLike", client),
+        settings=settings,
+        effort_floor=lambda model: pricing.price_for(model).effort_floor,
+    )
 
 
-# One builder per vendor: (settings, injected client or None, why this vendor is needed) -> provider.
+# One builder per vendor: (settings, injected client or None, why this vendor is needed, price list) -> provider.
 # Adding a vendor = a provider module, a builder here, its key in ``gating.VENDOR_KEYS`` and a
 # ``vendor:`` on its rows in ``pricing.yaml``. Nothing else changes.
-_VENDORS: dict[str, Callable[[Settings, object | None, str], Provider]] = {
+_VENDORS: dict[str, Callable[[Settings, object | None, str, Pricing], Provider]] = {
     "openai": _openai_provider,
     "anthropic": _anthropic_provider,
 }
@@ -172,7 +180,7 @@ def _build_live_provider(
                 f"pricing.yaml names vendor {vendor!r} but the gateway has no provider for it "
                 f"({needed_by}); known: {', '.join(sorted(_VENDORS))}"
             )
-        providers[vendor] = builder(settings, clients.get(vendor), needed_by)
+        providers[vendor] = builder(settings, clients.get(vendor), needed_by, pricing)
     if len(providers) == 1:
         return next(iter(providers.values()))
     return RoutingProvider(providers, pricing.vendor_for)

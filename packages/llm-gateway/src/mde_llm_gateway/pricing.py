@@ -37,6 +37,9 @@ class ModelPrice:
     long_context_threshold: int
     long_input_multiplier: Decimal
     long_output_multiplier: Decimal
+    # The lowest reasoning effort worth sending to this model (neutral scale none/low/medium/high), "" for none.
+    # Measured, not assumed: see the row's comment in pricing.yaml.
+    effort_floor: str = ""
 
 
 @dataclass(frozen=True)
@@ -100,6 +103,7 @@ class Pricing:
                     long_output_multiplier=_decimal(
                         lc.get("output_multiplier", 1), f"{name}.lc_out"
                     ),
+                    effort_floor=str(body.get("effort_floor", "")).strip().lower(),
                 )
             except KeyError as exc:
                 raise UnknownModelPrice(f"pricing for {name}: missing {exc.args[0]}") from exc
@@ -107,6 +111,10 @@ class Pricing:
                 raise UnknownModelPrice(f"pricing for {name}: prices must be positive")
             if price.long_input_multiplier < 1 or price.long_output_multiplier < 1:
                 raise ConfigError(f"pricing for {name}: long-context multipliers must be >= 1")
+            if price.effort_floor not in ("", "none", "low", "medium", "high"):
+                raise ConfigError(
+                    f"pricing for {name}: effort_floor must be none, low, medium or high"
+                )
             if not price.vendor:
                 raise ConfigError(
                     f"pricing for {name}: missing vendor (the provider that serves the model)"

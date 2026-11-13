@@ -236,8 +236,10 @@ async def run_reextract(
     plan = build_plan(inp, cat)
     by_label = {t.label: t for t in plan.targets}
     pairs, missing = pairs_of(evidence, by_label)
-    if max_pairs:
-        pairs = pairs[:max_pairs]
+    if max_pairs and len(pairs) > max_pairs:
+        # evenly spread over the sorted pairs, so a smaller sample still covers every kind of topic
+        step = len(pairs) / max_pairs
+        pairs = [pairs[int(i * step)] for i in range(max_pairs)]
     pages = {p["id"]: _page(p) for p in evidence.get("pages", [])}
     load_class = inp.load.load_class if inp.load else "standard"
     sem = asyncio.Semaphore(LANES)

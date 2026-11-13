@@ -28,6 +28,8 @@ Parsing:
   schema makes every optional field ``anyOf [X, null]``, so when there are too many the provider turns just
   enough of them into plain optional properties and puts ``null`` back into the answer for every field the
   model left out (``restore_omitted_nulls``), so the gateway still sees a document valid for its own schema;
+* a model may carry an ``effort_floor`` in ``pricing.yaml``: Haiku 5.5 under-thinks at the engines' ``low`` (see the
+  row's comment), so ``low`` is sent as ``medium`` for it; the engines' specs are untouched (rule 14);
 * the compiler behind ``output_config.format`` also refuses a schema that is simply too large ("compiled grammar
   is too large"), whatever its union count: `extract.data` is such a schema. The provider then makes the call
   WITHOUT constrained decoding, once, with the schema written into the instructions, remembers that this schema
@@ -43,7 +45,7 @@ from __future__ import annotations
 import dataclasses
 import json
 import re
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import suppress
 from typing import Protocol, cast
 
@@ -62,6 +64,7 @@ _MAX_RETRY_AFTER = 300.0
 # The gateway's effort scale has a "none"; this API has no such level, and the larger models cannot
 # switch thinking off, so "none" is the lowest real level.
 _EFFORT = {"none": "low", "low": "low", "medium": "medium", "high": "high"}
+_EFFORT_ORDER = ("low", "medium", "high")
 
 # Schema keywords this API rejects (a 400 would lose the whole call). They are removed from the
 # PROVIDER schema only and written into the field's description instead, so the model still sees the
@@ -275,12 +278,23 @@ def _clean_value(value: object) -> object:
 
 
 # ----------------------------------------------------------------------------- request
-def build_create_kwargs(req: ProviderRequest, *, constrained: bool = True) -> dict[str, object]:
+def effective_effort(effort: str, floor: str = "") -> str:
+    """The vendor's effort name for the gateway's, raised to the model's ``effort_floor`` (pricing.yaml) if it is lower."""
+    level = _EFFORT[effort]
+    if floor and _EFFORT_ORDER.index(_EFFORT[floor]) > _EFFORT_ORDER.index(level):
+        return _EFFORT[floor]
+    return level
+
+
+def build_create_kwargs(
+    req: ProviderRequest, *, constrained: bool = True, effort_floor: str = ""
+) -> dict[str, object]:
     """The keyword arguments for ``client.messages.create`` (pure; unit-tested).
 
     ``constrained=False`` leaves out ``output_config.format`` and writes the schema into the system text.
+    ``effort_floor`` is the model's lowest worthwhile effort (neutral name; ``""`` for none).
     """
-    output_config: dict[str, object] = {"effort": _EFFORT[req.effort]}
+    output_config: dict[str, object] = {"effort": effective_effort(req.effort, effort_floor)}
     system = req.system
     if req.schema is not None:
         if constrained:
@@ -436,14 +450,27 @@ def map_error(exc: Exception) -> ProviderCallError:
     return ProviderCallError(f"{type(exc).__name__}: {text}", retryable=False)
 
 
+def _no_floor(model: str) -> str:
+    return ""
+
+
 class AnthropicMessagesProvider:
     name = "anthropic-messages"
     billable = True
 
-    def __init__(self, client: AnthropicClientLike, *, settings: Settings) -> None:
+    def __init__(
+        self,
+        client: AnthropicClientLike,
+        *,
+        settings: Settings,
+        effort_floor: Callable[[str], str] | None = None,
+    ) -> None:
         require_live(settings)  # LLM_MODE=live, never under MDE_FORBID_LIVE
         self.mode: CallMode = "live"
         self._client = client
+        self._effort_floor: Callable[[str], str] = (
+            effort_floor or _no_floor
+        )  # model -> its lowest worthwhile effort
         self._prompted: set[str] = (
             set()
         )  # schema hashes the API refused to compile: sent as instructions instead
@@ -451,7 +478,9 @@ class AnthropicMessagesProvider:
 
     async def _create(self, request: ProviderRequest, *, constrained: bool) -> Message:
         """One ``messages.create``; SDK failures become :class:`ProviderCallError`, other exceptions pass through."""
-        kwargs = build_create_kwargs(request, constrained=constrained)
+        kwargs = build_create_kwargs(
+            request, constrained=constrained, effort_floor=self._effort_floor(request.model)
+        )
         try:
             return await self._client.messages.create(**kwargs)
         except ProviderCallError:
