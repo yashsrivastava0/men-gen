@@ -15,6 +15,7 @@ from mde_compass_intake import read_research
 from mde_spec_agent.derive.pipeline import derive_graph
 from mde_spec_agent.derive.seed import research_adapter
 from mde_spec_core import glossary as glossary_mod
+from mde_spec_core.assets import data_bound_asset_needs
 from mde_spec_core import hero as hero_mod
 from mde_spec_core.callkit.ladder import weak_route_banner
 from mde_spec_core.canon import canonical_json
@@ -143,6 +144,9 @@ async def assemble_and_check(ctx: RunContext) -> None:
     """Assemble the pack (code) and run gate 3 (`spec check`): the whole suite, the builder-needs rule, the coverage matrix."""
     log = run_rcode(ctx.graph, ctx.facts)
     ctx.rcode.extend(log)
+    # data-bound asset needs by code (media fields and hero image briefs exist only after the Freeze and hero records)
+    for need in data_bound_asset_needs(ctx.graph):
+        ctx.graph.assets.setdefault(need.id, need)
     opts = PackOptions(
         config=ctx.config,
         consumer_id=ctx.consumer.id,

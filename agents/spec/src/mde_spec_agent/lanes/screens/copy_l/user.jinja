@@ -1,0 +1,19 @@
+GLOSSARY (terms to keep consistent; data)
+{{ glossary }}
+
+APP (data)
+{{ facts }}
+
+THIS CALL. Translate from {{ source_language }} into {{ language }}. One record per string below (data blocks, key then text).
+{% for s in strings %}
+{{ s }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

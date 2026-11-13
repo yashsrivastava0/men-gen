@@ -1,0 +1,32 @@
+FROZEN FACTS (the same for every call of this run; data)
+{{ facts }}
+
+GLOSSARY (the same for every call of this run; data)
+{{ glossary }}
+
+THIS CALL. Language: {{ language }}. Country: {{ country }}. Detail profile: {{ profile }}.
+Sample names to match in style (people and places):
+{% for n in names %}
+- {{ n }}
+{% endfor %}
+Business names you may use as they are:
+{% for n in allowed_names %}
+{{ n }}
+{% endfor %}
+Parent entities outside this call (read only):
+{% for c in context %}
+{{ c }}
+{% endfor %}
+Entities to fill, with their records (data blocks, one per entity):
+{% for e in entities %}
+{{ e }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

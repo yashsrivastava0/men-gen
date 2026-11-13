@@ -345,6 +345,8 @@ def v41(ctx: Context) -> list[Finding]:
                 )
             )
     for e in g.entities.values():
+        if e.later:
+            continue  # exists only for later features: no hero records by design
         if e.klass == "primary":
             for st in e.lifecycle.states:
                 if st not in by_state.get(e.id, set()):

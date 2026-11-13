@@ -305,7 +305,7 @@ def make_graph(spec: SynthSpec | str) -> SpecGraph:
                 idempotent=True,
                 errors=[
                     OpError(code="payment_declined", recovery="stay"),
-                    OpError(code="duplicate", recovery="go"),
+                    OpError(code="duplicate", recovery="go_back"),
                 ],
             ),
         )

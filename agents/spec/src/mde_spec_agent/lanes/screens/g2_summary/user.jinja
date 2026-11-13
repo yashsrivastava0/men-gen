@@ -1,0 +1,18 @@
+THIS CALL. Language: {{ language }}.
+Numbers:
+{% for n in numbers %}
+- {{ n.name }}: {{ n.value }}
+{% endfor %}
+Facts (data blocks):
+{% for l in lines %}
+{{ l }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

@@ -1,0 +1,94 @@
+# Screens lane data (content, never logic). Everything here is a default the lane reads; changing it is a data change.
+version: 1
+
+# Extra, screen-specific acceptance scenarios the model may add on top of the library minimum (per detail profile).
+acceptance_extra_max: {compact: 1, standard: 2, deep: 3}
+usually_max: 2
+could_per_screen_default: 2          # never above config.profiles.could_cap_per_screen
+slots_norms_max: 4                   # research candidates shown to one card
+slots_delight_max: 2                 # delight-library candidates shown to one card
+slots_moments_max: 3
+region_label_copy: true              # mint a label key for a region only when the model gives its text
+
+# Research item kinds that may become a USUALLY line (peer practice), never competitor or provider facts.
+usually_item_kinds: [screen_pattern, navigation_pattern, entity_pattern, role_pattern, workflow, lifecycle]
+usually_applies_kinds: [FTR, ENT, ROL, FLW, APP]
+
+# COULD: which delight-library patterns suit which screen type, and the motion intent each one means.
+delight_by_screen_type:
+  list: [DLT-INSTANT-CONTENT]
+  search: [DLT-INSTANT-CONTENT]
+  dashboard: [DLT-INSTANT-CONTENT]
+  detail: [DLT-INSTANT-CONTENT]
+  status: [DLT-HONEST-PROGRESS]
+  media: [DLT-HONEST-PROGRESS]
+  checkout: [DLT-QUIET-SUCCESS, DLT-KIND-FAILURE]
+  confirmation: [DLT-QUIET-SUCCESS, DLT-SMALL-CELEBRATION]
+  form: [DLT-QUIET-SUCCESS, DLT-KIND-FAILURE]
+  wizard: [DLT-PICK-UP-WHERE-LEFT, DLT-QUIET-SUCCESS]
+  permission: [DLT-ASK-IN-CONTEXT]
+  onboarding: [DLT-LEARN-BY-DOING]
+  settings: [DLT-UNDO-WITH-CONFIDENCE]
+  profile: [DLT-UNDO-WITH-CONFIDENCE]
+motion_by_pattern:
+  DLT-INSTANT-CONTENT: content_arrival
+  DLT-HONEST-PROGRESS: show_progress
+  DLT-QUIET-SUCCESS: confirm_success
+  DLT-KIND-FAILURE: signal_error
+  DLT-SMALL-CELEBRATION: reward
+# The kind of a COULD entry that rests on a journey moment, by the emotion of that stage.
+could_kind_by_emotion:
+  anxious: trust
+  frustrated: speed
+  delighted: delight
+  curious: delight
+  confident: clarity
+  calm: clarity
+
+could_effect_by_kind:
+  trust: "the person feels sure the step went through and knows what happens next"
+  speed: "the person is not kept waiting and can see that the app is working"
+  delight: "the moment feels cared for, in proportion to how much it matters to the person"
+  clarity: "the person understands where they stand and what comes next"
+could_when: "the person reaches '{goal}' in the {flow} journey"
+
+# Analytics events: the verb a mutating intent gives to an event name (the consent rule is a global behaviour).
+analytics_verb_by_intent:
+  pay: paid
+  confirm: confirmed
+  act_on_item: updated
+  sign_in: signed_in
+  sign_out: signed_out
+  rate: rated
+  report: reported
+  share: shared
+
+# Accessibility statement templates (meaning only).
+accessibility:
+  live: "changes to {what} are announced to assistive technology when they happen"
+  action: "the result of {what} is announced to assistive technology"
+  plain: "every region and action has a text label that assistive technology can read"
+
+# Behaviours: how the library text of a mixed category is extended per fact (BEHAV mock), by category.
+behav_mock:
+  session: "{library} Roles can differ: {roles}. A session that expires while work is unsent keeps that work and asks the person to sign in again."
+  offline: "{library} Data shown while offline is marked as saved earlier; actions that need the network say so and are queued only where a screen says they may be."
+  notifications: "{library} Opening a notification goes to the screen it is about when the signed-in role may see it."
+  i18n: "{library} Languages offered: {languages}. Text, dates and money follow the person's language and region."
+  analytics: "{library} Events are named after what the person did; consent is asked before the first one is sent."
+  state: "Data shared between screens: {entities}. A screen refreshes what it shows when it opens and after an action that changes it."
+  background_work: "Work that continues while the app is closed is limited to what the person started; it ends with a result the person sees on return."
+  interrupted_external_flow: "When the person leaves for {flow} and returns without finishing, the app shows where things stand and lets them continue or cancel. {interruption}"
+  pending_timeouts: "A pending result is waited for as stated: {pending_timeout} When the wait ends the person sees that the result is unknown and can check again."
+  default: "Applies as stated for this app: {what}."
+
+# What the G2 summary template says (FN-29): the model paragraph is omitted, never invented, when the call fails.
+g2_template:
+  headline: "{screens} screens in this release across {apps} app(s), {entities} entities, {operations} operations, {languages} language(s)."
+  lines:
+    differs: "What differs from the Brief: {items}."
+    nothing_differs: "Nothing in the release differs from the Brief."
+    assumptions: "{n} node(s) rest on an assumption and are marked assumed."
+    degraded: "{n} node(s) were written by the safe default and are marked degraded."
+    fixes: "{n} mechanical fix(es) were made by code and are listed with the check report."
+    confirm: "{n} item(s) need your confirmation; the first {top} are ranked by money, legal and identity."

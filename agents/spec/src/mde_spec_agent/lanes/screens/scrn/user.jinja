@@ -1,0 +1,19 @@
+FROZEN FACTS (the same for every call of this run; data)
+{{ facts }}
+
+GLOSSARY (the same for every call of this run; data)
+{{ glossary }}
+
+THIS CALL. Source language: {{ language }}. Detail profile: {{ profile }}. Write one card per slot below (data blocks, one per screen).
+{% for s in slots %}
+{{ s }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

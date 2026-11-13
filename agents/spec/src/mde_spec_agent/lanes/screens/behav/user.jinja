@@ -1,0 +1,36 @@
+FROZEN FACTS (the same for every call of this run; data)
+{{ facts }}
+
+GLOSSARY (the same for every call of this run; data)
+{{ glossary }}
+
+THIS CALL. Source language: {{ language }}. Detail profile: {{ profile }}. Languages of the app: {{ languages | join(", ") }}.
+Roles:
+{% for r in roles %}
+{{ r }}
+{% endfor %}
+Entities:
+{% for e in entities %}
+{{ e }}
+{% endfor %}
+Integrations:
+{% for i in integrations %}
+{{ i }}
+{% endfor %}
+Rules that need confirming:
+{% for r in rules %}
+{{ r }}
+{% endfor %}
+Categories to write (data blocks):
+{% for c in categories %}
+{{ c }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text
