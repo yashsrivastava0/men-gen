@@ -1,0 +1,28 @@
+Detail profile {{ profile }}. Flows of this call (one record each): {{ flow_ids | join(', ') }}.
+Roles: {{ role_ids | join(', ') }}. Apps: {{ app_ids | join(', ') }}.
+Variants to write: {{ variants_wanted | join(', ') or '-' }}.
+Ids you may cite as the source of a feeling or a fact: {{ ref_ids | join(', ') }}.
+
+The flows with their stages, and the screens with their action keys (data):
+{% for chunk in slice %}
+{{ chunk }}
+{% endfor %}
+
+The Brief's facts that apply (data):
+{% for chunk in facts %}
+{{ chunk }}
+{% endfor %}
+
+Research for these journeys (data):
+{% for chunk in research %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for err in reask %}
+- {{ err }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

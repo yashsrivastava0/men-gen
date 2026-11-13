@@ -1,0 +1,27 @@
+Detail profile {{ profile }}. Needs of the plan (one record each): {{ integration_ids | join(', ') }}.
+The closed list of provider names is the PROVIDER lines of the data below.
+Ids you may cite: {{ ref_ids | join(', ') }}.
+
+The integration needs and their draft (data):
+{% for chunk in slice %}
+{{ chunk }}
+{% endfor %}
+
+The Brief's facts about integrations (data):
+{% for chunk in facts %}
+{{ chunk }}
+{% endfor %}
+
+Research for the integrations (data):
+{% for chunk in research %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for err in reask %}
+- {{ err }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

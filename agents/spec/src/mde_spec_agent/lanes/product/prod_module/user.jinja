@@ -1,0 +1,31 @@
+Module {{ module_id }}; detail profile {{ profile }}; apps {{ app_ids | join(', ') }}.
+
+Ids you may cite (closed list). Roles: {{ role_ids | join(', ') }}. Features: {{ feature_ids | join(', ') }} (in: {{ in_feature_ids | join(', ') }}). Screens: {{ screen_ids | join(', ') }}. Entities of this module: {{ entity_ids | join(', ') }}. Rules of the draft: {{ rule_ids | join(', ') }}. Stories of the draft: {{ story_ids | join(', ') }}.
+{% if policy_refs %}Policy references: {{ policy_refs | join(', ') }}.
+{% endif %}
+Features this answer's stories must still serve: {{ cover_feature_ids | join(', ') or '-' }}.
+Screens this answer's stories must still cite: {{ cover_screen_ids | join(', ') or '-' }}.
+
+The module slice and its draft (data):
+{% for chunk in slice %}
+{{ chunk }}
+{% endfor %}
+
+The Brief's facts that apply (data):
+{% for chunk in facts %}
+{{ chunk }}
+{% endfor %}
+
+Research for this module (data):
+{% for chunk in research %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for err in reask %}
+- {{ err }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

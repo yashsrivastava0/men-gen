@@ -24,6 +24,14 @@ from .store import NotFound, RunStore
 StepFn = Callable[[RunContext], Awaitable[None]]
 
 
+class MissingNeed(RuntimeError):
+    """A builder need is missing: the run ends partial with a plain list and the pack never reaches G2."""
+
+    def __init__(self, needs: list[str]) -> None:
+        super().__init__("missing builder needs: " + ", ".join(needs))
+        self.needs = needs
+
+
 class PlanInvalid(RuntimeError):
     """The Plan call is invalid after its re-ask: the one step with no safe default (FN-35). Run ends partial, resumable."""
 
@@ -135,6 +143,11 @@ class Orchestrator:
                 PlanInvalid,
                 "plan_invalid",
                 "the plan could not be written validly; resume retries it",
+            ),
+            (
+                MissingNeed,
+                "missing_need",
+                "a builder need is missing, so the pack was not delivered; the list is in the run note",
             ),
         ]
         reason, msg = "", ""

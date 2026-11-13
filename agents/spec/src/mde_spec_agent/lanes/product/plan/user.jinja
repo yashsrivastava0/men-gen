@@ -1,0 +1,32 @@
+Detail profile {{ profile }}; scope cap {{ scope_cap }} screens per app and phase; a screen slice may take at most {{ slice_cap_tokens }} tokens.
+
+Ids you may cite (closed lists). Modules: {{ module_ids | join(', ') }}. Roles: {{ role_ids | join(', ') }}. Entities: {{ entity_ids | join(', ') }}. Features: {{ feature_ids | join(', ') }}. Screens: {{ screen_ids | join(', ') }}.
+
+The Compass view in summary, with the draft (data):
+{% for chunk in brief %}
+{{ chunk }}
+{% endfor %}
+
+The derived screen inventory (data):
+{% for chunk in inventory %}
+{{ chunk }}
+{% endfor %}
+
+The derived release plan (data):
+{% for chunk in release_lines %}
+{{ chunk }}
+{% endfor %}
+
+The research digest (data):
+{% for chunk in research %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for err in reask %}
+- {{ err }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text

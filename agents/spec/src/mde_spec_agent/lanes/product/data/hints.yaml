@@ -1,0 +1,42 @@
+# Word lists and short texts the deterministic parts of the lane use (mock handlers and fallbacks). Content, not logic.
+version: 1
+# A `text` field whose key has one of these snake_case words gets that type (never the other way round).
+field_type_words:
+  money: [price, amount, fee, total, cost, charge, balance, commission, fare, payout, salary, wage]
+  phone: [phone, mobile, whatsapp]
+  email: [email]
+  location: [address, location, place, pickup, dropoff, destination, origin]
+  file: [photo, image, picture, document, attachment, receipt, invoice, avatar, logo]
+  quantity: [count, quantity, seats, spots, units, capacity]
+media_words: [photo, image, picture, avatar, logo]
+# Journey emotions by position (assumed unless a fact states one) and the words that mark a stake (money, commitment).
+stake_words: [pay, payment, checkout, purchase, book, order, submit, confirm, subscribe]
+emotion_first: curious
+emotion_middle: confident
+emotion_stake: anxious
+emotion_last: delighted
+# Journey variants made for deep apps: goal prefix and the emotion of every stage.
+variants:
+  first_run: {name_suffix: "first time", goal_prefix: "For the first time, ", emotion: curious}
+  returning: {name_suffix: "returning", goal_prefix: "Coming back, ", emotion: confident}
+  recovery: {name_suffix: "when something goes wrong", goal_prefix: "After a problem, ", emotion: frustrated}
+  cross_app: {name_suffix: "across apps", goal_prefix: "Handing over between apps, ", emotion: confident}
+unhappy_generic: "If the connection drops while the person is trying to {goal}, they are told and can try again without losing what they entered."
+# Texts for code-made records (assumed, flagged as such).
+persona_context: "Uses the app to {goal}."
+persona_success: "Gets this done without help: {goal}."
+acceptance_given: "{role} is signed in and allowed to use this"
+integration_defaults:
+  flow: "The person leaves the app for the provider's own step and returns with a result; the app never handles card or account secrets itself."
+  interruption: "If the app is closed or killed during the provider's step, the next open asks the provider for the status of the last attempt and shows the result; nothing is done twice."
+  pending_timeout: "A pending result is waited for a limited time, then shown as unknown with a way to check again or contact support; the limit is on the confirm list."
+  mock_behaviour: "A mock provider answers success, failure and pending on demand so every state can be shown without a real account."
+  events: [succeeded, failed, pending]
+# Batch sizing: average output tokens per item of a kind (an estimate made once, here, never in logic) and the cap of
+# items per call for the kinds spec-config has no cap for.
+avg_item_tokens: {entity: 450, story: 220, rule: 110, cover: 220, flow: 650, integration: 500}
+story_items_cap: 12
+rule_items_cap: 20
+research_digest_items: 40
+# The fused call's output is estimated as the draft's own size times this factor (the model writes the draft plus what it adds).
+fused_output_growth: 1.5

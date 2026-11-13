@@ -137,3 +137,37 @@ docs-check:
 ci-fast: lint typecheck layers test
 
 ci: ci-fast test-int test-e2e docs-check scan-secrets
+
+# --- Spec (the third agent): the Spec Bench app (API and front end on 127.0.0.1:8130) ---------------------------
+# The money cap comes from the launch environment (SPEC_LIVE_BUDGET_USD, SPEC_TRIPWIRE_USD), never from .env.
+spec-dev:
+    uv run python -m mde_spec_agent serve --port 8130
+
+spec-app-start:
+    uv run python scripts/spec_app.py start
+
+spec-app-stop:
+    uv run python scripts/spec_app.py stop
+
+spec-app-restart:
+    uv run python scripts/spec_app.py restart
+
+spec-app-status:
+    uv run python scripts/spec_app.py status
+
+spec-app-logs:
+    uv run python scripts/spec_app.py logs
+
+spec-test:
+    uv run pytest agents/spec agents/verify -m "not integration and not live" -q
+
+spec-bench-test:
+    uv run pytest apps/spec-bench -q
+
+# The money wrapper and the budget endpoints (offline, free): the cap cannot be bypassed.
+spec-spend-check:
+    uv run pytest agents/spec/tests/spend agents/spec/tests/api/test_budget.py -q
+
+# TEST ONLY: the real app over the gateway's mock mode with a TEST FAKE banner (port 8150); flags: --slow --not-ready ...
+spec-fake:
+    uv run python agents/spec/tests/e2e/fake_app.py --port 8150

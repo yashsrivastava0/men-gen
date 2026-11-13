@@ -15,8 +15,8 @@ from mde_compass_intake import read_research
 from mde_spec_agent.derive.pipeline import derive_graph
 from mde_spec_agent.derive.seed import research_adapter
 from mde_spec_core import glossary as glossary_mod
-from mde_spec_core.assets import data_bound_asset_needs
 from mde_spec_core import hero as hero_mod
+from mde_spec_core.assets import data_bound_asset_needs
 from mde_spec_core.callkit.ladder import weak_route_banner
 from mde_spec_core.canon import canonical_json
 from mde_spec_core.check import spec_check
@@ -27,15 +27,7 @@ from mde_spec_core.validators import run_all
 from mde_spec_core.validators.context import make_context
 
 from .context import RunContext
-from .orchestrator import PlanInvalid  # noqa: F401  (re-exported for lanes)
-
-
-class MissingNeed(RuntimeError):
-    """A builder need is missing: the run ends partial with a plain list and the pack never reaches G2."""
-
-    def __init__(self, needs: list[str]) -> None:
-        super().__init__("missing builder needs: " + ", ".join(needs))
-        self.needs = needs
+from .orchestrator import MissingNeed, PlanInvalid  # noqa: F401  (re-exported for lanes)
 
 
 def _seed(ctx: RunContext) -> random.Random:

@@ -1,0 +1,53 @@
+Detail profile {{ profile }}; scope cap {{ scope_cap }} screens per app and phase.
+
+Ids you may cite (closed lists). Modules: {{ plan.module_ids | join(', ') }}. Roles: {{ plan.role_ids | join(', ') }}. Entities: {{ plan.entity_ids | join(', ') }}. Features: {{ plan.feature_ids | join(', ') }} (in: {{ module.in_feature_ids | join(', ') }}). Screens: {{ plan.screen_ids | join(', ') }}. Integrations: {{ integration_ids | join(', ') or '-' }}. Flows: {{ flow_ids | join(', ') or '-' }}.
+Features the stories must still serve: {{ module.cover_feature_ids | join(', ') or '-' }}. Screens the stories must still cite: {{ module.cover_screen_ids | join(', ') or '-' }}.
+
+The Compass view in summary, with the draft (data):
+{% for chunk in brief %}
+{{ chunk }}
+{% endfor %}
+
+The derived screen inventory (data):
+{% for chunk in inventory %}
+{{ chunk }}
+{% endfor %}
+
+The derived release plan (data):
+{% for chunk in release_lines %}
+{{ chunk }}
+{% endfor %}
+
+The product slice and its draft (data):
+{% for chunk in module_slice %}
+{{ chunk }}
+{% endfor %}
+
+The Brief's facts that apply (data):
+{% for chunk in facts %}
+{{ chunk }}
+{% endfor %}
+
+The integration needs and their draft (data):
+{% for chunk in integ_slice %}
+{{ chunk }}
+{% endfor %}
+
+The flows with their stages, and the screens with their action keys (data):
+{% for chunk in journey_slice %}
+{{ chunk }}
+{% endfor %}
+
+The research digest (data):
+{% for chunk in research %}
+{{ chunk }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for err in reask %}
+- {{ err }}
+{% endfor %}
+{% endif %}
+
+Return ONE JSON object that matches the schema, no other text
