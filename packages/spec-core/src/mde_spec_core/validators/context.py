@@ -28,8 +28,8 @@ def vocab_view(facts: Collection[str] | Mapping[str, bool] | None = None) -> Voc
     with contextlib.suppress(ImportError):  # optional sheets: absent until the data task lands them
         from mde_spec_core import platform_data, policy
 
-        cap_ids = set(platform_data.capability_ids())
-        policy_ids = set(policy.policy_ids())
+        cap_ids = {c.id for c in platform_data.default_capability_sheet().capabilities}
+        policy_ids = {r.id for r in policy.default_policy_sheet().rules}
     return VocabView(
         shapes=set(vocab.shapes()),
         intents=set(vocab.intents()),
