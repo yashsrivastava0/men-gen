@@ -13,6 +13,7 @@ from typing import Any
 
 from .canon import canonical_json, normalise_text, sha256_text
 from .config import SpecConfig, default_config
+from .contract import contract_files
 from .graph import Region, Screen, SpecGraph
 from .render import (
     TokenCounter,
@@ -355,15 +356,8 @@ def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
     )
     for loc in sorted(graph.locale_copy):
         files[f"global/copy/{loc}.json"] = canonical_json(graph.locale_copy[loc]) + "\n"
-    ops_by_ent: dict[str, list[str]] = {}
-    for oid in sorted(graph.operations):
-        o = graph.operations[oid]
-        ops_by_ent.setdefault(o.entity or "general", []).append(
-            f"{o.id} {o.name} {o.method} {o.path}; errors: {', '.join(e.code for e in o.errors)}"
-            + (" idempotent" if o.idempotent else "")
-        )
-    for ent in sorted(ops_by_ent):
-        files[f"contract/{ent}.md"] = normalise_text("\n".join(ops_by_ent[ent]))
+    # Contract v0 (OpenAPI 3.1, schemas, auth matrix, events) is emitted by code and merged into the pack
+    files.update(contract_files(graph, config=cfg, chars_per_token=counter.chars_per_token))
 
     # ---- apps and modules
     for app_id in sorted(graph.apps):
@@ -389,8 +383,16 @@ def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
         for p in sorted(files)
         if p.startswith("global/") and not p.startswith("global/copy/")
     ]
-    idx += ["", "## contract"] + [f"- {p}" for p in sorted(files) if p.startswith("contract/")]
-    idx += ["", "## data-model"] + [f"- {p}" for p in sorted(files) if p.startswith("data-model/")]
+    idx += [
+        "",
+        "## contract",
+        "- contract/openapi.yaml and contract/components.yaml: the program's API (one document, per-app tags)",
+        "- contract/resources/<entity>.yaml: the operations of one entity; contract/schemas/<entity>.json: its schema",
+        "- contract/auth-matrix.json, contract/events.json",
+        "",
+        "## data-model",
+        "- data-model/<module>-<n>.md: the entities owned by a module (each module file names its entities)",
+    ]
     idx += ["", "## apps"]
     for app_id in sorted(graph.apps):
         idx.append(f"- {app_id} {graph.apps[app_id].name}: apps/{app_id}/app.md")
@@ -421,7 +423,7 @@ def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
     # ---- tasks (reads within the budget; re-shard by taking fewer screens per task)
     shard_tokens = {
         p: counter.count(files[p])
-        for p in list(shards) + [p for p in files if p.startswith("contract/")]
+        for p in list(shards) + [p for p in files if p.startswith("contract/resources/")]
     }
     tasks = _plan_tasks(
         graph,
@@ -554,8 +556,9 @@ def _plan_tasks(
         out = {ent_shard[e] for e in bf if e in ent_shard}
         for oid in bf.get("<ops>", []):
             op = graph.operations.get(oid)
-            if op and op.entity and f"contract/{op.entity}.md" in shard_tokens:
-                out.add(f"contract/{op.entity}.md")
+            if op and op.entity:
+                stem = f"contract/resources/{op.entity.lower()}"
+                out |= {p for p in shard_tokens if p == f"{stem}.yaml" or p.startswith(f"{stem}-")}
         return out
 
     def total(group: list[str], mod_tokens: int) -> tuple[int, dict[str, int]]:
