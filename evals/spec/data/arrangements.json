@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "note": "Closed list of region-arrangement tokens for the freedom probe (PS-4). They name an ordering idea for the regions of a screen, never a position, widget or measurement. The consumer (weakest configured route) chooses; Spec never does.",
+  "tokens": [
+    "primary-first",
+    "grouped-by-importance",
+    "sequence-by-flow",
+    "summary-then-detail",
+    "action-led",
+    "status-led",
+    "content-led",
+    "progressive-disclosure"
+  ]
+}

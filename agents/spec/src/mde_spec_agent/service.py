@@ -289,7 +289,7 @@ class SpecService:
             return list(self._readiness())
         problems = route_problems(self.core)
         if getattr(self.core, "llm_mode", "mock") != "live":
-            problems.insert(0, "LLM_MODE=live in the launch environment (the one live switch)")
+            problems.insert(0, "LLM_MODE=live in the launch environment")
         try:
             prices_of(self.profiles.get("weak-default"))
         except (ValueError, KeyError) as exc:
@@ -767,6 +767,7 @@ class SpecService:
                     "repaired": bool(res.repaired or res.reasked),
                     "fallback": res.used_fallback,
                     "reason": (res.reason or "")[:300],
+                    "first_errors": [e[:200] for e in res.first_errors[:4]],
                 },
             )
 

@@ -1,0 +1,253 @@
+{
+ "library": "Synthetic catalogue",
+ "source_url": "synthetic",
+ "checked_on": "2026-11-14",
+ "components": [
+  {
+   "name": "ListView",
+   "purpose": "Rows of homogeneous items.",
+   "shapes_it_can_show": [
+    "collection"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "TableView",
+   "purpose": "Items with comparable columns.",
+   "shapes_it_can_show": [
+    "collection"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "DetailRows",
+   "purpose": "Labelled facts, one per row.",
+   "shapes_it_can_show": [
+    "key_values"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "MetricTile",
+   "purpose": "One labelled value with an optional trend.",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "ProseBlock",
+   "purpose": "A block of prose.",
+   "shapes_it_can_show": [
+    "text"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "StepTrail",
+   "purpose": "Ordered steps with a current one.",
+   "shapes_it_can_show": [
+    "sequence"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "ProgressRing",
+   "purpose": "Progress of one task as a value.",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "PhotoGrid",
+   "purpose": "A set of photos.",
+   "shapes_it_can_show": [
+    "media"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "VideoPlayer",
+   "purpose": "Plays one video or audio file.",
+   "shapes_it_can_show": [
+    "media"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "ChartPanel",
+   "purpose": "Numbers over an axis or as parts of a whole.",
+   "shapes_it_can_show": [
+    "series"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "FormKit",
+   "purpose": "A set of labelled inputs with validation messages.",
+   "shapes_it_can_show": [
+    "inputs"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "FilePreview",
+   "purpose": "Shows a file or long attachment.",
+   "shapes_it_can_show": [
+    "document"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "PagedCarousel",
+   "purpose": "Ordered pages of content.",
+   "shapes_it_can_show": [
+    "pages"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "NoticeBar",
+   "purpose": "A message about the situation of the app or the user.",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "AlertDialog",
+   "purpose": "A message that needs a decision.",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "ChoiceGroup",
+   "purpose": "Alternatives to choose one or several of.",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "PlanCards",
+   "purpose": "Alternatives with comparable attributes side by side.",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "SuggestList",
+   "purpose": "Candidate values offered for an input.",
+   "shapes_it_can_show": [
+    "suggestions"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "Toast",
+   "purpose": "A short message that disappears.",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "TabBar",
+   "purpose": "Navigation between top-level views.",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "PrimaryButton",
+   "purpose": "The main action of a screen.",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "IconAction",
+   "purpose": "A secondary action shown as an icon.",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "SheetPanel",
+   "purpose": "A panel that holds other content.",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "Divider",
+   "purpose": "A separator between groups.",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  },
+  {
+   "name": "SkeletonBlock",
+   "purpose": "A placeholder while data loads.",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "synthetic: written for the gap-planting test, not a real library",
+   "source_url": "synthetic"
+  }
+ ],
+ "planted_gaps": [
+  "hierarchy",
+  "places",
+  "schedule",
+  "conversation"
+ ],
+ "excluded": [],
+ "notes": "About 25 components used only to plant gaps: no component can show a tree, locations, time or messages, so needs of those shapes must be declared gaps."
+}

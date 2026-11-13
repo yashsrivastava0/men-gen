@@ -85,6 +85,9 @@ class RunResult(Generic[O]):
     repaired: bool = False
     reason: str = ""
     errors: list[str] = field(default_factory=list)
+    first_errors: list[str] = field(
+        default_factory=list
+    )  # what the FIRST answer got wrong (when it was re-asked)
     tokens_in: int = 0
     tokens_out: int = 0
     cost_micros: int = 0
@@ -158,8 +161,18 @@ class CallRunner:
         self._cancel.check()
         errors: list[str] = []
         result: Any = None
+        spent = {"cost": 0, "in": 0, "out": 0}
+
+        def take(r: Any) -> None:
+            """Every attempt that reached the model costs money, whether or not its answer was used."""
+            u = getattr(r, "usage", None)
+            spent["cost"] += int(getattr(u, "cost_micros", 0) or 0)
+            spent["in"] += int(getattr(u, "input_tokens", 0) or 0)
+            spent["out"] += int(getattr(u, "output_tokens", 0) or 0)
+
         try:
             result = await self._once(cs, inp)
+            take(result)
         except PROPAGATE:
             raise
         except (GatewayError, TimeoutError) as exc:
@@ -170,6 +183,7 @@ class CallRunner:
         if out is not None:
             for v in cs.validators:
                 errors.extend(v(inp, out))
+        first_errors = list(errors)
         reasked = False
         if errors and node_ids and not any(self.ledger.has_used(n) for n in node_ids):
             reasked = True
@@ -177,6 +191,7 @@ class CallRunner:
                 self.ledger.mark(n)
             try:
                 result2 = await self._once(cs, inp.model_copy(update={"reask": errors[:20]}))
+                take(result2)
                 out2 = getattr(result2, "output", None)
                 errs2: list[str] = []
                 if out2 is not None:
@@ -188,6 +203,7 @@ class CallRunner:
                 raise
             except (GatewayError, TimeoutError):
                 pass
+        live = getattr(result, "mode", "") == "live"
         if out is None or errors:
             res: RunResult[O] = RunResult(
                 output=cs.fallback(inp),
@@ -196,19 +212,24 @@ class CallRunner:
                 reasked=reasked,
                 reason="; ".join(errors)[:300] or "empty_output",
                 errors=errors,
+                first_errors=first_errors,
+                tokens_in=spent["in"],
+                tokens_out=spent["out"],
+                cost_micros=spent["cost"],
                 latency_ms=int((time.monotonic() - started) * 1000),
+                live=live,
             )
         else:
-            u = getattr(result, "usage", None)
             res = RunResult(
                 output=out,
                 reasked=reasked,
                 repaired=bool(getattr(result, "repaired", False)),
-                tokens_in=int(getattr(u, "input_tokens", 0) or 0),
-                tokens_out=int(getattr(u, "output_tokens", 0) or 0),
-                cost_micros=int(getattr(u, "cost_micros", 0) or 0),
+                first_errors=first_errors,
+                tokens_in=spent["in"],
+                tokens_out=spent["out"],
+                cost_micros=spent["cost"],
                 latency_ms=int((time.monotonic() - started) * 1000),
-                live=getattr(result, "mode", "") == "live",
+                live=live,
                 model="",
             )
         self.calls.append((cs.id, res))

@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "note": "How the developer test turns a recorded gap into a REQUIRED item (doc 16 section 4): a `behaviors` category (V-35) or a `rules` entry. Keywords are matching hints only. A gap that is about layout is rejected, never added (doc 16 section 7: never add layout).",
+  "behaviors": {
+    "interrupted_external_flow": ["interrupted", "killed", "closed the app", "comes back", "returns from", "redirect", "external"],
+    "pending_timeouts": ["timeout", "time out", "pending", "how long", "wait"],
+    "offline": ["offline", "no network", "no connection", "sync"],
+    "errors": ["error", "fails", "failure", "declined", "rejected", "retry"],
+    "permissions": ["permission", "camera", "location", "notification permission", "denied"],
+    "loading": ["loading", "while fetching", "placeholder"],
+    "session": ["session", "sign in", "sign-in", "logged out", "token"],
+    "notifications": ["push", "reminder", "notify"],
+    "lifecycle": ["status", "lifecycle", "transition", "state of the"],
+    "i18n": ["language", "locale", "translation", "currency format", "date format"],
+    "media": ["image", "photo", "upload", "video"]
+  },
+  "rules": ["limit", "fee", "percent", "maximum", "minimum", "how many", "how much", "allowed", "policy", "rule", "number of", "price", "refund"]
+}

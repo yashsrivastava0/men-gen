@@ -1,0 +1,13 @@
+Question: {{ question }}
+
+Records (data):
+{% for r in records %}
+{{ r }}
+{% endfor %}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}

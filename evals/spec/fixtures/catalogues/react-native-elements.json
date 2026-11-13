@@ -1,0 +1,264 @@
+{
+ "library": "React Native Elements",
+ "source_url": "https://reactnativeelements.com/docs",
+ "checked_on": "2026-11-14",
+ "components": [
+  {
+   "name": "Avatar",
+   "purpose": "Avatars are found all over ui design from lists to profile screens.",
+   "source_url": "https://reactnativeelements.com/docs/components/avatar",
+   "shapes_it_can_show": [
+    "media"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "Badge",
+   "purpose": "Badges are small components typically used to communicate a numerical value or indicate the status of an item to the user.",
+   "source_url": "https://reactnativeelements.com/docs/components/badge",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "BottomSheet",
+   "purpose": "Overlay Modal that displays content from the bottom of the screen.",
+   "source_url": "https://reactnativeelements.com/docs/components/bottomsheet",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "container, no data shape"
+  },
+  {
+   "name": "Button",
+   "purpose": "Buttons are touchable elements used to interact with the screen and to perform and operation.",
+   "source_url": "https://reactnativeelements.com/docs/components/button",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "an action"
+  },
+  {
+   "name": "ButtonGroup",
+   "purpose": "ButtonGroup is a linear set of segments, each of which function as a button that can display a different view...",
+   "source_url": "https://reactnativeelements.com/docs/components/buttongroup",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "high",
+   "notes": "the page sentence ends with an ellipsis on the page itself"
+  },
+  {
+   "name": "Card",
+   "purpose": "Cards are a great way to display information, usually containing content and actions about a single subject.",
+   "source_url": "https://reactnativeelements.com/docs/components/card",
+   "shapes_it_can_show": [
+    "collection",
+    "key_values"
+   ],
+   "confidence": "low",
+   "notes": "a container: what it shows depends on its content"
+  },
+  {
+   "name": "CheckBox",
+   "purpose": "CheckBoxes allow users to complete tasks that involve making choices such as selecting options, or switching settings",
+   "source_url": "https://reactnativeelements.com/docs/components/checkbox",
+   "shapes_it_can_show": [
+    "options",
+    "inputs"
+   ],
+   "confidence": "medium",
+   "notes": "the page sentence is cut at the first 125 characters"
+  },
+  {
+   "name": "Chip",
+   "purpose": "Chips are compact elements that represent an input, attribute, or action.",
+   "source_url": "https://reactnativeelements.com/docs/components/chip",
+   "shapes_it_can_show": [
+    "options",
+    "suggestions"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "Dialog",
+   "purpose": "Dialogs inform users about a task and can contain critical information, require decisions, or involve multiple tasks.",
+   "source_url": "https://reactnativeelements.com/docs/components/dialog",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "Divider",
+   "purpose": "Dividers are visual separators of content.",
+   "source_url": "https://reactnativeelements.com/docs/components/divider",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "separator, no data shape"
+  },
+  {
+   "name": "FAB",
+   "purpose": "A floating action button (FAB) performs the primary, or most common, action on a screen.",
+   "source_url": "https://reactnativeelements.com/docs/components/fab",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "an action"
+  },
+  {
+   "name": "Header",
+   "purpose": "Headers are navigation components that display information and actions relating to the current screen.",
+   "source_url": "https://reactnativeelements.com/docs/components/header",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "chrome, no data shape"
+  },
+  {
+   "name": "LinearProgress",
+   "purpose": "Progress indicators inform users about the status of ongoing processes, such as loading an app, submitting a form…",
+   "source_url": "https://reactnativeelements.com/docs/components/linearprogress",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "high",
+   "notes": "progress kind of value"
+  },
+  {
+   "name": "ListItem",
+   "purpose": "ListItems are used to display rows of information, such as a contact list, playlist, or menu.",
+   "source_url": "https://reactnativeelements.com/docs/components/listitem",
+   "shapes_it_can_show": [
+    "collection",
+    "key_values"
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "name": "Overlay",
+   "purpose": "The Overlay is a view that floats above an app’s content.",
+   "source_url": "https://reactnativeelements.com/docs/components/overlay",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "container, no data shape"
+  },
+  {
+   "name": "PricingCard",
+   "purpose": "Pricing is a convenience component used to display features and pricing tables in a beautiful and engaging way.",
+   "source_url": "https://reactnativeelements.com/docs/components/pricingcard",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "medium",
+   "notes": "the plan-chooser case"
+  },
+  {
+   "name": "Skeleton",
+   "purpose": "A placeholder preview for content before the data gets loaded, an alternative for spinners.",
+   "source_url": "https://reactnativeelements.com/docs/components/skeleton",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "a loading state, no data shape"
+  },
+  {
+   "name": "Slider",
+   "purpose": "Sliders allow users to select a value from a fixed set of values using drag utility.",
+   "source_url": "https://reactnativeelements.com/docs/components/slider",
+   "shapes_it_can_show": [
+    "inputs"
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "name": "SpeedDial",
+   "purpose": "When pressed, a floating action button can display three to six related actions in the form of a speed dial.",
+   "source_url": "https://reactnativeelements.com/docs/components/speeddial",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "actions"
+  },
+  {
+   "name": "Switch",
+   "purpose": "Switch represents user's decision of a process and indicates whether a state is on/off.",
+   "source_url": "https://reactnativeelements.com/docs/components/switch",
+   "shapes_it_can_show": [
+    "inputs"
+   ],
+   "confidence": "high",
+   "notes": "toggle input"
+  },
+  {
+   "name": "Tab",
+   "purpose": "Tabs organize content across different screens, data sets, and other interactions.",
+   "source_url": "https://reactnativeelements.com/docs/components/tab",
+   "shapes_it_can_show": [],
+   "confidence": "medium",
+   "notes": "navigation between views"
+  },
+  {
+   "name": "TabView",
+   "purpose": "Tabs organize content across different screens, data sets, and other interactions.",
+   "source_url": "https://reactnativeelements.com/docs/components/tabview",
+   "shapes_it_can_show": [],
+   "confidence": "medium",
+   "notes": "the page repeats the Tab sentence; swipeable tab views"
+  },
+  {
+   "name": "Tile",
+   "purpose": "Tiles like Cards, are a convenient way to display related content about a single subject.",
+   "source_url": "https://reactnativeelements.com/docs/components/tile",
+   "shapes_it_can_show": [
+    "key_values"
+   ],
+   "confidence": "low",
+   "notes": "a container like Card"
+  },
+  {
+   "name": "Tooltip",
+   "purpose": "Tooltips display informative text when users tap on an element.",
+   "source_url": "https://reactnativeelements.com/docs/components/tooltip",
+   "shapes_it_can_show": [],
+   "confidence": "medium",
+   "notes": "no data shape"
+  }
+ ],
+ "excluded": [
+  {
+   "name": "Input",
+   "why": "listed in the documentation sidebar; the first line of its page does not state what it is for (it describes a prop), so no purpose is recorded"
+  },
+  {
+   "name": "SearchBar",
+   "why": "listed in the documentation sidebar; the first line of its page does not state what it is for (it describes a prop), so no purpose is recorded"
+  },
+  {
+   "name": "Rating",
+   "why": "listed in the documentation sidebar; the first line of its page does not state what it is for (it describes a prop), so no purpose is recorded"
+  },
+  {
+   "name": "AirbnbRating",
+   "why": "listed in the documentation sidebar; the first line of its page does not state what it is for (it describes a prop), so no purpose is recorded"
+  },
+  {
+   "name": "Text",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Icon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Image",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "SocialIcon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  }
+ ],
+ "notes": "Component list from the documentation sidebar (54 entries including sub-components); the one-line purpose is the first descriptive sentence of the component page, read on checked_on. shapes_it_can_show is the snapshot author's mapping to mde_spec_core.vocab shapes, with a confidence."
+}

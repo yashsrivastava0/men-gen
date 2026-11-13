@@ -1,0 +1,467 @@
+{
+ "library": "React Native Paper",
+ "source_url": "https://oss.callstack.com/react-native-paper/docs/guides/getting-started",
+ "checked_on": "2026-11-14",
+ "components": [
+  {
+   "name": "ActivityIndicator",
+   "purpose": "Activity indicator is used to present progress of some activity in the app.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/ActivityIndicator",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "medium",
+   "notes": "progress or waiting indicator"
+  },
+  {
+   "name": "Appbar",
+   "purpose": "A component to display action items in a bar.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Appbar/Appbar",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "app chrome: carries actions, shows no data shape"
+  },
+  {
+   "name": "Avatar",
+   "purpose": "Avatars can be used to represent people in a graphical way.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Avatar/AvatarText",
+   "shapes_it_can_show": [
+    "media"
+   ],
+   "confidence": "medium",
+   "notes": "documented through Avatar.Text; Avatar.Icon and Avatar.Image are in the sidebar"
+  },
+  {
+   "name": "Badge",
+   "purpose": "Badges are small status descriptors for UI elements.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Badge",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "medium",
+   "notes": "a flag or count next to something"
+  },
+  {
+   "name": "Banner",
+   "purpose": "Banner displays a prominent message and related actions.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Banner",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "name": "BottomNavigation",
+   "purpose": "BottomNavigation provides quick navigation between top-level views of an app with a bottom navigation bar.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/BottomNavigation/BottomNavigation",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "navigation chrome, no data shape"
+  },
+  {
+   "name": "Button",
+   "purpose": "A button is component that the user can press to trigger an action.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Button/Button",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "an action, not a data shape"
+  },
+  {
+   "name": "Card",
+   "purpose": "A card is a sheet of material that serves as an entry point to more detailed information.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Card/Card",
+   "shapes_it_can_show": [
+    "collection",
+    "key_values"
+   ],
+   "confidence": "low",
+   "notes": "a container: what it shows depends on its content"
+  },
+  {
+   "name": "Checkbox",
+   "purpose": "Checkboxes allow the selection of multiple options from a set.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Checkbox/Checkbox",
+   "shapes_it_can_show": [
+    "options",
+    "inputs"
+   ],
+   "confidence": "medium",
+   "notes": "multi selection"
+  },
+  {
+   "name": "Chip",
+   "purpose": "Chips are compact elements that can represent inputs, attributes, or actions.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Chip/Chip",
+   "shapes_it_can_show": [
+    "options",
+    "suggestions"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "DataTable",
+   "purpose": "Data tables allow displaying sets of data.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/DataTable/DataTable",
+   "shapes_it_can_show": [
+    "collection"
+   ],
+   "confidence": "high",
+   "notes": "the comparable-columns case of collection (columns 2 or more); pagination part exists"
+  },
+  {
+   "name": "Dialog",
+   "purpose": "Dialogs inform users about a specific task and may contain critical information, require decisions, or involve multiple tasks",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Dialog/Dialog",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "medium",
+   "notes": "the page sentence is quoted without its final period"
+  },
+  {
+   "name": "Divider",
+   "purpose": "A divider is a thin, lightweight separator that groups content in lists and page layouts.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Divider",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "separator, no data shape"
+  },
+  {
+   "name": "Drawer.Item",
+   "purpose": "A component used to show an action item with an icon and a label in a navigation drawer.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Drawer/DrawerItem",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "navigation chrome"
+  },
+  {
+   "name": "FAB",
+   "purpose": "A floating action button represents the primary action on a screen.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/FAB/FAB",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "an action"
+  },
+  {
+   "name": "HelperText",
+   "purpose": "Helper text is used in conjuction with input elements to provide additional hints for the user.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/HelperText/HelperText",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "low",
+   "notes": "a hint tied to an input"
+  },
+  {
+   "name": "IconButton",
+   "purpose": "An icon button is a button which displays only an icon without a label.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/IconButton/IconButton",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "an action"
+  },
+  {
+   "name": "List.Item",
+   "purpose": "A component to show tiles inside a List.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/List/ListItem",
+   "shapes_it_can_show": [
+    "collection",
+    "key_values"
+   ],
+   "confidence": "high",
+   "notes": "rows of items; also settings rows"
+  },
+  {
+   "name": "Menu",
+   "purpose": "Menus display a list of choices on temporary elevated surfaces.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Menu/Menu",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "Modal",
+   "purpose": "The Modal component is a simple way to present content above an enclosing view.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Modal",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "container, no data shape"
+  },
+  {
+   "name": "ProgressBar",
+   "purpose": "Progress bar is an indicator used to present progress of some activity in the app.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/ProgressBar",
+   "shapes_it_can_show": [
+    "value"
+   ],
+   "confidence": "high",
+   "notes": "progress kind of value"
+  },
+  {
+   "name": "RadioButton",
+   "purpose": "Radio buttons allow the selection a single option from a set.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/RadioButton/RadioButton",
+   "shapes_it_can_show": [
+    "options",
+    "inputs"
+   ],
+   "confidence": "high",
+   "notes": "single selection"
+  },
+  {
+   "name": "Searchbar",
+   "purpose": "Searchbar is a simple input box where users can type search queries.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Searchbar",
+   "shapes_it_can_show": [
+    "inputs"
+   ],
+   "confidence": "medium",
+   "notes": "no suggestions list is described on the page"
+  },
+  {
+   "name": "SegmentedButtons",
+   "purpose": "Segmented buttons can be used to select options, switch views or sort elements.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/SegmentedButtons/SegmentedButtons",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "name": "Snackbar",
+   "purpose": "Snackbars provide brief feedback about an operation through a message rendered at the bottom of the container",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Snackbar",
+   "shapes_it_can_show": [
+    "notice"
+   ],
+   "confidence": "high",
+   "notes": "the page sentence is quoted without its final period"
+  },
+  {
+   "name": "Surface",
+   "purpose": "Surface is a basic container that can give depth to an element with elevation shadow.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Surface",
+   "shapes_it_can_show": [],
+   "confidence": "high",
+   "notes": "container, no data shape"
+  },
+  {
+   "name": "Switch",
+   "purpose": "Switch is a visual toggle between two mutually exclusive states — on and off.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Switch/Switch",
+   "shapes_it_can_show": [
+    "inputs"
+   ],
+   "confidence": "high",
+   "notes": "toggle input"
+  },
+  {
+   "name": "TextInput",
+   "purpose": "A component to allow users to input text.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/TextInput/TextInput",
+   "shapes_it_can_show": [
+    "inputs"
+   ],
+   "confidence": "high",
+   "notes": ""
+  },
+  {
+   "name": "ToggleButton",
+   "purpose": "Toggle buttons can be used to group related options.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/ToggleButton/ToggleButton",
+   "shapes_it_can_show": [
+    "options"
+   ],
+   "confidence": "medium",
+   "notes": ""
+  },
+  {
+   "name": "Tooltip",
+   "purpose": "Tooltips display informative text when users hover over, focus on, or tap an element.",
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/components/Tooltip/Tooltip",
+   "shapes_it_can_show": [],
+   "confidence": "medium",
+   "notes": "hover is not a phone interaction (V-37): no data shape"
+  }
+ ],
+ "excluded": [
+  {
+   "name": "Text",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Icon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Portal",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "TouchableRipple",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Appbar.Action",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Appbar.BackAction",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Appbar.Content",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Appbar.Header",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Avatar.Icon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Avatar.Image",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "BottomNavigation.Bar",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Card.Actions",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Card.Content",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Card.Cover",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Card.Title",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Checkbox.Item",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "DataTable.Cell",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "DataTable.Header",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "DataTable.Pagination",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "DataTable.Row",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "DataTable.Title",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Dialog.Actions",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Dialog.Content",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Dialog.Icon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Dialog.ScrollArea",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Dialog.Title",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Drawer.CollapsedItem",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Drawer.Section",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "AnimatedFAB",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "FAB.Group",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "List.Accordion",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "List.AccordionGroup",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "List.Icon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "List.Section",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "List.Subheader",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Menu.Item",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "Portal.Host",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "RadioButton.Group",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "RadioButton.Item",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "TextInput.Affix",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "TextInput.Icon",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "ToggleButton.Group",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  },
+  {
+   "name": "ToggleButton.Row",
+   "why": "listed in the documentation sidebar; its page was not read for this snapshot"
+  }
+ ],
+ "notes": "Component list from the documentation sidebar; the one-line purpose of each entry is the first sentence of its documentation page, read on checked_on. Sub-components (the dotted names) are parts of the listed parents. shapes_it_can_show is the snapshot author's mapping to mde_spec_core.vocab shapes (never the library's claim); confidence says how sure the mapping is."
+}

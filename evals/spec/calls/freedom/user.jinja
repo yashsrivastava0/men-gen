@@ -1,0 +1,14 @@
+Screen {{ screen_id }}
+Style seed: {{ style_seed }}
+Closed list of arrangements: {{ arrangements | join(", ") }}
+Region keys: {{ region_keys | join(", ") }}
+
+Card (data):
+{{ card }}
+{% if reask %}
+
+Your last answer failed these checks. Fix exactly these and return the whole answer again:
+{% for e in reask %}
+- {{ e }}
+{% endfor %}
+{% endif %}

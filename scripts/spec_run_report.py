@@ -46,6 +46,8 @@ def report(run: Path) -> dict:
         k["repaired"] += 1 if d.get("repaired") else 0
         k["fallback"] += 1 if d.get("fallback") else 0
         k["clean"] = k.get("clean", 0) + (0 if (d.get("repaired") or d.get("fallback")) else 1)
+        if d.get("first_errors"):
+            k.setdefault("first_errors", []).extend(d["first_errors"][:2])
         if d.get("fallback") and d.get("reason"):
             k.setdefault("reasons", []).append(d["reason"][:160])
         k["tokens_in"] += int((d.get("tokens") or {}).get("in", 0))
