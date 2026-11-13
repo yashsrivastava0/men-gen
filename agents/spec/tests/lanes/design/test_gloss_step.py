@@ -11,7 +11,6 @@ from mde_spec_agent.lanes.design import design, gloss
 from mde_spec_agent.lanes.design.gloss_l.schema import GlossEntry, GlossIn, GlossItem, GlossOut
 from mde_spec_agent.lanes.design.gloss_l.validate import validate
 from mde_spec_agent.lanes.design.step_gloss import (
-    DEGRADED_FACT,
     KEY_PREFIX,
     flat_glossary,
     leaf_texts,
@@ -53,7 +52,7 @@ async def test_multi_language_glossary_is_one_call_and_lands_in_glossary_and_loc
     assert "en" in g.locale_copy  # the baseline's own source copy is untouched
     assert not any(k.startswith(KEY_PREFIX) for k in g.locale_copy["en"])
     assert not [f for f in ctx.flags if f["kind"] == "degraded_locales"]
-    assert DEGRADED_FACT not in g.meta.facts
+    assert not g.meta.degraded_locales
 
 
 async def test_entity_entries_keep_their_structure_per_language(env):
@@ -121,7 +120,7 @@ async def test_failure_after_the_reask_uses_the_briefs_terms_and_marks_the_local
     )
     (flag,) = [f for f in ctx.flags if f["kind"] == "degraded_locales"]
     assert flag["locales"] == ["mr", "hi"]
-    assert DEGRADED_FACT in g.meta.facts
+    assert set(g.meta.degraded_locales) == set(flag["locales"])
     # the degraded flag is not a validator error anywhere in gate 1
     assert [f for f in run_all(make_context(g), gate=1) if f.where.startswith("glossary")] == []
 
