@@ -54,3 +54,7 @@ RV-01..RV-23 in `validators/registry.py`, one pass test and one fail test each. 
 ## Page budget, region scope and number repair (2026-11-11)
 
 A page is one the run READ: an unreadable page is refunded, a spare replaces it, and a run that runs out of pages is `partial` with a `pages_exhausted` warning (D-144). Each topic template has a region scope (`city`, `country`, `none`) in `data/jobs/*.yaml` (D-146). Double-encoded page text is repaired exactly (D-145). An unverified figure is dropped, not the item, for the kinds in `data/figure_drop.yaml` only (D-149). `python -m mde_research_agent.compare OLD NEW` is the quality gate for any discovery change (D-143).
+
+## Discovery and planning (research-depth P4, 2026-11-13)
+
+Risk topics (regulation, integrations, identity, data protection, payments) run outside the topic cap; ceilings and caps are data (D-163); a topic about a named thing with no public footprint leaves the required-slot gate; official-first query variants, a provider's own-site follow-up, both search engines on vendor topics, authority registries with `fetch` and `verified_on`, `official_inferred` sources, one topic per country and numbers across languages and currencies are described in [research-agent/discovery-and-planning.md](../research-agent/discovery-and-planning.md).
