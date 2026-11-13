@@ -145,3 +145,55 @@ def test_retry_after_reads_seconds_and_dates_and_ignores_the_rest() -> None:
     )
     for junk in (None, "", "soon", "-5", "9" * 30):
         assert retry_after_seconds(junk) is None
+
+
+async def test_text_extraction_runs_a_few_at_a_time_and_does_not_count_against_the_request_timeout(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """Ten pages extracted at once fight for the interpreter lock and time every fetch out (live Big run, 2026-11-13):
+    extraction is bounded, and a slow extraction is not a network timeout."""
+    import asyncio
+    import threading
+    import time
+
+    from mde_research_agent.adapters.fetch import http as http_mod
+
+    real = http_mod.extract_body
+    lock = threading.Lock()
+    state = {"now": 0, "peak": 0}
+
+    def slow_extract(*args: object, **kwargs: object):  # type: ignore[no-untyped-def]
+        with lock:
+            state["now"] += 1
+            state["peak"] = max(state["peak"], state["now"])
+        time.sleep(0.15)  # longer than the 0.1 s request timeout below
+        with lock:
+            state["now"] -= 1
+        return real(*args, **kwargs)  # type: ignore[arg-type]
+
+    monkeypatch.setattr(http_mod, "extract_body", slow_extract)
+
+    def route(request: httpx.Request) -> httpx.Response:
+        if request.url.path == "/robots.txt":
+            return httpx.Response(
+                200, text="User-agent: *\nAllow: /\n", headers={"content-type": "text/plain"}
+            )
+        return httpx.Response(200, text=BODY, headers={"content-type": "text/html; charset=utf-8"})
+
+    async with httpx.AsyncClient(
+        transport=httpx.MockTransport(route), follow_redirects=False
+    ) as client:
+        fetcher = HttpFetcher(
+            client=client,
+            resolver=_public,
+            timeout=0.1,
+            total_timeout=5.0,
+            extract_concurrency=2,
+            per_host_concurrency=8,
+            retries=0,
+        )
+        pages = await asyncio.gather(
+            *[fetcher.fetch(f"https://h{i}.example.com/p") for i in range(8)]
+        )
+    assert all(p.ok for p in pages), [p.reason for p in pages]
+    assert state["peak"] <= 2

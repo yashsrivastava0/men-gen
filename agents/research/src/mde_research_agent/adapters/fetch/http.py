@@ -184,6 +184,8 @@ class HttpFetcher:
         min_text_chars: int = 200,
         max_redirects: int = 5,
         per_host_concurrency: int = 2,
+        total_timeout: float = 40.0,
+        extract_concurrency: int = 3,
         retries: int = 1,
         retry_backoff_s: float = 0.5,
         retry_after_cap_s: float = 10.0,
@@ -197,7 +199,11 @@ class HttpFetcher:
         self._client = client
         self._resolver: Resolver = resolver or system_resolver
         self._user_agent = user_agent
-        self._timeout = timeout
+        self._timeout = timeout  # each network request (connect, read); the page as a whole may take ``total_timeout``
+        self._total_timeout = max(total_timeout, timeout)
+        # Text extraction runs in threads and is CPU-bound: ten at once fight for the interpreter lock, slow the event
+        # loop and time every fetch out (first live Big run, 2026-11-13: 347 timeouts, 27 pages read of 335 tried).
+        self._extract_sem = asyncio.Semaphore(max(1, extract_concurrency))
         self._robots_timeout = robots_timeout
         self._max_bytes = max_bytes
         self._max_pdf_pages = max_pdf_pages
@@ -273,7 +279,7 @@ class HttpFetcher:
     async def _fetch_once(self, url: str) -> FetchedPage:
         state = _State(url=url, final_url=url)
         try:
-            async with self._host_slot(url), asyncio.timeout(self._timeout):
+            async with self._host_slot(url), asyncio.timeout(self._total_timeout):
                 return await self._fetch(state)
         except _Skip as skip:
             return state.failed(skip.reason)
@@ -336,14 +342,15 @@ class HttpFetcher:
         body, sniffed = await self._read_body(state, response, sniff=sniff)
         if sniffed:
             media = state.content_type = sniffed
-        extracted = await asyncio.to_thread(
-            extract_body,
-            body,
-            media,
-            charset,
-            max_pages=self._max_pdf_pages,
-            max_chars=self._max_chars,
-        )
+        async with self._extract_sem:
+            extracted = await asyncio.to_thread(
+                extract_body,
+                body,
+                media,
+                charset,
+                max_pages=self._max_pdf_pages,
+                max_chars=self._max_chars,
+            )
         state.title, state.published = extracted.title, extracted.published
         text = extracted.text
         if len(text) < self._min_text_chars:
