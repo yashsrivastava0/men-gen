@@ -135,8 +135,8 @@ def load_guard(root: Path = ROOT) -> Guard:
     """The patterns of ``tests/security`` (the guard tests stay the single source). Missing: no export at all."""
     security = root / "tests" / "security"
     try:
-        live = _load_module("_spec_export_guard_live", security / "test_single_live_switch.py")
-        hygiene = _load_module("_spec_export_guard_hygiene", security / "test_repo_hygiene.py")
+        live = _load_module("_spec_export_guard_single", security / "test_single_live_switch.py")
+        hygiene = _load_module("_spec_export_guard_repo", security / "test_repo_hygiene.py")
     except (OSError, ImportError, SyntaxError) as exc:
         raise ExportError(
             f"the safety check needs the repo's guard tests in {security}: {exc.__class__.__name__}: {exc}"
