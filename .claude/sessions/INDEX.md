@@ -1,7 +1,7 @@
 # Chat session index (generated; newest first)
 
-- [20261114_5ea5d75b.md](log/20261114_5ea5d75b.md) — Claude Code session sync  (6 KB)
-- [20261113_e90a88de.md](log/20261113_e90a88de.md) — build-spec-agent  (1094 KB)
+- [20261114_5ea5d75b.md](log/20261114_5ea5d75b.md) — Claude Code session sync  (7 KB)
+- [20261113_e90a88de.md](log/20261113_e90a88de.md) — build-spec-agent  (1101 KB)
 - [20261113_96e3f573.md](log/20261113_96e3f573.md) — merge-main-and-prune-branches  (8 KB)
 - [20261112_06263737.md](log/20261112_06263737.md) — model-vendor-independence-claude  (334 KB)
 - [20261111_d540afac.md](log/20261111_d540afac.md) — Research agent cost and yield review  (84 KB)
