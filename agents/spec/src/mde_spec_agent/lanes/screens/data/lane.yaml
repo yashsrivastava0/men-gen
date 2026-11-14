@@ -83,6 +83,7 @@ behav_mock:
   default: "Applies as stated for this app: {what}."
 
 # What the G2 summary template says (FN-29): the model paragraph is omitted, never invented, when the call fails.
+g2_max_words: 110               # the paragraph limit; the call is told it with the word count, code trims at a sentence
 g2_template:
   headline: "{screens} screens in this release across {apps} app(s), {entities} entities, {operations} operations, {languages} language(s)."
   lines:

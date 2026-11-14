@@ -65,4 +65,31 @@ def test_validator_rules():
     assert validate(inp, G2Out(paragraph="a\nb"))
     assert validate(inp, G2Out(paragraph="about 99 screens"))
     assert validate(inp, G2Out(paragraph=""))
-    assert validate(inp, G2Out(paragraph=" ".join(["word"] * 200)))
+    assert (
+        validate(inp, G2Out(paragraph=" ".join(["word"] * 200))) == []
+    )  # length is trimmed by code, not re-asked
+
+
+def test_trim_cuts_at_the_last_whole_sentence_within_the_limit():
+    from mde_spec_agent.lanes.screens.g2_summary.validate import trim_paragraph
+
+    text = "One two three. Four five six seven. Eight nine ten eleven twelve."
+    assert trim_paragraph(text, 20) == text
+    assert trim_paragraph(text, 8) == "One two three. Four five six seven."
+    assert trim_paragraph(text, 3) == "One two three."
+    assert trim_paragraph("word " * 50, 5) == "word word word word word."
+
+
+def test_a_too_long_paragraph_is_trimmed_not_dropped(fresh, monkeypatch):
+    run = fresh("quick")
+    sentence = "This release has many screens. "
+
+    def handle(inp):
+        return G2Out(paragraph=(sentence * 40).strip())
+
+    monkeypatch.setattr(g2_mock, "handle", handle)
+    asyncio.run(g2summary_step(run.ctx))
+    s = run.ctx.plan["g2_summary"]
+    assert s["paragraph_source"] == "model"
+    assert len(s["paragraph"].split()) <= 110 and s["paragraph"].endswith(".")
+    assert not [f for f in run.ctx.flags if f["kind"] == "degraded"]

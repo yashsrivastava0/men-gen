@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from mde_spec_agent.lanes.screens.common import call_versions
+from mde_spec_agent.lanes.screens.common import call_versions, lane_rules
 from mde_spec_agent.lanes.screens.g2_summary.schema import G2In, NumIn
 from mde_spec_agent.lanes.screens.g2_summary.spec import (
     CALL_ID,
@@ -20,6 +20,7 @@ from mde_spec_agent.lanes.screens.g2_summary.spec import (
     prompt_version,
 )
 from mde_spec_agent.lanes.screens.g2_summary.tables import build_tables, template_summary
+from mde_spec_agent.lanes.screens.g2_summary.validate import trim_paragraph
 from mde_spec_agent.run.context import RunContext
 from mde_spec_agent.run.patch import Patch
 from mde_spec_core.canon import canonical_json
@@ -47,7 +48,9 @@ def _input(language: str, tables: dict[str, Any]) -> G2In:
         for c in tables["confirm"][:5]
     ]
     lines += [f"needs a decision: {d['node']}: {d['why']}" for d in tables["needs_decision"][:3]]
-    return G2In(language=language, numbers=numbers, lines=lines)
+    return G2In(
+        language=language, numbers=numbers, lines=lines, max_words=lane_rules().g2_max_words
+    )
 
 
 async def g2summary_step(ctx: RunContext) -> None:
@@ -76,7 +79,9 @@ async def g2summary_step(ctx: RunContext) -> None:
         omitted = res.used_fallback or not res.output.paragraph.strip()
         return {
             "g2_summary": {
-                "paragraph": None if omitted else " ".join(res.output.paragraph.split()),
+                "paragraph": None
+                if omitted
+                else trim_paragraph(res.output.paragraph, inp.max_words),
                 "paragraph_source": "omitted" if omitted else "model",
                 "reason": res.reason if omitted else "",
             }

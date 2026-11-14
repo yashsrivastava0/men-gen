@@ -23,6 +23,7 @@ class G2Out(W):
 class G2In(CallInput):
     language: str
     numbers: list[NumIn]
+    max_words: int = 110  # the paragraph limit, stated in the prompt
     lines: list[
         str
     ]  # what differs from the Brief, the top items to confirm, what is assumed or degraded

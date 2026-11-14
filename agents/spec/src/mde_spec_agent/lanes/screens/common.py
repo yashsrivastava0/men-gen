@@ -56,6 +56,7 @@ class LaneRules(_M):
     accessibility: dict[str, str]
     behav_mock: dict[str, str]
     g2_template: dict[str, Any]
+    g2_max_words: int
 
 
 @cache
