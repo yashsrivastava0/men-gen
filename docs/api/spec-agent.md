@@ -43,7 +43,7 @@ nothing from `mde_flow`, `context-api`, `web` or any other agent. Design: `docs/
 | `POST /api/runs/{id}/stop` | graceful stop (checkpoint, `partial`) |
 | `POST /api/runs/{id}/resume` | continue from the last checkpoint; ends with the same bytes as an uninterrupted run |
 | `POST /api/runs/{id}/g15` | `{decision: approve\|change, moves[]?, everything_in_one_release?: bool}` records the consent (the I-4 override record) |
-| `POST /api/runs/{id}/g2` | `{decision: approve, content_hash}`; binds the content hash; refused when the pack has a missing builder need |
+| `POST /api/runs/{id}/g2` | `{decision: approve, content_hash}`; binds the content hash; refused when the pack has a missing builder need When any check of the gate-3 report failed with blocker status the approval is refused (`gate_required`, with `blocking_checks`, up to 20, and `blocking_checks_total`) unless the body carries `acknowledge_blockers: true`; the acknowledgement is recorded in the gate record as `acknowledged_blockers` (code and where). `GET /views/g2` lists them as `blocking_checks`. |
 
 ### `spec.event.v1`
 `run.queued`, `run.started`, `plan.ready`, `step.started`, `step.finished`, `call.finished` (kind, tokens, cost_micros, repaired), `validators.done`

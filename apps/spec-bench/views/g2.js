@@ -19,6 +19,7 @@ export function mount(root, ctx, route) {
   let result = null;
   let busy = false;
   let shown = SHOW_FIRST;
+  let ack = false; // "I have read the failed checks and approve anyway" (recorded with the approval)
   const choice = new Map(); // suggestion id -> included (true) or left out (false)
 
   async function load() {
@@ -45,6 +46,7 @@ export function mount(root, ctx, route) {
     draw();
     const payload = { decision: "approve", content_hash: String(view.content_hash || "") };
     if (choice.size) payload.suggestion_choices = Object.fromEntries(Array.from(choice.entries()));
+    if (ack) payload.acknowledge_blockers = true;
     try {
       await ctx.api.post(ctx.api.runPath(id) + "/g2", payload);
       result = { ok: true };
@@ -131,7 +133,9 @@ export function mount(root, ctx, route) {
     kids.push(card("Risks", risks.length ? h("ul", null, risks.map((r) => h("li", { class: "risk-" + severityTone(r && r.severity) }, untrusted(textOf(r && typeof r === "object" ? r.text || r.risk || r.title : r))))) : h("p", { class: "muted" }, "No risks listed.")));
 
     const blocking = texts(view.blocking_needs || view.missing_needs);
-    const refuseWhy = !open ? "The spec is not waiting for approval right now (" + (snap.status || "unknown") + ")." : !hash ? "The spec has no content hash yet." : blocking.length ? "The pack is missing something the front end needs, so it cannot be approved yet." : "";
+    const failed = arr(view.blocking_checks);
+    const failedTotal = typeof view.blocking_checks_total === "number" ? view.blocking_checks_total : failed.length;
+    const refuseWhy = !open ? "The spec is not waiting for approval right now (" + (snap.status || "unknown") + ")." : !hash ? "The spec has no content hash yet." : blocking.length ? "The pack is missing something the front end needs, so it cannot be approved yet." : failedTotal && !ack ? "Some checks failed as blockers. Read them above and tick the box if you accept them." : "";
     if (result && !result.ok) kids.push(problemBanner(result.problem));
     kids.push(
       card(
@@ -139,6 +143,15 @@ export function mount(root, ctx, route) {
         statusChip(snap.status),
         facts([["Content hash this approval binds", hash ? h("code", null, hash) : "none yet"]]),
         blocking.length ? h("div", null, h("p", { class: "tone-bad" }, "Missing for the front end:"), bullets(blocking)) : null,
+        failedTotal
+          ? h(
+              "div",
+              { class: "block", "data-fk": "failed-checks" },
+              h("p", { class: "tone-bad" }, failedTotal + " check" + (failedTotal === 1 ? "" : "s") + " failed as blockers" + (failed.length < failedTotal ? " (the first " + failed.length + " are listed)" : "") + ":"),
+              genericTable(failed, { cols: ["code", "where", "why", "fix"] }),
+              h("label", { class: "row" }, h("input", { type: "checkbox", checked: ack, "data-fk": "g2-ack", onchange: (e) => { ack = !!e.target.checked; draw(); } }), h("span", null, "I have read these checks and approve anyway. This is recorded with my approval."))
+            )
+          : null,
         h("div", { class: "actions row" }, h("button", { type: "button", class: "btn btn-primary", "data-fk": "g2-approve", disabled: busy || !!refuseWhy, onclick: approve }, busy ? "Approving…" : "Approve this spec"), navLink("#/run/" + id, "Back to the live run", "btn")),
         refuseWhy ? h("p", { class: "why-off" }, refuseWhy) : null
       )

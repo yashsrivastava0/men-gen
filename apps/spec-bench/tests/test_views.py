@@ -618,6 +618,32 @@ out({ first, label, second: byClass(v.box, "contentmap").length });
     assert r == {"first": 25, "label": "Show 25 more (35 left)", "second": 50}
 
 
+def test_g2_failed_checks_must_be_read_and_acknowledged_before_approving() -> None:
+    r = node(
+        """
+const checks = [{ code: "V-37", where: "SCR-001", why: "a gross mobile-fit breach", fix: "split the screen" }, { code: "V-04", where: "SCR-009", why: "a dead end", fix: "declare an exit" }];
+const routes = { "GET /api/runs/run_01": { status: "awaiting_g2", gates: { g2: "open" } }, "GET /api/runs/run_01/views/g2": G2({ blocking_checks: checks, blocking_checks_total: 2 }), "POST /api/runs/run_01/g2": {} };
+const v = await mountView("g2", { name: "g2", id: "run_01" }, routes);
+await until(() => byFk(v.box, "g2-approve"));
+const panel = flat(byFk(v.box, "failed-checks"));
+const offBefore = byFk(v.box, "g2-approve").disabled;
+const why = flat(find(v.box, (n) => has(n, "why-off")));
+await byFk(v.box, "g2-ack").change(true);
+const offAfter = byFk(v.box, "g2-approve").disabled;
+await byFk(v.box, "g2-approve").click();
+const clean = await mountView("g2", { name: "g2", id: "run_01" }, { ...routes, "GET /api/runs/run_01/views/g2": G2() });
+await until(() => byFk(clean.box, "g2-approve"));
+out({ panel, offBefore, why, offAfter, posts: posts(v.log), cleanHasPanel: !!byFk(clean.box, "failed-checks"), cleanOff: byFk(clean.box, "g2-approve").disabled });
+"""
+    )
+    assert "2 checks failed as blockers" in r["panel"] and "V-37" in r["panel"]
+    assert "split the screen" in r["panel"] and "SCR-009" in r["panel"]
+    assert r["offBefore"] is True and "tick the box" in r["why"]
+    assert r["offAfter"] is False
+    assert r["posts"][0][1]["acknowledge_blockers"] is True
+    assert r["cleanHasPanel"] is False and r["cleanOff"] is False
+
+
 # ------------------------------------------------------------------------------------------------ poisoned text
 def test_markup_in_pack_text_reaches_the_page_as_text_only() -> None:
     r = node(

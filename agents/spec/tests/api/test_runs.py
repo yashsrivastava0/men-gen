@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 import time
 from collections.abc import Callable
 from typing import Any
@@ -196,6 +197,59 @@ def test_g2_is_refused_while_blocking_needs_exist(
     err = res.json()["error"]
     assert err["code"] == "gate_required" and err["blocking_needs"] == ["BN-03"] and err["fix"]
     assert client.get(f"/api/runs/{snap['id']}").json()["status"] == "awaiting_g2"
+
+
+def _plant_blocker(service: SpecService, run_id: str) -> None:
+    raw = json.loads(service.store.read_text(run_id, "evidence/self-check.json"))
+    raw["errors"].append(
+        {
+            "code": "V-37",
+            "where": "SCR-001",
+            "why": "a gross mobile-fit breach",
+            "fix": "split the screen",
+            "severity": "blocker",
+            "repair": "B",
+        }
+    )
+    service.store.write_text(run_id, "evidence/self-check.json", json.dumps(raw))
+
+
+def test_g2_with_failed_blocker_checks_needs_an_explicit_recorded_acknowledgement(
+    service: SpecService, client: TestClient, start: Callable[..., Snap]
+) -> None:
+    snap = start(YOGA)
+    rid, h = snap["id"], snap["content_hash"]
+    _plant_blocker(service, rid)
+    view = client.get(f"/api/runs/{rid}/views/g2").json()
+    assert view["blocking_checks_total"] == 1 and view["blocking_checks"][0]["code"] == "V-37"
+    refused = client.post(f"/api/runs/{rid}/g2", json={"decision": "approve", "content_hash": h})
+    assert refused.status_code == 409
+    err = refused.json()["error"]
+    assert err["code"] == "gate_required" and "V-37" in err["message"] and err["fix"]
+    assert err["blocking_checks"][0]["where"] == "SCR-001" and err["blocking_checks_total"] == 1
+    assert client.get(f"/api/runs/{rid}").json()["status"] == "awaiting_g2"
+    ok = client.post(
+        f"/api/runs/{rid}/g2",
+        json={"decision": "approve", "content_hash": h, "acknowledge_blockers": True},
+    )
+    assert ok.status_code == 200 and ok.json()["status"] == "approved"
+    record = client.get(f"/api/runs/{rid}").json()["gate_records"]["g2"]
+    assert record["acknowledged_blockers"] == [{"code": "V-37", "where": "SCR-001"}]
+
+
+def test_g2_without_blockers_needs_no_acknowledgement(
+    client: TestClient, start: Callable[..., Snap]
+) -> None:
+    snap = start(YOGA)
+    view = client.get(f"/api/runs/{snap['id']}/views/g2").json()
+    assert view["blocking_checks"] == [] and view["blocking_checks_total"] == 0
+    ok = client.post(
+        f"/api/runs/{snap['id']}/g2",
+        json={"decision": "approve", "content_hash": snap["content_hash"]},
+    )
+    assert ok.status_code == 200
+    record = client.get(f"/api/runs/{snap['id']}").json()["gate_records"]["g2"]
+    assert "acknowledged_blockers" not in record
 
 
 def test_stop_then_resume_ends_with_the_same_bytes_as_an_uninterrupted_run(

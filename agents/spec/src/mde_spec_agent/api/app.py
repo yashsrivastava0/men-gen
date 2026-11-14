@@ -89,6 +89,7 @@ class G2Body(BaseModel):
     decision: str = "approve"
     content_hash: str = ""
     suggestion_choices: dict[str, bool] | None = None
+    acknowledge_blockers: bool = False  # approve although some checks failed as blockers (recorded)
 
 
 class ProbeBody(BaseModel):

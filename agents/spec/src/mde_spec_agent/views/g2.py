@@ -604,6 +604,16 @@ def g2(
         for n in cd.get("builder_needs", {}).get("needs", [])
         if n.get("status") == "missing"
     ]
+    blocking_checks = [
+        {
+            "code": str(e.get("code", "")),
+            "where": str(e.get("where", "")),
+            "why": str(e.get("why", "")),
+            "fix": str(e.get("fix", "")),
+        }
+        for e in cd.get("errors", [])
+        if isinstance(e, dict) and e.get("severity") == "blocker"
+    ]
     content_hash = (
         getattr(pack, "content_hash", None) or manifest.get("content_hash") or graph.content_hash()
     )
@@ -654,4 +664,7 @@ def g2(
         ],
         "verify": _verify_block(verify),
         "blocking_needs": blocking,
+        # checks that failed with blocker status: approving needs an explicit, recorded acknowledgement
+        "blocking_checks": blocking_checks[:MAX_LISTED],
+        "blocking_checks_total": len(blocking_checks),
     }

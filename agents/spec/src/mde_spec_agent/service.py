@@ -1157,6 +1157,18 @@ class SpecService:
         needs = (raw.get("builder_needs") or {}).get("needs", [])
         return [str(n.get("id")) for n in needs if n.get("status") == "missing"]
 
+    def blocking_checks(self, run_id: str) -> list[dict[str, str]]:
+        """Checks of the gate-3 report that failed with blocker status (code, where, why, fix), in report order."""
+        try:
+            raw = json.loads(self.store.read_text(run_id, "evidence/self-check.json"))
+        except (StoreNotFound, ValueError):
+            return []
+        return [
+            {k: str(e.get(k, "")) for k in ("code", "where", "why", "fix")}
+            for e in raw.get("errors", [])
+            if isinstance(e, dict) and e.get("severity") == "blocker"
+        ]
+
     def approve_g2(
         self, run_id: str, content_hash: str, payload: dict[str, Any] | None = None
     ) -> dict[str, Any]:
@@ -1181,7 +1193,22 @@ class SpecService:
                 "Reload the page and approve the version you see.",
                 content_hash=rec.get("content_hash"),
             )
+        blockers = self.blocking_checks(run_id)
+        acknowledged = bool((payload or {}).get("acknowledge_blockers"))
+        if blockers and not acknowledged:
+            codes = sorted({b["code"] for b in blockers if b["code"]})
+            raise GateRequired(
+                f"{len(blockers)} check(s) failed with blocker status ({', '.join(codes) or 'see the list'}).",
+                "Read them on the spec review page. If you accept them, tick the box to approve anyway: "
+                "your acknowledgement is recorded with the approval.",
+                blocking_checks=blockers[:20],
+                blocking_checks_total=len(blockers),
+            )
         record: dict[str, Any] = {"content_hash": content_hash, "at": self.clock.now().isoformat()}
+        if blockers:
+            record["acknowledged_blockers"] = [
+                {"code": b["code"], "where": b["where"]} for b in blockers
+            ]
         choices = (payload or {}).get("suggestion_choices")
         if isinstance(choices, dict):
             record["suggestion_choices"] = {str(k): bool(v) for k, v in choices.items()}
