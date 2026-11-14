@@ -165,7 +165,7 @@ async def screens_step(ctx: RunContext) -> None:
     for p in patches:
         ctx.apply(p)
         ctx.flags.extend(p.get("flags", []))
-        log_rcode(ctx, p.get("rcode", []))
+        log_rcode(ctx, p.get("rcode", []), step="screens")
     degraded = sum(1 for i in ids if ctx.graph.screens[i].degraded)
     ctx.emit(
         "notice",

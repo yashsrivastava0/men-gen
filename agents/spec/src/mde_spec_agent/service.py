@@ -33,7 +33,7 @@ from mde_core.clock import Clock, SystemClock
 from mde_core.errors import CircuitOpen
 from mde_core.logging import get_logger
 from mde_core.settings import Settings, load_settings
-from mde_llm_gateway.factory import route_problems
+from mde_llm_gateway.factory import route_problems, routes_share_vendor
 from mde_spec_agent.bench.autoselect import SIZES, auto_select, research_matches
 from mde_spec_agent.bench.inputs import (
     CompassEntry,
@@ -841,9 +841,32 @@ class SpecService:
         profile = rec.get("profile") or "standard"
         if ctx.runner is not None and verify_enabled(self.cfg, profile):
             ctx.verify = load_verify_port(
-                _RunnerCall(ctx.runner), self.cfg, profile=profile, critic_vendor="same"
+                _RunnerCall(ctx.runner),
+                self.cfg,
+                profile=profile,
+                critic_vendor=self.critic_vendor(),
             )
         return ctx
+
+    # The routes Verify's critic calls name (their call specs) and the routes the writer lanes name. Names of routes
+    # only: the gateway says whether two routes share a vendor (rule 14: this code never sees a model or vendor name).
+    CRITIC_ROUTES = ("standard",)
+    WRITER_ROUTES = ("deep", "standard", "fast")
+
+    def critic_vendor(self) -> str:
+        """``different`` only when NO writer route shares a vendor with a critic route; otherwise ``same``. Independence
+        is never claimed falsely (a bigger or dearer route is not assumed to be a better critic, D-172). With the
+        calls as built, the critic and the module writers both use the ``standard`` route, so this is ``same`` by
+        construction until a distinct critic route exists; it is computed, not typed."""
+        try:
+            shared = any(
+                routes_share_vendor(self.core, c, w)
+                for c in self.CRITIC_ROUTES
+                for w in self.WRITER_ROUTES
+            )
+        except Exception:  # a route the gateway cannot resolve: say the cautious thing
+            shared = True
+        return "same" if shared else "different"
 
     def _rehydrate(self, ctx: RunContext, rec: dict[str, Any]) -> None:
         """After a restart the run is rebuilt from its files: the input, the research and the derivation are
@@ -1284,7 +1307,10 @@ class SpecService:
         )
         port = (
             load_verify_port(
-                _RunnerCall(ctx.runner), self.cfg, profile="deep", critic_vendor="same"
+                _RunnerCall(ctx.runner),
+                self.cfg,
+                profile="deep",
+                critic_vendor=self.critic_vendor(),
             )
             if ctx.runner is not None
             else None

@@ -177,6 +177,6 @@ async def behav_step(ctx: RunContext) -> None:
     patch = await ctx.batch("behav", "behav-000", versions, produce)
     ctx.apply(patch)
     ctx.flags.extend(patch.get("flags", []))
-    log_rcode(ctx, patch.get("rcode", []))
+    log_rcode(ctx, patch.get("rcode", []), step="behav")
     rcode.instantiate_behaviors(ctx.graph, facts_set, ctx.rcode)  # a library category still missing
     ctx.emit("notice", what="behav.done", step="behav", categories=len(cats))

@@ -200,14 +200,19 @@ def needs_decision_flag(node: str, why: str, *, owner: str = "product") -> dict[
     return {"kind": "needs_decision", "step": "screens", "node": node, "owner": owner, "why": why}
 
 
-def log_rcode(ctx: RunContext, rows: Iterable[dict[str, str]]) -> int:
-    """Put the mechanical repairs a batch made (patch key `rcode`) into the run's R-code log, so G2 counts them."""
+def log_rcode(ctx: RunContext, rows: Iterable[dict[str, str]], step: str = "lane") -> int:
+    """Put the mechanical repairs a batch made (patch key `rcode`) into the run's R-code log, so G2 counts them, and
+    say so in the run's event feed (a lane's repairs used to reach only the log, never the events)."""
     from mde_spec_core.callkit.ladder import FixKind
 
     n = 0
+    by_kind: dict[str, int] = {}
     for r in rows:
         ctx.rcode.record(FixKind(r["kind"]), r["node"], r["what"], r["before"], r["after"])
+        by_kind[r["kind"]] = by_kind.get(r["kind"], 0) + 1
         n += 1
+    if n:
+        ctx.emit("repair.rcode", step=step, count=n, by_kind=dict(sorted(by_kind.items())))
     return n
 
 

@@ -29,6 +29,7 @@ from mde_spec_core.validators.context import make_context
 
 from .context import RunContext
 from .orchestrator import MissingNeed, PlanInvalid  # noqa: F401  (re-exported for lanes)
+from .store import NotFound as StoreNotFound
 
 
 def _seed(ctx: RunContext) -> random.Random:
@@ -135,6 +136,31 @@ async def freeze(ctx: RunContext) -> None:
     )
 
 
+def reasked_screen_ids(reasked: Any, graph: Any) -> set[str]:
+    """The re-asked node ids that are screens OF THIS GRAPH (so the banner can never count more screens than exist:
+    a re-asked entity, story or copy key is not a screen, and an id the graph does not hold is not counted)."""
+    return {str(n) for n in reasked if str(n) in graph.screens}
+
+
+def refresh_rcode_evidence(ctx: RunContext) -> None:
+    """Write the run's R-code log as it stands NOW into ``evidence/self-check.json``. Gate 3 writes that file at
+    assemble; repairs made after it (the G2 summary) would otherwise be missing from the saved report."""
+    try:
+        raw = json.loads(ctx.store.read_text(ctx.run_id, "evidence/self-check.json"))
+    except (StoreNotFound, ValueError):
+        return
+    raw["rcode"] = {
+        "changes": len(ctx.rcode),
+        "counts": ctx.rcode.counts(),
+        "rows": ctx.rcode.rows(),
+    }
+    ctx.store.write_text(
+        ctx.run_id,
+        "evidence/self-check.json",
+        json.dumps(raw, sort_keys=True, indent=1, ensure_ascii=False) + "\n",
+    )
+
+
 async def assemble_and_check(ctx: RunContext) -> None:
     """Assemble the pack (code) and run gate 3 (`spec check`): the whole suite, the builder-needs rule, the coverage matrix."""
     log = run_rcode(ctx.graph, ctx.facts)
@@ -147,7 +173,9 @@ async def assemble_and_check(ctx: RunContext) -> None:
         consumer_id=ctx.consumer.id,
         route_fingerprint=ctx.versions.route_fingerprint,
         library_version=ctx.versions.library,
-        checked_by=("self_check", *(["verify"] if ctx.verify is not None else [])),
+        # only the checks that really ran: Verify adds itself to the manifest when it FINISHES (service._verify_step),
+        # so a run that stops before that never claims an independent check it did not get
+        checked_by=("self_check",),
     )
     try:
         pack = assemble(ctx.graph, opts)
@@ -168,7 +196,7 @@ async def assemble_and_check(ctx: RunContext) -> None:
         if ctx.derived
         else set(),
     )
-    reasked_screens = {n for n in reasked if str(n).startswith("SCR-")}
+    reasked_screens = reasked_screen_ids(reasked, ctx.graph)
     banner = weak_route_banner(
         len(reasked_screens), max(1, len(ctx.graph.screens)), "screens", ctx.config
     )

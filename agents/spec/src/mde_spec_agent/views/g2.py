@@ -607,9 +607,10 @@ def g2(
     blocking_checks = [
         {
             "code": str(e.get("code", "")),
-            "where": str(e.get("where", "")),
-            "why": str(e.get("why", "")),
-            "fix": str(e.get("fix", "")),
+            # plain words for the owner: no bare id reaches the page (the raw ids stay in evidence/self-check.json)
+            "where": plain(str(e.get("where", "")), graph),
+            "why": plain(str(e.get("why", "")), graph),
+            "fix": plain(str(e.get("fix", "")), graph),
         }
         for e in cd.get("errors", [])
         if isinstance(e, dict) and e.get("severity") == "blocker"

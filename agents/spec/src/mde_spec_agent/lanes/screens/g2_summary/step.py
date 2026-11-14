@@ -100,7 +100,12 @@ async def g2summary_step(ctx: RunContext) -> None:
 
     patch = await ctx.batch("g2summary", "summary", versions, produce)
     para = patch["g2_summary"]
-    log_rcode(ctx, patch.get("rcode", []))
+    if log_rcode(ctx, patch.get("rcode", []), step="g2summary"):
+        from mde_spec_agent.run.steps_code import refresh_rcode_evidence
+
+        refresh_rcode_evidence(
+            ctx
+        )  # gate 3 wrote self-check.json before this repair: keep the report complete
     summary = {
         "language": g.meta.source_language,
         **template_summary(g, tables),
