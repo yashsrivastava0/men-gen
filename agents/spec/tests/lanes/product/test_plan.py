@@ -220,11 +220,6 @@ def test_a_split_moves_regions_and_actions_to_a_new_screen_with_links_both_ways(
             lambda out, inp: setattr(out.personas[0], "success", "answered within 37 minutes"),
             "never invent a number",
         ),
-        (lambda out, inp: setattr(out.personas[0], "prov", []), "provenance is empty"),
-        (
-            lambda out, inp: setattr(out.personas[0], "prov", ["research:RI-404"]),
-            "research item that is not in this call",
-        ),
         (lambda out, inp: setattr(out.modules[0], "depends_on", [out.modules[0].id]), "depends_on"),
         (lambda out, inp: out.modules.pop(), "no record"),
         (
@@ -312,7 +307,7 @@ def test_gate_1_accepts_the_mock_plan(env, key):
 
 def test_code_made_provenance_is_kept_when_echoed_and_refused_when_the_model_writes_it(env):
     """A module the derivation minted (no Compass modules) carries `code:MOD-S001`: the plan echoes it and stays valid; a
-    model that writes `code:` itself is refused (it may not claim to be code)."""
+    model that writes `code:` itself has it dropped by code (it may not claim to be code), logged."""
     _, e, inp, _ = setup(env, "delhi")
     minted = [m for m in e.graph.modules.values() if any(p.kind == "code" for p in m.provenance)]
     assert minted  # the older export has no modules of its own
@@ -320,6 +315,10 @@ def test_code_made_provenance_is_kept_when_echoed_and_refused_when_the_model_wri
     assert validate(inp, out) == []
     row = next(m for m in out.modules if m.id == minted[0].id)
     row.prov = [*row.prov, "code:MOD-S999"]
-    assert any("must be kind:ref" in m for m in validate(inp, out))
-    patch = build_plan_patch(e, inp, handle(inp), Minter.for_batch(e.graph, 0), False)
-    assert any(p["kind"] == "code" for p in patch["tables"]["modules"][minted[0].id]["provenance"])
+    assert validate(inp, out) == []  # provenance is never a reason to re-ask
+    patch = build_plan_patch(e, inp, out, Minter.for_batch(e.graph, 0), False)
+    prov = patch["tables"]["modules"][minted[0].id]["provenance"]
+    assert any(p["kind"] == "code" for p in prov) and "MOD-S999" not in str(
+        prov
+    )  # the echoed one stays, the claim goes
+    assert any("MOD-S999" in r["before"] for r in patch["rcode"])

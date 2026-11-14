@@ -8,8 +8,6 @@ from collections import Counter
 
 from mde_spec_agent.lanes.product.kit.common import (
     Errors,
-    ProvAllowed,
-    check_prov,
     invented_numbers,
     new_form_words,
     source_numbers,
@@ -20,7 +18,6 @@ from .schema import IntegIn, IntegOut
 
 def validate(inp: IntegIn, out: IntegOut) -> list[str]:
     e = Errors()
-    allowed = ProvAllowed.of(inp)
     source = "\n".join([*inp.slice, *inp.facts, *inp.research, inp.baseline.model_dump_json()])
     nums = source_numbers(source)
     ids = Counter(r.id for r in out.integrations)
@@ -49,12 +46,6 @@ def validate(inp: IntegIn, out: IntegOut) -> list[str]:
                 e.add(
                     f"{where}: provider {pid!r} is not in the closed list {sorted(closed)[:12]}; a provider name comes only from the research dossiers or the Brief"
                 )
-        for c in r.claims:
-            if c not in inp.research_ids:
-                e.add(f"{where}: claim {c} is not a research item of this call")
-            elif ProvAllowed.of(inp).labels.get(c) == "unverified":
-                e.add(f"{where}: claim {c} is unverified and is never used")
-        e.extend(check_prov(where, r.prov, allowed))
         text = " ".join([r.flow, r.interruption, r.pending_timeout, r.mock_behaviour])
         for bad in invented_numbers(text, nums):
             e.add(

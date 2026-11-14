@@ -10,8 +10,7 @@ from typing import Any
 from mde_spec_agent.lanes.product.kit.common import (
     ProvAllowed,
     merge_prov,
-    prov_nodes,
-    research_safe,
+    safe_prov,
     tier_and_assumed,
 )
 from mde_spec_agent.lanes.product.kit.env import Env, input_hash_of
@@ -52,10 +51,17 @@ def build_module_patch(
         strings: Any, node_id: str, *, claims_field: bool, tier: str = "default"
     ) -> tuple[list[Any], list[str], list[dict[str, str]]]:
         """Provenance the V-36 check accepts: research is recorded in claims_used or downgraded to assumed (logged)."""
-        prov, claims, rows = research_safe(
-            prov_nodes(strings, env.quote_of), allowed.labels, claims_field=claims_field, tier=tier
+        prov, claims, rows = safe_prov(
+            strings,
+            env.quote_of,
+            allowed.labels,
+            node_id,
+            claims_field=claims_field,
+            tier=tier,
+            allowed=allowed,
+            graph=env.graph,
         )
-        rcode.extend({**r, "node_id": node_id} for r in rows)
+        rcode.extend(rows)
         return prov, claims, rows
 
     ids: dict[str, str] = {}  # NEW-key (entity, rule, operation, story) -> minted id
@@ -236,6 +242,19 @@ def build_module_patch(
         prov = safe(srec.prov, nid, claims_field=False, tier=base.tier if base else "default")[0]
         story = _story(base, nid, srec, prov, allowed.labels)
         story.acceptance = acc_of.get(srec.id, [])
+        if (
+            story.assumed and story.voice == "must"
+        ):  # an assumed story is never voice must (V-40): code makes it usually
+            story.voice = "usually"
+            rcode.append(
+                {
+                    "kind": "downgrade_locked_to_default",
+                    "node_id": nid,
+                    "what": "an assumed story cannot be voice must: made usually",
+                    "before": "must",
+                    "after": "usually",
+                }
+            )
         story.input_hash = ih
         story.degraded = story.degraded or flagged
         tables["stories"][nid] = story.model_dump(mode="json")

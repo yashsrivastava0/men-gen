@@ -44,7 +44,13 @@ def apply_plan(
     def sp(strings: Any, node_id: str) -> list[Any]:
         """Provenance the V-36 check accepts (research becomes assumed on nodes that cannot record a claim; logged)."""
         prov, _, rows = safe_prov(
-            strings, env.quote_of, allowed.labels, node_id, claims_field=False
+            strings,
+            env.quote_of,
+            allowed.labels,
+            node_id,
+            claims_field=False,
+            allowed=allowed,
+            graph=env.graph,
         )
         facts["rcode"].extend(rows)
         return prov

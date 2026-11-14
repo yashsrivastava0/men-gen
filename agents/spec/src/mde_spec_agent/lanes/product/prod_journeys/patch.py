@@ -33,7 +33,15 @@ def build_journeys_patch(
     rcode: list[dict[str, str]] = []
     for rec in out.flows:
         fid = ids[rec.id]
-        prov, _, rows = safe_prov(rec.prov, env.quote_of, allowed.labels, fid, claims_field=False)
+        prov, _, rows = safe_prov(
+            rec.prov,
+            env.quote_of,
+            allowed.labels,
+            fid,
+            claims_field=False,
+            allowed=allowed,
+            graph=env.graph,
+        )
         rcode.extend(rows)
         stages = [
             Stage(

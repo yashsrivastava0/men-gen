@@ -211,8 +211,8 @@ def test_the_whole_run_with_research_is_clean_and_cites_only_what_it_was_shown(e
 def test_an_unverified_item_is_never_used_and_a_single_source_is_never_default(env):
     from mde_spec_agent.lanes.product.kit.common import (
         ProvAllowed,
-        check_prov,
         prov_nodes,
+        repair_prov,
         tier_and_assumed,
     )
 
@@ -226,17 +226,9 @@ def test_an_unverified_item_is_never_used_and_a_single_source_is_never_default(e
     )
     inp = module_input_factory(ctx, e)(b.module_id)(b.items)
     allowed = ProvAllowed.of(inp)
-    assert check_prov(
-        "x", ["research:RI-003"], allowed
-    )  # not even offered: it is not in the pack's items or it is unverified
-    assert check_prov("x", ["research:RI-001"], allowed) == []
+    kept, rows = repair_prov(["research:RI-003", "research:RI-001"], allowed, e.graph, "US-X")
+    assert (
+        kept == ["research:RI-001"] and len(rows) == 1
+    )  # the unverified item is dropped, the official one stays
     assert tier_and_assumed(prov_nodes(["research:RI-002"]), allowed.labels) == ("open", True)
     assert tier_and_assumed(prov_nodes(["research:RI-001"]), allowed.labels) == ("default", False)
-
-
-def test_a_raw_research_file_works_through_the_whole_run(env):
-    ctx = env.ctx("standard", research=research_file())  # the file as a mapping, not a typed view
-    assert env.run(ctx).status == "awaiting_g2"
-    assert ctx.flags == []
-    pay = next(i for i in ctx.graph.integrations.values() if i.need_key == "payments")
-    assert pay.provider_ids and set(pay.provider_ids) <= {"PayCo", "DOS-001"}

@@ -8,8 +8,6 @@ from collections import Counter
 
 from mde_spec_agent.lanes.product.kit.common import (
     Errors,
-    ProvAllowed,
-    check_prov,
     invented_numbers,
     new_form_words,
     source_numbers,
@@ -20,7 +18,6 @@ from .schema import JourneysIn, JourneysOut
 
 def validate(inp: JourneysIn, out: JourneysOut) -> list[str]:
     e = Errors()
-    allowed = ProvAllowed.of(inp)
     source = "\n".join([*inp.slice, *inp.facts, *inp.research, inp.baseline.model_dump_json()])
     nums = source_numbers(source)
     keys = {s.id: set(s.action_keys) for s in inp.screens}
@@ -49,7 +46,6 @@ def validate(inp: JourneysIn, out: JourneysOut) -> list[str]:
         for a in f.app_ids:
             if a not in apps:
                 e.add(f"{where}: app {a} does not exist")
-        e.extend(check_prov(where, f.prov, allowed))
         stages = sorted((s for s in out.stages if s.flow == f.id), key=lambda s: s.n)
         if not stages:
             e.add(f"{where}: write its stages")

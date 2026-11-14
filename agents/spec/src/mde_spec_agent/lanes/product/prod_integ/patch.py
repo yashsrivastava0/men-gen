@@ -45,6 +45,8 @@ def build_integ_patch(
             r.id,
             claims_field=True,
             tier=base.tier,
+            allowed=allowed,
+            graph=env.graph,
         )
         rcode.extend(rows)
         node.claims_used = sorted({*claims, *base.claims_used})

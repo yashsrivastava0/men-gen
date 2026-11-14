@@ -9,8 +9,6 @@ from collections import Counter
 
 from mde_spec_agent.lanes.product.kit.common import (
     Errors,
-    ProvAllowed,
-    check_prov,
     invented_numbers,
     new_form_words,
     parse_prov,
@@ -34,7 +32,6 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
         out
     )  # what code repairs mechanically is not an error (the patch makes the same repair)
     e = Errors()
-    allowed = ProvAllowed.of(inp)
     source = "\n".join([*inp.slice, *inp.facts, *inp.research])
     nums = source_numbers(source, inp.baseline.model_dump_json())
     known_roles = set(inp.role_ids)
@@ -55,7 +52,6 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
             )
         if not rec.name.strip():
             e.add(f"entity {rec.id}: name is empty")
-        e.extend(check_prov(f"entity {rec.id}", rec.prov, allowed))
     entity_ids = {r.id for r in out.entities}
     rule_ids = set(inp.rule_ids) | {r.id for r in out.rules}
     dup = Counter((f.entity, f.key) for f in out.fields)
@@ -141,7 +137,6 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
             e.add(f"{where}: use an id of the draft or NEW-<key>")
         if not r.statement.strip():
             e.add(f"{where}: statement is empty")
-        e.extend(check_prov(where, r.prov, allowed))
         if r.value:
             if bool(r.unit) is False:
                 e.add(f"{where}: a value needs its unit")
@@ -179,7 +174,6 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
                 e.add(f"{where}: role {r} is not a role of this app")
         if not any(x.op == o.id for x in out.op_errors):
             e.add(f"{where}: declare its errors (at least one)")
-        e.extend(check_prov(where, o.prov, allowed))
         for w in new_form_words(o.name, source):
             e.add(f"{where}: name uses the form word {w!r}")
     keyed = Counter((o.method, o.path.strip("/")) for o in out.operations)
@@ -218,11 +212,6 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
         for sc in s.screen_ids:
             if sc not in known_screens:
                 e.add(f"{where}: screen {sc} does not exist")
-        e.extend(check_prov(where, s.prov, allowed))
-        if s.voice == "must" and not _evidenced(s.prov):
-            e.add(
-                f"{where}: an assumed story is never voice must (say usually, or cite the user's words)"
-            )
         if not any(a.story == s.id for a in out.acceptance):
             e.add(f"{where}: write at least one acceptance (given, when, then)")
         for w in new_form_words(f"{s.want} {s.so_that}", source):

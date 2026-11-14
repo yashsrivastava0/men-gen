@@ -9,8 +9,6 @@ from collections import Counter
 
 from mde_spec_agent.lanes.product.kit.common import (
     Errors,
-    ProvAllowed,
-    check_prov,
     invented_numbers,
     new_form_words,
     source_numbers,
@@ -25,7 +23,6 @@ def _pairs(items: list[str]) -> dict[str, str]:
 
 def validate(inp: PlanIn, out: PlanOut) -> list[str]:
     e = Errors()
-    allowed = ProvAllowed.of(inp)
     source = "\n".join(
         [
             *inp.brief,
@@ -61,7 +58,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
         dropped.add(m.drop)
         if not m.reason.strip():
             e.add(f"{where}: give the reason")
-        e.extend(check_prov(where, m.prov, allowed))
     if len(out.merges) > max(1, len(screens) // 5):
         e.add("too many merges: merge only trivial pairs")
     splits: dict[str, list] = {}
@@ -98,7 +94,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
                 if k in moved_a:
                     e.add(f"{where}: action {k} moves to two parts")
                 moved_a.add(k)
-            e.extend(check_prov(f"{where} part {p.part}", p.prov, allowed))
             for w in new_form_words(f"{p.name} {p.purpose} {p.reason}", source):
                 e.add(f"{where} part {p.part}: uses the form word {w!r}")
 
@@ -118,7 +113,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
             e.add(
                 f"{where}: shared means used by several apps; this module is used by {sorted(module_apps.get(m.id, set()))}"
             )
-        e.extend(check_prov(where, m.prov, allowed))
         for w in new_form_words(m.purpose, source):
             e.add(f"{where}: purpose uses the form word {w!r}")
     for mid in inp.module_ids:
@@ -135,7 +129,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
             r.home_screen not in screens or r.id not in roles_of.get(r.home_screen, set())
         ):
             e.add(f"{where}: home screen {r.home_screen} is not a screen this role may use")
-        e.extend(check_prov(where, r.prov, allowed))
     owners = Counter(o.entity for o in out.owners)
     for o in out.owners:
         where = f"owner of {o.entity}"
@@ -145,7 +138,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
             e.add(f"{where}: module {o.module} does not exist")
         if owners[o.entity] > 1:
             e.add(f"{where}: an entity has exactly ONE owner module")
-        e.extend(check_prov(where, o.prov, allowed))
     for ent in inp.entity_ids:
         if ent not in owners:
             e.add(f"entity {ent}: no owner record; every entity has one owner module")
@@ -155,7 +147,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
             e.add(f"{where}: the entity and the role must exist")
         if not a.actions:
             e.add(f"{where}: name the actions (use none to deny)")
-        e.extend(check_prov(where, a.prov, allowed))
 
     # ---- personas --------------------------------------------------------------------------------------------------
     per = Counter(p.role for p in out.personas)
@@ -167,7 +158,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
             e.add(f"{where}: one persona per role")
         if not p.goal.strip():
             e.add(f"{where}: goal is empty")
-        e.extend(check_prov(where, p.prov, allowed))
         text = " ".join([p.goal, p.context, p.frequency, p.skill, p.success, *p.pain_points])
         for bad in invented_numbers(text, nums):
             e.add(f"{where}: states {bad}, which no source states (never invent a number)")
@@ -205,7 +195,6 @@ def validate(inp: PlanIn, out: PlanOut) -> list[str]:
             )
         if r.status == "later" and r.reason == "capacity" and not r.consent_needed:
             e.add(f"{where}: a capacity deferral needs consent_needed true (G1.5 consent)")
-        e.extend(check_prov(where, r.prov, allowed))
     for fid in inp.feature_ids:
         if fid not in rel:
             e.add(f"feature {fid}: no release record; write one record per feature")

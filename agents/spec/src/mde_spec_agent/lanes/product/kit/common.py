@@ -16,7 +16,7 @@ from pydantic import BaseModel, ConfigDict
 from mde_spec_agent.calls.base import CallInput
 from mde_spec_core import libraries
 from mde_spec_core.canon import canonical_json
-from mde_spec_core.graph import Prov
+from mde_spec_core.graph import Prov, SpecGraph
 
 from . import vocab
 
@@ -99,40 +99,88 @@ def _draft_prov(obj: object) -> list[str]:
 def check_prov(
     where: str, prov: Sequence[str], allowed: ProvAllowed, *, need: bool = True
 ) -> list[str]:
-    """Messages for a record's provenance strings (closed kinds, real ids, no unverified research)."""
-    errors: list[str] = []
-    if not prov:
-        return (
-            [f"{where}: provenance is empty; say where it comes from or write assumed:<reason>"]
-            if need
-            else []
+    """Provenance is never a reason to re-ask: whatever a model cites that this call did not offer is repaired by code
+    (`repair_prov`, logged), so there is nothing to report. Kept so every validator names where provenance is judged."""
+    return []
+
+
+_ID_IN_TEXT = re.compile(r"[A-Z]{1,6}-S?\d{1,6}")
+
+
+def _own_provenance(graph: SpecGraph | None, ident: str) -> list[str]:
+    node = graph.find(ident) if graph is not None else None
+    if node is None:
+        return []
+    return [f"{p.kind}:{p.ref}" for p in node.provenance if p.ref]
+
+
+def repair_prov(
+    strings: Sequence[str],
+    allowed: ProvAllowed,
+    graph: SpecGraph | None,
+    node_id: str,
+) -> tuple[list[str], list[dict[str, str]]]:
+    """Provenance strings the call really offered, and R-code rows for every change (never silent, never new evidence).
+
+    * a string that is the draft's own, or that cites an id the call offered, stays;
+    * a citation of a node that EXISTS in the graph but was not offered (a draft rule, flow, story ... or a malformed
+      `brief-FLW-001`) is rewritten to what that node itself rests on (its own provenance), or to `assumed:` when it has none;
+    * anything else (an unknown id, an unknown kind, research not shown, an unverified item, a rule not in the policy
+      sheet) is dropped; a node left with nothing is marked assumed.
+    """
+    out: list[str] = []
+    rows: list[dict[str, str]] = []
+
+    def row(kind: str, before: str, after: str, what: str) -> None:
+        rows.append(
+            {"kind": kind, "node_id": node_id, "what": what, "before": before, "after": after}
         )
-    for raw in prov:
+
+    for raw in strings:
         if raw in allowed.echoed:
-            continue  # the draft's own provenance, echoed
-        parsed = parse_prov(raw)
-        if parsed is None or parsed[0] in CODE_KINDS:
-            errors.append(
-                f"{where}: provenance {raw!r} must be kind:ref with kind one of {list(vocab.provenance_kinds())}"
-            )
+            out.append(raw)
             continue
-        kind, ref = parsed
-        if kind in ("user", "compass") and ref not in allowed.refs:
-            errors.append(
-                f"{where}: provenance {raw!r} cites {ref!r}, which is not an id of this call"
+        parsed = parse_prov(raw)
+        ok = False
+        if parsed is not None and parsed[0] not in CODE_KINDS:
+            kind, ref = parsed
+            if kind in ("user", "compass"):
+                ok = ref in allowed.refs
+            elif kind == "research":
+                ok = ref in allowed.research and allowed.labels.get(ref) != "unverified"
+            elif kind == "policy":
+                ok = not allowed.policy or ref in allowed.policy
+            else:
+                ok = kind in ("library", "assumed") and bool(ref)
+        if ok:
+            out.append(raw)
+            continue
+        named = [
+            i
+            for i in dict.fromkeys(_ID_IN_TEXT.findall(raw))
+            if graph is not None and graph.find(i) is not None
+        ]
+        inherited = [x for i in named for x in _own_provenance(graph, i)]
+        if named:
+            new = inherited or [f"assumed:derived from {named[0]}"]
+            out.extend(new)
+            row(
+                "exact_synonym",
+                raw[:120],
+                "; ".join(new)[:200],
+                f"provenance {raw!r} names {named[0]}, which this call did not offer as a source: rewritten to what that node rests on",
             )
-        elif kind == "research":
-            if ref not in allowed.research:
-                errors.append(
-                    f"{where}: provenance {raw!r} cites a research item that is not in this call"
-                )
-            elif allowed.labels.get(ref) == "unverified":
-                errors.append(f"{where}: research item {ref} is unverified and is never used")
-        elif kind == "policy" and allowed.policy and ref not in allowed.policy:
-            errors.append(f"{where}: {ref} is not a rule of the policy sheet")
-        elif kind == "assumed" and not ref:
-            errors.append(f"{where}: assumed provenance needs a short reason after the colon")
-    return errors
+        else:
+            row(
+                "drop_unknown_optional",
+                raw[:120],
+                "",
+                f"provenance {raw!r} is not a source this call offered: dropped (the node is assumed unless another source remains)",
+            )
+    if not out:
+        out.append("assumed:no source the call offered")
+    out = list(dict.fromkeys(out))
+    return out, rows
 
 
 def prov_nodes(
@@ -296,9 +344,16 @@ def safe_prov(
     *,
     claims_field: bool,
     tier: str = "default",
+    allowed: ProvAllowed | None = None,
+    graph: SpecGraph | None = None,
 ) -> tuple[list[Prov], list[str], list[dict[str, str]]]:
-    """`prov_nodes` plus `research_safe`: provenance a node can carry without failing V-36, and the R-code rows."""
-    prov, claims, rows = research_safe(
+    """The provenance a node can carry: `repair_prov` (ids the call did not offer), `prov_nodes`, then `research_safe`
+    (V-36). Returns the provenance, the claims and the R-code rows of every change."""
+    rows: list[dict[str, str]] = []
+    if allowed is not None:
+        strings, prows = repair_prov(strings, allowed, graph, node_id)
+        rows += prows
+    prov, claims, rrows = research_safe(
         prov_nodes(strings, quote_of), labels, claims_field=claims_field, tier=tier
     )
-    return prov, claims, [{**r, "node_id": node_id} for r in rows]
+    return prov, claims, [*rows, *({**r, "node_id": node_id} for r in rrows)]

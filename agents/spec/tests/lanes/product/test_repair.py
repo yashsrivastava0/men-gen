@@ -301,3 +301,122 @@ def test_a_single_source_claim_on_a_default_node_is_downgraded_not_left_to_fail(
     assert claims == ["RI-1", "RI-2"]  # an Open node may rest on a single source
     kept, claims, _ = research_safe(prov, labels, claims_field=False)
     assert claims == [] and all(p.kind != "research" for p in kept)
+
+
+# ---- provenance the call did not offer: repaired by code, never a re-ask (second live run) ---------------------------------
+
+
+def test_repair_prov_rewrites_a_named_node_drops_the_unknown_and_never_invents_evidence(env):
+    from mde_spec_agent.lanes.product.kit.common import ProvAllowed, repair_prov
+    from mde_spec_agent.lanes.product.steps.inputs import module_batches, module_input_factory
+    from mde_spec_agent.lanes.product.steps.plan import ensure_derived, env_of
+
+    ctx = env.ctx("standard")
+    ensure_derived(ctx)
+    e = env_of(ctx)
+    b = module_batches(ctx, e)[0]
+    allowed = ProvAllowed.of(module_input_factory(ctx, e)(b.module_id)(b.items))
+    rule = next(r for r in e.graph.rules.values() if r.provenance)
+    flow = next(iter(e.graph.flows))
+    own = [f"{p.kind}:{p.ref}" for p in rule.provenance]
+    offered = "user:FTR-001"
+    assert offered.split(":")[1] in allowed.refs
+    kept, rows = repair_prov(
+        [
+            offered,
+            f"compass:{rule.id}",
+            f"policy:brief-{flow}",
+            "user:FTR-999",
+            "gossip:nobody",
+            "research:RI-9",
+        ],
+        allowed,
+        e.graph,
+        "X",
+    )
+    assert offered in kept
+    assert all(
+        o in kept for o in own
+    )  # a draft rule cited as a source: rewritten to what that rule rests on
+    assert not any(
+        x.endswith(("FTR-999", "nobody", "RI-9")) for x in kept
+    )  # unknown: dropped, never invented
+    assert len(rows) == 5 and {r["kind"] for r in rows} == {
+        "exact_synonym",
+        "drop_unknown_optional",
+    }
+    # nothing left: the node is marked assumed rather than left without a source
+    only, _ = repair_prov(["user:FTR-999"], allowed, e.graph, "X")
+    assert only == ["assumed:no source the call offered"]
+
+
+def echo_bad_ids(out):
+    out = out.model_copy(deep=True)
+    for r in out.rules:
+        r.prov = [f"compass:{r.id}"]  # the draft rule's own id as a compass source
+    if out.stories:
+        out.stories[0].prov = ["user:FTR-999", "policy:brief-FLW-001"]
+    if out.entities:
+        out.entities[0].prov = []
+    return out
+
+
+def test_a_module_answer_with_unoffered_ids_is_repaired_not_reasked(env):
+    ctx = env.ctx("standard")
+    gw = env.gateway(ctx)
+    gw.rewrite = lambda spec, inp, n: (
+        echo_bad_ids if (spec == "spec.prod_module" and inp.baseline.rules) else None
+    )
+    assert env.run(ctx).status == "awaiting_g2"
+    results = env.calls_of(ctx, "spec.prod_module")
+    assert not any(r.reasked or r.used_fallback for r in results) and ctx.flags == []
+    g = ctx.graph
+    assert all(
+        p.ref != r.id for r in g.rules.values() for p in r.provenance
+    )  # no self-citation left
+    assert any(
+        "not a source this call offered" in c.what for c in ctx.rcode.changes
+    )  # each change is logged
+
+
+def echo_bad_flow_prov(out):
+    out = out.model_copy(deep=True)
+    for f in out.flows:
+        f.prov = [f"policy:brief-{f.id}"]
+    return out
+
+
+def test_a_journeys_answer_that_cites_a_flow_as_a_policy_is_repaired_not_reasked(env):
+    ctx = env.ctx("standard")
+    gw = env.gateway(ctx)
+    gw.rewrite = lambda spec, inp, n: echo_bad_flow_prov if spec == "spec.prod_journeys" else None
+    assert env.run(ctx).status == "awaiting_g2"
+    assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_journeys"))
+    assert ctx.flags == []
+    assert not any(
+        p.kind == "policy" and "brief-" in p.ref
+        for f in ctx.graph.flows.values()
+        for p in f.provenance
+    )
+
+
+def test_an_assumed_story_that_says_must_is_made_usually_by_code(env):
+    ctx = env.ctx("standard")
+    gw = env.gateway(ctx)
+
+    def assumed_must(out):
+        out = out.model_copy(deep=True)
+        st = out.stories[0].model_copy(
+            update={"id": "NEW-x", "voice": "must", "prov": ["assumed:no source"]}
+        )
+        out.stories.append(st)
+        out.acceptance.append(out.acceptance[0].model_copy(update={"story": "NEW-x"}))
+        return out
+
+    gw.rewrite = lambda spec, inp, n: (
+        assumed_must if (spec == "spec.prod_module" and inp.baseline.stories and n == 1) else None
+    )
+    assert env.run(ctx).status == "awaiting_g2"
+    assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_module"))
+    new = [s for s in ctx.graph.stories.values() if s.assumed]
+    assert new and all(s.voice != "must" for s in new)

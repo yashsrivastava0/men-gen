@@ -66,13 +66,6 @@ MODULE_CASES = [
     (lambda o: setattr(first_story(o), "feature_ids", []), "cite an in feature or a policy id"),
     (lambda o: setattr(first_story(o), "screen_ids", ["SCR-999"]), "screen SCR-999 does not exist"),
     (lambda o: setattr(first_story(o), "role", "ROL-999"), "is not a role of this app"),
-    (lambda o: setattr(first_story(o), "prov", ["assumed:x"]), "assumed story is never voice must"),
-    (lambda o: setattr(first_story(o), "prov", []), "provenance is empty"),
-    (
-        lambda o: setattr(first_story(o), "prov", ["user:FTR-999"]),
-        "which is not an id of this call",
-    ),
-    (lambda o: setattr(first_story(o), "prov", ["gossip:somebody"]), "must be kind:ref"),
     (
         lambda o: setattr(first_story(o), "want", "tap the big blue button on the right"),
         "form word",
@@ -92,7 +85,6 @@ MODULE_CASES = [
         lambda o: setattr(o.fields[0], "type", "enum") or setattr(o.fields[0], "enum_values", []),
         "needs its values",
     ),
-    (lambda o: setattr(o.entities[0], "prov", []), "provenance is empty"),
     (
         lambda o: o.rules.append(
             RuleRec(
@@ -173,7 +165,6 @@ def test_custom_operation_rules(env):
         (with_op(roles=["ROL-999"]), "is not a role of this app"),
         (with_op(path="things/confirm"), "path must start with /"),
         (with_op(entity="ENT-999"), "does not exist"),
-        (with_op(prov=[]), "provenance is empty"),
         (with_op(), "declare its errors"),
         (with_op(id="OP-S001"), "written as NEW-<key>"),
         (with_op(name="Tap the red button"), "form word"),
@@ -234,11 +225,6 @@ def test_integration_rules(env):
             "not in the closed list",
         ),
         (lambda o: setattr(o.integrations[0], "id", "INT-999"), "not a need of the plan"),
-        (lambda o: setattr(o.integrations[0], "prov", []), "provenance is empty"),
-        (
-            lambda o: setattr(o.integrations[0], "claims", ["RI-1"]),
-            "not a research item of this call",
-        ),
         (
             lambda o: setattr(o.integrations[0], "flow", "A blue button opens the provider"),
             "form word",
@@ -269,7 +255,6 @@ def test_journey_rules(env):
         (lambda o: setattr(o.flows[0], "moments", [99]), "is not a stage number"),
         (lambda o: setattr(o.flows[0], "unhappy", []), "keep the flow's own alternates"),
         (lambda o: setattr(o.flows[0], "role_ids", ["ROL-999"]), "does not exist"),
-        (lambda o: setattr(o.flows[0], "prov", []), "provenance is empty"),
         (lambda o: setattr(o.stages[0], "goal", "wait 12 minutes"), "never invent a number"),
         (
             lambda o: setattr(o.stages[0], "pain", "a hover tooltip on the left hides it"),
