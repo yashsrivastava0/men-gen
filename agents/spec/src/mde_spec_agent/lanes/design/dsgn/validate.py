@@ -17,6 +17,7 @@ from mde_spec_core import assets, libraries, tokens, vocab
 from mde_spec_core.config import SpecConfig, default_config
 
 _HEX = re.compile(r"^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})$")
+_RAW_HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 _URL = re.compile(r"https?://|www\.", re.I)
 MAX_GOALS = 8
 
@@ -57,6 +58,16 @@ def lint(where: str, text: str) -> list[str]:
     return [f"{where}: uses form words ({words}); say what it communicates, not how it looks"]
 
 
+def lint_avoid(where: str, text: str) -> list[str]:
+    """The `avoid` list says what the brand must not feel like or do, so it may name widgets and layouts it rejects
+    (a banner, a carousel). Only a hex colour is refused: a colour is the seed colour's alone."""
+    if _RAW_HEX.search(text):
+        return [
+            f"{where}: a raw colour value is not allowed here; the seed colour is the only colour"
+        ]
+    return []
+
+
 def validate(inp: DsgnIn, out: DsgnOut) -> list[str]:
     errors: list[str] = []
     d = design_data()
@@ -80,8 +91,10 @@ def validate(inp: DsgnIn, out: DsgnOut) -> list[str]:
             errors += lint(f"{w}.emotional_goals[{j}]", g)
         if not 1 <= len(x.avoid) <= d.max_avoid_items:
             errors.append(f"{w}.avoid: list 1 to {d.max_avoid_items} things to avoid")
-        for j, a in enumerate(x.avoid):
-            errors += lint(f"{w}.avoid[{j}]", a)
+        for j, a in enumerate(
+            x.avoid
+        ):  # what to avoid may name a banner or a carousel (doc 17 5.2)
+            errors += lint_avoid(f"{w}.avoid[{j}]", a)
         if not d.delight_budget.min <= x.delight_budget <= d.delight_budget.max:
             errors.append(
                 f"{w}.delight_budget must be {d.delight_budget.min} to {d.delight_budget.max}"

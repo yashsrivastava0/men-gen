@@ -224,3 +224,39 @@ async def test_a_budget_refusal_propagates_and_is_never_hidden_behind_a_fallback
     out = await env.run_stage(ctx, "design", design)
     assert out.status == "partial" and out.reason == "budget"
     assert not ctx.graph.directions
+
+
+async def test_the_avoid_list_may_name_a_banner_but_other_free_text_may_not(env, monkeypatch):
+    real = mock_mod.handle
+
+    def with_banner(inp):
+        out = real(inp)
+        ds = [
+            d.model_copy(
+                update={"avoid": ["a promotional banner", "a carousel of badges", *d.avoid]}
+            )
+            for d in out.directions
+        ]
+        return out.model_copy(update={"directions": ds})
+
+    monkeypatch.setattr(mock_mod, "handle", with_banner)
+    ctx = env.ctx("standard")
+    await design(ctx)
+    assert env.gateway(ctx).count("spec.dsgn") == 1  # accepted first time, no re-ask
+    assert not any(d.degraded for d in ctx.graph.directions.values())
+    assert all("a promotional banner" in d.avoid for d in ctx.graph.directions.values())
+
+
+async def test_a_raw_colour_in_the_avoid_list_and_form_words_elsewhere_still_fail(env, monkeypatch):
+    real = mock_mod.handle
+
+    def bad(inp):
+        out = real(inp)
+        d0 = out.directions[0].model_copy(update={"avoid": ["a flat #ff0000 look"]})
+        return out.model_copy(update={"directions": [d0, *out.directions[1:]]})
+
+    monkeypatch.setattr(mock_mod, "handle", bad)
+    ctx = env.ctx("standard")
+    await design(ctx)
+    assert env.gateway(ctx).count("spec.dsgn") == 2
+    assert all(d.degraded for d in ctx.graph.directions.values())
