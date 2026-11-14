@@ -12,7 +12,8 @@ from __future__ import annotations
 import argparse
 import json
 import re
-from datetime import datetime
+import sys
+from datetime import UTC, datetime
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent
@@ -108,7 +109,7 @@ def render(path: Path) -> tuple[str, str, str]:
             start, end = start or ts, ts
         who = "USER" if t == "user" else "CLAUDE"
         for kind, val in blocks(d.get("message", {})):
-            val = clean(val) if kind == "text" else clean(val)
+            val = clean(val)
             if not val:
                 continue
             if kind == "tool":
@@ -134,7 +135,7 @@ def main() -> None:
     LOG.mkdir(exist_ok=True)
     n = 0
     for f in sorted(a.src.glob("*.jsonl")):
-        date = datetime.fromtimestamp(f.stat().st_ctime).strftime("%Y%m%d")
+        date = datetime.fromtimestamp(f.stat().st_ctime, tz=UTC).strftime("%Y%m%d")
         existing = list(LOG.glob(f"*_{f.stem[:8]}.md"))
         if existing and not a.force and existing[0].stat().st_mtime >= f.stat().st_mtime:
             continue
@@ -188,7 +189,7 @@ def main() -> None:
             "",
         ]
     (HERE / "REFERENCE.md").write_text("\n".join(ref), encoding="utf-8")
-    print(f"exported {n} new/updated, {len(rows)} total")
+    sys.stdout.write(f"exported {n} new/updated, {len(rows)} total\n")
 
 
 if __name__ == "__main__":
