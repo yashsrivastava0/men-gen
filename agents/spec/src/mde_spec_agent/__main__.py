@@ -2,6 +2,7 @@
 
     bench auto [--size compact|standard|deep|program] [--json]   print the proposed Compass + Research pairs
     bench run --input <path|id|synth:name> [--research <path>] [--no-research] [--offline]
+    bench export --run <run_id> [--out <dir>] [--label <text>] [--mode live|mock|auto] [--allow-skip]
     serve [--host 127.0.0.1] [--port 8130]                       the Spec Bench app (loopback only)
 
 Exit codes: 0 done, 1 the run itself failed, 2 bad input or arguments, 3 a part that is built later is not there yet.
@@ -13,6 +14,7 @@ import argparse
 import asyncio
 import inspect
 import json
+import re
 import sys
 from pathlib import Path
 from typing import Any
@@ -31,7 +33,7 @@ from mde_spec_agent.bench.inputs import (
     resolve_compass,
     synth_name,
 )
-from mde_spec_agent.config import DEFAULT_PORT
+from mde_spec_agent.config import DEFAULT_PORT, data_dir, repo_root
 from mde_spec_core.synth import PRESETS
 
 EXIT_OK, EXIT_FAILED, EXIT_USAGE, EXIT_NOT_BUILT = 0, 1, 2, 3
@@ -40,6 +42,7 @@ NOT_BUILT_RUN = "the run service is not built yet"
 NOT_BUILT_SERVE = "the Spec Bench app is not built yet"
 _SERVICE_MODULES = {"mde_spec_agent.service"}
 _API_MODULES = {"mde_spec_agent.api", "mde_spec_agent.api.main"}
+_RUN_ID = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_-]{0,63}$")
 
 
 def _out(text: str = "") -> None:
@@ -232,6 +235,51 @@ async def _await(awaitable: Any) -> Any:
     return await awaitable
 
 
+# --- bench export ----------------------------------------------------------------------------------------------------
+
+
+def _load_exporter() -> Any | None:
+    """``scripts/spec_export_outputs.py`` of this checkout, loaded by path (scripts is not a package)."""
+    import importlib.util
+
+    for base in (Path(__file__).resolve().parents[4], repo_root()):
+        path = base / "scripts" / "spec_export_outputs.py"
+        if path.is_file():
+            spec = importlib.util.spec_from_file_location("spec_export_outputs", path)
+            if spec is None or spec.loader is None:
+                return None
+            module = importlib.util.module_from_spec(spec)
+            sys.modules[spec.name] = module
+            spec.loader.exec_module(module)
+            return module
+    return None
+
+
+def _cmd_export(args: argparse.Namespace) -> int:
+    if _RUN_ID.match(args.run):
+        run_dir = data_dir() / "runs" / args.run
+    else:  # a path to a run folder is fine too
+        run_dir = Path(args.run).expanduser()
+    if not (run_dir / "run.json").is_file():
+        _err(f"no such run: {args.run} (looked in {run_dir}); `bench run` prints the run id")
+        return EXIT_USAGE
+    exporter = _load_exporter()
+    if exporter is None:
+        _err("the export script scripts/spec_export_outputs.py is not in this checkout")
+        return EXIT_NOT_BUILT
+    return int(
+        exporter.export_and_report(
+            run_dir,
+            Path(args.out).expanduser() if args.out else None,
+            label=args.label,
+            mode=args.mode,
+            allow_skip=bool(args.allow_skip),
+            refresh=not args.no_index,
+            root=exporter.ROOT,
+        )
+    )
+
+
 # --- serve -----------------------------------------------------------------------------------------------------------
 
 
@@ -285,6 +333,29 @@ def build_parser() -> argparse.ArgumentParser:
         "--offline", action="store_true", help="no model call: deterministic stand-ins"
     )
     run.set_defaults(func=_cmd_run)
+
+    export = bsub.add_parser(
+        "export", help="copy a finished run under docs/ so the owner can read what Spec generated"
+    )
+    export.add_argument(
+        "--run", required=True, help="a run id (under the Spec data folder) or a run folder"
+    )
+    export.add_argument(
+        "--out",
+        default=None,
+        help="default: docs/spec-agent/outputs/<mode>-<date of the run> (the run goes in <out>/<run id>/)",
+    )
+    export.add_argument("--label", default=None, help="the input's name for the README")
+    export.add_argument("--mode", choices=("auto", "mock", "live"), default="auto")
+    export.add_argument(
+        "--allow-skip",
+        action="store_true",
+        help="copy the rest when a file fails the safety check (it is listed in EXPORT-NOTES.md)",
+    )
+    export.add_argument(
+        "--no-index", action="store_true", help="do not rewrite the parent folder's README.md"
+    )
+    export.set_defaults(func=_cmd_export)
 
     serve = sub.add_parser("serve", help="the Spec Bench app (loopback only)")
     serve.add_argument("--host", default="127.0.0.1")
