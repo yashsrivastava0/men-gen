@@ -13,6 +13,7 @@ import re
 from typing import Any
 
 from .config import SpecConfig, default_config
+from .packform import WHOLE_FILE
 from .render import TokenCounter
 
 _USE_BLOCK = re.compile(r"use_block: (BLK-S\d+)@")
@@ -21,7 +22,7 @@ _RELATIVE_COST = {
     "M": 2,
     "L": 3,
 }  # relative effort units for the dry-run timeline (not a time estimate)
-_NOT_READ = ("MANIFEST.json", "index.json")
+_NOT_READ = ("MANIFEST.json", "index.json", WHOLE_FILE)  # the one-file form repeats the tree
 
 
 def counter_for(pack: Any) -> TokenCounter:

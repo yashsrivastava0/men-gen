@@ -20,6 +20,8 @@ budgets:            # tokens (doc 15 5.3, 6.2)
   delight_block_max: 400
   one_file_min_consumer_window: 80000
   token_factor_chars_per_token: 3.0     # conservative factor until a profile gives a counter
+  detail_min_chars: 240                 # bulky detail (doc 18 3.3): only a text longer than this moves to screens/<id>.detail.md
+  detail_head_chars: 140                # the head of a moved text that stays in the card, with a pointer to its anchor
 
 scope:
   scope_cap_per_app_phase: 60
@@ -71,6 +73,16 @@ checks:
     max_phone_columns: 4
     long_text_chars: 600
     gross_breach_factor: 2.0
+    # two primary actions that answer one question are ONE decision, not two (doc 17 5.6): word stems, either order
+    decision_pairs:
+      - [approve, reject]
+      - [approve, decline]
+      - [accept, decline]
+      - [accept, reject]
+      - [allow, deny]
+      - [confirm, cancel]
+      - [save, discard]
+      - [keep, discard]
   freedom_lint_warnings_per_card_max: 3
   widget_key_suffixes: [_button, _btn, _cta, _modal, _sheet, _tab, _banner, _toast, _chip, _now]
   wcag_body_text_ratio: 4.5

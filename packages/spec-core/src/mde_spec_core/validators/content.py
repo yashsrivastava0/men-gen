@@ -227,6 +227,7 @@ def v26(ctx: Context) -> list[Finding]:
             path.startswith("screens/")
             and path.endswith(".md")
             and ".could." not in path
+            and ".detail." not in path
             and n > b.slice_cap
         ):
             out.append(
@@ -287,7 +288,8 @@ def v34(ctx: Context) -> list[Finding]:
                     "A",
                 )
             )
-        if path.endswith(".md") and _VOLATILE.search(text):
+        # the one-file form repeats files that are each scanned on their own (a contract file may say `version: 0`)
+        if path.endswith(".md") and path != "APP_SPEC.md" and _VOLATILE.search(text):
             out.append(
                 Finding(
                     "V-34",
