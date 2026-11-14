@@ -14,6 +14,7 @@ from typing import Any
 
 from mde_compass_intake import intake as read_intake
 from mde_compass_intake import read_research
+from mde_spec_agent.derive.choices import everything_in_one_release, moves_in_force
 from mde_spec_agent.derive.pipeline import derive_graph
 from mde_spec_agent.run.store import NotFound, RunStore
 from mde_spec_core.graph import SpecGraph
@@ -93,9 +94,15 @@ def load_derived(rec: dict[str, Any]) -> tuple[Any, Any]:
         if rpath and Path(rpath).is_file()
         else None
     )
-    g15 = (rec.get("gates") or {}).get("g15") or {}
-    one = bool(g15.get("everything_in_one_release")) if isinstance(g15, dict) else False
-    return derive_graph(got.spec_input, research, everything_in_one_release=one), research
+    return (
+        derive_graph(
+            got.spec_input,
+            research,
+            everything_in_one_release=everything_in_one_release(rec),
+            moves=moves_in_force(rec),
+        ),
+        research,
+    )
 
 
 def load_run(store: RunStore, run_id: str, *, with_derived: bool = True) -> LoadedRun:

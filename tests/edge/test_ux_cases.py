@@ -69,11 +69,6 @@ def test_ux_01_everything_in_one_release_is_recorded_with_its_consent_and_the_pa
 
 
 @case("spc-ux-01")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-UX-1: the user cannot choose the deferrals: a `change` decision with moves is only put on file "
-    "(`applied: false`); the planner never applies them, so the chosen screens stay in the first release",
-)
 def test_ux_01_the_user_can_choose_which_screens_are_deferred(tmp_path, monkeypatch):
     with api_client(tmp_path, monkeypatch) as client:
         rid = client.post("/api/runs", json={"compass_id": THOROUGH, "offline": True}).json()[
@@ -81,6 +76,7 @@ def test_ux_01_the_user_can_choose_which_screens_are_deferred(tmp_path, monkeypa
         ]
         wait_for(client, rid, ("paused_g15",))
         graph = client.service.load(rid).graph
+        deferred_before = {f for f, v in graph.features.items() if v.later_reason == "user"}
         moved = sorted(s.id for s in graph.screens.values() if s.status == "in" and not s.system)[
             -1
         ]
@@ -89,10 +85,18 @@ def test_ux_01_the_user_can_choose_which_screens_are_deferred(tmp_path, monkeypa
             json={"decision": "change", "moves": [{"item": moved, "to": "Phase 2 (later)"}]},
         ).json()
         assert res["recorded"] is True and res["moves"] == 1  # recorded ...
+        assert (
+            res["applied"] is True
+        )  # ... applied: the split is derived again, the gate opens once more
+        wait_for(client, rid, ("paused_g15",))
         client.post(f"/api/runs/{rid}/g15", json={"decision": "approve"})
         wait_for(client, rid, ("awaiting_g2",))
         after = client.service.load(rid).graph
-        assert after.screens[moved].status == "later"  # ... and applied
+        # ... and applied: the screen is out of the first release (a later feature keeps an outline and no screen
+        # node, V-19) and the feature behind it is the person's own deferral
+        assert moved not in after.screens
+        deferred_after = {f for f, v in after.features.items() if v.later_reason == "user"}
+        assert deferred_after - deferred_before
 
 
 # --------------------------------------------------------------------------------------------------- UX-02

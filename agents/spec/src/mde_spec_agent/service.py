@@ -58,6 +58,10 @@ from mde_spec_agent.config import (
     default_input_dirs,
     load_spec_settings,
 )
+from mde_spec_agent.derive.choices import (
+    everything_in_one_release,
+    moves_in_force,
+)
 from mde_spec_agent.derive.pipeline import derive_graph
 from mde_spec_agent.run.context import RunContext
 from mde_spec_agent.run.orchestrator import Orchestrator, Outcome, Stage, StepDef
@@ -881,12 +885,12 @@ class SpecService:
         ctx.research = (
             read_research(json.loads(Path(rpath).read_text(encoding="utf-8"))) if rpath else None
         )
-        g15 = (rec.get("gates") or {}).get("g15") or {}
         ctx.derived = derive_graph(
             ctx.spec_input,
             ctx.research,
             ctx.config,
-            everything_in_one_release=bool(g15.get("everything_in_one_release")),
+            everything_in_one_release=everything_in_one_release(rec),
+            moves=moves_in_force(rec),
         )
         ctx.facts = set(ctx.derived.facts)
 
@@ -1124,6 +1128,62 @@ class SpecService:
         return self.snapshot(run_id)
 
     # ------------------------------------------------------------------------------------ gates
+    @staticmethod
+    def _move_target(raw: Any) -> str:
+        """``in`` or ``later`` from what the page sends: a place ('Phase 1 (first release)', 'Phase 2 (later)') or the
+        short words themselves."""
+        text = str(raw).strip().lower()
+        if text in ("in", "phase 1", "first release") or text.startswith(("phase 1", "first")):
+            return "in"
+        if text in ("later", "phase 2") or text.startswith(("phase 2", "later")):
+            return "later"
+        raise BadRequest(
+            f"A feature can only be moved to the first release or to later, not {raw!r}.",
+            "Choose the first release (Phase 1) or later (Phase 2) for each item you move.",
+        )
+
+    def _check_moves(self, run_id: str, moves: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        """The owner's requested moves, checked and put in terms the release planner works in: FEATURES. The page moves
+        what it lists (screens, with the part they belong to); a screen stands for the features it serves, so moving it
+        moves those features (and so every screen of theirs). A system screen cannot be moved (the stores require it).
+        A refusal names what it did not recognise; nothing is half applied."""
+        loaded = self.load(run_id)
+        features = set(loaded.graph.features)
+        derived = getattr(loaded, "derived", None)
+        proposals = (
+            {p.id: p for p in derived.inventory.screens}
+            if derived is not None and getattr(derived, "inventory", None) is not None
+            else {}
+        )
+        clean: list[dict[str, Any]] = []
+        for m in moves:
+            item, to = str(m["item"]), self._move_target(m["to"])
+            if item in features:
+                fids = [item]
+            elif item in proposals or item in loaded.graph.screens:
+                prop = proposals.get(item)
+                node = loaded.graph.screens.get(item)
+                if (prop is not None and prop.system) or (node is not None and node.system):
+                    raise BadRequest(
+                        "This screen is part of the set every app with accounts needs, so it cannot be moved.",
+                        "Leave it where it is; the app stores require it.",
+                    )
+                fids = list(prop.feature_ids) if prop is not None else []
+                if not fids:
+                    raise BadRequest(
+                        "This screen does not serve a feature of its own, so there is nothing to move.",
+                        "Move the feature it belongs to, or leave it.",
+                    )
+                fids = [f for f in fids if f in features]
+            else:
+                raise BadRequest(
+                    f"This run has nothing called {item!r}.",
+                    "Pick the item from the list on the structure page.",
+                )
+            for fid in fids:
+                clean.append({"item": fid, "to": to, "asked": item})
+        return clean
+
     def approve_g15(self, run_id: str, payload: dict[str, Any]) -> dict[str, Any]:
         rec = self.get_record(run_id)
         decision = payload.get("decision")
@@ -1138,6 +1198,9 @@ class SpecService:
             isinstance(m, dict) and "item" in m and "to" in m for m in moves
         ):
             raise BadRequest("moves must be a list of {item, to}.")
+        asked = len(moves)
+        if moves:
+            moves = self._check_moves(run_id, moves)
         everything = bool(payload.get("everything_in_one_release"))
         consents = [
             {"kind": c["kind"], "app": c["app"], "features": c["features"]}
@@ -1145,26 +1208,45 @@ class SpecService:
         ]
         stamp = self.clock.now().isoformat()
         if decision == "change":
-            # The I-4 override record: what the person asked to move. The planner applies moves when it can; until
-            # then the gate stays open and the request is on file.
+            # The I-4 override record (who asked to move what, when) is kept, and the moves are APPLIED: the release
+            # plan is derived again with them and the run stops at this gate once more with the new split. The work the
+            # lanes already did is kept wherever its inputs did not change (checkpoints are keyed by input hash).
+            if not moves:
+                raise BadRequest(
+                    "Nothing was asked to change.",
+                    "Move at least one feature, or approve the structure as it is.",
+                )
             changes = [*rec.get("g15_changes", []), {"moves": moves, "at": stamp}]
-            self.store.update_run(run_id, g15_changes=changes)
+            self.store.update_run(run_id, g15_changes=changes, done_steps=[], status="queued")
+            self.store.append_event(
+                run_id,
+                "notice",
+                step="freeze",
+                data={"what": "g15.changed", "moves": len(moves), "at": stamp},
+            )
+            self._ctx.pop(run_id, None)
+            self._spawn(run_id)
             return {
                 "run_id": run_id,
                 "gate": "open",
                 "recorded": True,
-                "moves": len(moves),
-                "applied": False,
+                "moves": asked,
+                "applied": True,
             }
+        in_force = [
+            {"item": a, "to": b}
+            for a, b in moves_in_force({"g15_changes": rec.get("g15_changes", []), "gates": {}})
+        ] + moves
         record = {
-            "moves": moves,
-            "everything_in_one_release": everything,
+            "moves": in_force,
+            "everything_in_one_release": everything
+            or bool(((rec.get("gates") or {}).get("g15") or {}).get("everything_in_one_release")),
             "consents": consents,
             "at": stamp,
         }
         Orchestrator(self.store, []).approve_gate(run_id, "g15", record)
-        if everything:
-            # the release split changes: derive again from the start (the consent record is already on file)
+        if in_force or record["everything_in_one_release"]:
+            # the release split differs from the one derived: derive again from the start (the consent is on file)
             self.store.update_run(run_id, done_steps=[])
         self.store.update_run(run_id, status="queued")
         self._ctx.pop(run_id, None)

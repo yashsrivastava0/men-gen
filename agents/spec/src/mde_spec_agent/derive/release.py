@@ -77,7 +77,7 @@ class FeatureDecision:
 class PullIn:
     screen_id: str
     compass_id: str | None
-    rule: str  # user_must | role_journey | entity_producer
+    rule: str  # user_must | role_journey | entity_producer | owner_move
     because: str
     features: tuple[str, ...] = ()
 
@@ -179,7 +179,13 @@ def plan_release(
     research_view: ResearchView | None = None,
     everything_in_one_release: bool = False,
     consented: Collection[str] = (),
+    moves: Collection[tuple[str, str]] = (),
 ) -> ReleasePlan:
+    """``moves`` are the person's own choices at the structure check (G1.5): ``(feature id, "later")`` defers a feature
+    (reason ``user``: it is their own deferral, never relabelled) and ``(feature id, "in")`` brings one into the first
+    release (also over a deferral the Brief had, because their yes at G1.5 is the newer word). A feature named in both
+    directions follows the last request. Ids that are not features of the input are ignored here (the service refuses
+    them before they get this far)."""
     cfg = config or default_config()
     cap = cfg.scope.scope_cap_per_app_phase
     rd = release_data()
@@ -188,6 +194,13 @@ def plan_release(
 
     feats = {f.id: f for f in si.features if f.duplicate_of is None and f.scope_status != "out"}
     user_deferred = {fid for fid, f in feats.items() if f.deferred_by_user}
+    owner_choice: dict[str, str] = {}
+    for item, to in moves:
+        if item in feats and to in ("in", "later"):
+            owner_choice[item] = to  # the last request about a feature wins
+    moved_in = {f for f, to in owner_choice.items() if to == "in"}
+    moved_later = {f for f, to in owner_choice.items() if to == "later"}
+    user_deferred = (user_deferred - moved_in) | moved_later
     later_by_compass = {fid for fid, f in feats.items() if f.scope_status == "later"}
     screens = {p.id: p for p in inventory.screens}
     has_phase = any(p.phase in (rd.core_phase, rd.extended_phase) for p in screens.values())
@@ -224,6 +237,14 @@ def plan_release(
         pulled_ids.add(p.id)
         pulled.append(PullIn(p.id, p.compass_id, rule, because, p.feature_ids))
         return True
+
+    # --- 1b. what the person moved into the first release at G1.5 -------------------------------------------------------
+    for fid in sorted(moved_in):
+        for p in sorted((x for x in screens.values() if fid in x.feature_ids), key=lambda x: x.id):
+            pull(p, "owner_move", f"{fid} was moved into the first release by the person at G1.5")
+        notes.append(f"feature {fid} was moved into the first release by the person at G1.5")
+    for fid in sorted(moved_later):
+        notes.append(f"feature {fid} was moved to later by the person at G1.5 (reason user)")
 
     flows = list(si.structure.flows)
 
@@ -523,9 +544,15 @@ def plan_release(
         in_rel = [p for p in mine if p.id in release]
         pulled_f = any(p.id in pulled_ids for p in in_rel)
         if fid in user_deferred:
-            status, reason, why = "later", "user", "the person deferred it (their own words)"
+            status, reason, why = (
+                "later",
+                "user",
+                "the person moved it to later at G1.5"
+                if fid in moved_later
+                else "the person deferred it (their own words)",
+            )
         elif in_rel or not mine:
-            if fid in later_by_compass and not in_rel:
+            if fid in later_by_compass and not in_rel and fid not in moved_in:
                 status, reason, why = "later", "first_release", "Compass marks it later"
             else:
                 status, reason, why = (

@@ -13,6 +13,7 @@ from typing import Any
 
 from mde_compass_intake import intake as read_intake
 from mde_compass_intake import read_research
+from mde_spec_agent.derive.choices import everything_in_one_release, moves_in_force
 from mde_spec_agent.derive.pipeline import derive_graph
 from mde_spec_agent.derive.seed import research_adapter
 from mde_spec_core import glossary as glossary_mod
@@ -65,10 +66,8 @@ async def intake(ctx: RunContext) -> None:
         ctx.spec_input,
         ctx.research,
         ctx.config,
-        everything_in_one_release=bool(
-            ctx.store.get_run(ctx.run_id)["gates"].get("g15", {})
-            and ctx.store.get_run(ctx.run_id)["gates"]["g15"].get("everything_in_one_release")
-        ),
+        everything_in_one_release=everything_in_one_release(rec),
+        moves=moves_in_force(rec),
     )
     ctx.derived = dec
     ctx.graph = dec.graph

@@ -35,6 +35,7 @@ def derive_graph(
     *,
     everything_in_one_release: bool = False,
     consented: Collection[str] = (),
+    moves: Collection[tuple[str, str]] = (),
 ) -> Derived:
     cfg = config or default_config()
     facts = facts_from_input(spec_input, research_view)
@@ -47,5 +48,6 @@ def derive_graph(
         research_view=research_view,
         everything_in_one_release=everything_in_one_release,
         consented=consented,
+        moves=moves,
     )
     return Derived(facts, decision, inventory, plan, seed(spec_input, research_view, plan))

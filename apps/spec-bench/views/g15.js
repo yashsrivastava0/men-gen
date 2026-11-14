@@ -38,7 +38,7 @@ export function mount(root, ctx, route) {
     if (everything) payload.everything_in_one_release = true;
     try {
       await ctx.api.post(ctx.api.runPath(id) + "/g15", payload);
-      result = { ok: true, text: decision === "change" ? "Your changes were recorded. The split is being redone." : everything ? "Recorded: everything goes in one release." : "Recorded: you accepted the split." };
+      result = { ok: true, text: decision === "change" ? "Your moves were applied and recorded. The structure is being worked out again with them; this page opens again when it is ready (a minute or two)." : everything ? "Recorded: everything goes in one release." : "Recorded: you accepted the split." };
       moves.clear();
       ctx.refreshBudget();
       if (decision === "approve") {
