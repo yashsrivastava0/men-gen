@@ -118,10 +118,14 @@ const AUTO = {{
   deep: {{ compass_id: "cmp_freight", research_id: null, reason: "the thorough freight export", gaps: [] }},
 }};
 const PROFILES = {{ profiles: [{{ id: "haiku", capability_class: "weak", effective_window: 60000, whole_pack_tokens: 50000, k: 2, unset: ["price"] }}, {{ id: "sonnet", capability_class: "strong", effective_window: 200000, whole_pack_tokens: 180000, k: 4, unset: [] }}] }};
+const PREVIEW_OK = {{ profile: {{ id: "compact", label: "Small app", why: "one app" }}, inventory_count: 18, phases: [{{ name: "Core", screens: 18 }}], estimate: {{ low_micros: 40000, high_micros: 900000 }}, calls_by_step: {{ plan: 1, screens: 9 }}, remaining_micros: 4000000, mode: "offline", live: {{ allowed: true, blocked: null }}, refused: false }};
+const PREVIEW_BLOCKED = Object.assign({{}}, PREVIEW_OK, {{ live: {{ allowed: false, blocked: {{ code: "not_ready", message: "Live runs are not ready: ANTHROPIC_API_KEY.", fix: "Set the missing settings in the launch environment, or run offline.", missing: ["ANTHROPIC_API_KEY"] }} }} }});
+const HEALTH_READY = {{ ready: true, mode: "live", reasons: [], fake: false }};
 const inputsRoutes = (extra) => Object.assign({{
   "GET /api/inputs": INPUTS,
   "GET /api/inputs/auto": (init, url) => {{ const s = /size=(\\w+)/.exec(url)[1]; return AUTO[s] || {{ __status: 404, body: {{ error: {{ code: "not_found", message: "" }} }} }}; }},
   "GET /api/profiles": PROFILES,
+  "POST /api/preview": PREVIEW_OK,
   "POST /api/runs": {{ run_id: "run_01" }},
 }}, extra || {{}});
 
@@ -162,14 +166,17 @@ def test_inputs_show_proposals_with_reasons_and_start_the_run_with_the_chosen_pa
     r = node(
         """
 const v = await mountView("inputs", { name: "inputs" }, inputsRoutes());
-await until(() => byFk(v.box, "start"));
+await until(() => byFk(v.box, "preview"));
 const proposals = byClass(v.box, "proposal").map(flat);
 const compass = all(v.box, (n) => n.tag === "input" && n.attrs.name === "compass").map((n) => n.value);
 const drift = flat(v.box).includes("Brief edited after export");
 await byFk(v.box, "use-compact").click();
-const afterUse = { pressed: byFk(v.box, "use-compact").attrs["aria-pressed"], startOff: byFk(v.box, "start").disabled };
+const afterUse = { pressed: byFk(v.box, "use-compact").attrs["aria-pressed"], previewOff: byFk(v.box, "preview").disabled, confirmShown: !!byFk(v.box, "start") };
+await byFk(v.box, "preview").click();
+await until(() => byFk(v.box, "start"));
+const beforeConfirm = posts(v.log).map((p) => p[0]);
 await byFk(v.box, "start").click();
-out({ proposals, compass, drift, afterUse, posts: posts(v.log), nav: v.nav, autoCalls: v.log.filter((c) => c.url.startsWith("/api/inputs/auto")).map((c) => c.url) });
+out({ proposals, compass, drift, afterUse, beforeConfirm, posts: posts(v.log), nav: v.nav, autoCalls: v.log.filter((c) => c.url.startsWith("/api/inputs/auto")).map((c) => c.url) });
 """
     )
     assert len(r["proposals"]) == 4
@@ -180,40 +187,104 @@ out({ proposals, compass, drift, afterUse, posts: posts(v.log), nav: v.nav, auto
     assert "thin research lane" in r["proposals"][1]
     assert "Nothing suitable" in r["proposals"][3]  # the program size has no proposal
     assert r["compass"] == ["cmp_yoga", "cmp_freight"] and r["drift"] is True
-    assert r["afterUse"] == {"pressed": "true", "startOff": False}
-    assert r["posts"] == [
-        [
-            "/api/runs",
-            {
-                "compass_id": "cmp_yoga",
-                "offline": False,
-                "research_id": "rrn_9",
-                "consumer_profile": "haiku",
-            },
-        ]
-    ]
+    assert r["afterUse"] == {"pressed": "true", "previewOff": False, "confirmShown": False}
+    # the preview creates nothing: no run exists until the confirm button is pressed
+    assert r["beforeConfirm"] == ["/api/preview"]
+    body = {
+        "compass_id": "cmp_yoga",
+        "offline": True,  # no health answer (no key on this computer): offline is the default
+        "research_id": "rrn_9",
+        "consumer_profile": "haiku",
+    }
+    assert r["posts"] == [["/api/preview", body], ["/api/runs", body]]
     assert r["nav"] == ["#/preview/run_01"]
     assert sorted(r["autoCalls"]) == [
         f"/api/inputs/auto?size={s}" for s in ("compact", "deep", "program", "standard")
     ]
 
 
+def test_live_is_the_default_only_when_ready_and_says_the_cost_before_one_explicit_button() -> None:
+    r = node(
+        """
+const v = await mountView("inputs", { name: "inputs" }, inputsRoutes({ "GET /api/health": HEALTH_READY }));
+await until(() => byFk(v.box, "preview"));
+await byFk(v.box, "use-compact").click();
+const modeBefore = { live: "checked" in byFk(v.box, "mode-live").attrs, offline: "checked" in byFk(v.box, "mode-offline").attrs };
+await byFk(v.box, "preview").click();
+await until(() => byFk(v.box, "start"));
+const label = flat(byFk(v.box, "start"));
+const text = flat(v.box);
+const runsBefore = posts(v.log).filter((p) => p[0] === "/api/runs").length;
+await byFk(v.box, "start").click();
+out({ modeBefore, label, text, runsBefore, posts: posts(v.log) });
+"""
+    )
+    assert r["modeBefore"] == {"live": True, "offline": False}
+    assert r["label"] == "Start the LIVE run (may spend up to USD 0.90)"
+    assert "This will call real AI models and spend money" in r["text"]
+    assert "between USD 0.04 and USD 0.90" in r["text"] and "USD 4.00" in r["text"]
+    assert r["runsBefore"] == 0
+    assert r["posts"][0][1]["offline"] is False and r["posts"][1][0] == "/api/runs"
+    assert r["posts"][1][1]["offline"] is False
+
+
+def test_a_live_run_that_cannot_start_is_explained_and_offline_stays_possible() -> None:
+    r = node(
+        """
+const v = await mountView("inputs", { name: "inputs" }, inputsRoutes({ "GET /api/health": HEALTH_READY, "POST /api/preview": PREVIEW_BLOCKED }));
+await until(() => byFk(v.box, "preview"));
+await byFk(v.box, "use-compact").click();
+await byFk(v.box, "preview").click();
+await until(() => byFk(v.box, "start"));
+const liveOff = byFk(v.box, "start").disabled;
+const text = flat(v.box);
+await byFk(v.box, "mode-offline").change();
+const offlineOn = !byFk(v.box, "start").disabled;
+const offlineLabel = flat(byFk(v.box, "start"));
+await byFk(v.box, "start").click();
+out({ liveOff, text, offlineOn, offlineLabel, posts: posts(v.log).map((p) => [p[0], p[1].offline]) });
+"""
+    )
+    assert r["liveOff"] is True
+    assert "Live runs are not ready: ANTHROPIC_API_KEY." in r["text"]
+    assert "Set the missing settings in the launch environment, or run offline." in r["text"]
+    assert r["offlineOn"] is True and r["offlineLabel"] == "Start the offline run (free)"
+    assert r["posts"] == [["/api/preview", False], ["/api/runs", True]]
+
+
+def test_changing_the_input_drops_the_preview_so_a_stale_cost_is_never_confirmed() -> None:
+    r = node(
+        """
+const v = await mountView("inputs", { name: "inputs" }, inputsRoutes());
+await until(() => byFk(v.box, "preview"));
+await byFk(v.box, "use-compact").click();
+await byFk(v.box, "preview").click();
+await until(() => byFk(v.box, "start"));
+await byFk(v.box, "use-standard").click();       // another pair: the old preview no longer applies
+out({ confirmGone: !byFk(v.box, "start") });
+"""
+    )
+    assert r["confirmGone"] is True
+
+
 def test_compass_only_offline_and_not_ready_are_honoured_before_anything_is_sent() -> None:
     r = node(
         """
 const v = await mountView("inputs", { name: "inputs" }, inputsRoutes());
-await until(() => byFk(v.box, "start"));
+await until(() => byFk(v.box, "preview"));
 await byFk(v.box, "compass-cmp_yoga").change();
 await byFk(v.box, "research-rrn_9").change();
 await byFk(v.box, "research-none").change();      // Compass only: no research id may be sent
-await byFk(v.box, "offline").change(true);
+await byFk(v.box, "mode-offline").change();
+await byFk(v.box, "preview").click();
+await until(() => byFk(v.box, "start"));
 await byFk(v.box, "start").click();
-const firstPost = posts(v.log)[0][1];
+const firstPost = posts(v.log)[1][1];
 const w = await mountView("inputs", { name: "inputs" }, inputsRoutes());
-await until(() => byFk(w.box, "start"));
-const noneYet = byFk(w.box, "start").disabled;
+await until(() => byFk(w.box, "preview"));
+const noneYet = byFk(w.box, "preview").disabled;
 await byFk(w.box, "compass-cmp_freight").change();
-const notReady = { off: byFk(w.box, "start").disabled, text: flat(w.box).includes("not ready: roles") };
+const notReady = { off: byFk(w.box, "preview").disabled, text: flat(w.box).includes("not ready: roles") };
 out({ firstPost, noneYet, notReady });
 """
     )
@@ -231,8 +302,10 @@ def test_a_refused_estimate_is_said_in_plain_words_and_nothing_navigates() -> No
         """
 const routes = inputsRoutes({ "POST /api/runs": { __status: 409, body: { error: { code: "refused_estimate", message: "The highest this run could cost (USD 4.80) is more than the USD 4.00 left.", fix: "Choose a smaller input or run it offline." } } } });
 const v = await mountView("inputs", { name: "inputs" }, routes);
-await until(() => byFk(v.box, "start"));
+await until(() => byFk(v.box, "preview"));
 await byFk(v.box, "use-compact").click();
+await byFk(v.box, "preview").click();
+await until(() => byFk(v.box, "start"));
 await byFk(v.box, "start").click();
 const alert = find(v.box, (n) => n.attrs.role === "alert");
 out({ text: alert && flat(alert), nav: v.nav, stillOn: !byFk(v.box, "start").disabled });
@@ -240,14 +313,12 @@ out({ text: alert && flat(alert), nav: v.nav, stillOn: !byFk(v.box, "start").dis
     )
     assert "USD 4.80" in r["text"] and "Choose a smaller input or run it offline." in r["text"]
     assert r["nav"] == [] and r["stillOn"] is True
-
-
 # ------------------------------------------------------------------------------------------------ 2 preview
 def test_preview_shows_the_cost_range_and_refuses_in_words_when_it_does_not_fit() -> None:
     r = node(
         """
 const routes = {
-  "GET /api/runs/run_01": { status: "running", estimate: { low_micros: 100000, high_micros: 900000 } },
+  "GET /api/runs/run_01": { status: "running", offline: false, estimate: { low_micros: 100000, high_micros: 900000 } },
   "GET /api/runs/run_01/preview": { profile: { id: "standard", label: "Standard app", why: "two roles, one app" }, inventory_count: 42, phases: [{ name: "Core", screens: 30 }, { name: "Later", screens: 12 }], estimate: { low_micros: 100000, high_micros: 900000 }, calls_by_step: { structure: 4, product: 11 } },
 };
 const tight = await mountView("preview", { name: "preview", id: "run_01" }, routes, { budget: { ...BUDGET, remaining_micros: 500000 } });
@@ -276,6 +347,26 @@ out({
     assert r["phases"][0][0] == "Core" and r["phases"][1][0] == "Later"
     assert "#/g15/run_01" in r["links"] and "#/run/run_01" in r["links"]
     assert r["gets"][:2] == ["/api/runs/run_01", "/api/runs/run_01/preview"]
+
+
+def test_preview_of_an_offline_run_says_it_is_offline_and_never_calls_the_cost_a_refusal() -> None:
+    r = node(
+        """
+const routes = {
+  "GET /api/runs/run_01": { status: "running", offline: true, estimate: { low_micros: 100000, high_micros: 900000 } },
+  "GET /api/runs/run_01/preview": { profile: { id: "standard", label: "Standard app" }, inventory_count: 42, phases: [], estimate: { low_micros: 100000, high_micros: 900000 }, calls_by_step: { product: 11 } },
+};
+const v = await mountView("preview", { name: "preview", id: "run_01" }, routes, { budget: { ...BUDGET, remaining_micros: 500000 } });
+await until(() => flat(v.box).includes("Phases"));
+out({ text: flat(v.box), tiles: byClass(v.box, "tile").map(flat), banners: byClass(v.box, "banner").map((b) => b.className) });
+"""
+    )
+    assert "OFFLINE: no model, costs nothing" in r["text"]
+    assert "This run is offline: no model is called and it costs nothing." in r["text"]
+    assert "A live run of this input would not start" in r["text"]
+    assert any(t.startswith("A live run would cost") for t in r["tiles"])
+    assert "banner banner-bad" not in r["banners"]
+    assert "The app refuses to start a run like this" not in r["text"]
 
 
 # ------------------------------------------------------------------------------------------------ 3 g15
@@ -1069,7 +1160,11 @@ out({
 """
     )
     assert r["fakeHidden"] is False
-    assert r["mode"] == ["mode mode-live", "LIVE: real models; this costs money"]
+    # the fake app is never presented as live, even though its health says it is ready
+    assert r["mode"] == [
+        "mode mode-offline",
+        "TEST FAKE: scripted answers, no model is called, nothing is spent",
+    ]
     assert r["money"] == [
         "money money-ok",
         "Spent USD 1.00 of the USD 5.00 cap (USD 4.00 left). Tripwire USD 4.50.",

@@ -591,6 +591,51 @@ class SpecService:
                 missing=problems,
             )
 
+    # ------------------------------------------------------------------------------------ the preview BEFORE a run
+    def preview_input(
+        self,
+        *,
+        compass_id: str | None = None,
+        synth: str | None = None,
+        research_id: str | None = None,
+        consumer_profile: str | None = None,
+        offline: bool = True,
+    ) -> dict[str, Any]:
+        """The zero-cost preview of an input before any run exists (the owner sees the cost and says yes).
+
+        Nothing is created, reserved or called: no run folder, no gateway, no money. ``live`` says whether a live
+        run could start right now and, when it could not, why in plain words (``blocked``: the same code, message
+        and fix the start would answer with); ``mode`` is what the start would do with the ``offline`` flag given.
+        """
+        plan = self.plan_input(
+            compass_id=compass_id,
+            synth=synth,
+            research_id=research_id,
+            consumer_profile=consumer_profile,
+            offline=offline,
+        )
+        live: dict[str, Any] = {"allowed": True, "blocked": None}
+        try:
+            self._live_gate(plan.preview)
+        except SpecServiceError as exc:
+            live = {
+                "allowed": False,
+                "blocked": {"code": exc.code, "message": exc.message, "fix": exc.fix, **exc.extra},
+            }
+        snap = self.record.snapshot()
+        out = dict(plan.preview)
+        out.setdefault("estimate", plan.estimate)
+        out.update(
+            {
+                "profile_id": plan.profile,
+                "mode": "offline" if offline else "live",
+                "live": live,
+                "remaining_micros": snap["remaining_micros"],
+                "budget_state": snap["state"],
+            }
+        )
+        return out
+
     # ------------------------------------------------------------------------------------ runs: start, list, read
     async def start_run(
         self,

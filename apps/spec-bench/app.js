@@ -77,6 +77,9 @@ function drawMode() {
   } else if (!hl) {
     pill.className = "mode mode-wait";
     pill.textContent = "Checking…";
+  } else if (hl.fake) {
+    pill.className = "mode mode-offline";
+    pill.textContent = "TEST FAKE: scripted answers, no model is called, nothing is spent";
   } else if (hl.mode === "live") {
     pill.className = "mode mode-live";
     pill.textContent = hl.ready ? "LIVE: real models; this costs money" : "LIVE mode, not ready";

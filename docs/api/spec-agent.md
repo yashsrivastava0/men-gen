@@ -34,6 +34,7 @@ nothing from `mde_flow`, `context-api`, `web` or any other agent. Design: `docs/
 ## Runs (steps 2 to 6)
 | Method and path | Purpose |
 | --- | --- |
+| `POST /api/preview` | the same body as `POST /api/runs`. The zero-cost preview of an input **before any run exists**: nothing is created, reserved or called. Returns the run preview shape (below, `GET /api/runs/{id}/preview`) plus `mode` (`live` or `offline`, from the `offline` flag), `profile_id`, `remaining_micros`, `budget_state` and `live: {allowed, blocked}`; when a live run could not start now, `blocked` carries the code, message and fix the start would answer with (`budget_blocked`, `refused_estimate`, `not_ready`, with `missing` setting names only). The Bench shows this and asks for an explicit confirm before it starts a run |
 | `POST /api/runs` | `{compass_id, research_id?, consumer_profile?, offline: bool}` -> `202 {run_id}`. Refused with `refused_estimate` when the estimate's upper bound exceeds the remaining budget (plain message) |
 | `GET /api/runs` | run history |
 | `GET /api/runs/{id}` | snapshot: `{status: queued\|running\|paused_g15\|awaiting_g2\|approved\|partial\|failed, step, profile, gates{g15, g2}, spend_micros, estimate{low_micros, high_micros}, banners[], checked_by[], critic_vendor}` |

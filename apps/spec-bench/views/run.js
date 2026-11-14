@@ -5,7 +5,7 @@ import { createRunFeed } from "../lib/runfeed.js";
 import { emptyState, applySnapshot, ingest, stepRows, callKinds, runActions } from "../lib/reducer.js";
 import { describeEvent } from "../lib/eventtext.js";
 import { usd, usdRange, stepWord, statusWord, reasonWord, bannerWord, tokensText, plural, formatTime, count } from "../lib/format.js";
-import { banner, statusChip, problemBanner, problemOf, loading, pageHead, card, tile, genericTable } from "./shared.js";
+import { banner, statusChip, modeChip, problemBanner, problemOf, loading, pageHead, card, tile, genericTable } from "./shared.js";
 
 export function mount(root, ctx, route) {
   const id = route.id;
@@ -79,7 +79,7 @@ export function mount(root, ctx, route) {
     if (gone) return;
     const acts = runActions(state);
     const kids = [];
-    kids.push(h("div", { class: "row" }, h("p", { class: "nowline" }, statusChip(state.status), " ", state.step ? stepWord(state.step) : ""), h("span", { class: "muted small" }, live === "live" ? "Live" : live === "ended" ? "Feed ended" : live === "retry" ? "Reconnecting…" : "Connecting…")));
+    kids.push(h("div", { class: "row" }, h("p", { class: "nowline" }, statusChip(state.status), " ", modeChip(snap), " ", state.step ? stepWord(state.step) : ""), h("span", { class: "muted small" }, live === "live" ? "Live" : live === "ended" ? "Feed ended" : live === "retry" ? "Reconnecting…" : "Connecting…")));
     if (actionProblem) kids.push(problemBanner(actionProblem));
     for (const b of state.banners) kids.push(banner(bannerWord(b.code) + (b.text ? " " + b.text : ""), "warn"));
     if (state.status === "partial") {

@@ -215,6 +215,17 @@ def _make_router() -> APIRouter:
         return await asyncio.to_thread(_svc(request).upload, raw)
 
     # ---- runs ---------------------------------------------------------------------------------------------
+    @r.post("/preview")
+    async def preview_input(body: StartBody, request: Request) -> dict[str, Any]:
+        """The zero-cost preview of an input BEFORE a run exists: no run, no model call, no money."""
+        return await asyncio.to_thread(
+            _svc(request).preview_input,
+            compass_id=body.compass_id,
+            research_id=body.research_id,
+            consumer_profile=body.consumer_profile,
+            offline=body.offline,
+        )
+
     @r.post("/runs")
     async def start(body: StartBody, request: Request) -> JSONResponse:
         res = await _svc(request).start_run(

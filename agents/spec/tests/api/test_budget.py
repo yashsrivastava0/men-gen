@@ -92,3 +92,59 @@ def test_budget_endpoint_reflects_spend(service: SpecService, client: TestClient
     _spend(service, 1_234_000)
     b = client.get("/api/budget").json()
     assert b["spent_micros"] == 1_234_000 and b["remaining_micros"] == 5_000_000 - 1_234_000
+
+
+# ---- the preview BEFORE a run exists (the owner sees the cost, then says yes) ------------------------------------------
+
+
+def test_preview_before_a_run_creates_nothing_and_calls_no_model(
+    service: SpecService, client: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom(*a: object, **k: object) -> None:
+        raise AssertionError("a preview must not build a gateway or call a model")
+
+    monkeypatch.setattr(service, "_gateway", boom)
+    res = client.post("/api/preview", json={"compass_id": "synth:small", "offline": True})
+    assert res.status_code == 200
+    pv = res.json()
+    assert pv["mode"] == "offline" and pv["inventory_count"] > 0
+    assert 0 < pv["estimate"]["low_micros"] <= pv["estimate"]["high_micros"]
+    assert pv["remaining_micros"] == service.record.cap_micros
+    assert client.get("/api/runs").json() == {"runs": []}  # no run was created
+    assert service.budget()["spent_micros"] == 0
+
+
+def test_preview_says_why_a_live_run_could_not_start_without_raising(client: TestClient) -> None:
+    pv = client.post("/api/preview", json={"compass_id": "synth:tiny", "offline": False}).json()
+    assert pv["mode"] == "live"
+    assert pv["live"]["allowed"] is False
+    blocked = pv["live"]["blocked"]
+    assert blocked["code"] == "not_ready" and blocked["fix"]
+    assert any("_API_KEY" in m for m in blocked["missing"])  # names only, never a value
+    assert client.get("/api/runs").json() == {"runs": []}
+
+
+def test_preview_reports_an_estimate_the_money_cannot_cover(make_service) -> None:  # type: ignore[no-untyped-def]
+    svc = make_service(spec_live_budget_usd="0.01", spec_tripwire_usd="0.009")
+    from mde_spec_agent.api import create_app
+
+    with TestClient(create_app(svc, settings=svc.settings)) as c:
+        pv = c.post("/api/preview", json={"compass_id": "synth:small", "offline": False}).json()
+        assert pv["refused"] is True and pv["refusal_message"]
+        assert pv["live"]["allowed"] is False
+        assert pv["live"]["blocked"]["code"] == "refused_estimate"
+        assert pv["live"]["blocked"]["high_micros"] > pv["live"]["blocked"]["remaining_micros"]
+        assert c.get("/api/runs").json() == {"runs": []}
+
+
+def test_preview_reports_an_exhausted_budget(service: SpecService, client: TestClient) -> None:
+    _spend(service, service.record.cap_micros)
+    pv = client.post("/api/preview", json={"compass_id": "synth:tiny", "offline": False}).json()
+    assert pv["budget_state"] == "exhausted"
+    assert pv["live"]["blocked"]["code"] == "budget_blocked"
+    assert pv["remaining_micros"] == 0
+
+
+def test_preview_of_an_unknown_input_is_a_plain_400(client: TestClient) -> None:
+    res = client.post("/api/preview", json={"compass_id": "no-such-export", "offline": True})
+    assert res.status_code in (400, 404) and res.json()["error"]["message"]

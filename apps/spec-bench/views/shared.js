@@ -10,6 +10,10 @@ export const loading = () => h("p", { class: "muted pad" }, "Loading…");
 export function statusChip(status) {
   return h("span", { class: "chip chip-" + statusTone(status) }, statusWord(status));
 }
+/** LIVE or OFFLINE for a run (the colour is never the only signal: the word is always there). */
+export function modeChip(snap) {
+  return snap && snap.offline === false ? chip("LIVE: real models, costs money", "busy") : chip("OFFLINE: no model, costs nothing", "plain");
+}
 export function chip(text, tone) {
   return h("span", { class: "chip chip-" + (tone || "plain") }, text);
 }
