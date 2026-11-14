@@ -259,7 +259,19 @@ def _shard_entities(graph: SpecGraph, counter: TokenCounter, cap: int) -> dict[s
 
 
 def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
+    """The pack for one consumer. A TINY pack (one that fits the one-file form AND the design-target consumer's whole
+    read) has no module folders: its INDEX lists the screens and its one file holds the rest (SPC-SC-01)."""
     opt = options or PackOptions()
+    pack = _assemble(graph, opt, with_modules=True)
+    if (
+        pack.manifest["pack_form"] == "one_file_and_tree"
+        and pack.budget_report["total_tokens"] <= opt.config.budgets.whole_pack_tokens
+    ):
+        return _assemble(graph, opt, with_modules=False)
+    return pack
+
+
+def _assemble(graph: SpecGraph, opt: PackOptions, *, with_modules: bool) -> Pack:
     cfg = opt.config
     b = cfg.budgets
     counter = TokenCounter(opt.chars_per_token or b.token_factor_chars_per_token)
@@ -276,22 +288,59 @@ def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
         sid: s for sid, s in screens.items() if s.status == "in"
     }  # `later` features have NO screen files (V-19)
 
-    # ---- screens: card + generated closure = the slice
+    # ---- screens: card + generated closure = the slice. A card or slice over its cap first moves its bulky text to
+    # screens/<id>.detail.md (doc 18 3.3); only a budget still unmet after that (and after the one re-ask the flow
+    # runs on this signal) is a Spec bug.
     slice_tokens: dict[str, int] = {}
     block_tokens: dict[str, dict[str, int]] = {}
+    detail_moved: dict[str, list[str]] = {}
     for sid in sorted(live):
         s = live[sid]
-        card = render_card(s)
         clos = render_closure(s, graph, blocks)
-        if counter.count(card) > b.card_hard:
+
+        def measure(scr: Screen, ref: str | None, clos: str = clos) -> tuple[int, int]:
+            card_text = render_card(scr, ref)
+            return counter.count(card_text), counter.count(normalise_text(card_text + "\n" + clos))
+
+        fitted = fit(
+            s,
+            min_chars=b.detail_min_chars,
+            head_chars=b.detail_head_chars,
+            card_hard=b.card_hard,
+            slice_cap=b.slice_cap,
+            measure=measure,
+        )
+        moved = sorted(fitted.moved)
+        if not fitted.card_ok:
             raise PackBreach(
                 "CARD_OVER_HARD_CAP",
                 sid,
-                f"card is {counter.count(card)} tokens, hard cap {b.card_hard}",
-                "shorten the card (one re-ask) or move bulky detail to screens/<id>.detail.md",
+                f"card is {fitted.card_tokens} tokens, hard cap {b.card_hard}"
+                + (f" after {len(moved)} bulky texts moved to its detail file" if moved else ""),
+                "one re-ask of the card's owning batch shortens it (doc 18 3.3)",
+                after_detail_move=True,
+                reask="shorten_card",
+                moved=moved,
             )
-        text = normalise_text(card + "\n" + clos)
+        ref = detail_path(sid) if fitted.moved else None
+        text = normalise_text(render_card(fitted.screen, ref) + "\n" + clos)
         files[f"screens/{sid}.md"] = text
+        if fitted.moved:
+            detail_moved[sid] = moved
+            files[detail_path(sid)] = render_detail(sid, fitted.moved)
+            read_cap = b.task_read_budget - b.front_end_allowance
+            if counter.count(files[detail_path(sid)]) > max(
+                read_cap, (opt.task_read_budget or 0) - b.front_end_allowance
+            ):
+                raise PackBreach(
+                    "DETAIL_OVER_BUDGET",
+                    sid,
+                    f"the detail file is {counter.count(files[detail_path(sid)])} tokens: more than one read holds",
+                    "one re-ask of the card's owning batch shortens its texts (doc 18 3.3)",
+                    after_detail_move=True,
+                    reask="shorten_card",
+                    moved=moved,
+                )
         if s.could:
             files[f"screens/{sid}.could.md"] = render_could(s)
         slice_tokens[sid] = counter.count(text)
@@ -301,11 +350,18 @@ def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
             if r.use_block
         }
         if slice_tokens[sid] > b.slice_cap:
+            # a closure that alone fills the cap cannot be repaired by shortening a card: split the screen
+            fixable = counter.count(clos) < b.slice_cap
             raise PackBreach(
                 "SLICE_OVER_CAP",
                 sid,
                 f"slice is {slice_tokens[sid]} tokens, cap {b.slice_cap}",
-                "split the screen at inventory time, or move bulky detail to screens/<id>.detail.md",
+                "one re-ask shortens the card, or split the screen at inventory time"
+                if fixable
+                else "split the screen at inventory time (its closure alone fills the cap)",
+                after_detail_move=True,
+                reask="shorten_card" if fixable else None,
+                moved=moved,
             )
 
     # ---- global files
@@ -389,8 +445,12 @@ def assemble(graph: SpecGraph, options: PackOptions | None = None) -> Pack:
         )
         + "\n"
     )
-    for loc in sorted(graph.locale_copy):
-        files[f"global/copy/{loc}.json"] = canonical_json(graph.locale_copy[loc]) + "\n"
+    # copy: one file per locale while it fits a shard, else one file per module and locale (doc 15 5.4); the layout is
+    # decided with the fixed reference tokenizer so a consumer change never moves a string
+    for path, kv in shard_copy(
+        graph, TokenCounter(b.token_factor_chars_per_token), b.global_shard_cap
+    ).items():
+        files[path] = canonical_json(kv) + "\n"
     # Contract v0 (OpenAPI 3.1, schemas, auth matrix, events) is emitted by code and merged into the pack
     files.update(contract_files(graph, config=cfg, chars_per_token=counter.chars_per_token))
 
