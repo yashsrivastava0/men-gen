@@ -375,6 +375,7 @@ def _make_router() -> APIRouter:
             rcode_rows=m.rcode_rows,
             verify_report=_verify_for_view(m.verify),
             research=m.research,
+            today=_svc(request).clock.now().date(),
         )
         if isinstance(out, dict):
             out.setdefault("content_hash", rec.get("content_hash"))
