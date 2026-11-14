@@ -50,8 +50,12 @@ class ProofPack:
 
     @property
     def total_tokens(self) -> int:
+        # APP_SPEC.md is the whole pack again as ONE file (the one-file form of a pack small enough to read at once); a
+        # reader holds the tree OR the one file, so counting both would make every small pack look twice its size
         return sum(
-            count(t) for p, t in self.files.items() if p not in ("MANIFEST.json", "index.json")
+            count(t)
+            for p, t in self.files.items()
+            if p not in ("MANIFEST.json", "index.json", "APP_SPEC.md")
         )
 
     def screen_ids(self) -> list[str]:

@@ -107,10 +107,6 @@ def test_degraded_input_keeps_every_default_a_default_and_flags_weak_inputs():
 
 
 @case("spc-in-04")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-IN-1: the G2 view never says 'weak inputs': the reader sets trust.weak_inputs but no step turns it into a banner or a risk line",
-)
 def test_g2_leads_with_weak_inputs(tmp_path_factory):
     f = cached_flow(tmp_path_factory, "in-standard", lambda: raw("standard"))
     g2 = f.g2()
@@ -127,10 +123,6 @@ def test_unverified_approval_proceeds_with_a_reader_flag():
 
 
 @case("spc-in-05")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-IN-1: no G2 banner for an unverified approval (input_binding is read by the intake and dropped by the Spec flow)",
-)
 def test_unverified_approval_gets_a_g2_banner(tmp_path_factory):
     f = cached_flow(tmp_path_factory, "in-nobaseline", lambda: mutated("spc-in-05", "standard"))
     assert f.status == "approved"
@@ -226,10 +218,6 @@ def test_an_implied_payment_need_is_derived_mock_first():
 
 
 @case("spc-in-09")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-IN-3: the mismatch (payments implied by the Brief but absent from or real_later in Compass's integrations) is not flagged at G2",
-)
 def test_the_payment_mismatch_is_flagged_at_g2(tmp_path_factory):
     f = cached_flow(tmp_path_factory, "in-standard", lambda: raw("standard"))
     g2 = f.g2()
@@ -238,10 +226,6 @@ def test_the_payment_mismatch_is_flagged_at_g2(tmp_path_factory):
 
 
 @case("spc-in-10")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-IN-4: the standard export says farmers sign in by phone code (FCT-036) and the manager by email (FCT-037); Spec reads only email_password and records no conflict or confirm item",
-)
 def test_conflicting_sign_in_facts_are_recorded_and_the_user_fact_wins(tmp_path_factory):
     si = real("standard")
     assert any("phone code" in f.statement for f in si.domain_facts)

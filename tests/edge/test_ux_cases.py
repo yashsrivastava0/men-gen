@@ -306,12 +306,6 @@ def test_ux_06_a_tier_c_feature_is_said_plainly_at_g2_and_never_hidden():
 
 
 @case("spc-ux-06")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-UX-2: a requested capability outside the stack (an NFC feature) is never given a capability or a tier by "
-    "the derivation (Feature.capability stays None), so neither G1.5 nor G2 says anything about it: it is "
-    "specified silently; the tier C wording only appears for a graph whose capability was set by hand",
-)
 def test_ux_06_a_requested_nfc_feature_is_flagged_at_g15_and_g2():
     from mde_spec_agent.derive import derive_graph
     from mde_spec_agent.views import g15

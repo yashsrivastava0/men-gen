@@ -157,11 +157,6 @@ def test_fe_05_a_capability_outside_the_stack_kit_is_flagged_at_spec_time_and_ne
 
 
 @case("spc-fe-05")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-FE-4: the derivation never maps a requested feature to the capability sheet: an NFC feature keeps "
-    "capability None and tier None, so it is neither flagged tier B nor listed at G2; it is specified silently",
-)
 def test_fe_05_a_requested_nfc_feature_gets_its_tier_from_the_capability_sheet():
     from mde_spec_agent.derive import derive_graph
 

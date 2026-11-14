@@ -13,7 +13,9 @@ def test_a_live_runner_shares_the_services_spend_record(tmp_path: Path) -> None:
     settings = SpecSettings(spec_data_dir=tmp_path / "service-data")
     live = proof_record_path(tmp_path / "work", offline=False, settings=settings)
     assert live == data_dir(settings) / "spend-record.json"
-    assert live == tmp_path / "service-data" / "spend-record.json"  # the file the service and the spend check read
+    assert (
+        live == tmp_path / "service-data" / "spend-record.json"
+    )  # the file the service and the spend check read
 
 
 def test_an_offline_runner_keeps_a_private_record_in_its_work_folder(tmp_path: Path) -> None:

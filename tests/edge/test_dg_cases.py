@@ -99,8 +99,9 @@ def test_low_end_devices_get_a_light_motion_class_as_a_default_floor(tmp_path_fa
 @case("spc-dg-04")
 def test_a_could_that_needs_tier_b_is_flagged_with_its_tier_and_stays_optional(tmp_path_factory):
     f = _std(tmp_path_factory)
-    assert f.flags and f.flags[0]["kind"] == "capability_risk" and f.flags[0]["tier"] == "B"
-    assert "direction DIR-S003" in " ".join(f.flags[0]["implied_by"])
+    risks = [x for x in f.flags if x.get("kind") == "capability_risk"]  # input notes may come first
+    assert risks and risks[0]["tier"] == "B"
+    assert "direction DIR-S003" in " ".join(risks[0]["implied_by"])
     g2 = f.g2()
     assert any(row["what"] == "capability_risk" for row in g2["flags"])  # shown to the owner at G2
     # COULD is outside the approved hash: toggling it changes nothing that G2 binds

@@ -247,11 +247,6 @@ def test_op_07_a_policy_reference_with_an_old_date_is_not_current():
 
 
 @case("spc-op-07")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-OP-3: no `policy_sheet_stale` flag exists: nothing compares the sheet's checked date with today, "
-    "V-33 accepts a policy reference whose date is old, and no code produces that flag for G2",
-)
 def test_op_07_a_stale_policy_sheet_raises_the_policy_sheet_stale_flag_at_g2():
     from mde_spec_core.graph import Prov
     from mde_spec_core.policy import default_policy_sheet

@@ -181,10 +181,6 @@ def test_a_research_file_for_another_brief_is_known_to_be_stale():
 
 
 @case("spc-rs-06")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-RS-3: Spec never compares research.brief_hash with the Brief: no `research_stale` flag and no G2 banner (the run uses the stale research silently)",
-)
 def test_stale_research_raises_a_flag_and_a_g2_banner(tmp_path_factory):
     f = cached_flow(
         tmp_path_factory, "rs-stale", lambda: raw("standard"), research=_variant("stale")
