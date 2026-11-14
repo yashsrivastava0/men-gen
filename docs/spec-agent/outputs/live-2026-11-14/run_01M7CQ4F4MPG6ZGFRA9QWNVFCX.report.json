@@ -1,0 +1,168 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1919,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 7996,
+   "tokens_out": 2237
+  },
+  "COPY-L": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 14216,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 40906,
+   "tokens_out": 20247
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1829,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4887,
+   "tokens_out": 2680
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2528,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4148,
+   "tokens_out": 4224
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3650,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 5964,
+   "tokens_out": 6106
+  },
+  "MOCK-HERO": {
+   "calls": 3,
+   "clean": 3,
+   "cost_micros": 8781,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 19500,
+   "tokens_out": 13658
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 4165,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 33269,
+   "tokens_out": 1675
+  },
+  "PROD-JOURNEYS": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 7848,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 36451,
+   "tokens_out": 8404
+  },
+  "PROD-MODULE": {
+   "calls": 5,
+   "clean": 4,
+   "cost_micros": 36034,
+   "fallback": 0,
+   "first_errors": [
+    "screen SCR-003: no story cites it; cite it in the story it serves"
+   ],
+   "first_try_pass": 0.8,
+   "repair_rate": 0.2,
+   "repaired": 1,
+   "tokens_in": 159654,
+   "tokens_out": 40128
+  },
+  "SCRN": {
+   "calls": 7,
+   "clean": 5,
+   "cost_micros": 60278,
+   "fallback": 0,
+   "first_errors": [
+    "SCR-S003.could2: form words (bounce); say what it communicates, not how it looks"
+   ],
+   "first_try_pass": 0.714,
+   "repair_rate": 0.286,
+   "repaired": 2,
+   "tokens_in": 173902,
+   "tokens_out": 85765
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3753,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 12919,
+   "tokens_out": 4922
+  }
+ },
+ "calls_total": 25,
+ "cost_usd": 0.145,
+ "events": 95,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "c16b1d1d52ecf8b3ccae1332d1568369ac96362e00d487ad4a8fbdfbb1adca8d",
+  "critic_vendor": null,
+  "files": 133,
+  "tokens": 210856
+ },
+ "partial_reason": null,
+ "profile": "standard",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 2,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7CQ4F4MPG6ZGFRA9QWNVFCX",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 23,
+  "max_read_tokens": 19428,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": false
+ }
+}
