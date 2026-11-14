@@ -1,0 +1,3206 @@
+{
+ "gates": {
+  "PS-10.ablation": {
+   "checks": [
+    {
+     "name": "stories: earns its place",
+     "ok": false,
+     "op": "==",
+     "threshold": true,
+     "value": false
+    },
+    {
+     "name": "emotion: earns its place",
+     "ok": false,
+     "op": "==",
+     "threshold": true,
+     "value": false
+    },
+    {
+     "name": "could: earns its place",
+     "ok": false,
+     "op": "==",
+     "threshold": true,
+     "value": false
+    },
+    {
+     "name": "mock_assets: earns its place",
+     "ok": false,
+     "op": "==",
+     "threshold": true,
+     "value": false
+    }
+   ],
+   "details": {
+    "arms": {
+     "+could": {
+      "acceptance_satisfiable": 34,
+      "acceptance_satisfiable_share": 1.0,
+      "added_tokens_vs_must": 0,
+      "assumptions": 0,
+      "assumptions_per_screen": 0.0,
+      "blocking_per_screen": 0.0,
+      "blocking_questions": 0,
+      "criteria": 34,
+      "fallback_calls": 0,
+      "read_tokens_max": 14582,
+      "screens": 6
+     },
+     "+emotion": {
+      "acceptance_satisfiable": 34,
+      "acceptance_satisfiable_share": 1.0,
+      "added_tokens_vs_must": 0,
+      "assumptions": 0,
+      "assumptions_per_screen": 0.0,
+      "blocking_per_screen": 0.0,
+      "blocking_questions": 0,
+      "criteria": 34,
+      "fallback_calls": 0,
+      "read_tokens_max": 14582,
+      "screens": 6
+     },
+     "+mock_assets": {
+      "acceptance_satisfiable": 34,
+      "acceptance_satisfiable_share": 1.0,
+      "added_tokens_vs_must": 4621,
+      "assumptions": 0,
+      "assumptions_per_screen": 0.0,
+      "blocking_per_screen": 0.0,
+      "blocking_questions": 0,
+      "criteria": 34,
+      "fallback_calls": 0,
+      "read_tokens_max": 19203,
+      "screens": 6
+     },
+     "+stories": {
+      "acceptance_satisfiable": 34,
+      "acceptance_satisfiable_share": 1.0,
+      "added_tokens_vs_must": 0,
+      "assumptions": 0,
+      "assumptions_per_screen": 0.0,
+      "blocking_per_screen": 0.0,
+      "blocking_questions": 0,
+      "criteria": 34,
+      "fallback_calls": 0,
+      "read_tokens_max": 14582,
+      "screens": 6
+     },
+     "+usually": {
+      "acceptance_satisfiable": 34,
+      "acceptance_satisfiable_share": 1.0,
+      "added_tokens_vs_must": 0,
+      "assumptions": 0,
+      "assumptions_per_screen": 0.0,
+      "blocking_per_screen": 0.0,
+      "blocking_questions": 0,
+      "criteria": 34,
+      "fallback_calls": 0,
+      "read_tokens_max": 14582,
+      "screens": 6
+     },
+     "must": {
+      "acceptance_satisfiable": 34,
+      "acceptance_satisfiable_share": 1.0,
+      "added_tokens_vs_must": 0,
+      "assumptions": 0,
+      "assumptions_per_screen": 0.0,
+      "blocking_per_screen": 0.0,
+      "blocking_questions": 0,
+      "criteria": 34,
+      "fallback_calls": 0,
+      "read_tokens_max": 14582,
+      "screens": 6
+     }
+    },
+    "bundles": {
+     "could": {
+      "content": true,
+      "decision": "no_lift",
+      "delta_assumptions_per_screen": 0.0,
+      "delta_blocking_per_screen": 0.0,
+      "delta_satisfiable_share": 0.0,
+      "recommendation": "cut it, or make it optional by profile",
+      "source": "pack",
+      "tokens": 840
+     },
+     "emotion": {
+      "content": true,
+      "decision": "no_lift",
+      "delta_assumptions_per_screen": 0.0,
+      "delta_blocking_per_screen": 0.0,
+      "delta_satisfiable_share": 0.0,
+      "recommendation": "cut it, or make it optional by profile",
+      "source": "graph",
+      "tokens": 256
+     },
+     "mock_assets": {
+      "content": true,
+      "decision": "no_lift",
+      "delta_assumptions_per_screen": 0.0,
+      "delta_blocking_per_screen": 0.0,
+      "delta_satisfiable_share": 0.0,
+      "recommendation": "cut it, or make it optional by profile",
+      "source": "pack",
+      "tokens": 27843
+     },
+     "stories": {
+      "content": true,
+      "decision": "no_lift",
+      "delta_assumptions_per_screen": 0.0,
+      "delta_blocking_per_screen": 0.0,
+      "delta_satisfiable_share": 0.0,
+      "recommendation": "cut it, or make it optional by profile",
+      "source": "graph",
+      "tokens": 125
+     },
+     "usually": {
+      "content": false,
+      "decision": "no_content",
+      "recommendation": "nothing to ablate: this pack has no such content",
+      "source": "none",
+      "tokens": 0
+     }
+    },
+    "checks": [
+     {
+      "name": "stories: earns its place",
+      "ok": false,
+      "op": "==",
+      "threshold": true,
+      "value": false
+     },
+     {
+      "name": "emotion: earns its place",
+      "ok": false,
+      "op": "==",
+      "threshold": true,
+      "value": false
+     },
+     {
+      "name": "could: earns its place",
+      "ok": false,
+      "op": "==",
+      "threshold": true,
+      "value": false
+     },
+     {
+      "name": "mock_assets: earns its place",
+      "ok": false,
+      "op": "==",
+      "threshold": true,
+      "value": false
+     }
+    ],
+    "cut_or_optional": [
+     "could",
+     "emotion",
+     "mock_assets",
+     "stories"
+    ],
+    "gate": "PS-10.ablation",
+    "money": {
+     "calls": 36,
+     "cost_micro_usd": 0,
+     "fallback_calls": 0,
+     "live": false
+    },
+    "no_content": [
+     "usually"
+    ],
+    "note": "single run; quality and consistency gains need the diversity tool and the owner's reading, not this probe. OFFLINE STUB: the mock reader looks only for undefined ids, so no bundle can lift it; the decisions below prove the harness, not the bundles.",
+    "pack": "standard",
+    "screens": [
+     "SCR-002",
+     "SCR-017",
+     "SCR-008",
+     "SCR-014",
+     "SCR-015",
+     "SCR-004"
+    ],
+    "single_run": true,
+    "verdict": "not_measured",
+    "would_pass": false
+   },
+   "id": "PS-10.ablation",
+   "title": "Ablation: does each content bundle earn its place",
+   "verdict": "not_measured"
+  },
+  "PS-10.diversity": {
+   "checks": [
+    {
+     "name": "between-app: the two apps differ on at least one direction axis",
+     "ok": true,
+     "op": ">=",
+     "threshold": 1,
+     "value": 5
+    },
+    {
+     "name": "COULD on: between-app diversity not lower",
+     "ok": false,
+     "op": "==",
+     "threshold": true,
+     "value": false
+    },
+    {
+     "name": "COULD on: within-app consistency not lower",
+     "ok": true,
+     "op": "==",
+     "threshold": true,
+     "value": true
+    }
+   ],
+   "details": {
+    "between_app": {
+     "could_off": {
+      "applicable": true,
+      "axis_diff_required": 2,
+      "could": false,
+      "could_signature_difference": null,
+      "diversity": 0.8141666666666667,
+      "hue_gap_required": 60.0,
+      "mean_axis_diff": 5.333333333333333,
+      "min_axis_diff": 5,
+      "min_seed_hue_gap": 37.7,
+      "token_name_overlap": 0.9951456310679612
+     },
+     "could_on": {
+      "applicable": true,
+      "axis_diff_required": 2,
+      "could": true,
+      "could_signature_difference": 0.7142857142857143,
+      "diversity": 0.7808730158730159,
+      "hue_gap_required": 60.0,
+      "mean_axis_diff": 5.333333333333333,
+      "min_axis_diff": 5,
+      "min_seed_hue_gap": 37.7,
+      "token_name_overlap": 0.9951456310679612
+     }
+    },
+    "checks": [
+     {
+      "name": "between-app: the two apps differ on at least one direction axis",
+      "ok": true,
+      "op": ">=",
+      "threshold": 1,
+      "value": 5
+     },
+     {
+      "name": "COULD on: between-app diversity not lower",
+      "ok": false,
+      "op": "==",
+      "threshold": true,
+      "value": false
+     },
+     {
+      "name": "COULD on: within-app consistency not lower",
+      "ok": true,
+      "op": "==",
+      "threshold": true,
+      "value": true
+     }
+    ],
+    "critic": {
+     "asked": true,
+     "between_app": {
+      "fallback": false,
+      "notes": [
+       "stub: 17 words shared between A and B"
+      ],
+      "owner_note": "",
+      "score": 3
+     },
+     "within_app": {
+      "fallback": false,
+      "notes": [
+       "stub: mean word overlap across 9 records"
+      ],
+      "owner_note": "",
+      "score": 2
+     }
+    },
+    "gate": "PS-10.diversity",
+    "money": {
+     "calls": 2,
+     "cost_micro_usd": 0,
+     "fallback_calls": 0,
+     "live": false
+    },
+    "note": "Deterministic code metrics (diversity and consistency measured separately, COULD off and on); the critic call is for the owner to sample. The packs were NOT written by a live lane: this proves the harness only.",
+    "packs": [
+     "standard",
+     "quick"
+    ],
+    "packs_live": false,
+    "single_run": true,
+    "verdict": "not_measured",
+    "within_app": {
+     "could_off": {
+      "applicable": true,
+      "consistency": 0.9166666666666667,
+      "could": false,
+      "intent_consistency": 0.8333333333333334,
+      "motion_consistency": null,
+      "screens": [
+       "SCR-005",
+       "SCR-006",
+       "SCR-007",
+       "SCR-008",
+       "SCR-010",
+       "SCR-012",
+       "SCR-017",
+       "SCR-018",
+       "SCR-019",
+       "SCR-020",
+       "SCR-021",
+       "SCR-022"
+      ],
+      "shape_consistency": 1.0
+     },
+     "could_on": {
+      "applicable": true,
+      "consistency": 0.9222222222222222,
+      "could": true,
+      "intent_consistency": 0.8333333333333334,
+      "motion_consistency": 0.9333333333333332,
+      "screens": [
+       "SCR-005",
+       "SCR-006",
+       "SCR-007",
+       "SCR-008",
+       "SCR-010",
+       "SCR-012",
+       "SCR-017",
+       "SCR-018",
+       "SCR-019",
+       "SCR-020",
+       "SCR-021",
+       "SCR-022"
+      ],
+      "shape_consistency": 1.0
+     }
+    },
+    "would_pass": false
+   },
+   "id": "PS-10.diversity",
+   "title": "Diversity between apps and consistency within one, COULD off and on",
+   "verdict": "not_measured"
+  },
+  "PS-10.lookup": {
+   "checks": [
+    {
+     "name": "react-native-paper: recall at 3",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "react-native-paper: wrong-gap rate",
+     "ok": true,
+     "op": "<=",
+     "threshold": 0.1,
+     "value": 0.0
+    },
+    {
+     "name": "react-native-paper: better than the card-only baseline",
+     "ok": true,
+     "op": "==",
+     "threshold": true,
+     "value": true
+    },
+    {
+     "name": "react-native-elements: recall at 3",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "react-native-elements: wrong-gap rate",
+     "ok": true,
+     "op": "<=",
+     "threshold": 0.1,
+     "value": 0.0
+    },
+    {
+     "name": "react-native-elements: better than the card-only baseline",
+     "ok": true,
+     "op": "==",
+     "threshold": true,
+     "value": true
+    },
+    {
+     "name": "synthetic: planted gaps found",
+     "ok": true,
+     "op": ">=",
+     "threshold": 1.0,
+     "value": 1.0
+    }
+   ],
+   "details": {
+    "checks": [
+     {
+      "name": "react-native-paper: recall at 3",
+      "ok": true,
+      "op": ">=",
+      "threshold": 0.9,
+      "value": 1.0
+     },
+     {
+      "name": "react-native-paper: wrong-gap rate",
+      "ok": true,
+      "op": "<=",
+      "threshold": 0.1,
+      "value": 0.0
+     },
+     {
+      "name": "react-native-paper: better than the card-only baseline",
+      "ok": true,
+      "op": "==",
+      "threshold": true,
+      "value": true
+     },
+     {
+      "name": "react-native-elements: recall at 3",
+      "ok": true,
+      "op": ">=",
+      "threshold": 0.9,
+      "value": 1.0
+     },
+     {
+      "name": "react-native-elements: wrong-gap rate",
+      "ok": true,
+      "op": "<=",
+      "threshold": 0.1,
+      "value": 0.0
+     },
+     {
+      "name": "react-native-elements: better than the card-only baseline",
+      "ok": true,
+      "op": "==",
+      "threshold": true,
+      "value": true
+     },
+     {
+      "name": "synthetic: planted gaps found",
+      "ok": true,
+      "op": ">=",
+      "threshold": 1.0,
+      "value": 1.0
+     }
+    ],
+    "gate": "PS-10.lookup",
+    "libraries": [
+     {
+      "arms": {
+       "card_only": {
+        "ambiguous": 0,
+        "fit": 13,
+        "gap": 5,
+        "gap_found_rate": 0.0,
+        "gaps_found": 0,
+        "needs": 18,
+        "recall_at_3": 0.0,
+        "wrong_gap_rate": 0.0
+       },
+       "needs": {
+        "ambiguous": 0,
+        "fit": 13,
+        "gap": 5,
+        "gap_found_rate": 1.0,
+        "gaps_found": 5,
+        "needs": 18,
+        "recall_at_3": 1.0,
+        "wrong_gap_rate": 0.0
+       }
+      },
+      "checked_on": "2026-11-14",
+      "key": "react-native-paper",
+      "library": "React Native Paper",
+      "per_need": {
+       "card_only": [
+        {
+         "hit": false,
+         "need": "N-S002",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S003",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S004",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S005",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S008",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S010",
+         "shape": "inputs",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S011",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S013",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S014",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S016",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S017",
+         "shape": "notice",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S019",
+         "shape": "options",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S020",
+         "shape": "options",
+         "wrong_gap": false
+        }
+       ],
+       "needs": [
+        {
+         "hit": true,
+         "need": "N-S002",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S003",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S004",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S005",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S008",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S010",
+         "shape": "inputs",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S011",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S013",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S014",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S016",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S017",
+         "shape": "notice",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S019",
+         "shape": "options",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S020",
+         "shape": "options",
+         "wrong_gap": false
+        }
+       ]
+      },
+      "planted": {},
+      "source_url": "https://oss.callstack.com/react-native-paper/docs/guides/getting-started"
+     },
+     {
+      "arms": {
+       "card_only": {
+        "ambiguous": 0,
+        "fit": 13,
+        "gap": 5,
+        "gap_found_rate": 0.0,
+        "gaps_found": 0,
+        "needs": 18,
+        "recall_at_3": 0.07692307692307693,
+        "wrong_gap_rate": 0.0
+       },
+       "needs": {
+        "ambiguous": 0,
+        "fit": 13,
+        "gap": 5,
+        "gap_found_rate": 1.0,
+        "gaps_found": 5,
+        "needs": 18,
+        "recall_at_3": 1.0,
+        "wrong_gap_rate": 0.0
+       }
+      },
+      "checked_on": "2026-11-14",
+      "key": "react-native-elements",
+      "library": "React Native Elements",
+      "per_need": {
+       "card_only": [
+        {
+         "hit": false,
+         "need": "N-S002",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S003",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S004",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S005",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S008",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S010",
+         "shape": "inputs",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S011",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S013",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S014",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S016",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S017",
+         "shape": "notice",
+         "wrong_gap": false
+        },
+        {
+         "hit": false,
+         "need": "N-S019",
+         "shape": "options",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S020",
+         "shape": "options",
+         "wrong_gap": false
+        }
+       ],
+       "needs": [
+        {
+         "hit": true,
+         "need": "N-S002",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S003",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S004",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S005",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S008",
+         "shape": "collection",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S010",
+         "shape": "inputs",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S011",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S013",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S014",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S016",
+         "shape": "key_values",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S017",
+         "shape": "notice",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S019",
+         "shape": "options",
+         "wrong_gap": false
+        },
+        {
+         "hit": true,
+         "need": "N-S020",
+         "shape": "options",
+         "wrong_gap": false
+        }
+       ]
+      },
+      "planted": {},
+      "source_url": "https://reactnativeelements.com/docs"
+     }
+    ],
+    "money": {
+     "calls": 5,
+     "cost_micro_usd": 0,
+     "fallback_calls": 0,
+     "live": false
+    },
+    "note": "single run. The answer key is the snapshot author's shape mapping (high and medium confidence). OFFLINE STUB: the stub answers by shape name, so recall is high by construction; this proves the harness and the planted-gap check, not the consumer.",
+    "pack": "standard",
+    "single_run": true,
+    "split": {
+     "held_out": 18,
+     "held_out_percent": 50,
+     "needs": 26,
+     "tune": 8
+    },
+    "synthetic": {
+     "arms": {
+      "needs": {
+       "ambiguous": 0,
+       "fit": 18,
+       "gap": 4,
+       "gap_found_rate": 1.0,
+       "gaps_found": 4,
+       "needs": 22,
+       "recall_at_3": 1.0,
+       "wrong_gap_rate": 0.0
+      }
+     },
+     "checked_on": "2026-11-14",
+     "key": "synthetic",
+     "library": "Synthetic catalogue",
+     "per_need": {
+      "needs": [
+       {
+        "hit": true,
+        "need": "N-S002",
+        "shape": "collection",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S003",
+        "shape": "collection",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S004",
+        "shape": "collection",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S005",
+        "shape": "collection",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S008",
+        "shape": "collection",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S010",
+        "shape": "inputs",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S011",
+        "shape": "key_values",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S013",
+        "shape": "key_values",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S014",
+        "shape": "key_values",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S016",
+        "shape": "key_values",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S017",
+        "shape": "notice",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S019",
+        "shape": "options",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S020",
+        "shape": "options",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S021",
+        "shape": "sequence",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S023",
+        "shape": "text",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S024",
+        "shape": "text",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S025",
+        "shape": "text",
+        "wrong_gap": false
+       },
+       {
+        "hit": true,
+        "need": "N-S026",
+        "shape": "text",
+        "wrong_gap": false
+       }
+      ]
+     },
+     "planted": {
+      "gap_found_rate": 1.0,
+      "gap_shapes": [
+       "hierarchy",
+       "places",
+       "schedule",
+       "conversation"
+      ],
+      "gaps_found": 4,
+      "wrong_gap_rate": 0.0
+     },
+     "source_url": "synthetic"
+    },
+    "verdict": "not_measured",
+    "would_pass": true
+   },
+   "id": "PS-10.lookup",
+   "title": "Library lookup on two public catalogues, with planted gaps",
+   "verdict": "not_measured"
+  },
+  "PS-4": {
+   "checks": [
+    {
+     "name": "screens with a different arrangement",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.3,
+     "value": 0.8333
+    },
+    {
+     "name": "schema validity",
+     "ok": true,
+     "op": ">=",
+     "threshold": 1.0,
+     "value": 1.0
+    },
+    {
+     "name": "tier ceiling violations",
+     "ok": true,
+     "op": "==",
+     "threshold": 0,
+     "value": 0
+    },
+    {
+     "name": "lint warnings, max per card",
+     "ok": true,
+     "op": "<=",
+     "threshold": 3,
+     "value": 0
+    },
+    {
+     "name": "screens with a different arrangement",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.3,
+     "value": 1.0
+    },
+    {
+     "name": "schema validity",
+     "ok": true,
+     "op": ">=",
+     "threshold": 1.0,
+     "value": 1.0
+    },
+    {
+     "name": "tier ceiling violations",
+     "ok": true,
+     "op": "==",
+     "threshold": 0,
+     "value": 0
+    },
+    {
+     "name": "lint warnings, max per card",
+     "ok": true,
+     "op": "<=",
+     "threshold": 3,
+     "value": 0
+    }
+   ],
+   "details": {
+    "quick": {
+     "card_stats": {
+      "cards": 18,
+      "cards_over_lint_cap": [],
+      "lint_cap_per_card": 3,
+      "lint_warnings": [],
+      "lint_warnings_max_per_card": 0,
+      "lint_warnings_total": 0,
+      "measured": true,
+      "schema_findings": [],
+      "schema_valid_cards": 18,
+      "schema_validity": 1.0,
+      "tier_ceiling_violations": 0
+     },
+     "checks": [
+      {
+       "name": "screens with a different arrangement",
+       "ok": true,
+       "op": ">=",
+       "threshold": 0.3,
+       "value": 1.0
+      },
+      {
+       "name": "schema validity",
+       "ok": true,
+       "op": ">=",
+       "threshold": 1.0,
+       "value": 1.0
+      },
+      {
+       "name": "tier ceiling violations",
+       "ok": true,
+       "op": "==",
+       "threshold": 0,
+       "value": 0
+      },
+      {
+       "name": "lint warnings, max per card",
+       "ok": true,
+       "op": "<=",
+       "threshold": 3,
+       "value": 0
+      }
+     ],
+     "gate": "PS-4",
+     "money": {
+      "calls": 6,
+      "cost_micro_usd": 0,
+      "fallback_calls": 0,
+      "live": false
+     },
+     "note": "single run. OFFLINE STUB: the mock picks an arrangement from a hash of the style seed; this proves the harness, not the consumer.",
+     "owner_check": "the owner reads the 5 cards in owner-reading/cards.json and finds no layout instruction (not measured by code)",
+     "pack": "quick",
+     "probe": {
+      "distinct_layout_share": 1.0,
+      "distinct_order_share": 0.6666666666666666,
+      "distinct_token_share": 0.6666666666666666,
+      "per_screen": [
+       {
+        "arrangement_a": "action-led",
+        "arrangement_b": "summary-then-detail",
+        "fallback": false,
+        "order_differs": true,
+        "screen": "SCR-004"
+       },
+       {
+        "arrangement_a": "progressive-disclosure",
+        "arrangement_b": "content-led",
+        "fallback": false,
+        "order_differs": false,
+        "screen": "SCR-011"
+       },
+       {
+        "arrangement_a": "status-led",
+        "arrangement_b": "status-led",
+        "fallback": false,
+        "order_differs": true,
+        "screen": "SCR-008"
+       }
+      ]
+     },
+     "screens": [
+      "SCR-004",
+      "SCR-011",
+      "SCR-008"
+     ],
+     "single_run": true,
+     "style_seeds": [
+      "density dense, depth glass, imagery mixed_media, mood technical_precise, motion personality playful, shape organic, type personality humanist",
+      "density dense, depth dramatic, imagery photo_led, mood bold_energetic, motion personality calm, shape organic, type personality editorial"
+     ],
+     "verdict": "not_measured",
+     "would_pass": true
+    },
+    "standard": {
+     "card_stats": {
+      "cards": 36,
+      "cards_over_lint_cap": [],
+      "lint_cap_per_card": 3,
+      "lint_warnings": [],
+      "lint_warnings_max_per_card": 0,
+      "lint_warnings_total": 0,
+      "measured": true,
+      "schema_findings": [],
+      "schema_valid_cards": 36,
+      "schema_validity": 1.0,
+      "tier_ceiling_violations": 0
+     },
+     "checks": [
+      {
+       "name": "screens with a different arrangement",
+       "ok": true,
+       "op": ">=",
+       "threshold": 0.3,
+       "value": 0.8333
+      },
+      {
+       "name": "schema validity",
+       "ok": true,
+       "op": ">=",
+       "threshold": 1.0,
+       "value": 1.0
+      },
+      {
+       "name": "tier ceiling violations",
+       "ok": true,
+       "op": "==",
+       "threshold": 0,
+       "value": 0
+      },
+      {
+       "name": "lint warnings, max per card",
+       "ok": true,
+       "op": "<=",
+       "threshold": 3,
+       "value": 0
+      }
+     ],
+     "gate": "PS-4",
+     "money": {
+      "calls": 12,
+      "cost_micro_usd": 0,
+      "fallback_calls": 0,
+      "live": false
+     },
+     "note": "single run. OFFLINE STUB: the mock picks an arrangement from a hash of the style seed; this proves the harness, not the consumer.",
+     "owner_check": "the owner reads the 5 cards in owner-reading/cards.json and finds no layout instruction (not measured by code)",
+     "pack": "standard",
+     "probe": {
+      "distinct_layout_share": 0.8333333333333334,
+      "distinct_order_share": 0.5,
+      "distinct_token_share": 0.8333333333333334,
+      "per_screen": [
+       {
+        "arrangement_a": "content-led",
+        "arrangement_b": "summary-then-detail",
+        "fallback": false,
+        "order_differs": false,
+        "screen": "SCR-002"
+       },
+       {
+        "arrangement_a": "grouped-by-importance",
+        "arrangement_b": "sequence-by-flow",
+        "fallback": false,
+        "order_differs": true,
+        "screen": "SCR-017"
+       },
+       {
+        "arrangement_a": "status-led",
+        "arrangement_b": "status-led",
+        "fallback": false,
+        "order_differs": false,
+        "screen": "SCR-008"
+       },
+       {
+        "arrangement_a": "summary-then-detail",
+        "arrangement_b": "progressive-disclosure",
+        "fallback": false,
+        "order_differs": true,
+        "screen": "SCR-014"
+       },
+       {
+        "arrangement_a": "progressive-disclosure",
+        "arrangement_b": "primary-first",
+        "fallback": false,
+        "order_differs": true,
+        "screen": "SCR-015"
+       },
+       {
+        "arrangement_a": "action-led",
+        "arrangement_b": "summary-then-detail",
+        "fallback": false,
+        "order_differs": false,
+        "screen": "SCR-004"
+       }
+      ]
+     },
+     "screens": [
+      "SCR-002",
+      "SCR-017",
+      "SCR-008",
+      "SCR-014",
+      "SCR-015",
+      "SCR-004"
+     ],
+     "single_run": true,
+     "style_seeds": [
+      "density dense, depth glass, imagery mixed_media, mood technical_precise, motion personality playful, shape organic, type personality humanist",
+      "density dense, depth dramatic, imagery photo_led, mood bold_energetic, motion personality calm, shape organic, type personality editorial"
+     ],
+     "verdict": "not_measured",
+     "would_pass": true
+    }
+   },
+   "id": "PS-4",
+   "title": "Freedom: the same card built twice, card schema and lint",
+   "verdict": "not_measured"
+  },
+  "PS-6": {
+   "checks": [
+    {
+     "name": "A blocking questions per screen",
+     "ok": true,
+     "op": "<=",
+     "threshold": 0.3,
+     "value": 0.0
+    },
+    {
+     "name": "A assumptions per screen",
+     "ok": true,
+     "op": "<=",
+     "threshold": 1.0,
+     "value": 0.0
+    },
+    {
+     "name": "A acceptance satisfiable share",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "card-alone arm clearly worse",
+     "ok": true,
+     "op": "==",
+     "threshold": true,
+     "value": true
+    },
+    {
+     "name": "A blocking questions per screen",
+     "ok": true,
+     "op": "<=",
+     "threshold": 0.3,
+     "value": 0.0
+    },
+    {
+     "name": "A assumptions per screen",
+     "ok": true,
+     "op": "<=",
+     "threshold": 1.0,
+     "value": 0.0
+    },
+    {
+     "name": "A acceptance satisfiable share",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "card-alone arm clearly worse",
+     "ok": true,
+     "op": "==",
+     "threshold": true,
+     "value": true
+    },
+    {
+     "name": "A blocking questions per screen",
+     "ok": true,
+     "op": "<=",
+     "threshold": 0.3,
+     "value": 0.0
+    },
+    {
+     "name": "A assumptions per screen",
+     "ok": true,
+     "op": "<=",
+     "threshold": 1.0,
+     "value": 0.0
+    },
+    {
+     "name": "A acceptance satisfiable share",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "card-alone arm clearly worse",
+     "ok": true,
+     "op": "==",
+     "threshold": true,
+     "value": true
+    }
+   ],
+   "details": {
+    "quick": {
+     "arms": {
+      "A": {
+       "metrics": {
+        "acceptance_satisfiable": 11,
+        "acceptance_satisfiable_share": 1.0,
+        "assumptions": 0,
+        "assumptions_per_screen": 0.0,
+        "blocking_per_screen": 0.0,
+        "blocking_questions": 0,
+        "criteria": 11,
+        "fallback_calls": 0,
+        "read_tokens_max": 12748,
+        "screens": 3
+       },
+       "name": "task card reads",
+       "skipped": ""
+      },
+      "B": {
+       "metrics": {},
+       "name": "whole pack",
+       "skipped": "the pack is 83615 tokens and the profile's whole_pack_tokens is 22500: it does not fit"
+      },
+      "C": {
+       "metrics": {
+        "acceptance_satisfiable": 0,
+        "acceptance_satisfiable_share": 0.0,
+        "assumptions": 0,
+        "assumptions_per_screen": 0.0,
+        "blocking_per_screen": 5.333333333333333,
+        "blocking_questions": 16,
+        "criteria": 11,
+        "fallback_calls": 0,
+        "read_tokens_max": 1810,
+        "screens": 3
+       },
+       "name": "card alone",
+       "skipped": ""
+      }
+     },
+     "checks": [
+      {
+       "name": "A blocking questions per screen",
+       "ok": true,
+       "op": "<=",
+       "threshold": 0.3,
+       "value": 0.0
+      },
+      {
+       "name": "A assumptions per screen",
+       "ok": true,
+       "op": "<=",
+       "threshold": 1.0,
+       "value": 0.0
+      },
+      {
+       "name": "A acceptance satisfiable share",
+       "ok": true,
+       "op": ">=",
+       "threshold": 0.9,
+       "value": 1.0
+      },
+      {
+       "name": "card-alone arm clearly worse",
+       "ok": true,
+       "op": "==",
+       "threshold": true,
+       "value": true
+      }
+     ],
+     "comparisons": {
+      "card_alone_clearly_worse": true,
+      "slice_not_worse_than_whole": null
+     },
+     "gate": "PS-6",
+     "money": {
+      "calls": 6,
+      "cost_micro_usd": 0,
+      "fallback_calls": 0,
+      "live": false
+     },
+     "note": "single run: a run decides nothing; repeat and report the range. OFFLINE STUB: the mock reader only checks that ids used are defined; this proves the harness, not the live rate.",
+     "pack": "quick",
+     "screens": [
+      "SCR-004",
+      "SCR-011",
+      "SCR-008"
+     ],
+     "single_run": true,
+     "size": "quick",
+     "verdict": "not_measured",
+     "would_pass": true
+    },
+    "standard": {
+     "arms": {
+      "A": {
+       "metrics": {
+        "acceptance_satisfiable": 34,
+        "acceptance_satisfiable_share": 1.0,
+        "assumptions": 0,
+        "assumptions_per_screen": 0.0,
+        "blocking_per_screen": 0.0,
+        "blocking_questions": 0,
+        "criteria": 34,
+        "fallback_calls": 0,
+        "read_tokens_max": 14582,
+        "screens": 6
+       },
+       "name": "task card reads",
+       "skipped": ""
+      },
+      "B": {
+       "metrics": {},
+       "name": "whole pack",
+       "skipped": "the pack is 218748 tokens and the profile's whole_pack_tokens is 22500: it does not fit"
+      },
+      "C": {
+       "metrics": {
+        "acceptance_satisfiable": 0,
+        "acceptance_satisfiable_share": 0.0,
+        "assumptions": 0,
+        "assumptions_per_screen": 0.0,
+        "blocking_per_screen": 6.666666666666667,
+        "blocking_questions": 40,
+        "criteria": 34,
+        "fallback_calls": 0,
+        "read_tokens_max": 2615,
+        "screens": 6
+       },
+       "name": "card alone",
+       "skipped": ""
+      }
+     },
+     "checks": [
+      {
+       "name": "A blocking questions per screen",
+       "ok": true,
+       "op": "<=",
+       "threshold": 0.3,
+       "value": 0.0
+      },
+      {
+       "name": "A assumptions per screen",
+       "ok": true,
+       "op": "<=",
+       "threshold": 1.0,
+       "value": 0.0
+      },
+      {
+       "name": "A acceptance satisfiable share",
+       "ok": true,
+       "op": ">=",
+       "threshold": 0.9,
+       "value": 1.0
+      },
+      {
+       "name": "card-alone arm clearly worse",
+       "ok": true,
+       "op": "==",
+       "threshold": true,
+       "value": true
+      }
+     ],
+     "comparisons": {
+      "card_alone_clearly_worse": true,
+      "slice_not_worse_than_whole": null
+     },
+     "gate": "PS-6",
+     "money": {
+      "calls": 12,
+      "cost_micro_usd": 0,
+      "fallback_calls": 0,
+      "live": false
+     },
+     "note": "single run: a run decides nothing; repeat and report the range. OFFLINE STUB: the mock reader only checks that ids used are defined; this proves the harness, not the live rate.",
+     "pack": "standard",
+     "screens": [
+      "SCR-002",
+      "SCR-017",
+      "SCR-008",
+      "SCR-014",
+      "SCR-015",
+      "SCR-004"
+     ],
+     "single_run": true,
+     "size": "standard",
+     "verdict": "not_measured",
+     "would_pass": true
+    },
+    "thorough": {
+     "arms": {
+      "A": {
+       "metrics": {
+        "acceptance_satisfiable": 78,
+        "acceptance_satisfiable_share": 1.0,
+        "assumptions": 0,
+        "assumptions_per_screen": 0.0,
+        "blocking_per_screen": 0.0,
+        "blocking_questions": 0,
+        "criteria": 78,
+        "fallback_calls": 0,
+        "read_tokens_max": 23345,
+        "screens": 9
+       },
+       "name": "task card reads",
+       "skipped": ""
+      },
+      "B": {
+       "metrics": {},
+       "name": "whole pack",
+       "skipped": "the pack is 344125 tokens and the profile's whole_pack_tokens is 22500: it does not fit"
+      },
+      "C": {
+       "metrics": {
+        "acceptance_satisfiable": 16,
+        "acceptance_satisfiable_share": 0.20512820512820512,
+        "assumptions": 0,
+        "assumptions_per_screen": 0.0,
+        "blocking_per_screen": 3.5555555555555554,
+        "blocking_questions": 32,
+        "criteria": 78,
+        "fallback_calls": 0,
+        "read_tokens_max": 2575,
+        "screens": 9
+       },
+       "name": "card alone",
+       "skipped": ""
+      }
+     },
+     "checks": [
+      {
+       "name": "A blocking questions per screen",
+       "ok": true,
+       "op": "<=",
+       "threshold": 0.3,
+       "value": 0.0
+      },
+      {
+       "name": "A assumptions per screen",
+       "ok": true,
+       "op": "<=",
+       "threshold": 1.0,
+       "value": 0.0
+      },
+      {
+       "name": "A acceptance satisfiable share",
+       "ok": true,
+       "op": ">=",
+       "threshold": 0.9,
+       "value": 1.0
+      },
+      {
+       "name": "card-alone arm clearly worse",
+       "ok": true,
+       "op": "==",
+       "threshold": true,
+       "value": true
+      }
+     ],
+     "comparisons": {
+      "card_alone_clearly_worse": true,
+      "slice_not_worse_than_whole": null
+     },
+     "gate": "PS-6",
+     "money": {
+      "calls": 18,
+      "cost_micro_usd": 0,
+      "fallback_calls": 0,
+      "live": false
+     },
+     "note": "single run: a run decides nothing; repeat and report the range. OFFLINE STUB: the mock reader only checks that ids used are defined; this proves the harness, not the live rate.",
+     "pack": "thorough",
+     "screens": [
+      "SCR-004",
+      "SCR-068",
+      "SCR-030",
+      "SCR-016",
+      "SCR-031",
+      "SCR-001",
+      "SCR-006",
+      "SCR-067",
+      "SCR-080"
+     ],
+     "single_run": true,
+     "size": "thorough",
+     "verdict": "not_measured",
+     "would_pass": true
+    }
+   },
+   "id": "PS-6",
+   "title": "Consumer probe: can the weakest consumer build a screen from its reads",
+   "verdict": "not_measured"
+  },
+  "PS-7": {
+   "checks": [
+    {
+     "name": "self_check: structural catch overall",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "self_check: structural catch, worst kind",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.8,
+     "value": 1.0
+    },
+    {
+     "name": "self_check: false positives on the unmodified pack",
+     "ok": false,
+     "op": "<=",
+     "threshold": 0.05,
+     "value": 0.1538
+    },
+    {
+     "name": "critic: structural catch overall",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "critic: structural catch, worst kind",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.8,
+     "value": 1.0
+    },
+    {
+     "name": "critic: false positives on the unmodified pack",
+     "ok": false,
+     "op": "<=",
+     "threshold": 0.05,
+     "value": 0.1538
+    },
+    {
+     "name": "critic: LLM rounds used (max)",
+     "ok": true,
+     "op": "<=",
+     "threshold": 2,
+     "value": 2
+    },
+    {
+     "name": "verify: structural catch overall",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "verify: structural catch, worst kind",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.8,
+     "value": 1.0
+    },
+    {
+     "name": "verify: false positives on the unmodified pack",
+     "ok": false,
+     "op": "<=",
+     "threshold": 0.05,
+     "value": 0.1538
+    },
+    {
+     "name": "verify: LLM rounds used (max)",
+     "ok": true,
+     "op": "<=",
+     "threshold": 2,
+     "value": 2
+    }
+   ],
+   "critic_vendor": "same",
+   "details": {
+    "arms": {
+     "critic": {
+      "checks": [
+       {
+        "name": "critic: structural catch overall",
+        "ok": true,
+        "op": ">=",
+        "threshold": 0.9,
+        "value": 1.0
+       },
+       {
+        "name": "critic: structural catch, worst kind",
+        "ok": true,
+        "op": ">=",
+        "threshold": 0.8,
+        "value": 1.0
+       },
+       {
+        "name": "critic: false positives on the unmodified pack",
+        "ok": false,
+        "op": "<=",
+        "threshold": 0.05,
+        "value": 0.1538
+       },
+       {
+        "name": "critic: LLM rounds used (max)",
+        "ok": true,
+        "op": "<=",
+        "threshold": 2,
+        "value": 2
+       }
+      ],
+      "false_positives": {
+       "clean_findings": 10,
+       "rate": 0.15384615384615385,
+       "screens_flagged": [
+        "SCR-017",
+        "SCR-028",
+        "SCR-030",
+        "SCR-034",
+        "SCR-051",
+        "SCR-078",
+        "SCR-102",
+        "SCR-S004",
+        "SCR-S005",
+        "SCR-S006"
+       ]
+      },
+      "meaning": {
+       "bar": "none (code cannot judge meaning)",
+       "caught": 4,
+       "min_per_kind": 0.0,
+       "missed": [
+        "default_contradicts_official_research",
+        "journey_without_payment_failure_path",
+        "role_sees_what_brief_forbids",
+        "story_contradicts_a_rule"
+       ],
+       "overall": 0.5,
+       "per_kind": {
+        "assumed_item_shown_as_locked": true,
+        "changed_locked_number": true,
+        "default_contradicts_official_research": false,
+        "journey_without_payment_failure_path": false,
+        "role_sees_what_brief_forbids": false,
+        "story_contradicts_a_rule": false,
+        "two_contradictory_rules": true,
+        "user_feature_missing_from_inventory": true
+       },
+       "planted": 8
+      },
+      "name": "proof-only critic arm (Verify final critic)",
+      "structural": {
+       "caught": 20,
+       "min_per_kind": 1.0,
+       "missed": [],
+       "overall": 1.0,
+       "per_kind": {
+        "action_to_missing_screen": true,
+        "binding_to_missing_field": true,
+        "closure_missing_a_field": true,
+        "duplicate_region_key": true,
+        "entity_without_screen": true,
+        "form_vocabulary_violation": true,
+        "invented_provider_name": true,
+        "locked_without_evidence": true,
+        "missing_copy_key": true,
+        "missing_mandatory_state": true,
+        "missing_token_reference": true,
+        "operation_without_error_model": true,
+        "orphan_screen": true,
+        "policy_locked_without_citation": true,
+        "research_value_does_not_match_item": true,
+        "role_gating_missing": true,
+        "task_over_budget": true,
+        "unresolved_alias": true,
+        "unverified_research_used_as_default": true,
+        "volatile_data_in_body": true
+       },
+       "planted": 20
+      },
+      "verdict": "not_measured"
+     },
+     "self_check": {
+      "checks": [
+       {
+        "name": "self_check: structural catch overall",
+        "ok": true,
+        "op": ">=",
+        "threshold": 0.9,
+        "value": 1.0
+       },
+       {
+        "name": "self_check: structural catch, worst kind",
+        "ok": true,
+        "op": ">=",
+        "threshold": 0.8,
+        "value": 1.0
+       },
+       {
+        "name": "self_check: false positives on the unmodified pack",
+        "ok": false,
+        "op": "<=",
+        "threshold": 0.05,
+        "value": 0.1538
+       }
+      ],
+      "false_positives": {
+       "clean_findings": 10,
+       "rate": 0.15384615384615385,
+       "screens_flagged": [
+        "SCR-017",
+        "SCR-028",
+        "SCR-030",
+        "SCR-034",
+        "SCR-051",
+        "SCR-078",
+        "SCR-102",
+        "SCR-S004",
+        "SCR-S005",
+        "SCR-S006"
+       ]
+      },
+      "meaning": {
+       "bar": "none (code cannot judge meaning)",
+       "caught": 3,
+       "min_per_kind": 0.0,
+       "missed": [
+        "changed_locked_number",
+        "default_contradicts_official_research",
+        "journey_without_payment_failure_path",
+        "role_sees_what_brief_forbids",
+        "story_contradicts_a_rule"
+       ],
+       "overall": 0.375,
+       "per_kind": {
+        "assumed_item_shown_as_locked": true,
+        "changed_locked_number": false,
+        "default_contradicts_official_research": false,
+        "journey_without_payment_failure_path": false,
+        "role_sees_what_brief_forbids": false,
+        "story_contradicts_a_rule": false,
+        "two_contradictory_rules": true,
+        "user_feature_missing_from_inventory": true
+       },
+       "planted": 8
+      },
+      "name": "self-check (validators, code)",
+      "structural": {
+       "caught": 20,
+       "min_per_kind": 1.0,
+       "missed": [],
+       "overall": 1.0,
+       "per_kind": {
+        "action_to_missing_screen": true,
+        "binding_to_missing_field": true,
+        "closure_missing_a_field": true,
+        "duplicate_region_key": true,
+        "entity_without_screen": true,
+        "form_vocabulary_violation": true,
+        "invented_provider_name": true,
+        "locked_without_evidence": true,
+        "missing_copy_key": true,
+        "missing_mandatory_state": true,
+        "missing_token_reference": true,
+        "operation_without_error_model": true,
+        "orphan_screen": true,
+        "policy_locked_without_citation": true,
+        "research_value_does_not_match_item": true,
+        "role_gating_missing": true,
+        "task_over_budget": true,
+        "unresolved_alias": true,
+        "unverified_research_used_as_default": true,
+        "volatile_data_in_body": true
+       },
+       "planted": 20
+      },
+      "verdict": "fail"
+     },
+     "verify": {
+      "checks": [
+       {
+        "name": "verify: structural catch overall",
+        "ok": true,
+        "op": ">=",
+        "threshold": 0.9,
+        "value": 1.0
+       },
+       {
+        "name": "verify: structural catch, worst kind",
+        "ok": true,
+        "op": ">=",
+        "threshold": 0.8,
+        "value": 1.0
+       },
+       {
+        "name": "verify: false positives on the unmodified pack",
+        "ok": false,
+        "op": "<=",
+        "threshold": 0.05,
+        "value": 0.1538
+       },
+       {
+        "name": "verify: LLM rounds used (max)",
+        "ok": true,
+        "op": "<=",
+        "threshold": 2,
+        "value": 2
+       }
+      ],
+      "false_positives": {
+       "canary_questions": 0,
+       "clean_findings": 10,
+       "rate": 0.15384615384615385,
+       "screens_flagged": [
+        "SCR-017",
+        "SCR-028",
+        "SCR-030",
+        "SCR-034",
+        "SCR-051",
+        "SCR-078",
+        "SCR-102",
+        "SCR-S004",
+        "SCR-S005",
+        "SCR-S006"
+       ]
+      },
+      "meaning": {
+       "bar": "none (code cannot judge meaning)",
+       "caught": 4,
+       "min_per_kind": 0.0,
+       "missed": [
+        "default_contradicts_official_research",
+        "journey_without_payment_failure_path",
+        "role_sees_what_brief_forbids",
+        "story_contradicts_a_rule"
+       ],
+       "overall": 0.5,
+       "per_kind": {
+        "assumed_item_shown_as_locked": true,
+        "changed_locked_number": true,
+        "default_contradicts_official_research": false,
+        "journey_without_payment_failure_path": false,
+        "role_sees_what_brief_forbids": false,
+        "story_contradicts_a_rule": false,
+        "two_contradictory_rules": true,
+        "user_feature_missing_from_inventory": true
+       },
+       "planted": 8
+      },
+      "name": "Verify for deep (structure critic + canary + final critic)",
+      "structural": {
+       "caught": 20,
+       "min_per_kind": 1.0,
+       "missed": [],
+       "overall": 1.0,
+       "per_kind": {
+        "action_to_missing_screen": true,
+        "binding_to_missing_field": true,
+        "closure_missing_a_field": true,
+        "duplicate_region_key": true,
+        "entity_without_screen": true,
+        "form_vocabulary_violation": true,
+        "invented_provider_name": true,
+        "locked_without_evidence": true,
+        "missing_copy_key": true,
+        "missing_mandatory_state": true,
+        "missing_token_reference": true,
+        "operation_without_error_model": true,
+        "orphan_screen": true,
+        "policy_locked_without_citation": true,
+        "research_value_does_not_match_item": true,
+        "role_gating_missing": true,
+        "task_over_budget": true,
+        "unresolved_alias": true,
+        "unverified_research_used_as_default": true,
+        "volatile_data_in_body": true
+       },
+       "planted": 20
+      },
+      "verdict": "not_measured"
+     }
+    },
+    "canary_scope": "changed",
+    "clean_pack": {
+     "codes": [
+      "V-04"
+     ],
+     "findings": 10,
+     "masked_kinds": [],
+     "note": "A plant whose validator already reports on the unmodified pack, with nothing new, counts as missed (conservative).",
+     "screens": 65
+    },
+    "critic_vendor": "same",
+    "gate": "PS-7",
+    "meaning_kinds": 8,
+    "money": {
+     "calls": 320,
+     "cost_micro_usd": 0,
+     "fallback_calls": 0,
+     "live": false
+    },
+    "not_applicable": [
+     {
+      "defect": "phase1_depends_on_phase2",
+      "reason": "the planter could not change this pack: ValueError: duplicate id FTR-001 in features"
+     },
+     {
+      "defect": "later_feature_has_screen_node",
+      "reason": "the planter could not change this pack: ValueError: duplicate id FTR-003 in features"
+     }
+    ],
+    "note": "Each kind is planted once (a rate over kinds). The self-check arm is code and a real measurement. The critic arms are the MOCK critic: they catch what its mock rules catch (a Locked fact that is missing or changed, coverage gaps, role and entity conflicts); this proves the harness, not the live rate.",
+    "pack": "given graph",
+    "profile": "deep",
+    "rounds_used_max": 2,
+    "rows": [
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-13:SCR-002:3883fa"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "missing_mandatory_state",
+      "detail": "",
+      "expected_code": "V-13",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-13 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-13:SCR-002:3883fa"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-06:SCR-002.code_entry:5f8df3",
+        "V-30:SCR-002:191b48"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "binding_to_missing_field",
+      "detail": "",
+      "expected_code": "V-06",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-06 SCR-002.code_entry",
+        "V-30 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [
+        "T-0031:SCR-002 binds ENT-001.no_such_field but ENT-001 in my reads has no field no_such_field: which is right?"
+       ],
+       "new_findings": [
+        "V-06:SCR-002.code_entry:5f8df3",
+        "V-30:SCR-002:191b48"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-07:SCR-002.change_number:9ae705",
+        "V-27:SCR-002:884e5f"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "action_to_missing_screen",
+      "detail": "",
+      "expected_code": "V-07",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-07 SCR-002.change_number",
+        "V-27 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-07:SCR-002.change_number:9ae705",
+        "V-27:SCR-002:884e5f"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-08:OP-S001:c654b0"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "role_gating_missing",
+      "detail": "",
+      "expected_code": "V-08",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-08 OP-S001"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-08:OP-S001:c654b0"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-31:SCR-002:97bea8"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "duplicate_region_key",
+      "detail": "",
+      "expected_code": "V-31",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-31 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-31:SCR-002:97bea8"
+       ]
+      }
+     },
+     {
+      "applicable": false,
+      "defect": "phase1_depends_on_phase2",
+      "detail": "",
+      "expected_code": "V-28",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "the planter could not change this pack: ValueError: duplicate id FTR-001 in features",
+      "touched": []
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-12:DIR-001:831a41"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "missing_token_reference",
+      "detail": "",
+      "expected_code": "V-12",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-12 DIR-001"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-12:DIR-001:831a41"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-17:SCR-002:163dfe",
+        "V-17:SCR-002:e80cec",
+        "V-24:SCR-002:63395d"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "locked_without_evidence",
+      "detail": "",
+      "expected_code": "V-17",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-17 SCR-002",
+        "V-24 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-17:SCR-002:163dfe",
+        "V-17:SCR-002:e80cec",
+        "V-24:SCR-002:63395d"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-33:SCR-002:9f7b59"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "policy_locked_without_citation",
+      "detail": "",
+      "expected_code": "V-33",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-33 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-33:SCR-002:9f7b59"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-25:SCR-002.purpose:174584"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "form_vocabulary_violation",
+      "detail": "",
+      "expected_code": "V-25",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-25 SCR-002.purpose"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-25:SCR-002.purpose:174584"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-04:SCR-900:8d0407",
+        "V-14:SCR-900:514ee4",
+        "V-14:SCR-900:7532f7",
+        "V-14:SCR-900:8240fb",
+        "V-14:SCR-900:855cfb",
+        "V-14:SCR-900:89f4c3",
+        "V-22:SCR-900.change_number:b77f88",
+        "V-22:SCR-900.code:2c2bfb",
+        "V-22:SCR-900.resend_code:b77f88",
+        "V-22:SCR-900.submit_code:b77f88"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "orphan_screen",
+      "detail": "",
+      "expected_code": "V-04",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-04 SCR-900",
+        "V-14 SCR-900",
+        "V-22 SCR-900.change_number",
+        "V-22 SCR-900.code",
+        "V-22 SCR-900.resend_code",
+        "V-22 SCR-900.submit_code"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-04:SCR-900:8d0407",
+        "V-14:SCR-900:514ee4",
+        "V-14:SCR-900:7532f7",
+        "V-14:SCR-900:8240fb",
+        "V-14:SCR-900:855cfb",
+        "V-14:SCR-900:89f4c3",
+        "V-22:SCR-900.change_number:b77f88",
+        "V-22:SCR-900.code:2c2bfb",
+        "V-22:SCR-900.resend_code:b77f88",
+        "V-22:SCR-900.submit_code:b77f88"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "COVERAGE:ENT-900:c46846",
+        "V-29:ENT-900:5dd371"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "entity_without_screen",
+      "detail": "",
+      "expected_code": "V-29",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-29 ENT-900"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "COVERAGE:ENT-900:c46846",
+        "V-29:ENT-900:5dd371"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-14:SCR-001:06da7e",
+        "V-14:SCR-001:f6d3c0",
+        "V-14:SCR-002:06da7e",
+        "V-14:SCR-002:f6d3c0",
+        "V-14:SCR-004:06da7e",
+        "V-14:SCR-004:f6d3c0",
+        "V-14:SCR-005:06da7e",
+        "V-14:SCR-005:f6d3c0",
+        "V-14:SCR-006:06da7e",
+        "V-14:SCR-006:f6d3c0"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "missing_copy_key",
+      "detail": "",
+      "expected_code": "V-14",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-14 SCR-001",
+        "V-14 SCR-002",
+        "V-14 SCR-004",
+        "V-14 SCR-005",
+        "V-14 SCR-006",
+        "V-14 SCR-007",
+        "V-14 SCR-008",
+        "V-14 SCR-012",
+        "V-14 SCR-013",
+        "V-14 SCR-014"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-14:SCR-001:06da7e",
+        "V-14:SCR-001:f6d3c0",
+        "V-14:SCR-002:06da7e",
+        "V-14:SCR-002:f6d3c0",
+        "V-14:SCR-004:06da7e",
+        "V-14:SCR-004:f6d3c0",
+        "V-14:SCR-005:06da7e",
+        "V-14:SCR-005:f6d3c0",
+        "V-14:SCR-006:06da7e",
+        "V-14:SCR-006:f6d3c0"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-10:OP-S001:f7a082"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "operation_without_error_model",
+      "detail": "",
+      "expected_code": "V-10",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-10 OP-S001"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-10:OP-S001:f7a082"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-21:screens/SCR-002.md:8ccc0e",
+        "V-34:screens/SCR-002.md:5904ea"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "volatile_data_in_body",
+      "detail": "",
+      "expected_code": "V-34",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-21 screens/SCR-002.md",
+        "V-34 screens/SCR-002.md"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-21:screens/SCR-002.md:8ccc0e",
+        "V-34:screens/SCR-002.md:5904ea"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-07:SCR-002.change_number:2afad5",
+        "V-27:SCR-002:884e5f"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "closure_missing_a_field",
+      "detail": "",
+      "expected_code": "V-27",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-07 SCR-002.change_number",
+        "V-27 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [
+        "T-0031:SCR-002 calls OP-999 but no read defines OP-999: what does it take and return?"
+       ],
+       "new_findings": [
+        "V-07:SCR-002.change_number:2afad5",
+        "V-27:SCR-002:884e5f"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-26:T-0041:e1d7a9"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "task_over_budget",
+      "detail": "",
+      "expected_code": "V-26",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-26 T-0041"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-26:T-0041:e1d7a9"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-32:SCR-002:8be3c8",
+        "V-32:SCR-002:902e59"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "unresolved_alias",
+      "detail": "",
+      "expected_code": "V-32",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-32 SCR-002",
+        "V-32 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-32:SCR-002:8be3c8",
+        "V-32:SCR-002:902e59"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-36:SCR-002:1af8d6"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "unverified_research_used_as_default",
+      "detail": "",
+      "expected_code": "V-36",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-36 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-36:SCR-002:1af8d6"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-45:INT-S001:5849b5"
+       ]
+      },
+      "critic_input_differs": false,
+      "defect": "invented_provider_name",
+      "detail": "",
+      "expected_code": "V-45",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-45 INT-S001"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-45:INT-S001:5849b5"
+       ]
+      }
+     },
+     {
+      "applicable": false,
+      "defect": "later_feature_has_screen_node",
+      "detail": "",
+      "expected_code": "V-19",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "the planter could not change this pack: ValueError: duplicate id FTR-003 in features",
+      "touched": []
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-36:SCR-002:3df5af"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "research_value_does_not_match_item",
+      "detail": "",
+      "expected_code": "V-36",
+      "kind": "structural",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-36 SCR-002"
+       ]
+      },
+      "touched": [],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-36:SCR-002:3df5af"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "S-LOCKED:FACT-RUL-S033:value"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "changed_locked_number",
+      "detail": "82 became 83",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": false,
+       "masked_by_clean_pack": false,
+       "new_findings": []
+      },
+      "touched": [
+       "RUL-S033"
+      ],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "S-LOCKED:FACT-RUL-S033:value"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-45:RUL-S053:e2b47f"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "two_contradictory_rules",
+      "detail": "RUL-S053 contradicts RUL-S033",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-45 RUL-S053"
+       ]
+      },
+      "touched": [
+       "RUL-S033",
+       "RUL-S053"
+      ],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-45:RUL-S053:e2b47f"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "COVERAGE:FLW-001:042c3e",
+        "COVERAGE:FLW-001:637459",
+        "COVERAGE:FLW-003:a221bf",
+        "COVERAGE:FLW-S1001:bd841d",
+        "COVERAGE:FLW-S1001:dab649",
+        "COVERAGE:FLW-S1002:9173b9",
+        "COVERAGE:FLW-S1002:edc424",
+        "COVERAGE:FLW-S1003:57fb2f",
+        "COVERAGE:FLW-S1003:85df3e",
+        "COVERAGE:FLW-S1004:4e11b1"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "user_feature_missing_from_inventory",
+      "detail": "feature FTR-001 and its only screen(s) are gone",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-03 US-S001",
+        "V-04 SCR-008",
+        "V-05 FLW-001",
+        "V-05 FLW-003",
+        "V-05 FLW-S1001",
+        "V-05 FLW-S1002",
+        "V-05 FLW-S1003",
+        "V-05 FLW-S1004",
+        "V-05 FLW-S1005",
+        "V-05 FLW-S1006"
+       ]
+      },
+      "touched": [
+       "FTR-001",
+       "SCR-005",
+       "SCR-006",
+       "SCR-007"
+      ],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "COVERAGE:FLW-001:042c3e",
+        "COVERAGE:FLW-001:637459",
+        "COVERAGE:FLW-003:a221bf",
+        "COVERAGE:FLW-S1001:bd841d",
+        "COVERAGE:FLW-S1001:dab649",
+        "COVERAGE:FLW-S1002:9173b9",
+        "COVERAGE:FLW-S1002:edc424",
+        "COVERAGE:FLW-S1003:57fb2f",
+        "COVERAGE:FLW-S1003:85df3e",
+        "COVERAGE:FLW-S1004:4e11b1"
+       ]
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": false,
+       "new_findings": []
+      },
+      "critic_input_differs": true,
+      "defect": "role_sees_what_brief_forbids",
+      "detail": "ROL-007 may view ENT-002 in the Brief, now manage",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": false,
+       "masked_by_clean_pack": false,
+       "new_findings": []
+      },
+      "touched": [
+       "ENT-002",
+       "ROL-007"
+      ],
+      "verify": {
+       "caught": false,
+       "new_canary_questions": [],
+       "new_findings": []
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": false,
+       "new_findings": []
+      },
+      "critic_input_differs": true,
+      "defect": "journey_without_payment_failure_path",
+      "detail": "payment-failure paths removed",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": false,
+      "reason": "",
+      "self_check": {
+       "caught": false,
+       "masked_by_clean_pack": false,
+       "new_findings": []
+      },
+      "touched": [
+       "FLW-001"
+      ],
+      "verify": {
+       "caught": false,
+       "new_canary_questions": [],
+       "new_findings": []
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": false,
+       "new_findings": []
+      },
+      "critic_input_differs": true,
+      "defect": "story_contradicts_a_rule",
+      "detail": "story US-S001 now contradicts RUL-S033",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": false,
+      "reason": "",
+      "self_check": {
+       "caught": false,
+       "masked_by_clean_pack": false,
+       "new_findings": []
+      },
+      "touched": [
+       "US-S001",
+       "RUL-S033"
+      ],
+      "verify": {
+       "caught": false,
+       "new_canary_questions": [],
+       "new_findings": []
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": false,
+       "new_findings": []
+      },
+      "critic_input_differs": true,
+      "defect": "default_contradicts_official_research",
+      "detail": "SCR-132 says the opposite of RI-OFFICIAL-1",
+      "expected_code": "",
+      "kind": "meaning",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": false,
+       "masked_by_clean_pack": false,
+       "new_findings": []
+      },
+      "touched": [
+       "SCR-132"
+      ],
+      "verify": {
+       "caught": false,
+       "new_canary_questions": [],
+       "new_findings": []
+      }
+     },
+     {
+      "applicable": true,
+      "critic": {
+       "by_model_half": false,
+       "caught": true,
+       "new_findings": [
+        "V-17:SCR-004:163dfe",
+        "V-17:SCR-004:e80cec",
+        "V-24:SCR-004:63395d"
+       ]
+      },
+      "critic_input_differs": true,
+      "defect": "assumed_item_shown_as_locked",
+      "detail": "SCR-004 is an assumption shown as Locked",
+      "expected_code": "V-17",
+      "kind": "meaning",
+      "pack_visible": true,
+      "reason": "",
+      "self_check": {
+       "caught": true,
+       "masked_by_clean_pack": false,
+       "new_findings": [
+        "V-17 SCR-004",
+        "V-24 SCR-004"
+       ]
+      },
+      "touched": [
+       "SCR-004"
+      ],
+      "verify": {
+       "caught": true,
+       "new_canary_questions": [],
+       "new_findings": [
+        "V-17:SCR-004:163dfe",
+        "V-17:SCR-004:e80cec",
+        "V-24:SCR-004:63395d"
+       ]
+      }
+     }
+    ],
+    "single_run": true,
+    "structural_kinds": 22,
+    "verdict": "not_measured"
+   },
+   "id": "PS-7",
+   "rounds_used_max": 2,
+   "title": "Planted defects: 22 structural and 8 meaning, self-check and critic arms",
+   "verdict": "not_measured"
+  }
+ },
+ "inputs": {
+  "quick": {
+   "has_graph": true,
+   "pack": "quick",
+   "profile": "compact",
+   "screens": 18
+  },
+  "standard": {
+   "has_graph": true,
+   "pack": "standard",
+   "profile": "standard",
+   "screens": 36
+  },
+  "thorough": {
+   "has_graph": true,
+   "pack": "thorough",
+   "profile": "deep",
+   "screens": 65
+  }
+ },
+ "mode": "offline_stub",
+ "money": {
+  "calls": 417,
+  "cap_micro_usd": 5000000,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live_calls": 0,
+  "total_in_runner_micro_usd": 0
+ },
+ "note": "This tool only reports numbers against thresholds. It declares nothing decided: the decision table (doc 16 section 7) is applied by people.",
+ "runs": 1,
+ "schema": "spec.proof-report.v1",
+ "thresholds": {
+  "acceptance_satisfiable_min": 0.9,
+  "assumptions_per_screen_max": 1.0,
+  "blocking_questions_per_screen_max": 0.3,
+  "degraded_max": 0.05,
+  "estimate_error_max": 1.5,
+  "false_positive_max": 0.05,
+  "first_try_pass_min": 0.85,
+  "freedom_probe_distinct_layout_min": 0.3,
+  "lookup_recall_at_3_min": 0.9,
+  "mobile_fit_hit_rate_max": 0.1,
+  "planted_catch_min": 0.9,
+  "planted_catch_per_kind_min": 0.8,
+  "repair_rate_max": 0.15,
+  "wrong_gap_max": 0.1
+ },
+ "verdicts": {
+  "PS-10.ablation": "not_measured",
+  "PS-10.diversity": "not_measured",
+  "PS-10.lookup": "not_measured",
+  "PS-4": "not_measured",
+  "PS-6": "not_measured",
+  "PS-7": "not_measured"
+ }
+}

@@ -3,97 +3,69 @@
  "by_kind": {
   "BEHAV": {
    "calls": 1,
-   "clean": 1,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 3618,
-   "tokens_out": 492
+   "repaired": 0
   },
   "COPY-L": {
    "calls": 1,
-   "clean": 1,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 6264,
-   "tokens_out": 1549
+   "repaired": 0
   },
   "DSGN": {
    "calls": 1,
-   "clean": 1,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 1901,
-   "tokens_out": 295
+   "repaired": 0
   },
   "G2-SUMMARY": {
    "calls": 1,
-   "clean": 1,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 482,
-   "tokens_out": 61
+   "repaired": 0
   },
   "GLOSS-L": {
    "calls": 1,
-   "clean": 1,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 2143,
-   "tokens_out": 968
+   "repaired": 0
   },
   "MOCK-HERO": {
    "calls": 2,
-   "clean": 2,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 4923,
-   "tokens_out": 1221
+   "repaired": 0
   },
   "SCRN": {
    "calls": 3,
-   "clean": 3,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 24194,
-   "tokens_out": 5150
+   "repaired": 0
   },
   "SPEC-PLAN": {
    "calls": 1,
-   "clean": 1,
-   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 7354,
-   "tokens_out": 6516
+   "repaired": 0
   }
  },
- "calls_total": 11,
+ "calls": 11,
+ "compass_id": "quick-yoga-studio-bengaluru",
  "cost_micros": 0,
- "cost_usd": 0.0,
- "events": 66,
+ "cost_usd": "0.0000",
+ "created_at": "2026-11-14T16:32:29.815853+00:00",
+ "input": "quick-yoga-studio-bengaluru",
+ "mode": "mock",
+ "not_copied": [],
  "offline": true,
  "pack": {
   "checked_by": [
@@ -106,22 +78,19 @@
  },
  "partial_reason": null,
  "profile": "compact",
- "rcode_counts": {
-  "downgrade_locked_to_default": 0,
-  "drop_unknown_optional": 0,
-  "exact_synonym": 0,
-  "instantiate_library_default": 0,
-  "mint_missing_id": 0,
-  "sort_bytes": 0
- },
- "run_id": "run_01M7DDM79Q9CVRVD1FCV7JBMMX",
+ "program_id": "ses_01M72PT1S3G61C9WFTXJPWKC3N",
+ "run_id": "run_01M7DEEF3QXFVJNF3Z5Q3PRQW5",
+ "run_spend_micros": 0,
+ "schema": "spec.export.summary.v1",
  "status": "approved",
+ "synth": null,
  "tasks": {
   "budget": 28000,
   "count": 5,
   "max_read_tokens": 16748,
   "over_budget": 0
  },
+ "updated_at": "2026-11-14T16:32:30.827638+00:00",
  "validators": {
   "by_severity": {
    "blocker": 0,

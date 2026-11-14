@@ -3,90 +3,130 @@
  "by_kind": {
   "BEHAV": {
    "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 4331,
+   "tokens_out": 598
   },
   "COPY-L": {
    "calls": 2,
+   "clean": 2,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 22906,
+   "tokens_out": 5948
   },
   "DSGN": {
    "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 2028,
+   "tokens_out": 864
   },
   "G2-SUMMARY": {
    "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 1015,
+   "tokens_out": 70
   },
   "GLOSS-L": {
    "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 2800,
+   "tokens_out": 2071
   },
   "MOCK-HERO": {
    "calls": 3,
+   "clean": 3,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 9760,
+   "tokens_out": 4777
   },
   "PROD-INTEG": {
    "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 1475,
+   "tokens_out": 261
   },
   "PROD-JOURNEYS": {
    "calls": 2,
+   "clean": 2,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 4874,
+   "tokens_out": 2016
   },
   "PROD-MODULE": {
    "calls": 5,
+   "clean": 5,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 17057,
+   "tokens_out": 7860
   },
   "SCRN": {
    "calls": 7,
+   "clean": 7,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 70103,
+   "tokens_out": 17033
   },
   "SPEC-PLAN": {
    "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
-   "repaired": 0
+   "repaired": 0,
+   "tokens_in": 4546,
+   "tokens_out": 1716
   }
  },
- "calls": 25,
- "compass_id": "standard-produce-marketplace-nashik",
+ "calls_total": 25,
  "cost_micros": 0,
- "cost_usd": "0.0000",
- "created_at": "2026-11-14T15:18:08.627682+00:00",
- "input": "standard-produce-marketplace-nashik",
- "mode": "mock",
- "not_copied": [],
+ "cost_usd": 0.0,
+ "events": 94,
  "offline": true,
  "pack": {
   "checked_by": [
@@ -99,19 +139,22 @@
  },
  "partial_reason": null,
  "profile": "standard",
- "program_id": "ses_01M72RE53CJJKA5HB19FR788ZJ",
- "run_id": "run_01M7DA6AFKFVSE7TQ875NDHVXG",
- "run_spend_micros": 0,
- "schema": "spec.export.summary.v1",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7DEEQ9H75GZ71C73NBZ5WYR",
  "status": "approved",
- "synth": null,
  "tasks": {
   "budget": 28000,
   "count": 23,
   "max_read_tokens": 19341,
   "over_budget": 0
  },
- "updated_at": "2026-11-14T15:18:10.613336+00:00",
  "validators": {
   "by_severity": {
    "blocker": 0,

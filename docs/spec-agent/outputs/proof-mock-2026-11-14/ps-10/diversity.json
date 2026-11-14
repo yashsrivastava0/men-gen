@@ -1,0 +1,132 @@
+{
+ "between_app": {
+  "could_off": {
+   "applicable": true,
+   "axis_diff_required": 2,
+   "could": false,
+   "could_signature_difference": null,
+   "diversity": 0.8141666666666667,
+   "hue_gap_required": 60.0,
+   "mean_axis_diff": 5.333333333333333,
+   "min_axis_diff": 5,
+   "min_seed_hue_gap": 37.7,
+   "token_name_overlap": 0.9951456310679612
+  },
+  "could_on": {
+   "applicable": true,
+   "axis_diff_required": 2,
+   "could": true,
+   "could_signature_difference": 0.7142857142857143,
+   "diversity": 0.7808730158730159,
+   "hue_gap_required": 60.0,
+   "mean_axis_diff": 5.333333333333333,
+   "min_axis_diff": 5,
+   "min_seed_hue_gap": 37.7,
+   "token_name_overlap": 0.9951456310679612
+  }
+ },
+ "checks": [
+  {
+   "name": "between-app: the two apps differ on at least one direction axis",
+   "ok": true,
+   "op": ">=",
+   "threshold": 1,
+   "value": 5
+  },
+  {
+   "name": "COULD on: between-app diversity not lower",
+   "ok": false,
+   "op": "==",
+   "threshold": true,
+   "value": false
+  },
+  {
+   "name": "COULD on: within-app consistency not lower",
+   "ok": true,
+   "op": "==",
+   "threshold": true,
+   "value": true
+  }
+ ],
+ "critic": {
+  "asked": true,
+  "between_app": {
+   "fallback": false,
+   "notes": [
+    "stub: 17 words shared between A and B"
+   ],
+   "owner_note": "",
+   "score": 3
+  },
+  "within_app": {
+   "fallback": false,
+   "notes": [
+    "stub: mean word overlap across 9 records"
+   ],
+   "owner_note": "",
+   "score": 2
+  }
+ },
+ "gate": "PS-10.diversity",
+ "money": {
+  "calls": 2,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "note": "Deterministic code metrics (diversity and consistency measured separately, COULD off and on); the critic call is for the owner to sample. The packs were NOT written by a live lane: this proves the harness only.",
+ "packs": [
+  "standard",
+  "quick"
+ ],
+ "packs_live": false,
+ "single_run": true,
+ "verdict": "not_measured",
+ "within_app": {
+  "could_off": {
+   "applicable": true,
+   "consistency": 0.9166666666666667,
+   "could": false,
+   "intent_consistency": 0.8333333333333334,
+   "motion_consistency": null,
+   "screens": [
+    "SCR-005",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-010",
+    "SCR-012",
+    "SCR-017",
+    "SCR-018",
+    "SCR-019",
+    "SCR-020",
+    "SCR-021",
+    "SCR-022"
+   ],
+   "shape_consistency": 1.0
+  },
+  "could_on": {
+   "applicable": true,
+   "consistency": 0.9222222222222222,
+   "could": true,
+   "intent_consistency": 0.8333333333333334,
+   "motion_consistency": 0.9333333333333332,
+   "screens": [
+    "SCR-005",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-010",
+    "SCR-012",
+    "SCR-017",
+    "SCR-018",
+    "SCR-019",
+    "SCR-020",
+    "SCR-021",
+    "SCR-022"
+   ],
+   "shape_consistency": 1.0
+  }
+ },
+ "would_pass": false
+}

@@ -1,0 +1,272 @@
+{
+ "offline_stub": true,
+ "outputs": [
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Class Details for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Class Details asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Class Details WHEN the user opens Class Details or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Weekly Timetable (screens/SCR-003.md): 2 regions, 1 actions, every listed state",
+    "Build Class Details (screens/SCR-004.md): 4 regions, 1 actions, every listed state",
+    "Build My Bookings (screens/SCR-005.md): 1 regions, 1 actions, every listed state",
+    "Build Class Reminders (screens/SCR-006.md): 1 regions, 2 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 7186,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-002-1.md",
+    "data-model/MOD-004-1.md",
+    "modules/MOD-002/module.md",
+    "screens/SCR-003.md",
+    "screens/SCR-004.md",
+    "screens/SCR-005.md",
+    "screens/SCR-006.md"
+   ],
+   "screen": "SCR-004",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Class Details for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-004 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-004 binds ENT-001.id but no read defines ENT-001: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Class Details asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-004 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-004 binds ENT-001.id but no read defines ENT-001: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Class Details WHEN the user opens Class Details or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-004 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-004 binds ENT-001.id but no read defines ENT-001: what are its fields? SCR-0",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-004 binds ENT-001.ends_at but no read defines ENT-001: what are its fields?",
+    "SCR-004 binds ENT-001.id but no read defines ENT-001: what are its fields?",
+    "SCR-004 binds ENT-001.instructor_name but no read defines ENT-001: what are its fields?",
+    "SCR-004 binds ENT-001.starts_at but no read defines ENT-001: what are its fields?",
+    "SCR-004 binds ENT-001.status but no read defines ENT-001: what are its fields?",
+    "SCR-004 binds ENT-001.title but no read defines ENT-001: what are its fields?",
+    "SCR-004 binds ENT-002.class_id but no read defines ENT-002: what are its fields?",
+    "SCR-004 binds ENT-002.member_id but no read defines ENT-002: what are its fields?",
+    "SCR-004 binds ENT-002.status but no read defines ENT-002: what are its fields?",
+    "SCR-004 binds ENT-002.waitlist_position but no read defines ENT-002: what are its fields?"
+   ],
+   "outline": [
+    "Build Class Details (screens/SCR-004.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1521,
+   "reads": [
+    "screens/SCR-004.md"
+   ],
+   "screen": "SCR-004",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Class Editor for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Class Editor WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Class Editor asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in studio owner on Class Editor WHEN they save the new class THEN the change is saved and the person reaches SCR-012",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Studio Schedule (screens/SCR-010.md): 1 regions, 2 actions, every listed state",
+    "Build Class Editor (screens/SCR-011.md): 1 regions, 2 actions, every listed state",
+    "Build Class Attendance (screens/SCR-012.md): 2 regions, 0 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 12748,
+   "reads": [
+    "prefix.bundle.md",
+    "contract/resources/ent-001-1.yaml",
+    "contract/resources/ent-001-2.yaml",
+    "data-model/MOD-002-1.md",
+    "data-model/MOD-004-1.md",
+    "modules/MOD-004/module.md",
+    "screens/SCR-010.md",
+    "screens/SCR-011.md",
+    "screens/SCR-012.md"
+   ],
+   "screen": "SCR-011",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Class Editor for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-011 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-011 binds ENT-001.instructor_name but no read defines ENT-001: what are its ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Class Editor WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "blocked: SCR-011 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-011 binds ENT-001.instructor_name but no read defines ENT-001: what are its ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Class Editor asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-011 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-011 binds ENT-001.instructor_name but no read defines ENT-001: what are its ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in studio owner on Class Editor WHEN they save the new class THEN the change is saved and the person reaches SCR-012",
+     "how": "blocked: SCR-011 binds ENT-001.ends_at but no read defines ENT-001: what are its fields? SCR-011 binds ENT-001.instructor_name but no read defines ENT-001: what are its ",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-011 binds ENT-001.ends_at but no read defines ENT-001: what are its fields?",
+    "SCR-011 binds ENT-001.instructor_name but no read defines ENT-001: what are its fields?",
+    "SCR-011 binds ENT-001.starts_at but no read defines ENT-001: what are its fields?",
+    "SCR-011 binds ENT-001.title but no read defines ENT-001: what are its fields?"
+   ],
+   "outline": [
+    "Build Class Editor (screens/SCR-011.md): 1 regions, 2 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1810,
+   "reads": [
+    "screens/SCR-011.md"
+   ],
+   "screen": "SCR-011",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Pay for Pack for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Pay for Pack THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in members on Pay for Pack WHEN they pay the amount due THEN the change is saved and the person reaches SCR-009",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Class Packs (screens/SCR-007.md): 1 regions, 1 actions, every listed state",
+    "Build Pay for Pack (screens/SCR-008.md): 3 regions, 1 actions, every listed state",
+    "Build Purchase Confirmation (screens/SCR-009.md): 1 regions, 0 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 10176,
+   "reads": [
+    "prefix.bundle.md",
+    "contract/resources/ent-004-1.yaml",
+    "contract/resources/ent-004-2.yaml",
+    "data-model/MOD-003-1.md",
+    "modules/MOD-003/module.md",
+    "screens/SCR-007.md",
+    "screens/SCR-008.md",
+    "screens/SCR-009.md"
+   ],
+   "screen": "SCR-008",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Pay for Pack for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-008 binds ENT-003.price but no read defines ENT-003: what are its fields? SCR-008 binds ENT-004.amount but no read defines ENT-004: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "blocked: SCR-008 binds ENT-003.price but no read defines ENT-003: what are its fields? SCR-008 binds ENT-004.amount but no read defines ENT-004: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Pay for Pack THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "blocked: SCR-008 binds ENT-003.price but no read defines ENT-003: what are its fields? SCR-008 binds ENT-004.amount but no read defines ENT-004: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in members on Pay for Pack WHEN they pay the amount due THEN the change is saved and the person reaches SCR-009",
+     "how": "blocked: SCR-008 binds ENT-003.price but no read defines ENT-003: what are its fields? SCR-008 binds ENT-004.amount but no read defines ENT-004: what are its fields?",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-008 binds ENT-003.price but no read defines ENT-003: what are its fields?",
+    "SCR-008 binds ENT-004.amount but no read defines ENT-004: what are its fields?"
+   ],
+   "outline": [
+    "Build Pay for Pack (screens/SCR-008.md): 3 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1787,
+   "reads": [
+    "screens/SCR-008.md"
+   ],
+   "screen": "SCR-008",
+   "used_fallback": false
+  }
+ ],
+ "what": "Ten consumer-probe outputs for the owner to read (doc 16 PS-6). A blocking question is what the weakest consumer says it cannot decide from its reads. Mark any that is a false alarm."
+}

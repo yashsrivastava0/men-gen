@@ -1,0 +1,596 @@
+{
+ "checks": [
+  {
+   "name": "react-native-paper: recall at 3",
+   "ok": true,
+   "op": ">=",
+   "threshold": 0.9,
+   "value": 1.0
+  },
+  {
+   "name": "react-native-paper: wrong-gap rate",
+   "ok": true,
+   "op": "<=",
+   "threshold": 0.1,
+   "value": 0.0
+  },
+  {
+   "name": "react-native-paper: better than the card-only baseline",
+   "ok": true,
+   "op": "==",
+   "threshold": true,
+   "value": true
+  },
+  {
+   "name": "react-native-elements: recall at 3",
+   "ok": true,
+   "op": ">=",
+   "threshold": 0.9,
+   "value": 1.0
+  },
+  {
+   "name": "react-native-elements: wrong-gap rate",
+   "ok": true,
+   "op": "<=",
+   "threshold": 0.1,
+   "value": 0.0
+  },
+  {
+   "name": "react-native-elements: better than the card-only baseline",
+   "ok": true,
+   "op": "==",
+   "threshold": true,
+   "value": true
+  },
+  {
+   "name": "synthetic: planted gaps found",
+   "ok": true,
+   "op": ">=",
+   "threshold": 1.0,
+   "value": 1.0
+  }
+ ],
+ "gate": "PS-10.lookup",
+ "libraries": [
+  {
+   "arms": {
+    "card_only": {
+     "ambiguous": 0,
+     "fit": 13,
+     "gap": 5,
+     "gap_found_rate": 0.0,
+     "gaps_found": 0,
+     "needs": 18,
+     "recall_at_3": 0.0,
+     "wrong_gap_rate": 0.0
+    },
+    "needs": {
+     "ambiguous": 0,
+     "fit": 13,
+     "gap": 5,
+     "gap_found_rate": 1.0,
+     "gaps_found": 5,
+     "needs": 18,
+     "recall_at_3": 1.0,
+     "wrong_gap_rate": 0.0
+    }
+   },
+   "checked_on": "2026-11-14",
+   "key": "react-native-paper",
+   "library": "React Native Paper",
+   "per_need": {
+    "card_only": [
+     {
+      "hit": false,
+      "need": "N-S002",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S003",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S004",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S005",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S008",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S010",
+      "shape": "inputs",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S011",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S013",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S014",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S016",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S017",
+      "shape": "notice",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S019",
+      "shape": "options",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S020",
+      "shape": "options",
+      "wrong_gap": false
+     }
+    ],
+    "needs": [
+     {
+      "hit": true,
+      "need": "N-S002",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S003",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S004",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S005",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S008",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S010",
+      "shape": "inputs",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S011",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S013",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S014",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S016",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S017",
+      "shape": "notice",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S019",
+      "shape": "options",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S020",
+      "shape": "options",
+      "wrong_gap": false
+     }
+    ]
+   },
+   "planted": {},
+   "source_url": "https://oss.callstack.com/react-native-paper/docs/guides/getting-started"
+  },
+  {
+   "arms": {
+    "card_only": {
+     "ambiguous": 0,
+     "fit": 13,
+     "gap": 5,
+     "gap_found_rate": 0.0,
+     "gaps_found": 0,
+     "needs": 18,
+     "recall_at_3": 0.07692307692307693,
+     "wrong_gap_rate": 0.0
+    },
+    "needs": {
+     "ambiguous": 0,
+     "fit": 13,
+     "gap": 5,
+     "gap_found_rate": 1.0,
+     "gaps_found": 5,
+     "needs": 18,
+     "recall_at_3": 1.0,
+     "wrong_gap_rate": 0.0
+    }
+   },
+   "checked_on": "2026-11-14",
+   "key": "react-native-elements",
+   "library": "React Native Elements",
+   "per_need": {
+    "card_only": [
+     {
+      "hit": false,
+      "need": "N-S002",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S003",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S004",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S005",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S008",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S010",
+      "shape": "inputs",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S011",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S013",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S014",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S016",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S017",
+      "shape": "notice",
+      "wrong_gap": false
+     },
+     {
+      "hit": false,
+      "need": "N-S019",
+      "shape": "options",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S020",
+      "shape": "options",
+      "wrong_gap": false
+     }
+    ],
+    "needs": [
+     {
+      "hit": true,
+      "need": "N-S002",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S003",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S004",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S005",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S008",
+      "shape": "collection",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S010",
+      "shape": "inputs",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S011",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S013",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S014",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S016",
+      "shape": "key_values",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S017",
+      "shape": "notice",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S019",
+      "shape": "options",
+      "wrong_gap": false
+     },
+     {
+      "hit": true,
+      "need": "N-S020",
+      "shape": "options",
+      "wrong_gap": false
+     }
+    ]
+   },
+   "planted": {},
+   "source_url": "https://reactnativeelements.com/docs"
+  }
+ ],
+ "money": {
+  "calls": 5,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "note": "single run. The answer key is the snapshot author's shape mapping (high and medium confidence). OFFLINE STUB: the stub answers by shape name, so recall is high by construction; this proves the harness and the planted-gap check, not the consumer.",
+ "pack": "standard",
+ "single_run": true,
+ "split": {
+  "held_out": 18,
+  "held_out_percent": 50,
+  "needs": 26,
+  "tune": 8
+ },
+ "synthetic": {
+  "arms": {
+   "needs": {
+    "ambiguous": 0,
+    "fit": 18,
+    "gap": 4,
+    "gap_found_rate": 1.0,
+    "gaps_found": 4,
+    "needs": 22,
+    "recall_at_3": 1.0,
+    "wrong_gap_rate": 0.0
+   }
+  },
+  "checked_on": "2026-11-14",
+  "key": "synthetic",
+  "library": "Synthetic catalogue",
+  "per_need": {
+   "needs": [
+    {
+     "hit": true,
+     "need": "N-S002",
+     "shape": "collection",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S003",
+     "shape": "collection",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S004",
+     "shape": "collection",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S005",
+     "shape": "collection",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S008",
+     "shape": "collection",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S010",
+     "shape": "inputs",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S011",
+     "shape": "key_values",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S013",
+     "shape": "key_values",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S014",
+     "shape": "key_values",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S016",
+     "shape": "key_values",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S017",
+     "shape": "notice",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S019",
+     "shape": "options",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S020",
+     "shape": "options",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S021",
+     "shape": "sequence",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S023",
+     "shape": "text",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S024",
+     "shape": "text",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S025",
+     "shape": "text",
+     "wrong_gap": false
+    },
+    {
+     "hit": true,
+     "need": "N-S026",
+     "shape": "text",
+     "wrong_gap": false
+    }
+   ]
+  },
+  "planted": {
+   "gap_found_rate": 1.0,
+   "gap_shapes": [
+    "hierarchy",
+    "places",
+    "schedule",
+    "conversation"
+   ],
+   "gaps_found": 4,
+   "wrong_gap_rate": 0.0
+  },
+  "source_url": "synthetic"
+ },
+ "verdict": "not_measured",
+ "would_pass": true
+}

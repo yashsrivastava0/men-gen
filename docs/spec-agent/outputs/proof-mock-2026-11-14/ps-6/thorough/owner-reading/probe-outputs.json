@@ -1,0 +1,680 @@
+{
+ "offline_stub": true,
+ "outputs": [
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Bookings for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Bookings yet WHEN Bookings loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Bookings asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Bookings WHEN the user opens Bookings or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on Bookings WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Bookings offers WHEN the user reaches Bookings or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Bookings was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Bookings and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Bookings, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Bookings (screens/SCR-004.md): 1 regions, 3 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 6532,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-002-1.md",
+    "modules/MOD-002/module.md",
+    "screens/SCR-004.md"
+   ],
+   "screen": "SCR-004",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Bookings for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user has no data for Bookings yet WHEN Bookings loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Bookings asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Bookings WHEN the user opens Bookings or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on Bookings WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Bookings offers WHEN the user reaches Bookings or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the data on Bookings was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Bookings and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Bookings, not at the home screen",
+     "how": "blocked: SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields? SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-004 binds ENT-004.customer_company_id but no read defines ENT-004: what are its fields?",
+    "SCR-004 binds ENT-004.drop_address but no read defines ENT-004: what are its fields?",
+    "SCR-004 binds ENT-004.material but no read defines ENT-004: what are its fields?",
+    "SCR-004 binds ENT-004.pickup_address but no read defines ENT-004: what are its fields?",
+    "SCR-004 binds ENT-004.weight but no read defines ENT-004: what are its fields?"
+   ],
+   "outline": [
+    "Build Bookings (screens/SCR-004.md): 1 regions, 3 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1993,
+   "reads": [
+    "screens/SCR-004.md"
+   ],
+   "screen": "SCR-004",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Branch performance detail for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Branch performance detail asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Branch performance detail WHEN the user opens Branch performance detail or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Branch performance detail loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Branch performance detail and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Branch performance detail, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Branch performance detail offers WHEN the user reaches Branch performance detail or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Branch performance detail was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Branch performance detail has very long text, very large numbers, emoji and right-to-left text WHEN Branch performance detail shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Branch performance detail (screens/SCR-068.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 6176,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-004-1.md",
+    "data-model/MOD-007-1.md",
+    "modules/MOD-010/module.md",
+    "screens/SCR-068.md"
+   ],
+   "screen": "SCR-068",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Branch performance detail for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Branch performance detail asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Branch performance detail WHEN the user opens Branch performance detail or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the network is slow while Branch performance detail loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Branch performance detail and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Branch performance detail, not at the home screen",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Branch performance detail offers WHEN the user reaches Branch performance detail or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the data on Branch performance detail was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the data on Branch performance detail has very long text, very large numbers, emoji and right-to-left text WHEN Branch performance detail shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "blocked: SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields? SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-0",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-068 binds ENT-006.details but no read defines ENT-006: what are its fields?",
+    "SCR-068 binds ENT-006.id but no read defines ENT-006: what are its fields?",
+    "SCR-068 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+    "SCR-068 binds ENT-009.details but no read defines ENT-009: what are its fields?",
+    "SCR-068 binds ENT-009.name but no read defines ENT-009: what are its fields?"
+   ],
+   "outline": [
+    "Build Branch performance detail (screens/SCR-068.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1851,
+   "reads": [
+    "screens/SCR-068.md"
+   ],
+   "screen": "SCR-068",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Trip Document form for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Trip Document form WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Trip Document form asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Trip Document form WHEN the user opens Trip Document form or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Trip Document form offers WHEN the user reaches Trip Document form or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Trip Document form was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Trip Document form was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Trip Document form afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in drivers on Trip Document form WHEN they save the new trip document THEN the change is saved and the person stays here and sees the result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in drivers on Trip Document form and the request fails with validation failed WHEN they save the new trip document THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in drivers on Trip Document form and the request fails with conflict WHEN they save the new trip document THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build My Trips (screens/SCR-026.md): 2 regions, 0 actions, every listed state",
+    "Build Trip Details (screens/SCR-027.md): 4 regions, 0 actions, every listed state",
+    "Build Trip Status (screens/SCR-028.md): 1 regions, 2 actions, every listed state",
+    "Build Trip Document form (screens/SCR-030.md): 1 regions, 3 actions, every listed state",
+    "Build trip updates and delivery proof (screens/SCR-092.md): 1 regions, 1 actions, every listed state",
+    "Build \"trip updates and delivery proof: new or edit\" (screens/SCR-094.md): 1 regions, 2 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 22143,
+   "reads": [
+    "prefix.bundle.md",
+    "contract/resources/ent-007.yaml",
+    "contract/resources/ent-008.yaml",
+    "data-model/MOD-004-1.md",
+    "data-model/MOD-005-1.md",
+    "modules/MOD-005/module.md",
+    "screens/SCR-026.md",
+    "screens/SCR-027.md",
+    "screens/SCR-028.md",
+    "screens/SCR-030.md",
+    "screens/SCR-092.md",
+    "screens/SCR-094.md"
+   ],
+   "screen": "SCR-030",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Trip Document form for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Trip Document form WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Trip Document form asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Trip Document form WHEN the user opens Trip Document form or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Trip Document form offers WHEN the user reaches Trip Document form or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the data on Trip Document form was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Trip Document form was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Trip Document form afterwards, and keeps any unsent input",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in drivers on Trip Document form WHEN they save the new trip document THEN the change is saved and the person stays here and sees the result",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in drivers on Trip Document form and the request fails with validation failed WHEN they save the new trip document THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in drivers on Trip Document form and the request fails with conflict WHEN they save the new trip document THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "blocked: SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields? SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-030 binds ENT-008.details but no read defines ENT-008: what are its fields?",
+    "SCR-030 binds ENT-008.name but no read defines ENT-008: what are its fields?"
+   ],
+   "outline": [
+    "Build Trip Document form (screens/SCR-030.md): 1 regions, 3 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 2272,
+   "reads": [
+    "screens/SCR-030.md"
+   ],
+   "screen": "SCR-030",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Trip Progress for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Trip Progress asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Trip Progress WHEN the user opens Trip Progress or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Trip Progress loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Trip Progress THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Trip Progress offers WHEN the user reaches Trip Progress or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Trip Progress was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Trip Progress and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Trip Progress",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Tracked Bookings (screens/SCR-014.md): 2 regions, 1 actions, every listed state",
+    "Build Trip Progress (screens/SCR-016.md): 1 regions, 1 actions, every listed state",
+    "Build Delivery Proof (screens/SCR-017.md): 4 regions, 0 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 9992,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-002-1.md",
+    "data-model/MOD-004-1.md",
+    "data-model/MOD-005-1.md",
+    "modules/MOD-003/module.md",
+    "screens/SCR-014.md",
+    "screens/SCR-016.md",
+    "screens/SCR-017.md"
+   ],
+   "screen": "SCR-016",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Trip Progress for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Trip Progress asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Trip Progress WHEN the user opens Trip Progress or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the network is slow while Trip Progress loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Trip Progress THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Trip Progress offers WHEN the user reaches Trip Progress or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the data on Trip Progress was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Trip Progress and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Trip Progress",
+     "how": "blocked: SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields? SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-016 binds ENT-006.id but no read defines ENT-006: what are its fields?",
+    "SCR-016 binds ENT-006.name but no read defines ENT-006: what are its fields?"
+   ],
+   "outline": [
+    "Build Trip Progress (screens/SCR-016.md): 1 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1559,
+   "reads": [
+    "screens/SCR-016.md"
+   ],
+   "screen": "SCR-016",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Trip Costs for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Trip Costs asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Trip Costs WHEN the user opens Trip Costs or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Trip Costs yet WHEN Trip Costs loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Trip Costs loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Trip Costs offers WHEN the user reaches Trip Costs or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Trip Costs changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Trip Costs has very long text, very large numbers, emoji and right-to-left text WHEN Trip Costs shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Trip Costs (screens/SCR-031.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 5967,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-006-1.md",
+    "modules/MOD-006/module.md",
+    "screens/SCR-031.md"
+   ],
+   "screen": "SCR-031",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Trip Costs for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Trip Costs asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Trip Costs WHEN the user opens Trip Costs or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user has no data for Trip Costs yet WHEN Trip Costs loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the network is slow while Trip Costs loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Trip Costs offers WHEN the user reaches Trip Costs or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the figures on Trip Costs changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the data on Trip Costs has very long text, very large numbers, emoji and right-to-left text WHEN Trip Costs shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "blocked: SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields? SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields? ",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-031 binds ENT-011.amount but no read defines ENT-011: what are its fields?",
+    "SCR-031 binds ENT-011.category but no read defines ENT-011: what are its fields?",
+    "SCR-031 binds ENT-011.occurred_at but no read defines ENT-011: what are its fields?",
+    "SCR-031 binds ENT-011.status but no read defines ENT-011: what are its fields?",
+    "SCR-031 binds ENT-011.trip_id but no read defines ENT-011: what are its fields?",
+    "SCR-031 binds ENT-012.amount but no read defines ENT-012: what are its fields?",
+    "SCR-031 binds ENT-012.requested_at but no read defines ENT-012: what are its fields?",
+    "SCR-031 binds ENT-012.settled_amount but no read defines ENT-012: what are its fields?",
+    "SCR-031 binds ENT-012.status but no read defines ENT-012: what are its fields?",
+    "SCR-031 binds ENT-012.trip_id but no read defines ENT-012: what are its fields?"
+   ],
+   "outline": [
+    "Build Trip Costs (screens/SCR-031.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1909,
+   "reads": [
+    "screens/SCR-031.md"
+   ],
+   "screen": "SCR-031",
+   "used_fallback": false
+  }
+ ],
+ "what": "Ten consumer-probe outputs for the owner to read (doc 16 PS-6). A blocking question is what the weakest consumer says it cannot decide from its reads. Mark any that is a false alarm."
+}

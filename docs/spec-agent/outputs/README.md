@@ -6,9 +6,9 @@ This page is written by `scripts/spec_export_outputs.py` (also `python -m mde_sp
 
 | Run | Mode | Input | Profile | Status | Calls | USD |
 | --- | --- | --- | --- | --- | --- | --- |
+| [`mock-2026-11-14/run_01M7DEETBCRPV2A7N0WG3ZM3HK`](mock-2026-11-14/run_01M7DEETBCRPV2A7N0WG3ZM3HK/README.md) | MOCK | thorough-freight-fleet-india | deep | approved | 84 | 0.0000 |
+| [`mock-2026-11-14/run_01M7DEEQ9H75GZ71C73NBZ5WYR`](mock-2026-11-14/run_01M7DEEQ9H75GZ71C73NBZ5WYR/README.md) | MOCK | standard-produce-marketplace-nashik | standard | approved | 25 | 0.0000 |
+| [`mock-2026-11-14/run_01M7DEEF3QXFVJNF3Z5Q3PRQW5`](mock-2026-11-14/run_01M7DEEF3QXFVJNF3Z5Q3PRQW5/README.md) | MOCK | quick-yoga-studio-bengaluru | compact | approved | 11 | 0.0000 |
 | [`mock-2026-11-14/run_01M7DDMDR29KX0NGX3MFP1YARZ`](mock-2026-11-14/run_01M7DDMDR29KX0NGX3MFP1YARZ/README.md) | MOCK | synth-big-60-screens | deep | approved | 75 | 0.0000 |
-| [`mock-2026-11-14/run_01M7DDM8XSRFMG1B6TRZNGR3EE`](mock-2026-11-14/run_01M7DDM8XSRFMG1B6TRZNGR3EE/README.md) | MOCK | thorough-freight-fleet-india | deep | approved | 84 | 0.0000 |
-| [`mock-2026-11-14/run_01M7DDM79Q9CVRVD1FCV7JBMMX`](mock-2026-11-14/run_01M7DDM79Q9CVRVD1FCV7JBMMX/README.md) | MOCK | quick-yoga-studio-bengaluru | compact | approved | 11 | 0.0000 |
-| [`mock-2026-11-14/run_01M7DA6AFKFVSE7TQ875NDHVXG`](mock-2026-11-14/run_01M7DA6AFKFVSE7TQ875NDHVXG/README.md) | MOCK | standard-produce-marketplace-nashik | standard | approved | 25 | 0.0000 |
 
-Folders with numbers only (no pack): `live-2026-11-14`.
+Folders with numbers only (no pack): `live-2026-11-14`, `proof-mock-2026-11-14`.

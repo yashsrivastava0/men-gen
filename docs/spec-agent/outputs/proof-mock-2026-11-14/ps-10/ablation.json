@@ -1,0 +1,190 @@
+{
+ "arms": {
+  "+could": {
+   "acceptance_satisfiable": 34,
+   "acceptance_satisfiable_share": 1.0,
+   "added_tokens_vs_must": 0,
+   "assumptions": 0,
+   "assumptions_per_screen": 0.0,
+   "blocking_per_screen": 0.0,
+   "blocking_questions": 0,
+   "criteria": 34,
+   "fallback_calls": 0,
+   "read_tokens_max": 14582,
+   "screens": 6
+  },
+  "+emotion": {
+   "acceptance_satisfiable": 34,
+   "acceptance_satisfiable_share": 1.0,
+   "added_tokens_vs_must": 0,
+   "assumptions": 0,
+   "assumptions_per_screen": 0.0,
+   "blocking_per_screen": 0.0,
+   "blocking_questions": 0,
+   "criteria": 34,
+   "fallback_calls": 0,
+   "read_tokens_max": 14582,
+   "screens": 6
+  },
+  "+mock_assets": {
+   "acceptance_satisfiable": 34,
+   "acceptance_satisfiable_share": 1.0,
+   "added_tokens_vs_must": 4621,
+   "assumptions": 0,
+   "assumptions_per_screen": 0.0,
+   "blocking_per_screen": 0.0,
+   "blocking_questions": 0,
+   "criteria": 34,
+   "fallback_calls": 0,
+   "read_tokens_max": 19203,
+   "screens": 6
+  },
+  "+stories": {
+   "acceptance_satisfiable": 34,
+   "acceptance_satisfiable_share": 1.0,
+   "added_tokens_vs_must": 0,
+   "assumptions": 0,
+   "assumptions_per_screen": 0.0,
+   "blocking_per_screen": 0.0,
+   "blocking_questions": 0,
+   "criteria": 34,
+   "fallback_calls": 0,
+   "read_tokens_max": 14582,
+   "screens": 6
+  },
+  "+usually": {
+   "acceptance_satisfiable": 34,
+   "acceptance_satisfiable_share": 1.0,
+   "added_tokens_vs_must": 0,
+   "assumptions": 0,
+   "assumptions_per_screen": 0.0,
+   "blocking_per_screen": 0.0,
+   "blocking_questions": 0,
+   "criteria": 34,
+   "fallback_calls": 0,
+   "read_tokens_max": 14582,
+   "screens": 6
+  },
+  "must": {
+   "acceptance_satisfiable": 34,
+   "acceptance_satisfiable_share": 1.0,
+   "added_tokens_vs_must": 0,
+   "assumptions": 0,
+   "assumptions_per_screen": 0.0,
+   "blocking_per_screen": 0.0,
+   "blocking_questions": 0,
+   "criteria": 34,
+   "fallback_calls": 0,
+   "read_tokens_max": 14582,
+   "screens": 6
+  }
+ },
+ "bundles": {
+  "could": {
+   "content": true,
+   "decision": "no_lift",
+   "delta_assumptions_per_screen": 0.0,
+   "delta_blocking_per_screen": 0.0,
+   "delta_satisfiable_share": 0.0,
+   "recommendation": "cut it, or make it optional by profile",
+   "source": "pack",
+   "tokens": 840
+  },
+  "emotion": {
+   "content": true,
+   "decision": "no_lift",
+   "delta_assumptions_per_screen": 0.0,
+   "delta_blocking_per_screen": 0.0,
+   "delta_satisfiable_share": 0.0,
+   "recommendation": "cut it, or make it optional by profile",
+   "source": "graph",
+   "tokens": 256
+  },
+  "mock_assets": {
+   "content": true,
+   "decision": "no_lift",
+   "delta_assumptions_per_screen": 0.0,
+   "delta_blocking_per_screen": 0.0,
+   "delta_satisfiable_share": 0.0,
+   "recommendation": "cut it, or make it optional by profile",
+   "source": "pack",
+   "tokens": 27843
+  },
+  "stories": {
+   "content": true,
+   "decision": "no_lift",
+   "delta_assumptions_per_screen": 0.0,
+   "delta_blocking_per_screen": 0.0,
+   "delta_satisfiable_share": 0.0,
+   "recommendation": "cut it, or make it optional by profile",
+   "source": "graph",
+   "tokens": 125
+  },
+  "usually": {
+   "content": false,
+   "decision": "no_content",
+   "recommendation": "nothing to ablate: this pack has no such content",
+   "source": "none",
+   "tokens": 0
+  }
+ },
+ "checks": [
+  {
+   "name": "stories: earns its place",
+   "ok": false,
+   "op": "==",
+   "threshold": true,
+   "value": false
+  },
+  {
+   "name": "emotion: earns its place",
+   "ok": false,
+   "op": "==",
+   "threshold": true,
+   "value": false
+  },
+  {
+   "name": "could: earns its place",
+   "ok": false,
+   "op": "==",
+   "threshold": true,
+   "value": false
+  },
+  {
+   "name": "mock_assets: earns its place",
+   "ok": false,
+   "op": "==",
+   "threshold": true,
+   "value": false
+  }
+ ],
+ "cut_or_optional": [
+  "could",
+  "emotion",
+  "mock_assets",
+  "stories"
+ ],
+ "gate": "PS-10.ablation",
+ "money": {
+  "calls": 36,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "no_content": [
+  "usually"
+ ],
+ "note": "single run; quality and consistency gains need the diversity tool and the owner's reading, not this probe. OFFLINE STUB: the mock reader looks only for undefined ids, so no bundle can lift it; the decisions below prove the harness, not the bundles.",
+ "pack": "standard",
+ "screens": [
+  "SCR-002",
+  "SCR-017",
+  "SCR-008",
+  "SCR-014",
+  "SCR-015",
+  "SCR-004"
+ ],
+ "single_run": true,
+ "verdict": "not_measured",
+ "would_pass": false
+}

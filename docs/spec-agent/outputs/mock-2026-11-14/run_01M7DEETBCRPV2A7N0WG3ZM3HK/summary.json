@@ -97,7 +97,7 @@
  "compass_id": "thorough-freight-fleet-india",
  "cost_micros": 0,
  "cost_usd": "0.0000",
- "created_at": "2026-11-14T16:18:11.513831+00:00",
+ "created_at": "2026-11-14T16:32:41.324083+00:00",
  "input": "thorough-freight-fleet-india",
  "mode": "mock",
  "not_copied": [],
@@ -115,7 +115,7 @@
  "partial_reason": null,
  "profile": "deep",
  "program_id": "ses_01M72T5XJ3TAQG997X48V9C95Q",
- "run_id": "run_01M7DDM8XSRFMG1B6TRZNGR3EE",
+ "run_id": "run_01M7DEETBCRPV2A7N0WG3ZM3HK",
  "run_spend_micros": 0,
  "schema": "spec.export.summary.v1",
  "status": "approved",
@@ -126,7 +126,7 @@
   "max_read_tokens": 27345,
   "over_budget": 0
  },
- "updated_at": "2026-11-14T16:18:16.004551+00:00",
+ "updated_at": "2026-11-14T16:32:46.070945+00:00",
  "validators": {
   "by_severity": {
    "blocker": 0,

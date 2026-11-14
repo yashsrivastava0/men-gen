@@ -9,7 +9,7 @@
  "compass_path": "/Users/yash/Desktop/untitled folder/men-gen/docs/compass/research-inputs/thorough-freight-fleet-india.json",
  "consumer_profile": "weak-default",
  "content_hash": "1fe52fd9709d056dbd57deade98139610a7050e903132a76ba328e915737ae58",
- "created_at": "2026-11-14T16:18:11.513831+00:00",
+ "created_at": "2026-11-14T16:32:41.324083+00:00",
  "critic_vendor": "same",
  "done_steps": [
   "intake",
@@ -86,7 +86,7 @@
  ],
  "gates": {
   "g15": {
-   "at": "2026-11-14T16:18:12.725595+00:00",
+   "at": "2026-11-14T16:32:42.557071+00:00",
    "consents": [
     {
      "app": "",
@@ -104,12 +104,12 @@
    "moves": []
   },
   "g2": {
-   "at": "2026-11-14T16:18:16.003991+00:00",
+   "at": "2026-11-14T16:32:46.070501+00:00",
    "content_hash": "1fe52fd9709d056dbd57deade98139610a7050e903132a76ba328e915737ae58",
    "decision": "approved"
   }
  },
- "id": "run_01M7DDM8XSRFMG1B6TRZNGR3EE",
+ "id": "run_01M7DEETBCRPV2A7N0WG3ZM3HK",
  "input_hash": "e2d5b965748ee7d6b8d24aba9b46ff9b96f6bbada05d75daeeb8e295c860ace5",
  "offline": true,
  "package_hash": "6ffe337bebb312b24d52d5918af1286f19d8002e58938c44d7abc23aefbd2903",
@@ -183,5 +183,5 @@
  "spend_micros": 0,
  "status": "approved",
  "step": "done",
- "updated_at": "2026-11-14T16:18:16.004551+00:00"
+ "updated_at": "2026-11-14T16:32:46.070945+00:00"
 }

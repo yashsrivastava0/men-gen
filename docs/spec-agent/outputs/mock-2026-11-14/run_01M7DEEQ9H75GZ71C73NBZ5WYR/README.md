@@ -7,7 +7,7 @@ This folder is one saved Spec run, copied here so you can read what the engine g
 | | |
 | --- | --- |
 | Input | standard-produce-marketplace-nashik |
-| Run id | `run_01M7DA6AFKFVSE7TQ875NDHVXG` |
+| Run id | `run_01M7DEEQ9H75GZ71C73NBZ5WYR` |
 | Mode | MOCK |
 | Status | approved at Gate 2: this is the pack that would be handed to the front-end engine |
 | Size profile | standard |
@@ -16,7 +16,7 @@ This folder is one saved Spec run, copied here so you can read what the engine g
 | The pack | 136 files, about 211,376 tokens, content hash `9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45` |
 | Checked by | self_check |
 | Build tasks | 23 (the biggest reads 19,341 tokens; the budget is 28,000) |
-| Started | 2026-11-14T15:18:08.627682+00:00 |
+| Started | 2026-11-14T16:32:38.193403+00:00 |
 
 ## Open these first
 
@@ -58,7 +58,7 @@ Left out on purpose: the run's checkpoints, its event log and its input file. Th
 ## Check it yourself
 
 ```
-uv run python -m mde_spec_core check docs/spec-agent/outputs/mock-2026-11-14/run_01M7DA6AFKFVSE7TQ875NDHVXG/pack
+uv run python -m mde_spec_core check docs/spec-agent/outputs/mock-2026-11-14/run_01M7DEEQ9H75GZ71C73NBZ5WYR/pack
 ```
 
 That runs the pack linter and the spec check (it finds `graph.json` beside the pack). It costs nothing and calls no model. It prints `RESULT: OK` when nothing blocks.

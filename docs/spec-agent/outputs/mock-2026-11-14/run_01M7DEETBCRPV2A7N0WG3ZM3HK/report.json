@@ -9,8 +9,8 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 4331,
-   "tokens_out": 598
+   "tokens_in": 5491,
+   "tokens_out": 750
   },
   "COPY-L": {
    "calls": 2,
@@ -20,8 +20,8 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 22906,
-   "tokens_out": 5948
+   "tokens_in": 20319,
+   "tokens_out": 4912
   },
   "DSGN": {
    "calls": 1,
@@ -31,8 +31,8 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 2028,
-   "tokens_out": 864
+   "tokens_in": 2035,
+   "tokens_out": 1144
   },
   "G2-SUMMARY": {
    "calls": 1,
@@ -42,8 +42,8 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 1015,
-   "tokens_out": 70
+   "tokens_in": 1187,
+   "tokens_out": 71
   },
   "GLOSS-L": {
    "calls": 1,
@@ -53,19 +53,19 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 2800,
-   "tokens_out": 2071
+   "tokens_in": 3079,
+   "tokens_out": 1524
   },
   "MOCK-HERO": {
-   "calls": 3,
-   "clean": 3,
+   "calls": 10,
+   "clean": 10,
    "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 9760,
-   "tokens_out": 4777
+   "tokens_in": 28650,
+   "tokens_out": 6989
   },
   "PROD-INTEG": {
    "calls": 1,
@@ -75,21 +75,10 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 1475,
-   "tokens_out": 261
+   "tokens_in": 2348,
+   "tokens_out": 329
   },
   "PROD-JOURNEYS": {
-   "calls": 2,
-   "clean": 2,
-   "cost_micros": 0,
-   "fallback": 0,
-   "first_try_pass": 1.0,
-   "repair_rate": 0.0,
-   "repaired": 0,
-   "tokens_in": 4874,
-   "tokens_out": 2016
-  },
-  "PROD-MODULE": {
    "calls": 5,
    "clean": 5,
    "cost_micros": 0,
@@ -97,19 +86,30 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 17057,
-   "tokens_out": 7860
+   "tokens_in": 14890,
+   "tokens_out": 23291
   },
-  "SCRN": {
-   "calls": 7,
-   "clean": 7,
+  "PROD-MODULE": {
+   "calls": 11,
+   "clean": 11,
    "cost_micros": 0,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 70103,
-   "tokens_out": 17033
+   "tokens_in": 42036,
+   "tokens_out": 13481
+  },
+  "SCRN": {
+   "calls": 13,
+   "clean": 13,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 146919,
+   "tokens_out": 31870
   },
   "SPEC-PLAN": {
    "calls": 1,
@@ -119,26 +119,49 @@
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0,
-   "tokens_in": 4546,
-   "tokens_out": 1716
+   "tokens_in": 8974,
+   "tokens_out": 3515
+  },
+  "VERIFY-CANARY": {
+   "calls": 36,
+   "clean": 36,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 325646,
+   "tokens_out": 50238
+  },
+  "VERIFY-FINAL": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 14747,
+   "tokens_out": 29
   }
  },
- "calls_total": 25,
+ "calls_total": 84,
  "cost_micros": 0,
  "cost_usd": 0.0,
- "events": 94,
+ "events": 182,
  "offline": true,
  "pack": {
   "checked_by": [
-   "self_check"
+   "self_check",
+   "verify"
   ],
-  "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
-  "critic_vendor": null,
-  "files": 136,
-  "tokens": 211376
+  "content_hash": "1fe52fd9709d056dbd57deade98139610a7050e903132a76ba328e915737ae58",
+  "critic_vendor": "same",
+  "files": 237,
+  "tokens": 330394
  },
  "partial_reason": null,
- "profile": "standard",
+ "profile": "deep",
  "rcode_counts": {
   "downgrade_locked_to_default": 0,
   "drop_unknown_optional": 0,
@@ -147,22 +170,22 @@
   "mint_missing_id": 0,
   "sort_bytes": 0
  },
- "run_id": "run_01M7DA6AFKFVSE7TQ875NDHVXG",
+ "run_id": "run_01M7DEETBCRPV2A7N0WG3ZM3HK",
  "status": "approved",
  "tasks": {
   "budget": 28000,
-  "count": 23,
-  "max_read_tokens": 19341,
+  "count": 41,
+  "max_read_tokens": 27345,
   "over_budget": 0
  },
  "validators": {
   "by_severity": {
    "blocker": 0,
    "info": 3,
-   "warning": 8
+   "warning": 10
   },
   "by_validator": {
-   "V-04": 8,
+   "V-04": 10,
    "V-36": 1,
    "V-45": 2
   },

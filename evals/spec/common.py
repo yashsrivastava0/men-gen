@@ -128,6 +128,20 @@ def proof_call_specs() -> list[Any]:
     return [FREEDOM.spec, LOOKUP.spec, DIVERSITY.spec, *(s.spec for s in ALL_SPECS)]
 
 
+def proof_record_path(
+    workdir: Path, *, offline: bool, settings: SpecSettings | None = None
+) -> Path:
+    """Where a proof runner books its money. OFFLINE costs nothing, so it keeps a private record in its work folder.
+    A LIVE runner books to the SAME spend record as the Spec service (``agents/spec/.runtime/spend-record.json``), so the
+    one hard cap (USD 5.00 by default) holds for every path: the app, the headless runs and the proof tools together.
+    A separate record per tool would let each spend up to the cap."""
+    if offline:
+        return workdir / "spend-record.json"
+    from mde_spec_agent.config import data_dir
+
+    return data_dir(settings) / "spend-record.json"
+
+
 def make_proof_runner(
     workdir: Path,
     *,
@@ -143,7 +157,7 @@ def make_proof_runner(
     settings = SpecSettings()
     workdir.mkdir(parents=True, exist_ok=True)
     record = SpendRecord(
-        workdir / "spend-record.json",
+        proof_record_path(workdir, offline=offline, settings=settings),
         cap_micros=settings.cap_micros,
         tripwire_micros=settings.tripwire_micros,
     )

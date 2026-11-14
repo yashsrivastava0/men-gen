@@ -8,7 +8,7 @@
  "compass_path": "/Users/yash/Desktop/untitled folder/men-gen/docs/compass/research-inputs/standard-produce-marketplace-nashik.json",
  "consumer_profile": "weak-default",
  "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
- "created_at": "2026-11-14T15:18:08.627682+00:00",
+ "created_at": "2026-11-14T16:32:38.193403+00:00",
  "critic_vendor": null,
  "done_steps": [
   "intake",
@@ -47,12 +47,12 @@
  "gates": {
   "g15": null,
   "g2": {
-   "at": "2026-11-14T15:18:10.612890+00:00",
+   "at": "2026-11-14T16:32:40.307775+00:00",
    "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
    "decision": "approved"
   }
  },
- "id": "run_01M7DA6AFKFVSE7TQ875NDHVXG",
+ "id": "run_01M7DEEQ9H75GZ71C73NBZ5WYR",
  "input_hash": "25c5e8ef3330ce05593b09bee9fdd3853cbbf3766212a90152dc915abd6e01b6",
  "offline": true,
  "package_hash": "f5c5b622a16d7adee9b2a00d0bb08df06dd894e98c168608fbe939da887d68a5",
@@ -111,5 +111,5 @@
  "spend_micros": 0,
  "status": "approved",
  "step": "done",
- "updated_at": "2026-11-14T15:18:10.613336+00:00"
+ "updated_at": "2026-11-14T16:32:40.308275+00:00"
 }

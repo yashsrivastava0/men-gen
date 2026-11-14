@@ -1,0 +1,99 @@
+{
+ "arms": {
+  "A": {
+   "metrics": {
+    "acceptance_satisfiable": 78,
+    "acceptance_satisfiable_share": 1.0,
+    "assumptions": 0,
+    "assumptions_per_screen": 0.0,
+    "blocking_per_screen": 0.0,
+    "blocking_questions": 0,
+    "criteria": 78,
+    "fallback_calls": 0,
+    "read_tokens_max": 23345,
+    "screens": 9
+   },
+   "name": "task card reads",
+   "skipped": ""
+  },
+  "B": {
+   "metrics": {},
+   "name": "whole pack",
+   "skipped": "the pack is 344125 tokens and the profile's whole_pack_tokens is 22500: it does not fit"
+  },
+  "C": {
+   "metrics": {
+    "acceptance_satisfiable": 16,
+    "acceptance_satisfiable_share": 0.20512820512820512,
+    "assumptions": 0,
+    "assumptions_per_screen": 0.0,
+    "blocking_per_screen": 3.5555555555555554,
+    "blocking_questions": 32,
+    "criteria": 78,
+    "fallback_calls": 0,
+    "read_tokens_max": 2575,
+    "screens": 9
+   },
+   "name": "card alone",
+   "skipped": ""
+  }
+ },
+ "checks": [
+  {
+   "name": "A blocking questions per screen",
+   "ok": true,
+   "op": "<=",
+   "threshold": 0.3,
+   "value": 0.0
+  },
+  {
+   "name": "A assumptions per screen",
+   "ok": true,
+   "op": "<=",
+   "threshold": 1.0,
+   "value": 0.0
+  },
+  {
+   "name": "A acceptance satisfiable share",
+   "ok": true,
+   "op": ">=",
+   "threshold": 0.9,
+   "value": 1.0
+  },
+  {
+   "name": "card-alone arm clearly worse",
+   "ok": true,
+   "op": "==",
+   "threshold": true,
+   "value": true
+  }
+ ],
+ "comparisons": {
+  "card_alone_clearly_worse": true,
+  "slice_not_worse_than_whole": null
+ },
+ "gate": "PS-6",
+ "money": {
+  "calls": 18,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "note": "single run: a run decides nothing; repeat and report the range. OFFLINE STUB: the mock reader only checks that ids used are defined; this proves the harness, not the live rate.",
+ "pack": "thorough",
+ "screens": [
+  "SCR-004",
+  "SCR-068",
+  "SCR-030",
+  "SCR-016",
+  "SCR-031",
+  "SCR-001",
+  "SCR-006",
+  "SCR-067",
+  "SCR-080"
+ ],
+ "single_run": true,
+ "size": "thorough",
+ "verdict": "not_measured",
+ "would_pass": true
+}

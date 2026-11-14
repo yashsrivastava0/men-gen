@@ -1,4 +1,4 @@
-# Spec output: quick-yoga-studio-bengaluru (MOCK)
+# Spec output: thorough-freight-fleet-india (MOCK)
 
 This folder is one saved Spec run, copied here so you can read what the engine generates without starting the app. Spec turns an approved Compass Brief (and a Research note, when there is one) into a folder of plain files, the Spec Pack. The pack tells the front-end engine what the app is and does. It never says how the app should look in code.
 
@@ -6,17 +6,17 @@ This folder is one saved Spec run, copied here so you can read what the engine g
 
 | | |
 | --- | --- |
-| Input | quick-yoga-studio-bengaluru |
-| Run id | `run_01M7DDM79Q9CVRVD1FCV7JBMMX` |
+| Input | thorough-freight-fleet-india |
+| Run id | `run_01M7DEETBCRPV2A7N0WG3ZM3HK` |
 | Mode | MOCK |
 | Status | approved at Gate 2: this is the pack that would be handed to the front-end engine |
-| Size profile | compact |
-| Model calls | 11 (11 clean first try, 0 repaired, 0 fell back to the safe default) |
+| Size profile | deep |
+| Model calls | 84 (84 clean first try, 0 repaired, 0 fell back to the safe default) |
 | Cost | USD 0.0000 |
-| The pack | 69 files, about 81,802 tokens, content hash `b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe` |
-| Checked by | self_check |
-| Build tasks | 5 (the biggest reads 16,748 tokens; the budget is 28,000) |
-| Started | 2026-11-14T16:18:09.847636+00:00 |
+| The pack | 237 files, about 330,394 tokens, content hash `1fe52fd9709d056dbd57deade98139610a7050e903132a76ba328e915737ae58` |
+| Checked by | self_check, verify |
+| Build tasks | 41 (the biggest reads 27,345 tokens; the budget is 28,000) |
+| Started | 2026-11-14T16:32:41.324083+00:00 |
 
 ## Open these first
 
@@ -28,8 +28,8 @@ This folder is one saved Spec run, copied here so you can read what the engine g
 
 ## What the checks said
 
-The engine's own validators: passed (0 blocker, 2 info, 5 warning).
-Which validators spoke: V-04 (5), V-36 (1), V-45 (1).
+The engine's own validators: passed (0 blocker, 3 info, 10 warning).
+Which validators spoke: V-04 (10), V-36 (1), V-45 (2).
 
 ## What is in this folder
 
@@ -58,7 +58,7 @@ Left out on purpose: the run's checkpoints, its event log and its input file. Th
 ## Check it yourself
 
 ```
-uv run python -m mde_spec_core check docs/spec-agent/outputs/mock-2026-11-14/run_01M7DDM79Q9CVRVD1FCV7JBMMX/pack
+uv run python -m mde_spec_core check docs/spec-agent/outputs/mock-2026-11-14/run_01M7DEETBCRPV2A7N0WG3ZM3HK/pack
 ```
 
 That runs the pack linter and the spec check (it finds `graph.json` beside the pack). It costs nothing and calls no model. It prints `RESULT: OK` when nothing blocks.

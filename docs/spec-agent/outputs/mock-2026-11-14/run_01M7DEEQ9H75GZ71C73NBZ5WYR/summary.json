@@ -9,7 +9,7 @@
    "repaired": 0
   },
   "COPY-L": {
-   "calls": 1,
+   "calls": 2,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
@@ -37,14 +37,35 @@
    "repaired": 0
   },
   "MOCK-HERO": {
+   "calls": 3,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-JOURNEYS": {
    "calls": 2,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
    "repaired": 0
   },
+  "PROD-MODULE": {
+   "calls": 5,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
   "SCRN": {
-   "calls": 3,
+   "calls": 7,
    "fallback": 0,
    "first_try_pass": 1.0,
    "repair_rate": 0.0,
@@ -58,12 +79,12 @@
    "repaired": 0
   }
  },
- "calls": 11,
- "compass_id": "quick-yoga-studio-bengaluru",
+ "calls": 25,
+ "compass_id": "standard-produce-marketplace-nashik",
  "cost_micros": 0,
  "cost_usd": "0.0000",
- "created_at": "2026-11-14T16:18:09.847636+00:00",
- "input": "quick-yoga-studio-bengaluru",
+ "created_at": "2026-11-14T16:32:38.193403+00:00",
+ "input": "standard-produce-marketplace-nashik",
  "mode": "mock",
  "not_copied": [],
  "offline": true,
@@ -71,36 +92,36 @@
   "checked_by": [
    "self_check"
   ],
-  "content_hash": "b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe",
+  "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
   "critic_vendor": null,
-  "files": 69,
-  "tokens": 81802
+  "files": 136,
+  "tokens": 211376
  },
  "partial_reason": null,
- "profile": "compact",
- "program_id": "ses_01M72PT1S3G61C9WFTXJPWKC3N",
- "run_id": "run_01M7DDM79Q9CVRVD1FCV7JBMMX",
+ "profile": "standard",
+ "program_id": "ses_01M72RE53CJJKA5HB19FR788ZJ",
+ "run_id": "run_01M7DEEQ9H75GZ71C73NBZ5WYR",
  "run_spend_micros": 0,
  "schema": "spec.export.summary.v1",
  "status": "approved",
  "synth": null,
  "tasks": {
   "budget": 28000,
-  "count": 5,
-  "max_read_tokens": 16748,
+  "count": 23,
+  "max_read_tokens": 19341,
   "over_budget": 0
  },
- "updated_at": "2026-11-14T16:18:10.889769+00:00",
+ "updated_at": "2026-11-14T16:32:40.308275+00:00",
  "validators": {
   "by_severity": {
    "blocker": 0,
-   "info": 2,
-   "warning": 5
+   "info": 3,
+   "warning": 8
   },
   "by_validator": {
-   "V-04": 5,
+   "V-04": 8,
    "V-36": 1,
-   "V-45": 1
+   "V-45": 2
   },
   "ok": true
  }

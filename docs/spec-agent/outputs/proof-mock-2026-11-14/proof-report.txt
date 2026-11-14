@@ -1,0 +1,72 @@
+SPEC PROOF REPORT
+
+This run used the OFFLINE MOCK reader: the numbers prove that the tools work, not how well the real model does. Runs: 1.
+Nothing here says a decision is settled. These are numbers against the thresholds of the proof plan; people read them and apply its decision table.
+
+PS-6  Consumer probe: can the weakest consumer build a screen from its reads
+  Result: not measured.
+  - A blocking questions per screen: 0.0 (needs <= 0.3) ok
+  - A assumptions per screen: 0.0 (needs <= 1.0) ok
+  - A acceptance satisfiable share: 100% (needs >= 0.9) ok
+  - card-alone arm clearly worse: True (needs == True) ok
+  - A blocking questions per screen: 0.0 (needs <= 0.3) ok
+  - A assumptions per screen: 0.0 (needs <= 1.0) ok
+  - A acceptance satisfiable share: 100% (needs >= 0.9) ok
+  - card-alone arm clearly worse: True (needs == True) ok
+  - A blocking questions per screen: 0.0 (needs <= 0.3) ok
+  - A assumptions per screen: 0.0 (needs <= 1.0) ok
+  - A acceptance satisfiable share: 100% (needs >= 0.9) ok
+  - card-alone arm clearly worse: True (needs == True) ok
+
+PS-4  Freedom: the same card built twice, card schema and lint
+  Result: not measured.
+  - screens with a different arrangement: 83% (needs >= 0.3) ok
+  - schema validity: 100% (needs >= 1.0) ok
+  - tier ceiling violations: 0 (needs == 0) ok
+  - lint warnings, max per card: 0 (needs <= 3) ok
+  - screens with a different arrangement: 100% (needs >= 0.3) ok
+  - schema validity: 100% (needs >= 1.0) ok
+  - tier ceiling violations: 0 (needs == 0) ok
+  - lint warnings, max per card: 0 (needs <= 3) ok
+
+PS-7  Planted defects: 22 structural and 8 meaning, self-check and critic arms
+  Result: not measured.
+  - self_check: structural catch overall: 100% (needs >= 0.9) ok
+  - self_check: structural catch, worst kind: 100% (needs >= 0.8) ok
+  - self_check: false positives on the unmodified pack: 15% (needs <= 0.05) NOT ok
+  - critic: structural catch overall: 100% (needs >= 0.9) ok
+  - critic: structural catch, worst kind: 100% (needs >= 0.8) ok
+  - critic: false positives on the unmodified pack: 15% (needs <= 0.05) NOT ok
+  - critic: LLM rounds used (max): 2 (needs <= 2) ok
+  - verify: structural catch overall: 100% (needs >= 0.9) ok
+  - verify: structural catch, worst kind: 100% (needs >= 0.8) ok
+  - verify: false positives on the unmodified pack: 15% (needs <= 0.05) NOT ok
+  - verify: LLM rounds used (max): 2 (needs <= 2) ok
+
+PS-10.lookup  Library lookup on two public catalogues, with planted gaps
+  Result: not measured.
+  - react-native-paper: recall at 3: 100% (needs >= 0.9) ok
+  - react-native-paper: wrong-gap rate: 0% (needs <= 0.1) ok
+  - react-native-paper: better than the card-only baseline: True (needs == True) ok
+  - react-native-elements: recall at 3: 100% (needs >= 0.9) ok
+  - react-native-elements: wrong-gap rate: 0% (needs <= 0.1) ok
+  - react-native-elements: better than the card-only baseline: True (needs == True) ok
+  - synthetic: planted gaps found: 100% (needs >= 1.0) ok
+
+PS-10.ablation  Ablation: does each content bundle earn its place
+  Result: not measured.
+  - stories: earns its place: False (needs == True) NOT ok
+  - emotion: earns its place: False (needs == True) NOT ok
+  - could: earns its place: False (needs == True) NOT ok
+  - mock_assets: earns its place: False (needs == True) NOT ok
+
+PS-10.diversity  Diversity between apps and consistency within one, COULD off and on
+  Result: not measured.
+  - between-app: the two apps differ on at least one direction axis: 5 (needs >= 1) ok
+  - COULD on: between-app diversity not lower: False (needs == True) NOT ok
+  - COULD on: within-app consistency not lower: True (needs == True) ok
+
+Model calls: 417 (0 live, 0 fell back).
+Money spent by this run: 0 micro-USD (cap 5000000 micro-USD).
+
+For the owner to read: owner-reading/probe-outputs.json (ten consumer outputs) and owner-reading/cards.json (five cards), inside the ps-6 and ps-4 folders.

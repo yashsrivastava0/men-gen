@@ -1,0 +1,1363 @@
+{
+ "arms": {
+  "critic": {
+   "checks": [
+    {
+     "name": "critic: structural catch overall",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "critic: structural catch, worst kind",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.8,
+     "value": 1.0
+    },
+    {
+     "name": "critic: false positives on the unmodified pack",
+     "ok": false,
+     "op": "<=",
+     "threshold": 0.05,
+     "value": 0.1538
+    },
+    {
+     "name": "critic: LLM rounds used (max)",
+     "ok": true,
+     "op": "<=",
+     "threshold": 2,
+     "value": 2
+    }
+   ],
+   "false_positives": {
+    "clean_findings": 10,
+    "rate": 0.15384615384615385,
+    "screens_flagged": [
+     "SCR-017",
+     "SCR-028",
+     "SCR-030",
+     "SCR-034",
+     "SCR-051",
+     "SCR-078",
+     "SCR-102",
+     "SCR-S004",
+     "SCR-S005",
+     "SCR-S006"
+    ]
+   },
+   "meaning": {
+    "bar": "none (code cannot judge meaning)",
+    "caught": 4,
+    "min_per_kind": 0.0,
+    "missed": [
+     "default_contradicts_official_research",
+     "journey_without_payment_failure_path",
+     "role_sees_what_brief_forbids",
+     "story_contradicts_a_rule"
+    ],
+    "overall": 0.5,
+    "per_kind": {
+     "assumed_item_shown_as_locked": true,
+     "changed_locked_number": true,
+     "default_contradicts_official_research": false,
+     "journey_without_payment_failure_path": false,
+     "role_sees_what_brief_forbids": false,
+     "story_contradicts_a_rule": false,
+     "two_contradictory_rules": true,
+     "user_feature_missing_from_inventory": true
+    },
+    "planted": 8
+   },
+   "name": "proof-only critic arm (Verify final critic)",
+   "structural": {
+    "caught": 20,
+    "min_per_kind": 1.0,
+    "missed": [],
+    "overall": 1.0,
+    "per_kind": {
+     "action_to_missing_screen": true,
+     "binding_to_missing_field": true,
+     "closure_missing_a_field": true,
+     "duplicate_region_key": true,
+     "entity_without_screen": true,
+     "form_vocabulary_violation": true,
+     "invented_provider_name": true,
+     "locked_without_evidence": true,
+     "missing_copy_key": true,
+     "missing_mandatory_state": true,
+     "missing_token_reference": true,
+     "operation_without_error_model": true,
+     "orphan_screen": true,
+     "policy_locked_without_citation": true,
+     "research_value_does_not_match_item": true,
+     "role_gating_missing": true,
+     "task_over_budget": true,
+     "unresolved_alias": true,
+     "unverified_research_used_as_default": true,
+     "volatile_data_in_body": true
+    },
+    "planted": 20
+   },
+   "verdict": "not_measured"
+  },
+  "self_check": {
+   "checks": [
+    {
+     "name": "self_check: structural catch overall",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "self_check: structural catch, worst kind",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.8,
+     "value": 1.0
+    },
+    {
+     "name": "self_check: false positives on the unmodified pack",
+     "ok": false,
+     "op": "<=",
+     "threshold": 0.05,
+     "value": 0.1538
+    }
+   ],
+   "false_positives": {
+    "clean_findings": 10,
+    "rate": 0.15384615384615385,
+    "screens_flagged": [
+     "SCR-017",
+     "SCR-028",
+     "SCR-030",
+     "SCR-034",
+     "SCR-051",
+     "SCR-078",
+     "SCR-102",
+     "SCR-S004",
+     "SCR-S005",
+     "SCR-S006"
+    ]
+   },
+   "meaning": {
+    "bar": "none (code cannot judge meaning)",
+    "caught": 3,
+    "min_per_kind": 0.0,
+    "missed": [
+     "changed_locked_number",
+     "default_contradicts_official_research",
+     "journey_without_payment_failure_path",
+     "role_sees_what_brief_forbids",
+     "story_contradicts_a_rule"
+    ],
+    "overall": 0.375,
+    "per_kind": {
+     "assumed_item_shown_as_locked": true,
+     "changed_locked_number": false,
+     "default_contradicts_official_research": false,
+     "journey_without_payment_failure_path": false,
+     "role_sees_what_brief_forbids": false,
+     "story_contradicts_a_rule": false,
+     "two_contradictory_rules": true,
+     "user_feature_missing_from_inventory": true
+    },
+    "planted": 8
+   },
+   "name": "self-check (validators, code)",
+   "structural": {
+    "caught": 20,
+    "min_per_kind": 1.0,
+    "missed": [],
+    "overall": 1.0,
+    "per_kind": {
+     "action_to_missing_screen": true,
+     "binding_to_missing_field": true,
+     "closure_missing_a_field": true,
+     "duplicate_region_key": true,
+     "entity_without_screen": true,
+     "form_vocabulary_violation": true,
+     "invented_provider_name": true,
+     "locked_without_evidence": true,
+     "missing_copy_key": true,
+     "missing_mandatory_state": true,
+     "missing_token_reference": true,
+     "operation_without_error_model": true,
+     "orphan_screen": true,
+     "policy_locked_without_citation": true,
+     "research_value_does_not_match_item": true,
+     "role_gating_missing": true,
+     "task_over_budget": true,
+     "unresolved_alias": true,
+     "unverified_research_used_as_default": true,
+     "volatile_data_in_body": true
+    },
+    "planted": 20
+   },
+   "verdict": "fail"
+  },
+  "verify": {
+   "checks": [
+    {
+     "name": "verify: structural catch overall",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.9,
+     "value": 1.0
+    },
+    {
+     "name": "verify: structural catch, worst kind",
+     "ok": true,
+     "op": ">=",
+     "threshold": 0.8,
+     "value": 1.0
+    },
+    {
+     "name": "verify: false positives on the unmodified pack",
+     "ok": false,
+     "op": "<=",
+     "threshold": 0.05,
+     "value": 0.1538
+    },
+    {
+     "name": "verify: LLM rounds used (max)",
+     "ok": true,
+     "op": "<=",
+     "threshold": 2,
+     "value": 2
+    }
+   ],
+   "false_positives": {
+    "canary_questions": 0,
+    "clean_findings": 10,
+    "rate": 0.15384615384615385,
+    "screens_flagged": [
+     "SCR-017",
+     "SCR-028",
+     "SCR-030",
+     "SCR-034",
+     "SCR-051",
+     "SCR-078",
+     "SCR-102",
+     "SCR-S004",
+     "SCR-S005",
+     "SCR-S006"
+    ]
+   },
+   "meaning": {
+    "bar": "none (code cannot judge meaning)",
+    "caught": 4,
+    "min_per_kind": 0.0,
+    "missed": [
+     "default_contradicts_official_research",
+     "journey_without_payment_failure_path",
+     "role_sees_what_brief_forbids",
+     "story_contradicts_a_rule"
+    ],
+    "overall": 0.5,
+    "per_kind": {
+     "assumed_item_shown_as_locked": true,
+     "changed_locked_number": true,
+     "default_contradicts_official_research": false,
+     "journey_without_payment_failure_path": false,
+     "role_sees_what_brief_forbids": false,
+     "story_contradicts_a_rule": false,
+     "two_contradictory_rules": true,
+     "user_feature_missing_from_inventory": true
+    },
+    "planted": 8
+   },
+   "name": "Verify for deep (structure critic + canary + final critic)",
+   "structural": {
+    "caught": 20,
+    "min_per_kind": 1.0,
+    "missed": [],
+    "overall": 1.0,
+    "per_kind": {
+     "action_to_missing_screen": true,
+     "binding_to_missing_field": true,
+     "closure_missing_a_field": true,
+     "duplicate_region_key": true,
+     "entity_without_screen": true,
+     "form_vocabulary_violation": true,
+     "invented_provider_name": true,
+     "locked_without_evidence": true,
+     "missing_copy_key": true,
+     "missing_mandatory_state": true,
+     "missing_token_reference": true,
+     "operation_without_error_model": true,
+     "orphan_screen": true,
+     "policy_locked_without_citation": true,
+     "research_value_does_not_match_item": true,
+     "role_gating_missing": true,
+     "task_over_budget": true,
+     "unresolved_alias": true,
+     "unverified_research_used_as_default": true,
+     "volatile_data_in_body": true
+    },
+    "planted": 20
+   },
+   "verdict": "not_measured"
+  }
+ },
+ "canary_scope": "changed",
+ "clean_pack": {
+  "codes": [
+   "V-04"
+  ],
+  "findings": 10,
+  "masked_kinds": [],
+  "note": "A plant whose validator already reports on the unmodified pack, with nothing new, counts as missed (conservative).",
+  "screens": 65
+ },
+ "critic_vendor": "same",
+ "gate": "PS-7",
+ "meaning_kinds": 8,
+ "money": {
+  "calls": 320,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "not_applicable": [
+  {
+   "defect": "phase1_depends_on_phase2",
+   "reason": "the planter could not change this pack: ValueError: duplicate id FTR-001 in features"
+  },
+  {
+   "defect": "later_feature_has_screen_node",
+   "reason": "the planter could not change this pack: ValueError: duplicate id FTR-003 in features"
+  }
+ ],
+ "note": "Each kind is planted once (a rate over kinds). The self-check arm is code and a real measurement. The critic arms are the MOCK critic: they catch what its mock rules catch (a Locked fact that is missing or changed, coverage gaps, role and entity conflicts); this proves the harness, not the live rate.",
+ "pack": "given graph",
+ "profile": "deep",
+ "rounds_used_max": 2,
+ "rows": [
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-13:SCR-002:3883fa"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "missing_mandatory_state",
+   "detail": "",
+   "expected_code": "V-13",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-13 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-13:SCR-002:3883fa"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-06:SCR-002.code_entry:5f8df3",
+     "V-30:SCR-002:191b48"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "binding_to_missing_field",
+   "detail": "",
+   "expected_code": "V-06",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-06 SCR-002.code_entry",
+     "V-30 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [
+     "T-0031:SCR-002 binds ENT-001.no_such_field but ENT-001 in my reads has no field no_such_field: which is right?"
+    ],
+    "new_findings": [
+     "V-06:SCR-002.code_entry:5f8df3",
+     "V-30:SCR-002:191b48"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-07:SCR-002.change_number:9ae705",
+     "V-27:SCR-002:884e5f"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "action_to_missing_screen",
+   "detail": "",
+   "expected_code": "V-07",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-07 SCR-002.change_number",
+     "V-27 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-07:SCR-002.change_number:9ae705",
+     "V-27:SCR-002:884e5f"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-08:OP-S001:c654b0"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "role_gating_missing",
+   "detail": "",
+   "expected_code": "V-08",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-08 OP-S001"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-08:OP-S001:c654b0"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-31:SCR-002:97bea8"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "duplicate_region_key",
+   "detail": "",
+   "expected_code": "V-31",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-31 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-31:SCR-002:97bea8"
+    ]
+   }
+  },
+  {
+   "applicable": false,
+   "defect": "phase1_depends_on_phase2",
+   "detail": "",
+   "expected_code": "V-28",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "the planter could not change this pack: ValueError: duplicate id FTR-001 in features",
+   "touched": []
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-12:DIR-001:831a41"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "missing_token_reference",
+   "detail": "",
+   "expected_code": "V-12",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-12 DIR-001"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-12:DIR-001:831a41"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-17:SCR-002:163dfe",
+     "V-17:SCR-002:e80cec",
+     "V-24:SCR-002:63395d"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "locked_without_evidence",
+   "detail": "",
+   "expected_code": "V-17",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-17 SCR-002",
+     "V-24 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-17:SCR-002:163dfe",
+     "V-17:SCR-002:e80cec",
+     "V-24:SCR-002:63395d"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-33:SCR-002:9f7b59"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "policy_locked_without_citation",
+   "detail": "",
+   "expected_code": "V-33",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-33 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-33:SCR-002:9f7b59"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-25:SCR-002.purpose:174584"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "form_vocabulary_violation",
+   "detail": "",
+   "expected_code": "V-25",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-25 SCR-002.purpose"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-25:SCR-002.purpose:174584"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-04:SCR-900:8d0407",
+     "V-14:SCR-900:514ee4",
+     "V-14:SCR-900:7532f7",
+     "V-14:SCR-900:8240fb",
+     "V-14:SCR-900:855cfb",
+     "V-14:SCR-900:89f4c3",
+     "V-22:SCR-900.change_number:b77f88",
+     "V-22:SCR-900.code:2c2bfb",
+     "V-22:SCR-900.resend_code:b77f88",
+     "V-22:SCR-900.submit_code:b77f88"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "orphan_screen",
+   "detail": "",
+   "expected_code": "V-04",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-04 SCR-900",
+     "V-14 SCR-900",
+     "V-22 SCR-900.change_number",
+     "V-22 SCR-900.code",
+     "V-22 SCR-900.resend_code",
+     "V-22 SCR-900.submit_code"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-04:SCR-900:8d0407",
+     "V-14:SCR-900:514ee4",
+     "V-14:SCR-900:7532f7",
+     "V-14:SCR-900:8240fb",
+     "V-14:SCR-900:855cfb",
+     "V-14:SCR-900:89f4c3",
+     "V-22:SCR-900.change_number:b77f88",
+     "V-22:SCR-900.code:2c2bfb",
+     "V-22:SCR-900.resend_code:b77f88",
+     "V-22:SCR-900.submit_code:b77f88"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "COVERAGE:ENT-900:c46846",
+     "V-29:ENT-900:5dd371"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "entity_without_screen",
+   "detail": "",
+   "expected_code": "V-29",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-29 ENT-900"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "COVERAGE:ENT-900:c46846",
+     "V-29:ENT-900:5dd371"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-14:SCR-001:06da7e",
+     "V-14:SCR-001:f6d3c0",
+     "V-14:SCR-002:06da7e",
+     "V-14:SCR-002:f6d3c0",
+     "V-14:SCR-004:06da7e",
+     "V-14:SCR-004:f6d3c0",
+     "V-14:SCR-005:06da7e",
+     "V-14:SCR-005:f6d3c0",
+     "V-14:SCR-006:06da7e",
+     "V-14:SCR-006:f6d3c0"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "missing_copy_key",
+   "detail": "",
+   "expected_code": "V-14",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-14 SCR-001",
+     "V-14 SCR-002",
+     "V-14 SCR-004",
+     "V-14 SCR-005",
+     "V-14 SCR-006",
+     "V-14 SCR-007",
+     "V-14 SCR-008",
+     "V-14 SCR-012",
+     "V-14 SCR-013",
+     "V-14 SCR-014"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-14:SCR-001:06da7e",
+     "V-14:SCR-001:f6d3c0",
+     "V-14:SCR-002:06da7e",
+     "V-14:SCR-002:f6d3c0",
+     "V-14:SCR-004:06da7e",
+     "V-14:SCR-004:f6d3c0",
+     "V-14:SCR-005:06da7e",
+     "V-14:SCR-005:f6d3c0",
+     "V-14:SCR-006:06da7e",
+     "V-14:SCR-006:f6d3c0"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-10:OP-S001:f7a082"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "operation_without_error_model",
+   "detail": "",
+   "expected_code": "V-10",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-10 OP-S001"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-10:OP-S001:f7a082"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-21:screens/SCR-002.md:8ccc0e",
+     "V-34:screens/SCR-002.md:5904ea"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "volatile_data_in_body",
+   "detail": "",
+   "expected_code": "V-34",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-21 screens/SCR-002.md",
+     "V-34 screens/SCR-002.md"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-21:screens/SCR-002.md:8ccc0e",
+     "V-34:screens/SCR-002.md:5904ea"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-07:SCR-002.change_number:2afad5",
+     "V-27:SCR-002:884e5f"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "closure_missing_a_field",
+   "detail": "",
+   "expected_code": "V-27",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-07 SCR-002.change_number",
+     "V-27 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [
+     "T-0031:SCR-002 calls OP-999 but no read defines OP-999: what does it take and return?"
+    ],
+    "new_findings": [
+     "V-07:SCR-002.change_number:2afad5",
+     "V-27:SCR-002:884e5f"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-26:T-0041:e1d7a9"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "task_over_budget",
+   "detail": "",
+   "expected_code": "V-26",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-26 T-0041"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-26:T-0041:e1d7a9"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-32:SCR-002:8be3c8",
+     "V-32:SCR-002:902e59"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "unresolved_alias",
+   "detail": "",
+   "expected_code": "V-32",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-32 SCR-002",
+     "V-32 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-32:SCR-002:8be3c8",
+     "V-32:SCR-002:902e59"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-36:SCR-002:1af8d6"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "unverified_research_used_as_default",
+   "detail": "",
+   "expected_code": "V-36",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-36 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-36:SCR-002:1af8d6"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-45:INT-S001:5849b5"
+    ]
+   },
+   "critic_input_differs": false,
+   "defect": "invented_provider_name",
+   "detail": "",
+   "expected_code": "V-45",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-45 INT-S001"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-45:INT-S001:5849b5"
+    ]
+   }
+  },
+  {
+   "applicable": false,
+   "defect": "later_feature_has_screen_node",
+   "detail": "",
+   "expected_code": "V-19",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "the planter could not change this pack: ValueError: duplicate id FTR-003 in features",
+   "touched": []
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-36:SCR-002:3df5af"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "research_value_does_not_match_item",
+   "detail": "",
+   "expected_code": "V-36",
+   "kind": "structural",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-36 SCR-002"
+    ]
+   },
+   "touched": [],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-36:SCR-002:3df5af"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "S-LOCKED:FACT-RUL-S033:value"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "changed_locked_number",
+   "detail": "82 became 83",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": false,
+    "masked_by_clean_pack": false,
+    "new_findings": []
+   },
+   "touched": [
+    "RUL-S033"
+   ],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "S-LOCKED:FACT-RUL-S033:value"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-45:RUL-S053:e2b47f"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "two_contradictory_rules",
+   "detail": "RUL-S053 contradicts RUL-S033",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-45 RUL-S053"
+    ]
+   },
+   "touched": [
+    "RUL-S033",
+    "RUL-S053"
+   ],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-45:RUL-S053:e2b47f"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "COVERAGE:FLW-001:042c3e",
+     "COVERAGE:FLW-001:637459",
+     "COVERAGE:FLW-003:a221bf",
+     "COVERAGE:FLW-S1001:bd841d",
+     "COVERAGE:FLW-S1001:dab649",
+     "COVERAGE:FLW-S1002:9173b9",
+     "COVERAGE:FLW-S1002:edc424",
+     "COVERAGE:FLW-S1003:57fb2f",
+     "COVERAGE:FLW-S1003:85df3e",
+     "COVERAGE:FLW-S1004:4e11b1"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "user_feature_missing_from_inventory",
+   "detail": "feature FTR-001 and its only screen(s) are gone",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-03 US-S001",
+     "V-04 SCR-008",
+     "V-05 FLW-001",
+     "V-05 FLW-003",
+     "V-05 FLW-S1001",
+     "V-05 FLW-S1002",
+     "V-05 FLW-S1003",
+     "V-05 FLW-S1004",
+     "V-05 FLW-S1005",
+     "V-05 FLW-S1006"
+    ]
+   },
+   "touched": [
+    "FTR-001",
+    "SCR-005",
+    "SCR-006",
+    "SCR-007"
+   ],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "COVERAGE:FLW-001:042c3e",
+     "COVERAGE:FLW-001:637459",
+     "COVERAGE:FLW-003:a221bf",
+     "COVERAGE:FLW-S1001:bd841d",
+     "COVERAGE:FLW-S1001:dab649",
+     "COVERAGE:FLW-S1002:9173b9",
+     "COVERAGE:FLW-S1002:edc424",
+     "COVERAGE:FLW-S1003:57fb2f",
+     "COVERAGE:FLW-S1003:85df3e",
+     "COVERAGE:FLW-S1004:4e11b1"
+    ]
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": false,
+    "new_findings": []
+   },
+   "critic_input_differs": true,
+   "defect": "role_sees_what_brief_forbids",
+   "detail": "ROL-007 may view ENT-002 in the Brief, now manage",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": false,
+    "masked_by_clean_pack": false,
+    "new_findings": []
+   },
+   "touched": [
+    "ENT-002",
+    "ROL-007"
+   ],
+   "verify": {
+    "caught": false,
+    "new_canary_questions": [],
+    "new_findings": []
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": false,
+    "new_findings": []
+   },
+   "critic_input_differs": true,
+   "defect": "journey_without_payment_failure_path",
+   "detail": "payment-failure paths removed",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": false,
+   "reason": "",
+   "self_check": {
+    "caught": false,
+    "masked_by_clean_pack": false,
+    "new_findings": []
+   },
+   "touched": [
+    "FLW-001"
+   ],
+   "verify": {
+    "caught": false,
+    "new_canary_questions": [],
+    "new_findings": []
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": false,
+    "new_findings": []
+   },
+   "critic_input_differs": true,
+   "defect": "story_contradicts_a_rule",
+   "detail": "story US-S001 now contradicts RUL-S033",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": false,
+   "reason": "",
+   "self_check": {
+    "caught": false,
+    "masked_by_clean_pack": false,
+    "new_findings": []
+   },
+   "touched": [
+    "US-S001",
+    "RUL-S033"
+   ],
+   "verify": {
+    "caught": false,
+    "new_canary_questions": [],
+    "new_findings": []
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": false,
+    "new_findings": []
+   },
+   "critic_input_differs": true,
+   "defect": "default_contradicts_official_research",
+   "detail": "SCR-132 says the opposite of RI-OFFICIAL-1",
+   "expected_code": "",
+   "kind": "meaning",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": false,
+    "masked_by_clean_pack": false,
+    "new_findings": []
+   },
+   "touched": [
+    "SCR-132"
+   ],
+   "verify": {
+    "caught": false,
+    "new_canary_questions": [],
+    "new_findings": []
+   }
+  },
+  {
+   "applicable": true,
+   "critic": {
+    "by_model_half": false,
+    "caught": true,
+    "new_findings": [
+     "V-17:SCR-004:163dfe",
+     "V-17:SCR-004:e80cec",
+     "V-24:SCR-004:63395d"
+    ]
+   },
+   "critic_input_differs": true,
+   "defect": "assumed_item_shown_as_locked",
+   "detail": "SCR-004 is an assumption shown as Locked",
+   "expected_code": "V-17",
+   "kind": "meaning",
+   "pack_visible": true,
+   "reason": "",
+   "self_check": {
+    "caught": true,
+    "masked_by_clean_pack": false,
+    "new_findings": [
+     "V-17 SCR-004",
+     "V-24 SCR-004"
+    ]
+   },
+   "touched": [
+    "SCR-004"
+   ],
+   "verify": {
+    "caught": true,
+    "new_canary_questions": [],
+    "new_findings": [
+     "V-17:SCR-004:163dfe",
+     "V-17:SCR-004:e80cec",
+     "V-24:SCR-004:63395d"
+    ]
+   }
+  }
+ ],
+ "single_run": true,
+ "structural_kinds": 22,
+ "verdict": "not_measured"
+}

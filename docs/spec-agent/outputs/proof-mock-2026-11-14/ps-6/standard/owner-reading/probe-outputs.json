@@ -1,0 +1,552 @@
+{
+ "offline_stub": true,
+ "outputs": [
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Choose account for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Choose account yet WHEN Choose account loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Choose account asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Choose account WHEN the user opens Choose account or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on Choose account WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Choose account (screens/SCR-002.md): 1 regions, 2 actions, every listed state",
+    "Build Business account (screens/SCR-003.md): 1 regions, 0 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 5295,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-001-1.md",
+    "modules/MOD-001/module.md",
+    "screens/SCR-002.md",
+    "screens/SCR-003.md"
+   ],
+   "screen": "SCR-002",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Choose account for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-002 binds ENT-002.business_name but no read defines ENT-002: what are its fields? SCR-002 binds ENT-002.business_type but no read defines ENT-002: what are ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user has no data for Choose account yet WHEN Choose account loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "blocked: SCR-002 binds ENT-002.business_name but no read defines ENT-002: what are its fields? SCR-002 binds ENT-002.business_type but no read defines ENT-002: what are ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Choose account asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-002 binds ENT-002.business_name but no read defines ENT-002: what are its fields? SCR-002 binds ENT-002.business_type but no read defines ENT-002: what are ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Choose account WHEN the user opens Choose account or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-002 binds ENT-002.business_name but no read defines ENT-002: what are its fields? SCR-002 binds ENT-002.business_type but no read defines ENT-002: what are ",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on Choose account WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "blocked: SCR-002 binds ENT-002.business_name but no read defines ENT-002: what are its fields? SCR-002 binds ENT-002.business_type but no read defines ENT-002: what are ",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-002 binds ENT-002.business_name but no read defines ENT-002: what are its fields?",
+    "SCR-002 binds ENT-002.business_type but no read defines ENT-002: what are its fields?",
+    "SCR-002 binds ENT-002.owner but no read defines ENT-002: what are its fields?",
+    "SCR-002 binds ENT-002.staff but no read defines ENT-002: what are its fields?"
+   ],
+   "outline": [
+    "Build Choose account (screens/SCR-002.md): 1 regions, 2 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1370,
+   "reads": [
+    "screens/SCR-002.md"
+   ],
+   "screen": "SCR-002",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Order details for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Order details asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Order details WHEN the user opens Order details or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Order details loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Order details and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Order details, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Order details (screens/SCR-017.md): 4 regions, 0 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 4258,
+   "reads": [
+    "prefix.bundle.md",
+    "data-model/MOD-003-1.md",
+    "modules/MOD-003/module.md",
+    "screens/SCR-017.md"
+   ],
+   "screen": "SCR-017",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Order details for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-017 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-017 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Order details asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-017 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-017 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Order details WHEN the user opens Order details or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-017 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-017 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the network is slow while Order details loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "blocked: SCR-017 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-017 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Order details and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Order details, not at the home screen",
+     "how": "blocked: SCR-017 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-017 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-017 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-006.delivery_day but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-006.id but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-006.items but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-006.produce_total but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-006.status but no read defines ENT-006: what are its fields?",
+    "SCR-017 binds ENT-007.amount but no read defines ENT-007: what are its fields?",
+    "SCR-017 binds ENT-007.order but no read defines ENT-007: what are its fields?",
+    "SCR-017 binds ENT-007.paid_at but no read defines ENT-007: what are its fields?",
+    "SCR-017 binds ENT-007.status but no read defines ENT-007: what are its fields?"
+   ],
+   "outline": [
+    "Build Order details (screens/SCR-017.md): 4 regions, 0 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1611,
+   "reads": [
+    "screens/SCR-017.md"
+   ],
+   "screen": "SCR-017",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Produce listing form for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Produce listing form WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Produce listing form asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Produce listing form WHEN the user opens Produce listing form or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in farmer on Produce listing form WHEN they save the new produce listing THEN the change is saved and the person reaches SCR-016",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in farmer on Produce listing form and the request fails with validation failed WHEN they save the new produce listing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build Produce listing form (screens/SCR-008.md): 1 regions, 3 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 13521,
+   "reads": [
+    "prefix.bundle.md",
+    "contract/resources/ent-003-1.yaml",
+    "contract/resources/ent-003-2.yaml",
+    "contract/resources/ent-003-3.yaml",
+    "data-model/MOD-002-1.md",
+    "modules/MOD-002/module.md",
+    "screens/SCR-008.md"
+   ],
+   "screen": "SCR-008",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Produce listing form for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Produce listing form WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Produce listing form asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Produce listing form WHEN the user opens Produce listing form or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in farmer on Produce listing form WHEN they save the new produce listing THEN the change is saved and the person reaches SCR-016",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in farmer on Produce listing form and the request fails with validation failed WHEN they save the new produce listing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "blocked: SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields? SCR-008 binds ENT-003.price but no read defines ENT-003: what are it",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-008 binds ENT-003.availability_period but no read defines ENT-003: what are its fields?",
+    "SCR-008 binds ENT-003.price but no read defines ENT-003: what are its fields?",
+    "SCR-008 binds ENT-003.produce_name but no read defines ENT-003: what are its fields?",
+    "SCR-008 binds ENT-003.quantity_available but no read defines ENT-003: what are its fields?",
+    "SCR-008 binds ENT-003.seller_farmer but no read defines ENT-003: what are its fields?",
+    "SCR-008 binds ENT-003.seller_fpo but no read defines ENT-003: what are its fields?"
+   ],
+   "outline": [
+    "Build Produce listing form (screens/SCR-008.md): 1 regions, 3 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 2615,
+   "reads": [
+    "screens/SCR-008.md"
+   ],
+   "screen": "SCR-008",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Pay for order for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Pay for order THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Pay for order WHEN the user opens Pay for order or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in buyer on Pay for order WHEN they pay the amount due THEN the change is saved and the person reaches SCR-015",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in buyer on Pay for order and the request fails with validation failed WHEN they pay the amount due THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build My orders (screens/SCR-011.md): 1 regions, 0 actions, every listed state",
+    "Build Order placed (screens/SCR-013.md): 1 regions, 1 actions, every listed state",
+    "Build Pay for order (screens/SCR-014.md): 3 regions, 1 actions, every listed state",
+    "Build Payment result (screens/SCR-015.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 13859,
+   "reads": [
+    "prefix.bundle.md",
+    "contract/resources/ent-007-1.yaml",
+    "contract/resources/ent-007-2.yaml",
+    "data-model/MOD-003-1.md",
+    "modules/MOD-003/module.md",
+    "screens/SCR-011.md",
+    "screens/SCR-013.md",
+    "screens/SCR-014.md",
+    "screens/SCR-015.md"
+   ],
+   "screen": "SCR-014",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Pay for order for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Pay for order THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Pay for order WHEN the user opens Pay for order or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in buyer on Pay for order WHEN they pay the amount due THEN the change is saved and the person reaches SCR-015",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN a signed-in buyer on Pay for order and the request fails with validation failed WHEN they pay the amount due THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "blocked: SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields? SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are i",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-014 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields?",
+    "SCR-014 binds ENT-006.produce_total but no read defines ENT-006: what are its fields?",
+    "SCR-014 binds ENT-007.amount but no read defines ENT-007: what are its fields?"
+   ],
+   "outline": [
+    "Build Pay for order (screens/SCR-014.md): 3 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 2109,
+   "reads": [
+    "screens/SCR-014.md"
+   ],
+   "screen": "SCR-014",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Payment result for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Payment result asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Payment result WHEN the user opens Payment result or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Payment result loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Payment result THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "arm": "A",
+   "arm_name": "task card reads",
+   "assumptions": [],
+   "blocking_questions": [],
+   "outline": [
+    "Build My orders (screens/SCR-011.md): 1 regions, 0 actions, every listed state",
+    "Build Order placed (screens/SCR-013.md): 1 regions, 1 actions, every listed state",
+    "Build Pay for order (screens/SCR-014.md): 3 regions, 1 actions, every listed state",
+    "Build Payment result (screens/SCR-015.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 13859,
+   "reads": [
+    "prefix.bundle.md",
+    "contract/resources/ent-007-1.yaml",
+    "contract/resources/ent-007-2.yaml",
+    "data-model/MOD-003-1.md",
+    "modules/MOD-003/module.md",
+    "screens/SCR-011.md",
+    "screens/SCR-013.md",
+    "screens/SCR-014.md",
+    "screens/SCR-015.md"
+   ],
+   "screen": "SCR-015",
+   "used_fallback": false
+  },
+  {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Payment result for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "blocked: SCR-015 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-015 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the server fails when Payment result asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "blocked: SCR-015 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-015 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Payment result WHEN the user opens Payment result or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "blocked: SCR-015 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-015 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the network is slow while Payment result loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "blocked: SCR-015 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-015 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Payment result THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "blocked: SCR-015 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields? SCR-015 binds ENT-006.delivery_day but no read defines ENT-006: what are i",
+     "satisfiable": false
+    }
+   ],
+   "arm": "C",
+   "arm_name": "card alone",
+   "assumptions": [],
+   "blocking_questions": [
+    "SCR-015 binds ENT-006.buyer_account but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-006.delivery_day but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-006.delivery_fee but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-006.id but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-006.items but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-006.produce_total but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-006.status but no read defines ENT-006: what are its fields?",
+    "SCR-015 binds ENT-007.amount but no read defines ENT-007: what are its fields?",
+    "SCR-015 binds ENT-007.order but no read defines ENT-007: what are its fields?",
+    "SCR-015 binds ENT-007.paid_at but no read defines ENT-007: what are its fields?",
+    "SCR-015 binds ENT-007.status but no read defines ENT-007: what are its fields?"
+   ],
+   "outline": [
+    "Build Payment result (screens/SCR-015.md): 4 regions, 1 actions, every listed state"
+   ],
+   "owner_note": "",
+   "read_tokens": 1792,
+   "reads": [
+    "screens/SCR-015.md"
+   ],
+   "screen": "SCR-015",
+   "used_fallback": false
+  }
+ ],
+ "what": "Ten consumer-probe outputs for the owner to read (doc 16 PS-6). A blocking question is what the weakest consumer says it cannot decide from its reads. Mark any that is a false alarm."
+}

@@ -1,0 +1,119 @@
+{
+ "card_stats": {
+  "cards": 36,
+  "cards_over_lint_cap": [],
+  "lint_cap_per_card": 3,
+  "lint_warnings": [],
+  "lint_warnings_max_per_card": 0,
+  "lint_warnings_total": 0,
+  "measured": true,
+  "schema_findings": [],
+  "schema_valid_cards": 36,
+  "schema_validity": 1.0,
+  "tier_ceiling_violations": 0
+ },
+ "checks": [
+  {
+   "name": "screens with a different arrangement",
+   "ok": true,
+   "op": ">=",
+   "threshold": 0.3,
+   "value": 0.8333
+  },
+  {
+   "name": "schema validity",
+   "ok": true,
+   "op": ">=",
+   "threshold": 1.0,
+   "value": 1.0
+  },
+  {
+   "name": "tier ceiling violations",
+   "ok": true,
+   "op": "==",
+   "threshold": 0,
+   "value": 0
+  },
+  {
+   "name": "lint warnings, max per card",
+   "ok": true,
+   "op": "<=",
+   "threshold": 3,
+   "value": 0
+  }
+ ],
+ "gate": "PS-4",
+ "money": {
+  "calls": 12,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "note": "single run. OFFLINE STUB: the mock picks an arrangement from a hash of the style seed; this proves the harness, not the consumer.",
+ "owner_check": "the owner reads the 5 cards in owner-reading/cards.json and finds no layout instruction (not measured by code)",
+ "pack": "standard",
+ "probe": {
+  "distinct_layout_share": 0.8333333333333334,
+  "distinct_order_share": 0.5,
+  "distinct_token_share": 0.8333333333333334,
+  "per_screen": [
+   {
+    "arrangement_a": "content-led",
+    "arrangement_b": "summary-then-detail",
+    "fallback": false,
+    "order_differs": false,
+    "screen": "SCR-002"
+   },
+   {
+    "arrangement_a": "grouped-by-importance",
+    "arrangement_b": "sequence-by-flow",
+    "fallback": false,
+    "order_differs": true,
+    "screen": "SCR-017"
+   },
+   {
+    "arrangement_a": "status-led",
+    "arrangement_b": "status-led",
+    "fallback": false,
+    "order_differs": false,
+    "screen": "SCR-008"
+   },
+   {
+    "arrangement_a": "summary-then-detail",
+    "arrangement_b": "progressive-disclosure",
+    "fallback": false,
+    "order_differs": true,
+    "screen": "SCR-014"
+   },
+   {
+    "arrangement_a": "progressive-disclosure",
+    "arrangement_b": "primary-first",
+    "fallback": false,
+    "order_differs": true,
+    "screen": "SCR-015"
+   },
+   {
+    "arrangement_a": "action-led",
+    "arrangement_b": "summary-then-detail",
+    "fallback": false,
+    "order_differs": false,
+    "screen": "SCR-004"
+   }
+  ]
+ },
+ "screens": [
+  "SCR-002",
+  "SCR-017",
+  "SCR-008",
+  "SCR-014",
+  "SCR-015",
+  "SCR-004"
+ ],
+ "single_run": true,
+ "style_seeds": [
+  "density dense, depth glass, imagery mixed_media, mood technical_precise, motion personality playful, shape organic, type personality humanist",
+  "density dense, depth dramatic, imagery photo_led, mood bold_energetic, motion personality calm, shape organic, type personality editorial"
+ ],
+ "verdict": "not_measured",
+ "would_pass": true
+}

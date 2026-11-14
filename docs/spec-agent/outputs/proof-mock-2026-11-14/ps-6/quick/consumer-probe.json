@@ -1,0 +1,93 @@
+{
+ "arms": {
+  "A": {
+   "metrics": {
+    "acceptance_satisfiable": 11,
+    "acceptance_satisfiable_share": 1.0,
+    "assumptions": 0,
+    "assumptions_per_screen": 0.0,
+    "blocking_per_screen": 0.0,
+    "blocking_questions": 0,
+    "criteria": 11,
+    "fallback_calls": 0,
+    "read_tokens_max": 12748,
+    "screens": 3
+   },
+   "name": "task card reads",
+   "skipped": ""
+  },
+  "B": {
+   "metrics": {},
+   "name": "whole pack",
+   "skipped": "the pack is 83615 tokens and the profile's whole_pack_tokens is 22500: it does not fit"
+  },
+  "C": {
+   "metrics": {
+    "acceptance_satisfiable": 0,
+    "acceptance_satisfiable_share": 0.0,
+    "assumptions": 0,
+    "assumptions_per_screen": 0.0,
+    "blocking_per_screen": 5.333333333333333,
+    "blocking_questions": 16,
+    "criteria": 11,
+    "fallback_calls": 0,
+    "read_tokens_max": 1810,
+    "screens": 3
+   },
+   "name": "card alone",
+   "skipped": ""
+  }
+ },
+ "checks": [
+  {
+   "name": "A blocking questions per screen",
+   "ok": true,
+   "op": "<=",
+   "threshold": 0.3,
+   "value": 0.0
+  },
+  {
+   "name": "A assumptions per screen",
+   "ok": true,
+   "op": "<=",
+   "threshold": 1.0,
+   "value": 0.0
+  },
+  {
+   "name": "A acceptance satisfiable share",
+   "ok": true,
+   "op": ">=",
+   "threshold": 0.9,
+   "value": 1.0
+  },
+  {
+   "name": "card-alone arm clearly worse",
+   "ok": true,
+   "op": "==",
+   "threshold": true,
+   "value": true
+  }
+ ],
+ "comparisons": {
+  "card_alone_clearly_worse": true,
+  "slice_not_worse_than_whole": null
+ },
+ "gate": "PS-6",
+ "money": {
+  "calls": 6,
+  "cost_micro_usd": 0,
+  "fallback_calls": 0,
+  "live": false
+ },
+ "note": "single run: a run decides nothing; repeat and report the range. OFFLINE STUB: the mock reader only checks that ids used are defined; this proves the harness, not the live rate.",
+ "pack": "quick",
+ "screens": [
+  "SCR-004",
+  "SCR-011",
+  "SCR-008"
+ ],
+ "single_run": true,
+ "size": "quick",
+ "verdict": "not_measured",
+ "would_pass": true
+}
