@@ -1,0 +1,180 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2531,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10711,
+   "tokens_out": 2917
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 10718,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 32590,
+   "tokens_out": 14918
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 3746,
+   "fallback": 0,
+   "first_errors": [
+    "directions[2].dark_stance: dark mode must be designed as seriously as light; use one of ['parity', 'dark_first', 'follows_time_of_day']"
+   ],
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 9862,
+   "tokens_out": 5517
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3219,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 6924,
+   "tokens_out": 5052
+  },
+  "MOCK-HERO": {
+   "calls": 8,
+   "clean": 8,
+   "cost_micros": 18923,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 50942,
+   "tokens_out": 27646
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1839,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 8347,
+   "tokens_out": 2008
+  },
+  "PROD-JOURNEYS": {
+   "calls": 5,
+   "clean": 5,
+   "cost_micros": 53839,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 54162,
+   "tokens_out": 96833
+  },
+  "PROD-MODULE": {
+   "calls": 11,
+   "clean": 10,
+   "cost_micros": 54231,
+   "fallback": 0,
+   "first_errors": [
+    "operation NEW-trk-list-tracked: entity ENT-004 does not exist",
+    "operation NEW-trk-delivery-proof: entity ENT-008 does not exist"
+   ],
+   "first_try_pass": 0.909,
+   "repair_rate": 0.091,
+   "repaired": 1,
+   "tokens_in": 103870,
+   "tokens_out": 87669
+  },
+  "SCRN": {
+   "calls": 13,
+   "clean": 8,
+   "cost_micros": 110458,
+   "fallback": 0,
+   "first_errors": [
+    "SCR-027.delivery_proof: shape 'media' variant 'photo' is not one of ['single', 'set']"
+   ],
+   "first_try_pass": 0.615,
+   "repair_rate": 0.385,
+   "repaired": 5,
+   "tokens_in": 397826,
+   "tokens_out": 141327
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 6979,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 17871,
+   "tokens_out": 10381
+  },
+  "VERIFY-CANARY": {
+   "calls": 5,
+   "clean": 3,
+   "cost_micros": 27763,
+   "fallback": 1,
+   "first_errors": [
+    "more than 12 blocking questions; keep the ones that truly block",
+    "TimeoutError: "
+   ],
+   "first_try_pass": 0.6,
+   "reasons": [
+    "TimeoutError: "
+   ],
+   "repair_rate": 0.4,
+   "repaired": 2,
+   "tokens_in": 97898,
+   "tokens_out": 35936
+  }
+ },
+ "calls_total": 48,
+ "cost_usd": 0.2942,
+ "events": 136,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check",
+   "verify"
+  ],
+  "content_hash": "f3c2e0c16edbb68c93dc4b15c71dd20a9a95feed691f1e36f2bb62c2ad08ab38",
+  "critic_vendor": null,
+  "files": 230,
+  "tokens": 356760
+ },
+ "partial_reason": "rate_limit",
+ "profile": "deep",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7CTNC2ZH4Q0B4D3Z82ECAC6",
+ "status": "partial",
+ "tasks": {
+  "budget": 28000,
+  "count": 43,
+  "max_read_tokens": 26912,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": false
+ }
+}
