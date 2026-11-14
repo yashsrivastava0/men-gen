@@ -14,7 +14,15 @@ from typing import Any
 from .canon import canonical_json, normalise_text, sha256_text
 from .config import SpecConfig, default_config
 from .contract import contract_files
+from .detail import detail_path, fit, render_detail
 from .graph import Region, Screen, SpecGraph
+from .packform import (
+    WHOLE_FILE,
+    build_whole_file,
+    decide_form,
+    shard_copy,
+    whole_pack_budget,
+)
 from .render import (
     TokenCounter,
     render_card,
@@ -27,11 +35,35 @@ PACK_VERSION = 1
 
 
 class PackBreach(RuntimeError):
-    """A budget breach the packager could not repair: a Spec bug or an un-splittable screen (structured error)."""
+    """A budget breach the packager could not repair: a Spec bug or an un-splittable screen (structured error).
 
-    def __init__(self, code: str, where: str, why: str, fix: str) -> None:
+    ``error["after_detail_move"]`` is True when the packager already moved every bulky text of the card to
+    ``screens/<id>.detail.md`` and the budget still is not met: the next step of doc 18 3.3 is ONE re-ask of the card's
+    owning batch that shortens it (``error["reask"]`` names it; the flow's service does it). A breach with
+    ``reask`` None cannot be repaired by shortening a card (a slice too big for its closure: split the screen)."""
+
+    def __init__(
+        self,
+        code: str,
+        where: str,
+        why: str,
+        fix: str,
+        *,
+        after_detail_move: bool = False,
+        reask: str | None = None,
+        moved: list[str] | None = None,
+    ) -> None:
         super().__init__(f"{code} {where}: {why}; {fix}")
-        self.error = {"code": code, "severity": "blocker", "where": where, "why": why, "fix": fix}
+        self.error: dict[str, Any] = {
+            "code": code,
+            "severity": "blocker",
+            "where": where,
+            "why": why,
+            "fix": fix,
+            "after_detail_move": after_detail_move,
+            "reask": reask,
+            "moved": sorted(moved or []),
+        }
 
 
 @dataclass(frozen=True)
@@ -62,6 +94,9 @@ class Pack:
     needs: list[dict[str, Any]]
     pilots: dict[str, list[str]]
     warnings: list[str] = field(default_factory=list)
+    detail: dict[str, list[str]] = field(
+        default_factory=dict
+    )  # screen id -> anchors moved to its .detail.md
 
 
 # ---------------------------------------------------------------- derived: blocks, needs, pilots

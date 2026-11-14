@@ -38,6 +38,10 @@ class Budgets(_M):
     delight_block_max: int
     one_file_min_consumer_window: int
     token_factor_chars_per_token: float
+    detail_min_chars: (
+        int  # a text shorter than this never moves to screens/<id>.detail.md (doc 18 3.3)
+    )
+    detail_head_chars: int  # the head of a moved text that stays in the card
 
     @property
     def prefix_cap(self) -> int:

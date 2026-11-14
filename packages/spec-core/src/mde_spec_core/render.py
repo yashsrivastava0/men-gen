@@ -111,8 +111,11 @@ def _action(a: Action) -> str:
     )
 
 
-def render_card(screen: Screen) -> str:
-    """The card: what the screen must communicate and do. Never where or how."""
+def render_card(screen: Screen, detail_ref: str | None = None) -> str:
+    """The card: what the screen must communicate and do. Never where or how.
+
+    ``detail_ref`` is the path of the screen's ``.detail.md`` when bulky text moved there (doc 18 3.3): the card names it
+    in its header and the moved texts carry a pointer to their anchor."""
     L: list[str] = ["---"]
     L.append(f"id: {screen.id}   kind: screen   name: {_v(screen.name)}")
     L.append(
@@ -128,6 +131,8 @@ def render_card(screen: Screen) -> str:
         L.append(f"claims_used: {_lst(sorted(screen.claims_used))}")
     if screen.stories:
         L.append(f"stories: {_lst(sorted(screen.stories))}")
+    if detail_ref:
+        L.append(f"detail: {detail_ref}   # longer texts of this card, loaded on demand")
     L.append("---")
     L.append(f"purpose: {screen.purpose}")
     r = screen.route
