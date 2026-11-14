@@ -34,9 +34,17 @@ def test_every_fact_is_a_known_predicate(export) -> None:
         ),
         (
             "standard",
-            {"accounts", "email_password_login", "multi_language", "payments", "multi_role_user"},
+            {
+                "accounts",
+                "email_password_login",
+                # FCT-036 (farmers and drivers use a phone code) is read per role, not only the one setting (BUG-IN-4)
+                "phone_code_login",
+                "multi_language",
+                "payments",
+                "multi_role_user",
+            },
             # the person put live tracking off: a feature they deferred is not read
-            {"realtime", "phone_code_login", "sensitive_data"},
+            {"realtime", "sensitive_data"},
         ),
         (
             "thorough",

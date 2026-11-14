@@ -114,7 +114,7 @@ def _weak_notes(spec_input: SpecInput) -> list[Note]:
     out: list[Note] = []
     if binding != "verified":
         why = u.get(binding, u["unverified_no_baseline"])
-        reasons.append(why)
+        reasons.append(f"{u['reason']} ({why})")
         out.append(
             Note(
                 "input_unverified",
@@ -225,7 +225,8 @@ def signin_plan(
             if w:
                 per_role[w].add(methods)
     same_role_clash = any(len(ms) > 1 for ms in per_role.values())
-    if len(groups) < 2 and not extra:
+    named_groups = [m for m, who_list in groups.items() if any(who_list)]
+    if len(named_groups) < 2 and not extra and not same_role_clash:
         return None
     parts = []
     for methods, who_list in sorted(groups.items(), key=lambda kv: (kv[0], kv[1])):
@@ -233,7 +234,7 @@ def signin_plan(
         parts.append(
             d["group"].format(
                 who=_join(sorted(names)),
-                verb="signs in" if len(names) == 1 else "sign in",
+                verb="signs in" if len(names) == 1 and any(who_list) else "sign in",
                 method=_method_text(methods),
             )
         )

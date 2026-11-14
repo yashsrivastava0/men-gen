@@ -16,8 +16,9 @@ weak_inputs:
     verify: "the check of the Brief"
     blueprint: "the structure step"
 unverified:
-  unverified_no_baseline: "the approval of the Brief cannot be verified, because the export carries no record of what was approved"
-  unverified_hash_mismatch: "the approval of the Brief cannot be verified, because the Brief changed after it was approved"
+  reason: "the approval of the Brief cannot be verified"
+  unverified_no_baseline: "the export carries no record of what was approved"
+  unverified_hash_mismatch: "the Brief changed after it was approved"
   flag: "The approval of the Brief cannot be verified: {why}. The spec went on with it and marks everything that rests on it."
   fix: "Approve the Brief again in Compass to get a verifiable approval."
 
