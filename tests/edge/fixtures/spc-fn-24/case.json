@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-24",
+  "kind": "syn",
+  "handling": "free routes exist only in the proof configuration; the nine exports go there only after the owner's confirmation (OI-43)",
+  "test": "test_fn_more_cases.py::test_fn_24_no_runtime_flag_exists_that_sends_a_real_brief_to_a_free_route"
+}

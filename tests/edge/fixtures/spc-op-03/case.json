@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-03",
+  "kind": "mock",
+  "handling": "single-flight lock",
+  "test": "test_op_cases.py::test_op_03_two_starts_for_one_program_are_one_run_and_a_different_input_is_refused"
+}

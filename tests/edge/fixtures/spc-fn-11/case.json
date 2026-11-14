@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-11",
+  "kind": "syn",
+  "handling": "IDs and phone numbers only masked; a value that passes `validate()`, a digit run of 9 or more, a plate-like value or an unmasked `name@bank` fails the fixture; demo accounts use a demo code or an `example.com` email",
+  "test": "test_fn_cases.py::test_fn_11_ids_and_phone_numbers_are_only_ever_masked"
+}

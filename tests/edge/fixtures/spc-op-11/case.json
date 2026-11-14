@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-11",
+  "kind": "mock",
+  "handling": "checkpoint keys carry the versions; a resumed run keeps the versions it began with unless restarted; the pack records them",
+  "test": "test_op_cases.py::test_op_11_a_version_bump_in_flight_never_mixes_old_and_new_checkpoints"
+}

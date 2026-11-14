@@ -1,0 +1,16 @@
+[
+ {
+  "set": "brief.experience.locales.value",
+  "value": "whatever people there normally speak"
+ },
+ {
+  "set": "brief.meta.locales",
+  "value": [
+   "whatever people there normally speak"
+  ]
+ },
+ {
+  "set": "brief.search_hints.languages",
+  "value": []
+ }
+]

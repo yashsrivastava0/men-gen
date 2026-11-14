@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-20",
+ "kind": "real",
+ "handling": "Policy-Locked flow, always present when accounts exist.",
+ "test": "tests/edge/test_sc_cases.py::test_account_deletion_is_a_policy_backed_flow_whenever_accounts_exist; test_deletion_and_export_are_policy_locked_flows (strict xfail BUG-SC-9)"
+}

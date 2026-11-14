@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-05",
+ "kind": "syn",
+ "handling": "Needs unchanged.",
+ "test": "tests/edge/test_cl_cases.py::test_a_library_version_change_changes_no_need"
+}

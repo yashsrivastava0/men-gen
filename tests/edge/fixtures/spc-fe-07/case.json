@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-07",
+  "kind": "syn",
+  "handling": "the packager splits it; a heavy screen travels alone",
+  "test": "test_fe_cases.py::test_fe_07_a_task_over_the_budget_is_split_and_a_heavy_screen_travels_alone"
+}

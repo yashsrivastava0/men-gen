@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-02",
+  "kind": "syn",
+  "handling": "shared files are code-generated; `owns` disjoint; build checks",
+  "test": "test_fe_cases.py::test_fe_02_task_cards_own_disjoint_files_and_the_shared_files_are_generated_by_code"
+}

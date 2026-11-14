@@ -1,0 +1,6 @@
+{
+  "id": "spc-ux-03",
+  "kind": "real",
+  "handling": "plain words, no JSON, store rules explained",
+  "test": "test_ux_cases.py::test_ux_03_a_non_technical_reader_gets_plain_words_no_json_and_store_rules_explained"
+}

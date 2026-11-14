@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-02",
+  "kind": "syn",
+  "handling": "per-key patch; the copy shard only",
+  "test": "test_ch_cases.py::test_ch_02_a_copy_change_touches_the_copy_shard_and_only_the_screens_that_show_the_key"
+}

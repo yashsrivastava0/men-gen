@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-15",
+ "kind": "syn",
+ "handling": "G1.5 shows the conflict; allowed as one release with a recorded warning; more waves.",
+ "test": "tests/edge/test_sc_cases.py::test_ninety_core_screens_show_the_conflict_and_allow_everything_in_one_release"
+}

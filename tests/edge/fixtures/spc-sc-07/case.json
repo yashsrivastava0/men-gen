@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-07",
+ "kind": "real",
+ "handling": "Consent, deletion and export flows, audit trail, age gate, store disclosures.",
+ "test": "tests/edge/test_sc_cases.py::test_sensitive_data_gets_consent_age_gate_and_deletion; test_sensitive_data_is_recognised_for_hospital_and_a_school_of_children (strict xfail BUG-SC-1)"
+}

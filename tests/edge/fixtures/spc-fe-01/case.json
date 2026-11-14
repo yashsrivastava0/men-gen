@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-01",
+  "kind": "mut",
+  "handling": "V-27 prevents it; at run time at most 3 lookups, then a raised decision",
+  "test": "test_fe_cases.py::test_fe_01_a_fact_missing_from_a_slice_is_stopped_by_v27_and_the_lookup_limit_is_three"
+}

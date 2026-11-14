@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-02",
+ "kind": "real",
+ "handling": "Locale packs; needs_native_review.",
+ "test": "tests/edge/test_mk_cases.py::test_rupees_and_indian_names_are_used_for_the_nashik_app; test_marathi_money_uses_indian_digit_grouping (strict xfail BUG-MK-3); test_marathi_names_and_native_review_flag_for_the_mock_data (strict xfail BUG-MK-1)"
+}

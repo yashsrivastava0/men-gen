@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-06",
+  "kind": "mock",
+  "handling": "per-step time budgets; timeout means `degraded`",
+  "test": "test_op_cases.py::test_op_06_a_slow_route_times_out_and_the_node_is_degraded"
+}

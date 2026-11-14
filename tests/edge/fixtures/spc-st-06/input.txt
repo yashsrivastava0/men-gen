@@ -1,0 +1,1 @@
+Standard run graph plus a story that cites only the deferred feature.

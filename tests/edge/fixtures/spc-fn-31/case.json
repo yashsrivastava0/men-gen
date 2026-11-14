@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-31",
+  "kind": "mock",
+  "handling": "Gate 2 fails the integration; one re-ask to `PROD-INTEG`; else a library flow template, `degraded`, on the confirm list",
+  "test": "test_fn_more_cases.py::test_fn_31_an_integration_with_no_interrupted_flow_gets_one_reask_then_a_library_template_and_degraded"
+}

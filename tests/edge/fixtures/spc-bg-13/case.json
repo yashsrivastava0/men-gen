@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-13",
+  "kind": "syn",
+  "handling": "incremental regeneration; Phase 1's approved baseline stays immutable; Phase 2 gets its own",
+  "test": "test_bg_cases.py::test_bg_13_phase_2_regenerates_only_what_is_new_and_phase_1_stays_immutable"
+}

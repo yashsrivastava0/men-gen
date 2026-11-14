@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-11",
+  "kind": "syn",
+  "handling": "the freedom probe (PS-4); direction axes differ per app",
+  "test": "test_fe_cases.py::test_fe_11_direction_axes_differ_per_app_so_the_output_is_not_a_look_alike"
+}

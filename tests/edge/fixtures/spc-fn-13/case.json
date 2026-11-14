@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-13",
+  "kind": "syn",
+  "handling": "none: briefs only; sourcing and licences are the front end's",
+  "test": "test_fn_cases.py::test_fn_13_hero_image_requests_are_briefs_never_urls"
+}

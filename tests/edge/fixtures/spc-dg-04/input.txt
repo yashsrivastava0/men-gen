@@ -1,0 +1,1 @@
+Standard run flags and trim_could on a tier C entry.

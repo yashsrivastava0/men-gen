@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-09",
+ "kind": "syn",
+ "handling": "Needs grouped by purpose with a count.",
+ "test": "tests/edge/test_cl_cases.py::test_sixty_hero_visuals_become_one_need_with_a_count_not_sixty_needs"
+}

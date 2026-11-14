@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-11",
+ "kind": "real",
+ "handling": "Parsed to regions; per-region currency, language and legal list; unresolved goes to confirm.",
+ "test": "tests/edge/test_in_cases.py::test_multi_country_geography_is_parsed_to_regions_with_codes; test_per_region_currency_language_and_legal_list_reach_the_graph (strict xfail BUG-IN-5)"
+}

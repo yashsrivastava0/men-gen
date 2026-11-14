@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-05",
+  "kind": "mock",
+  "handling": "back off, adapt concurrency, resume from checkpoints",
+  "test": "test_md_cases.py::test_md_05_a_429_is_retried_with_growing_backoff_and_the_run_resumes_from_checkpoints"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-03",
+  "kind": "mut",
+  "handling": "module Product call, new cards, additive contract",
+  "test": "test_ch_cases.py::test_ch_03_adding_a_feature_changes_only_the_nodes_it_touches_and_is_additive"
+}

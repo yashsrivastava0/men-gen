@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-20",
+ "kind": "mut",
+ "handling": "V-29 blocks; Product adds a screen or records why.",
+ "test": "tests/edge/test_in_cases.py::test_a_locked_must_without_a_screen_gets_one_by_the_pull_in_rule"
+}

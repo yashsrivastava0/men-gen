@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-13",
+ "kind": "real",
+ "handling": "Direction derived from audience and category; palette contrast checked; assumed.",
+ "test": "tests/edge/test_in_cases.py::test_no_brand_derives_a_direction_and_checks_contrast"
+}

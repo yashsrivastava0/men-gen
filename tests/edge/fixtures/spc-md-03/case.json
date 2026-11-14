@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-03",
+  "kind": "mock",
+  "handling": "detect the finish reason; retry with a smaller batch",
+  "test": "test_md_cases.py::test_md_03_a_truncated_batch_is_redone_in_smaller_batches_with_the_same_nodes"
+}

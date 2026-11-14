@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-02",
+ "kind": "syn",
+ "handling": "Gap list; no deviation.",
+ "test": "tests/edge/test_cl_cases.py::test_a_shape_the_library_lacks_is_a_gap_the_consumer_can_list_and_nothing_changes"
+}

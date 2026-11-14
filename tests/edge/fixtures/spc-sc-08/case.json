@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-08",
+ "kind": "real",
+ "handling": "Shared entities owned once; cross-app scenarios; the cap and deferrals per app; shared modules once.",
+ "test": "tests/edge/test_sc_cases.py::test_six_apps_share_entities_modules_and_cross_app_scenarios_once"
+}

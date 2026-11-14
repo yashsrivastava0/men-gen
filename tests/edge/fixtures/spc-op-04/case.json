@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-04",
+  "kind": "mut",
+  "handling": "no keys in packs; fixtures are synthetic; personal data in the Brief is not copied into fixtures; a secret scan runs on packs",
+  "test": "test_op_cases.py::test_op_04_a_phone_number_and_a_key_in_the_brief_never_reach_fixtures_or_the_pack_and_the_scan_names_them"
+}

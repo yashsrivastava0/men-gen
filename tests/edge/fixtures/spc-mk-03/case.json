@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-03",
+ "kind": "real",
+ "handling": "Shared ids and one timeline.",
+ "test": "tests/edge/test_mk_cases.py::test_the_same_order_is_one_record_in_every_app"
+}

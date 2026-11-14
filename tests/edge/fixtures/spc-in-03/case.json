@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-03",
+ "kind": "mut",
+ "handling": "Tolerant read; drift flags per missing or changed field; proceeds when idea, role and feature are found, else a readiness fail with a plain list.",
+ "test": "tests/edge/test_in_cases.py::test_unknown_future_format_and_renamed_keys_load_with_drift_flags"
+}

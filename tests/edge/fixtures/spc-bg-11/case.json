@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-11",
+  "kind": "syn",
+  "handling": "the packager splits at a module boundary; a heavy card moves detail to `.detail.md`; never truncated",
+  "test": "test_bg_cases.py::test_bg_11_a_card_over_the_read_budget_splits_inside_one_module_and_is_never_truncated"
+}

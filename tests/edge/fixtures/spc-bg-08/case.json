@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-08",
+  "kind": "syn",
+  "handling": "glossary into all; locale batches by 300 strings; RTL as a global behaviour; script-fallback tokens; `needs_native_review`",
+  "test": "test_bg_cases.py::test_bg_08_five_locales_with_right_to_left_translate_the_glossary_first_and_flag_native_review"
+}

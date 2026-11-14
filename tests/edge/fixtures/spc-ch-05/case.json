@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-05",
+  "kind": "syn",
+  "handling": "alias; stamps stay valid through it",
+  "test": "test_ch_cases.py::test_ch_05_a_renamed_screen_keeps_its_old_id_as_an_alias_that_still_resolves"
+}

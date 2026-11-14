@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-07",
+ "kind": "mock",
+ "handling": "The need's fallback and alt-text rule; flagged.",
+ "test": "tests/edge/test_cl_cases.py::test_an_asset_need_without_a_fallback_or_alt_text_rule_is_a_blocker"
+}

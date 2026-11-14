@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-02",
+  "kind": "mock",
+  "handling": "those screens `degraded` with library defaults;  amended (doc 18 §3.2): the ladder (code fixes, one re-ask per node batched per call kind, flag); a pack with a `missing` builder need never reaches G2",
+  "test": "test_op_cases.py::test_op_02_failed_screen_batches_are_degraded_with_defaults_and_a_missing_need_never_reaches_g2"
+}

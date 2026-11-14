@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-19",
+ "kind": "real",
+ "handling": "Size and type limits, permission, failure and resume states.",
+ "test": "tests/edge/test_sc_cases.py::test_media_upload_gets_a_permission_flow_failure_and_resume; test_media_upload_has_size_and_type_limits (strict xfail BUG-SC-14)"
+}

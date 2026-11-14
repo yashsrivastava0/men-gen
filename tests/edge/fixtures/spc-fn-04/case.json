@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-04",
+  "kind": "mock",
+  "handling": "accept only the repaired items, re-validate the whole call; if worse, keep the original and flag; one re-ask per node in the run, so Gate 3 does not ask again",
+  "test": "test_fn_cases.py::test_fn_04_one_reask_per_node_in_the_whole_run_so_gate_3_cannot_ask_again"
+}

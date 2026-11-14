@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-10",
+ "kind": "real",
+ "handling": "Becomes a needs_access_change suggestion.",
+ "test": "tests/edge/test_cl_cases.py::test_a_could_or_usually_binding_that_fails_the_access_check_becomes_a_suggestion (strict xfail BUG-CL-2)"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-01",
+ "kind": "mock",
+ "handling": "Needs unchanged; fallback in behaviors.",
+ "test": "tests/edge/test_cl_cases.py::test_the_needs_do_not_depend_on_a_tool_and_the_fallback_policy_is_in_the_pack"
+}

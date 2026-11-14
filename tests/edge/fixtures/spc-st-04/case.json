@@ -1,0 +1,6 @@
+{
+ "id": "spc-st-04",
+ "kind": "real",
+ "handling": "Both apps' screens and one data timeline.",
+ "test": "tests/edge/test_st_cases.py::test_a_cross_app_journey_has_both_apps_screens_and_one_data_timeline"
+}

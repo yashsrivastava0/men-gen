@@ -1,0 +1,6 @@
+{
+ "id": "spc-sz-04",
+ "kind": "real",
+ "handling": "Exempt from the column limit; the rest applies.",
+ "test": "tests/edge/test_sz_cases.py::test_a_web_portal_table_is_exempt_from_the_phone_column_limit; test_the_rest_of_the_mobile_fit_rule_still_applies_to_a_web_portal (strict xfail BUG-SZ-1)"
+}

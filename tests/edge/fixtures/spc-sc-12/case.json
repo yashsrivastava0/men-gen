@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-12",
+ "kind": "real",
+ "handling": "Copy sharded by module and locale; locale passes batched; cards carry keys.",
+ "test": "tests/edge/test_sc_cases.py::test_three_locales_get_one_copy_file_each_and_cards_carry_keys; test_copy_is_sharded_by_module_and_locale (strict xfail BUG-SC-7)"
+}

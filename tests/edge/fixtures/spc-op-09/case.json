@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-09",
+  "kind": "real",
+  "handling": "byte stability: locale-independent sorting, no timestamps in bodies",
+  "test": "test_op_cases.py::test_op_09_the_same_run_gives_the_same_bytes_under_two_locales_clocks_and_hash_seeds"
+}

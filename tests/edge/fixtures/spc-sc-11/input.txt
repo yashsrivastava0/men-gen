@@ -1,0 +1,1 @@
+SynthSpec with 20 integrations built in the test.

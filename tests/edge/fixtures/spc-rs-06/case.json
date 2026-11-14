@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-06",
+ "kind": "mut",
+ "handling": "Flag research_stale; proceed or request a delta; G2 banner.",
+ "test": "tests/edge/test_rs_cases.py::test_a_research_file_for_another_brief_is_known_to_be_stale; test_stale_research_raises_a_flag_and_a_g2_banner (strict xfail BUG-RS-3)"
+}

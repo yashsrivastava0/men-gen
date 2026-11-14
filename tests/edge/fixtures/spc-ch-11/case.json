@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-11",
+  "kind": "syn",
+  "handling": "an L4 change set with consent; incremental regeneration; the waves re-plan; the approved baseline stays immutable",
+  "test": "test_ch_cases.py::test_ch_11_a_feature_moving_to_the_backlog_needs_consent_and_the_approved_baseline_stays_immutable"
+}

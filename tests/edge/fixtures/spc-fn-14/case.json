@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-14",
+  "kind": "syn",
+  "handling": "Babel-built formatter, tested in S0",
+  "test": "test_fn_cases.py::test_fn_14_numbers_and_money_follow_the_locale_with_lakh_grouping"
+}

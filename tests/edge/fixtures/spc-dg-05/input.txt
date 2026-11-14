@@ -1,0 +1,1 @@
+Synthetic preset small with 4 COULD entries on one screen and 9 on one app.

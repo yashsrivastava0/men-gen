@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-21",
+  "kind": "mock",
+  "handling": "the prompt carries the schema in text and the word JSON; local validation is the contract",
+  "test": "test_fn_more_cases.py::test_fn_21_a_prompt_carries_the_schema_in_text_and_the_word_json_for_json_mode_providers"
+}

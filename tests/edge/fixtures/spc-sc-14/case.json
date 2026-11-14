@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-14",
+ "kind": "mut",
+ "handling": "V-29 range warning; ask at G1.5 whether the idea is bigger than the tier; never trimmed silently.",
+ "test": "tests/edge/test_sc_cases.py::test_a_quick_app_deriving_forty_screens_gets_the_v29_range_warning_and_is_never_trimmed; test_g15_asks_whether_the_idea_is_bigger_than_the_tier (strict xfail BUG-SC-4)"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-12",
+ "kind": "mut",
+ "handling": "Script-aware type stacks in tokens; right-to-left as a global behaviour; copy flagged for native review.",
+ "test": "tests/edge/test_in_cases.py::test_right_to_left_and_mixed_scripts_reach_tokens_and_behaviours"
+}

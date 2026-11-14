@@ -1,0 +1,12 @@
+[
+ {
+  "set": "consumer_views.research.languages",
+  "value": {
+   "locales": [
+    "ar",
+    "en",
+    "hi"
+   ]
+  }
+ }
+]

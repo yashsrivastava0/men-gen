@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-28",
+  "kind": "syn",
+  "handling": "seed from the category and direction; the user may change the seed at G2",
+  "test": "test_fn_more_cases.py::test_fn_28_without_a_brand_colour_the_seed_comes_from_the_direction_and_the_user_can_change_it"
+}

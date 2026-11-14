@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-03",
+  "kind": "mock",
+  "handling": "item-level repair; the valid items are kept",
+  "test": "test_fn_cases.py::test_fn_03_only_the_failed_items_go_back_in_one_batch"
+}

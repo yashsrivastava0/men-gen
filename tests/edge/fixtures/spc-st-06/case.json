@@ -1,0 +1,6 @@
+{
+ "id": "spc-st-06",
+ "kind": "mut",
+ "handling": "V-40 blocks it; it can live only as a backlog story or a suggestion.",
+ "test": "tests/edge/test_st_cases.py::test_a_story_with_no_in_feature_behind_it_is_a_v40_blocker"
+}

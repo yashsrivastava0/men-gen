@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-07",
+  "kind": "cfg",
+  "handling": "profile changes; re-package; the same validators and probes pass",
+  "test": "test_md_cases.py::test_md_07_a_provider_switch_re_packages_with_the_same_content_and_the_same_probes_pass"
+}

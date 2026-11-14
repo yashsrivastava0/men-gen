@@ -1,0 +1,6 @@
+{
+ "id": "spc-sz-03",
+ "kind": "syn",
+ "handling": "Warning; a gross breach is repaired or waived.",
+ "test": "tests/edge/test_sz_cases.py::test_a_phone_screen_above_the_mobile_fit_limits_warns_and_a_gross_breach_is_repaired_or_waived"
+}

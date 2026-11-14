@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-35",
+  "kind": "mock",
+  "handling": "no default exists: the run ends `partial` and resumes (a fallback route first, if configured)",
+  "test": "test_fn_more_cases.py::test_fn_35_an_invalid_plan_after_its_reask_ends_the_run_partial_and_a_resume_retries_it"
+}

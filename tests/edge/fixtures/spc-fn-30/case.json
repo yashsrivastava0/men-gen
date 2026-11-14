@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-30",
+  "kind": "cfg",
+  "handling": "both forms are produced per consumer profile; same content",
+  "test": "test_fn_more_cases.py::test_fn_30_a_small_pack_fits_one_file_for_the_weak_consumer_and_the_tree_is_always_there"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-18",
+ "kind": "real",
+ "handling": "Time-zone rule per entity; recurrence rules; calendar behaviours.",
+ "test": "tests/edge/test_sc_cases.py::test_scheduling_gets_time_zone_recurrence_and_calendar_rules (strict xfail BUG-SC-6)"
+}

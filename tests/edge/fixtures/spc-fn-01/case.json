@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-01",
+  "kind": "mock",
+  "handling": "strip them, take the first object that parses and fits; if none, one re-ask; else R-flag",
+  "test": "test_fn_cases.py::test_fn_01_prose_reasoning_and_fences_are_stripped_and_the_first_fitting_object_wins"
+}

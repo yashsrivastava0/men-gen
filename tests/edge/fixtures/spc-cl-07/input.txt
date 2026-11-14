@@ -1,0 +1,1 @@
+Synthetic preset small plus an asset need, with and without fallback and alt-text rule.

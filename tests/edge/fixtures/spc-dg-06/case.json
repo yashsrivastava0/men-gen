@@ -1,0 +1,6 @@
+{
+ "id": "spc-dg-06",
+ "kind": "syn",
+ "handling": "The entry stays assumed; never presented as evidence.",
+ "test": "tests/edge/test_dg_cases.py::test_a_could_whose_basis_is_assumed_stays_assumed"
+}

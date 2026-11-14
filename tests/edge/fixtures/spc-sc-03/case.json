@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-03",
+ "kind": "syn",
+ "handling": "Minimal states; no forms.",
+ "test": "tests/edge/test_sc_cases.py::test_a_read_only_content_app_has_no_forms_and_only_the_states_a_list_and_detail_need"
+}

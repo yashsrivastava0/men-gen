@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-01",
+ "kind": "real",
+ "handling": "Provider-neutral shapes and scripted callbacks.",
+ "test": "tests/edge/test_mk_cases.py::test_payments_have_provider_neutral_records_and_scripted_callbacks"
+}

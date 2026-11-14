@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-01",
+ "kind": "real",
+ "handling": "Every lane thin; libraries fill, marked assumed; G2 says research incomplete.",
+ "test": "tests/edge/test_rs_cases.py::test_failed_or_missing_research_gives_a_thin_lane_marked_assumed_and_never_a_crash"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-06",
+  "kind": "syn",
+  "handling": "shards by entity cluster; an owner module per entity; the data model never exceeds a shard cap; task cards name only the clusters they need",
+  "test": "test_bg_cases.py::test_bg_06_hundreds_of_entities_shard_by_owner_and_a_task_names_only_the_shards_it_needs"
+}

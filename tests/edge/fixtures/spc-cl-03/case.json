@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-03",
+ "kind": "syn",
+ "handling": "Gap per attribute, not per shape.",
+ "test": "tests/edge/test_cl_cases.py::test_a_missing_attribute_is_a_gap_per_attribute_not_per_shape"
+}

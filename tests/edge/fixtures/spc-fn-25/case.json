@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-25",
+  "kind": "mock",
+  "handling": "`partial` with checkpoints; resume",
+  "test": "test_fn_more_cases.py::test_fn_25_when_the_money_runs_out_mid_run_the_run_ends_partial_and_resumes_to_the_same_bytes"
+}

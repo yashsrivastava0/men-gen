@@ -1,0 +1,6 @@
+{
+ "id": "spc-st-05",
+ "kind": "syn",
+ "handling": "Two data profiles and state flags.",
+ "test": "tests/edge/test_st_cases.py::test_first_run_and_returning_journeys_use_two_data_profiles"
+}

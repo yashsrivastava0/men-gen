@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-08",
+  "kind": "syn",
+  "handling": "restore a previous manifest by hash",
+  "test": "test_ch_cases.py::test_ch_08_a_previous_version_is_restored_by_its_hash_to_the_same_bytes"
+}

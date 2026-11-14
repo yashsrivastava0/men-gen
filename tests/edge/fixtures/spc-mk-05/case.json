@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-05",
+ "kind": "syn",
+ "handling": "The extreme profile and list volumes.",
+ "test": "tests/edge/test_mk_cases.py::test_the_extreme_profile_draws_only_from_allow_listed_categories; test_the_extreme_profile_declares_a_very_large_list_volume (strict xfail BUG-MK-2)"
+}

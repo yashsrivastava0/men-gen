@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-27",
+  "kind": "syn",
+  "handling": "keep the colour for brand roles; derive the text-on-brand role to pass 4.5:1; say so at G2",
+  "test": "test_fn_more_cases.py::test_fn_27_a_brand_colour_that_fails_white_text_stays_and_the_text_on_it_is_derived_and_said"
+}

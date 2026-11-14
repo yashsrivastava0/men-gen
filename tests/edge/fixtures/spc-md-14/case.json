@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-14",
+  "kind": "mock",
+  "handling": "as SPC-MD-02; the rate is logged",
+  "test": "test_md_cases.py::test_md_14_prose_instead_of_json_is_handled_as_invalid_json_and_the_rate_is_visible"
+}

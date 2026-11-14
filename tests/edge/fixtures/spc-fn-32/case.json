@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-32",
+  "kind": "syn",
+  "handling": "ids, counts and relations come from the skeleton; a value that appears in two entities is derived by code from the parent record; related entities go in one call",
+  "test": "test_fn_more_cases.py::test_fn_32_ids_counts_and_relations_come_from_the_skeleton_and_shared_values_from_the_parent"
+}

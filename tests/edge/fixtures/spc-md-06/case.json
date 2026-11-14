@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-06",
+  "kind": "mock",
+  "handling": "the breaker waits out an open circuit; the run ends `partial`; resumes after a top-up",
+  "test": "test_md_cases.py::test_md_06_a_402_is_not_retried_and_five_of_them_open_the_breaker"
+}

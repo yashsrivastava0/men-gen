@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-04",
+ "kind": "syn",
+ "handling": "Dates relative to now; fixed seed.",
+ "test": "tests/edge/test_mk_cases.py::test_the_seed_fixes_the_records_and_the_same_graph_gives_the_same_skeleton; test_filled_records_use_relative_dates_and_the_pack_is_byte_stable"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-08",
+ "kind": "syn",
+ "handling": "source_policy user_upload or generate; placeholders marked synthetic.",
+ "test": "tests/edge/test_cl_cases.py::test_images_are_user_upload_or_generated_and_placeholders_are_marked_synthetic"
+}

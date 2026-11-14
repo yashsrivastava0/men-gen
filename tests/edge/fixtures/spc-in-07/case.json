@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-07",
+ "kind": "real",
+ "handling": "Duplicate features merged with an alias; a user-evidenced must is never dropped.",
+ "test": "tests/edge/test_in_cases.py::test_duplicate_features_merge_with_an_alias_and_a_user_must_survives"
+}

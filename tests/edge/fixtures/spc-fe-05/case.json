@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-05",
+  "kind": "syn",
+  "handling": "tier B or C flagged at Spec time; never silently specified",
+  "test": "test_fe_cases.py::test_fe_05_a_capability_outside_the_stack_kit_is_flagged_at_spec_time_and_never_silent"
+}

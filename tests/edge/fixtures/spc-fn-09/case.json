@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-09",
+  "kind": "syn",
+  "handling": "a script check on generated people and places (share in the app's script above a threshold) fails the fixture; use the curated pool",
+  "test": "test_fn_cases.py::test_fn_09_a_provider_that_fell_back_to_english_fails_the_script_check_and_the_curated_pool_is_used"
+}

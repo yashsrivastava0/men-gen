@@ -1,0 +1,6 @@
+{
+ "id": "spc-dg-03",
+ "kind": "syn",
+ "handling": "A light motion class as a Default floor.",
+ "test": "tests/edge/test_dg_cases.py::test_low_end_devices_get_a_light_motion_class_as_a_default_floor (strict xfail BUG-DG-1)"
+}

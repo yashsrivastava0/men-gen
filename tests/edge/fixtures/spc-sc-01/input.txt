@@ -1,0 +1,1 @@
+Synthetic preset tiny (mde_spec_core.synth) and a tiny SpecInput built in tests/edge/edge_support/ea_support.py (tiny_si).

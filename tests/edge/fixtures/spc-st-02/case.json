@@ -1,0 +1,6 @@
+{
+ "id": "spc-st-02",
+ "kind": "real",
+ "handling": "Backlog stories in the ledger; no screens (V-19).",
+ "test": "tests/edge/test_st_cases.py::test_stories_for_later_features_never_make_screens; test_a_later_feature_has_a_backlog_story_in_the_ledger (strict xfail BUG-ST-1)"
+}

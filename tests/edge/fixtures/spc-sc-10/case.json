@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-10",
+ "kind": "syn",
+ "handling": "data-model shards by cluster; an entity index; closure projection.",
+ "test": "tests/edge/test_sc_cases.py::test_hundreds_of_entities_shard_the_data_model_and_stay_inside_the_budget"
+}

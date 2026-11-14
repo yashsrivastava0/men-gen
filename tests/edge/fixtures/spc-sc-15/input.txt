@@ -1,0 +1,1 @@
+big_si(90) in tests/edge/edge_support/ea_support.py: one app, 90 core screens, user-evidenced musts.

@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-05",
+  "kind": "syn",
+  "handling": "content addressing; retention policy",
+  "test": "test_op_cases.py::test_op_05_packs_are_content_addressed_and_versions_share_their_unchanged_files"
+}

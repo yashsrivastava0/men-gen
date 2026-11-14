@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-07",
+  "kind": "cfg",
+  "handling": "`policy_sheet_stale` flag at G2",
+  "test": "test_op_cases.py::test_op_07_a_policy_reference_with_an_old_date_is_not_current"
+}

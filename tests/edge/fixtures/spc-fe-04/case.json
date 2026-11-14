@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-04",
+  "kind": "syn",
+  "handling": "files without a valid `@spec` stamp are `unplanned`; the usage map reconciles",
+  "test": "test_fe_cases.py::test_fe_04_every_planned_screen_has_one_stable_id_for_the_usage_map_to_reconcile"
+}

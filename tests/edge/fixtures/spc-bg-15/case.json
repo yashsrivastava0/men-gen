@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-15",
+  "kind": "syn",
+  "handling": "both recorded; the blocking questions are the union; the card is judged by the stricter result",
+  "test": "test_bg_cases.py::test_bg_15_two_canary_runs_that_disagree_give_the_union_of_questions_and_the_stricter_result"
+}

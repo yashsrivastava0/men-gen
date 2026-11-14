@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-17",
+ "kind": "real",
+ "handling": "Payout lifecycle, commission rule, reconciliation states; provider on confirm.",
+ "test": "tests/edge/test_sc_cases.py::test_marketplace_commission_is_a_locked_rule_and_the_payment_has_a_lifecycle; test_marketplace_payouts_get_a_lifecycle_and_reconciliation_states (strict xfail BUG-SC-5)"
+}

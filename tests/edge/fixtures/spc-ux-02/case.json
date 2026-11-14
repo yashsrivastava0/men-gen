@@ -1,0 +1,6 @@
+{
+  "id": "spc-ux-02",
+  "kind": "real",
+  "handling": "summary first, diff against the Brief, ranked confirm top 20, content maps",
+  "test": "test_ux_cases.py::test_ux_02_g2_reads_summary_first_with_a_ranked_top_20_and_content_maps"
+}

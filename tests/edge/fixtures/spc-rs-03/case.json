@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-03",
+ "kind": "syn",
+ "handling": "No defaults; suggestions and confirm only.",
+ "test": "tests/edge/test_rs_cases.py::test_mostly_unverified_research_gives_suggestions_and_confirm_only_no_defaults"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-st-01",
+ "kind": "real",
+ "handling": "Derived from roles and audience; assumed.",
+ "test": "tests/edge/test_st_cases.py::test_no_personas_in_the_brief_are_derived_from_roles_and_marked_assumed"
+}

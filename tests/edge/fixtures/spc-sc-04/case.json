@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-04",
+ "kind": "real",
+ "handling": "Sync queue, conflict policy, offline states first-class, idempotent actions.",
+ "test": "tests/edge/test_sc_cases.py::test_offline_first_gets_queue_offline_states_and_idempotent_actions; test_offline_first_gets_a_conflict_policy (strict xfail BUG-SC-11)"
+}

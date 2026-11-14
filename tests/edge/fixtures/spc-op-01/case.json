@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-01",
+  "kind": "mock",
+  "handling": "checkpoints; resume",
+  "test": "test_op_cases.py::test_op_01_a_crash_mid_run_resumes_from_the_checkpoints_to_the_same_bytes"
+}

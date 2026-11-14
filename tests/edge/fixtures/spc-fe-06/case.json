@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-06",
+  "kind": "syn",
+  "handling": "expected volumes in `data-model`; list behaviour states paging; no implementation advice",
+  "test": "test_fe_cases.py::test_fe_06_expected_volumes_are_in_the_data_model_and_list_behaviour_states_paging"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-04",
+  "kind": "mock",
+  "handling": "fallback route; `degraded`; never a crash",
+  "test": "test_md_cases.py::test_md_04_a_refusal_takes_the_fallback_and_degrades_the_node_never_a_crash"
+}

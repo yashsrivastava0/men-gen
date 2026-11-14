@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-04",
+  "kind": "syn",
+  "handling": "L5: a new program version; G2 reopens",
+  "test": "test_ch_cases.py::test_ch_04_a_new_program_version_is_a_new_run_that_reopens_g2_and_leaves_the_approved_one_alone"
+}

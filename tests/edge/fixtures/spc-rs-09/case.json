@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-09",
+ "kind": "syn",
+ "handling": "Suggestions at G2, never scope; Default only if official or corroborated and the user toggles it in.",
+ "test": "tests/edge/test_rs_cases.py::test_new_items_are_suggestions_at_g2_never_scope"
+}

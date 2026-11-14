@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-02",
+  "kind": "mock",
+  "handling": "one repair; then the library default; the node is `degraded`",
+  "test": "test_md_cases.py::test_md_02_invalid_json_gets_one_repair_then_the_library_default_and_degraded"
+}

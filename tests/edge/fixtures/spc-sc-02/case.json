@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-02",
+ "kind": "syn",
+ "handling": "No Contract; local persistence in state-and-sync; fixtures are seed data.",
+ "test": "tests/edge/test_sc_cases.py::test_no_backend_app_has_no_contract_and_local_persistence (strict xfail BUG-SC-3)"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-10",
+ "kind": "real",
+ "handling": "The user-evidenced fact wins; the conflict is recorded; a confirm item.",
+ "test": "tests/edge/test_in_cases.py::test_conflicting_sign_in_facts_are_recorded_and_the_user_fact_wins (strict xfail BUG-IN-4)"
+}

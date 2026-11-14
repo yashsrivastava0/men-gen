@@ -1,0 +1,1 @@
+Standard run pack (AGENTS.md and the build plan); the critic itself is the front end's.

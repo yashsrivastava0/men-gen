@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-18",
+  "kind": "cfg",
+  "handling": "every call input stays below the profile's threshold (V-26); the estimate uses the profile's multiplier",
+  "test": "test_md_cases.py::test_md_18_every_call_input_stays_under_the_surcharge_threshold_and_the_estimate_uses_the_multiplier"
+}

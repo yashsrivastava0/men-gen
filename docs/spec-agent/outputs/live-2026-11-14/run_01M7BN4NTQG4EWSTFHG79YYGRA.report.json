@@ -1,0 +1,178 @@
+{
+ "banners": [
+  {
+   "code": "weak_route",
+   "message": "this route needed many repairs for step screens (4 of 18 nodes); consider a stronger route for it"
+  }
+ ],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 1490,
+   "fallback": 0,
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 6546,
+   "tokens_out": 1670
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 6351,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 11723,
+   "tokens_out": 10356
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 0,
+   "fallback": 1,
+   "first_try_pass": 0.0,
+   "reasons": [
+    "directions[0].avoid[0]: uses form words (banner); say what it communicates, not how it looks; directions[0].avoid[2]: uses form words (left); say what it commun"
+   ],
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 0,
+   "tokens_out": 0
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2182,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 2824,
+   "tokens_out": 3796
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2504,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4482,
+   "tokens_out": 4110
+  },
+  "MOCK-HERO": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 3228,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10108,
+   "tokens_out": 4431
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3838,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 31889,
+   "tokens_out": 1298
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 0,
+   "fallback": 1,
+   "first_try_pass": 0.0,
+   "reasons": [
+    "flow FLW-001 stage 1: uses the form word 'right'; [BLOCKER] V-36 at FLW-001: research-derived but claims_used is empty. Fix: record the item ids; [BLOCKER] V-36"
+   ],
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 0,
+   "tokens_out": 0
+  },
+  "PROD-MODULE": {
+   "calls": 4,
+   "clean": 1,
+   "cost_micros": 4356,
+   "fallback": 3,
+   "first_try_pass": 0.25,
+   "reasons": [
+    "entity NEW-account: a new entity must be a join or log entity (it has no screen); say primary or secondary only for the draft's entities; entity NEW-sign-in-cha",
+    "[BLOCKER] V-36 at US-S4007: research-derived but claims_used is empty. Fix: record the item ids",
+    "rule RUL-S004: provenance 'compass:RUL-S004' cites 'RUL-S004', which is not an id of this call; rule RUL-S005: provenance 'compass:RUL-S005' cites 'RUL-S005', w"
+   ],
+   "repair_rate": 0.75,
+   "repaired": 3,
+   "tokens_in": 15348,
+   "tokens_out": 5642
+  },
+  "SCRN": {
+   "calls": 3,
+   "clean": 1,
+   "cost_micros": 17034,
+   "fallback": 0,
+   "first_try_pass": 0.333,
+   "repair_rate": 0.667,
+   "repaired": 2,
+   "tokens_in": 55472,
+   "tokens_out": 22967
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 2575,
+   "fallback": 0,
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 10613,
+   "tokens_out": 3025
+  }
+ },
+ "calls_total": 17,
+ "cost_usd": 0.0436,
+ "events": 81,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "32e08edbfe08858eeb1811866af0f0ef94f339ee28c51410bd32c5fd758d0537",
+  "critic_vendor": null,
+  "files": 68,
+  "tokens": 77194
+ },
+ "partial_reason": null,
+ "profile": "compact",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7BN4NTQG4EWSTFHG79YYGRA",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 5,
+  "max_read_tokens": 22231,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": false
+ }
+}

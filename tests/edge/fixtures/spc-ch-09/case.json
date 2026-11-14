@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-09",
+  "kind": "syn",
+  "handling": "the backlog moves `later` to `in` as one batch through the Scope Change Protocol; incremental regeneration",
+  "test": "test_ch_cases.py::test_ch_09_starting_phase_2_adds_files_and_leaves_every_phase_1_file_byte_identical"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-12",
+  "kind": "mock",
+  "handling": "resume from the last batch checkpoint; same bytes as an uninterrupted run",
+  "test": "test_bg_cases.py::test_bg_12_a_kill_in_the_screens_wave_resumes_from_the_last_batch_to_the_same_bytes"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-36",
+  "kind": "mock",
+  "handling": "one additive re-ask to the owning Product call, then listed at G2 as `needs_decision`; the card keeps the action marked `unspecified`",
+  "test": "test_fn_more_cases.py::test_fn_36_a_card_that_needs_an_operation_product_never_wrote_is_unspecified_and_needs_a_decision"
+}

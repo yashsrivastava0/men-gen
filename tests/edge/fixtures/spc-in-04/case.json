@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-04",
+ "kind": "real",
+ "handling": "Every Default stays Default; G2 leads with weak inputs.",
+ "test": "tests/edge/test_in_cases.py::test_degraded_input_keeps_every_default_a_default_and_flags_weak_inputs; test_g2_leads_with_weak_inputs (strict xfail BUG-IN-1)"
+}

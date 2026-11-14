@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-29",
+  "kind": "mock",
+  "handling": "a template summary from code; the paragraph is omitted, never invented",
+  "test": "test_fn_more_cases.py::test_fn_29_when_the_g2_summary_call_fails_a_template_summary_stands_and_no_paragraph_is_invented"
+}

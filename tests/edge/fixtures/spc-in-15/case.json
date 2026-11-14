@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-15",
+ "kind": "real",
+ "handling": "Views only, per-module slices, never the whole.",
+ "test": "tests/edge/test_in_cases.py::test_a_very_large_export_travels_in_slices_never_whole"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-14",
+ "kind": "real",
+ "handling": "Default tone (0.4): Default and assumed; never user evidence.",
+ "test": "tests/edge/test_in_cases.py::test_default_tone_is_assumed_and_never_user_evidence"
+}

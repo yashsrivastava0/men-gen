@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-07",
+  "kind": "mut",
+  "handling": "input-hash diff (SPC-IN-19)",
+  "test": "test_ch_cases.py::test_ch_07_the_same_brief_gives_the_same_input_hashes_and_a_changed_one_names_the_nodes"
+}

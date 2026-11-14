@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-08",
+  "kind": "mock",
+  "handling": "fallback route if configured; else library default and `degraded`",
+  "test": "test_fn_cases.py::test_fn_08_a_refused_call_uses_the_library_default_and_degrades_the_node"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-02",
+ "kind": "syn",
+ "handling": "Use what is verified; gaps flagged.",
+ "test": "tests/edge/test_rs_cases.py::test_partial_research_uses_what_it_has_and_flags_the_gap"
+}

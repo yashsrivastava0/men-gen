@@ -1,0 +1,1 @@
+quick export plus 26 core screens (the test copies the My Bookings row and adds them to brief.screens and structure.slices).

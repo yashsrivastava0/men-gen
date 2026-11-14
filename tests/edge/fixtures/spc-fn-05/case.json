@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-05",
+  "kind": "syn",
+  "handling": "every change is logged and counted on the G2 page, never silent",
+  "test": "test_fn_cases.py::test_fn_05_every_r_code_change_is_logged_counted_and_shown_on_the_g2_page"
+}

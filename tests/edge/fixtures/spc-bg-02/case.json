@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-02",
+  "kind": "syn",
+  "handling": "one id; regions and actions by role; role-visibility part of the block match",
+  "test": "test_bg_cases.py::test_bg_02_one_screen_serves_several_roles_with_one_id_and_visibility_is_part_of_the_block_match"
+}

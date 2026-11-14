@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-01",
+ "kind": "real",
+ "handling": "Reader builds SpecInput from the four views and the Brief; Product derives the structure; flagged structure_derived.",
+ "test": "tests/edge/test_in_cases.py::test_format_1_export_without_structure_is_derived_and_flagged; test_a_derived_structure_includes_entities_and_flows (strict xfail BUG-IN-7)"
+}

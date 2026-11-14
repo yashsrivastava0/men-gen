@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-16",
+ "kind": "real",
+ "handling": "Surface web portal; needs stated (dense tables, keyboard use), no layout.",
+ "test": "tests/edge/test_sc_cases.py::test_web_portals_are_a_surface_with_needs_and_no_layout; test_web_portal_needs_are_stated (strict xfail BUG-SC-8)"
+}

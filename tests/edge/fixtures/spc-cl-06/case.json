@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-06",
+ "kind": "syn",
+ "handling": "Needs are library-neutral.",
+ "test": "tests/edge/test_cl_cases.py::test_two_libraries_attached_the_needs_stay_library_neutral"
+}

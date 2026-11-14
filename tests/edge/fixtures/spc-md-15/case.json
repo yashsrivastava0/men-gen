@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-15",
+  "kind": "mut",
+  "handling": "data inside delimiters; no tools; output validated; instructions in data ignored",
+  "test": "test_md_cases.py::test_md_15_a_poisoned_quote_only_ever_sits_inside_untrusted_blocks_and_never_reaches_the_output"
+}

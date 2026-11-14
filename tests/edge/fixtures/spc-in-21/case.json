@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-21",
+ "kind": "real",
+ "handling": "Both are later with different reasons; the user's later is never relabelled; neither has screen nodes; the outline lives in the ledger.",
+ "test": "tests/edge/test_in_cases.py::test_a_user_deferral_and_a_capacity_deferral_keep_their_own_reasons"
+}

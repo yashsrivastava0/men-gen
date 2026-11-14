@@ -1,0 +1,5 @@
+{
+ "id": "INT-GAP",
+ "lane": "integrations",
+ "gap": "no in-market payment provider found; only global providers"
+}

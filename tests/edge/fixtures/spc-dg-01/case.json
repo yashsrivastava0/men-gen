@@ -1,0 +1,6 @@
+{
+ "id": "spc-dg-01",
+ "kind": "real",
+ "handling": "Ambition refined; the front end may exceed.",
+ "test": "tests/edge/test_dg_cases.py::test_a_dense_enterprise_app_leads_with_a_refined_direction_and_the_front_end_may_exceed"
+}

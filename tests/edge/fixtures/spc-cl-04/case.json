@@ -1,0 +1,6 @@
+{
+ "id": "spc-cl-04",
+ "kind": "syn",
+ "handling": "Tokens are the starting theme.",
+ "test": "tests/edge/test_cl_cases.py::test_the_tokens_are_role_named_and_ship_in_the_pack_for_any_library_to_theme_from; test_the_pack_says_tokens_are_the_starting_theme (strict xfail BUG-CL-1)"
+}

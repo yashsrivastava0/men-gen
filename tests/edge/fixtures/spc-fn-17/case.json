@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-17",
+  "kind": "cfg",
+  "handling": "the tree; `AGENTS.md` says which form to use; the weakest consumer never gets the one-file form",
+  "test": "test_fn_cases.py::test_fn_17_the_weakest_consumer_never_gets_the_one_file_form"
+}

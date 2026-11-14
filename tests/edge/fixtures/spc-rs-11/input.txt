@@ -1,0 +1,1 @@
+Research is the recorded real run docs/research-agent/outputs/claude-2026-11-13/medium-produce-marketplace-nashik/research.json (same brief hash as the standard export). schema research.v6 with unknown fields.

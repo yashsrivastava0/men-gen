@@ -1,0 +1,6 @@
+{
+  "id": "spc-ux-04",
+  "kind": "syn",
+  "handling": "the user wins (Locked by user); the override is recorded",
+  "test": "test_ux_cases.py::test_ux_04_a_users_deferral_wins_over_a_model_proposal_and_the_choice_is_recorded"
+}

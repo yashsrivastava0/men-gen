@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-16",
+ "kind": "real",
+ "handling": "Locked facts with low confidence are graded per field: Default.",
+ "test": "tests/edge/test_in_cases.py::test_locked_facts_with_low_confidence_are_graded_default"
+}

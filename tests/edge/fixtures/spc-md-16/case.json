@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-16",
+  "kind": "cfg",
+  "handling": "schemas are authored in the portable subset and compile-checked offline against every profile's limits; the gateway sanitises the dialect; a refusal falls back once to instructions-only JSON with validation",
+  "test": "test_md_cases.py::test_md_16_every_call_schema_compiles_against_every_profile_offline"
+}

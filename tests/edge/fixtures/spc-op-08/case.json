@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-08",
+  "kind": "syn",
+  "handling": "packs record the validator version; re-verify on upgrade",
+  "test": "test_op_cases.py::test_op_08_the_pack_records_the_library_version_it_was_made_with"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-06",
+  "kind": "syn",
+  "handling": "tombstones and aliases; V-32",
+  "test": "test_ch_cases.py::test_ch_06_a_merge_leaves_a_tombstone_and_an_alias_and_v32_holds"
+}

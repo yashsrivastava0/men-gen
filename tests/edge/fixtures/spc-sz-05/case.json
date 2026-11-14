@@ -1,0 +1,6 @@
+{
+ "id": "spc-sz-05",
+ "kind": "syn",
+ "handling": "The record is in freeze v2; the front end's critic flags it.",
+ "test": "tests/edge/test_sz_cases.py::test_the_pack_asks_workers_to_follow_the_pilot_and_keep_a_design_language_record"
+}

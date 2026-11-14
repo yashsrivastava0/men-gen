@@ -1,0 +1,6 @@
+{
+  "id": "spc-ux-01",
+  "kind": "syn",
+  "handling": "everything in one release with a warning, or the user chooses the deferrals; recorded",
+  "test": "test_ux_cases.py::test_ux_01_everything_in_one_release_is_recorded_with_its_consent_and_the_page_says_so"
+}

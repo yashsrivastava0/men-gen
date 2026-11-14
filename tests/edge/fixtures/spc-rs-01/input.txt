@@ -1,0 +1,1 @@
+Real export standard, once with no research file and once with a research file whose status is failed.

@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-19",
+ "kind": "mut",
+ "handling": "Input-hash diff; incremental regeneration; G2 reopens for touched sections.",
+ "test": "tests/edge/test_in_cases.py::test_a_changed_brief_gives_a_new_input_hash_and_a_new_content_hash; test_only_the_touched_sections_are_regenerated_and_g2_names_them (strict xfail BUG-IN-6)"
+}

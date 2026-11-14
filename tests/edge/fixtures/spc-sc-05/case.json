@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-05",
+ "kind": "real",
+ "handling": "Events and a realtime channel in the contract; polling fallback; background limits noted.",
+ "test": "tests/edge/test_sc_cases.py::test_realtime_is_recognised_and_background_limits_are_noted; test_realtime_gets_a_channel_in_the_contract_and_a_polling_fallback (strict xfail BUG-SC-12)"
+}

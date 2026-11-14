@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-16",
+  "kind": "syn",
+  "handling": "each slice carries the block body (G-2); the block has one owner for its definition (G-5); a task bundle lists the body once",
+  "test": "test_fn_cases.py::test_fn_16_every_slice_carries_the_block_body_and_a_task_bundle_lists_it_once"
+}

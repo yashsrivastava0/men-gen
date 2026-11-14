@@ -1,0 +1,6 @@
+{
+ "id": "spc-sz-02",
+ "kind": "syn",
+ "handling": "Five tasks, each inside the budget.",
+ "test": "tests/edge/test_sz_cases.py::test_a_pilot_of_five_screens_is_five_tasks_each_inside_the_budget"
+}

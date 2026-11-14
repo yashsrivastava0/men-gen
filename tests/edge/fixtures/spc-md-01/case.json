@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-01",
+  "kind": "real",
+  "handling": "deterministic rules first, the model only for the residue; validators catch the rest",
+  "test": "test_md_cases.py::test_md_01_a_weak_merge_is_rejected_by_code_and_the_residue_is_all_the_model_decides"
+}

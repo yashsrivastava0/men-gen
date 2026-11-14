@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-10",
+  "kind": "cfg",
+  "handling": "the profile raises the budget; fewer tasks; same content",
+  "test": "test_fe_cases.py::test_fe_10_a_consumer_with_a_larger_window_gets_fewer_tasks_and_the_same_content"
+}

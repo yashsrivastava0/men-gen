@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-19",
+  "kind": "syn",
+  "handling": "`raise_decision`; the gap is logged as a pack defect and becomes a regression fixture (V-27 should have caught it)",
+  "test": "test_fn_more_cases.py::test_fn_19_v27_stops_a_missing_fact_before_the_front_end_and_the_pack_tells_it_to_raise_a_decision"
+}

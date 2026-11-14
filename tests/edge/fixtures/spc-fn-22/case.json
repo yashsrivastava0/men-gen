@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-22",
+  "kind": "cfg",
+  "handling": "flat schemas; the offline compile check per profile (PS-0); the fusion rule consults it",
+  "test": "test_fn_more_cases.py::test_fn_22_schemas_are_flat_and_the_fusion_rule_consults_the_profile_limits"
+}

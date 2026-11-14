@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-22",
+ "kind": "real",
+ "handling": "Each existing system becomes an integration need with mode adapter and an import or sync flow; no API assumed; confirm.",
+ "test": "tests/edge/test_in_cases.py::test_existing_systems_become_adapter_integrations_with_an_import_flow (strict xfail BUG-IN-8)"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-08",
+ "kind": "syn",
+ "handling": "State library and Compass patterns only; no invented peer practice.",
+ "test": "tests/edge/test_rs_cases.py::test_with_no_screens_lane_the_state_library_and_compass_patterns_are_all_there_is"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-20",
+  "kind": "syn",
+  "handling": "one active run per program; the same input hash joins it (doc 15 §8.4)",
+  "test": "test_fn_more_cases.py::test_fn_20_one_active_run_per_program_and_the_same_input_joins_it"
+}

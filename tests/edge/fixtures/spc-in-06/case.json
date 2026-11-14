@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-06",
+ "kind": "real",
+ "handling": "Junk and duplicate roles and apps cleaned with recorded merges; unresolved goes to G1.5.",
+ "test": "tests/edge/test_in_cases.py::test_junk_and_duplicate_roles_and_apps_are_cleaned_with_merges_recorded; test_a_role_that_is_also_an_app_is_resolved_visibly_and_not_dropped; test_the_unresolved_clash_goes_to_g15 (strict xfail BUG-IN-2)"
+}

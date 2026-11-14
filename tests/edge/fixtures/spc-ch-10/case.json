@@ -1,0 +1,6 @@
+{
+  "id": "spc-ch-10",
+  "kind": "syn",
+  "handling": "separate namespaces; no collision",
+  "test": "test_ch_cases.py::test_ch_10_a_compass_id_and_a_spec_minted_id_live_in_separate_namespaces_and_never_collide"
+}

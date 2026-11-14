@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-05",
+ "kind": "mut",
+ "handling": "Proceed with a flag and a G2 banner.",
+ "test": "tests/edge/test_in_cases.py::test_unverified_approval_proceeds_with_a_reader_flag; test_unverified_approval_gets_a_g2_banner (strict xfail BUG-IN-1)"
+}

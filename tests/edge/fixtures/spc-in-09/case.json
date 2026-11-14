@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-09",
+ "kind": "real",
+ "handling": "Derive the need from facts and flows; Phase 1 mock-first; flag the mismatch at G2.",
+ "test": "tests/edge/test_in_cases.py::test_an_implied_payment_need_is_derived_mock_first; test_the_payment_mismatch_is_flagged_at_g2 (strict xfail BUG-IN-3)"
+}

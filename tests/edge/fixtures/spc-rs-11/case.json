@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-11",
+ "kind": "mut",
+ "handling": "Adapter; unknown fields ignored; contract tests.",
+ "test": "tests/edge/test_rs_cases.py::test_a_research_file_of_a_new_schema_version_reads_and_unknown_fields_are_ignored"
+}

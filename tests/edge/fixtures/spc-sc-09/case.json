@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-09",
+ "kind": "real",
+ "handling": "One screen with role-conditioned regions and actions; split only when purposes differ.",
+ "test": "tests/edge/test_sc_cases.py::test_one_purpose_for_many_roles_is_one_screen_with_role_conditions"
+}

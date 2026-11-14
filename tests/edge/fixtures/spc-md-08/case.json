@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-08",
+  "kind": "cfg",
+  "handling": "conservative factor until measured; the packager re-shards",
+  "test": "test_md_cases.py::test_md_08_a_30_percent_heavier_tokenizer_re_shards_with_the_same_content_hash"
+}

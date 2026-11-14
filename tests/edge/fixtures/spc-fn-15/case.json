@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-15",
+  "kind": "syn",
+  "handling": "A's closure carries B's route target (name, typed parameters, guard); no build-order word exists (G-2, G-4)",
+  "test": "test_fn_cases.py::test_fn_15_a_screen_built_before_its_target_carries_the_targets_route_in_its_closure"
+}

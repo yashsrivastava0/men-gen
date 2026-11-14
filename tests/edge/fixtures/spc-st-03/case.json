@@ -1,0 +1,6 @@
+{
+ "id": "spc-st-03",
+ "kind": "syn",
+ "handling": "Conflict flagged; confirm.",
+ "test": "tests/edge/test_st_cases.py::test_two_roles_with_opposite_wants_are_flagged_for_confirm (strict xfail BUG-ST-2)"
+}

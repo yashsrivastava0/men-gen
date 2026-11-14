@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-06",
+ "kind": "real",
+ "handling": "Money typed with currency; formats per locale; tax rules per region with confirm.",
+ "test": "tests/edge/test_sc_cases.py::test_money_is_typed_with_a_currency_and_multi_country_is_recognised; test_tax_rules_per_region_go_to_confirm (strict xfail BUG-SC-13)"
+}

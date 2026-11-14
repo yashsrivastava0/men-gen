@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-13",
+ "kind": "mock",
+ "handling": "Single-flight lock; result cache.",
+ "test": "tests/edge/test_sc_cases.py::test_a_double_start_joins_one_run_and_a_finished_input_is_a_cache_hit"
+}

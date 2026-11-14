@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-18",
+ "kind": "mut",
+ "handling": "Quotes kept; technical fields in English; app copy in the app locales.",
+ "test": "tests/edge/test_in_cases.py::test_hinglish_quotes_are_kept_and_technical_fields_stay_english"
+}

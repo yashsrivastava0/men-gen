@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-07",
+  "kind": "syn",
+  "handling": "V-45 flags it at G2 (and, once switched on after PS-7, downgrades the node to Open `assumed` and logs it); the claim is never turned into a Locked fact",
+  "test": "test_fn_cases.py::test_fn_07_a_number_not_in_its_quote_is_flagged_and_never_becomes_a_locked_fact"
+}

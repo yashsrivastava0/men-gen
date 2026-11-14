@@ -1,0 +1,6 @@
+{
+ "id": "spc-dg-04",
+ "kind": "syn",
+ "handling": "Flagged with its tier; optional.",
+ "test": "tests/edge/test_dg_cases.py::test_a_could_that_needs_tier_b_is_flagged_with_its_tier_and_stays_optional; test_a_tier_c_could_is_flagged_not_dropped (strict xfail BUG-DG-2)"
+}

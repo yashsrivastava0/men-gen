@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-03",
+  "kind": "syn",
+  "handling": "L1 and L2 hot-patch unstarted tasks; L3 and above wait at a wave barrier",
+  "test": "test_fe_cases.py::test_fe_03_later_waves_wait_at_a_barrier_in_the_build_plan"
+}

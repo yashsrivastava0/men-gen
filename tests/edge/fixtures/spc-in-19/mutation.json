@@ -1,0 +1,20 @@
+[
+ {
+  "append": "brief.scope",
+  "value": {
+   "id": "FTR-010",
+   "name": "Rate the seller",
+   "intent": "Buyers rate a seller after delivery",
+   "apps": [
+    "APP-002"
+   ],
+   "scope_status": "in",
+   "priority": "nice",
+   "tier": "Default",
+   "confidence": 0.5,
+   "status": "assumed",
+   "provenance": [],
+   "history": []
+  }
+ }
+]

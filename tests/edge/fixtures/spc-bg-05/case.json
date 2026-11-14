@@ -1,0 +1,6 @@
+{
+  "id": "spc-bg-05",
+  "kind": "syn",
+  "handling": "exempt from the column limit of V-37, other mobile-fit rules kept; marked `surface: web`",
+  "test": "test_bg_cases.py::test_bg_05_a_web_portal_is_exempt_from_the_column_limit_and_marked_web"
+}

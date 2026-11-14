@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-11",
+ "kind": "syn",
+ "handling": "A dossier each; mock-first order in the build plan.",
+ "test": "tests/edge/test_sc_cases.py::test_twenty_integrations_each_get_an_entry_and_mock_first_in_the_plan"
+}

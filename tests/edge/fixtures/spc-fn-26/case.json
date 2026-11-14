@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-26",
+  "kind": "cfg",
+  "handling": "budgets use the profile's counter; content splits use the fixed reference tokenizer; an over-cap slice is reported, never hidden, and repaired: bulky detail moves to `.detail.md`, then one re-ask shortens the card",
+  "test": "test_fn_more_cases.py::test_fn_26_an_over_cap_slice_is_reported_never_hidden_and_budgets_follow_the_profile_counter"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-06",
+  "kind": "syn",
+  "handling": "the `weak_route` banner on the report and G2; no stop",
+  "test": "test_fn_cases.py::test_fn_06_the_weak_route_banner_appears_above_15_percent_of_nodes_and_never_stops_the_run"
+}

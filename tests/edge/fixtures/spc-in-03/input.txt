@@ -1,0 +1,1 @@
+standard-produce-marketplace-nashik with export.format_version 3; the test also renames brief.scope and brief.idea.

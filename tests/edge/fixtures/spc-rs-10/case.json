@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-10",
+ "kind": "real",
+ "handling": "Compliance is information; consent, deletion and disclosure flows come from signals and the policy sheet; confirm.",
+ "test": "tests/edge/test_rs_cases.py::test_a_thin_compliance_register_still_gives_a_policy_backed_deletion_flow; test_a_thin_register_still_gives_consent_and_disclosure_flows_from_signals (strict xfail BUG-SC-1)"
+}

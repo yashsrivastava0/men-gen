@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-13",
+  "kind": "cfg",
+  "handling": "amended (doc 18): no critic runs for compact and standard; one vendor matters only for the proof-only critic arm and for a future Verify, which flags `critic_vendor: same`",
+  "test": "test_md_cases.py::test_md_13_no_critic_runs_for_compact_and_standard_and_verify_flags_a_single_vendor"
+}

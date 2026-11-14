@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-08",
+ "kind": "real",
+ "handling": "Priority is Default; order comes from journeys; a Locked must is never demoted.",
+ "test": "tests/edge/test_in_cases.py::test_mostly_nice_priorities_are_default_and_a_locked_must_is_never_demoted"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-04",
+ "kind": "syn",
+ "handling": "Both values kept; confirm; no default.",
+ "test": "tests/edge/test_rs_cases.py::test_a_research_conflict_keeps_both_values_and_goes_to_confirm"
+}

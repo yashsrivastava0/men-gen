@@ -1,0 +1,6 @@
+{
+ "id": "spc-dg-02",
+ "kind": "syn",
+ "handling": "Essential intents have alternatives.",
+ "test": "tests/edge/test_dg_cases.py::test_essential_motion_must_have_a_non_motion_alternative; test_every_essential_motion_of_a_real_run_has_its_alternative"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-02",
+ "kind": "mut",
+ "handling": "Views derived from the Brief; locales parsed from a sentence, else Default en plus a drift flag.",
+ "test": "tests/edge/test_in_cases.py::test_trimmed_export_derives_views_from_the_brief_and_parses_locales_from_a_sentence"
+}

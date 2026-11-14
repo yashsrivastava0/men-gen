@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-12",
+  "kind": "syn",
+  "handling": "deny-list and `avoid` check; hero records are marked synthetic and use only business names the user gave",
+  "test": "test_fn_cases.py::test_fn_12_a_real_brand_in_a_hero_record_fails_unless_the_user_gave_the_name"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-06",
+ "kind": "syn",
+ "handling": "Generated from the error taxonomy.",
+ "test": "tests/edge/test_mk_cases.py::test_the_broken_profile_covers_every_operation_from_the_error_taxonomy"
+}

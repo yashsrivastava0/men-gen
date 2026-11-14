@@ -1,0 +1,6 @@
+[
+ {
+  "set": "brief.scope.0.intent",
+  "value": "original intent + ' and it must work offline in poor network'"
+ }
+]

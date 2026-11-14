@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-07",
+ "kind": "syn",
+ "handling": "A second deterministic pack with a narrower need_card; an over-budget unit travels alone.",
+ "test": "tests/edge/test_rs_cases.py::test_an_over_budget_unit_travels_alone_and_a_narrower_card_gives_a_second_pack"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-rs-05",
+ "kind": "syn",
+ "handling": "Provider-neutral payment flow, mock adapter, confirm choose a provider.",
+ "test": "tests/edge/test_rs_cases.py::test_no_provider_dossier_means_a_mock_integration_with_no_provider_names; test_no_in_market_provider_gives_a_neutral_flow_a_mock_adapter_and_a_confirm (strict xfail BUG-RS-2)"
+}

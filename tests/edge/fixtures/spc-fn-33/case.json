@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-33",
+  "kind": "mock",
+  "handling": "keys are namespaced by screen id by code; the glossary (at most 0.7k, source and extra languages, `GLOSS-L` first) leads every prefix; if `GLOSS-L` fails the Brief's own terms are used and the locale calls are `degraded`",
+  "test": "test_fn_more_cases.py::test_fn_33_copy_keys_are_namespaced_by_screen_by_code_and_a_failed_glossary_degrades_the_locales"
+}

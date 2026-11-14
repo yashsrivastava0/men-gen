@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-09",
+  "kind": "cfg",
+  "handling": "the effective window sets budgets; a larger one raises the task budget, content unchanged",
+  "test": "test_md_cases.py::test_md_09_the_effective_window_sets_the_budgets_and_content_is_unchanged"
+}

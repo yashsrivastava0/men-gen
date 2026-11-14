@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-17",
+  "kind": "mock",
+  "handling": "unknown stays null or `assumed`; every filled field needs provenance; validators check bindings and provenance; effort is a gateway setting",
+  "test": "test_md_cases.py::test_md_17_an_over_filled_answer_is_rejected_and_provenance_stays_required"
+}

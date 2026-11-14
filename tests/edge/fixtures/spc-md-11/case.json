@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-11",
+  "kind": "cfg",
+  "handling": "the gateway adapter; the prefix still leads; the estimate uses `cache_share` from the profile",
+  "test": "test_md_cases.py::test_md_11_the_static_prefix_leads_every_call_whatever_the_caching_style"
+}

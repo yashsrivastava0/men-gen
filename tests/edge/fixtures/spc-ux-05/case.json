@@ -1,0 +1,6 @@
+{
+  "id": "spc-ux-05",
+  "kind": "real",
+  "handling": "the G1.5 view appears as soon as the skeleton and inventory exist",
+  "test": "test_ux_cases.py::test_ux_05_the_structure_view_appears_before_any_screen_call_is_made"
+}

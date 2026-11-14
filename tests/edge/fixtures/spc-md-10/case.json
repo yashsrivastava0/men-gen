@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-10",
+  "kind": "cfg",
+  "handling": "validated JSON plus repair",
+  "test": "test_md_cases.py::test_md_10_without_a_structured_mode_the_output_is_validated_json_plus_repair"
+}

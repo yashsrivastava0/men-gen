@@ -1,0 +1,180 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 3048,
+   "fallback": 1,
+   "first_errors": [
+    "pending_timeouts: name the integration it is about (payments)"
+   ],
+   "first_try_pass": 0.0,
+   "reasons": [
+    "pending_timeouts: name the integration it is about (payments)"
+   ],
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 12973,
+   "tokens_out": 3497
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 6392,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 11508,
+   "tokens_out": 10482
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 2212,
+   "fallback": 0,
+   "first_errors": [
+    "directions[0].avoid[0]: uses form words (banner); say what it communicates, not how it looks"
+   ],
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 9306,
+   "tokens_out": 2560
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1793,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 2824,
+   "tokens_out": 3018
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2581,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4488,
+   "tokens_out": 4264
+  },
+  "MOCK-HERO": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 3319,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10114,
+   "tokens_out": 4612
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3802,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 31889,
+   "tokens_out": 1225
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 5186,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 29303,
+   "tokens_out": 4510
+  },
+  "PROD-MODULE": {
+   "calls": 4,
+   "clean": 2,
+   "cost_micros": 34914,
+   "fallback": 2,
+   "first_errors": [
+    "[BLOCKER] V-36 at US-S4008: research-derived but claims_used is empty. Fix: record the item ids",
+    "entity NEW-account: a new entity must be a join or log entity (it has no screen); say primary or secondary only for the draft's entities",
+    "entity NEW-code: a new entity must be a join or log entity (it has no screen); say primary or secondary only for the draft's entities"
+   ],
+   "first_try_pass": 0.5,
+   "reasons": [
+    "[BLOCKER] V-36 at US-S4008: research-derived but claims_used is empty. Fix: record the item ids",
+    "entity NEW-account: a new entity must be a join or log entity (it has no screen); say primary or secondary only for the draft's entities; entity NEW-code: a new"
+   ],
+   "repair_rate": 0.5,
+   "repaired": 2,
+   "tokens_in": 140561,
+   "tokens_out": 41709
+  },
+  "SCRN": {
+   "calls": 3,
+   "clean": 3,
+   "cost_micros": 16172,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 44983,
+   "tokens_out": 23345
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2546,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 9495,
+   "tokens_out": 3192
+  }
+ },
+ "calls_total": 17,
+ "cost_usd": 0.082,
+ "events": 79,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "485777cba284a072c722e13b5042dfd408e2ea8241a781906c8b23f0a35feafa",
+  "critic_vendor": null,
+  "files": 68,
+  "tokens": 82091
+ },
+ "partial_reason": null,
+ "profile": "compact",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7BNQ4CRDXTGWEAMV2QSF31F",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 5,
+  "max_read_tokens": 25403,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": true
+ }
+}

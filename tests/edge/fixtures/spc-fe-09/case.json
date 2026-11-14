@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-09",
+  "kind": "syn",
+  "handling": "as SPC-FE-08; the notification payload maps to a route",
+  "test": "test_fe_cases.py::test_fe_09_a_push_tap_while_signed_out_follows_the_same_rule_and_maps_to_a_route"
+}

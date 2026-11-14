@@ -1,0 +1,193 @@
+{
+ "banners": [
+  {
+   "code": "weak_route",
+   "message": "this route needed many repairs for step screens (4 of 18 nodes); consider a stronger route for it"
+  }
+ ],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 3147,
+   "fallback": 0,
+   "first_errors": [
+    "session: basis 'MOD-001' is not an id of this call"
+   ],
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 13147,
+   "tokens_out": 3663
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 5934,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 11202,
+   "tokens_out": 9625
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1141,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4678,
+   "tokens_out": 1345
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 1158,
+   "fallback": 1,
+   "first_errors": [
+    "the paragraph is longer than 110 words"
+   ],
+   "first_try_pass": 0.0,
+   "reasons": [
+    "the paragraph is longer than 110 words"
+   ],
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 2824,
+   "tokens_out": 1748
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2521,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4493,
+   "tokens_out": 4141
+  },
+  "MOCK-HERO": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 3523,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10158,
+   "tokens_out": 5010
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3910,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 31889,
+   "tokens_out": 1442
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 10211,
+   "fallback": 0,
+   "first_errors": [
+    "flow FLW-001: brief-FLW-001 is not a rule of the policy sheet",
+    "flow FLW-002: brief-FLW-002 is not a rule of the policy sheet"
+   ],
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 59018,
+   "tokens_out": 8614
+  },
+  "PROD-MODULE": {
+   "calls": 4,
+   "clean": 3,
+   "cost_micros": 23301,
+   "fallback": 1,
+   "first_errors": [
+    "rule RUL-S003: provenance 'compass:RUL-S003' cites 'RUL-S003', which is not an id of this call",
+    "rule RUL-S007: provenance 'compass:RUL-S007' cites 'RUL-S007', which is not an id of this call"
+   ],
+   "first_try_pass": 0.75,
+   "reasons": [
+    "rule RUL-S003: provenance 'compass:RUL-S003' cites 'RUL-S003', which is not an id of this call; rule RUL-S007: provenance 'compass:RUL-S007' cites 'RUL-S007', w"
+   ],
+   "repair_rate": 0.25,
+   "repaired": 1,
+   "tokens_in": 108652,
+   "tokens_out": 24866
+  },
+  "SCRN": {
+   "calls": 3,
+   "clean": 1,
+   "cost_micros": 21613,
+   "fallback": 1,
+   "first_errors": [
+    "SCR-005.usually: item 'RI-043' is not one of the research items offered"
+   ],
+   "first_try_pass": 0.333,
+   "reasons": [
+    "SCR-005.usually: item 'RI-043' is not one of the research items offered"
+   ],
+   "repair_rate": 0.667,
+   "repaired": 2,
+   "tokens_in": 73932,
+   "tokens_out": 28430
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2558,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 9495,
+   "tokens_out": 3215
+  }
+ },
+ "calls_total": 17,
+ "cost_usd": 0.079,
+ "events": 80,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "1c07c433d3b9a9fe46579047454e685c90e92be0fa6ff57372bafc291925ab80",
+  "critic_vendor": null,
+  "files": 68,
+  "tokens": 85163
+ },
+ "partial_reason": null,
+ "profile": "compact",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7C3D7S4JVKC41EEFNZ8J9ND",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 5,
+  "max_read_tokens": 25793,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": true
+ }
+}

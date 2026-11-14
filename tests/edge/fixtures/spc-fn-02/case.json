@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-02",
+  "kind": "mock",
+  "handling": "keep the finished array items; redo the rest in smaller batches; a fused call splits back into its parts (the single Plan call too)",
+  "test": "test_fn_cases.py::test_fn_02_truncation_keeps_finished_items_and_redoes_only_the_rest_in_smaller_batches"
+}

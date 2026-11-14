@@ -1,0 +1,1 @@
+Synthetic preset big (60 screens) with eleven shared blocks.

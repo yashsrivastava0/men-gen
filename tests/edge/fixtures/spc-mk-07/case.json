@@ -1,0 +1,6 @@
+{
+ "id": "spc-mk-07",
+ "kind": "mut",
+ "handling": "Records are synthetic and marked; the secret scan includes names.",
+ "test": "tests/edge/test_mk_cases.py::test_a_phone_number_in_the_brief_is_not_copied_into_the_pack_and_records_are_synthetic"
+}

@@ -1,0 +1,6 @@
+{
+  "id": "spc-op-10",
+  "kind": "syn",
+  "handling": "bounded: outlines are ledger entries written inside the module Product calls, not separate calls",
+  "test": "test_op_cases.py::test_op_10_backlog_outlines_are_ledger_entries_written_inside_the_module_calls"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-sc-21",
+ "kind": "real",
+ "handling": "Roles carry a level; approvals are lifecycle transitions gated by an approver role; the access matrix is per level; G1.5 shows who approves what.",
+ "test": "tests/edge/test_sc_cases.py::test_organisation_hierarchy_gives_levels_and_approver_gated_transitions (strict xfail BUG-SC-10)"
+}

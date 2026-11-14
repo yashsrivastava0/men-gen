@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-08",
+  "kind": "syn",
+  "handling": "gate, remember the target, route after sign-in; a forbidden state",
+  "test": "test_fe_cases.py::test_fe_08_a_deep_link_before_sign_in_gates_remembers_the_target_and_has_a_forbidden_state"
+}

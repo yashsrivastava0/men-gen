@@ -1,0 +1,6 @@
+{
+  "id": "spc-md-12",
+  "kind": "real",
+  "handling": "the graph commit is the checkpoint; replay from checkpoints; variance bands recorded",
+  "test": "test_md_cases.py::test_md_12_three_runs_agree_and_a_replay_comes_from_the_checkpoints"
+}

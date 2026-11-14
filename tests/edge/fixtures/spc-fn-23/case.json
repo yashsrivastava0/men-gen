@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-23",
+  "kind": "syn",
+  "handling": "a small sequential fixture set; never used for throughput",
+  "test": "test_fn_more_cases.py::test_fn_23_the_provider_switch_proof_uses_a_small_sequential_fixture_set_never_throughput"
+}

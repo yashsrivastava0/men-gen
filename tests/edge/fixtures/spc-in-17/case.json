@@ -1,0 +1,6 @@
+{
+ "id": "spc-in-17",
+ "kind": "real",
+ "handling": "The structure is a proposal; validators repair by derivation; the issue list goes to G1.5.",
+ "test": "tests/edge/test_in_cases.py::test_a_structure_with_errors_is_a_proposal_repaired_by_derivation; test_the_structure_issue_list_goes_to_g15 (strict xfail BUG-IN-2)"
+}

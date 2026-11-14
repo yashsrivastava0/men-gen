@@ -1,0 +1,6 @@
+{
+  "id": "spc-fe-12",
+  "kind": "syn",
+  "handling": "floors are policy-Locked; announcements are in the cards",
+  "test": "test_fe_cases.py::test_fe_12_accessibility_floors_are_policy_locked_and_the_cards_carry_the_announcements"
+}

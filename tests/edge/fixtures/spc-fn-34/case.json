@@ -1,0 +1,6 @@
+{
+  "id": "spc-fn-34",
+  "kind": "syn",
+  "handling": "the cache key carries the route fingerprint; PS-9 bypasses the cache",
+  "test": "test_fn_more_cases.py::test_fn_34_the_cache_and_checkpoint_keys_carry_the_route_fingerprint"
+}

@@ -1,0 +1,6 @@
+{
+ "id": "spc-dg-05",
+ "kind": "syn",
+ "handling": "V-42 error; trimmed by criticality.",
+ "test": "tests/edge/test_dg_cases.py::test_more_could_entries_than_the_cap_is_a_v42_error_and_is_trimmed_by_criticality"
+}

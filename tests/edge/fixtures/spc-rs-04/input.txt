@@ -1,0 +1,1 @@
+Research is the recorded real run docs/research-agent/outputs/claude-2026-11-13/medium-produce-marketplace-nashik/research.json (same brief hash as the standard export). Its conflicts block (RI-153, RI-163, RI-164: Rs100, Rs5,000, Rs7,500) is used as is.
