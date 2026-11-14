@@ -81,6 +81,12 @@ Every event: `{seq, type, at, run_id, step?, data{}}`; `seq` is dense and starts
 ## Headless (Claude Code)
 `uv run python -m mde_spec_agent bench auto --size deep` prints the proposed pair; `bench run --input <path> [--research <path>] [--offline]`
 runs end to end and prints the run folder, gate results and the pack hash. Both use the same auto-select function as the UI.
+`bench export --run <run_id> [--out <dir>] [--label <text>] [--mode live|mock|auto] [--allow-skip] [--no-index]` copies a finished run
+(found under the Spec data folder, or given as a run folder path) into `docs/spec-agent/outputs/<mode>-<date>/<run_id>/`: the manifest-listed pack files,
+the evidence, graph and run record, `report.json`, `summary.json` and a plain-words README. Before anything is written it scans every file with the
+repo's own guard patterns; a file that hits is not copied and is listed in `EXPORT-NOTES.md` (exit 1, or 0 with `--allow-skip`). It rewrites the parent
+folder's index `README.md` and exits 2 on bad input (unknown run, run still going, a mode that disagrees with the run). The same code is
+`scripts/spec_export_outputs.py`; see "Saving a run's output under docs/" in [spec-agent/README](../spec-agent/README.md).
 
 ## Files under `agents/spec/.runtime/`
 `runs/<run_id>/{run.json, input.json.gz, events.jsonl, graph.json, checkpoints/, pack/, evidence/}`, `spend-record.json` (+ `.lock`), `inputs/`, `logs/`, `app.pid`.

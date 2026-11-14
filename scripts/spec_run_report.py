@@ -58,6 +58,9 @@ def report(run: Path) -> dict:
         k["first_try_pass"] = round(k.get("clean", 0) / n, 3)
         k["repair_rate"] = round(k["repaired"] / n, 3)
     sc = load(run / "evidence" / "self-check.json") or {}
+    counts = (
+        sc.get("counts") or {}
+    )  # by_severity and by_validator live under "counts" in the self-check
     man = load(run / "pack" / "MANIFEST.json") or {}
     plan = load(run / "pack" / "build" / "build-plan.json") or {}
     tasks = plan.get("tasks", [])
@@ -71,12 +74,13 @@ def report(run: Path) -> dict:
         "offline": rec.get("offline"),
         "calls_total": sum(k["calls"] for k in kinds.values()),
         "cost_usd": round(total_cost / 1e6, 4),
+        "cost_micros": total_cost,
         "by_kind": dict(sorted(kinds.items())),
         "banners": [e["data"] for e in events if e["type"] == "banner"],
         "rcode_counts": (sc.get("rcode") or {}).get("counts") or sc.get("rcode_counts"),
         "validators": {
-            "by_severity": sc.get("by_severity"),
-            "by_validator": sc.get("by_validator"),
+            "by_severity": counts.get("by_severity", sc.get("by_severity")),
+            "by_validator": counts.get("by_validator", sc.get("by_validator")),
             "ok": sc.get("ok"),
         },
         "pack": {
