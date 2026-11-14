@@ -247,17 +247,12 @@ def test_synonym_tables_cover_every_closed_vocabulary():
 def test_form_word_lint_flags_and_allows():
     kinds = {
         f.category
-        for f in lib.form_word_findings(
-            "a button at the top of the list, 12px, fade in, red background, #ff0000"
-        )
+        for f in lib.form_word_findings("a button at the top of the list, 12px, fade in, red background, #ff0000")
     }
     assert kinds == {"widget", "position", "unit", "motion", "colour"}
     assert lib.form_word_findings("shown in right-to-left scripts, top 20 sellers") == []
     # ambiguous single words are ordinary prose (tuned on live model output, D-185)
-    assert (
-        lib.form_word_findings("the right to cancel, green chillies, orange juice, left over stock")
-        == []
-    )
+    assert lib.form_word_findings("the right to cancel, green chillies, orange juice, left over stock") == []
     assert [f.word for f in lib.form_word_findings("the map of stores")] == []
     assert lib.form_word_findings("a bottom sheet")[0].category in ("position", "widget")
     assert lib.form_word_findings("animated card")[0].category == "motion"
