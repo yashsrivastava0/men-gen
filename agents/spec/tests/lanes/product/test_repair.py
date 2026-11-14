@@ -632,3 +632,19 @@ def test_module_answers_with_no_terminal_status_an_invented_value_or_a_layout_cl
     assert all("side by side" not in a.then for st in g.stories.values() for a in st.acceptance)
     kinds = " ".join(c.what for c in ctx.rcode.changes)
     assert "lifecycle" in kinds and "a value no fact states" in kinds and "layout word" in kinds
+
+
+def test_a_draft_rule_echoed_with_another_number_is_not_judged_and_the_drafts_text_stays(env):
+    from mde_spec_agent.lanes.product.prod_module.validate import validate
+
+    from .test_validators import module_case
+
+    inp, out = module_case(env)
+    assert out.rules  # the produce export has rules in this module
+    out = out.model_copy(deep=True)
+    out.rules[0].value, out.rules[0].unit, out.rules[0].statement = (
+        "9999",
+        "days",
+        "Under 9999 days applies",
+    )
+    assert validate(inp, out) == []  # the live run fell back on exactly this

@@ -135,6 +135,8 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
         where = f"rule {r.id}"
         if not (r.id in inp.rule_ids or r.id.startswith("NEW-")):
             e.add(f"{where}: use an id of the draft or NEW-<key>")
+        if r.id in inp.rule_ids:
+            continue  # a rule of the draft is the code's own: the patch keeps its text and number, the echo is not judged
         if not r.statement.strip():
             e.add(f"{where}: statement is empty")
         if r.value:
