@@ -299,14 +299,20 @@ def _usually(
     slot = next((s for s in inp.slots if s.id == base.id), None)
     norms = {n.id: n for n in (slot.norms if slot else [])}
     evidence = u.evidence
-    if u.item:
-        n = norms.get(u.item)
+    item = u.item or None
+    if item is not None:
+        n = norms.get(item)
         if n is None:
-            errors.append(f"{where}: item {u.item!r} is not one of the research items offered")
-            return None
-        evidence = n.evidence  # type: ignore[assignment]
+            # R-code (drop an unknown optional field): a research item that was not offered is not a citation. The note
+            # stays only as an unverified peer note; it is never given evidence it does not have (doc 18 3.2).
+            built.notes.append(
+                f"{where}: dropped the unknown research item {item!r}; the line is unverified"
+            )
+            item, evidence = None, "unverified"
+        else:
+            evidence = n.evidence  # type: ignore[assignment]
     elif u.evidence != "library":
-        errors.append(f"{where}: a line without a research item can only have evidence 'library'")
+        evidence = "unverified"  # evidence without an item is not evidence
     # bindings named in a USUALLY line must pass the access and contract checks, or they become suggestions
     for ref in _ENTFIELD.findall(u.note):
         eid, _, fld = ref.partition(".")
@@ -326,7 +332,7 @@ def _usually(
                 }
             )
             return None
-    return Usually(note=" ".join(u.note.split()), evidence=evidence, item=u.item or None)  # type: ignore[arg-type]
+    return Usually(note=" ".join(u.note.split()), evidence=evidence, item=item)  # type: ignore[arg-type]
 
 
 # ---------------------------------------------------------------- one screen

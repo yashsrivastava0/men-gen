@@ -354,7 +354,7 @@ def test_usually_lines_cite_offered_research_with_unchanged_evidence(fresh):
     assert not [x for x in u if re.search(r"\b(should|must)\b", x.note)]
 
 
-def test_a_usually_line_that_cites_an_unoffered_item_or_invents_evidence_is_refused(finished):
+def test_a_usually_line_with_an_unoffered_item_is_repaired_by_code_not_reasked(finished):
     run = finished("quick")
     g = run.baseline
     sid = release_targets(g)[0]
@@ -368,11 +368,17 @@ def test_a_usually_line_that_cites_an_unoffered_item_or_invents_evidence_is_refu
 
     base = fallback(inp)
     for u in (
-        UsuallyOut(screen=sid, note="Peers do this.", evidence="official", item="RI-0"),
+        UsuallyOut(screen=sid, note="Peers do this.", evidence="official", item="RI-043"),
         UsuallyOut(screen=sid, note="Peers do this.", evidence="official", item=None),
     ):
-        errs = assemble(g, inp, base.model_copy(update={"usually": [u]}), CFG, lane_rules()).errors
-        assert any("usually" in e for e in errs)
+        built = assemble(g, inp, base.model_copy(update={"usually": [u]}), CFG, lane_rules())
+        assert not [e for e in built.errors if "usually" in e]  # no re-ask for this
+        if u.item:
+            assert any("RI-043" in n for n in built.notes)
+        line = built.screens[sid].usually[0]
+        assert (
+            line.item is None and line.evidence == "unverified"
+        )  # never evidence it does not have
 
 
 def test_costs_nothing_to_build_slots_and_the_prompt_input_is_deterministic(finished):
