@@ -103,3 +103,41 @@ def test_step_is_idempotent(fresh):
     a = run.graph.model_dump_json()
     asyncio.run(behav_step(run.ctx))
     assert run.graph.model_dump_json() == a
+
+
+def test_a_behaviour_about_a_provider_flow_may_name_it_loosely_or_cite_its_id():
+    """A real model wrote "the payment provider" for an integration called `payments`: that is about it. The text naming the
+    integration (with or without the plural s) or the basis citing its id is accepted; a text about nothing is not."""
+    from mde_spec_agent.lanes.screens.behav.schema import BehavIn, BehavOut, BehOut, CatIn, IntegIn
+    from mde_spec_agent.lanes.screens.behav.validate import validate
+
+    inp = BehavIn(
+        language="en", profile="standard", facts="", glossary="",
+        categories=[CatIn(name="pending_timeouts", what="w", supplied_by="app_specific", library_text="", existing_id=None, existing_text="")],
+        integrations=[IntegIn(id="INT-S001", name="payments", provider_side=True, flow="f", interruption="i", pending_timeout="p", events=[])],
+        roles=[], entities=[], rules=[], languages=["en"],
+    )  # fmt: skip
+
+    def out(text, basis):
+        return BehavOut(
+            behaviors=[
+                BehOut(category="pending_timeouts", text=text, basis=basis, assumed=not basis)
+            ]
+        )
+
+    assert (
+        validate(
+            inp,
+            out(
+                "While the payment provider has not answered the person sees that the result is pending.",
+                [],
+            ),
+        )
+        == []
+    )
+    assert validate(inp, out("payments: the result is waited for.", [])) == []
+    assert (
+        validate(inp, out("The result is waited for, then shown as unknown.", ["INT-S001"])) == []
+    )
+    errors = validate(inp, out("The result is waited for, then shown as unknown.", []))
+    assert errors and "INT-S001" in errors[0] and "payments" in errors[0]

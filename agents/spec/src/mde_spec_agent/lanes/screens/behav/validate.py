@@ -40,6 +40,17 @@ def validate(inp: BehavIn, out: BehavOut) -> list[str]:
     side = [i for i in inp.integrations if i.provider_side]
     for b in out.behaviors:
         provider = b.category in ("interrupted_external_flow", "pending_timeouts")
-        if provider and side and not any(i.name.lower() in b.text.lower() for i in side):
-            errors.append(f"{b.category}: name the integration it is about ({side[0].name})")
+        if provider and side and not any(_about(i, b) for i in side):
+            errors.append(
+                f"{b.category}: name the integration it is about in the text ({side[0].name}) "
+                f"or cite its id ({side[0].id}) in basis"
+            )
     return errors
+
+
+def _about(i, b) -> bool:
+    """The behaviour is about integration `i` when its basis cites the integration's id, or its text names the integration
+    (the name as the draft writes it, or the name without a plural s: "payments" is named by "payment provider")."""
+    name = i.name.lower().strip()
+    text = b.text.lower()
+    return i.id in b.basis or name in text or (len(name) > 3 and name.rstrip("s") in text)
