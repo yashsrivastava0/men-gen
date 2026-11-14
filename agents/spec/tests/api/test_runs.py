@@ -111,10 +111,16 @@ def test_g15_pauses_deep_apps_and_records_the_consent(
     assert bad.status_code == 400
     wrong = client.post(f"/api/runs/{rid}/g2", json={"decision": "approve", "content_hash": "x"})
     assert wrong.status_code == 409 and wrong.json()["error"]["code"] == "gate_required"
-    moves = [{"item": "FEAT-001", "to": "phase_2"}]
-    changed = client.post(f"/api/runs/{rid}/g15", json={"decision": "change", "moves": moves})
-    assert changed.status_code == 200 and changed.json()["gate"] == "open"
+    # a move the run cannot make is refused in plain words and nothing changes
+    refused = client.post(
+        f"/api/runs/{rid}/g15",
+        json={"decision": "change", "moves": [{"item": "FEAT-001", "to": "phase_2"}]},
+    )
+    assert refused.status_code == 400 and refused.json()["error"]["message"] and refused.json()["error"]["fix"]
     assert client.get(f"/api/runs/{rid}").json()["status"] == "paused_g15"
+    moves: list[
+        dict[str, str]
+    ] = []  # approving as it stands; applied moves have their own tests (test_g15_moves)
     ok = client.post(
         f"/api/runs/{rid}/g15",
         json={"decision": "approve", "moves": moves, "everything_in_one_release": False},

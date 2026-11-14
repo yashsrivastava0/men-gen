@@ -1314,6 +1314,9 @@ class SpecService:
             record["acknowledged_blockers"] = [
                 {"code": b["code"], "where": b["where"]} for b in blockers
             ]
+            who = (payload or {}).get("acknowledged_by")
+            if who:
+                record["acknowledged_by"] = str(who)[:40]
         choices = (payload or {}).get("suggestion_choices")
         if isinstance(choices, dict):
             record["suggestion_choices"] = {str(k): bool(v) for k, v in choices.items()}
@@ -1493,8 +1496,17 @@ async def _run_to_end(
             gates["g15"] = "approved (headless)"
             continue
         if status == "awaiting_g2":
-            service.approve_g2(rid, str(rec.get("content_hash")))
-            gates["g2"] = "approved (headless)"
+            # the terminal helper is a test harness, not a person: it approves, and when some checks failed as blockers
+            # it acknowledges them OUT LOUD (recorded in the gate record and said in the gates it prints)
+            failed = service.blocking_checks(rid)
+            service.approve_g2(
+                rid,
+                str(rec.get("content_hash")),
+                {"acknowledge_blockers": bool(failed), "acknowledged_by": "headless helper"},
+            )
+            gates["g2"] = "approved (headless)" + (
+                f", {len(failed)} blocker check(s) acknowledged" if failed else ""
+            )
             continue
         break
     rec = service.store.get_run(rid)
