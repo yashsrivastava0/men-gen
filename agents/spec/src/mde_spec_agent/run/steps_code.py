@@ -5,6 +5,7 @@ Model-facing steps live in the lanes. Everything here is deterministic.
 
 from __future__ import annotations
 
+import asyncio
 import json
 import random
 from pathlib import Path
@@ -48,14 +49,16 @@ async def intake(ctx: RunContext) -> None:
             profile=ctx.graph.meta.profile,
         )
         return
-    export = json.loads(Path(rec["compass_path"]).read_text(encoding="utf-8"))
+    export = json.loads(await asyncio.to_thread(Path(rec["compass_path"]).read_text, "utf-8"))
     got = read_intake(export)
     if not got.readiness.ready:
         raise MissingNeed(list(got.readiness.missing))
     ctx.spec_input = got.spec_input
     rpath = rec.get("research_path")
     ctx.research = (
-        read_research(json.loads(Path(rpath).read_text(encoding="utf-8"))) if rpath else None
+        read_research(json.loads(await asyncio.to_thread(Path(rpath).read_text, "utf-8")))
+        if rpath
+        else None
     )
     dec = derive_graph(
         ctx.spec_input,
@@ -144,7 +147,7 @@ async def assemble_and_check(ctx: RunContext) -> None:
         consumer_id=ctx.consumer.id,
         route_fingerprint=ctx.versions.route_fingerprint,
         library_version=ctx.versions.library,
-        checked_by=tuple(["self_check", *(["verify"] if ctx.verify is not None else [])]),
+        checked_by=("self_check", *(["verify"] if ctx.verify is not None else [])),
     )
     try:
         pack = assemble(ctx.graph, opts)

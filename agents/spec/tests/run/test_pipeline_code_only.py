@@ -49,7 +49,7 @@ def go(store, ctx):
 
 
 @pytest.mark.parametrize(
-    "stem,profile",
+    ("stem", "profile"),
     [
         ("quick-yoga-studio-bengaluru", "compact"),
         ("standard-produce-marketplace-nashik", "standard"),

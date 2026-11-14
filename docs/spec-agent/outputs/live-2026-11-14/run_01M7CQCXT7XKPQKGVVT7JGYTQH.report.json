@@ -1,0 +1,241 @@
+{
+ "banners": [
+  {
+   "code": "weak_route",
+   "message": "this route needed many repairs for step screens (12 of 65 nodes); consider a stronger route for it"
+  }
+ ],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2595,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10618,
+   "tokens_out": 3065
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 11092,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 32728,
+   "tokens_out": 15637
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2089,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4890,
+   "tokens_out": 3199
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2250,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4896,
+   "tokens_out": 3520
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 3380,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 7511,
+   "tokens_out": 5255
+  },
+  "MOCK-HERO": {
+   "calls": 9,
+   "clean": 9,
+   "cost_micros": 19284,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 56512,
+   "tokens_out": 27254
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1781,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 8347,
+   "tokens_out": 1892
+  },
+  "PROD-JOURNEYS": {
+   "calls": 5,
+   "clean": 1,
+   "cost_micros": 89299,
+   "fallback": 4,
+   "first_errors": [
+    "flow FLW-005: keep the flow's own alternates ('If no eligible booking is available, explain that a booking ') before any you add",
+    "flow FLW-006: keep the flow's own alternates ('A step fails or the network drops: the user keeps what was e') before any you add",
+    "flow FLW-003: write its stages",
+    "flow FLW-004: write its stages",
+    "flow FLW-009: keep the flow's own alternates ('If the trip is unavailable, let the driver return to their t') before any you add",
+    "flow FLW-010: keep the flow's own alternates ('A step fails or the network drops: the user keeps what was e') before any you add",
+    "flow FLW-013: keep the flow's own alternates ('A step fails or the network drops: the user keeps what was e') before any you add",
+    "flow FLW-014: keep the flow's own alternates ('If no measures are available for the selected scope, show an') before any you add"
+   ],
+   "first_try_pass": 0.2,
+   "reasons": [
+    "flow FLW-005: keep the flow's own alternates ('If no eligible booking is available, explain that a booking ') before any you add; flow FLW-006: keep the flow's ",
+    "flow FLW-003: write its stages; flow FLW-004: write its stages; flow NEW-first_run-FLW-001: write its stages; flow NEW-returning-FLW-001: write its stages; flow",
+    "flow FLW-009: keep the flow's own alternates ('If the trip is unavailable, let the driver return to their t') before any you add; flow FLW-010: keep the flow's ",
+    "flow FLW-013: keep the flow's own alternates ('A step fails or the network drops: the user keeps what was e') before any you add; flow FLW-014: keep the flow's "
+   ],
+   "repair_rate": 0.8,
+   "repaired": 4,
+   "tokens_in": 95997,
+   "tokens_out": 159376
+  },
+  "PROD-MODULE": {
+   "calls": 11,
+   "clean": 7,
+   "cost_micros": 60633,
+   "fallback": 1,
+   "first_errors": [
+    "entity ENT-006: no terminal status (one with no way out)",
+    "rule RUL-S034: the value under 10 is not stated by any fact (never invent a number)",
+    "acceptance for US-S016: uses the form word 'side by side'",
+    "story NEW-jobcard-view: uses the form word 'on the right'",
+    "entity ENT-015: transition issued->paid names no role",
+    "entity ENT-016: transition pending->succeeded names no role"
+   ],
+   "first_try_pass": 0.636,
+   "reasons": [
+    "entity ENT-006: no terminal status (one with no way out); rule RUL-S034: the value under 10 is not stated by any fact (never invent a number)"
+   ],
+   "repair_rate": 0.364,
+   "repaired": 4,
+   "tokens_in": 132318,
+   "tokens_out": 94777
+  },
+  "SCRN": {
+   "calls": 13,
+   "clean": 9,
+   "cost_micros": 116847,
+   "fallback": 0,
+   "first_errors": [
+    "SCR-028: exactly one card is needed, got 0",
+    "SCR-028: exactly one card is needed, got 0",
+    "SCR-030.could2: form words (bounce); say what it communicates, not how it looks",
+    "SCR-067.purpose: form words (side by side); say what it communicates, not how it looks"
+   ],
+   "first_try_pass": 0.692,
+   "repair_rate": 0.308,
+   "repaired": 4,
+   "tokens_in": 384188,
+   "tokens_out": 156829
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 7136,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 17871,
+   "tokens_out": 10696
+  },
+  "VERIFY-CANARY": {
+   "calls": 37,
+   "clean": 32,
+   "cost_micros": 210515,
+   "fallback": 5,
+   "first_errors": [
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback"
+   ],
+   "first_try_pass": 0.865,
+   "reasons": [
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback",
+    "StructuredOutputError: ver.canary: output still invalid after validation (1 problem(s)); the engine should use its fallback"
+   ],
+   "repair_rate": 0.135,
+   "repaired": 5,
+   "tokens_in": 755327,
+   "tokens_out": 269890
+  },
+  "VERIFY-FINAL": {
+   "calls": 1,
+   "clean": 0,
+   "cost_micros": 11305,
+   "fallback": 0,
+   "first_errors": [
+    "confirm_moves[0]: 'RI-086 automated invoice processing and payment routing' is not an item of the confirm list",
+    "confirm_moves[1]: 'RI-139 rate confirmation to load creation' is not an item of the confirm list"
+   ],
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 1,
+   "tokens_in": 68278,
+   "tokens_out": 8950
+  }
+ },
+ "calls_total": 83,
+ "cost_usd": 0.5382,
+ "events": 181,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check",
+   "verify"
+  ],
+  "content_hash": "91bcb7bb50bd7d3426c6a4f15f1dea44ff443a2d8f792e563cdcc6af038413a5",
+  "critic_vendor": "same",
+  "files": 222,
+  "tokens": 344867
+ },
+ "partial_reason": null,
+ "profile": "deep",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7CQCXT7XKPQKGVVT7JGYTQH",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 42,
+  "max_read_tokens": 27868,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": false
+ }
+}

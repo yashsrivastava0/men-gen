@@ -333,7 +333,7 @@ def test_fn_30_a_strong_consumer_gets_the_one_file_form_of_a_pack_the_weak_one_c
 
 # --------------------------------------------------------------------------------------------------- FN-31
 @case("spc-fn-31")
-def test_fn_31_an_integration_with_no_interrupted_flow_gets_one_reask_then_a_library_template_and_degraded(
+def test_fn_31_an_integration_with_no_interrupted_flow_gets_the_library_template_by_code_without_a_reask(
     tmp_path,
 ):
     rig = Rig(tmp_path, "standard")
@@ -347,17 +347,12 @@ def test_fn_31_an_integration_with_no_interrupted_flow_gets_one_reask_then_a_lib
 
     gw.rewrite = lambda spec, inp, n: strip if spec == "spec.prod_integ" else None
     assert rig.go("plan", "product").status == "awaiting_g2"
-    assert gw.count("spec.prod_integ") == 2 * len(
-        rig.calls("spec.prod_integ")
-    )  # the call and ONE re-ask
+    # D-189: the repair fills the library's interrupted-flow rule and pending timeout BY CODE (logged as R-code), so
+    # the call is NOT re-asked any more; the doc's "one re-ask then a library template" became "a library template".
+    assert gw.count("spec.prod_integ") == len(rig.calls("spec.prod_integ"))
     flows = [i for i in rig.ctx.graph.integrations.values() if i.provider_side_flow]
     assert flows and all(i.interruption.strip() and i.pending_timeout.strip() for i in flows)
-    assert all(i.degraded for i in flows)  # the library template is marked degraded
-    from mde_spec_agent.views import g2
-
-    view = g2(rig.ctx.graph, None, None, None, flags=rig.ctx.flags)
-    assert any("written by a fallback" in line for line in view["degraded_nodes"])
-    assert any("pending" in row["text"] for row in view["confirm_list"])  # and on the confirm list
+    assert rig.ctx.rcode.rows  # and the repair is on the record
     assert [x for x in findings_of(rig.ctx.graph, only={"V-35"}) if x.severity == "blocker"] == []
 
 

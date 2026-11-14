@@ -512,7 +512,7 @@ def test_warning_grade_form_words_are_repaired_by_code_never_reasked(finished):
     def mutate(out, sid):
         card = out.cards[0].model_copy(
             update={
-                "purpose": "Shows the items side by side so the person can compare.",
+                "purpose": "Shows the items on the left and the right so the person can compare.",
                 "accessibility": "A floating label above the field is announced.",
             }
         )

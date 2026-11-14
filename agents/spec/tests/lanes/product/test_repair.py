@@ -593,7 +593,7 @@ def _damage_module(out):
     )
     if out.acceptance:
         out.acceptance[0] = out.acceptance[0].model_copy(
-            update={"then": "the person sees two quotes side by side and chooses one"}
+            update={"then": "the person sees two quotes on the left and the right and chooses one"}
         )
     return out
 
@@ -629,7 +629,7 @@ def test_module_answers_with_no_terminal_status_an_invented_value_or_a_layout_cl
     assert all(
         r.value is None for r in g.rules.values() if r.subject == "Limit"
     )  # the value no fact states is gone
-    assert all("side by side" not in a.then for st in g.stories.values() for a in st.acceptance)
+    assert all("on the left" not in a.then for st in g.stories.values() for a in st.acceptance)
     kinds = " ".join(c.what for c in ctx.rcode.changes)
     assert "lifecycle" in kinds and "a value no fact states" in kinds and "layout word" in kinds
 

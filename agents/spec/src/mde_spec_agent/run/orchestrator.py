@@ -97,16 +97,19 @@ class Orchestrator:
             if stage.name in done:
                 continue
             needs_gate = stage.gate_before and (stage.gate_when is None or stage.gate_when(ctx))
-            if needs_gate and stage.gate_before:
-                if not self.store.get_run(rid)["gates"].get(stage.gate_before):
-                    self.store.update_run(
-                        rid,
-                        status="paused_g15" if stage.gate_before == "g15" else "awaiting_g2",
-                        step=stage.name,
-                    )
-                    ctx.emit("gate.opened", step=stage.name, gate=stage.gate_before)
-                    ctx.save_graph()
-                    return Outcome("paused", stage=stage.name)
+            if (
+                needs_gate
+                and stage.gate_before
+                and not self.store.get_run(rid)["gates"].get(stage.gate_before)
+            ):
+                self.store.update_run(
+                    rid,
+                    status="paused_g15" if stage.gate_before == "g15" else "awaiting_g2",
+                    step=stage.name,
+                )
+                ctx.emit("gate.opened", step=stage.name, gate=stage.gate_before)
+                ctx.save_graph()
+                return Outcome("paused", stage=stage.name)
             out = await self._run_stage(ctx, stage)
             if out is not None:
                 return out
