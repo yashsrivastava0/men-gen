@@ -1,6 +1,8 @@
 # Current state (read this first)
 
-Written 2026-11-11 (evening) on branch `feat/research-yield`; updated 2026-11-13 (see the banner just below). Keep it current: when the branch, the focus or what is open changes, update this page in the same commit (CLAUDE.md, resume protocol). Everything here was checked against the repository on that date; where something was **not** checked it says so. `git log -1` tells you how far the branch has moved since.
+Written 2026-11-11 (evening) on branch `feat/research-yield`; updated 2026-11-13 and 2026-11-14 (see the banners just below). Keep it current: when the branch, the focus or what is open changes, update this page in the same commit (CLAUDE.md, resume protocol). Everything here was checked against the repository on that date; where something was **not** checked it says so. `git log -1` tells you how far the branch has moved since.
+
+> **2026-11-14 (later): the active branch is `feat/spec-agent`.** The Spec agent is built offline through S6b and the live proof has started: eight single live runs are saved, none of them scored, and the spend record reads USD 1.26 of the USD 5.00 cap. Section 2 is the current focus; the Research agent is in section 2b. Decisions D-174 to D-188. Start with `docs/spec-agent/README.md`, then `docs/spec-agent/BUILD-PLAN.md`.
 
 > **2026-11-14: `main` is up to date.** The owner asked for everything to be pushed to `main` and for at most 3 branches to remain (D-173). `feat/llm-providers` was merged into `main` with `--no-ff`; the merged side branches were deleted (their tips are listed in D-173, restore with `git branch <name> <hash>`). Branches now: `main`, `feat/llm-providers` (still the branch for ongoing work, same content as `main` at the merge) and `backup/compass-v2-20261110-0036` (the Compass v2 checkpoint). The old `main` is tagged `pre/main-sync-20261114`. Everywhere below that says "never merged into `main`" or "`origin/main` holds the older tip" describes the state before this date.
 
@@ -20,9 +22,45 @@ Three things live side by side here:
 | --- | --- | --- |
 | **Context Engine** (the original six-step pipeline: discovery, flow with two gates, spec builder, spec loader, gateway) | `packages/`, `apps/context-api`, `apps/llm-gateway-api`, `apps/cli` | built end to end and verified offline in mock mode (snapshot of 2026-11-08, the `init` commit). Live batches L0, L1, L2 were run; L3 and L4 were not (`PROGRESS.md` Phase 4) |
 | **Compass** (the Discover agent: AI-planned interview, Brief with structure, tiers, test UI) | `agents/compass/`, `apps/web/` | built through v2 and the size-aware Brief (ADR 0016, 0017; PROGRESS sections "Compass ..."). Phase S8 (prefetch) was deliberately not built. Never merged into `main` |
-| **Research agent** (`mde_research_agent`: plan, search, read pages, code-verified quotes, second-model check, `research.json`) | `agents/research/`, `apps/research-console/`, `scripts/research_app.py` | **the active work.** Offline-complete; live-tested on the Small example only; see section 2 |
+| **Spec agent** (`mde_spec_agent`: turns an approved Compass Brief and Research into the Spec Pack) | `agents/spec/`, `packages/spec-core/`, `packages/compass-intake/`, `agents/verify/`, `apps/spec-bench/`, `evals/spec/` | **the active work** (section 2). Built offline; live proof under way, none of it scored |
+| **Research agent** (`mde_research_agent`: plan, search, read pages, code-verified quotes, second-model check, `research.json`) | `agents/research/`, `apps/research-console/`, `scripts/research_app.py` | previous focus (section 2b). Offline-complete; live-tested on the Small example only |
 
-## 2. What we are working on right now: the Research agent
+## 2. What we are working on right now: the Spec agent
+
+Spec turns an approved Compass Brief plus Research into one static folder of files (the Spec Pack). It tells the front-end engine what the app is and does, never how it looks. Packages: `agents/spec/` (`mde_spec_agent`), `packages/spec-core/`, `packages/compass-intake/`, `agents/verify/` (the Verify agent for deep packs, injected through a port), `apps/spec-bench/` (the front end) and `evals/spec/` (the proof tools). Read in this order: `docs/spec-agent/README.md`; `docs/spec-agent/BUILD-PLAN.md` (phases, exit checks, proof-gate status); the design in `docs/architecture-v3/19-spec-big-apps-bench-and-result-first.md`, then 18, 17, 16, 15; the HTTP contract in `docs/api/spec-agent.md`. Decisions D-174 to D-188 are in `DECISIONS.md`; progress lines are in `PROGRESS.md`, section "Spec agent".
+
+**Where it stands (2026-11-14).** The build is in git through S6b, offline. The edge-case suite (`tests/edge`, 200 fixture cases) is built; on the working tree that day it gave 208 passed, 68 xfailed and 1 failed. The live proof has started: eight single live runs are saved in `docs/spec-agent/outputs/live-2026-11-14/` (six Quick, one Standard, one Thorough with Verify). None is a scored proof gate. Spend: USD 1.26 by the spend record, against the USD 5.00 cap (tripwire 4.50), read by `scripts/spec_spend_check.py` on 2026-11-14.
+
+**How to run it (Mac, zsh).** The live switch and the money cap come from the launch environment, never from `.env`. Live runs are started by the owner or the lead (CLAUDE.md rules 3 and 13): `LLM_MODE=live` is the only live switch; the cap is `SPEC_LIVE_BUDGET_USD` (5.00 when unset, as the spend check reads it) and the tripwire is `SPEC_TRIPWIRE_USD`.
+
+```
+just spec-test                                                  # Spec and Verify offline suites (mock, no money)
+just spec-bench-test                                            # the Bench front end's tests
+uv run pytest tests/edge -m "not live and not integration" -q   # the 200-case edge suite (offline)
+uv run python -m mde_spec_agent bench auto                      # list the Compass and Research pairs it would propose
+uv run python scripts/spec_app.py start                         # the Bench, detached: http://127.0.0.1:8130/
+uv run python scripts/spec_app.py status                        # also: logs, stop, restart
+just spec-dev                                                   # the same app in the foreground, port 8130
+uv run python -m mde_spec_agent bench run --input <id> --offline   # one run, no model, no money
+uv run python scripts/spec_spend_check.py                       # spend record and period ledgers (read-only)
+just spec-fake                                                  # TEST FAKE app on port 8150 (mock, no key)
+```
+
+`bench run --input` takes a path, an id or `synth:<name>`. Without `--offline` the run is live and needs `LLM_MODE=live`.
+
+**Open, in the order that matters:**
+
+1. The proof gates. PS-0 to PS-2 have no saved report. PS-3, PS-5 and PS-12b each have a live run that was not scored. PS-4, PS-6 to PS-8, PS-10, PS-11, PS-12a and PS-12c are not run. The list is in `BUILD-PLAN.md`, "Proof gates".
+2. The edge suite is not green. `tests/edge/test_fn_more_cases.py::test_fn_31_…` expects two calls to the integrations lane (one re-ask) and gets one. The working tree also has four uncommitted files that are not part of this page (`orchestrator.py`, `steps_code.py`, one test, `form_words.yaml`). The failure has not been checked on a clean HEAD.
+3. The Bench was never opened in a real browser. `agents/spec/tests/e2e/browser_check.py` exists; it needs Playwright and a browser, and no result is saved.
+4. Screen lacks doc 15 section 5.7a type-specific fields.
+5. G1.5 "change" moves are recorded but not applied. Verify runs the final stage in the service and class A patches only.
+6. The Thorough report `run_01M7CQCXT7XKPQKGVVT7JGYTQH.report.json` is in the outputs folder but not in git yet.
+7. The report (`docs/spec-agent/REPORT-<date>.md`) is not written. `docs/api/spec-agent.md` exists.
+8. Tags: only the safe point `pre/spec-agent-20261114-0258` (on `main` 4f16ded). No phase tags are set.
+9. Branches: `feat/spec-agent` is a fourth branch next to `main`, `feat/llm-providers` and `backup/compass-v2-20261110-0036`; D-173 asked for at most three. Nothing is merged into `main` without the owner's yes.
+
+## 2b. Previous focus: the Research agent
 
 A standalone app (live models and the live web only). It reads an approved Compass export, plans research topics, searches (Tavily primary, Serper failover and bounded second opinion), reads pages with our own fetcher, extracts facts whose **quotes are verified by code**, has a second model check every fact, and writes `research.json` (`research.v5`) plus an evidence file and a Markdown report. Package README: `agents/research/README.md` (read it; it has the layout table). Design: `docs/architecture-v3/13-research-agent-design.md` and `14-research-proof-plan.md`. ADR 0018. HTTP contract: `docs/api/research-agent.md`. Runbook (how the owner tests it): `docs/runbooks/research-agent.md`.
 
@@ -50,6 +88,7 @@ How it got here, in order (decisions in `DECISIONS.md`, progress in `PROGRESS.md
 
 | Branch | Tip (what it adds on top of the one above) |
 | --- | --- |
+| **`feat/spec-agent`** | the Spec agent build (D-174 to D-188), cut from `main` 4f16ded; the tip is the newest commit on the branch (`git log -1`) |
 | `main` (`7dd4cb6`) | the Context Engine plus the first Compass; **no `agents/` directory at all**. Deliberately not advanced: nothing is merged into `main` without the owner's yes (`GLOBAL_RULES.md`, last entry) |
 | `feat/compass-fix-pipeline`, `feat/compass-fix-facts`, `feat/compass-v2-calls`, `feat/compass-v2-web`, `feat/compass-v2-brief` | the Compass v2 pieces, kept for history |
 | `feat/compass-ai-interview` = `backup/compass-v2-20261110-0036` (`51e0c60`) | Compass v2 complete offline (the checkpoint taken before the speed work) |
@@ -95,12 +134,12 @@ just ci-fast                                                           # lint, t
 - Never read, print or commit `.env` or any key. Only `mde_llm_gateway` imports `openai`. No agent frameworks, no agent loops. Web and search content is untrusted: no tools in calls that read it.
 - Every LLM call: gateway, versioned call spec, mock handler, deterministic fallback. Money is `Decimal` or integer micro-dollars, never float. No SQLite. No markdown outside `README.md`, `CLAUDE.md`, `AGENTS.md`, `.claude/**` and `docs/**`.
 - **Commit checkpoints** (CLAUDE.md, section of that name; `GLOBAL_RULES.md` section A): before a medium or major task, commit what is pending and tag a `pre/...` safe point; small tasks need nothing extra; a complete overhaul gets a new branch only after the owner's approval. This is only a git safety net; it does not restrict how you work.
-- Log non-trivial decisions in `DECISIONS.md` (next number is **D-156**), tick `PROGRESS.md`, update `docs/` with every behavior change (the docs check enforces the index).
+- Log non-trivial decisions in `DECISIONS.md` (next number is **D-189**), tick `PROGRESS.md`, update `docs/` with every behavior change (the docs check enforces the index).
 - Plain-words reports to the owner: say what is verified and what is not; do not tune code to make a number pass.
 
 ## 7. Reading order for a fresh session
 
-1. `CLAUDE.md` (rules, commands, commit checkpoints), then this page.
+1. `CLAUDE.md` (rules, commands, commit checkpoints), then this page. For the current focus, the Spec agent, continue with `docs/spec-agent/README.md` and `docs/spec-agent/BUILD-PLAN.md`.
 2. `docs/research-agent/yield-and-cost-report-2026-11-11.md` (the latest work, in plain words), then `agents/research/README.md`.
 3. `docs/implementation/DECISIONS.md` from D-125 to the end, and the "Research ..." sections at the bottom of `PROGRESS.md`.
 4. `docs/runbooks/research-agent.md` (how the owner runs and reads a run), `docs/api/research-agent.md`, ADR 0018.

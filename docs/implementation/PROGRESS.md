@@ -251,3 +251,25 @@ Baseline before any change: offline Compass + web suite 3044 collected (3033 pas
 - [x] W5 Live runs on Claude (Haiku 5.5): Small yoga (x3, final 19 of 19 slots), Porto, Medium Nashik (78%), Big freight (90%), consumer probe (not passed)
 - [x] W6 Report `docs/research-agent/claude-provider-test-report-2026-11-13.md`, outputs saved in `docs/research-agent/outputs/claude-2026-11-13/`
 - [ ] Not done (money, USD 4.66 of 4.95 booked): Medium and Big on Tavily, Dakar, Pune, hospital and Central America; Claude against the OpenAI model on the same day; a cross-vendor checker (needs OpenAI credits); Sonnet as checker at a higher effort; the hand spot-check of 60 facts per run; Compass still names the OpenAI model (rule 14 debt, listed in the report)
+
+## Spec agent (feat/spec-agent; owner prompt 12 v4; decisions D-174 to D-188)
+
+Safe point: tag `pre/spec-agent-20261114-0258` on `main` 4f16ded. The lines below are build status from git history. The proof gates (PS-0 to PS-12) are in `docs/spec-agent/BUILD-PLAN.md` and are not ticked here. Nothing is merged into `main`.
+
+- [x] W0 Checkpoint: design docs 15 to 19 copied, `spec-core`, `compass-intake`, `spec` and `verify` packages scaffolded, layering contracts kept (e241bf6)
+- [x] S0 Foundation: graph model and config (52cf31d), money wrapper and spend record (8b7eae4), portable call harness (d9191e3), validators V-01..V-45 as code (5c296e4), compass-intake reader (ef2f55b), vocabularies and libraries (a1b54db), consumer profiles and free-tool smoke tests (8c6c106)
+- [x] S1 Deterministic core: R-code fixes (30a8c61), derivation with R-INV and the release planner, PS-2 on the three real exports (4ab1546), tokens, mock modes, hero skeleton, glossary (6d5b0f2), Contract v0, `spec check`, pack linter, consumption simulator (7fd334a)
+- [x] S6a Bench skeleton: input discovery, auto-select and bench CLI (59dd6a5), static front end (ae96d80), service, HTTP API, fake app on 8150, `scripts/spec_app.py` and justfile recipes (e85710f)
+- [x] S2 Product lane: run store and API contract (4c0ac9e), call runner through the spend guard, patches, orchestrator (3c23d34), Product lane, service and HTTP API (e85710f), Spec's own ledger per budget period (f789d7d), `LLM_MODE=live` as the one switch (1bfc1aa)
+- [x] S3 Design lane: DSGN directions, tokens by code, GLOSS-L (326d289)
+- [x] S4 Screens lane: SCRN, MOCK-HERO, BEHAV, COPY-L, G2-SUMMARY (98ef48d)
+- [x] S5 Self-check, Verify for deep and proof tools: code steps and gate 3 with the skeleton to G2 (f8d1f36), Verify agent (b791d6d), proof tools under `evals/spec` (0f48350), `scripts/spec_run_report.py` (f08200a)
+- [x] S6b Bench second half, offline parts: view data for preview, estimate, G1.5, G2 and content maps (ac27daf), API response shapes (9cb70eb)
+- [ ] Edge-case suite, 200 fixture cases in `tests/edge` (c6c946b): built. On 2026-11-14 the working tree gave 208 passed, 68 xfailed, 1 failed (`test_fn_31`, the integration re-ask). Not ticked until it is green.
+- [x] Live Quick run 6, single run, not scored: USD 0.0701, 16 of 17 calls clean, no fallback (f8623d0). Quick runs 1 to 5 are saved too (cf5513d, c6c946b, f8623d0).
+- [x] Live Standard run, single run, not scored: USD 0.145, 22 of 25 calls clean, no fallback (05c30ca)
+- [x] Live Thorough run with Verify, single run, not scored: USD 0.5382, 83 calls, status approved. Report `run_01M7CQCXT7XKPQKGVVT7JGYTQH.report.json` is saved in `docs/spec-agent/outputs/live-2026-11-14/` and is not in git yet.
+- [x] Commits after the Standard report: 838368c and df80f8b (D-188, Verify maps reworded criteria back by code), 2f76b17, f97406a, 2ecef00 (Product lane, after the first Thorough run), c363dca
+- Spend: the spend record reads USD 1.26 of the USD 5.00 cap (`uv run python scripts/spec_spend_check.py`, read-only, 2026-11-14). The eight saved reports add up to USD 1.08.
+- [ ] S7 Proof and big runs (live): price check, PS-3..PS-7, PS-12a to PS-12c, PS-8, PS-9 live part, PS-10, Bench smoke. Not run beyond the three single runs above.
+- [ ] Report: `docs/spec-agent/REPORT-<date>.md`, CURRENT_STATE, PROGRESS, Bench left running on 8130.
