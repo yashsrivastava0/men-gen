@@ -1,0 +1,13 @@
+- [Live mode is one switch (STRICT owner policy)](feedback-live-mode-is-one-switch.md) — only `LLM_MODE=live`; never add a second key, permission flag or blocking hook
+- [Compass: speed over cost](feedback-compass-speed-over-cost.md) — fast responses first; only limit is USD 3.00 total live spend
+- [Compass: necessary questions only](feedback-compass-necessary-questions.md) — Brief detail from inference + approval, not more questions
+- [Compass v2 plan](project-compass-v2-plan.md) — owner requirements (tiers, submit-once, closing question) and approved plan location
+- [Owner tests with the live LLM](feedback-owner-tests-with-live-llm.md) — "run it" means live, never mock; owner starts it with the ! prefix
+- [Compass v2 checkpoint](reference-compass-checkpoint-v2.md) — tag/branch to revert to before the other AI's speed-v3 work, with commands
+- [Compass size and structure (ADR 0017)](project-compass-size-structure.md) — tiers = app size, structure sections, batch H replay, scoped live authorization and spend
+- [Research v5 state](project-research-v5-state.md) — standalone app, how to start, what is unverified
+- [Research yield and cost work](project-research-yield-2026-11-11.md) — branch feat/research-yield, D-142..D-153, live results, Tavily stays primary
+- [Research depth overhaul (2026-11-13)](project-research-depth-2026-11-13.md) — branch feat/research-depth, owner's credit and money rules, eval commands, state
+- [Model-vendor independence and the Claude test (2026-11-13)](project-llm-providers-2026-11-13.md) — rule 14, how to switch, results, money, open items
+- [Save agent run outputs in docs](feedback-save-outputs-in-docs.md) — owner wants outputs under docs/<agent>/outputs/
+- [Docs by a cheap agent](feedback-docs-by-cheap-agent.md) — delegate documentation writing to Haiku or another cheap agent
