@@ -17,6 +17,7 @@ from typing import Any
 from .canon import canonical_json, normalise_text, sha256_text
 from .config import SpecConfig, default_config
 from .graph import SpecGraph
+from .packform import WHOLE_FILE
 from .render import TokenCounter
 from .simulate import block_bodies, task_tokens
 from .validators.base import Finding, VocabView
@@ -91,7 +92,9 @@ def pack_from_files(files: dict[str, str]) -> Any:
         index=index,
         tasks=tasks,
         budget_report={
-            "total_tokens": sum(i["tokens"] for i in manifest["files"].values()),
+            "total_tokens": sum(
+                i["tokens"] for p, i in manifest["files"].items() if p != WHOLE_FILE
+            ),
             "tasks": len(tasks),
             "task_budget": manifest["task_read_budget"],
         },
@@ -265,7 +268,7 @@ def _bytes_and_volatile(files: dict[str, str], out: list[Finding]) -> None:
                     "A",
                 )
             )
-        if p.endswith(".md") and (m := _VOLATILE.search(t)):
+        if p.endswith(".md") and p != WHOLE_FILE and (m := _VOLATILE.search(t)):
             out.append(
                 _f(
                     "V-34",
@@ -518,7 +521,12 @@ def _caps(
             cap = b.global_shard_cap
         elif p.startswith("modules/"):
             cap = b.module_cap
-        elif p.startswith("screens/") and p.endswith(".md") and ".could." not in p:
+        elif (
+            p.startswith("screens/")
+            and p.endswith(".md")
+            and ".could." not in p
+            and ".detail." not in p
+        ):
             cap = b.slice_cap
         elif p.startswith("contract/"):
             cap = b.contract_resource_cap
