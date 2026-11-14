@@ -400,3 +400,81 @@ def test_costs_nothing_to_build_slots_and_the_prompt_input_is_deterministic(fini
     assert a == b
     assert facts_text(g) == facts_text(g) and glossary_block(g) == glossary_block(g)
     assert vocab_lines() == vocab_lines()
+
+
+def _built_with(run, region_attrs=None, guards=None, card_guards=None):
+    from mde_spec_agent.lanes.screens.scrn.schema import RegionOut
+
+    g = run.baseline
+    sid = next(i for i in release_targets(g) if g.screens[i].actions)
+    slot = build_slot(
+        g.screens[sid], g, CFG, lane_rules(), copy=g.locale_copy["en"], incoming=incoming_edges(g)
+    )
+    inp = ScrnIn(
+        language="en", profile=g.meta.profile, vocab=[], facts="", glossary="", slots=[slot]
+    )
+    out = fallback(inp)
+    upd = {}
+    if region_attrs is not None:
+        reg = RegionOut(
+            screen=sid, key="progress_booking", what="where the booking stands", shape="sequence",
+            shape_kind="stages", attrs=region_attrs, bind=[], importance="supporting",
+            freshness=None, cardinality="few", typical=None, maximum=None, live="none",
+        )  # fmt: skip
+        upd["regions"] = [*out.regions, reg]
+    if guards is not None:
+        a0 = out.actions[0].model_copy(
+            update={"guard": guards, "precondition": "the booking is open"}
+        )
+        upd["actions"] = [a0, *out.actions[1:]]
+    if card_guards is not None:
+        upd["cards"] = [out.cards[0].model_copy(update={"guards": card_guards})]
+    return sid, assemble(g, inp, out.model_copy(update=upd), CFG, lane_rules())
+
+
+def test_a_boolean_attribute_is_coerced_or_dropped_by_code(finished):
+    run = finished("quick")
+    for given, want in (
+        ("exits=Yes", "exits=true"),
+        ("exits=FALSE", "exits=false"),
+        ("exits=no", "exits=false"),
+    ):
+        sid, built = _built_with(run, region_attrs=[given])
+        assert not built.errors, built.errors
+        reg = next(r for r in built.screens[sid].regions if r.key == "progress_booking")
+        assert reg.attrs == [want]
+    sid, built = _built_with(run, region_attrs=["exits=SCR-009"])
+    assert not built.errors, built.errors  # not a re-ask
+    assert next(r for r in built.screens[sid].regions if r.key == "progress_booking").attrs == []
+    assert any("dropped attribute exits" in n for n in built.notes)  # logged as R-code
+
+
+def test_a_guard_outside_the_grammar_is_dropped_and_kept_as_plain_words(finished):
+    run = finished("quick")
+    sid, built = _built_with(
+        run,
+        guards=["method_chosen", "signed_in", "amount_due_present"],
+        card_guards=["role_has_access", "is_open"],
+    )
+    assert not built.errors, built.errors
+    s = built.screens[sid]
+    a0 = sorted(s.actions, key=lambda x: x.key)[0]
+    assert [g.pred for g in a0.guard] == ["signed_in"]
+    assert "method chosen" in a0.precondition and "amount due present" in a0.precondition
+    assert a0.precondition.startswith("the booking is open")
+    assert [g.pred for g in s.route.guards] == [
+        "role_has_access"
+    ] and "is open" in s.role_conditions
+    assert sum("outside the grammar" in n for n in built.notes) == 3
+    # a structured guard still has to be well formed when it is written in the grammar
+    sid, built = _built_with(run, guards=["field_equals ENT-001.status open"])
+    assert not built.errors
+
+
+def test_the_prompt_shows_the_guard_grammar_and_the_boolean_rule():
+    text = "\n".join(vocab_lines())
+    assert "signed_in | role_has_access | field_equals" in text and "true or false" in text
+    from mde_spec_agent.lanes.screens.scrn.spec import HERE
+
+    system = (HERE / "system.jinja").read_text()
+    assert "plain words in precondition" in system and "bool take exactly true or false" in system

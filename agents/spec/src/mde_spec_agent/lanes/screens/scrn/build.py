@@ -118,6 +118,66 @@ def _canon(vocab_name: str, word: str) -> str:
 # ---------------------------------------------------------------- the pieces
 
 
+_TRUE = {"true", "yes"}
+_FALSE = {"false", "no"}
+
+
+def repair_attrs(shape: str, attrs: list[str], where: str, notes: list[str]) -> list[str]:
+    """R-code on the attributes of a shape (drop_unknown_optional): a boolean attribute takes a clear yes/no/true/false word
+    (any case) and is written true or false; a value that is not clearly boolean, or a whole-number attribute that is not
+    a number, is dropped and logged. Everything else is left to the vocabulary check (which re-asks)."""
+    sh = vocab.shape(shape)
+    if sh is None:
+        return list(attrs)
+    allowed = {a.name: a for a in vocab.shapes_file().common_attributes}
+    allowed.update({a.name: a for a in sh.attributes})
+    out: list[str] = []
+    for raw in attrs:
+        name, sep, value = raw.partition("=")
+        spec = allowed.get(name)
+        if sep and spec is not None and spec.type == "bool":
+            v = value.strip().lower()
+            if v in _TRUE | _FALSE:
+                fixed = "true" if v in _TRUE else "false"
+                if fixed != value:
+                    notes.append(f"{where}: attribute {name}={value!r} written as {fixed}")
+                out.append(f"{name}={fixed}")
+            else:
+                notes.append(f"{where}: dropped attribute {name}={value!r}: not true or false")
+        elif (
+            sep
+            and spec is not None
+            and spec.type == "integer"
+            and not value.strip().lstrip("-").isdigit()
+        ):
+            notes.append(f"{where}: dropped attribute {name}={value!r}: not a whole number")
+        else:
+            out.append(raw)
+    return out
+
+
+def split_guards(
+    texts: list[str], where: str, errors: list[str], notes: list[str]
+) -> tuple[list[Guard], list[str]]:
+    """R-code on guards: a guard outside the closed grammar is dropped and its meaning is kept as plain words (the caller
+    writes it into a free-text field). Returns the structured guards and the plain-language notes."""
+    guards: list[Guard] = []
+    plain: list[str] = []
+    for t in texts:
+        tmp: list[str] = []
+        g = parse_guard(t, where, tmp)
+        if g is not None:
+            guards.append(g)
+            continue
+        words = " ".join(t.replace("_", " ").replace(".", " ").split())
+        if words:
+            plain.append(words)
+            notes.append(
+                f"{where}: guard {t!r} is outside the grammar; kept as the plain words {words!r}"
+            )
+    return guards, plain
+
+
 def _check_key(key: str, where: str, errors: list[str]) -> None:
     if not is_valid_key(key):
         errors.append(f"{where}: key {key!r} must be lower snake case")
@@ -134,11 +194,12 @@ def _lint(text: str | None, where: str, screen_type: str, errors: list[str]) -> 
         errors.append(f"{where}: form words ({words}); say what it communicates, not how it looks")
 
 
-def _region(r: RegionOut, base: Screen, errors: list[str]) -> Region:
+def _region(r: RegionOut, base: Screen, errors: list[str], notes: list[str]) -> Region:
     where = f"{base.id}.{r.key}"
     _check_key(r.key, where, errors)
     shape = r.shape if r.shape.startswith("other:") else _canon("shape", r.shape)
-    for p in vocab.check_region_shape(shape, r.shape_kind, r.attrs):
+    attrs = repair_attrs(shape, r.attrs, where, notes)
+    for p in vocab.check_region_shape(shape, r.shape_kind, attrs):
         errors.append(f"{where}: {p}")
     if shape == "collection" and not (r.cardinality or r.maximum):
         errors.append(
@@ -152,7 +213,7 @@ def _region(r: RegionOut, base: Screen, errors: list[str]) -> Region:
         what=" ".join(r.what.split()),
         shape=shape,
         shape_kind=r.shape_kind or None,
-        attrs=sorted(r.attrs),
+        attrs=sorted(attrs),
         bind=list(r.bind),
         importance=r.importance,
         freshness=r.freshness or None,
@@ -164,7 +225,12 @@ def _region(r: RegionOut, base: Screen, errors: list[str]) -> Region:
 
 
 def _action(
-    a: ActionOut, base: Screen, graph: SpecGraph, errors: list[str], flags: list[dict[str, Any]]
+    a: ActionOut,
+    base: Screen,
+    graph: SpecGraph,
+    errors: list[str],
+    flags: list[dict[str, Any]],
+    notes: list[str],
 ) -> Action:
     where = f"{base.id}.{a.key}"
     _check_key(a.key, where, errors)
@@ -207,13 +273,14 @@ def _action(
                 errors.append(f"{where}: external flow {s.target} has no integration record")
         if not steps:
             errors.append(f"{where}: an action needs an effect (or unspecified)")
-    guards = [g for t in a.guard if (g := parse_guard(t, where, errors))]
+    guards, plain = split_guards(a.guard, where, errors, notes)
+    precondition = "; ".join([p for p in [" ".join((a.precondition or "").split()), *plain] if p])
     return Action(
         key=a.key,
         importance=a.importance,
         intent=intent,
         what=" ".join(a.what.split()),
-        precondition=" ".join((a.precondition or "").split()),
+        precondition=precondition,
         effect=steps,
         guard=guards,
         errors=list(dict.fromkeys(a.errors)),
@@ -404,8 +471,8 @@ def build_screen(
         card = cards[0]
     profile = inp.profile
     # regions, actions, inputs
-    regions = [_region(r, base, errors) for r in mine(out.regions)]
-    actions = [_action(a, base, graph, errors, built.flags) for a in mine(out.actions)]
+    regions = [_region(r, base, errors, built.notes) for r in mine(out.regions)]
+    actions = [_action(a, base, graph, errors, built.flags, built.notes) for a in mine(out.actions)]
     inputs = [_input(i, base, errors) for i in mine(out.inputs)]
     if not regions:
         errors.append(f"{sid}: a card needs at least one region")
@@ -433,13 +500,14 @@ def build_screen(
     _lint(purpose, f"{sid}.purpose", base.screen_type, errors)
     _lint(card.accessibility, f"{sid}.accessibility", base.screen_type, errors)
     route = base.route.model_copy(deep=True)
+    route_plain: list[str] = []
     if card.params:
         route.params = [p for t in card.params if (p := parse_param(t, sid, errors))]
         for p in route.params:
             if f":{p.name}" not in route.path:
                 route.path = route.path.rstrip("/") + f"/:{p.name}"
     if card.guards:
-        route.guards = [g for t in card.guards if (g := parse_guard(t, sid, errors))]
+        route.guards, route_plain = split_guards(card.guards, sid, errors, built.notes)
     # navigation facts: leads_to always contains every go target (code keeps the two consistent)
     go_targets = {s.target for a in actions for s in a.effect if s.verb == "go" and s.target}
     leads = sorted(
@@ -509,7 +577,9 @@ def build_screen(
     s = base.model_copy(deep=True)
     s.purpose = purpose
     s.route = route
-    s.role_conditions = " ".join((card.role_conditions or "").split())
+    s.role_conditions = "; ".join(
+        p for p in [" ".join((card.role_conditions or "").split()), *route_plain] if p
+    )
     s.reached_from = reached
     s.leads_to = leads
     s.regions = sorted(regions, key=lambda r: r.key)

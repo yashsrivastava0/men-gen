@@ -46,6 +46,8 @@ def vocab_lines() -> list[str]:
             f"{a.name}=" + ("|".join(a.values) if a.values else a.type)
             for a in vocab.shapes_file().common_attributes
         ),
+        "boolean attributes (type bool) take exactly true or false, nothing else",
+        "guards (the only forms): signed_in | role_has_access | field_equals ENT-x.field value | field_in ENT-x.field a|b",
         "intents: " + " | ".join(sorted(vocab.intents())),
         "input types: " + " | ".join(sorted(vocab.input_types())),
         "region importance: " + " | ".join(vocab.region_importances()),
