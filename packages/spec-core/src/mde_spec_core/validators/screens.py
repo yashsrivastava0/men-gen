@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import re
 
-from mde_spec_core.graph import Screen
+from mde_spec_core.graph import Action, Screen
 from mde_spec_core.ids import namespaced_copy_key
 from mde_spec_core.render import render_closure
 
@@ -287,6 +287,49 @@ def _is_view_only(s: Screen) -> bool:
     return all(a.intent in ("view", "navigate", "cancel", "refresh", "share") for a in s.actions)
 
 
+def _stem(word: str) -> str:
+    """A crude stem for the decision-pair match: approve, approves, approved -> approv."""
+    w = word.lower()
+    if w.endswith("ies") and len(w) >= 5:
+        return w[:-3] + "y"
+    for suf in ("ing", "ed", "es", "s", "e", "d"):
+        if w.endswith(suf) and len(w) - len(suf) >= 4:
+            return w[: -len(suf)]
+    return w
+
+
+def _action_words(a: Action) -> set[str]:
+    """The stems an action names itself by: its key words and the first word of what it does."""
+    words = [w for w in re.split(r"[^A-Za-z]+", a.key) if w]
+    words += [w for w in re.split(r"[^A-Za-z]+", a.what)[:1] if w]
+    return {_stem(w) for w in words}
+
+
+def decisions(primary: list[Action], pairs: list[list[str]]) -> int:
+    """How many decisions the primary actions make: an approve and reject pair answers ONE question (doc 17 5.6).
+
+    The pairs are data (``checks.mobile_fit.decision_pairs``); each action joins at most one pair."""
+    free = list(primary)
+    n = len(free)
+    for left, right in pairs:
+        a, b = _stem(left), _stem(right)
+        first = next((x for x in free if a in _action_words(x) and b not in _action_words(x)), None)
+        if first is None:
+            continue
+        second = next(
+            (
+                x
+                for x in free
+                if x is not first and b in _action_words(x) and a not in _action_words(x)
+            ),
+            None,
+        )
+        if second is not None:
+            free = [x for x in free if x is not first and x is not second]
+            n -= 1
+    return n
+
+
 def _mf_add(out: list[Finding], s: Screen, waived: bool, sev: str, why: str, gross: bool) -> None:
     """A mobile-fit finding: a warning, or a blocker for a gross breach without a recorded waiver."""
     if gross and not waived:
@@ -310,8 +353,10 @@ def _mf_add(out: list[Finding], s: Screen, waived: bool, sev: str, why: str, gro
 def v37(ctx: Context) -> list[Finding]:
     mf, out = ctx.config.checks.mobile_fit, []
     for s in ctx.graph.screens.values():
-        if s.surface != "phone":
-            continue  # web portals are exempt from the column limit and keep the rest (doc 19 2.6): handled below
+        if s.surface not in ("phone", "web"):
+            continue  # a tablet is not held to the phone rules (doc 17 5.6 names phones and web portals)
+        # a web portal is exempt from the COLUMN limit only and keeps the rest (doc 17 5.6, doc 19 2.6, SPC-SZ-04)
+        on_phone = s.surface == "phone"
         waived = s.id in ctx.waivers
 
         prim = sum(1 for r in s.regions if r.importance == "primary")
@@ -354,13 +399,14 @@ def v37(ctx: Context) -> list[Finding]:
                     "B",
                 )
             )
-        if len(pa) > 1 and not _is_view_only(s):
+        n_decisions = decisions(pa, mf.decision_pairs)
+        if n_decisions > 1 and not _is_view_only(s):
             out.append(
                 Finding(
                     "V-37",
                     "warning",
                     s.id,
-                    f"{len(pa)} primary actions (one per decision)",
+                    f"{n_decisions} primary actions (one per decision)",
                     "an approve and reject pair is one decision; otherwise demote one",
                     "B",
                 )
@@ -372,13 +418,15 @@ def v37(ctx: Context) -> list[Finding]:
                         "V-37",
                         "blocker",
                         f"{s.id}.{a.key}",
-                        f"intent {a.intent} cannot exist on a phone",
+                        f"intent {a.intent} cannot exist on a phone"
+                        if on_phone
+                        else f"intent {a.intent} stays forbidden on a web portal (doc 17 5.6 keeps this rule there)",
                         "use a touch intent",
                         "B",
                     )
                 )
         for r in s.regions:
-            if "columns" in " ".join(r.attrs) and r.shape == "collection":
+            if on_phone and "columns" in " ".join(r.attrs) and r.shape == "collection":
                 cols = [
                     int(x.split("=")[1])
                     for x in r.attrs

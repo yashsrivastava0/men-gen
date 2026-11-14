@@ -204,11 +204,6 @@ def test_bg_05_a_web_portal_is_exempt_from_the_column_limit_and_marked_web():
 
 
 @case("spc-bg-05")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-BG-2: V-37 skips every non-phone screen entirely (`continue`), so the other mobile-fit rules the doc keeps "
-    "for a web portal (primary regions, region count, primary actions) are never checked there",
-)
 def test_bg_05_the_other_mobile_fit_rules_still_apply_to_a_web_portal():
     g = make_graph("program")
     web = next(a for a in g.apps.values() if a.surface == "web")

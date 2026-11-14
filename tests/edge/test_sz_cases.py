@@ -5,7 +5,6 @@ from __future__ import annotations
 import json
 from functools import cache
 
-import pytest
 from edge_support.ea_support import cached_flow, raw, validate
 from edge_support.registry import case
 
@@ -150,10 +149,6 @@ def test_a_web_portal_table_is_exempt_from_the_phone_column_limit(tmp_path_facto
 
 
 @case("spc-sz-04")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-SZ-1: V-37 skips every web screen (`if s.surface != 'phone': continue`), so the rest of the mobile-fit rule that the doc keeps for web portals (hover, right-click, more than 3 primary regions) is never applied there",
-)
 def test_the_rest_of_the_mobile_fit_rule_still_applies_to_a_web_portal():
     g = make_graph("small").model_copy(deep=True)
     s = _phone_screen(g, surface="web")
@@ -197,10 +192,6 @@ def test_a_view_only_screen_has_no_primary_action_and_an_approve_reject_pair_is_
 
 
 @case("spc-sz-06")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-SZ-2: V-37 warns '2 primary actions (one per decision)' for an approve and reject pair although its own fix text and the doc say that pair is one decision and not a breach",
-)
 def test_an_approve_and_reject_pair_is_not_a_v37_breach():
     g = make_graph("small").model_copy(deep=True)
     s = _phone_screen(g)

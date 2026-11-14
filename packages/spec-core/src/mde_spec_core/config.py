@@ -109,6 +109,7 @@ class MobileFit(_M):
     max_phone_columns: int
     long_text_chars: int
     gross_breach_factor: float
+    decision_pairs: list[list[str]]  # two primary actions that are ONE decision (doc 17 5.6)
 
 
 class Checks(_M):

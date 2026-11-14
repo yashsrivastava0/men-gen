@@ -71,6 +71,16 @@ checks:
     max_phone_columns: 4
     long_text_chars: 600
     gross_breach_factor: 2.0
+    # two primary actions that answer one question are ONE decision, not two (doc 17 5.6): word stems, either order
+    decision_pairs:
+      - [approve, reject]
+      - [approve, decline]
+      - [accept, decline]
+      - [accept, reject]
+      - [allow, deny]
+      - [confirm, cancel]
+      - [save, discard]
+      - [keep, discard]
   freedom_lint_warnings_per_card_max: 3
   widget_key_suffixes: [_button, _btn, _cta, _modal, _sheet, _tab, _banner, _toast, _chip, _now]
   wcag_body_text_ratio: 4.5
