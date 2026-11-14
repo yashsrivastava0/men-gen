@@ -18,6 +18,7 @@ from mde_spec_agent.lanes.screens.behav.spec import (
     out_schema_version,
     prompt_version,
 )
+from mde_spec_agent.lanes.screens.behav.validate import repair_basis
 from mde_spec_agent.lanes.screens.common import (
     Gate1,
     call_versions,
@@ -139,6 +140,7 @@ async def behav_step(ctx: RunContext) -> None:
     gate1 = Gate1(snap, cfg, ctx.research)
 
     def gate_one(inp: BehavIn, out: BehavOut) -> list[str]:
+        out, _ = repair_basis(inp, out)
         nodes = behaviour_nodes(snap, out, flagged=False, cats=by_name)
         patch = node_patch("behaviors", nodes, replace=True)
         touched = {"behaviors", *[i.id for i in inp.integrations]}
@@ -148,20 +150,19 @@ async def behav_step(ctx: RunContext) -> None:
     versions = call_versions(ctx, CALL_ID, VERSION, prompt_version(), out_schema_version())
 
     async def produce() -> Patch:
-        results = await run_split(
-            ctx,
-            cs,
-            [c.name for c in categories],
-            lambda names: inp0.model_copy(
+        def make_input(names: list[str]) -> BehavIn:
+            return inp0.model_copy(
                 update={"categories": [c for c in categories if c.name in names]}
-            ),
-            lambda n: n,
-            "behav",
+            )
+
+        results = await run_split(
+            ctx, cs, [c.name for c in categories], make_input, lambda n: n, "behav"
         )
         nodes: list[Behavior] = []
         flags: list[dict[str, Any]] = []
-        for _, res in results:
-            ns = behaviour_nodes(snap, res.output, flagged=res.flagged, cats=by_name)
+        for names, res in results:
+            repaired, _log = repair_basis(make_input(names), res.output)
+            ns = behaviour_nodes(snap, repaired, flagged=res.flagged, cats=by_name)
             nodes += ns
             if res.flagged:
                 flags += [degraded_flag("behav", n.id, res.reason or "fallback") for n in ns]

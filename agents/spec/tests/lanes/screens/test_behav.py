@@ -141,3 +141,87 @@ def test_a_behaviour_about_a_provider_flow_may_name_it_loosely_or_cite_its_id():
     )
     errors = validate(inp, out("The result is waited for, then shown as unknown.", []))
     assert errors and "INT-S001" in errors[0] and "payments" in errors[0]
+
+
+def test_an_unknown_basis_id_is_dropped_by_code_not_reasked(fresh, monkeypatch):
+    run = fresh("quick")
+    real = behav_mock.handle
+
+    def handle(inp):
+        out = real(inp)
+        b = out.behaviors[0]
+        out.behaviors[0] = b.model_copy(update={"basis": ["MOD-001"], "assumed": False})
+        return out
+
+    monkeypatch.setattr(behav_mock, "handle", handle)
+    asyncio.run(behav_step(run.ctx))
+    assert not [f for f in run.ctx.flags if f["kind"] == "degraded"]  # no fallback
+    calls = [c for c in run.ctx.runner.calls if c[0] == "spec.behav"]
+    assert calls and not any(res.reasked for _, res in calls)
+    assert all(
+        "MOD-001" not in " ".join(p.ref for p in b.provenance) + " ".join(b.applies_to)
+        for b in run.graph.behaviors.values()
+    )
+
+
+def test_repair_keeps_a_behaviour_only_if_something_still_grounds_it():
+    from mde_spec_agent.lanes.screens.behav.schema import BehavIn, BehavOut, BehOut, CatIn, IntegIn
+    from mde_spec_agent.lanes.screens.behav.validate import repair_basis, validate
+
+    def cat(n):
+        return CatIn(
+            name=n,
+            what="x",
+            supplied_by="mixed",
+            library_text="",
+            existing_id=None,
+            existing_text="",
+        )
+
+    inp = BehavIn(
+        language="en",
+        profile="standard",
+        facts="",
+        glossary="",
+        categories=[cat("session"), cat("state"), cat("offline")],
+        integrations=[
+            IntegIn(
+                id="INT-001",
+                name="payments",
+                provider_side=True,
+                flow="",
+                interruption="",
+                pending_timeout="",
+                events=[],
+            )
+        ],
+        roles=["ROL-001 Buyer"],
+        entities=["ENT-006 Order (primary)"],
+        rules=[],
+        languages=["en"],
+    )
+    out = BehavOut(
+        behaviors=[
+            BehOut(
+                category="session", text="A session lasts.", basis=["MOD-001"], assumed=False
+            ),  # nothing left: goes
+            BehOut(
+                category="state",
+                text="The Order is shared between screens.",
+                basis=["MOD-001"],
+                assumed=False,
+            ),  # names an entity: stays
+            BehOut(
+                category="offline",
+                text="Offline works.",
+                basis=["MOD-001", "ENT-006"],
+                assumed=False,
+            ),  # another id remains: stays
+        ]
+    )
+    assert validate(inp, out) == []  # nothing here is a re-ask
+    fixed, log = repair_basis(inp, out)
+    assert [b.category for b in fixed.behaviors] == ["state", "offline"]
+    assert fixed.behaviors[0].basis == [] and fixed.behaviors[0].assumed
+    assert fixed.behaviors[1].basis == ["ENT-006"] and not fixed.behaviors[1].assumed
+    assert any("removed" in x for x in log)
