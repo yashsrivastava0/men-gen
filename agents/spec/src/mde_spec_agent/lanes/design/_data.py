@@ -57,6 +57,8 @@ class DesignData(_M):
     deep_dark_stances: list[str]
     deep_default_dark_stance: str
     default_dark_stance: str
+    dark_stance_synonyms: dict[str, str]
+    max_asset_count: int
     model_asset_kinds: list[str]
     model_asset_purposes: list[str]
     max_model_assets: dict[str, int]

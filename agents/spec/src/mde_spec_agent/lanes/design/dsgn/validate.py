@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import re
 
-from mde_spec_agent.lanes.design._data import design_data
 from mde_spec_agent.lanes.design._tokens import tokens_for
 from mde_spec_agent.lanes.design.dsgn._node import direction_id, seed_hue_of, to_direction
 from mde_spec_agent.lanes.design.dsgn.schema import DsgnIn, DsgnOut
@@ -19,7 +18,6 @@ from mde_spec_core.config import SpecConfig, default_config
 _HEX = re.compile(r"^#(?:[0-9a-fA-F]{6}|[0-9a-fA-F]{3})$")
 _RAW_HEX = re.compile(r"#[0-9a-fA-F]{3,8}\b")
 _URL = re.compile(r"https?://|www\.", re.I)
-MAX_GOALS = 8
 
 
 def config_for(inp: DsgnIn) -> SpecConfig:
@@ -70,7 +68,6 @@ def lint_avoid(where: str, text: str) -> list[str]:
 
 def validate(inp: DsgnIn, out: DsgnOut) -> list[str]:
     errors: list[str] = []
-    d = design_data()
     if len(out.directions) != inp.count:
         errors.append(f"write exactly {inp.count} direction(s), got {len(out.directions)}")
         return errors
@@ -83,33 +80,17 @@ def validate(inp: DsgnIn, out: DsgnOut) -> list[str]:
             if not getattr(x, field).strip():
                 errors.append(f"{w}.{field} must not be empty")
             errors += lint(f"{w}.{field}", getattr(x, field))
-        if not MAX_GOALS >= len(x.emotional_goals) >= 3:
-            errors.append(
-                f"{w}.emotional_goals: write one line per journey stage (3 to {MAX_GOALS})"
-            )
+        if len(x.emotional_goals) < 3:
+            errors.append(f"{w}.emotional_goals: write one line per journey stage (at least 3)")
         for j, g in enumerate(x.emotional_goals):
             errors += lint(f"{w}.emotional_goals[{j}]", g)
-        if not 1 <= len(x.avoid) <= d.max_avoid_items:
-            errors.append(f"{w}.avoid: list 1 to {d.max_avoid_items} things to avoid")
+        if not x.avoid:
+            errors.append(f"{w}.avoid: list at least one thing to avoid")
         for j, a in enumerate(
             x.avoid
         ):  # what to avoid may name a banner or a carousel (doc 17 5.2)
             errors += lint_avoid(f"{w}.avoid[{j}]", a)
-        if not d.delight_budget.min <= x.delight_budget <= d.delight_budget.max:
-            errors.append(
-                f"{w}.delight_budget must be {d.delight_budget.min} to {d.delight_budget.max}"
-            )
-        if inp.profile == "deep":
-            if x.dark_stance not in d.deep_dark_stances:
-                errors.append(
-                    f"{w}.dark_stance: dark mode must be designed as seriously as light; use one of {d.deep_dark_stances}"
-                )
-            if not (
-                x.admin_density and x.admin_motion and x.admin_ambition and x.admin_note.strip()
-            ):
-                errors.append(
-                    f"{w}: a deep app needs the admin variant (density, motion, ambition and a note)"
-                )
+        if x.admin_note.strip():
             errors += lint(f"{w}.admin_note", x.admin_note)
         if not inp.brand_locked and not (x.seed_colour and _HEX.match(x.seed_colour.strip())):
             errors.append(
@@ -140,18 +121,11 @@ def validate(inp: DsgnIn, out: DsgnOut) -> list[str]:
             errors.append(
                 f"directions[{i}].seed_colour {x.seed_colour}: no accessible tokens can be built from it ({exc}); pick a colour with some colour in it"
             )
-    # unbound asset needs
-    if len(out.assets) > inp.max_assets:
-        errors.append(f"write at most {inp.max_assets} asset needs, got {len(out.assets)}")
-    seen: set[tuple[str, str, str]] = set()
+    # unbound asset needs (counts, unknown apps, repeats and the maximum are repaired by code, see repair.py)
     for i, a in enumerate(out.assets):
         w = f"assets[{i}]"
         if not a.subject.strip():
             errors.append(f"{w}.subject must not be empty")
-        if a.count < 1 or a.count > 12:
-            errors.append(f"{w}.count must be 1 to 12")
-        if a.app and a.app not in inp.app_ids:
-            errors.append(f"{w}.app {a.app!r} is not one of {inp.app_ids} (or leave it empty)")
         if _URL.search(a.subject) or any(_URL.search(x) for x in a.avoid):
             errors.append(f"{w}: write what is needed, never a URL")
         bad = assets.lint_brief(a.subject, *a.avoid)
@@ -160,8 +134,4 @@ def validate(inp: DsgnIn, out: DsgnOut) -> list[str]:
                 f"{w}: remove {', '.join(bad)} (lighting, placement, size and crop belong to the front end)"
             )
         errors += lint(f"{w}.subject", a.subject)
-        key = (a.kind, a.purpose, a.subject.strip().lower())
-        if key in seen:
-            errors.append(f"{w} repeats an earlier need")
-        seen.add(key)
     return errors

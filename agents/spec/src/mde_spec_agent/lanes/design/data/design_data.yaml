@@ -14,6 +14,9 @@ delight_budget: {min: 0, max: 3}
 deep_dark_stances: [parity, dark_first, follows_time_of_day]
 deep_default_dark_stance: parity
 default_dark_stance: supported
+# A closed value the profile does not accept maps to its nearest accepted one (R-code, exact synonym); anything else gets the default.
+dark_stance_synonyms: {supported: parity, light_first: parity, equal: parity, same: parity, both: parity, dark: dark_first, night: dark_first, auto: follows_time_of_day, system: follows_time_of_day}
+max_asset_count: 12
 
 # Asset needs the model may write (the brand needs are code-made baseline, assets.unbound_asset_needs).
 model_asset_kinds: [illustration, icon, animation_clip, audio_cue, haptic_cue, texture]

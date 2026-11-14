@@ -14,10 +14,12 @@ from mde_spec_agent.lanes.design._versions import versions_of
 from mde_spec_agent.lanes.design.brief import BrandFacts, build_dsgn_input
 from mde_spec_agent.lanes.design.build import build_patch
 from mde_spec_agent.lanes.design.dsgn._node import direction_id
+from mde_spec_agent.lanes.design.dsgn.repair import repair
 from mde_spec_agent.lanes.design.dsgn.schema import DsgnIn, DsgnOut
 from mde_spec_agent.lanes.design.dsgn.spec import SPEC
 from mde_spec_agent.run.context import RunContext
 from mde_spec_agent.run.patch import Patch
+from mde_spec_core.callkit.ladder import FixKind
 
 STEP = "design"
 
@@ -39,10 +41,19 @@ async def run_checked(
     runner's ledger allows one per node in the whole run), then the deterministic fallback: the lane never blocks."""
 
     def patch_for(res: RunResult[DsgnOut]) -> Patch:
-        return build_patch(
-            ctx.graph, inp, res.output, brand, ctx.config,
-            flagged=res.flagged, from_fallback=res.used_fallback, reason=res.reason,
-        )  # fmt: skip
+        out, fixes = repair(inp, res.output)  # mechanical repairs: logged, never a re-ask
+        patch = build_patch(
+            ctx.graph,
+            inp,
+            out,
+            brand,
+            ctx.config,
+            flagged=res.flagged,
+            from_fallback=res.used_fallback,
+            reason=res.reason,
+        )
+        patch["rcode"] = [f.as_row() for f in fixes]
+        return patch
 
     runner = ctx.runner
     if runner is None:  # a code-only run: no model, the deterministic directions, said out loud
@@ -91,3 +102,5 @@ async def design(ctx: RunContext) -> None:
     patch = await ctx.batch(STEP, "directions", versions_of(ctx.versions, SPEC), produce)
     ctx.apply(patch)
     ctx.flags.extend(patch.get("flags", []))
+    for r in patch.get("rcode", []):  # logged on a fresh run and on a replay alike
+        ctx.rcode.record(FixKind(r["kind"]), r["node_id"], r["what"], r["before"], r["after"])

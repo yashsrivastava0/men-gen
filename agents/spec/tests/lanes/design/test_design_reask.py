@@ -136,12 +136,6 @@ async def test_a_model_that_fixes_itself_on_the_reask_is_accepted_unflagged(env,
             ),
             id="asset_lighting_crop_url",
         ),
-        pytest.param(
-            lambda out: out.model_copy(
-                update={"assets": [out.assets[0].model_copy(update={"app": "APP-999"})]}
-            ),
-            id="unknown_app",
-        ),
     ],
 )
 async def test_each_validator_error_costs_exactly_one_reask_then_the_fallback(
