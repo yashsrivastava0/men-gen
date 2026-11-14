@@ -33,7 +33,7 @@ import asyncio
 import json
 import random
 from collections import OrderedDict
-from collections.abc import Callable, Iterable, Mapping
+from collections.abc import Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field, replace
 from typing import cast
 
@@ -83,6 +83,7 @@ MAX_ESCALATED_OUTPUT_TOKENS = 32_768
 # held worst case is not below what the provider can bill; the real cost is committed afterwards.
 TOOL_CALL_RESERVE_FACTOR = 2
 MAX_LOGGED_PROMPT_CHARS = 4_000
+MAX_JSON_CANDIDATES = 8  # how many texts one answer may offer through ``json_candidates``
 _PREVIOUS_OUTPUT_CHARS = 8_000
 # 402 is a spent balance: every following call would fail the same way, so it opens the breaker.
 _STATUS_COUNTS_FOR_BREAKER = frozenset({401, 402, 403})
@@ -125,6 +126,15 @@ class GatewayConfig:
     # Hard ceiling for the one escalated retry of a response that ran out of output tokens (a live
     # batch can lower it; it can never exceed the module's ``MAX_ESCALATED_OUTPUT_TOKENS``).
     max_escalated_output_tokens: int = MAX_ESCALATED_OUTPUT_TOKENS
+    # An engine's view of provider pressure: called synchronously, with a scrubbed copy of the error, for EVERY
+    # provider attempt that failed (a 429 that the retries then absorb included), before the retry decision. It
+    # must be cheap; whatever it raises is logged and dropped, a call never fails because of an observer.
+    on_provider_error: Callable[[ProviderError], None] | None = None
+    # Lenient reading of a model's text: when ``json.loads`` fails, an engine can offer the JSON texts it finds
+    # inside the answer (a reasoning block, a code fence or prose around the object), in order of appearance. The
+    # first one that validates against the spec's output model is the answer (no repair call is paid for it); the
+    # strict path stays the first thing tried, so a clean answer never reaches this hook.
+    json_candidates: Callable[[str], Sequence[str]] | None = None
 
 
 @dataclass
@@ -295,13 +305,11 @@ class Gateway:
 
         output, errors, repairable = self._validate(spec, response)
         if errors:
-            if (
-                _ran_out_of_tokens(response)
-                and spec.reasoning_effort in _EFFORTS_A_REPAIR_CANNOT_LOWER
-            ):
+            cut_off = _ran_out_of_tokens(response)
+            if cut_off and spec.reasoning_effort in _EFFORTS_A_REPAIR_CANNOT_LOWER:
                 repairable = False  # reasoning ate the cap twice: the engine falls back instead
             if not (spec.repair and spec.output_model is not None and repairable):
-                raise self._structured_error(spec, errors, repaired=False)
+                raise self._structured_error(spec, errors, repaired=False, truncated=cut_off)
             repair_user = _repair_prompt(rendered.user, response.text, errors)
             response = await self._call(
                 request("repair", repair_user, "low", spec.max_output_tokens), ctx, state
@@ -309,7 +317,9 @@ class Gateway:
             state.repaired = True
             output, errors, _ = self._validate(spec, response)
             if errors:
-                raise self._structured_error(spec, errors, repaired=True)
+                raise self._structured_error(
+                    spec, errors, repaired=True, truncated=_ran_out_of_tokens(response)
+                )
 
         status: CallStatus = "repaired" if state.repaired else "ok"
         result: CallResult[BaseModel] = CallResult(
@@ -377,6 +387,7 @@ class Gateway:
                     breaker.record_failure()
                 else:
                     breaker.record_neutral()
+                self._observe_provider_error(exc)
                 failed += 1
                 if not exc.retryable or failed >= policy.max_attempts:
                     raise self._scrub_error(exc) from None
@@ -416,6 +427,15 @@ class Gateway:
             if response.cassette_key:
                 state.cassette_key = response.cassette_key
             return response
+
+    def _observe_provider_error(self, exc: ProviderError) -> None:
+        hook = self.config.on_provider_error
+        if hook is None:
+            return
+        try:
+            hook(self._scrub_error(exc))
+        except Exception as hook_exc:  # an observer never breaks a call
+            self._log.warning("llm_observer_failed", error_type=type(hook_exc).__name__)
 
     async def _provider_call(self, req: ProviderRequest) -> ProviderResponse:
         try:
@@ -543,19 +563,50 @@ class Gateway:
         try:
             data = json.loads(response.text)
         except ValueError as exc:
-            return None, [f"the output is not valid JSON: {exc}"], True
+            found, problems = self._read_candidates(spec, response.text)
+            if found is not None:
+                return found, [], True
+            return None, problems or [f"the output is not valid JSON: {exc}"], True
         try:
             return spec.output_model.model_validate(data), [], True
         except ValidationError as exc:
             return None, _error_lines(exc), True
 
+    def _read_candidates(self, spec: AnySpec, text: str) -> tuple[BaseModel | None, list[str]]:
+        """The first JSON text the engine's ``json_candidates`` hook finds that validates, or the problems of the
+        first one that parsed (they tell a repair call more than "not valid JSON"). Never raises."""
+        hook = self.config.json_candidates
+        if hook is None or spec.output_model is None:
+            return None, []
+        try:
+            candidates = list(hook(text))[:MAX_JSON_CANDIDATES]
+        except Exception as hook_exc:  # a lenient reader is a help, never a failure of its own
+            self._log.warning("llm_candidates_failed", error_type=type(hook_exc).__name__)
+            return None, []
+        problems: list[str] = []
+        for candidate in candidates:
+            try:
+                return spec.output_model.model_validate(json.loads(candidate)), []
+            except ValidationError as exc:
+                problems = problems or _error_lines(exc)
+            except ValueError:
+                continue
+        return None, problems
+
     def _structured_error(
-        self, spec: AnySpec, errors: list[str], *, repaired: bool
+        self, spec: AnySpec, errors: list[str], *, repaired: bool, truncated: bool = False
     ) -> StructuredOutputError:
+        """``details["truncated"]`` is the typed signal for an answer that was cut off at the output limit even
+        after the one escalated retry: an engine splits the work into smaller calls instead of asking again."""
         return StructuredOutputError(
             f"{spec.id}: output still invalid after {'the repair attempt' if repaired else 'validation'}"
             f" ({len(errors)} problem(s)); the engine should use its fallback",
-            details={"errors": errors[:10], "repaired": repaired, "call_id": spec.id},
+            details={
+                "errors": errors[:10],
+                "repaired": repaired,
+                "call_id": spec.id,
+                "truncated": truncated,
+            },
         )
 
     # ------------------------------------------------------------------ helpers
