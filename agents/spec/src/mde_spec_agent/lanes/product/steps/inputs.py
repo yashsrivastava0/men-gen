@@ -323,6 +323,8 @@ def module_input_factory(ctx: RunContext, env: Env):
                 research_note=read.note,
                 feature_ids=sorted(g.features),
                 in_feature_ids=in_features,
+                module_feature_ids=[f.id for f in v.features if f.status == "in"],
+                feature_names=[f"{f.id}={f.name}" for f in g.features.values() if f.status == "in"],
                 role_ids=sorted(g.roles),
                 role_names=role_names,
                 role_features=role_features,
@@ -365,6 +367,7 @@ def merged_module_input(ctx: RunContext, env: Env) -> ModuleIn:
     head.research = chunk_lines(
         sorted({ln for p in parts for ln in "\n".join(p.research).split("\n") if ln})
     )
+    head.module_feature_ids = sorted({f for p in parts for f in p.module_feature_ids})
     head.cover_feature_ids = sorted({f for p in parts for f in p.cover_feature_ids})
     head.cover_screen_ids = sorted({f for p in parts for f in p.cover_screen_ids})
     head.entity_ids = sorted({f for p in parts for f in p.entity_ids})

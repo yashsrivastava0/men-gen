@@ -14,7 +14,7 @@ from .schema import FusedIn, FusedOut, parts_of
 def validate(inp: FusedIn, out: FusedOut) -> list[str]:
     errors: list[str] = []
     if any(
-        e.id.startswith("NEW-") for e in repair(parts_of(out)[1])[0].entities
+        e.id.startswith("NEW-") for e in repair(inp.module, parts_of(out)[1])[0].entities
     ):  # invented non-join entities are dropped by code
         errors.append("a fused answer adds no new entity; use the draft's entities")
     plan, module, integ, journeys = parts_of(out)

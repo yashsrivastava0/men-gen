@@ -146,6 +146,12 @@ class ModuleIn(ProvIn):
     research_note: str = ""  # said when Research is thin or has nothing for this module
     feature_ids: list[str]
     in_feature_ids: list[str]
+    module_feature_ids: list[str] = Field(
+        default_factory=list
+    )  # the in features this module serves
+    feature_names: list[str] = Field(
+        default_factory=list
+    )  # "FTR-001=Weekly class timetable" for the in features
     role_ids: list[str]
     role_names: list[str]  # "ROL-002=Members"
     role_features: list[

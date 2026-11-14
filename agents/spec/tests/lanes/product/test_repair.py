@@ -420,3 +420,120 @@ def test_an_assumed_story_that_says_must_is_made_usually_by_code(env):
     assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_module"))
     new = [s for s in ctx.graph.stories.values() if s.assumed]
     assert new and all(s.voice != "must" for s in new)
+
+
+# ---- a story the model added that cites no in feature (live run 5) ----------------------------------------------------------
+
+
+def _story(key, want, features=()):
+    from mde_spec_agent.lanes.product.prod_module.schema import AcceptRec, StoryRec
+
+    st = StoryRec(
+        id=f"NEW-{key}", role="ROL-001", want=want, so_that="the person gets it done",
+        feature_ids=list(features), voice="usually", prov=["assumed:not in the draft"],
+    )  # fmt: skip
+    return st, AcceptRec(story=st.id, given="g", when="w", then="t")
+
+
+def test_a_model_added_story_with_no_in_feature_is_attached_by_name_by_module_or_dropped(env):
+    from mde_spec_agent.lanes.product.prod_module.repair import repair
+    from mde_spec_agent.lanes.product.prod_module.validate import validate
+
+    from .test_validators import module_case
+
+    inp, out = module_case(env)
+    inp = inp.model_copy(
+        update={
+            "in_feature_ids": ["FTR-001", "FTR-002", "FTR-003"],
+            "feature_ids": ["FTR-001", "FTR-002", "FTR-003", "FTR-004"],
+            "feature_names": ["FTR-001=Class booking", "FTR-002=Language settings", "FTR-003=Weekly timetable"],
+            "module_feature_ids": ["FTR-001", "FTR-002"],
+        }
+    )  # fmt: skip
+    out = out.model_copy(deep=True)
+    for key, want in [
+        ("switch_language", "switch the language"),
+        ("book_two", "book a class for a friend"),
+    ]:
+        st, acc = _story(key, want)
+        out.stories.append(st)
+        out.acceptance.append(acc)
+    fixed, rows = repair(inp, out)
+    by_id = {s.id: s for s in fixed.stories}
+    assert by_id["NEW-switch_language"].feature_ids == ["FTR-002"]  # one feature fits by name
+    assert by_id["NEW-book_two"].feature_ids == ["FTR-001"]  # one fits by name too (booking)
+    assert all(
+        any(p.startswith("assumed:attached to feature") for p in by_id[k].prov)
+        for k in by_id
+        if k.startswith("NEW-")
+    )
+    assert len(rows) == 2 and all("cites no in feature" in r["what"] for r in rows)
+    # none fits by name and the module serves two features: dropped (with its acceptance), never left without a feature
+    st, acc = _story("something_else", "do something unrelated")
+    gone, rows = repair(
+        inp,
+        out.model_copy(
+            update={"stories": [*out.stories, st], "acceptance": [*out.acceptance, acc]}
+        ),
+    )
+    assert "NEW-something_else" not in {s.id for s in gone.stories} and all(
+        a.story != st.id for a in gone.acceptance
+    )
+    assert any(
+        r["kind"] == "drop_unknown_optional" and r["node_id"] == "NEW-something_else" for r in rows
+    )
+    # a module that serves exactly one feature attaches it
+    one = inp.model_copy(update={"module_feature_ids": ["FTR-003"]})
+    kept, _ = repair(
+        one,
+        out.model_copy(
+            update={"stories": [*out.stories, st], "acceptance": [*out.acceptance, acc]}
+        ),
+    )
+    assert next(s for s in kept.stories if s.id == st.id).feature_ids == ["FTR-003"]
+    # the validator accepts all of it (nothing to re-ask); a draft story or an unknown feature is still an error
+    assert [m for m in validate(inp, out) if "cite an in feature" in m and "NEW-" in m] == []
+    st2, _ = _story("bad", "x", features=["FTR-999"])
+    assert any(
+        "does not exist" in m
+        for m in validate(inp, out.model_copy(update={"stories": [*out.stories, st2]}))
+    )
+
+
+def add_unattached_stories(out):
+    out = out.model_copy(deep=True)
+    base_features = {f for s in out.stories for f in s.feature_ids}
+    for key in ("switch_language", "sign_in_phone"):
+        st, acc = _story(key, f"{key.replace('_', ' ')} for the person")
+        out.stories.append(st)
+        out.acceptance.append(acc)
+    assert base_features
+    return out
+
+
+def test_unattached_added_stories_are_repaired_without_a_reask_and_v40_stays_whole(env):
+    from mde_spec_core.validators.base import run_all
+    from mde_spec_core.validators.context import make_context
+
+    ctx = env.ctx("standard")
+    env.gateway(ctx).rewrite = lambda spec, inp, n: (
+        add_unattached_stories if (spec == "spec.prod_module" and inp.baseline.stories) else None
+    )
+    out = env.run(ctx)
+    assert out.status == "awaiting_g2", out
+    assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_module"))
+    assert ctx.flags == []
+    g = ctx.graph
+    assert any(
+        "cites no in feature and no policy id" in c.what for c in ctx.rcode.changes
+    )  # logged
+    v40 = [
+        f
+        for f in run_all(make_context(g.model_copy(deep=True)), gate=3, only={"V-40", "V-19"})
+        if f.severity == "blocker"
+    ]
+    assert v40 == []  # a story with no feature never reaches the graph
+    for st in g.stories.values():
+        assert st.policy_id or any(
+            f in g.features and g.features[f].status == "in" for f in st.feature_ids
+        )

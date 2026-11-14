@@ -29,7 +29,7 @@ def _evidenced(prov: list[str]) -> bool:
 
 def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
     out, _ = repair(
-        out
+        inp, out
     )  # what code repairs mechanically is not an error (the patch makes the same repair)
     e = Errors()
     source = "\n".join([*inp.slice, *inp.facts, *inp.research])

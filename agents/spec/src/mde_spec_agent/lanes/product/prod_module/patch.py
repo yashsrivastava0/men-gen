@@ -45,7 +45,9 @@ def build_module_patch(
     g = env.graph
     allowed = ProvAllowed.of(inp)
     ih = input_hash_of(inp)
-    out, rcode = repair(out)  # R-code: an invented non-join, non-log entity is dropped (logged)
+    out, rcode = repair(
+        inp, out
+    )  # R-code: an invented non-join, non-log entity is dropped (logged)
 
     def safe(
         strings: Any, node_id: str, *, claims_field: bool, tier: str = "default"
