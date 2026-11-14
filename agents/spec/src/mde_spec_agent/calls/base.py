@@ -25,6 +25,7 @@ from mde_core.errors import (
     BudgetExceeded,
     CallCancelled,
     CassetteMissing,
+    CircuitOpen,
     GatewayError,
     LiveCallForbidden,
 )
@@ -41,6 +42,8 @@ O = TypeVar("O", bound=BaseModel)  # noqa: E741
 PROPAGATE: tuple[type[BaseException], ...] = (
     BudgetExceeded,
     CassetteMissing,
+    CircuitOpen,
+    CircuitOpen,  # a rate-limit or credit storm opens the breaker: the run ends partial and resumable, not degraded
     LiveCallForbidden,
     CallCancelled,
     SpendRefused,
@@ -48,6 +51,20 @@ PROPAGATE: tuple[type[BaseException], ...] = (
 )
 Validator = Callable[[Any, Any], list[str]]
 TEMPLATE_SLACK_TOKENS = 2500  # rules, vocabularies and schema text around the input
+
+
+class NoCredit(CircuitOpen):
+    """The provider refused for money (402): nothing more can run until a top-up. The run ends partial and resumable."""
+
+
+def stop_on_provider_refusal(exc: BaseException) -> None:
+    """A provider that is out of credit or still rate-limiting after the gateway's own retries is a STOP for the run,
+    not a node to degrade: a fallback written now would be replayed from the checkpoint after the top-up."""
+    status = getattr(exc, "status", None)
+    if status == 402:
+        raise NoCredit(f"provider refused for credit: {str(exc)[:120]}") from exc
+    if status == 429:
+        raise CircuitOpen(f"provider is rate limiting: {str(exc)[:120]}") from exc
 
 
 class Truncated(RuntimeError):
@@ -176,6 +193,7 @@ class CallRunner:
         except PROPAGATE:
             raise
         except (GatewayError, TimeoutError) as exc:
+            stop_on_provider_refusal(exc)
             if "truncat" in str(exc).lower():
                 raise Truncated(str(exc)) from exc
             errors = [f"{type(exc).__name__}: {str(exc)[:160]}"]
@@ -201,8 +219,8 @@ class CallRunner:
                     result, out, errors = result2, out2, []
             except PROPAGATE:
                 raise
-            except (GatewayError, TimeoutError):
-                pass
+            except (GatewayError, TimeoutError) as exc2:
+                stop_on_provider_refusal(exc2)
         live = getattr(result, "mode", "") == "live"
         if out is None or errors:
             res: RunResult[O] = RunResult(

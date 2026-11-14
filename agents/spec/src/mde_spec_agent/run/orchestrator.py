@@ -15,6 +15,7 @@ from collections.abc import Awaitable, Callable
 from dataclasses import dataclass, field
 
 from mde_core.errors import BudgetExceeded, CircuitOpen
+from mde_spec_agent.calls.base import NoCredit
 from mde_spec_agent.spend import SpendRefused, StopRequested
 from mde_spec_core.graph import SpecGraph
 
@@ -133,6 +134,11 @@ class Orchestrator:
                 StopRequested,
                 "stop",
                 "stopped on request; resume continues from the last checkpoint",
+            ),
+            (
+                NoCredit,
+                "no_credit",
+                "the provider has no credit left; top it up and resume",
             ),
             (
                 CircuitOpen,

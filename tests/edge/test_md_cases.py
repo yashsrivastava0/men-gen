@@ -178,12 +178,6 @@ async def test_md_05_the_limiter_halves_on_a_rate_limit_and_grows_back_additivel
 
 
 @case("spc-md-05")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MD-2: a 429 storm opens the gateway breaker; CircuitOpen is a GatewayError that CallRunner swallows "
-    "(it is not in PROPAGATE), so every node takes the fallback and the run ends awaiting_g2 instead of partial "
-    "with reason rate_limit",
-)
 def test_md_05_a_429_storm_ends_the_run_partial_with_reason_rate_limit(tmp_path):
     rig = Rig(tmp_path, "standard")
     rig.provider.set_default(MODULE, ProviderCallError("slow down", status=429, retryable=True))
@@ -240,11 +234,6 @@ def test_md_06_a_402_is_not_retried_and_five_of_them_open_the_breaker(tmp_path):
 
 
 @case("spc-md-06")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MD-2: with no credits the breaker opens and CircuitOpen is swallowed by CallRunner; the run ends "
-    "awaiting_g2 with every node degraded instead of partial (resumable after a top-up)",
-)
 def test_md_06_credits_out_ends_the_run_partial_and_resumes_after_a_top_up(tmp_path):
     rig = Rig(tmp_path, "standard")
     rig.provider.set_default(MODULE, ProviderCallError("no credits", status=402, retryable=False))
