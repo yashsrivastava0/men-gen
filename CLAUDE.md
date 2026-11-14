@@ -78,6 +78,10 @@ When unsure between two sizes, take the larger: a checkpoint costs seconds. A su
 
 ## Resume protocol (context gets compacted; the job is long)
 
+Past chat sessions (all laptops), one-screen map, loaded automatically; details in `.claude/sessions/log/`, regenerate with `python3 -I .claude/sessions/export_sessions.py`:
+
+@.claude/sessions/REFERENCE.md
+
 At the start of every session or after compaction, read in this order: `docs/implementation/CURRENT_STATE.md` (where the project is right now: branch, what we are working on, what is done and not, how to run it), then `docs/implementation/BRIEF.md`, `docs/product/context-engine-spec.md`, `docs/implementation/PROGRESS.md` and `DECISIONS.md`; run `git log --oneline -20` and `git status`; continue from the first unchecked item **of the section for the active work** (the Phase 0 to 5 and Definition of Done boxes at the top of `PROGRESS.md` are historical and stale; `CURRENT_STATE.md` section 4 explains). After every finished task tick it in `PROGRESS.md` (one line, with commit hash) and commit; when the state of the work changes (branch, focus, what is open), update `CURRENT_STATE.md` in the same commit. Never rely on memory of earlier turns, and never rely on a private per-user memory: everything a fresh session needs is in this repository.
 
 ## Contract-change rule
