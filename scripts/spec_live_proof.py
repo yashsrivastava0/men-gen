@@ -9,7 +9,7 @@ and after each step, every finished run saved under docs/spec-agent/outputs/ at 
 A live stage needs, set in the LAUNCH SHELL (never in .env): LLM_MODE=live MODEL_ROUTES=<route> SPEC_LIVE_BUDGET_USD=5.00
 SPEC_TRIPWIRE_USD=4.50, and the key for the route's vendor in .env or the shell. This script never reads a key. It refuses
 a stage whose worst case would take the booked spend past the tripwire, and stops after any run that did not finish.
-`LLM_MODE=live` stays the only live switch (CLAUDE.md rule 13); the cap is enforced by the service's own money wrapper too.
+`LLM_MODE=live` is the only live setting (CLAUDE.md rule 13); the cap is enforced by the service's own money wrapper too.
 """
 
 from __future__ import annotations
