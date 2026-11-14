@@ -264,3 +264,14 @@ def test_a_stage_is_done_under_its_own_name_or_when_every_step_was_done_alone():
     )  # a step-by-step run, resumed with the grouped pipeline
     assert not _stage_done(both, ["product"])  # one of two: the stage still has work to do
     assert _stage_done(_stage("plan"), ["plan"])
+
+
+# --------------------------------------------------------------------------------------------- composition
+def test_the_composition_root_wires_both_gateway_hooks():
+    from mde_spec_agent.compose import gateway_config
+    from mde_spec_core.callkit import json_candidates
+
+    for offline in (True, False):
+        cfg = gateway_config(offline=offline)
+        assert cfg.on_provider_error is observe_provider_error
+        assert cfg.json_candidates is json_candidates

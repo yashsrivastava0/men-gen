@@ -170,3 +170,33 @@ def test_every_truncation_point_is_safe_and_consistent(cut):
     r = tolerant_parse(full[:cut], SHAPE)
     if r.ok and r.truncated:
         assert r.value["items"] == _items(10)[: r.salvaged_count]
+
+
+# ----------------------------------------------------------------------------------------- json_candidates
+def test_candidates_are_the_objects_in_order_with_noise_stripped():
+    from mde_spec_core.callkit import json_candidates
+
+    good = json.dumps({"version": 1, "items": _items(1)})
+    text = '<think>maybe {"x": 9}</think>\nHere:\n```json\n' + good + '\n```\nand also {"a": 1}'
+    got = json_candidates(text)
+    assert [json.loads(c) for c in got] == [
+        json.loads(good),
+        {"a": 1},
+    ]  # the reasoning block is gone
+
+
+def test_a_nested_object_is_not_offered_again_and_the_count_is_bounded():
+    from mde_spec_core.callkit import json_candidates
+
+    assert json_candidates(json.dumps({"a": {"b": 1}})) == [json.dumps({"a": {"b": 1}})]
+    many = " ".join(json.dumps({"n": i}) for i in range(20))
+    assert len(json_candidates(many)) == 8 and len(json_candidates(many, limit=3)) == 3
+
+
+def test_candidates_offer_nothing_for_junk_or_cut_off_text_and_never_raise():
+    from mde_spec_core.callkit import json_candidates
+
+    full = json.dumps({"version": 1, "items": _items(3)})
+    for text in ("", "   ", "no json here", "{not json}", full[:20], "{" * 500, None, 12):
+        assert json_candidates(text) == []  # type: ignore[arg-type]
+    assert json_candidates('NaN {"v": NaN}') == []  # a constant JSON does not have is not an answer

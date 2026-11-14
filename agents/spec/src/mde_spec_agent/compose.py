@@ -25,6 +25,7 @@ from mde_spec_agent.run.concurrency import Limiter, compute_k, observe_provider_
 from mde_spec_agent.run.context import RunContext
 from mde_spec_agent.run.store import RunStore
 from mde_spec_agent.spend import Prices, SpendGuard, SpendRecord
+from mde_spec_core.callkit import json_candidates
 from mde_spec_core.config import SpecConfig, default_config
 from mde_spec_core.graph import SpecGraph
 from mde_spec_core.profiles import ConsumerProfile, ProfileSet, load_profiles
@@ -48,6 +49,7 @@ def gateway_config(*, offline: bool) -> GatewayConfig:
         rpm=rpm,
         timeout_s={"fast": 240.0, "standard": 300.0, "deep": 420.0},
         max_untrusted_chars=UNTRUSTED_CHARS,
+        json_candidates=json_candidates,  # a valid object in prose or a fence is read, not paid for twice (FN-01)
         on_provider_error=observe_provider_error,  # every 429, absorbed by a retry or not, narrows the run (doc 15 10.3)
     )
 
