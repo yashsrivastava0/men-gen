@@ -10,8 +10,12 @@ from mde_spec_agent.run.store import RunStore  # noqa: F401  (documents where ch
 
 
 def bad_story_feature(out):
+    """An answer no code can mend: seven new fields on one entity (add only what a feature, story or fact needs)."""
+    from mde_spec_agent.lanes.product.prod_module.schema import FieldRec
+
     out = out.model_copy(deep=True)
-    out.stories[0].feature_ids = ["FTR-999"]  # a feature that does not exist
+    ent = out.entities[0].id
+    out.fields += [FieldRec(entity=ent, key=f"extra_{i}", type="text") for i in range(7)]
     return out
 
 
@@ -29,8 +33,8 @@ def test_a_bad_module_answer_is_reasked_once_and_the_second_answer_is_used(env):
     assert len(reasked) == 1 and not reasked[0].used_fallback and not reasked[0].flagged
     assert gw.count("spec.prod_module") == len(results) + 1  # one more gateway call: the re-ask
     assert ctx.flags == [] and not any(n.degraded for n in ctx.graph.all_nodes())
-    assert "FTR-999" not in "".join(
-        sorted(f for st in ctx.graph.stories.values() for f in st.feature_ids)
+    assert not any(
+        f.key.startswith("extra_") for e in ctx.graph.entities.values() for f in e.fields
     )
 
 
@@ -69,13 +73,13 @@ def test_the_validator_messages_reach_the_reask_word_for_word(env):
         if spec == "spec.prod_module" and inp.module_id == "MOD-002":
             seen.append(list(inp.reask))
             if n == 1:
-                return bad_story_feature  # a feature that does not exist: no code can mend that
+                return bad_story_feature  # too many added fields: no code can choose which to keep
         return None
 
     gw.rewrite = rewrite
     assert env.run(ctx).status == "awaiting_g2"
     assert seen[0] == [] and seen[1], seen  # the second attempt carries the messages
-    assert any("FTR-999" in m for m in seen[1])
+    assert any("new fields" in m for m in seen[1])
 
 
 def test_the_plan_is_invalid_twice_raises_plan_invalid_and_checkpoints_nothing(env):
@@ -160,7 +164,6 @@ def test_the_fusion_rule_says_no_when_the_fused_schema_does_not_fit_the_profile(
 
 def test_gate_1_runs_on_a_copy_of_the_graph_and_its_findings_become_validator_errors(env):
     """Gate 1 is the LAST validator of every call: a patch that breaks an edge (V-03) is reported against the call."""
-    import functools
 
     from mde_spec_agent.lanes.product.kit.batch import with_gate
     from mde_spec_agent.lanes.product.kit.gate import Minter
@@ -177,11 +180,19 @@ def test_gate_1_runs_on_a_copy_of_the_graph_and_its_findings_become_validator_er
     inp = module_input_factory(ctx, e)(b.module_id)(b.items)
     out = inp.baseline.model_copy(deep=True)
     assert gate.errors(build_module_patch(e, inp, out, Minter.for_batch(e.graph, 0), False)) == []
-    out.stories[0].screen_ids = ["SCR-999"]
+
+    def broken_build(
+        i, o, m, f
+    ):  # a patch with an edge to a screen that does not exist (code would have mended the answer)
+        patch = build_module_patch(e, i, o, m, f)
+        st = next(iter(patch["tables"]["stories"].values()))
+        st["screen_ids"] = ["SCR-999"]
+        return patch
+
     cs = with_gate(
         module_spec.SPEC,
         gate,
-        functools.partial(lambda env_, i, o, m, f: build_module_patch(env_, i, o, m, f), e),
+        lambda *a: broken_build(a[0], a[1], a[2], a[3]),
         Minter.for_batch(e.graph, 0),
     )
     errors = cs.validators[-1](inp, out)
@@ -458,7 +469,8 @@ def test_a_model_added_story_with_no_in_feature_is_attached_by_name_by_module_or
         for k in by_id
         if k.startswith("NEW-")
     )
-    assert len(rows) == 2 and all("cites no in feature" in r["what"] for r in rows)
+    attach = [r for r in rows if "cites no in feature" in r["what"]]
+    assert len(attach) == 2
     # none fits by name and the module serves two features: dropped (with its acceptance), never left without a feature
     st, acc = _story("something_else", "do something unrelated")
     gone, rows = repair(
@@ -482,13 +494,16 @@ def test_a_model_added_story_with_no_in_feature_is_attached_by_name_by_module_or
         ),
     )
     assert next(s for s in kept.stories if s.id == st.id).feature_ids == ["FTR-003"]
-    # the validator accepts all of it (nothing to re-ask); a draft story or an unknown feature is still an error
+    # the validator accepts all of it (nothing to re-ask)
     assert [m for m in validate(inp, out) if "cite an in feature" in m and "NEW-" in m] == []
-    st2, _ = _story("bad", "x", features=["FTR-999"])
-    assert any(
-        "does not exist" in m
+    st2, _ = _story(
+        "bad", "x", features=["FTR-999"]
+    )  # an unknown feature id is dropped, then the story is attached or dropped
+    assert [
+        m
         for m in validate(inp, out.model_copy(update={"stories": [*out.stories, st2]}))
-    )
+        if "NEW-" in m
+    ] == []
 
 
 def add_unattached_stories(out):
@@ -648,3 +663,40 @@ def test_a_draft_rule_echoed_with_another_number_is_not_judged_and_the_drafts_te
         "Under 9999 days applies",
     )
     assert validate(inp, out) == []  # the live run fell back on exactly this
+
+
+def _ops_on_other_entities(out):
+    from mde_spec_agent.lanes.product.prod_module.schema import OperationRec, OpErrorRec
+
+    out = out.model_copy(deep=True)
+    for key, ent in (("trk-list-tracked", "ENT-004"), ("trk-delivery-proof", "ENT-008")):
+        out.operations.append(
+            OperationRec(
+                id=f"NEW-{key}",
+                name=key.replace("-", " "),
+                entity=ent,
+                method="POST",
+                path=f"/{key}",
+                roles=["ROL-001"],
+                prov=["assumed:x"],
+            )  # fmt: skip
+        )
+        out.op_errors.append(OpErrorRec(op=f"NEW-{key}", code="forbidden", recovery="stay"))
+    return out
+
+
+def test_operations_on_an_entity_of_another_module_are_relinked_or_dropped_not_reasked(env):
+    ctx = env.ctx("thorough")
+    env.gateway(ctx).rewrite = lambda spec, inp, n: (
+        _ops_on_other_entities if spec == "spec.prod_module" and inp.baseline.entities else None
+    )
+    out = env.run(ctx)
+    assert out.status == "awaiting_g2", out
+    assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_module"))
+    assert ctx.flags == []
+    for o in ctx.graph.operations.values():
+        assert o.entity is None or o.entity in ctx.graph.entities
+        assert set(o.roles) <= set(ctx.graph.roles)
+    assert any(
+        "entity ENT-00" in c.what and "not in this call" in c.what for c in ctx.rcode.changes
+    )

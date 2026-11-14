@@ -58,25 +58,19 @@ def first_story(out):
     return out.stories[0]
 
 
-MODULE_CASES = [
-    (
-        lambda o: setattr(first_story(o), "feature_ids", ["FTR-999"]),
-        "feature FTR-999 does not exist",
-    ),
-    (lambda o: setattr(first_story(o), "feature_ids", []), "cite an in feature or a policy id"),
-    (lambda o: setattr(first_story(o), "screen_ids", ["SCR-999"]), "screen SCR-999 does not exist"),
-    (lambda o: setattr(first_story(o), "role", "ROL-999"), "is not a role of this app"),
-    (lambda o: setattr(first_story(o), "id", "US-S999"), "use an id of the draft or NEW-"),
-]
+def test_the_module_validator_still_says_no_to_what_no_code_can_choose(env):
+    from mde_spec_agent.lanes.product.prod_module.schema import FieldRec
 
-
-@pytest.mark.parametrize(("mutate", "message"), MODULE_CASES)
-def test_the_module_validator_says_no(env, mutate, message):
     inp, out = module_case(env)
     out = out.model_copy(deep=True)
-    mutate(out)
-    errors = module_validate(inp, out)
-    assert any(message in m for m in errors), (message, errors)
+    out.fields += [
+        FieldRec(entity=out.entities[0].id, key=f"extra_{i}", type="text") for i in range(7)
+    ]
+    assert any("new fields" in m for m in module_validate(inp, out))
+    out.stories[
+        0
+    ].feature_ids = []  # a draft story that cites no in feature is not a NEW one: code cannot attach it
+    assert any("cite an in feature or a policy id" in m for m in module_validate(inp, out))
 
 
 def new_rule(**kw):
@@ -198,29 +192,60 @@ OP = OperationRec(
 )
 
 
-def test_custom_operation_rules(env):
+def test_custom_operations_with_unknown_references_are_mended_not_reasked(env):
+    """Live Thorough run 2: operations on an entity id of another module. Relinked when exactly one entity of this module fits
+    by name, else dropped; unknown roles removed; paths made well formed; every case logged, none re-asked."""
+    from mde_spec_agent.lanes.product.prod_module.repair import repair
+
     inp, out = module_case(env)
     ent = inp.entity_ids[0]
+    ent_name = next(e.name for e in out.entities if e.id == ent)
     role = inp.role_ids[0]
+    other = next(i for i in inp.ref_ids if i.startswith("ENT-") and i not in inp.entity_ids)
 
-    def with_op(**kw):
+    def with_op(key="x", **kw):
         o = out.model_copy(deep=True)
-        o.operations.append(OP.model_copy(update={"entity": ent, "roles": [role], **kw}))
+        o.operations.append(
+            OP.model_copy(update={"id": f"NEW-{key}", "entity": ent, "roles": [role], **kw})
+        )
+        o.op_errors.append(OpErrorRec(op=f"NEW-{key}", code="forbidden", recovery="stay"))
         return o
 
-    ok = with_op()
-    ok.op_errors.append(OpErrorRec(op="NEW-x", code="forbidden", recovery="stay"))
-    assert module_validate(inp, ok) == []
-    bad = [
-        (with_op(roles=[]), "name the roles"),
-        (with_op(roles=["ROL-999"]), "is not a role of this app"),
-        (with_op(path="things/confirm"), "path must start with /"),
-        (with_op(entity="ENT-999"), "does not exist"),
-        (with_op(), "declare its errors"),
-        (with_op(id="OP-S001"), "written as NEW-<key>"),
+    assert module_validate(inp, with_op()) == []
+    # an entity of another module: relinked to the one of this module whose name fits, else the operation is dropped
+    fit = with_op("list-" + ent_name.lower().replace(" ", "-"), entity=other)
+    fixed, rows = repair(inp, fit)
+    op = next(o for o in fixed.operations if o.id.startswith("NEW-list-"))
+    assert op.entity == ent and any("relinked" in r["what"] for r in rows)
+    nofit = with_op(
+        "zzz-unrelated", entity=other, name="Something unrelated", path="/zzz/unrelated"
+    )
+    fixed, rows = repair(inp, nofit)
+    assert all(o.id != "NEW-zzz-unrelated" for o in fixed.operations)
+    assert all(
+        f.op != "NEW-zzz-unrelated" for f in fixed.op_fields + fixed.op_errors
+    )  # what hung on it went too
+    assert any("operation dropped" in r["what"] for r in rows)
+    # an entity that exists nowhere
+    gone, _ = repair(inp, with_op("ghost", entity="ENT-999", name="Ghost thing", path="/ghost"))
+    assert all(o.id != "NEW-ghost" for o in gone.operations)
+    # roles: unknown ones are removed; none left and none that move the entity: dropped
+    assert repair(inp, with_op(roles=[role, "ROL-999"]))[0].operations[-1].roles == [role]
+    assert all(
+        o.id != "NEW-x" for o in repair(inp, with_op(roles=["ROL-999"], entity=""))[0].operations
+    )
+    # path, errors, repeats
+    assert repair(inp, with_op(path="things confirm"))[0].operations[-1].path == "/things-confirm"
+    no_err = out.model_copy(deep=True)
+    no_err.operations.append(OP.model_copy(update={"entity": ent, "roles": [role]}))
+    assert any(e.op == "NEW-x" for e in repair(inp, no_err)[0].op_errors)
+    twice = with_op("a")
+    twice.operations.append(twice.operations[-1].model_copy(update={"id": "NEW-b"}))
+    assert [o.id for o in repair(inp, twice)[0].operations if o.id in ("NEW-a", "NEW-b")] == [
+        "NEW-a"
     ]
-    for o, msg in bad:
-        assert any(msg in m for m in module_validate(inp, o)), (msg, module_validate(inp, o))
+    for o in (fit, nofit, with_op(roles=["ROL-999"]), with_op(id="OP-S001")):
+        assert module_validate(inp, o) == []
     # the closed vocabularies are enforced by the schema itself
     with pytest.raises(ValueError):
         OpErrorRec(op="NEW-x", code="made_up_code", recovery="stay")

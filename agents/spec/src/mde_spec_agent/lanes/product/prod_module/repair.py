@@ -19,24 +19,41 @@ from mde_spec_core.callkit.ladder import FixKind
 from mde_spec_core.ids import is_valid_key
 
 from .baseline import acceptance_for, cover_stories
-from .schema import ModuleIn, ModuleOut, StoryRec
+from .schema import ModuleIn, ModuleOut, OpErrorRec, StoryRec
 
 
 def repair(inp: ModuleIn, out: ModuleOut) -> tuple[ModuleOut, list[dict[str, str]]]:
     """The answer after the mechanical repairs, and the R-code rows that say what was changed (see the module docstring)."""
-    out, rows = _drop_invented_entities(out)
+    out, rows = _drop_invented_entities(inp, out)
     out = out.model_copy(
         deep=True
     )  # the steps below edit in place; the caller's answer is never touched
-    for step in (_attach_stories, _stories_and_acceptance, _fields, _lifecycles, _rules, _texts):
+    for step in (
+        _unknown_ids,
+        _operations,
+        _references,
+        _attach_stories,
+        _stories_and_acceptance,
+        _fields,
+        _lifecycles,
+        _rules,
+        _texts,
+    ):
         out, more = step(inp, out)
         rows += more
     return out, rows
 
 
-def _drop_invented_entities(out: ModuleOut) -> tuple[ModuleOut, list[dict[str, str]]]:
+def _drop_invented_entities(
+    inp: ModuleIn, out: ModuleOut
+) -> tuple[ModuleOut, list[dict[str, str]]]:
+    """An entity that is not this module's (neither a draft entity nor NEW-) or a NEW one that is not a join or log entity."""
+    own = set(inp.entity_ids)
     drop = {
-        e.id: e for e in out.entities if e.id.startswith("NEW-") and e.klass not in ("join", "log")
+        e.id: e
+        for e in out.entities
+        if (e.id.startswith("NEW-") and e.klass not in ("join", "log"))
+        or (not e.id.startswith("NEW-") and e.id not in own)
     }
     if not drop:
         return out, []
@@ -57,7 +74,7 @@ def _drop_invented_entities(out: ModuleOut) -> tuple[ModuleOut, list[dict[str, s
             "kind": FixKind.DROP_UNKNOWN_OPTIONAL.value,
             "node_id": ent.id,
             "what": f"dropped the invented entity {ent.name!r} ({ent.klass}): a new entity must be a join or log entity, "
-            "and accounts and codes belong to the system set",
+            "accounts and codes belong to the system set, and an entity of another module is not written here",
             "before": ent.name,
             "after": "",
         }
@@ -458,4 +475,215 @@ def _texts(inp: ModuleIn, out: ModuleOut) -> tuple[ModuleOut, list[dict[str, str
             f.constraint = after
             rows.append(scrub_row(f"{f.entity}.{f.key}", "constraint", before, after, cut))
     _ = invented_numbers
+    return out, rows
+
+
+# ------------------------------------------------------------------------------------------------ ids and cross-references
+def _unknown_ids(inp: ModuleIn, out: ModuleOut) -> tuple[ModuleOut, list[dict[str, str]]]:
+    """A rule, story or operation whose id is neither a draft id nor NEW-<key> is not something this call may write: dropped
+    (with what hangs on it), logged."""
+    rows: list[dict[str, str]] = []
+    bad_r = {r.id for r in out.rules if not (r.id in inp.rule_ids or r.id.startswith("NEW-"))}
+    bad_s = {s.id for s in out.stories if not (s.id in inp.story_ids or s.id.startswith("NEW-"))}
+    draft_ops = {o.id for o in inp.baseline.operations}
+    bad_o = {o.id for o in out.operations if not (o.id in draft_ops or o.id.startswith("NEW-"))}
+    for kind, ids in (("rule", bad_r), ("story", bad_s), ("operation", bad_o)):
+        for i in sorted(ids):
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    i,
+                    f"{kind} id is neither a draft id nor NEW-<key>: dropped",
+                )
+            )
+    out.rules = [r for r in out.rules if r.id not in bad_r]
+    out.stories = [s for s in out.stories if s.id not in bad_s]
+    out.acceptance = [a for a in out.acceptance if a.story not in bad_s]
+    _drop_ops(out, bad_o)
+    return out, rows
+
+
+def _drop_ops(out: ModuleOut, ids: set[str]) -> None:
+    if not ids:
+        return
+    out.operations = [o for o in out.operations if o.id not in ids]
+    out.op_fields = [f for f in out.op_fields if f.op not in ids]
+    out.op_errors = [e for e in out.op_errors if e.op not in ids]
+    for t in out.transitions:
+        if t.on in ids:
+            t.on = ""
+
+
+def _operations(inp: ModuleIn, out: ModuleOut) -> tuple[ModuleOut, list[dict[str, str]]]:
+    """A custom operation that points at something this call does not have: an entity of another module (or none that
+    exists) is relinked to this module's entity when exactly one fits by name, else the operation is dropped; unknown roles are
+    removed (none left: the roles that move that entity's status, else dropped); a path is made well formed; errors are added
+    when none are declared; an operation that repeats another's method and path is dropped. Everything is logged."""
+    rows: list[dict[str, str]] = []
+    roles = set(inp.role_ids)
+    own = {e.id: e.name for e in out.entities} | {e.id: e.name for e in inp.baseline.entities}
+    gone: set[str] = set()
+    seen: set[tuple[str, str]] = set()
+    for op in out.operations:
+        if op.entity and op.entity not in own:
+            words = stem_set(
+                f"{op.id.removeprefix('NEW-').replace('_', ' ').replace('-', ' ')} {op.name} {op.path}"
+            )
+            fit = [i for i, n in own.items() if stem_set(n) & words]
+            if len(fit) == 1:
+                rows.append(
+                    _row(
+                        FixKind.EXACT_SYNONYM,
+                        op.id,
+                        f"entity {op.entity} is not in this call: relinked to {fit[0]} (the one that fits by name)",
+                        op.entity,
+                        fit[0],
+                    )
+                )
+                op.entity = fit[0]
+            else:
+                rows.append(
+                    _row(
+                        FixKind.DROP_UNKNOWN_OPTIONAL,
+                        op.id,
+                        f"entity {op.entity} is not in this call and no entity of this module fits by name: operation dropped",
+                        op.entity,
+                    )
+                )
+                gone.add(op.id)
+                continue
+        known = [r for r in op.roles if r in roles]
+        if not known:
+            known = sorted(
+                {r for t in out.transitions if t.entity == op.entity for r in t.roles if r in roles}
+            )
+        if known != op.roles:
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    op.id,
+                    "unknown roles were removed"
+                    if known
+                    else "no role of this app is named: operation dropped",
+                    ",".join(op.roles),
+                )
+            )
+        if not known:
+            gone.add(op.id)
+            continue
+        op.roles = known
+        path = "/" + "-".join(op.path.strip().strip("/").split()).replace("//", "/")
+        if path != op.path:
+            rows.append(
+                _row(FixKind.EXACT_SYNONYM, op.id, "the path was made well formed", op.path, path)
+            )
+            op.path = path
+        key = (op.method, path.strip("/"))
+        if key in seen:
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    op.id,
+                    "the method and path repeat another operation: dropped",
+                )
+            )
+            gone.add(op.id)
+            continue
+        seen.add(key)
+        if not any(e.op == op.id for e in out.op_errors):
+            out.op_errors.append(OpErrorRec(op=op.id, code="forbidden", recovery="stay"))
+            rows.append(
+                _row(
+                    FixKind.INSTANTIATE_LIBRARY_DEFAULT,
+                    op.id,
+                    "the operation declared no errors: forbidden was added",
+                )
+            )
+    _drop_ops(out, gone)
+    ids = {o.id for o in out.operations}
+    out.op_fields = [f for f in out.op_fields if f.op in ids]
+    out.op_errors = [e for e in out.op_errors if e.op in ids]
+    return out, rows
+
+
+def _references(inp: ModuleIn, out: ModuleOut) -> tuple[ModuleOut, list[dict[str, str]]]:
+    """Unknown screens, features and roles in stories, an unknown entity in a rule, an unknown derived rule on a field."""
+    rows: list[dict[str, str]] = []
+    screens, features, roles = set(inp.screen_ids), set(inp.feature_ids), set(inp.role_ids)
+    draft = {s.id: s for s in inp.baseline.stories}
+    gone: set[str] = set()
+    for st in out.stories:
+        bad_s = [x for x in st.screen_ids if x not in screens]
+        bad_f = [x for x in st.feature_ids if x not in features]
+        if bad_s:
+            st.screen_ids = [x for x in st.screen_ids if x in screens]
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    st.id,
+                    "screens that do not exist were removed",
+                    ",".join(bad_s),
+                )
+            )
+        if bad_f:
+            st.feature_ids = [x for x in st.feature_ids if x in features]
+            if not st.feature_ids and st.id in draft:
+                st.feature_ids = list(draft[st.id].feature_ids)
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    st.id,
+                    "features that do not exist were removed",
+                    ",".join(bad_f),
+                )
+            )
+        if st.role not in roles:
+            if st.id in draft:
+                rows.append(
+                    _row(
+                        FixKind.EXACT_SYNONYM,
+                        st.id,
+                        "an unknown role: the draft's role is used",
+                        st.role,
+                        draft[st.id].role,
+                    )
+                )
+                st.role = draft[st.id].role
+            else:
+                rows.append(
+                    _row(
+                        FixKind.DROP_UNKNOWN_OPTIONAL,
+                        st.id,
+                        "an unknown role: the story is dropped",
+                        st.role,
+                    )
+                )
+                gone.add(st.id)
+    if gone:
+        out.stories = [s for s in out.stories if s.id not in gone]
+        out.acceptance = [a for a in out.acceptance if a.story not in gone]
+    ents = {e.id for e in out.entities} | set(inp.entity_ids)
+    for r in out.rules:
+        if r.entity and r.entity not in ents:
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    r.id,
+                    "the entity of the rule does not exist: cleared",
+                    r.entity,
+                )
+            )
+            r.entity = ""
+    rule_ids = set(inp.rule_ids) | {r.id for r in out.rules}
+    for f in out.fields:
+        if f.derived_rule and f.derived_rule not in rule_ids:
+            rows.append(
+                _row(
+                    FixKind.DROP_UNKNOWN_OPTIONAL,
+                    f"{f.entity}.{f.key}",
+                    "derived_rule is not a rule of this module: cleared",
+                    f.derived_rule,
+                )
+            )
+            f.derived_rule = ""
     return out, rows
