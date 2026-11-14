@@ -101,6 +101,7 @@ concurrency:
   min: 1
   additive_increase: 1
   multiplicative_decrease: 0.5
+  clean_window_seconds: 60      # no 429 for this long = add `additive_increase` workers (up to the computed k)
   fair_queue_weights: {interactive: 3, resume: 2, background: 1}
   quota_runs_per_day: 20
   quota_tokens_per_day: 10000000

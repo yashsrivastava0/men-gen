@@ -62,6 +62,13 @@ class Outcome:
     errors: list[str] = field(default_factory=list)
 
 
+def _stage_done(stage: Stage, done: list[str]) -> bool:
+    """A stage is done when it was recorded under its own name, or when every one of its steps was recorded alone (a
+    run first driven step by step and then resumed with the grouped pipeline must not apply a finished step's stored
+    patch to a graph that already holds it)."""
+    return stage.name in done or all(s.name in done for s in stage.steps)
+
+
 class Orchestrator:
     def __init__(self, store: RunStore, pipeline: list[Stage]) -> None:
         self.store = store
@@ -94,7 +101,7 @@ class Orchestrator:
             "run.started" if not resumed else "step.started", step="resume" if resumed else None
         )
         for stage in self.pipeline:
-            if stage.name in done:
+            if _stage_done(stage, done):
                 continue
             needs_gate = stage.gate_before and (stage.gate_when is None or stage.gate_when(ctx))
             if (

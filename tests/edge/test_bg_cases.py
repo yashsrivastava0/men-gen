@@ -370,12 +370,6 @@ def test_bg_09_a_short_rate_limit_storm_in_the_screens_wave_is_absorbed_with_ide
 
 
 @case("spc-bg-09")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MD-2: a sustained storm opens the breaker and CircuitOpen is swallowed by CallRunner, so the Screens wave "
-    "does not end partial; every card takes its fallback and the run reaches G2 degraded (also: the limiter is never "
-    "halved, BUG-MD-3)",
-)
 def test_bg_09_a_sustained_storm_ends_the_wave_partial_halves_concurrency_and_resumes_identically(
     tmp_path,
 ):

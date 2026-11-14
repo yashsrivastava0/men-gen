@@ -156,6 +156,9 @@ class Concurrency(_M):
     min: int
     additive_increase: int
     multiplicative_decrease: float
+    clean_window_seconds: float = (
+        60.0  # one provider rate-limit window without a 429 earns one worker (doc 15 10.3)
+    )
     fair_queue_weights: dict[str, int]
     quota_runs_per_day: int
     quota_tokens_per_day: int
