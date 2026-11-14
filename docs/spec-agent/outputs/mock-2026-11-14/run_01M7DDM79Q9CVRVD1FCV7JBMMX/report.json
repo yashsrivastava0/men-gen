@@ -1,0 +1,138 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 3618,
+   "tokens_out": 492
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 6264,
+   "tokens_out": 1549
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 1901,
+   "tokens_out": 295
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 482,
+   "tokens_out": 61
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 2143,
+   "tokens_out": 968
+  },
+  "MOCK-HERO": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4923,
+   "tokens_out": 1221
+  },
+  "SCRN": {
+   "calls": 3,
+   "clean": 3,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 24194,
+   "tokens_out": 5150
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 7354,
+   "tokens_out": 6516
+  }
+ },
+ "calls_total": 11,
+ "cost_micros": 0,
+ "cost_usd": 0.0,
+ "events": 66,
+ "offline": true,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe",
+  "critic_vendor": null,
+  "files": 69,
+  "tokens": 81802
+ },
+ "partial_reason": null,
+ "profile": "compact",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7DDM79Q9CVRVD1FCV7JBMMX",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 5,
+  "max_read_tokens": 16748,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": {
+   "blocker": 0,
+   "info": 2,
+   "warning": 5
+  },
+  "by_validator": {
+   "V-04": 5,
+   "V-36": 1,
+   "V-45": 1
+  },
+  "ok": true
+ }
+}

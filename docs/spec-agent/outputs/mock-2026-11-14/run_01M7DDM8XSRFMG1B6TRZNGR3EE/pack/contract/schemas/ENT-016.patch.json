@@ -1,0 +1,31 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "details": {
+   "type": "string"
+  },
+  "name": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  }
+ },
+ "title": "Payment changes",
+ "type": "object",
+ "x-entity": "ENT-016"
+}

@@ -1,0 +1,138 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "amount": "₹10,195.00",
+   "category": "toll",
+   "note": "Note of expense 1 in the submitted state",
+   "occurred_at": "now-76d",
+   "status": "submitted"
+  },
+  {
+   "amount": "₹5,730.00",
+   "category": "other",
+   "note": "Note of expense 2 in the reviewed state",
+   "occurred_at": "now-72d",
+   "status": "reviewed"
+  },
+  {
+   "amount": "₹4,195.00",
+   "category": "fuel",
+   "note": "Note of expense 3 in the reviewed state",
+   "occurred_at": "now-11d",
+   "status": "reviewed"
+  }
+ ],
+ "properties": {
+  "amount": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "category": {
+   "enum": [
+    "fuel",
+    "toll",
+    "other"
+   ],
+   "type": "string"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "note": {
+   "type": "string"
+  },
+  "occurred_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "receipt": {
+   "description": "file reference id; bytes go through the media route",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "submitted",
+    "reviewed",
+    "settled"
+   ],
+   "type": "string"
+  },
+  "trip_id": {
+   "type": "string",
+   "x-ref": "ENT-006"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "amount",
+  "category",
+  "id",
+  "occurred_at",
+  "status",
+  "trip_id"
+ ],
+ "title": "Expense",
+ "type": "object",
+ "x-access": {
+  "ROL-003": [
+   "create",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-011",
+ "x-lifecycle": {
+  "initial": "submitted",
+  "states": [
+   "submitted",
+   "reviewed",
+   "settled"
+  ],
+  "transitions": [
+   {
+    "from": "reviewed",
+    "on": "OP-S11093",
+    "roles": [
+     "ROL-003"
+    ],
+    "to": "settled"
+   },
+   {
+    "from": "submitted",
+    "on": "OP-S11092",
+    "roles": [
+     "ROL-003"
+    ],
+    "to": "reviewed"
+   }
+  ]
+ }
+}

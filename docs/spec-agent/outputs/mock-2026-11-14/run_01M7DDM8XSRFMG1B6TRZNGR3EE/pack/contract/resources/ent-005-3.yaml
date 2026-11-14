@@ -1,0 +1,178 @@
+/claims/{id}/resolved:
+  post:
+    operationId: OP-S7101
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                id:
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewing
+                  - resolved
+                  - rejected
+                  type: string
+              required:
+              - id
+              - status
+              type: object
+        description: Success
+      '401':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not signed in: unauthenticated'
+        x-error-codes:
+        - unauthenticated
+        x-recovery:
+          unauthenticated: sign_in_again
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: reload
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: Mark claim resolved
+    tags:
+    - APP-005
+    x-derived: false
+    x-entity: ENT-005
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-007
+    - ROL-008
+/claims/{id}/reviewing:
+  post:
+    operationId: OP-S7100
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                id:
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewing
+                  - resolved
+                  - rejected
+                  type: string
+              required:
+              - id
+              - status
+              type: object
+        description: Success
+      '401':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not signed in: unauthenticated'
+        x-error-codes:
+        - unauthenticated
+        x-recovery:
+          unauthenticated: sign_in_again
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: reload
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: Mark claim reviewing
+    tags:
+    - APP-005
+    x-derived: false
+    x-entity: ENT-005
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-007
+    - ROL-008

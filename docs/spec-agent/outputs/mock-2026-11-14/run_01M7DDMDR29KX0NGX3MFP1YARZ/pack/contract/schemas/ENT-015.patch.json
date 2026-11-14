@@ -1,0 +1,110 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "report_f1": {
+   "format": "email",
+   "type": "string"
+  },
+  "report_f10": {
+   "format": "email",
+   "type": "string"
+  },
+  "report_f11": {
+   "type": "string"
+  },
+  "report_f12": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "report_f2": {
+   "type": "string"
+  },
+  "report_f3": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "report_f4": {
+   "type": "boolean"
+  },
+  "report_f5": {
+   "type": "string"
+  },
+  "report_f6": {
+   "type": "number"
+  },
+  "report_f7": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "report_f8": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "report_f9": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress"
+   ],
+   "type": "string"
+  }
+ },
+ "title": "Report changes",
+ "type": "object",
+ "x-entity": "ENT-015"
+}

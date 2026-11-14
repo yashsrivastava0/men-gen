@@ -1,0 +1,30 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "class_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "member_id": {
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "booked",
+    "waitlisted",
+    "cancelled",
+    "attended",
+    "no_show"
+   ],
+   "type": "string"
+  },
+  "waitlist_position": {
+   "type": "number"
+  }
+ },
+ "title": "Booking changes",
+ "type": "object",
+ "x-entity": "ENT-002"
+}

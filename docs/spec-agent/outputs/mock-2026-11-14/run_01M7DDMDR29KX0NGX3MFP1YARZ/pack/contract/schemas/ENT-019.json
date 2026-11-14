@@ -1,0 +1,220 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "coupon_f1": "Coupon f1 of coupon 1 in the confirmed state",
+   "coupon_f10": "Coupon f10 of coupon 1 in the confirmed state",
+   "coupon_f11": "35",
+   "coupon_f12": "₹16,700.00",
+   "coupon_f2": "40",
+   "coupon_f3": "₹20,780.00",
+   "coupon_f4": "now-67d",
+   "coupon_f5": "+91 96••• ••748",
+   "coupon_f6": "ayush.ramakrishnan@example.com",
+   "coupon_f7": "option 4",
+   "coupon_f8": "Satara",
+   "coupon_f9": "true",
+   "status": "confirmed"
+  },
+  {
+   "coupon_f1": "Coupon f1 of coupon 2 in the placed state",
+   "coupon_f10": "Coupon f10 of coupon 2 in the placed state",
+   "coupon_f11": "17",
+   "coupon_f12": "₹9,395.00",
+   "coupon_f2": "39",
+   "coupon_f3": "₹8,345.00",
+   "coupon_f4": "now-4d",
+   "coupon_f5": "+91 93••• ••849",
+   "coupon_f6": "lavanya.chad@example.com",
+   "coupon_f7": "option 3",
+   "coupon_f8": "Hubli–Dharwad",
+   "coupon_f9": "true",
+   "status": "placed"
+  },
+  {
+   "coupon_f1": "Coupon f1 of coupon 3 in the draft state",
+   "coupon_f10": "Coupon f10 of coupon 3 in the draft state",
+   "coupon_f11": "7",
+   "coupon_f12": "₹23,485.00",
+   "coupon_f2": "15",
+   "coupon_f3": "₹16,610.00",
+   "coupon_f4": "now-68d",
+   "coupon_f5": "+91 94••• ••300",
+   "coupon_f6": "quincy.mahajan@example.com",
+   "coupon_f7": "option 2",
+   "coupon_f8": "Karawal Nagar",
+   "coupon_f9": "false",
+   "status": "draft"
+  }
+ ],
+ "properties": {
+  "coupon_f1": {
+   "type": "string"
+  },
+  "coupon_f10": {
+   "type": "string"
+  },
+  "coupon_f11": {
+   "type": "number"
+  },
+  "coupon_f12": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "coupon_f2": {
+   "type": "number"
+  },
+  "coupon_f3": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "coupon_f4": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "coupon_f5": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "coupon_f6": {
+   "format": "email",
+   "type": "string"
+  },
+  "coupon_f7": {
+   "type": "string"
+  },
+  "coupon_f8": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "coupon_f9": {
+   "type": "boolean"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "coupon_f1",
+  "coupon_f2",
+  "id"
+ ],
+ "title": "Coupon",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-019",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

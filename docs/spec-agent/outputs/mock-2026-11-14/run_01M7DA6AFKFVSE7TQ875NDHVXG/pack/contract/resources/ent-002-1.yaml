@@ -1,0 +1,225 @@
+/business_accounts:
+  get:
+    operationId: OP-S005
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -business_name
+        - -business_type
+        - -created_at
+        - business_name
+        - business_type
+        - created_at
+        type: string
+    - in: query
+      name: filter[business_name]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[business_type]
+      required: false
+      schema:
+        enum:
+        - Restaurant
+        - Shop
+        type: string
+    - in: query
+      name: filter[owner]
+      required: false
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                business_name:
+                  type: string
+                business_type:
+                  enum:
+                  - Restaurant
+                  - Shop
+                  type: string
+                id:
+                  type: string
+                owner:
+                  type: string
+                  x-ref: ENT-001
+                staff:
+                  items:
+                    type: string
+                  type: array
+              required:
+              - business_name
+              - business_type
+              - owner
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_business_account
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-002
+    x-phase: now
+    x-roles:
+    - ROL-006
+    - ROL-007
+    - ROL-009
+  post:
+    operationId: OP-S007
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              business_name:
+                type: string
+              business_type:
+                enum:
+                - Restaurant
+                - Shop
+                type: string
+              owner:
+                type: string
+                x-ref: ENT-001
+              staff:
+                items:
+                  type: string
+                type: array
+            required:
+            - business_name
+            - business_type
+            - owner
+            type: object
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                business_name:
+                  type: string
+                business_type:
+                  enum:
+                  - Restaurant
+                  - Shop
+                  type: string
+                id:
+                  type: string
+                owner:
+                  type: string
+                  x-ref: ENT-001
+                staff:
+                  items:
+                    type: string
+                  type: array
+              required:
+              - business_name
+              - business_type
+              - owner
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: create_business_account
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-002
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-006
+    - ROL-007

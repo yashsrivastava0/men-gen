@@ -1,0 +1,112 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "details": "Details of invoice 1",
+   "name": "Ekantika Pingle"
+  },
+  {
+   "details": "Details of invoice 2",
+   "name": "Upma Sekhon"
+  },
+  {
+   "details": "Details of invoice 3",
+   "name": "Lucky Murty"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "details": {
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "name"
+ ],
+ "title": "Invoice",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ],
+  "ROL-004": [
+   "view"
+  ],
+  "ROL-005": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-006": [
+   "view"
+  ],
+  "ROL-007": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-010": [
+   "view"
+  ],
+  "ROL-012": [
+   "view"
+  ],
+  "ROL-013": [
+   "view"
+  ],
+  "ROL-014": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-015": [
+   "view"
+  ],
+  "ROL-016": [
+   "view"
+  ],
+  "ROL-017": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-015"
+}

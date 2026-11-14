@@ -1,0 +1,328 @@
+/claims/{id}:
+  delete:
+    operationId: delete_ENT-021
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '204':
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: delete Claim
+    tags:
+    - APP-001
+    x-derived: true
+    x-entity: ENT-021
+    x-phase: now
+    x-roles:
+    - ROL-001
+  patch:
+    operationId: update_ENT-021
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    - $ref: ../components.yaml#/parameters/IfMatch
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/ENT-021.patch.json
+      required: true
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-021.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '412':
+        $ref: ../components.yaml#/responses/VersionChanged
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: update Claim
+    tags:
+    - APP-001
+    x-concurrency: etag
+    x-derived: true
+    x-entity: ENT-021
+    x-phase: now
+    x-roles:
+    - ROL-001
+/ent-021:
+  get:
+    operationId: OP-061
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -claim_f1
+        - -claim_f10
+        - -claim_f11
+        - -claim_f2
+        - -claim_f5
+        - -claim_f8
+        - -claim_f9
+        - -created_at
+        - -status
+        - claim_f1
+        - claim_f10
+        - claim_f11
+        - claim_f2
+        - claim_f5
+        - claim_f8
+        - claim_f9
+        - created_at
+        - status
+        type: string
+    - in: query
+      name: filter[claim_f1]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[claim_f10]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[claim_f11]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[claim_f2]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[claim_f5]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[claim_f7]
+      required: false
+      schema:
+        type: boolean
+    - in: query
+      name: filter[claim_f8]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[claim_f9]
+      required: false
+      schema:
+        type: number
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              properties:
+                items:
+                  items:
+                    $ref: ../schemas/ENT-021.json
+                  type: array
+                next_cursor:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - items
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_ent-021
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-021
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-021/get:
+  get:
+    operationId: OP-062
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-021.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_ent-021
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-021
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-021/save:
+  post:
+    operationId: OP-063
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/ENT-021.json
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-021.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: save_ent-021
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-021
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006

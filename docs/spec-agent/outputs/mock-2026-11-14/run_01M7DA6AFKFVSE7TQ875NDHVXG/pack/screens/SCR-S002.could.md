@@ -1,0 +1,4 @@
+---
+id: SCR-S002   kind: could   voice: could   tier: open
+---
+{id: CP-S10021, kind: trust, when: "A significant task finishes (order placed, payment sent, booking made)", effect: "A brief, clear acknowledgement near where the action happened, with a short matching haptic where the device supports it; routine actions get none", basis: DLT-QUIET-SUCCESS, motion: confirm_success, reduced_motion_alt: The acknowledgement appears as a still message; the haptic stays if haptics are on., tier: A}

@@ -1,0 +1,222 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "product_f1": "option 4",
+   "product_f10": "option 1",
+   "product_f11": "Barasat",
+   "product_f12": "true",
+   "product_f2": "Burhanpur",
+   "product_f3": "false",
+   "product_f4": "Product f4 of product 1 in the placed state",
+   "product_f5": "37",
+   "product_f6": "₹14,220.00",
+   "product_f7": "now-76d",
+   "product_f8": "+91 95••• ••752",
+   "product_f9": "warhi.bains@example.com",
+   "status": "placed"
+  },
+  {
+   "product_f1": "option 4",
+   "product_f10": "option 1",
+   "product_f11": "Jorhat",
+   "product_f12": "false",
+   "product_f2": "Malda",
+   "product_f3": "false",
+   "product_f4": "Product f4 of product 2 in the draft state",
+   "product_f5": "12",
+   "product_f6": "₹7,645.00",
+   "product_f7": "now-4d",
+   "product_f8": "+91 93••• ••751",
+   "product_f9": "xiti.ratta@example.com",
+   "status": "draft"
+  },
+  {
+   "product_f1": "option 1",
+   "product_f10": "option 4",
+   "product_f11": "Sambalpur",
+   "product_f12": "true",
+   "product_f2": "Amaravati",
+   "product_f3": "true",
+   "product_f4": "Product f4 of product 3 in the confirmed state",
+   "product_f5": "12",
+   "product_f6": "₹18,605.00",
+   "product_f7": "now-79d",
+   "product_f8": "+91 94••• ••947",
+   "product_f9": "wridesh.lall@example.com",
+   "status": "confirmed"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "product_f1": {
+   "type": "string"
+  },
+  "product_f10": {
+   "type": "string"
+  },
+  "product_f11": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "product_f12": {
+   "type": "boolean"
+  },
+  "product_f2": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "product_f3": {
+   "type": "boolean"
+  },
+  "product_f4": {
+   "type": "string"
+  },
+  "product_f5": {
+   "type": "number"
+  },
+  "product_f6": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "product_f7": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "product_f8": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "product_f9": {
+   "format": "email",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "product_f1",
+  "product_f2"
+ ],
+ "title": "Product",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-016",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

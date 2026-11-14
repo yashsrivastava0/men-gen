@@ -1,0 +1,205 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "address_f1": "false",
+   "address_f10": "true",
+   "address_f11": "Rourkela",
+   "address_f12": "8",
+   "address_f2": "Bijapur",
+   "address_f3": "30",
+   "address_f4": "₹22,545.00",
+   "address_f5": "now-66d",
+   "address_f6": "+91 91••• ••445",
+   "address_f7": "henry.sekhon@example.com",
+   "address_f8": "option 1",
+   "address_f9": "Bhusawal",
+   "status": "draft"
+  },
+  {
+   "address_f1": "true",
+   "address_f10": "false",
+   "address_f11": "Noida",
+   "address_f12": "24",
+   "address_f2": "Baranagar",
+   "address_f3": "2",
+   "address_f4": "₹9,470.00",
+   "address_f5": "now-32d",
+   "address_f6": "+91 98••• ••147",
+   "address_f7": "warhi.bains@example.com",
+   "address_f8": "option 4",
+   "address_f9": "Loni",
+   "status": "placed"
+  },
+  {
+   "address_f1": "true",
+   "address_f10": "true",
+   "address_f11": "Jalandhar",
+   "address_f12": "38",
+   "address_f2": "Karawal Nagar",
+   "address_f3": "6",
+   "address_f4": "₹11,100.00",
+   "address_f5": "now-42d",
+   "address_f6": "+91 97••• ••222",
+   "address_f7": "om.varughese@example.com",
+   "address_f8": "option 1",
+   "address_f9": "Giridih",
+   "status": "confirmed"
+  }
+ ],
+ "properties": {
+  "address_f1": {
+   "type": "boolean"
+  },
+  "address_f10": {
+   "type": "boolean"
+  },
+  "address_f11": {
+   "type": "string"
+  },
+  "address_f12": {
+   "type": "number"
+  },
+  "address_f2": {
+   "type": "string"
+  },
+  "address_f3": {
+   "type": "number"
+  },
+  "address_f4": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "address_f5": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "address_f6": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "address_f7": {
+   "format": "email",
+   "type": "string"
+  },
+  "address_f8": {
+   "type": "string"
+  },
+  "address_f9": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "address_f1",
+  "address_f2",
+  "id"
+ ],
+ "title": "Address",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-018",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

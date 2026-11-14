@@ -1,0 +1,94 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "payment_f1": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "payment_f10": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "payment_f11": {
+   "format": "email",
+   "type": "string"
+  },
+  "payment_f12": {
+   "type": "string"
+  },
+  "payment_f2": {
+   "format": "email",
+   "type": "string"
+  },
+  "payment_f3": {
+   "type": "string"
+  },
+  "payment_f4": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "payment_f5": {
+   "type": "boolean"
+  },
+  "payment_f6": {
+   "type": "string"
+  },
+  "payment_f7": {
+   "type": "number"
+  },
+  "payment_f8": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "payment_f9": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  }
+ },
+ "title": "Payment changes",
+ "type": "object",
+ "x-entity": "ENT-005"
+}

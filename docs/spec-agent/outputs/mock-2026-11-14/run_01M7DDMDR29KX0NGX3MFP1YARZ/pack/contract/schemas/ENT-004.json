@@ -1,0 +1,210 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "invoice_f1": "now-43d",
+   "invoice_f10": "now-56d",
+   "invoice_f11": "+91 98••• ••312",
+   "invoice_f12": "ekantika.pingle@example.com",
+   "invoice_f2": "+91 98••• ••185",
+   "invoice_f3": "sarthak.kapoor@example.com",
+   "invoice_f4": "option 2",
+   "invoice_f5": "Malegaon",
+   "invoice_f6": "true",
+   "invoice_f7": "Invoice f7 of invoice 1 in the placed state",
+   "invoice_f8": "38",
+   "invoice_f9": "₹9,820.00",
+   "status": "placed"
+  },
+  {
+   "invoice_f1": "now-22d",
+   "invoice_f10": "now-82d",
+   "invoice_f11": "+91 94••• ••671",
+   "invoice_f12": "nilima.iyengar@example.com",
+   "invoice_f2": "+91 93••• ••432",
+   "invoice_f3": "timothy.kothari@example.com",
+   "invoice_f4": "option 2",
+   "invoice_f5": "Nellore",
+   "invoice_f6": "true",
+   "invoice_f7": "Invoice f7 of invoice 2 in the confirmed state",
+   "invoice_f8": "25",
+   "invoice_f9": "₹10,485.00",
+   "status": "confirmed"
+  },
+  {
+   "invoice_f1": "now-78d",
+   "invoice_f10": "now-18d",
+   "invoice_f11": "+91 99••• ••499",
+   "invoice_f12": "lakshit.bora@example.com",
+   "invoice_f2": "+91 99••• ••192",
+   "invoice_f3": "kashvi.chaudhuri@example.com",
+   "invoice_f4": "option 4",
+   "invoice_f5": "Jaunpur",
+   "invoice_f6": "true",
+   "invoice_f7": "Invoice f7 of invoice 3 in the draft state",
+   "invoice_f8": "13",
+   "invoice_f9": "₹23,275.00",
+   "status": "draft"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "invoice_f1": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "invoice_f10": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "invoice_f11": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "invoice_f12": {
+   "format": "email",
+   "type": "string"
+  },
+  "invoice_f2": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "invoice_f3": {
+   "format": "email",
+   "type": "string"
+  },
+  "invoice_f4": {
+   "type": "string"
+  },
+  "invoice_f5": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "invoice_f6": {
+   "type": "boolean"
+  },
+  "invoice_f7": {
+   "type": "string"
+  },
+  "invoice_f8": {
+   "type": "number"
+  },
+  "invoice_f9": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "invoice_f1",
+  "invoice_f2"
+ ],
+ "title": "Invoice",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-004",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

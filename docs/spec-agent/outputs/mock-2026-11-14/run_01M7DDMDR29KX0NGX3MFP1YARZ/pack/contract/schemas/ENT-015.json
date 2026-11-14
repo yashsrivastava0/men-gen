@@ -1,0 +1,233 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "report_f1": "fiyaz.sharaf@example.com",
+   "report_f10": "rajata.dara@example.com",
+   "report_f11": "option 1",
+   "report_f12": "Jehanabad",
+   "report_f2": "option 4",
+   "report_f3": "Hospet",
+   "report_f4": "false",
+   "report_f5": "Report f5 of report 1 in the draft state",
+   "report_f6": "10",
+   "report_f7": "₹23,270.00",
+   "report_f8": "now-32d",
+   "report_f9": "+91 95••• ••486",
+   "status": "draft"
+  },
+  {
+   "report_f1": "aayush.nagar@example.com",
+   "report_f10": "vedhika.loyal@example.com",
+   "report_f11": "option 4",
+   "report_f12": "Jalandhar",
+   "report_f2": "option 3",
+   "report_f3": "Lucknow",
+   "report_f4": "false",
+   "report_f5": "Report f5 of report 2 in the in_progress state",
+   "report_f6": "24",
+   "report_f7": "₹2,335.00",
+   "report_f8": "now-81d",
+   "report_f9": "+91 96••• ••476",
+   "status": "in_progress"
+  },
+  {
+   "report_f1": "imaran.wali@example.com",
+   "report_f10": "ishani.tak@example.com",
+   "report_f11": "option 1",
+   "report_f12": "Ghaziabad",
+   "report_f2": "option 3",
+   "report_f3": "Giridih",
+   "report_f4": "true",
+   "report_f5": "Report f5 of report 3 in the placed state",
+   "report_f6": "23",
+   "report_f7": "₹1,425.00",
+   "report_f8": "now-72d",
+   "report_f9": "+91 93••• ••892",
+   "status": "placed"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "report_f1": {
+   "format": "email",
+   "type": "string"
+  },
+  "report_f10": {
+   "format": "email",
+   "type": "string"
+  },
+  "report_f11": {
+   "type": "string"
+  },
+  "report_f12": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "report_f2": {
+   "type": "string"
+  },
+  "report_f3": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "report_f4": {
+   "type": "boolean"
+  },
+  "report_f5": {
+   "type": "string"
+  },
+  "report_f6": {
+   "type": "number"
+  },
+  "report_f7": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "report_f8": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "report_f9": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "report_f1",
+  "report_f2"
+ ],
+ "title": "Report",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-015",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress"
+  ],
+  "transitions": [
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

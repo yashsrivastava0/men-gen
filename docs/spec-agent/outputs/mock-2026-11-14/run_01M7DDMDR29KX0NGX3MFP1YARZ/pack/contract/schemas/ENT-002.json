@@ -1,0 +1,232 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "booking_f1": "37",
+   "booking_f10": "39",
+   "booking_f11": "₹21,130.00",
+   "booking_f12": "now-17d",
+   "booking_f2": "₹19,320.00",
+   "booking_f3": "now-7d",
+   "booking_f4": "+91 96••• ••544",
+   "booking_f5": "mitesh.bose@example.com",
+   "booking_f6": "option 1",
+   "booking_f7": "Sultan Pur Majra",
+   "booking_f8": "true",
+   "booking_f9": "Booking f9 of booking 1 in the draft state",
+   "status": "draft"
+  },
+  {
+   "booking_f1": "27",
+   "booking_f10": "2",
+   "booking_f11": "₹14,670.00",
+   "booking_f12": "now-78d",
+   "booking_f2": "₹22,755.00",
+   "booking_f3": "now-52d",
+   "booking_f4": "+91 96••• ••826",
+   "booking_f5": "vamakshi.dar@example.com",
+   "booking_f6": "option 4",
+   "booking_f7": "Bhilwara",
+   "booking_f8": "false",
+   "booking_f9": "Booking f9 of booking 2 in the draft state",
+   "status": "draft"
+  },
+  {
+   "booking_f1": "32",
+   "booking_f10": "40",
+   "booking_f11": "₹10,825.00",
+   "booking_f12": "now-30d",
+   "booking_f2": "₹18,275.00",
+   "booking_f3": "now-52d",
+   "booking_f4": "+91 92••• ••621",
+   "booking_f5": "vedhika.loyal@example.com",
+   "booking_f6": "option 3",
+   "booking_f7": "Mysore",
+   "booking_f8": "true",
+   "booking_f9": "Booking f9 of booking 3 in the in_progress state",
+   "status": "in_progress"
+  }
+ ],
+ "properties": {
+  "booking_f1": {
+   "type": "number"
+  },
+  "booking_f10": {
+   "type": "number"
+  },
+  "booking_f11": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "booking_f12": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "booking_f2": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "booking_f3": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "booking_f4": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "booking_f5": {
+   "format": "email",
+   "type": "string"
+  },
+  "booking_f6": {
+   "type": "string"
+  },
+  "booking_f7": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "booking_f8": {
+   "type": "boolean"
+  },
+  "booking_f9": {
+   "type": "string"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "booking_f1",
+  "booking_f2",
+  "id"
+ ],
+ "title": "Booking",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-002",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress"
+  ],
+  "transitions": [
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

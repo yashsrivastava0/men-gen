@@ -1,0 +1,112 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "details": "Details of audit entry 1",
+   "name": "Onkar Halder"
+  },
+  {
+   "details": "Details of audit entry 2",
+   "name": "Dakshesh Sawhney"
+  },
+  {
+   "details": "Details of audit entry 3",
+   "name": "Aayush Nagar"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "details": {
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "name"
+ ],
+ "title": "Audit Entry",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "view"
+  ],
+  "ROL-002": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ],
+  "ROL-004": [
+   "view"
+  ],
+  "ROL-005": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-006": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-007": [
+   "view"
+  ],
+  "ROL-008": [
+   "view"
+  ],
+  "ROL-010": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-012": [
+   "view"
+  ],
+  "ROL-013": [
+   "view"
+  ],
+  "ROL-014": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-015": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-016": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-017": [
+   "create",
+   "edit",
+   "view"
+  ]
+ },
+ "x-class": "log",
+ "x-entity": "ENT-021"
+}

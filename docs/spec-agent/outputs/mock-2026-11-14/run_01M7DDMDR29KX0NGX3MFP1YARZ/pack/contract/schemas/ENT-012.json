@@ -1,0 +1,254 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "review_f1": "₹7,050.00",
+   "review_f10": "₹17,870.00",
+   "review_f11": "now-41d",
+   "review_f12": "+91 96••• ••989",
+   "review_f2": "now-24d",
+   "review_f3": "+91 92••• ••797",
+   "review_f4": "triveni.shankar@example.com",
+   "review_f5": "option 4",
+   "review_f6": "Noida",
+   "review_f7": "false",
+   "review_f8": "Review f8 of review 1 in the cancelled state",
+   "review_f9": "24",
+   "status": "cancelled"
+  },
+  {
+   "review_f1": "₹8,580.00",
+   "review_f10": "₹22,810.00",
+   "review_f11": "now-17d",
+   "review_f12": "+91 99••• ••589",
+   "review_f2": "now-37d",
+   "review_f3": "+91 93••• ••700",
+   "review_f4": "sanaya.bhat@example.com",
+   "review_f5": "option 2",
+   "review_f6": "Amaravati",
+   "review_f7": "true",
+   "review_f8": "Review f8 of review 2 in the completed state",
+   "review_f9": "2",
+   "status": "completed"
+  },
+  {
+   "review_f1": "₹18,440.00",
+   "review_f10": "₹23,125.00",
+   "review_f11": "now-66d",
+   "review_f12": "+91 94••• ••162",
+   "review_f2": "now-77d",
+   "review_f3": "+91 95••• ••805",
+   "review_f4": "jyoti.sarna@example.com",
+   "review_f5": "option 1",
+   "review_f6": "Bhind",
+   "review_f7": "true",
+   "review_f8": "Review f8 of review 3 in the in_progress state",
+   "review_f9": "31",
+   "status": "in_progress"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "review_f1": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "review_f10": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "review_f11": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "review_f12": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "review_f2": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "review_f3": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "review_f4": {
+   "format": "email",
+   "type": "string"
+  },
+  "review_f5": {
+   "type": "string"
+  },
+  "review_f6": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "review_f7": {
+   "type": "boolean"
+  },
+  "review_f8": {
+   "type": "string"
+  },
+  "review_f9": {
+   "type": "number"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress",
+    "completed",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "review_f1",
+  "review_f2"
+ ],
+ "title": "Review",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-012",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress",
+   "completed",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "completed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "in_progress",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "completed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

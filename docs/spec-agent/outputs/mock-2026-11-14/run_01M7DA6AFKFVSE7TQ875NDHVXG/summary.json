@@ -1,0 +1,128 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "COPY-L": {
+   "calls": 2,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "DSGN": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "MOCK-HERO": {
+   "calls": 3,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-JOURNEYS": {
+   "calls": 2,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-MODULE": {
+   "calls": 5,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "SCRN": {
+   "calls": 7,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  }
+ },
+ "calls": 25,
+ "compass_id": "standard-produce-marketplace-nashik",
+ "cost_micros": 0,
+ "cost_usd": "0.0000",
+ "created_at": "2026-11-14T15:18:08.627682+00:00",
+ "input": "standard-produce-marketplace-nashik",
+ "mode": "mock",
+ "not_copied": [],
+ "offline": true,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
+  "critic_vendor": null,
+  "files": 136,
+  "tokens": 211376
+ },
+ "partial_reason": null,
+ "profile": "standard",
+ "program_id": "ses_01M72RE53CJJKA5HB19FR788ZJ",
+ "run_id": "run_01M7DA6AFKFVSE7TQ875NDHVXG",
+ "run_spend_micros": 0,
+ "schema": "spec.export.summary.v1",
+ "status": "approved",
+ "synth": null,
+ "tasks": {
+  "budget": 28000,
+  "count": 23,
+  "max_read_tokens": 19341,
+  "over_budget": 0
+ },
+ "updated_at": "2026-11-14T15:18:10.613336+00:00",
+ "validators": {
+  "by_severity": {
+   "blocker": 0,
+   "info": 3,
+   "warning": 8
+  },
+  "by_validator": {
+   "V-04": 8,
+   "V-36": 1,
+   "V-45": 2
+  },
+  "ok": true
+ }
+}

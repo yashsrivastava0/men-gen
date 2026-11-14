@@ -1,0 +1,460 @@
+/ent-001:
+  get:
+    operationId: OP-001
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -created_at
+        - -order_f1
+        - -order_f10
+        - -order_f11
+        - -order_f12
+        - -order_f2
+        - -order_f3
+        - -order_f4
+        - -order_f7
+        - created_at
+        - order_f1
+        - order_f10
+        - order_f11
+        - order_f12
+        - order_f2
+        - order_f3
+        - order_f4
+        - order_f7
+        type: string
+    - in: query
+      name: filter[order_f1]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[order_f10]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[order_f11]
+      required: false
+      schema:
+        type: number
+    - in: query
+      name: filter[order_f12]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[order_f2]
+      required: false
+      schema:
+        type: number
+    - in: query
+      name: filter[order_f3]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[order_f4]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[order_f7]
+      required: false
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              properties:
+                items:
+                  items:
+                    $ref: ../schemas/ENT-001.json
+                  type: array
+                next_cursor:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - items
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_ent-001
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-001
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-001/checkout/1:
+  post:
+    operationId: OP-067
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '402':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Payment required: payment_declined'
+        x-error-codes:
+        - payment_declined
+        x-recovery:
+          payment_declined: stay
+      '403':
+        $ref: ../components.yaml#/responses/Forbidden
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: duplicate'
+        x-error-codes:
+        - duplicate
+        x-recovery:
+          duplicate: go_back
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: checkout_step_1
+    tags:
+    - APP-001
+    x-derived: false
+    x-entity: ENT-001
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-001/checkout/2:
+  post:
+    operationId: OP-068
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '402':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Payment required: payment_declined'
+        x-error-codes:
+        - payment_declined
+        x-recovery:
+          payment_declined: stay
+      '403':
+        $ref: ../components.yaml#/responses/Forbidden
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: duplicate'
+        x-error-codes:
+        - duplicate
+        x-recovery:
+          duplicate: go_back
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: checkout_step_2
+    tags:
+    - APP-001
+    x-derived: false
+    x-entity: ENT-001
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-001/checkout/3:
+  post:
+    operationId: OP-069
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '402':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Payment required: payment_declined'
+        x-error-codes:
+        - payment_declined
+        x-recovery:
+          payment_declined: stay
+      '403':
+        $ref: ../components.yaml#/responses/Forbidden
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: duplicate'
+        x-error-codes:
+        - duplicate
+        x-recovery:
+          duplicate: go_back
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: checkout_step_3
+    tags:
+    - APP-001
+    x-derived: false
+    x-entity: ENT-001
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-001/checkout/4:
+  post:
+    operationId: OP-070
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '402':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Payment required: payment_declined'
+        x-error-codes:
+        - payment_declined
+        x-recovery:
+          payment_declined: stay
+      '403':
+        $ref: ../components.yaml#/responses/Forbidden
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: duplicate'
+        x-error-codes:
+        - duplicate
+        x-recovery:
+          duplicate: go_back
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: checkout_step_4
+    tags:
+    - APP-001
+    x-derived: false
+    x-entity: ENT-001
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-001/checkout/5:
+  post:
+    operationId: OP-071
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '402':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Payment required: payment_declined'
+        x-error-codes:
+        - payment_declined
+        x-recovery:
+          payment_declined: stay
+      '403':
+        $ref: ../components.yaml#/responses/Forbidden
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: duplicate'
+        x-error-codes:
+        - duplicate
+        x-recovery:
+          duplicate: go_back
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: checkout_step_5
+    tags:
+    - APP-001
+    x-derived: false
+    x-entity: ENT-001
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-001/get:
+  get:
+    operationId: OP-002
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-001.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_ent-001
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-001
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006

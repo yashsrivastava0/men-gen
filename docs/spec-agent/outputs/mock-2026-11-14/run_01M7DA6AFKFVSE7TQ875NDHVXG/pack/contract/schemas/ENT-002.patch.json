@@ -1,0 +1,30 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "business_name": {
+   "type": "string"
+  },
+  "business_type": {
+   "enum": [
+    "Restaurant",
+    "Shop"
+   ],
+   "type": "string"
+  },
+  "owner": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "staff": {
+   "items": {
+    "type": "string"
+   },
+   "type": "array"
+  }
+ },
+ "title": "Business account changes",
+ "type": "object",
+ "x-entity": "ENT-002"
+}

@@ -1,0 +1,153 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "amount": "₹16,640.00",
+   "reason": "Reason of advance 1 in the rejected state",
+   "requested_at": "now-24d",
+   "settled_amount": "₹2,005.00",
+   "status": "rejected"
+  },
+  {
+   "amount": "₹8,565.00",
+   "reason": "Reason of advance 2 in the rejected state",
+   "requested_at": "now-73d",
+   "settled_amount": "₹16,005.00",
+   "status": "rejected"
+  },
+  {
+   "amount": "₹475.00",
+   "reason": "Reason of advance 3 in the requested state",
+   "requested_at": "now-30d",
+   "settled_amount": "₹19,970.00",
+   "status": "requested"
+  }
+ ],
+ "properties": {
+  "amount": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "reason": {
+   "type": "string"
+  },
+  "requested_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "settled_amount": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "requested",
+    "approved",
+    "rejected",
+    "settled"
+   ],
+   "type": "string"
+  },
+  "trip_id": {
+   "type": "string",
+   "x-ref": "ENT-006"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "amount",
+  "id",
+  "requested_at",
+  "status",
+  "trip_id"
+ ],
+ "title": "Advance",
+ "type": "object",
+ "x-access": {
+  "ROL-003": [
+   "create",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-012",
+ "x-lifecycle": {
+  "initial": "requested",
+  "states": [
+   "requested",
+   "approved",
+   "rejected",
+   "settled"
+  ],
+  "transitions": [
+   {
+    "from": "approved",
+    "on": "OP-S11096",
+    "roles": [
+     "ROL-003"
+    ],
+    "to": "rejected"
+   },
+   {
+    "from": "approved",
+    "on": "OP-S11095",
+    "roles": [
+     "ROL-003"
+    ],
+    "to": "settled"
+   },
+   {
+    "from": "requested",
+    "on": "OP-S11094",
+    "roles": [
+     "ROL-003"
+    ],
+    "to": "approved"
+   }
+  ]
+ }
+}

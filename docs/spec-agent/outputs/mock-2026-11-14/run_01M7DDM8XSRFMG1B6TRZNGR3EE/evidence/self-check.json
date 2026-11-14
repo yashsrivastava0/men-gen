@@ -1,0 +1,2171 @@
+{
+ "banners": [],
+ "builder_needs": {
+  "needs": [
+   {
+    "expected_files": [
+     "global/roles-and-access.md",
+     "apps/*/app.md"
+    ],
+    "files": [
+     "apps/APP-001/app.md",
+     "apps/APP-002/app.md",
+     "apps/APP-003/app.md",
+     "apps/APP-004/app.md",
+     "apps/APP-005/app.md",
+     "global/roles-and-access.md"
+    ],
+    "flagged": 0,
+    "id": "BN-01",
+    "status": "present",
+    "title": "What it is, who uses it, apps, roles",
+    "validators": [
+     "V-08",
+     "V-29"
+    ],
+    "why": "5 apps, 15 roles"
+   },
+   {
+    "expected_files": [
+     "global/scope-ledger.json"
+    ],
+    "files": [
+     "global/scope-ledger.json"
+    ],
+    "flagged": 0,
+    "id": "BN-02",
+    "status": "present",
+    "title": "What first: in, later, out",
+    "validators": [
+     "V-16",
+     "V-19",
+     "V-28"
+    ],
+    "why": "29 features in the scope ledger"
+   },
+   {
+    "expected_files": [
+     "global/navigation.md",
+     "global/routes.json",
+     "modules/*/module.md"
+    ],
+    "files": [
+     "global/navigation.md",
+     "global/routes.json",
+     "modules/MOD-001/module.md",
+     "modules/MOD-002/module.md",
+     "modules/MOD-003/module.md",
+     "modules/MOD-004/module.md",
+     "modules/MOD-005/module.md",
+     "modules/MOD-006/module.md",
+     "modules/MOD-007/module.md",
+     "modules/MOD-008/module.md",
+     "modules/MOD-009/module.md",
+     "modules/MOD-010/module.md",
+     "modules/MOD-011/module.md"
+    ],
+    "flagged": 8,
+    "id": "BN-03",
+    "status": "present",
+    "title": "Screens and movement",
+    "validators": [
+     "V-04",
+     "V-05",
+     "V-07"
+    ],
+    "why": "65 screens, 0 without a route"
+   },
+   {
+    "expected_files": [
+     "data-model/*.md"
+    ],
+    "files": [
+     "data-model/MOD-002-1.md",
+     "data-model/MOD-004-1.md",
+     "data-model/MOD-005-1.md",
+     "data-model/MOD-006-1.md",
+     "data-model/MOD-007-1.md",
+     "data-model/MOD-008-1.md",
+     "data-model/MOD-009-1.md",
+     "data-model/MOD-011-1.md"
+    ],
+    "flagged": 6,
+    "id": "BN-04",
+    "status": "present",
+    "title": "Data: entities, fields, statuses, who sees what",
+    "validators": [
+     "V-06",
+     "V-09",
+     "V-11"
+    ],
+    "why": "22 entities"
+   },
+   {
+    "expected_files": [
+     "global/rules.md",
+     "global/behaviors.md"
+    ],
+    "files": [
+     "global/behaviors.md",
+     "global/rules.md"
+    ],
+    "flagged": 1,
+    "id": "BN-05",
+    "status": "present",
+    "title": "Rules, formulas, validations; unknown numbers flagged",
+    "validators": [
+     "V-08",
+     "V-36",
+     "V-45"
+    ],
+    "why": "52 rules, 1 flagged confirm"
+   },
+   {
+    "expected_files": [
+     "contract/*"
+    ],
+    "files": [
+     "contract/auth-matrix.json",
+     "contract/components.yaml",
+     "contract/events.json",
+     "contract/openapi.yaml",
+     "contract/resources/ent-001.yaml",
+     "contract/resources/ent-002-1.yaml",
+     "contract/resources/ent-002-2.yaml",
+     "contract/resources/ent-003-1.yaml",
+     "contract/resources/ent-003-2.yaml",
+     "contract/resources/ent-003-3.yaml",
+     "contract/resources/ent-004-1.yaml",
+     "contract/resources/ent-004-2.yaml",
+     "contract/resources/ent-004-3.yaml",
+     "contract/resources/ent-005-1.yaml",
+     "contract/resources/ent-005-2.yaml",
+     "contract/resources/ent-005-3.yaml",
+     "contract/resources/ent-006.yaml",
+     "contract/resources/ent-007.yaml",
+     "contract/resources/ent-008.yaml",
+     "contract/resources/ent-009.yaml",
+     "contract/resources/ent-010.yaml",
+     "contract/resources/ent-011-1.yaml",
+     "contract/resources/ent-011-2.yaml",
+     "contract/resources/ent-012-1.yaml",
+     "contract/resources/ent-012-2.yaml",
+     "contract/resources/ent-013.yaml",
+     "contract/resources/ent-014.yaml",
+     "contract/resources/ent-015.yaml",
+     "contract/resources/ent-016.yaml",
+     "contract/resources/ent-017.yaml",
+     "contract/resources/ent-018.yaml",
+     "contract/resources/ent-019.yaml",
+     "contract/resources/ent-020.yaml",
+     "contract/resources/ent-021.yaml",
+     "contract/resources/ent-022.yaml",
+     "contract/resources/webhooks.yaml",
+     "contract/schemas/ENT-001.json",
+     "contract/schemas/ENT-001.patch.json",
+     "contract/schemas/ENT-002.json",
+     "contract/schemas/ENT-002.patch.json",
+     "contract/schemas/ENT-003.json",
+     "contract/schemas/ENT-003.patch.json",
+     "contract/schemas/ENT-004.json",
+     "contract/schemas/ENT-004.patch.json",
+     "contract/schemas/ENT-005.json",
+     "contract/schemas/ENT-005.patch.json",
+     "contract/schemas/ENT-006.json",
+     "contract/schemas/ENT-006.patch.json",
+     "contract/schemas/ENT-007.json",
+     "contract/schemas/ENT-007.patch.json",
+     "contract/schemas/ENT-008.json",
+     "contract/schemas/ENT-008.patch.json",
+     "contract/schemas/ENT-009.json",
+     "contract/schemas/ENT-009.patch.json",
+     "contract/schemas/ENT-010.json",
+     "contract/schemas/ENT-010.patch.json",
+     "contract/schemas/ENT-011.json",
+     "contract/schemas/ENT-012.json",
+     "contract/schemas/ENT-013.json",
+     "contract/schemas/ENT-013.patch.json",
+     "contract/schemas/ENT-014.json",
+     "contract/schemas/ENT-014.patch.json",
+     "contract/schemas/ENT-015.json",
+     "contract/schemas/ENT-015.patch.json",
+     "contract/schemas/ENT-016.json",
+     "contract/schemas/ENT-016.patch.json",
+     "contract/schemas/ENT-017.json",
+     "contract/schemas/ENT-017.patch.json",
+     "contract/schemas/ENT-018.json",
+     "contract/schemas/ENT-018.patch.json",
+     "contract/schemas/ENT-019.json",
+     "contract/schemas/ENT-019.patch.json",
+     "contract/schemas/ENT-020.json",
+     "contract/schemas/ENT-020.patch.json",
+     "contract/schemas/ENT-021.json",
+     "contract/schemas/ENT-021.patch.json",
+     "contract/schemas/ENT-022.json",
+     "contract/schemas/ENT-022.patch.json"
+    ],
+    "flagged": 16,
+    "id": "BN-06",
+    "status": "present",
+    "title": "Contract: operations, errors, pagination, auth",
+    "validators": [
+     "V-10",
+     "V-15",
+     "V-30"
+    ],
+    "why": "107 operations, 0 without an error model"
+   },
+   {
+    "expected_files": [
+     "contract/fixtures/*"
+    ],
+    "files": [],
+    "flagged": 0,
+    "id": "BN-07",
+    "status": "present",
+    "title": "Realistic data: names, prices, formats, edge cases",
+    "validators": [
+     "V-15",
+     "V-41"
+    ],
+    "why": "109 hero records filled"
+   },
+   {
+    "expected_files": [
+     "global/design-direction.md",
+     "global/tokens.dtcg.json"
+    ],
+    "files": [
+     "global/design-direction.md",
+     "global/tokens.dtcg.json"
+    ],
+    "flagged": 0,
+    "id": "BN-08",
+    "status": "present",
+    "title": "Look: tokens, tone, accessibility, dark mode",
+    "validators": [
+     "V-12",
+     "V-24"
+    ],
+    "why": "3 directions with tokens"
+   },
+   {
+    "expected_files": [
+     "screens/*.md"
+    ],
+    "files": [
+     "screens/SCR-001.md",
+     "screens/SCR-002.md",
+     "screens/SCR-004.could.md",
+     "screens/SCR-004.md",
+     "screens/SCR-005.could.md",
+     "screens/SCR-005.md",
+     "screens/SCR-006.could.md",
+     "screens/SCR-006.md",
+     "screens/SCR-007.could.md",
+     "screens/SCR-007.md",
+     "screens/SCR-008.could.md",
+     "screens/SCR-008.md",
+     "screens/SCR-012.could.md",
+     "screens/SCR-012.md",
+     "screens/SCR-013.could.md",
+     "screens/SCR-013.md",
+     "screens/SCR-014.could.md",
+     "screens/SCR-014.md",
+     "screens/SCR-015.could.md",
+     "screens/SCR-015.md",
+     "screens/SCR-016.could.md",
+     "screens/SCR-016.md",
+     "screens/SCR-017.could.md",
+     "screens/SCR-017.md",
+     "screens/SCR-026.could.md",
+     "screens/SCR-026.md",
+     "screens/SCR-027.could.md",
+     "screens/SCR-027.md",
+     "screens/SCR-028.could.md",
+     "screens/SCR-028.md",
+     "screens/SCR-030.could.md",
+     "screens/SCR-030.md",
+     "screens/SCR-031.could.md",
+     "screens/SCR-031.md",
+     "screens/SCR-032.could.md",
+     "screens/SCR-032.md",
+     "screens/SCR-033.could.md",
+     "screens/SCR-033.md",
+     "screens/SCR-034.could.md",
+     "screens/SCR-034.md",
+     "screens/SCR-045.could.md",
+     "screens/SCR-045.md",
+     "screens/SCR-046.could.md",
+     "screens/SCR-046.md",
+     "screens/SCR-047.could.md",
+     "screens/SCR-047.md",
+     "screens/SCR-048.could.md",
+     "screens/SCR-048.md",
+     "screens/SCR-049.could.md",
+     "screens/SCR-049.md",
+     "screens/SCR-050.could.md",
+     "screens/SCR-050.md",
+     "screens/SCR-051.could.md",
+     "screens/SCR-051.md",
+     "screens/SCR-052.could.md",
+     "screens/SCR-052.md",
+     "screens/SCR-066.could.md",
+     "screens/SCR-066.md",
+     "screens/SCR-067.could.md",
+     "screens/SCR-067.md",
+     "screens/SCR-068.could.md",
+     "screens/SCR-068.md",
+     "screens/SCR-069.could.md",
+     "screens/SCR-069.md",
+     "screens/SCR-078.md",
+     "screens/SCR-079.could.md",
+     "screens/SCR-079.md",
+     "screens/SCR-080.md",
+     "screens/SCR-081.could.md",
+     "screens/SCR-081.md",
+     "screens/SCR-082.could.md",
+     "screens/SCR-082.md",
+     "screens/SCR-083.could.md",
+     "screens/SCR-083.md",
+     "screens/SCR-084.could.md",
+     "screens/SCR-084.md",
+     "screens/SCR-092.could.md",
+     "screens/SCR-092.md",
+     "screens/SCR-093.could.md",
+     "screens/SCR-093.md",
+     "screens/SCR-094.could.md",
+     "screens/SCR-094.md",
+     "screens/SCR-095.could.md",
+     "screens/SCR-095.md",
+     "screens/SCR-102.could.md",
+     "screens/SCR-102.md",
+     "screens/SCR-107.could.md",
+     "screens/SCR-107.md",
+     "screens/SCR-108.could.md",
+     "screens/SCR-108.md",
+     "screens/SCR-109.could.md",
+     "screens/SCR-109.md",
+     "screens/SCR-110.could.md",
+     "screens/SCR-110.md",
+     "screens/SCR-122.could.md",
+     "screens/SCR-122.md",
+     "screens/SCR-123.could.md",
+     "screens/SCR-123.md",
+     "screens/SCR-124.could.md",
+     "screens/SCR-124.md",
+     "screens/SCR-125.could.md",
+     "screens/SCR-125.md",
+     "screens/SCR-130.could.md",
+     "screens/SCR-130.md",
+     "screens/SCR-131.could.md",
+     "screens/SCR-131.md",
+     "screens/SCR-132.could.md",
+     "screens/SCR-132.md",
+     "screens/SCR-S001.md",
+     "screens/SCR-S002.md",
+     "screens/SCR-S003.md",
+     "screens/SCR-S004.md",
+     "screens/SCR-S005.md",
+     "screens/SCR-S006.md",
+     "screens/SCR-S007.md",
+     "screens/SCR-S008.md",
+     "screens/SCR-S009.md"
+    ],
+    "flagged": 8,
+    "id": "BN-09",
+    "status": "present",
+    "title": "Per screen: regions, bindings, actions, states, copy, acceptance",
+    "validators": [
+     "V-06",
+     "V-07",
+     "V-13",
+     "V-14",
+     "V-22",
+     "V-27"
+    ],
+    "why": "65 screen cards, 0 without regions or states"
+   },
+   {
+    "expected_files": [
+     "global/integrations.md"
+    ],
+    "files": [
+     "global/integrations.md"
+    ],
+    "flagged": 1,
+    "id": "BN-10",
+    "status": "present",
+    "title": "The outside world and what is mocked",
+    "validators": [
+     "V-16",
+     "V-36"
+    ],
+    "why": "2 integrations with a mock plan"
+   },
+   {
+    "expected_files": [
+     "global/platform.md"
+    ],
+    "files": [],
+    "flagged": 0,
+    "id": "BN-11",
+    "status": "default",
+    "title": "What is allowed: SDK, packages, kit",
+    "validators": [
+     "V-23"
+    ],
+    "why": "the standard stack applies (library)"
+   },
+   {
+    "expected_files": [
+     "build/build-plan.json"
+    ],
+    "files": [
+     "build/build-plan.json"
+    ],
+    "flagged": 0,
+    "id": "BN-12",
+    "status": "present",
+    "title": "Build order, ownership, interface freeze",
+    "validators": [
+     "V-26",
+     "V-28"
+    ],
+    "why": "41 task cards in the build plan"
+   },
+   {
+    "expected_files": [
+     "screens/*.md"
+    ],
+    "files": [
+     "screens/SCR-001.md",
+     "screens/SCR-002.md",
+     "screens/SCR-004.could.md",
+     "screens/SCR-004.md",
+     "screens/SCR-005.could.md",
+     "screens/SCR-005.md",
+     "screens/SCR-006.could.md",
+     "screens/SCR-006.md",
+     "screens/SCR-007.could.md",
+     "screens/SCR-007.md",
+     "screens/SCR-008.could.md",
+     "screens/SCR-008.md",
+     "screens/SCR-012.could.md",
+     "screens/SCR-012.md",
+     "screens/SCR-013.could.md",
+     "screens/SCR-013.md",
+     "screens/SCR-014.could.md",
+     "screens/SCR-014.md",
+     "screens/SCR-015.could.md",
+     "screens/SCR-015.md",
+     "screens/SCR-016.could.md",
+     "screens/SCR-016.md",
+     "screens/SCR-017.could.md",
+     "screens/SCR-017.md",
+     "screens/SCR-026.could.md",
+     "screens/SCR-026.md",
+     "screens/SCR-027.could.md",
+     "screens/SCR-027.md",
+     "screens/SCR-028.could.md",
+     "screens/SCR-028.md",
+     "screens/SCR-030.could.md",
+     "screens/SCR-030.md",
+     "screens/SCR-031.could.md",
+     "screens/SCR-031.md",
+     "screens/SCR-032.could.md",
+     "screens/SCR-032.md",
+     "screens/SCR-033.could.md",
+     "screens/SCR-033.md",
+     "screens/SCR-034.could.md",
+     "screens/SCR-034.md",
+     "screens/SCR-045.could.md",
+     "screens/SCR-045.md",
+     "screens/SCR-046.could.md",
+     "screens/SCR-046.md",
+     "screens/SCR-047.could.md",
+     "screens/SCR-047.md",
+     "screens/SCR-048.could.md",
+     "screens/SCR-048.md",
+     "screens/SCR-049.could.md",
+     "screens/SCR-049.md",
+     "screens/SCR-050.could.md",
+     "screens/SCR-050.md",
+     "screens/SCR-051.could.md",
+     "screens/SCR-051.md",
+     "screens/SCR-052.could.md",
+     "screens/SCR-052.md",
+     "screens/SCR-066.could.md",
+     "screens/SCR-066.md",
+     "screens/SCR-067.could.md",
+     "screens/SCR-067.md",
+     "screens/SCR-068.could.md",
+     "screens/SCR-068.md",
+     "screens/SCR-069.could.md",
+     "screens/SCR-069.md",
+     "screens/SCR-078.md",
+     "screens/SCR-079.could.md",
+     "screens/SCR-079.md",
+     "screens/SCR-080.md",
+     "screens/SCR-081.could.md",
+     "screens/SCR-081.md",
+     "screens/SCR-082.could.md",
+     "screens/SCR-082.md",
+     "screens/SCR-083.could.md",
+     "screens/SCR-083.md",
+     "screens/SCR-084.could.md",
+     "screens/SCR-084.md",
+     "screens/SCR-092.could.md",
+     "screens/SCR-092.md",
+     "screens/SCR-093.could.md",
+     "screens/SCR-093.md",
+     "screens/SCR-094.could.md",
+     "screens/SCR-094.md",
+     "screens/SCR-095.could.md",
+     "screens/SCR-095.md",
+     "screens/SCR-102.could.md",
+     "screens/SCR-102.md",
+     "screens/SCR-107.could.md",
+     "screens/SCR-107.md",
+     "screens/SCR-108.could.md",
+     "screens/SCR-108.md",
+     "screens/SCR-109.could.md",
+     "screens/SCR-109.md",
+     "screens/SCR-110.could.md",
+     "screens/SCR-110.md",
+     "screens/SCR-122.could.md",
+     "screens/SCR-122.md",
+     "screens/SCR-123.could.md",
+     "screens/SCR-123.md",
+     "screens/SCR-124.could.md",
+     "screens/SCR-124.md",
+     "screens/SCR-125.could.md",
+     "screens/SCR-125.md",
+     "screens/SCR-130.could.md",
+     "screens/SCR-130.md",
+     "screens/SCR-131.could.md",
+     "screens/SCR-131.md",
+     "screens/SCR-132.could.md",
+     "screens/SCR-132.md",
+     "screens/SCR-S001.md",
+     "screens/SCR-S002.md",
+     "screens/SCR-S003.md",
+     "screens/SCR-S004.md",
+     "screens/SCR-S005.md",
+     "screens/SCR-S006.md",
+     "screens/SCR-S007.md",
+     "screens/SCR-S008.md",
+     "screens/SCR-S009.md"
+    ],
+    "flagged": 0,
+    "id": "BN-13",
+    "status": "present",
+    "title": "What done means; Locked, Default, Open",
+    "validators": [
+     "V-17"
+    ],
+    "why": "every screen has acceptance scenarios and marked tiers"
+   },
+   {
+    "expected_files": [
+     "INDEX.md"
+    ],
+    "files": [
+     "INDEX.md"
+    ],
+    "flagged": 101,
+    "id": "BN-14",
+    "status": "present",
+    "title": "Unknown, assumed, degraded; how to ask",
+    "validators": [
+     "V-17",
+     "V-45"
+    ],
+    "why": "101 assumed or degraded nodes are marked"
+   },
+   {
+    "expected_files": [
+     "global/platform.md"
+    ],
+    "files": [],
+    "flagged": 0,
+    "id": "BN-15",
+    "status": "present",
+    "title": "Platform and store rules",
+    "validators": [
+     "V-33"
+    ],
+    "why": "1 node cite a store or policy rule"
+   },
+   {
+    "expected_files": [
+     "global/behaviors.md"
+    ],
+    "files": [
+     "global/behaviors.md"
+    ],
+    "flagged": 11,
+    "id": "BN-16",
+    "status": "present",
+    "title": "Global behaviour",
+    "validators": [
+     "V-35"
+    ],
+    "why": "all 13 required categories are present"
+   },
+   {
+    "expected_files": [
+     "global/scope-ledger.json",
+     "apps/*/app.md"
+    ],
+    "files": [
+     "apps/APP-001/app.md",
+     "apps/APP-002/app.md",
+     "apps/APP-003/app.md",
+     "apps/APP-004/app.md",
+     "apps/APP-005/app.md",
+     "global/scope-ledger.json"
+    ],
+    "flagged": 0,
+    "id": "BN-17",
+    "status": "present",
+    "title": "Phases and scope cap",
+    "validators": [
+     "V-28"
+    ],
+    "why": "scope and phases are recorded"
+   }
+  ],
+  "summary": {
+   "assumed": 0,
+   "default": 1,
+   "missing": 0,
+   "present": 16
+  }
+ },
+ "confirm_list": [
+  {
+   "category": "other",
+   "id": "RUL-S052",
+   "kind": "rule",
+   "rank": 1,
+   "source": "graph",
+   "text": "payments pending result: A pending result is waited for a limited time, then shown as unknown with a way to check again or contact support; the limit is on the confirm list."
+  },
+  {
+   "category": "other",
+   "id": "SCR-045",
+   "kind": "screen",
+   "rank": 2,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-046",
+   "kind": "screen",
+   "rank": 3,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-047",
+   "kind": "screen",
+   "rank": 4,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-048",
+   "kind": "screen",
+   "rank": 5,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-049",
+   "kind": "screen",
+   "rank": 6,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-050",
+   "kind": "screen",
+   "rank": 7,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-051",
+   "kind": "screen",
+   "rank": 8,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-052",
+   "kind": "screen",
+   "rank": 9,
+   "source": "graph",
+   "text": "RUL-S052 payments pending result"
+  }
+ ],
+ "counts": {
+  "by_severity": {
+   "blocker": 0,
+   "info": 3,
+   "warning": 10
+  },
+  "by_validator": {
+   "V-04": 10,
+   "V-36": 1,
+   "V-45": 2
+  }
+ },
+ "coverage": {
+  "entities": {
+   "ENT-001": {
+    "shown_on": [
+     "SCR-008"
+    ],
+    "via_operations": [
+     "SCR-008"
+    ]
+   },
+   "ENT-004": {
+    "shown_on": [
+     "SCR-004",
+     "SCR-005",
+     "SCR-006",
+     "SCR-007",
+     "SCR-014"
+    ],
+    "via_operations": [
+     "SCR-006"
+    ]
+   },
+   "ENT-005": {
+    "shown_on": [
+     "SCR-012",
+     "SCR-013"
+    ],
+    "via_operations": [
+     "SCR-013"
+    ]
+   },
+   "ENT-006": {
+    "shown_on": [
+     "SCR-014",
+     "SCR-016",
+     "SCR-017",
+     "SCR-026",
+     "SCR-027",
+     "SCR-066",
+     "SCR-067",
+     "SCR-068",
+     "SCR-081",
+     "SCR-082",
+     "SCR-083",
+     "SCR-084"
+    ],
+    "via_operations": [
+     "SCR-083"
+    ]
+   },
+   "ENT-007": {
+    "shown_on": [
+     "SCR-027",
+     "SCR-028",
+     "SCR-092",
+     "SCR-093",
+     "SCR-094",
+     "SCR-095"
+    ],
+    "via_operations": [
+     "SCR-028",
+     "SCR-094"
+    ]
+   },
+   "ENT-008": {
+    "shown_on": [
+     "SCR-017",
+     "SCR-030"
+    ],
+    "via_operations": [
+     "SCR-030"
+    ]
+   },
+   "ENT-009": {
+    "shown_on": [
+     "SCR-066",
+     "SCR-067",
+     "SCR-068",
+     "SCR-107",
+     "SCR-108",
+     "SCR-109",
+     "SCR-110"
+    ],
+    "via_operations": [
+     "SCR-109"
+    ]
+   },
+   "ENT-010": {
+    "shown_on": [
+     "SCR-026",
+     "SCR-102"
+    ],
+    "via_operations": [
+     "SCR-102"
+    ]
+   },
+   "ENT-011": {
+    "shown_on": [
+     "SCR-031",
+     "SCR-032",
+     "SCR-034"
+    ],
+    "via_operations": [
+     "SCR-032",
+     "SCR-034"
+    ]
+   },
+   "ENT-012": {
+    "shown_on": [
+     "SCR-031",
+     "SCR-033"
+    ],
+    "via_operations": [
+     "SCR-033"
+    ]
+   },
+   "ENT-015": {
+    "shown_on": [
+     "SCR-045",
+     "SCR-046",
+     "SCR-047",
+     "SCR-048"
+    ],
+    "via_operations": [
+     "SCR-047"
+    ]
+   },
+   "ENT-016": {
+    "shown_on": [
+     "SCR-049",
+     "SCR-050",
+     "SCR-051",
+     "SCR-052"
+    ],
+    "via_operations": [
+     "SCR-051"
+    ]
+   },
+   "ENT-018": {
+    "shown_on": [
+     "SCR-122",
+     "SCR-123",
+     "SCR-124",
+     "SCR-125"
+    ],
+    "via_operations": [
+     "SCR-124"
+    ]
+   },
+   "ENT-021": {
+    "shown_on": [],
+    "via_operations": []
+   }
+  },
+  "features": {
+   "FTR-001": {
+    "screens": [
+     "SCR-001",
+     "SCR-004",
+     "SCR-005",
+     "SCR-006",
+     "SCR-007",
+     "SCR-079",
+     "SCR-080"
+    ],
+    "stories": [
+     "US-S001"
+    ]
+   },
+   "FTR-002": {
+    "screens": [
+     "SCR-081",
+     "SCR-082",
+     "SCR-083",
+     "SCR-084",
+     "SCR-130",
+     "SCR-131",
+     "SCR-132"
+    ],
+    "stories": [
+     "US-S002"
+    ]
+   },
+   "FTR-003": {
+    "screens": [
+     "SCR-026",
+     "SCR-027",
+     "SCR-028",
+     "SCR-030",
+     "SCR-092",
+     "SCR-093",
+     "SCR-094",
+     "SCR-095"
+    ],
+    "stories": [
+     "US-S003"
+    ]
+   },
+   "FTR-004": {
+    "screens": [
+     "SCR-107",
+     "SCR-108",
+     "SCR-109",
+     "SCR-110"
+    ],
+    "stories": [
+     "US-S004"
+    ]
+   },
+   "FTR-005": {
+    "screens": [
+     "SCR-045",
+     "SCR-046",
+     "SCR-047",
+     "SCR-048",
+     "SCR-130",
+     "SCR-131",
+     "SCR-132"
+    ],
+    "stories": [
+     "US-S005"
+    ]
+   },
+   "FTR-006": {
+    "screens": [
+     "SCR-122",
+     "SCR-123",
+     "SCR-124",
+     "SCR-125",
+     "SCR-130",
+     "SCR-131",
+     "SCR-132"
+    ],
+    "stories": [
+     "US-S006"
+    ]
+   },
+   "FTR-007": {
+    "screens": [
+     "SCR-001",
+     "SCR-008",
+     "SCR-079",
+     "SCR-080"
+    ],
+    "stories": [
+     "US-S007"
+    ]
+   },
+   "FTR-008": {
+    "screens": [
+     "SCR-001",
+     "SCR-079",
+     "SCR-080"
+    ],
+    "stories": [
+     "US-S008"
+    ]
+   },
+   "FTR-010": {
+    "screens": [
+     "SCR-014",
+     "SCR-015",
+     "SCR-016",
+     "SCR-017"
+    ],
+    "stories": [
+     "US-S009"
+    ]
+   },
+   "FTR-011": {
+    "screens": [
+     "SCR-049",
+     "SCR-050",
+     "SCR-051",
+     "SCR-052"
+    ],
+    "stories": [
+     "US-S010"
+    ]
+   },
+   "FTR-012": {
+    "screens": [
+     "SCR-004",
+     "SCR-012",
+     "SCR-013"
+    ],
+    "stories": [
+     "US-S011"
+    ]
+   },
+   "FTR-015": {
+    "screens": [
+     "SCR-026",
+     "SCR-027",
+     "SCR-030"
+    ],
+    "stories": [
+     "US-S012"
+    ]
+   },
+   "FTR-016": {
+    "screens": [
+     "SCR-028",
+     "SCR-102"
+    ],
+    "stories": [
+     "US-S013"
+    ]
+   },
+   "FTR-017": {
+    "screens": [
+     "SCR-030"
+    ],
+    "stories": [
+     "US-S014"
+    ]
+   },
+   "FTR-018": {
+    "screens": [
+     "SCR-031",
+     "SCR-032",
+     "SCR-033",
+     "SCR-034"
+    ],
+    "stories": [
+     "US-S015"
+    ]
+   },
+   "FTR-026": {
+    "screens": [
+     "SCR-066",
+     "SCR-067",
+     "SCR-068",
+     "SCR-069",
+     "SCR-130",
+     "SCR-131",
+     "SCR-132"
+    ],
+    "stories": [
+     "US-S016"
+    ]
+   },
+   "FTR-030": {
+    "screens": [
+     "SCR-078"
+    ],
+    "stories": [
+     "US-S017"
+    ]
+   }
+  },
+  "flows": {
+   "FLW-001": [
+    "SCR-001",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-079",
+    "SCR-080"
+   ],
+   "FLW-002": [
+    "SCR-001",
+    "SCR-079",
+    "SCR-080"
+   ],
+   "FLW-003": [
+    "SCR-004",
+    "SCR-005",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017"
+   ],
+   "FLW-004": [
+    "SCR-004",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-005": [
+    "SCR-004",
+    "SCR-012",
+    "SCR-013"
+   ],
+   "FLW-006": [
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084"
+   ],
+   "FLW-007": [
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084"
+   ],
+   "FLW-008": [
+    "SCR-092",
+    "SCR-093",
+    "SCR-094",
+    "SCR-095"
+   ],
+   "FLW-009": [
+    "SCR-031",
+    "SCR-032",
+    "SCR-033",
+    "SCR-034",
+    "SCR-092",
+    "SCR-093",
+    "SCR-094",
+    "SCR-095"
+   ],
+   "FLW-010": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-011": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-012": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-013": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-014": [
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069"
+   ],
+   "FLW-015": [
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-016": [
+    "SCR-066",
+    "SCR-068",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-017": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-018": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-019": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-020": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S1001": [
+    "SCR-001",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-079",
+    "SCR-080"
+   ],
+   "FLW-S1002": [
+    "SCR-001",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-079",
+    "SCR-080"
+   ],
+   "FLW-S1003": [
+    "SCR-001",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-079",
+    "SCR-080"
+   ],
+   "FLW-S1004": [
+    "SCR-001",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-079",
+    "SCR-080"
+   ],
+   "FLW-S1005": [
+    "SCR-004",
+    "SCR-005",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017"
+   ],
+   "FLW-S1006": [
+    "SCR-004",
+    "SCR-005",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017"
+   ],
+   "FLW-S1007": [
+    "SCR-004",
+    "SCR-005",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017"
+   ],
+   "FLW-S1008": [
+    "SCR-004",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S1009": [
+    "SCR-004",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S1010": [
+    "SCR-004",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S1011": [
+    "SCR-004",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S2001": [
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084"
+   ],
+   "FLW-S2002": [
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084"
+   ],
+   "FLW-S2003": [
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084"
+   ],
+   "FLW-S3001": [
+    "SCR-031",
+    "SCR-032",
+    "SCR-033",
+    "SCR-034",
+    "SCR-092",
+    "SCR-093",
+    "SCR-094",
+    "SCR-095"
+   ],
+   "FLW-S3002": [
+    "SCR-031",
+    "SCR-032",
+    "SCR-033",
+    "SCR-034",
+    "SCR-092",
+    "SCR-093",
+    "SCR-094",
+    "SCR-095"
+   ],
+   "FLW-S3003": [
+    "SCR-031",
+    "SCR-032",
+    "SCR-033",
+    "SCR-034",
+    "SCR-092",
+    "SCR-093",
+    "SCR-094",
+    "SCR-095"
+   ],
+   "FLW-S3004": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-S3005": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-S3006": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-S3007": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-S3008": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-S3009": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110"
+   ],
+   "FLW-S3010": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S3011": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S3012": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048"
+   ],
+   "FLW-S4001": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S4002": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S4003": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S4004": [
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069"
+   ],
+   "FLW-S4005": [
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069"
+   ],
+   "FLW-S4006": [
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069"
+   ],
+   "FLW-S4007": [
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S4008": [
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S4009": [
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S4010": [
+    "SCR-066",
+    "SCR-068",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S4011": [
+    "SCR-066",
+    "SCR-068",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S4012": [
+    "SCR-066",
+    "SCR-068",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S4013": [
+    "SCR-066",
+    "SCR-068",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5001": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S5002": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S5003": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S5004": [
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125"
+   ],
+   "FLW-S5005": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5006": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5007": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5008": [
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5009": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5010": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5011": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ],
+   "FLW-S5012": [
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132"
+   ]
+  },
+  "gaps": [],
+  "roles": {
+   "ROL-001": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-007",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-049",
+    "SCR-050",
+    "SCR-051",
+    "SCR-052",
+    "SCR-079",
+    "SCR-080",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-002": [
+    "SCR-001",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-003": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-026",
+    "SCR-027",
+    "SCR-028",
+    "SCR-030",
+    "SCR-031",
+    "SCR-032",
+    "SCR-033",
+    "SCR-034",
+    "SCR-079",
+    "SCR-080",
+    "SCR-092",
+    "SCR-093",
+    "SCR-094",
+    "SCR-095",
+    "SCR-102",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-004": [
+    "SCR-001",
+    "SCR-079",
+    "SCR-080",
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-005": [
+    "SCR-001",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-049",
+    "SCR-050",
+    "SCR-051",
+    "SCR-052",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-006": [
+    "SCR-001",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-007": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-049",
+    "SCR-050",
+    "SCR-051",
+    "SCR-052",
+    "SCR-079",
+    "SCR-080",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-008": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-007",
+    "SCR-008",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015",
+    "SCR-016",
+    "SCR-017",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-049",
+    "SCR-050",
+    "SCR-051",
+    "SCR-052",
+    "SCR-079",
+    "SCR-080",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-010": [
+    "SCR-001",
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-081",
+    "SCR-082",
+    "SCR-083",
+    "SCR-084",
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-012": [
+    "SCR-001",
+    "SCR-079",
+    "SCR-080",
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-013": [
+    "SCR-001",
+    "SCR-079",
+    "SCR-080",
+    "SCR-107",
+    "SCR-108",
+    "SCR-109",
+    "SCR-110",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-014": [
+    "SCR-001",
+    "SCR-045",
+    "SCR-046",
+    "SCR-047",
+    "SCR-048",
+    "SCR-049",
+    "SCR-050",
+    "SCR-051",
+    "SCR-052",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-015": [
+    "SCR-001",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-122",
+    "SCR-123",
+    "SCR-124",
+    "SCR-125",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-016": [
+    "SCR-001",
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-017": [
+    "SCR-001",
+    "SCR-066",
+    "SCR-067",
+    "SCR-068",
+    "SCR-069",
+    "SCR-078",
+    "SCR-079",
+    "SCR-080",
+    "SCR-130",
+    "SCR-131",
+    "SCR-132",
+    "SCR-S001",
+    "SCR-S002",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ]
+  }
+ },
+ "errors": [
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-017",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-028",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-030",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-034",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-051",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-078",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-102",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S004",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S005",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S006",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "RESEARCH_DRIFT"
+   ],
+   "code": "V-36",
+   "fix": "libraries fill, marked assumed",
+   "repair": "C",
+   "severity": "info",
+   "where": "research",
+   "why": "no research view: every research-derived claim must be absent or assumed"
+  },
+  {
+   "catalogue": [
+    "GROUNDING_NAME_UNKNOWN",
+    "GROUNDING_NUMBER_UNSUPPORTED",
+    "RULE_VALUES_CONFLICT"
+   ],
+   "code": "V-45",
+   "fix": "listed as unchecked for G2",
+   "repair": "C",
+   "severity": "info",
+   "where": "RUL-S033",
+   "why": "number cannot be grounded: no quote text available"
+  },
+  {
+   "catalogue": [
+    "GROUNDING_NAME_UNKNOWN",
+    "GROUNDING_NUMBER_UNSUPPORTED",
+    "RULE_VALUES_CONFLICT"
+   ],
+   "code": "V-45",
+   "fix": "listed as unchecked for G2",
+   "repair": "C",
+   "severity": "info",
+   "where": "RUL-S034",
+   "why": "number cannot be grounded: no quote text available"
+  }
+ ],
+ "flags": [],
+ "ok": true,
+ "pack_error": null,
+ "partial": false,
+ "rcode": {
+  "changes": 0,
+  "counts": {
+   "downgrade_locked_to_default": 0,
+   "drop_unknown_optional": 0,
+   "exact_synonym": 0,
+   "instantiate_library_default": 0,
+   "mint_missing_id": 0,
+   "sort_bytes": 0
+  },
+  "rows": []
+ },
+ "reasks": [],
+ "schema": "spec.self-check.v1"
+}

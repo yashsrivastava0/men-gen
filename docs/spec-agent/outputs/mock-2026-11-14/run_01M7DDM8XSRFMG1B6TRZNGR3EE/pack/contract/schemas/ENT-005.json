@@ -1,0 +1,138 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "claim_type": "delay",
+   "description": "Description of claim 1 in the rejected state",
+   "status": "rejected"
+  },
+  {
+   "claim_type": "delay",
+   "description": "Description of claim 2 in the reviewing state",
+   "status": "reviewing"
+  },
+  {
+   "claim_type": "delay",
+   "description": "Description of claim 3 in the submitted state",
+   "status": "submitted"
+  }
+ ],
+ "properties": {
+  "booking_id": {
+   "type": "string",
+   "x-ref": "ENT-004"
+  },
+  "claim_type": {
+   "enum": [
+    "damage",
+    "delay"
+   ],
+   "type": "string"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "customer_company_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "description": {
+   "type": "string"
+  },
+  "evidence": {
+   "description": "file reference id; bytes go through the media route",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "submitted",
+    "reviewing",
+    "resolved",
+    "rejected"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "booking_id",
+  "claim_type",
+  "customer_company_id",
+  "description",
+  "id",
+  "status"
+ ],
+ "title": "Claim",
+ "type": "object",
+ "x-access": {
+  "ROL-007": [
+   "create",
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-005",
+ "x-lifecycle": {
+  "initial": "submitted",
+  "states": [
+   "submitted",
+   "reviewing",
+   "resolved",
+   "rejected"
+  ],
+  "transitions": [
+   {
+    "from": "resolved",
+    "on": "OP-S7102",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "rejected"
+   },
+   {
+    "from": "reviewing",
+    "on": "OP-S7101",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "resolved"
+   },
+   {
+    "from": "submitted",
+    "on": "OP-S7100",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "reviewing"
+   }
+  ]
+ }
+}

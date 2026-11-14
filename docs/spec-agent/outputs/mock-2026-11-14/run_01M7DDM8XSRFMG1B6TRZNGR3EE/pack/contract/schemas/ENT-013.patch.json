@@ -1,0 +1,16 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "details": {
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  }
+ },
+ "title": "Maintenance Job changes",
+ "type": "object",
+ "x-entity": "ENT-013"
+}

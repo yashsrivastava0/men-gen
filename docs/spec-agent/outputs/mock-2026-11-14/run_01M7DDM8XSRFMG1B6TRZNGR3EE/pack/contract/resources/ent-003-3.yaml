@@ -1,0 +1,313 @@
+/quote_requests/{id}:
+  delete:
+    operationId: OP-S015
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '204':
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: delete_quote_request
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-003
+    x-phase: later
+    x-roles:
+    - ROL-008
+  get:
+    operationId: OP-S012
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                customer_company_id:
+                  type: string
+                  x-ref: ENT-001
+                drop_address:
+                  type: string
+                id:
+                  type: string
+                material:
+                  type: string
+                pickup_address:
+                  type: string
+                requested_date:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewing
+                  - responded
+                  - closed
+                  type: string
+                weight:
+                  type: number
+              required:
+              - customer_company_id
+              - drop_address
+              - material
+              - pickup_address
+              - requested_date
+              - status
+              - weight
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_quote_request
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-003
+    x-phase: later
+    x-roles:
+    - ROL-007
+    - ROL-008
+  patch:
+    operationId: OP-S014
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    - $ref: ../components.yaml#/parameters/IfMatch
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              customer_company_id:
+                type: string
+                x-ref: ENT-001
+              drop_address:
+                type: string
+              material:
+                type: string
+              pickup_address:
+                type: string
+              requested_date:
+                description: RFC 3339, UTC
+                format: date-time
+                type: string
+              status:
+                enum:
+                - submitted
+                - reviewing
+                - responded
+                - closed
+                type: string
+              weight:
+                type: number
+            required:
+            - customer_company_id
+            - drop_address
+            - material
+            - pickup_address
+            - requested_date
+            - status
+            - weight
+            type: object
+      required: true
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                customer_company_id:
+                  type: string
+                  x-ref: ENT-001
+                drop_address:
+                  type: string
+                id:
+                  type: string
+                material:
+                  type: string
+                pickup_address:
+                  type: string
+                requested_date:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewing
+                  - responded
+                  - closed
+                  type: string
+                weight:
+                  type: number
+              required:
+              - customer_company_id
+              - drop_address
+              - material
+              - pickup_address
+              - requested_date
+              - status
+              - weight
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '412':
+        $ref: ../components.yaml#/responses/VersionChanged
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: update_quote_request
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-concurrency: etag
+    x-derived: false
+    x-entity: ENT-003
+    x-idempotent: true
+    x-phase: later
+    x-roles:
+    - ROL-008

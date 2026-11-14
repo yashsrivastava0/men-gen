@@ -1,0 +1,148 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "amount": "₹16,250.00",
+   "paid_at": "now-68d",
+   "status": "pending"
+  },
+  {
+   "amount": "₹23,725.00",
+   "paid_at": "now-17d",
+   "status": "succeeded"
+  },
+  {
+   "amount": "₹13,840.00",
+   "paid_at": "now-43d",
+   "status": "succeeded"
+  }
+ ],
+ "properties": {
+  "amount": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "order": {
+   "type": "string",
+   "x-ref": "ENT-006"
+  },
+  "paid_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "pending",
+    "succeeded",
+    "failed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "amount",
+  "id",
+  "order",
+  "status"
+ ],
+ "title": "Payment",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "create",
+   "view"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "none"
+  ],
+  "ROL-004": [
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ],
+  "ROL-006": [
+   "create",
+   "view"
+  ],
+  "ROL-007": [
+   "create",
+   "view"
+  ],
+  "ROL-008": [
+   "view"
+  ],
+  "ROL-009": [
+   "create",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-007",
+ "x-lifecycle": {
+  "initial": "pending",
+  "states": [
+   "pending",
+   "succeeded",
+   "failed"
+  ],
+  "transitions": [
+   {
+    "from": "pending",
+    "on": "OP-S5049",
+    "roles": [
+     "ROL-001",
+     "ROL-006",
+     "ROL-007",
+     "ROL-009"
+    ],
+    "to": "succeeded"
+   },
+   {
+    "from": "succeeded",
+    "on": "OP-S5050",
+    "roles": [
+     "ROL-001",
+     "ROL-006",
+     "ROL-007",
+     "ROL-009"
+    ],
+    "to": "failed"
+   }
+  ]
+ }
+}

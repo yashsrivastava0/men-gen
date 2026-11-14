@@ -1,0 +1,73 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+info:
+  summary: Contract v0 derived from the Spec graph; the backend engine builds on it.
+  title: ses_01M72PT1S3G61C9WFTXJPWKC3N contract
+  version: 0.1.0
+  x-conventions:
+    auth: 'default deny: x-roles lists who may call; see auth-matrix.json'
+    concurrency: ETag out and If-Match in on editable entities (version field)
+    enums: lifecycle states are the enum of an entity status
+    errors: 'one shape (spec.error.v1): code, message, request_id, retryable, details'
+    filter_sort: filter[field]=value and sort=field or -field on list operations
+    fixtures: contract/fixtures/<ENT>.json (hook; absent until fixtures are written)
+    idempotency: Idempotency-Key header on operations marked x-idempotent
+    ids: opaque strings, never reused
+    pagination: 'cursor: cursor and limit in, next_cursor out'
+    phase: x-phase later marks operations that exist only for later features
+    timestamps: RFC 3339, UTC
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+openapi: 3.1.0
+paths:
+  /bookings:
+    $ref: resources/ent-002-1.yaml#/~1bookings
+  /bookings/{id}:
+    $ref: resources/ent-002-2.yaml#/~1bookings~1%7Bid%7D
+  /bookings/{id}/attended:
+    $ref: resources/ent-002-2.yaml#/~1bookings~1%7Bid%7D~1attended
+  /bookings/{id}/cancelled:
+    $ref: resources/ent-002-2.yaml#/~1bookings~1%7Bid%7D~1cancelled
+  /bookings/{id}/no-show:
+    $ref: resources/ent-002-3.yaml#/~1bookings~1%7Bid%7D~1no-show
+  /bookings/{id}/waitlisted:
+    $ref: resources/ent-002-3.yaml#/~1bookings~1%7Bid%7D~1waitlisted
+  /class_packs:
+    $ref: resources/ent-003.yaml#/~1class_packs
+  /class_packs/{id}:
+    $ref: resources/ent-003.yaml#/~1class_packs~1%7Bid%7D
+  /classes:
+    $ref: resources/ent-001-1.yaml#/~1classes
+  /classes/{id}:
+    $ref: resources/ent-001-2.yaml#/~1classes~1%7Bid%7D
+  /classes/{id}/cancelled:
+    $ref: resources/ent-001-2.yaml#/~1classes~1%7Bid%7D~1cancelled
+  /classes/{id}/completed:
+    $ref: resources/ent-001-2.yaml#/~1classes~1%7Bid%7D~1completed
+  /payments:
+    $ref: resources/ent-004-1.yaml#/~1payments
+  /payments/{id}:
+    $ref: resources/ent-004-1.yaml#/~1payments~1%7Bid%7D
+  /payments/{id}/failed:
+    $ref: resources/ent-004-1.yaml#/~1payments~1%7Bid%7D~1failed
+  /payments/{id}/paid:
+    $ref: resources/ent-004-2.yaml#/~1payments~1%7Bid%7D~1paid
+  /reminders:
+    $ref: resources/ent-005.yaml#/~1reminders
+  /reminders/{id}:
+    $ref: resources/ent-005.yaml#/~1reminders~1%7Bid%7D
+  /reminders/{id}/sent:
+    $ref: resources/ent-005.yaml#/~1reminders~1%7Bid%7D~1sent
+security:
+- bearerAuth: []
+servers:
+- url: /
+tags:
+- description: One app for everybody
+  name: APP-001
+  x-surface: phone
+webhooks:
+  INT-S001-callback:
+    $ref: resources/webhooks.yaml#/INT-S001-callback

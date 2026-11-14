@@ -1,0 +1,93 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "fpo_name": "Wridesh Lall",
+   "listing_eligible": "true"
+  },
+  {
+   "fpo_name": "Meera Raval",
+   "listing_eligible": "true"
+  },
+  {
+   "fpo_name": "Peter Sehgal",
+   "listing_eligible": "false"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "fpo_name": {
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "listing_eligible": {
+   "type": "boolean"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "fpo_name",
+  "id",
+  "listing_eligible"
+ ],
+ "title": "FPO",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "none"
+  ],
+  "ROL-002": [
+   "none"
+  ],
+  "ROL-003": [
+   "none"
+  ],
+  "ROL-004": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ],
+  "ROL-006": [
+   "none"
+  ],
+  "ROL-007": [
+   "none"
+  ],
+  "ROL-008": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-009": [
+   "none"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-005"
+}

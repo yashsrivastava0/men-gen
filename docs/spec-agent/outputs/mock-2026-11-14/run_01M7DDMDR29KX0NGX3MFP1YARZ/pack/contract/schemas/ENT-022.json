@@ -1,0 +1,240 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "policy_f1": "now-7d",
+   "policy_f10": "now-1d",
+   "policy_f11": "+91 93••• ••455",
+   "policy_f12": "warhi.bains@example.com",
+   "policy_f2": "+91 98••• ••770",
+   "policy_f3": "nilima.rao@example.com",
+   "policy_f4": "option 2",
+   "policy_f5": "Buxar",
+   "policy_f6": "true",
+   "policy_f7": "Policy f7 of policy 1 in the confirmed state",
+   "policy_f8": "21",
+   "policy_f9": "₹21,415.00",
+   "status": "confirmed"
+  },
+  {
+   "policy_f1": "now-15d",
+   "policy_f10": "now-34d",
+   "policy_f11": "+91 93••• ••329",
+   "policy_f12": "abha.loyal@example.com",
+   "policy_f2": "+91 93••• ••179",
+   "policy_f3": "kashvi.chaudhuri@example.com",
+   "policy_f4": "option 4",
+   "policy_f5": "Mehsana",
+   "policy_f6": "true",
+   "policy_f7": "Policy f7 of policy 2 in the placed state",
+   "policy_f8": "26",
+   "policy_f9": "₹16,465.00",
+   "status": "placed"
+  },
+  {
+   "policy_f1": "now-63d",
+   "policy_f10": "now-69d",
+   "policy_f11": "+91 99••• ••702",
+   "policy_f12": "oeshi.sama@example.com",
+   "policy_f2": "+91 91••• ••173",
+   "policy_f3": "hemang.mani@example.com",
+   "policy_f4": "option 1",
+   "policy_f5": "Durgapur",
+   "policy_f6": "false",
+   "policy_f7": "Policy f7 of policy 3 in the draft state",
+   "policy_f8": "3",
+   "policy_f9": "₹20,060.00",
+   "status": "draft"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "policy_f1": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "policy_f10": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "policy_f11": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "policy_f12": {
+   "format": "email",
+   "type": "string"
+  },
+  "policy_f2": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "policy_f3": {
+   "format": "email",
+   "type": "string"
+  },
+  "policy_f4": {
+   "type": "string"
+  },
+  "policy_f5": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "policy_f6": {
+   "type": "boolean"
+  },
+  "policy_f7": {
+   "type": "string"
+  },
+  "policy_f8": {
+   "type": "number"
+  },
+  "policy_f9": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress",
+    "completed",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "policy_f1",
+  "policy_f2"
+ ],
+ "title": "Policy",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-022",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress",
+   "completed",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "completed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "in_progress",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "completed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

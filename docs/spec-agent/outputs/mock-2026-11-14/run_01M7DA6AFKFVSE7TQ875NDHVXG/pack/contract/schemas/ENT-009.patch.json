@@ -1,0 +1,16 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "contact": {
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  }
+ },
+ "title": "Transport partner changes",
+ "type": "object",
+ "x-entity": "ENT-009"
+}

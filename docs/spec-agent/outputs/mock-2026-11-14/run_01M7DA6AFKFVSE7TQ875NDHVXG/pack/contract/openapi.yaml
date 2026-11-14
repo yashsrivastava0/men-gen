@@ -1,0 +1,112 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+info:
+  summary: Contract v0 derived from the Spec graph; the backend engine builds on it.
+  title: ses_01M72RE53CJJKA5HB19FR788ZJ contract
+  version: 0.1.0
+  x-conventions:
+    auth: 'default deny: x-roles lists who may call; see auth-matrix.json'
+    concurrency: ETag out and If-Match in on editable entities (version field)
+    enums: lifecycle states are the enum of an entity status
+    errors: 'one shape (spec.error.v1): code, message, request_id, retryable, details'
+    filter_sort: filter[field]=value and sort=field or -field on list operations
+    fixtures: contract/fixtures/<ENT>.json (hook; absent until fixtures are written)
+    idempotency: Idempotency-Key header on operations marked x-idempotent
+    ids: opaque strings, never reused
+    pagination: 'cursor: cursor and limit in, next_cursor out'
+    phase: x-phase later marks operations that exist only for later features
+    timestamps: RFC 3339, UTC
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+openapi: 3.1.0
+paths:
+  /business_accounts:
+    $ref: resources/ent-002-1.yaml#/~1business_accounts
+  /business_accounts/{id}:
+    $ref: resources/ent-002-2.yaml#/~1business_accounts~1%7Bid%7D
+  /deliveries:
+    $ref: resources/ent-008-1.yaml#/~1deliveries
+  /deliveries/{id}:
+    $ref: resources/ent-008-2.yaml#/~1deliveries~1%7Bid%7D
+  /deliveries/{id}/assigned:
+    $ref: resources/ent-008-3.yaml#/~1deliveries~1%7Bid%7D~1assigned
+  /deliveries/{id}/delivered:
+    $ref: resources/ent-008-3.yaml#/~1deliveries~1%7Bid%7D~1delivered
+  /deliveries/{id}/picked-up:
+    $ref: resources/ent-008-3.yaml#/~1deliveries~1%7Bid%7D~1picked-up
+  /deliveries/{id}/unable-to-deliver:
+    $ref: resources/ent-008-3.yaml#/~1deliveries~1%7Bid%7D~1unable-to-deliver
+  /farmers:
+    $ref: resources/ent-004.yaml#/~1farmers
+  /farmers/{id}:
+    $ref: resources/ent-004.yaml#/~1farmers~1%7Bid%7D
+  /fpos:
+    $ref: resources/ent-005.yaml#/~1fpos
+  /fpos/{id}:
+    $ref: resources/ent-005.yaml#/~1fpos~1%7Bid%7D
+  /orders:
+    $ref: resources/ent-006-1.yaml#/~1orders
+  /orders/{id}:
+    $ref: resources/ent-006-2.yaml#/~1orders~1%7Bid%7D
+  /orders/{id}/cancelled:
+    $ref: resources/ent-006-2.yaml#/~1orders~1%7Bid%7D~1cancelled
+  /orders/{id}/paid:
+    $ref: resources/ent-006-2.yaml#/~1orders~1%7Bid%7D~1paid
+  /orders/{id}/payment-pending:
+    $ref: resources/ent-006-2.yaml#/~1orders~1%7Bid%7D~1payment-pending
+  /payments:
+    $ref: resources/ent-007-1.yaml#/~1payments
+  /payments/{id}:
+    $ref: resources/ent-007-1.yaml#/~1payments~1%7Bid%7D
+  /payments/{id}/failed:
+    $ref: resources/ent-007-1.yaml#/~1payments~1%7Bid%7D~1failed
+  /payments/{id}/succeeded:
+    $ref: resources/ent-007-2.yaml#/~1payments~1%7Bid%7D~1succeeded
+  /produce-listings/{id}/available:
+    $ref: resources/ent-003-1.yaml#/~1produce-listings~1%7Bid%7D~1available
+  /produce-listings/{id}/sold-out:
+    $ref: resources/ent-003-1.yaml#/~1produce-listings~1%7Bid%7D~1sold-out
+  /produce-listings/{id}/unavailable:
+    $ref: resources/ent-003-1.yaml#/~1produce-listings~1%7Bid%7D~1unavailable
+  /produce_listings:
+    $ref: resources/ent-003-2.yaml#/~1produce_listings
+  /produce_listings/{id}:
+    $ref: resources/ent-003-3.yaml#/~1produce_listings~1%7Bid%7D
+  /seller-reviews/{id}/approved:
+    $ref: resources/ent-010-1.yaml#/~1seller-reviews~1%7Bid%7D~1approved
+  /seller-reviews/{id}/rejected:
+    $ref: resources/ent-010-1.yaml#/~1seller-reviews~1%7Bid%7D~1rejected
+  /seller_reviews:
+    $ref: resources/ent-010-1.yaml#/~1seller_reviews
+  /seller_reviews/{id}:
+    $ref: resources/ent-010-2.yaml#/~1seller_reviews~1%7Bid%7D
+  /transport_partners:
+    $ref: resources/ent-009.yaml#/~1transport_partners
+  /transport_partners/{id}:
+    $ref: resources/ent-009.yaml#/~1transport_partners~1%7Bid%7D
+  /users:
+    $ref: resources/ent-001-1.yaml#/~1users
+  /users/{id}:
+    $ref: resources/ent-001-2.yaml#/~1users~1%7Bid%7D
+security:
+- bearerAuth: []
+servers:
+- url: /
+tags:
+- description: Farmer or FPO app
+  name: APP-001
+  x-surface: phone
+- description: Buyer app
+  name: APP-002
+  x-surface: phone
+- description: Transport partner app
+  name: APP-003
+  x-surface: phone
+- description: Manager side
+  name: APP-004
+  x-surface: phone
+webhooks:
+  INT-S001-callback:
+    $ref: resources/webhooks.yaml#/INT-S001-callback

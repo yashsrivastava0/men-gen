@@ -1,0 +1,215 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "status": "in_progress",
+   "vehicle_f1": "false",
+   "vehicle_f10": "true",
+   "vehicle_f11": "Vehicle f11 of vehicle 1 in the in_progress state",
+   "vehicle_f12": "6",
+   "vehicle_f2": "Vehicle f2 of vehicle 1 in the in_progress state",
+   "vehicle_f3": "20",
+   "vehicle_f4": "₹13,670.00",
+   "vehicle_f5": "now-70d",
+   "vehicle_f6": "+91 96••• ••909",
+   "vehicle_f7": "arunima.chad@example.com",
+   "vehicle_f8": "option 3",
+   "vehicle_f9": "Raurkela Industrial Township"
+  },
+  {
+   "status": "confirmed",
+   "vehicle_f1": "true",
+   "vehicle_f10": "true",
+   "vehicle_f11": "Vehicle f11 of vehicle 2 in the confirmed state",
+   "vehicle_f12": "31",
+   "vehicle_f2": "Vehicle f2 of vehicle 2 in the confirmed state",
+   "vehicle_f3": "17",
+   "vehicle_f4": "₹9,110.00",
+   "vehicle_f5": "now-8d",
+   "vehicle_f6": "+91 91••• ••881",
+   "vehicle_f7": "urmi.karnik@example.com",
+   "vehicle_f8": "option 2",
+   "vehicle_f9": "Jehanabad"
+  },
+  {
+   "status": "placed",
+   "vehicle_f1": "true",
+   "vehicle_f10": "false",
+   "vehicle_f11": "Vehicle f11 of vehicle 3 in the placed state",
+   "vehicle_f12": "11",
+   "vehicle_f2": "Vehicle f2 of vehicle 3 in the placed state",
+   "vehicle_f3": "29",
+   "vehicle_f4": "₹10,485.00",
+   "vehicle_f5": "now-79d",
+   "vehicle_f6": "+91 92••• ••595",
+   "vehicle_f7": "arunima.chad@example.com",
+   "vehicle_f8": "option 1",
+   "vehicle_f9": "Hyderabad"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "vehicle_f1": {
+   "type": "boolean"
+  },
+  "vehicle_f10": {
+   "type": "boolean"
+  },
+  "vehicle_f11": {
+   "type": "string"
+  },
+  "vehicle_f12": {
+   "type": "number"
+  },
+  "vehicle_f2": {
+   "type": "string"
+  },
+  "vehicle_f3": {
+   "type": "number"
+  },
+  "vehicle_f4": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "vehicle_f5": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "vehicle_f6": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "vehicle_f7": {
+   "format": "email",
+   "type": "string"
+  },
+  "vehicle_f8": {
+   "type": "string"
+  },
+  "vehicle_f9": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "vehicle_f1",
+  "vehicle_f2"
+ ],
+ "title": "Vehicle",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-009",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress"
+  ],
+  "transitions": [
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

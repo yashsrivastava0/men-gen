@@ -1,0 +1,52 @@
+{
+ "callbacks": [
+  {"dedupe_on":"event id","integration":"INT-001","interruption":"app killed mid flow: resume by status","method":"POST","mode":"mock","name":"Provider need 1","path":"/callbacks/need-1","pending_timeout":"pending for up to 15 minutes, then fail","signed":true},
+  {"dedupe_on":"event id","integration":"INT-002","interruption":"app killed mid flow: resume by status","method":"POST","mode":"mock","name":"Provider need 2","path":"/callbacks/need-2","pending_timeout":"pending for up to 15 minutes, then fail","signed":true},
+  {"dedupe_on":"event id","integration":"INT-003","interruption":"app killed mid flow: resume by status","method":"POST","mode":"mock","name":"Provider need 3","path":"/callbacks/need-3","pending_timeout":"pending for up to 15 minutes, then fail","signed":true},
+  {"dedupe_on":"event id","integration":"INT-004","interruption":"app killed mid flow: resume by status","method":"POST","mode":"mock","name":"Provider need 4","path":"/callbacks/need-4","pending_timeout":"pending for up to 15 minutes, then fail","signed":true},
+  {"dedupe_on":"event id","integration":"INT-005","interruption":"app killed mid flow: resume by status","method":"POST","mode":"mock","name":"Provider need 5","path":"/callbacks/need-5","pending_timeout":"pending for up to 15 minutes, then fail","signed":true},
+  {"dedupe_on":"event id","integration":"INT-006","interruption":"app killed mid flow: resume by status","method":"POST","mode":"mock","name":"Provider need 6","path":"/callbacks/need-6","pending_timeout":"pending for up to 15 minutes, then fail","signed":true}
+ ],
+ "envelope": {
+  "id": "unique per event; consumers dedupe on it",
+  "occurred_at": "RFC 3339, UTC",
+  "required": ["id","type","occurred_at","data"]
+ },
+ "events": [
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-018","states":["draft","placed","confirmed"],"type":"address.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-002","states":["draft","placed","confirmed","in_progress"],"type":"booking.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-017","states":["draft","placed","confirmed","in_progress","completed","cancelled"],"type":"category.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-021","states":["draft","placed","confirmed"],"type":"claim.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-019","states":["draft","placed","confirmed"],"type":"coupon.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-007","states":["draft","placed","confirmed","in_progress","completed"],"type":"customer.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-006","states":["draft","placed","confirmed"],"type":"delivery.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-014","states":["draft","placed","confirmed"],"type":"document.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-008","states":["draft","placed","confirmed"],"type":"driver.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-004","states":["draft","placed","confirmed"],"type":"invoice.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-003","states":["draft","placed","confirmed","in_progress","completed","cancelled"],"type":"listing.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-013","states":["draft","placed","confirmed","in_progress","completed","cancelled"],"type":"message.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-001","states":["draft","placed","confirmed","in_progress","completed"],"type":"order.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-005","states":["draft","placed","confirmed"],"type":"payment.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-022","states":["draft","placed","confirmed","in_progress","completed","cancelled"],"type":"policy.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-016","states":["draft","placed","confirmed"],"type":"product.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-015","states":["draft","placed","confirmed","in_progress"],"type":"report.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-012","states":["draft","placed","confirmed","in_progress","completed","cancelled"],"type":"review.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-020","states":["draft","placed","confirmed","in_progress"],"type":"shift.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-011","states":["draft","placed","confirmed"],"type":"ticket.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-010","states":["draft","placed","confirmed"],"type":"trip.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-009","states":["draft","placed","confirmed","in_progress"],"type":"vehicle.status_changed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-001","type":"need-1.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-001","type":"need-1.succeeded"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-002","type":"need-2.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-002","type":"need-2.succeeded"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-003","type":"need-3.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-003","type":"need-3.succeeded"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-004","type":"need-4.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-004","type":"need-4.succeeded"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-005","type":"need-5.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-005","type":"need-5.succeeded"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-006","type":"need-6.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-006","type":"need-6.succeeded"}
+ ],
+ "schema": "spec.events.v1"
+}

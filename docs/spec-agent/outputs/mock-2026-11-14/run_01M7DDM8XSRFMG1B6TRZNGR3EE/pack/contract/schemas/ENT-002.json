@@ -1,0 +1,94 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "customer_company_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "email": {
+   "format": "email",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "is_admin": {
+   "type": "boolean"
+  },
+  "name": {
+   "type": "string"
+  },
+  "phone": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "active",
+    "removed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "customer_company_id",
+  "id",
+  "is_admin",
+  "name",
+  "phone",
+  "status"
+ ],
+ "title": "Customer User",
+ "type": "object",
+ "x-access": {
+  "ROL-007": [
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-002",
+ "x-lifecycle": {
+  "initial": "active",
+  "states": [
+   "active",
+   "removed"
+  ],
+  "transitions": [
+   {
+    "from": "active",
+    "on": "OP-S7092",
+    "roles": [
+     "ROL-008"
+    ],
+    "to": "removed"
+   }
+  ]
+ }
+}

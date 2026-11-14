@@ -1,0 +1,218 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "delivery_fee": "₹7,550.00",
+   "dropoff_location": "Buxar",
+   "pickup_location": "Amaravati",
+   "status": "assigned"
+  },
+  {
+   "delivery_fee": "₹17,805.00",
+   "dropoff_location": "Mehsana",
+   "pickup_location": "Hosur",
+   "status": "picked_up"
+  },
+  {
+   "delivery_fee": "₹23,915.00",
+   "dropoff_location": "Tinsukia",
+   "pickup_location": "Hospet",
+   "status": "unassigned"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "delivery_fee": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "dropoff_location": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "order_id": {
+   "type": "string",
+   "x-ref": "ENT-006"
+  },
+  "pickup_location": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "unassigned",
+    "assigned",
+    "picked_up",
+    "delivered",
+    "unable_to_deliver"
+   ],
+   "type": "string"
+  },
+  "transport_partner_id": {
+   "type": "string",
+   "x-ref": "ENT-009"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "delivery_fee",
+  "dropoff_location",
+  "id",
+  "order_id",
+  "pickup_location",
+  "status"
+ ],
+ "title": "Delivery",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "view"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-004": [
+   "view"
+  ],
+  "ROL-005": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-006": [
+   "view"
+  ],
+  "ROL-007": [
+   "view"
+  ],
+  "ROL-008": [
+   "view"
+  ],
+  "ROL-009": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-008",
+ "x-lifecycle": {
+  "initial": "unassigned",
+  "states": [
+   "unassigned",
+   "assigned",
+   "picked_up",
+   "delivered",
+   "unable_to_deliver"
+  ],
+  "transitions": [
+   {
+    "from": "assigned",
+    "on": "OP-S6047",
+    "roles": [
+     "ROL-003",
+     "ROL-005"
+    ],
+    "to": "picked_up"
+   },
+   {
+    "from": "delivered",
+    "on": "OP-S6049",
+    "roles": [
+     "ROL-003",
+     "ROL-005"
+    ],
+    "to": "unable_to_deliver"
+   },
+   {
+    "from": "picked_up",
+    "on": "OP-S6048",
+    "roles": [
+     "ROL-003",
+     "ROL-005"
+    ],
+    "to": "delivered"
+   },
+   {
+    "from": "unassigned",
+    "on": "OP-S6046",
+    "roles": [
+     "ROL-003",
+     "ROL-005"
+    ],
+    "to": "assigned"
+   }
+  ]
+ }
+}

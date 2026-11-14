@@ -1,0 +1,329 @@
+/deliveries/{id}:
+  delete:
+    operationId: delete_ENT-006
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '204':
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: delete Delivery
+    tags:
+    - APP-001
+    x-derived: true
+    x-entity: ENT-006
+    x-phase: now
+    x-roles:
+    - ROL-001
+  patch:
+    operationId: update_ENT-006
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    - $ref: ../components.yaml#/parameters/IfMatch
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/ENT-006.patch.json
+      required: true
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-006.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '412':
+        $ref: ../components.yaml#/responses/VersionChanged
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: update Delivery
+    tags:
+    - APP-001
+    x-concurrency: etag
+    x-derived: true
+    x-entity: ENT-006
+    x-phase: now
+    x-roles:
+    - ROL-001
+/ent-006:
+  get:
+    operationId: OP-016
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -created_at
+        - -delivery_f11
+        - -delivery_f2
+        - -delivery_f5
+        - -delivery_f6
+        - -delivery_f7
+        - -delivery_f8
+        - -status
+        - created_at
+        - delivery_f11
+        - delivery_f2
+        - delivery_f5
+        - delivery_f6
+        - delivery_f7
+        - delivery_f8
+        - status
+        type: string
+    - in: query
+      name: filter[delivery_f11]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[delivery_f2]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[delivery_f4]
+      required: false
+      schema:
+        type: boolean
+    - in: query
+      name: filter[delivery_f5]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[delivery_f6]
+      required: false
+      schema:
+        type: number
+    - in: query
+      name: filter[delivery_f7]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[delivery_f8]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[status]
+      required: false
+      schema:
+        enum:
+        - draft
+        - placed
+        - confirmed
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              properties:
+                items:
+                  items:
+                    $ref: ../schemas/ENT-006.json
+                  type: array
+                next_cursor:
+                  type:
+                  - string
+                  - 'null'
+              required:
+              - items
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_ent-006
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-006
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-006/get:
+  get:
+    operationId: OP-017
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-006.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_ent-006
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-006
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+/ent-006/save:
+  post:
+    operationId: OP-018
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../schemas/ENT-006.json
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              $ref: ../schemas/ENT-006.json
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '422':
+        $ref: ../components.yaml#/responses/Unprocessable
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: save_ent-006
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-006
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006

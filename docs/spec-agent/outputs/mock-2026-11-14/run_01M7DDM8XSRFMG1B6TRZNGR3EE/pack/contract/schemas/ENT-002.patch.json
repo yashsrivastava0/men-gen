@@ -1,0 +1,36 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "customer_company_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "email": {
+   "format": "email",
+   "type": "string"
+  },
+  "is_admin": {
+   "type": "boolean"
+  },
+  "name": {
+   "type": "string"
+  },
+  "phone": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "active",
+    "removed"
+   ],
+   "type": "string"
+  }
+ },
+ "title": "Customer User changes",
+ "type": "object",
+ "x-entity": "ENT-002"
+}

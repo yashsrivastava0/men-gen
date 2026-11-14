@@ -1,0 +1,99 @@
+{
+ "approved_hash": "b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe",
+ "banners": [],
+ "checked_by": [
+  "self_check"
+ ],
+ "compass_id": "quick-yoga-studio-bengaluru",
+ "compass_path": "/Users/yash/Desktop/untitled folder/men-gen/docs/compass/research-inputs/quick-yoga-studio-bengaluru.json",
+ "consumer_profile": "weak-default",
+ "content_hash": "b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe",
+ "created_at": "2026-11-14T16:18:09.847636+00:00",
+ "critic_vendor": null,
+ "done_steps": [
+  "intake",
+  "plan",
+  "product+design",
+  "join",
+  "freeze",
+  "g15",
+  "gloss",
+  "screens+hero+behav",
+  "copyl",
+  "assemble",
+  "g2summary"
+ ],
+ "estimate": {
+  "high_micros": 96740,
+  "low_micros": 55300,
+  "minutes_high": 12,
+  "minutes_low": 7,
+  "priced": true
+ },
+ "flags": [],
+ "gates": {
+  "g15": null,
+  "g2": {
+   "at": "2026-11-14T16:18:10.889204+00:00",
+   "content_hash": "b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe",
+   "decision": "approved"
+  }
+ },
+ "id": "run_01M7DDM79Q9CVRVD1FCV7JBMMX",
+ "input_hash": "8f796de38936f1e697b898b51b80ad4ad5eaf6388c9cfaed6eeda2f29cb3ea58",
+ "offline": true,
+ "package_hash": "388094fbaad98779da1c1d9a554d3f559f0809bec6b5b31b4b627e5ac5849c8c",
+ "partial_reason": null,
+ "preview": {
+  "calls_by_step": {
+   "behav": 1,
+   "design": 1,
+   "g2_summary": 1,
+   "gloss": 1,
+   "hero": 1,
+   "locales": 1,
+   "plan": 1,
+   "reasks": 1,
+   "screens": 5
+  },
+  "consent_required": false,
+  "consents": [],
+  "estimate": {
+   "high_micros": 96740,
+   "low_micros": 55300,
+   "minutes_high": 12,
+   "minutes_low": 7,
+   "priced": true
+  },
+  "inventory_count": 18,
+  "phases": [
+   {
+    "name": "Phase 1 (first release)",
+    "note": "What the first release needs: the screens Compass marked core, the parts the first release cannot work without, and the sign-in and settings screens the app stores require.",
+    "screens": 18
+   },
+   {
+    "name": "Phase 2 (later)",
+    "note": "Nothing waits for a later release.",
+    "screens": 0
+   }
+  ],
+  "profile": {
+   "id": "compact",
+   "label": "Compact: a small app",
+   "why": "The tier you chose sets the floor at compact. Nothing in the app raised it above that. One short run, one design direction, the essentials only."
+  },
+  "refused": false,
+  "release_screens": 18,
+  "research": false,
+  "thin_input": false
+ },
+ "profile": "compact",
+ "program_id": "ses_01M72PT1S3G61C9WFTXJPWKC3N",
+ "research_id": null,
+ "research_path": null,
+ "spend_micros": 0,
+ "status": "approved",
+ "step": "done",
+ "updated_at": "2026-11-14T16:18:10.889769+00:00"
+}

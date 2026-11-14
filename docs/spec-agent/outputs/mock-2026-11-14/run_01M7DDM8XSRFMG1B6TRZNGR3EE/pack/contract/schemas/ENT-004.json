@@ -1,0 +1,202 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "drop_address": "Jehanabad",
+   "material": "Material of booking 1 in the submitted state",
+   "pickup_address": "Amaravati",
+   "requested_date": "now-63d",
+   "status": "submitted",
+   "weight": "7"
+  },
+  {
+   "drop_address": "Nangloi Jat",
+   "material": "Material of booking 2 in the in_transit state",
+   "pickup_address": "Hubli–Dharwad",
+   "requested_date": "now-31d",
+   "status": "in_transit",
+   "weight": "20"
+  },
+  {
+   "drop_address": "Gorakhpur",
+   "material": "Material of booking 3 in the confirmed state",
+   "pickup_address": "Noida",
+   "requested_date": "now-41d",
+   "status": "confirmed",
+   "weight": "7"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "customer_company_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "drop_address": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "material": {
+   "type": "string"
+  },
+  "pickup_address": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "requested_date": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "submitted",
+    "confirmed",
+    "in_transit",
+    "delivered",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  },
+  "weight": {
+   "type": "number"
+  }
+ },
+ "required": [
+  "customer_company_id",
+  "drop_address",
+  "id",
+  "material",
+  "pickup_address",
+  "requested_date",
+  "status",
+  "weight"
+ ],
+ "title": "Booking",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "view"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-007": [
+   "create",
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-010": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-004",
+ "x-lifecycle": {
+  "initial": "submitted",
+  "states": [
+   "submitted",
+   "confirmed",
+   "in_transit",
+   "delivered",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "confirmed",
+    "on": "OP-S7097",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "in_transit"
+   },
+   {
+    "from": "delivered",
+    "on": "OP-S7099",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "in_transit",
+    "on": "OP-S7098",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "delivered"
+   },
+   {
+    "from": "submitted",
+    "on": "OP-S7096",
+    "roles": [
+     "ROL-007",
+     "ROL-008"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ }
+}

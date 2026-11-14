@@ -1,0 +1,20 @@
+{
+ "callbacks": [{"dedupe_on":"event id","integration":"INT-S001","interruption":"If the app is closed or killed during the provider's step, the next open asks the provider for the status of the last attempt and shows the result; nothing is charged twice.","method":"POST","mode":"mock","name":"payments","path":"/callbacks/payments","pending_timeout":"A pending result is waited for a limited time, then shown as unknown with a way to check again or contact support; the limit is on the confirm list.","signed":true}],
+ "envelope": {
+  "id": "unique per event; consumers dedupe on it",
+  "occurred_at": "RFC 3339, UTC",
+  "required": ["id","type","occurred_at","data"]
+ },
+ "events": [
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-012","states":["requested","approved","rejected","settled"],"type":"advance.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-004","states":["submitted","confirmed","in_transit","delivered","cancelled"],"type":"booking.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-005","states":["submitted","reviewing","resolved","rejected"],"type":"claim.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"later","source":"ENT-002","states":["active","removed"],"type":"customer-user.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"now","source":"ENT-011","states":["submitted","reviewed","settled"],"type":"expense.status_changed"},
+  {"delivery":"internal","kind":"domain","payload":["id","from","to","version"],"phase":"later","source":"ENT-003","states":["submitted","reviewing","responded","closed"],"type":"quote-request.status_changed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-S001","type":"payments.failed"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-S001","type":"payments.pending"},
+  {"at_least_once":true,"delivery":"webhook","kind":"integration","phase":"now","source":"INT-S001","type":"payments.succeeded"}
+ ],
+ "schema": "spec.events.v1"
+}

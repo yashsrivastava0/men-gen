@@ -1,0 +1,83 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "scheduled_at": "now+12d",
+   "status": "scheduled"
+  },
+  {
+   "scheduled_at": "now+11d",
+   "status": "sent"
+  },
+  {
+   "scheduled_at": "now+15d",
+   "status": "scheduled"
+  }
+ ],
+ "properties": {
+  "booking_id": {
+   "type": "string",
+   "x-ref": "ENT-002"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "scheduled_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "scheduled",
+    "sent"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "booking_id",
+  "id",
+  "scheduled_at",
+  "status"
+ ],
+ "title": "Reminder",
+ "type": "object",
+ "x-access": {
+  "ROL-002": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-005",
+ "x-lifecycle": {
+  "initial": "scheduled",
+  "states": [
+   "scheduled",
+   "sent"
+  ],
+  "transitions": [
+   {
+    "from": "scheduled",
+    "on": "OP-S022",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "sent"
+   }
+  ]
+ }
+}

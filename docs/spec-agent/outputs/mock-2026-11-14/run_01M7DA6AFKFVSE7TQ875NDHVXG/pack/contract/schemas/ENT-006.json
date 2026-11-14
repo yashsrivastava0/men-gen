@@ -1,0 +1,191 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "delivery_day": "now+1d",
+   "delivery_fee": "₹1,415.00",
+   "produce_total": "₹21,420.00",
+   "status": "paid"
+  },
+  {
+   "delivery_day": "now+17d",
+   "delivery_fee": "₹7,195.00",
+   "produce_total": "₹13,235.00",
+   "status": "placed"
+  },
+  {
+   "delivery_day": "now+21d",
+   "delivery_fee": "₹3,695.00",
+   "produce_total": "₹23,675.00",
+   "status": "cancelled"
+  }
+ ],
+ "properties": {
+  "buyer_account": {
+   "type": "string",
+   "x-ref": "ENT-002"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "delivery_day": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "delivery_fee": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "items": {
+   "items": {
+    "type": "string"
+   },
+   "type": "array"
+  },
+  "produce_total": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "placed",
+    "payment_pending",
+    "paid",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "buyer_account",
+  "delivery_day",
+  "delivery_fee",
+  "id",
+  "items",
+  "produce_total",
+  "status"
+ ],
+ "title": "Order",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "create",
+   "view"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ],
+  "ROL-004": [
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ],
+  "ROL-006": [
+   "create",
+   "view"
+  ],
+  "ROL-007": [
+   "create",
+   "view"
+  ],
+  "ROL-008": [
+   "view"
+  ],
+  "ROL-009": [
+   "create",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-006",
+ "x-lifecycle": {
+  "initial": "placed",
+  "states": [
+   "placed",
+   "payment_pending",
+   "paid",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "paid",
+    "on": "OP-S5048",
+    "roles": [
+     "ROL-001",
+     "ROL-006",
+     "ROL-007",
+     "ROL-009"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "payment_pending",
+    "on": "OP-S5047",
+    "roles": [
+     "ROL-001",
+     "ROL-006",
+     "ROL-007",
+     "ROL-009"
+    ],
+    "to": "paid"
+   },
+   {
+    "from": "placed",
+    "on": "OP-S5046",
+    "roles": [
+     "ROL-001",
+     "ROL-006",
+     "ROL-007",
+     "ROL-009"
+    ],
+    "to": "payment_pending"
+   }
+  ]
+ }
+}

@@ -1,0 +1,229 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4372,
+   "tokens_out": 699
+  },
+  "COPY-L": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 31592,
+   "tokens_out": 8520
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 1818,
+   "tokens_out": 1075
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 650,
+   "tokens_out": 61
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 2227,
+   "tokens_out": 1525
+  },
+  "MOCK-HERO": {
+   "calls": 22,
+   "clean": 22,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 56693,
+   "tokens_out": 34243
+  },
+  "PROD-INTEG": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 2815,
+   "tokens_out": 826
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 1455,
+   "tokens_out": 570
+  },
+  "PROD-MODULE": {
+   "calls": 11,
+   "clean": 0,
+   "cost_micros": 0,
+   "fallback": 11,
+   "first_errors": [
+    "story US-001: cite an in feature or a policy id of the sheet",
+    "screen SCR-012: no story cites it; cite it in the story it serves",
+    "screen SCR-002: no story cites it; cite it in the story it serves",
+    "screen SCR-013: no story cites it; cite it in the story it serves",
+    "screen SCR-003: no story cites it; cite it in the story it serves",
+    "screen SCR-014: no story cites it; cite it in the story it serves",
+    "screen SCR-004: no story cites it; cite it in the story it serves",
+    "screen SCR-015: no story cites it; cite it in the story it serves",
+    "screen SCR-005: no story cites it; cite it in the story it serves",
+    "screen SCR-016: no story cites it; cite it in the story it serves",
+    "screen SCR-006: no story cites it; cite it in the story it serves",
+    "screen SCR-017: no story cites it; cite it in the story it serves",
+    "screen SCR-007: no story cites it; cite it in the story it serves",
+    "screen SCR-018: no story cites it; cite it in the story it serves",
+    "screen SCR-008: no story cites it; cite it in the story it serves",
+    "screen SCR-019: no story cites it; cite it in the story it serves",
+    "screen SCR-009: no story cites it; cite it in the story it serves",
+    "screen SCR-020: no story cites it; cite it in the story it serves",
+    "screen SCR-010: no story cites it; cite it in the story it serves",
+    "screen SCR-021: no story cites it; cite it in the story it serves",
+    "screen SCR-011: no story cites it; cite it in the story it serves",
+    "screen SCR-022: no story cites it; cite it in the story it serves"
+   ],
+   "first_try_pass": 0.0,
+   "reasons": [
+    "story US-001: cite an in feature or a policy id of the sheet; screen SCR-012: no story cites it; cite it in the story it serves; screen SCR-023: no story cites ",
+    "screen SCR-002: no story cites it; cite it in the story it serves; screen SCR-013: no story cites it; cite it in the story it serves; screen SCR-024: no story c",
+    "screen SCR-003: no story cites it; cite it in the story it serves; screen SCR-014: no story cites it; cite it in the story it serves; screen SCR-025: no story c",
+    "screen SCR-004: no story cites it; cite it in the story it serves; screen SCR-015: no story cites it; cite it in the story it serves; screen SCR-026: no story c",
+    "screen SCR-005: no story cites it; cite it in the story it serves; screen SCR-016: no story cites it; cite it in the story it serves; screen SCR-027: no story c",
+    "screen SCR-006: no story cites it; cite it in the story it serves; screen SCR-017: no story cites it; cite it in the story it serves; screen SCR-028: no story c",
+    "screen SCR-007: no story cites it; cite it in the story it serves; screen SCR-018: no story cites it; cite it in the story it serves; screen SCR-029: no story c",
+    "screen SCR-008: no story cites it; cite it in the story it serves; screen SCR-019: no story cites it; cite it in the story it serves; screen SCR-030: no story c",
+    "screen SCR-009: no story cites it; cite it in the story it serves; screen SCR-020: no story cites it; cite it in the story it serves; screen SCR-031: no story c",
+    "screen SCR-010: no story cites it; cite it in the story it serves; screen SCR-021: no story cites it; cite it in the story it serves; screen SCR-032: no story c",
+    "screen SCR-011: no story cites it; cite it in the story it serves; screen SCR-022: no story cites it; cite it in the story it serves; screen SCR-033: no story c"
+   ],
+   "repair_rate": 1.0,
+   "repaired": 11,
+   "tokens_in": 62854,
+   "tokens_out": 56198
+  },
+  "SCRN": {
+   "calls": 15,
+   "clean": 15,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 172590,
+   "tokens_out": 52636
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4577,
+   "tokens_out": 1147
+  },
+  "VERIFY-CANARY": {
+   "calls": 16,
+   "clean": 16,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 257151,
+   "tokens_out": 44364
+  },
+  "VERIFY-FINAL": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 0,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 6127,
+   "tokens_out": 29
+  }
+ },
+ "calls_total": 75,
+ "cost_micros": 0,
+ "cost_usd": 0.0,
+ "events": 185,
+ "offline": true,
+ "pack": {
+  "checked_by": [
+   "self_check",
+   "verify"
+  ],
+  "content_hash": "5556368c53bcbf59219d10cb98480d5c0efdd63c5e5d28549013564d88f97461",
+  "critic_vendor": "same",
+  "files": 204,
+  "tokens": 342261
+ },
+ "partial_reason": null,
+ "profile": "deep",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 0,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7DDMDR29KX0NGX3MFP1YARZ",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 17,
+  "max_read_tokens": 27333,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": {
+   "blocker": 0,
+   "info": 1,
+   "warning": 0
+  },
+  "by_validator": {
+   "V-36": 1
+  },
+  "ok": true
+ }
+}

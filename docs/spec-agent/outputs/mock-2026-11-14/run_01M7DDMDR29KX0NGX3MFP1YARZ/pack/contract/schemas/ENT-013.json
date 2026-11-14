@@ -1,0 +1,240 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "message_f1": "now-59d",
+   "message_f10": "now-36d",
+   "message_f11": "+91 97••• ••120",
+   "message_f12": "xiti.ratta@example.com",
+   "message_f2": "+91 93••• ••821",
+   "message_f3": "gayathri.parekh@example.com",
+   "message_f4": "option 3",
+   "message_f5": "Jehanabad",
+   "message_f6": "true",
+   "message_f7": "Message f7 of message 1 in the draft state",
+   "message_f8": "6",
+   "message_f9": "₹21,010.00",
+   "status": "draft"
+  },
+  {
+   "message_f1": "now-14d",
+   "message_f10": "now-50d",
+   "message_f11": "+91 94••• ••671",
+   "message_f12": "lakshit.bora@example.com",
+   "message_f2": "+91 98••• ••960",
+   "message_f3": "widisha.barman@example.com",
+   "message_f4": "option 2",
+   "message_f5": "Sultan Pur Majra",
+   "message_f6": "true",
+   "message_f7": "Message f7 of message 2 in the confirmed state",
+   "message_f8": "20",
+   "message_f9": "₹7,155.00",
+   "status": "confirmed"
+  },
+  {
+   "message_f1": "now-42d",
+   "message_f10": "now-29d",
+   "message_f11": "+91 91••• ••141",
+   "message_f12": "max.bakshi@example.com",
+   "message_f2": "+91 93••• ••333",
+   "message_f3": "sanaya.bhat@example.com",
+   "message_f4": "option 3",
+   "message_f5": "Loni",
+   "message_f6": "true",
+   "message_f7": "Message f7 of message 3 in the in_progress state",
+   "message_f8": "31",
+   "message_f9": "₹15,255.00",
+   "status": "in_progress"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "message_f1": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "message_f10": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "message_f11": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "message_f12": {
+   "format": "email",
+   "type": "string"
+  },
+  "message_f2": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "message_f3": {
+   "format": "email",
+   "type": "string"
+  },
+  "message_f4": {
+   "type": "string"
+  },
+  "message_f5": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "message_f6": {
+   "type": "boolean"
+  },
+  "message_f7": {
+   "type": "string"
+  },
+  "message_f8": {
+   "type": "number"
+  },
+  "message_f9": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress",
+    "completed",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "message_f1",
+  "message_f2"
+ ],
+ "title": "Message",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-013",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress",
+   "completed",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "completed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "in_progress",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "completed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

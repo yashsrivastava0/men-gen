@@ -1,0 +1,276 @@
+/claims:
+  get:
+    operationId: OP-S021
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -claim_type
+        - -created_at
+        - -description
+        - -status
+        - claim_type
+        - created_at
+        - description
+        - status
+        type: string
+    - in: query
+      name: filter[booking_id]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[claim_type]
+      required: false
+      schema:
+        enum:
+        - damage
+        - delay
+        type: string
+    - in: query
+      name: filter[customer_company_id]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[description]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[status]
+      required: false
+      schema:
+        enum:
+        - submitted
+        - reviewing
+        - resolved
+        - rejected
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                booking_id:
+                  type: string
+                  x-ref: ENT-004
+                claim_type:
+                  enum:
+                  - damage
+                  - delay
+                  type: string
+                customer_company_id:
+                  type: string
+                  x-ref: ENT-001
+                description:
+                  type: string
+                evidence:
+                  description: file reference id; bytes go through the media route
+                  type: string
+                id:
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewing
+                  - resolved
+                  - rejected
+                  type: string
+              required:
+              - booking_id
+              - claim_type
+              - customer_company_id
+              - description
+              - status
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_claim
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-005
+    x-phase: now
+    x-roles:
+    - ROL-007
+    - ROL-008
+  post:
+    operationId: OP-S023
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              booking_id:
+                type: string
+                x-ref: ENT-004
+              claim_type:
+                enum:
+                - damage
+                - delay
+                type: string
+              customer_company_id:
+                type: string
+                x-ref: ENT-001
+              description:
+                type: string
+              evidence:
+                description: file reference id; bytes go through the media route
+                type: string
+              status:
+                enum:
+                - submitted
+                - reviewing
+                - resolved
+                - rejected
+                type: string
+            required:
+            - booking_id
+            - claim_type
+            - customer_company_id
+            - description
+            - status
+            type: object
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                booking_id:
+                  type: string
+                  x-ref: ENT-004
+                claim_type:
+                  enum:
+                  - damage
+                  - delay
+                  type: string
+                customer_company_id:
+                  type: string
+                  x-ref: ENT-001
+                description:
+                  type: string
+                evidence:
+                  description: file reference id; bytes go through the media route
+                  type: string
+                id:
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewing
+                  - resolved
+                  - rejected
+                  type: string
+              required:
+              - booking_id
+              - claim_type
+              - customer_company_id
+              - description
+              - status
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: create_claim
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-005
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-007
+    - ROL-008

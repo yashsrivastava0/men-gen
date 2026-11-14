@@ -1,0 +1,188 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "availability_period": "Availability period of produce listing 1 in the unavailable state",
+   "price": "₹400.00",
+   "produce_name": "Ekani Mohanty",
+   "quantity_available": "13",
+   "status": "unavailable"
+  },
+  {
+   "availability_period": "Availability period of produce listing 2 in the pending_review state",
+   "price": "₹10,360.00",
+   "produce_name": "Nakul Dugal",
+   "quantity_available": "22",
+   "status": "pending_review"
+  },
+  {
+   "availability_period": "Availability period of produce listing 3 in the unavailable state",
+   "price": "₹15,420.00",
+   "produce_name": "Kashvi Chaudhuri",
+   "quantity_available": "19",
+   "status": "unavailable"
+  }
+ ],
+ "properties": {
+  "availability_period": {
+   "type": "string"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "price": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "produce_name": {
+   "type": "string"
+  },
+  "quantity_available": {
+   "type": "number"
+  },
+  "seller_farmer": {
+   "type": "string",
+   "x-ref": "ENT-004"
+  },
+  "seller_fpo": {
+   "type": "string",
+   "x-ref": "ENT-005"
+  },
+  "status": {
+   "enum": [
+    "pending_review",
+    "available",
+    "unavailable",
+    "sold_out"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "availability_period",
+  "id",
+  "price",
+  "produce_name",
+  "quantity_available",
+  "status"
+ ],
+ "title": "Produce listing",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "view"
+  ],
+  "ROL-002": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-003": [
+   "none"
+  ],
+  "ROL-004": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ],
+  "ROL-006": [
+   "view"
+  ],
+  "ROL-007": [
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-009": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-003",
+ "x-lifecycle": {
+  "initial": "pending_review",
+  "states": [
+   "pending_review",
+   "available",
+   "unavailable",
+   "sold_out"
+  ],
+  "transitions": [
+   {
+    "from": "available",
+    "on": "OP-S4047",
+    "roles": [
+     "ROL-002",
+     "ROL-004",
+     "ROL-008"
+    ],
+    "to": "unavailable"
+   },
+   {
+    "from": "pending_review",
+    "on": "OP-S4046",
+    "roles": [
+     "ROL-002",
+     "ROL-004",
+     "ROL-008"
+    ],
+    "to": "available"
+   },
+   {
+    "from": "unavailable",
+    "on": "OP-S4048",
+    "roles": [
+     "ROL-002",
+     "ROL-004",
+     "ROL-008"
+    ],
+    "to": "sold_out"
+   }
+  ]
+ }
+}

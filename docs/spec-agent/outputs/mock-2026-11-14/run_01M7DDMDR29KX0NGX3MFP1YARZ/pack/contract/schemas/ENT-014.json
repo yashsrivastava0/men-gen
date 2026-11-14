@@ -1,0 +1,208 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "document_f1": "+91 95••• ••352",
+   "document_f10": "+91 99••• ••263",
+   "document_f11": "ishani.tak@example.com",
+   "document_f12": "option 4",
+   "document_f2": "gaurang.baria@example.com",
+   "document_f3": "option 3",
+   "document_f4": "Hajipur",
+   "document_f5": "true",
+   "document_f6": "Document f6 of document 1 in the placed state",
+   "document_f7": "18",
+   "document_f8": "₹9,465.00",
+   "document_f9": "now-54d",
+   "status": "placed"
+  },
+  {
+   "document_f1": "+91 93••• ••780",
+   "document_f10": "+91 91••• ••392",
+   "document_f11": "nilima.rao@example.com",
+   "document_f12": "option 1",
+   "document_f2": "lakshit.bora@example.com",
+   "document_f3": "option 3",
+   "document_f4": "Hyderabad",
+   "document_f5": "true",
+   "document_f6": "Document f6 of document 2 in the confirmed state",
+   "document_f7": "22",
+   "document_f8": "₹21,095.00",
+   "document_f9": "now-50d",
+   "status": "confirmed"
+  },
+  {
+   "document_f1": "+91 92••• ••122",
+   "document_f10": "+91 97••• ••449",
+   "document_f11": "karan.dhar@example.com",
+   "document_f12": "option 1",
+   "document_f2": "gayathri.parekh@example.com",
+   "document_f3": "option 3",
+   "document_f4": "Buxar",
+   "document_f5": "false",
+   "document_f6": "Document f6 of document 3 in the draft state",
+   "document_f7": "40",
+   "document_f8": "₹3,585.00",
+   "document_f9": "now-80d",
+   "status": "draft"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "document_f1": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "document_f10": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "document_f11": {
+   "format": "email",
+   "type": "string"
+  },
+  "document_f12": {
+   "type": "string"
+  },
+  "document_f2": {
+   "format": "email",
+   "type": "string"
+  },
+  "document_f3": {
+   "type": "string"
+  },
+  "document_f4": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "document_f5": {
+   "type": "boolean"
+  },
+  "document_f6": {
+   "type": "string"
+  },
+  "document_f7": {
+   "type": "number"
+  },
+  "document_f8": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "document_f9": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "document_f1",
+  "document_f2",
+  "id"
+ ],
+ "title": "Document",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-014",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

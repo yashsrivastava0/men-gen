@@ -1,0 +1,54 @@
+{
+ "default": "deny",
+ "entities": {
+  "ENT-001": {"ROL-002":["view"],"ROL-003":["create","delete","edit","manage","view"],"ROL-004":["create","edit","view"],"ROL-005":["view"]},
+  "ENT-002": {"ROL-002":["create","delete","edit","manage","view"],"ROL-003":["view"],"ROL-004":["view"],"ROL-005":["view"]},
+  "ENT-003": {"ROL-002":["view"]},
+  "ENT-004": {"ROL-002":["create","view"]},
+  "ENT-005": {"ROL-002":["view"]}
+ },
+ "later_operations": [],
+ "note": "an operation, role or entity action not listed here is denied; role_sets lists who may call",
+ "operations": {
+  "OP-S001": "RS-02",
+  "OP-S002": "RS-02",
+  "OP-S003": "RS-04",
+  "OP-S004": "RS-04",
+  "OP-S005": "RS-03",
+  "OP-S006": "RS-02",
+  "OP-S007": "RS-02",
+  "OP-S008": "RS-01",
+  "OP-S009": "RS-01",
+  "OP-S010": "RS-01",
+  "OP-S011": "RS-01",
+  "OP-S012": "RS-01",
+  "OP-S013": "RS-01",
+  "OP-S014": "RS-01",
+  "OP-S015": "RS-01",
+  "OP-S016": "RS-01",
+  "OP-S017": "RS-01",
+  "OP-S018": "RS-01",
+  "OP-S019": "RS-01",
+  "OP-S020": "RS-01",
+  "OP-S021": "RS-01",
+  "OP-S022": "RS-01",
+  "OP-S023": "RS-01",
+  "OP-S024": "RS-01",
+  "OP-S025": "RS-04",
+  "OP-S026": "RS-04"
+ },
+ "public_operations": [],
+ "role_sets": {
+  "RS-01": ["ROL-002"],
+  "RS-02": ["ROL-002","ROL-003","ROL-004","ROL-005"],
+  "RS-03": ["ROL-003"],
+  "RS-04": ["ROL-003","ROL-004"]
+ },
+ "roles": {
+  "ROL-002": {"apps":["APP-001"],"name":"Members"},
+  "ROL-003": {"apps":["APP-001"],"name":"Studio owner"},
+  "ROL-004": {"apps":["APP-001"],"name":"Studio staff"},
+  "ROL-005": {"apps":["APP-001"],"name":"Instructors"}
+ },
+ "schema": "spec.auth-matrix.v1"
+}

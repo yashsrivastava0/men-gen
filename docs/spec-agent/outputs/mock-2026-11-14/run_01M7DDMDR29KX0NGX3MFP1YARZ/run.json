@@ -1,0 +1,108 @@
+{
+ "approved_hash": "5556368c53bcbf59219d10cb98480d5c0efdd63c5e5d28549013564d88f97461",
+ "banners": [],
+ "checked_by": [
+  "self_check",
+  "verify"
+ ],
+ "compass_id": "synth:big",
+ "consumer_profile": "weak-default",
+ "content_hash": "5556368c53bcbf59219d10cb98480d5c0efdd63c5e5d28549013564d88f97461",
+ "created_at": "2026-11-14T16:18:16.450695+00:00",
+ "critic_vendor": "same",
+ "done_steps": [
+  "intake",
+  "plan",
+  "product+design",
+  "join",
+  "freeze",
+  "g15",
+  "gloss",
+  "screens+hero+behav",
+  "copyl",
+  "assemble",
+  "verify",
+  "g2summary"
+ ],
+ "estimate": {
+  "high_micros": 539180,
+  "low_micros": 314600,
+  "minutes_high": 28,
+  "minutes_low": 12,
+  "priced": true
+ },
+ "flags": [],
+ "gates": {
+  "g15": {
+   "at": "2026-11-14T16:18:17.494392+00:00",
+   "consents": [],
+   "decision": "approved",
+   "everything_in_one_release": false,
+   "moves": []
+  },
+  "g2": {
+   "at": "2026-11-14T16:18:21.203152+00:00",
+   "content_hash": "5556368c53bcbf59219d10cb98480d5c0efdd63c5e5d28549013564d88f97461",
+   "decision": "approved"
+  }
+ },
+ "id": "run_01M7DDMDR29KX0NGX3MFP1YARZ",
+ "input_hash": "a65f99001a1bad2e618a0d87b09c74c1168f67c58136b97e5e18d1d26ad80b6b",
+ "offline": true,
+ "package_hash": "0f1b2f27b4ece4eebd3fb8308e25cc4eec792413aeca70031b222e13b636018e",
+ "partial_reason": null,
+ "preview": {
+  "calls_by_step": {
+   "behav": 2,
+   "canaries": 17,
+   "critics": 2,
+   "design": 3,
+   "g2_summary": 1,
+   "gloss": 1,
+   "hero": 5,
+   "integrations": 2,
+   "journeys": 1,
+   "locales": 6,
+   "modules": 11,
+   "plan": 1,
+   "reasks": 4,
+   "screens": 15,
+   "skeleton": 1
+  },
+  "estimate": {
+   "high_micros": 539180,
+   "low_micros": 314600,
+   "minutes_high": 28,
+   "minutes_low": 12,
+   "priced": true
+  },
+  "inventory_count": 60,
+  "phases": [
+   {
+    "name": "Phase 1 (first release)",
+    "note": "What the first release needs: the screens Compass marked core, the parts the first release cannot work without, and the sign-in and settings screens the app stores require.",
+    "screens": 60
+   },
+   {
+    "name": "Phase 2 (later)",
+    "note": "Nothing waits for a later release.",
+    "screens": 0
+   }
+  ],
+  "profile": {
+   "id": "deep",
+   "label": "Deep: a big app or a program of apps",
+   "why": "A pause for your OK on the structure, an independent check of every task, the most detail."
+  },
+  "refused": false,
+  "release_screens": 60,
+  "synthetic": "big"
+ },
+ "profile": "deep",
+ "program_id": "prog-big",
+ "spend_micros": 0,
+ "status": "approved",
+ "step": "done",
+ "synth": "big",
+ "updated_at": "2026-11-14T16:18:21.203623+00:00"
+}

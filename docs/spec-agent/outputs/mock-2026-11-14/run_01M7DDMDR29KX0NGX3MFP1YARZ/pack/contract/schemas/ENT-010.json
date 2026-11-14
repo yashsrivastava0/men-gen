@@ -1,0 +1,220 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "status": "confirmed",
+   "trip_f1": "Trip f1 of trip 1 in the confirmed state",
+   "trip_f10": "Trip f10 of trip 1 in the confirmed state",
+   "trip_f11": "26",
+   "trip_f12": "₹15,590.00",
+   "trip_f2": "35",
+   "trip_f3": "₹785.00",
+   "trip_f4": "now-84d",
+   "trip_f5": "+91 94••• ••603",
+   "trip_f6": "arunima.chad@example.com",
+   "trip_f7": "option 4",
+   "trip_f8": "Hyderabad",
+   "trip_f9": "false"
+  },
+  {
+   "status": "draft",
+   "trip_f1": "Trip f1 of trip 2 in the draft state",
+   "trip_f10": "Trip f10 of trip 2 in the draft state",
+   "trip_f11": "39",
+   "trip_f12": "₹16,960.00",
+   "trip_f2": "12",
+   "trip_f3": "₹10,310.00",
+   "trip_f4": "now-47d",
+   "trip_f5": "+91 94••• ••689",
+   "trip_f6": "avi.date@example.com",
+   "trip_f7": "option 2",
+   "trip_f8": "Hosur",
+   "trip_f9": "true"
+  },
+  {
+   "status": "placed",
+   "trip_f1": "Trip f1 of trip 3 in the placed state",
+   "trip_f10": "Trip f10 of trip 3 in the placed state",
+   "trip_f11": "11",
+   "trip_f12": "₹3,335.00",
+   "trip_f2": "28",
+   "trip_f3": "₹12,115.00",
+   "trip_f4": "now-16d",
+   "trip_f5": "+91 97••• ••161",
+   "trip_f6": "gayathri.parekh@example.com",
+   "trip_f7": "option 3",
+   "trip_f8": "Satara",
+   "trip_f9": "true"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "trip_f1": {
+   "type": "string"
+  },
+  "trip_f10": {
+   "type": "string"
+  },
+  "trip_f11": {
+   "type": "number"
+  },
+  "trip_f12": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "trip_f2": {
+   "type": "number"
+  },
+  "trip_f3": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "trip_f4": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "trip_f5": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "trip_f6": {
+   "format": "email",
+   "type": "string"
+  },
+  "trip_f7": {
+   "type": "string"
+  },
+  "trip_f8": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "trip_f9": {
+   "type": "boolean"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "trip_f1",
+  "trip_f2"
+ ],
+ "title": "Trip",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-010",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

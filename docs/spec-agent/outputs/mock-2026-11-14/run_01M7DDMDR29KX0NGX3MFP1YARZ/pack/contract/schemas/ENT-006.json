@@ -1,0 +1,223 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "delivery_f1": "qushi.shukla@example.com",
+   "delivery_f10": "george.date@example.com",
+   "delivery_f11": "option 1",
+   "delivery_f12": "Mango",
+   "delivery_f2": "option 4",
+   "delivery_f3": "Hubli–Dharwad",
+   "delivery_f4": "true",
+   "delivery_f5": "Delivery f5 of delivery 1 in the placed state",
+   "delivery_f6": "29",
+   "delivery_f7": "₹3,175.00",
+   "delivery_f8": "now+9d",
+   "delivery_f9": "+91 98••• ••747",
+   "status": "placed"
+  },
+  {
+   "delivery_f1": "eiravati.borah@example.com",
+   "delivery_f10": "sai.morar@example.com",
+   "delivery_f11": "option 4",
+   "delivery_f12": "Rourkela",
+   "delivery_f2": "option 1",
+   "delivery_f3": "Bhind",
+   "delivery_f4": "false",
+   "delivery_f5": "Delivery f5 of delivery 2 in the draft state",
+   "delivery_f6": "21",
+   "delivery_f7": "₹4,975.00",
+   "delivery_f8": "now+25d",
+   "delivery_f9": "+91 94••• ••555",
+   "status": "draft"
+  },
+  {
+   "delivery_f1": "lakshit.bora@example.com",
+   "delivery_f10": "atharv.gopal@example.com",
+   "delivery_f11": "option 4",
+   "delivery_f12": "Kolkata",
+   "delivery_f2": "option 4",
+   "delivery_f3": "Jehanabad",
+   "delivery_f4": "false",
+   "delivery_f5": "Delivery f5 of delivery 3 in the confirmed state",
+   "delivery_f6": "31",
+   "delivery_f7": "₹19,670.00",
+   "delivery_f8": "now+16d",
+   "delivery_f9": "+91 99••• ••550",
+   "status": "confirmed"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "delivery_f1": {
+   "format": "email",
+   "type": "string"
+  },
+  "delivery_f10": {
+   "format": "email",
+   "type": "string"
+  },
+  "delivery_f11": {
+   "type": "string"
+  },
+  "delivery_f12": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "delivery_f2": {
+   "type": "string"
+  },
+  "delivery_f3": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "delivery_f4": {
+   "type": "boolean"
+  },
+  "delivery_f5": {
+   "type": "string"
+  },
+  "delivery_f6": {
+   "type": "number"
+  },
+  "delivery_f7": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "delivery_f8": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "delivery_f9": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "delivery_f1",
+  "delivery_f2",
+  "id"
+ ],
+ "title": "Delivery",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-006",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

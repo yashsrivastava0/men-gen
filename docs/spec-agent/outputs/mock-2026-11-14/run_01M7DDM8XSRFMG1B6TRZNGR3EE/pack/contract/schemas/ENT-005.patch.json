@@ -1,0 +1,41 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "booking_id": {
+   "type": "string",
+   "x-ref": "ENT-004"
+  },
+  "claim_type": {
+   "enum": [
+    "damage",
+    "delay"
+   ],
+   "type": "string"
+  },
+  "customer_company_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "description": {
+   "type": "string"
+  },
+  "evidence": {
+   "description": "file reference id; bytes go through the media route",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "submitted",
+    "reviewing",
+    "resolved",
+    "rejected"
+   ],
+   "type": "string"
+  }
+ },
+ "title": "Claim changes",
+ "type": "object",
+ "x-entity": "ENT-005"
+}

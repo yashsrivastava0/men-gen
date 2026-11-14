@@ -1,0 +1,2811 @@
+{
+ "applied_nodes": [],
+ "canaries": {
+  "T-0002": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has an account and is signed out WHEN the user gives valid credentials THEN the user is signed in and lands on their home screen, and the credentials are not kept anywhere visible",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Auth of Order WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Auth of Order asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Auth of Order WHEN the user opens Auth of Order or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Auth of Order was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Auth of Order afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the account is blocked or its role may not use this app WHEN the user signs in THEN the user is told they cannot use this app and whom to contact, and no session starts",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the account's details were changed on another device while the user was signing in WHEN the sign-in is submitted THEN the user is told the details changed and signs in again with the current ones",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Auth of Order loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Auth of Order (screens/SCR-001.md): 3 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0002",
+   "used_fallback": false
+  },
+  "T-0003": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Booking for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Booking yet WHEN List of Booking loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Booking asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Booking WHEN the user opens List of Booking or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Booking WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Booking offers WHEN the user reaches List of Booking or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Booking was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Booking and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Booking, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build List of Booking (screens/SCR-002.md): 4 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0003",
+   "used_fallback": false
+  },
+  "T-0004": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Listing for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Listing asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Listing WHEN the user opens Detail of Listing or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Listing loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Listing and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Listing, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Listing offers WHEN the user reaches Detail of Listing or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Listing was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Listing has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Listing shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Detail of Listing (screens/SCR-003.md): 3 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0004",
+   "used_fallback": false
+  },
+  "T-0005": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Invoice for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Invoice WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Invoice asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Invoice WHEN the user opens Form of Invoice or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Invoice offers WHEN the user reaches Form of Invoice or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Invoice was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Invoice was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Invoice afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Form of Invoice (screens/SCR-004.md): 4 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0005",
+   "used_fallback": false
+  },
+  "T-0006": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Delivery for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Delivery asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Delivery WHEN the user opens Status of Delivery or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Delivery loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Delivery THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Delivery offers WHEN the user reaches Status of Delivery or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Delivery was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Delivery and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Delivery",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Status of Delivery (screens/SCR-006.md): 6 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0006",
+   "used_fallback": false
+  },
+  "T-0007": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Review for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Review WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Review asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Review WHEN the user opens Form of Review or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Review offers WHEN the user reaches Form of Review or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Review was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Review was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Review afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Order for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Order THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Order WHEN the user opens Checkout of Order or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Order offers WHEN the user reaches Checkout of Order or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Order was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Order was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Order afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.5 on Checkout of Order WHEN they do the main thing THEN the change is saved and the person reaches SCR-024",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.5 on Checkout of Order and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.5 on Checkout of Order and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Review for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Review yet WHEN List of Review loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Review asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Review WHEN the user opens List of Review or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Review WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Review offers WHEN the user reaches List of Review or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Review was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Review and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Review, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Order for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Order asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Order WHEN the user opens Dashboard of Order or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Order yet WHEN Dashboard of Order loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Order loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Order offers WHEN the user reaches Dashboard of Order or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Order changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Order has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Order shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Review for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Review yet WHEN Search of Review loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Review asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Review WHEN the user opens Search of Review or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Review loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Review offers WHEN the user reaches Search of Review or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Review was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Review is open WHEN the change is applied THEN all text on Search of Review follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Form of Review (screens/SCR-012.md): 4 regions, 2 actions, every listed state",
+    "Build Checkout of Order (screens/SCR-023.md): 5 regions, 7 actions, every listed state",
+    "Build List of Review (screens/SCR-034.md): 3 regions, 2 actions, every listed state",
+    "Build Dashboard of Order (screens/SCR-045.md): 5 regions, 2 actions, every listed state",
+    "Build Search of Review (screens/SCR-056.md): 6 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0007",
+   "used_fallback": false
+  },
+  "T-0008": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Message for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Message asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Message WHEN the user opens Dashboard of Message or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Message yet WHEN Dashboard of Message loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Message loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Message offers WHEN the user reaches Dashboard of Message or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Message changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Message has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Message shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Booking for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Booking yet WHEN Search of Booking loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Booking asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Booking WHEN the user opens Search of Booking or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Booking loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Booking offers WHEN the user reaches Search of Booking or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Booking was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Booking is open WHEN the change is applied THEN all text on Search of Booking follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Message for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Message asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Message WHEN the user opens Detail of Message or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Message loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Message and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Message, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Message offers WHEN the user reaches Detail of Message or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Message was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Message has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Message shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Booking for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Booking asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Booking WHEN the user opens Status of Booking or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Booking loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Booking THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Booking offers WHEN the user reaches Status of Booking or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Booking was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Booking and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Booking",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Message for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Message asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Message WHEN the user opens Settings of Message or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Message was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Message afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Message is open WHEN the change is applied THEN all text on Settings of Message follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Message offers WHEN the user reaches Settings of Message or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Message was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Message WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Dashboard of Message (screens/SCR-013.md): 5 regions, 2 actions, every listed state",
+    "Build Search of Booking (screens/SCR-024.md): 5 regions, 2 actions, every listed state",
+    "Build Detail of Message (screens/SCR-035.md): 3 regions, 2 actions, every listed state",
+    "Build Status of Booking (screens/SCR-046.md): 5 regions, 2 actions, every listed state",
+    "Build Settings of Message (screens/SCR-057.md): 5 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0008",
+   "used_fallback": false
+  },
+  "T-0009": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Document for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Document asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Document WHEN the user opens Status of Document or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Document loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Document THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Document offers WHEN the user reaches Status of Document or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Document was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Document and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Document",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Listing for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Listing asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Listing WHEN the user opens Settings of Listing or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Listing was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Listing afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Listing is open WHEN the change is applied THEN all text on Settings of Listing follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Listing offers WHEN the user reaches Settings of Listing or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Listing was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Listing WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Document for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Document WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Document asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Document WHEN the user opens Form of Document or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Document offers WHEN the user reaches Form of Document or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Document was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Document was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Document afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Listing for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Listing THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Listing WHEN the user opens Checkout of Listing or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Listing offers WHEN the user reaches Checkout of Listing or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Listing was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Listing was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Listing afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.5 on Checkout of Listing WHEN they do the main thing THEN the change is saved and the person reaches SCR-048",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.5 on Checkout of Listing and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.5 on Checkout of Listing and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Document for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Document yet WHEN List of Document loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Document asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Document WHEN the user opens List of Document or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Document WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Document offers WHEN the user reaches List of Document or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Document was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Document and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Document, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Status of Document (screens/SCR-014.md): 3 regions, 2 actions, every listed state",
+    "Build Settings of Listing (screens/SCR-025.md): 4 regions, 2 actions, every listed state",
+    "Build Form of Document (screens/SCR-036.md): 6 regions, 2 actions, every listed state",
+    "Build Checkout of Listing (screens/SCR-047.md): 6 regions, 7 actions, every listed state",
+    "Build List of Document (screens/SCR-058.md): 6 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0009",
+   "used_fallback": false
+  },
+  "T-0010": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Report for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Report THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Report WHEN the user opens Checkout of Report or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Report offers WHEN the user reaches Checkout of Report or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Report was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Report was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Report afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.3 on Checkout of Report WHEN they do the main thing THEN the change is saved and the person reaches SCR-016",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.3 on Checkout of Report and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.3 on Checkout of Report and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Invoice for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Invoice yet WHEN List of Invoice loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Invoice asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Invoice WHEN the user opens List of Invoice or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Invoice WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Invoice offers WHEN the user reaches List of Invoice or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Invoice was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Invoice and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Invoice, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Report for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Report asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Report WHEN the user opens Dashboard of Report or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Report yet WHEN Dashboard of Report loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Report loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Report offers WHEN the user reaches Dashboard of Report or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Report changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Report has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Report shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Invoice for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Invoice yet WHEN Search of Invoice loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Invoice asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Invoice WHEN the user opens Search of Invoice or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Invoice loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Invoice offers WHEN the user reaches Search of Invoice or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Invoice was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Invoice is open WHEN the change is applied THEN all text on Search of Invoice follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Report for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Report asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Report WHEN the user opens Detail of Report or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Report loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Report and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Report, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Report offers WHEN the user reaches Detail of Report or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Report was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Report has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Report shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Checkout of Report (screens/SCR-015.md): 3 regions, 7 actions, every listed state",
+    "Build List of Invoice (screens/SCR-026.md): 4 regions, 2 actions, every listed state",
+    "Build Dashboard of Report (screens/SCR-037.md): 4 regions, 2 actions, every listed state",
+    "Build Search of Invoice (screens/SCR-048.md): 6 regions, 2 actions, every listed state",
+    "Build Detail of Report (screens/SCR-059.md): 5 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0010",
+   "used_fallback": false
+  },
+  "T-0011": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Payment for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Payment asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Payment WHEN the user opens Dashboard of Payment or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Payment yet WHEN Dashboard of Payment loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Payment loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Payment offers WHEN the user reaches Dashboard of Payment or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Payment changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Payment has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Payment shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Product for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Product yet WHEN Search of Product loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Product asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Product WHEN the user opens Search of Product or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Product loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Product offers WHEN the user reaches Search of Product or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Product was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Product is open WHEN the change is applied THEN all text on Search of Product follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Payment for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Payment asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Payment WHEN the user opens Detail of Payment or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Payment loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Payment and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Payment, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Payment offers WHEN the user reaches Detail of Payment or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Payment was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Payment has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Payment shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Product for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Product asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Product WHEN the user opens Status of Product or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Product loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Product THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Product offers WHEN the user reaches Status of Product or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Product was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Product and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Product",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Payment for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Payment asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Payment WHEN the user opens Settings of Payment or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Payment was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Payment afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Payment is open WHEN the change is applied THEN all text on Settings of Payment follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Payment offers WHEN the user reaches Settings of Payment or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Payment was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Payment WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Product for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Product WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Product asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Product WHEN the user opens Form of Product or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Product offers WHEN the user reaches Form of Product or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Product was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Product was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Product afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Dashboard of Payment (screens/SCR-005.md): 5 regions, 2 actions, every listed state",
+    "Build Search of Product (screens/SCR-016.md): 3 regions, 2 actions, every listed state",
+    "Build Detail of Payment (screens/SCR-027.md): 4 regions, 2 actions, every listed state",
+    "Build Status of Product (screens/SCR-038.md): 5 regions, 2 actions, every listed state",
+    "Build Settings of Payment (screens/SCR-049.md): 3 regions, 2 actions, every listed state",
+    "Build Form of Product (screens/SCR-060.md): 3 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0011",
+   "used_fallback": false
+  },
+  "T-0012": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Category for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Category asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Category WHEN the user opens Settings of Category or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Category was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Category afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Category is open WHEN the change is applied THEN all text on Settings of Category follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Category offers WHEN the user reaches Settings of Category or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Category was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Category WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Delivery for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Delivery WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Delivery asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Delivery WHEN the user opens Form of Delivery or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Delivery offers WHEN the user reaches Form of Delivery or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Delivery was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Delivery was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Delivery afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Category for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Category THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Category WHEN the user opens Checkout of Category or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Category offers WHEN the user reaches Checkout of Category or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Category was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Category was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Category afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.3 on Checkout of Category WHEN they do the main thing THEN the change is saved and the person reaches SCR-040",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.3 on Checkout of Category and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.3 on Checkout of Category and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Delivery for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Delivery yet WHEN List of Delivery loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Delivery asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Delivery WHEN the user opens List of Delivery or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Delivery WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Delivery offers WHEN the user reaches List of Delivery or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Delivery was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Delivery and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Delivery, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Settings of Category (screens/SCR-017.md): 4 regions, 2 actions, every listed state",
+    "Build Form of Delivery (screens/SCR-028.md): 3 regions, 2 actions, every listed state",
+    "Build Checkout of Category (screens/SCR-039.md): 4 regions, 7 actions, every listed state",
+    "Build List of Delivery (screens/SCR-050.md): 3 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0012",
+   "used_fallback": false
+  },
+  "T-0013": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Customer for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Customer THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Customer WHEN the user opens Checkout of Customer or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Customer offers WHEN the user reaches Checkout of Customer or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Customer was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Customer was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Customer afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Customer WHEN they do the main thing THEN the change is saved and the person reaches SCR-008",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Customer and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Customer and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Address for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Address yet WHEN List of Address loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Address asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Address WHEN the user opens List of Address or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Address WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Address offers WHEN the user reaches List of Address or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Address was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Address and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Address, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Customer for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Customer asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Customer WHEN the user opens Dashboard of Customer or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Customer yet WHEN Dashboard of Customer loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Customer loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Customer offers WHEN the user reaches Dashboard of Customer or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Customer changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Customer has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Customer shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Address for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Address yet WHEN Search of Address loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Address asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Address WHEN the user opens Search of Address or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Address loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Address offers WHEN the user reaches Search of Address or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Address was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Address is open WHEN the change is applied THEN all text on Search of Address follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Customer for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Customer asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Customer WHEN the user opens Detail of Customer or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Customer loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Customer and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Customer, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Customer offers WHEN the user reaches Detail of Customer or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Customer was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Customer has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Customer shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Checkout of Customer (screens/SCR-007.md): 4 regions, 7 actions, every listed state",
+    "Build List of Address (screens/SCR-018.md): 6 regions, 2 actions, every listed state",
+    "Build Dashboard of Customer (screens/SCR-029.md): 5 regions, 2 actions, every listed state",
+    "Build Search of Address (screens/SCR-040.md): 6 regions, 2 actions, every listed state",
+    "Build Detail of Customer (screens/SCR-051.md): 5 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0013",
+   "used_fallback": false
+  },
+  "T-0014": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Driver for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Driver yet WHEN Search of Driver loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Driver asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Driver WHEN the user opens Search of Driver or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Driver loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Driver offers WHEN the user reaches Search of Driver or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Driver was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Driver is open WHEN the change is applied THEN all text on Search of Driver follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Coupon for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Coupon asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Coupon WHEN the user opens Detail of Coupon or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Coupon loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Coupon and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Coupon, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Coupon offers WHEN the user reaches Detail of Coupon or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Coupon was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Coupon has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Coupon shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Driver for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Driver asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Driver WHEN the user opens Status of Driver or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Driver loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Driver THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Driver offers WHEN the user reaches Status of Driver or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Driver was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Driver and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Driver",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Coupon for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Coupon asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Coupon WHEN the user opens Settings of Coupon or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Coupon was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Coupon afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Coupon is open WHEN the change is applied THEN all text on Settings of Coupon follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Coupon offers WHEN the user reaches Settings of Coupon or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Coupon was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Coupon WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Driver for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Driver WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Driver asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Driver WHEN the user opens Form of Driver or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Driver offers WHEN the user reaches Form of Driver or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Driver was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Driver was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Driver afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Search of Driver (screens/SCR-008.md): 3 regions, 2 actions, every listed state",
+    "Build Detail of Coupon (screens/SCR-019.md): 6 regions, 2 actions, every listed state",
+    "Build Status of Driver (screens/SCR-030.md): 6 regions, 2 actions, every listed state",
+    "Build Settings of Coupon (screens/SCR-041.md): 6 regions, 2 actions, every listed state",
+    "Build Form of Driver (screens/SCR-052.md): 6 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0014",
+   "used_fallback": false
+  },
+  "T-0015": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Vehicle for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Vehicle asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Vehicle WHEN the user opens Settings of Vehicle or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Vehicle was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Vehicle afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Vehicle is open WHEN the change is applied THEN all text on Settings of Vehicle follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Vehicle offers WHEN the user reaches Settings of Vehicle or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Vehicle was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Vehicle WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Shift for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Shift WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Shift asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Shift WHEN the user opens Form of Shift or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Shift offers WHEN the user reaches Form of Shift or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Shift was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Shift was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Shift afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Vehicle for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Vehicle THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Vehicle WHEN the user opens Checkout of Vehicle or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Vehicle offers WHEN the user reaches Checkout of Vehicle or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Vehicle was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Vehicle was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Vehicle afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Vehicle WHEN they do the main thing THEN the change is saved and the person reaches SCR-032",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Vehicle and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Vehicle and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Shift for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Shift yet WHEN List of Shift loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Shift asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Shift WHEN the user opens List of Shift or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Shift WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Shift offers WHEN the user reaches List of Shift or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Shift was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Shift and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Shift, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Vehicle for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Vehicle asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Vehicle WHEN the user opens Dashboard of Vehicle or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Vehicle yet WHEN Dashboard of Vehicle loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Vehicle loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Vehicle offers WHEN the user reaches Dashboard of Vehicle or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Vehicle changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Vehicle has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Vehicle shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Settings of Vehicle (screens/SCR-009.md): 5 regions, 2 actions, every listed state",
+    "Build Form of Shift (screens/SCR-020.md): 5 regions, 2 actions, every listed state",
+    "Build Checkout of Vehicle (screens/SCR-031.md): 5 regions, 7 actions, every listed state",
+    "Build List of Shift (screens/SCR-042.md): 3 regions, 2 actions, every listed state",
+    "Build Dashboard of Vehicle (screens/SCR-053.md): 3 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0015",
+   "used_fallback": false
+  },
+  "T-0016": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses List of Trip for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for List of Trip yet WHEN List of Trip loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when List of Trip asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on List of Trip WHEN the user opens List of Trip or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has reached the end of a long set on List of Trip WHEN the user asks for more THEN the user is told there is no more, and no empty request is sent again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what List of Trip offers WHEN the user reaches List of Trip or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on List of Trip was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to List of Trip and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at List of Trip, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Dashboard of Claim for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Dashboard of Claim asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Dashboard of Claim WHEN the user opens Dashboard of Claim or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Dashboard of Claim yet WHEN Dashboard of Claim loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Dashboard of Claim loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Dashboard of Claim offers WHEN the user reaches Dashboard of Claim or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the figures on Dashboard of Claim changed after they were loaded WHEN the user refreshes or opens the detail behind a figure THEN the new figures replace the old ones together, and the detail matches the figure it came from",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Dashboard of Claim has very long text, very large numbers, emoji and right-to-left text WHEN Dashboard of Claim shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Search of Trip for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has no data for Search of Trip yet WHEN Search of Trip loads THEN the empty state says why there is nothing and what the user can do next",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Search of Trip asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Search of Trip WHEN the user opens Search of Trip or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Search of Trip loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Search of Trip offers WHEN the user reaches Search of Trip or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Search of Trip was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Search of Trip is open WHEN the change is applied THEN all text on Search of Trip follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Claim for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Claim asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Claim WHEN the user opens Detail of Claim or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Claim loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Claim and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Claim, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Claim offers WHEN the user reaches Detail of Claim or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Claim was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Claim has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Claim shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Trip for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Trip asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Trip WHEN the user opens Status of Trip or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Trip loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Trip THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Trip offers WHEN the user reaches Status of Trip or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Trip was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Trip and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Trip",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build List of Trip (screens/SCR-010.md): 4 regions, 2 actions, every listed state",
+    "Build Dashboard of Claim (screens/SCR-021.md): 6 regions, 2 actions, every listed state",
+    "Build Search of Trip (screens/SCR-032.md): 6 regions, 2 actions, every listed state",
+    "Build Detail of Claim (screens/SCR-043.md): 3 regions, 2 actions, every listed state",
+    "Build Status of Trip (screens/SCR-054.md): 3 regions, 2 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0016",
+   "used_fallback": false
+  },
+  "T-0017": {
+   "acceptance_coverage": [
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Detail of Ticket for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Detail of Ticket asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Detail of Ticket WHEN the user opens Detail of Ticket or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Detail of Ticket loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user opens a link to Detail of Ticket and is signed out WHEN the app starts from the link THEN the user signs in first and then arrives at Detail of Ticket, not at the home screen",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Detail of Ticket offers WHEN the user reaches Detail of Ticket or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Ticket was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Detail of Ticket has very long text, very large numbers, emoji and right-to-left text WHEN Detail of Ticket shows it THEN nothing is cut off in a way that hides its meaning, and the screen stays usable",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Status of Policy for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Status of Policy asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Status of Policy WHEN the user opens Status of Policy or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the network is slow while Status of Policy loads WHEN the wait passes the moment the user expects THEN the user can see that content is coming, and a wait past the timeout becomes an error with a retry",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Status of Policy THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Status of Policy offers WHEN the user reaches Status of Policy or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Status of Policy was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user receives a notification about something on Status of Policy and is signed out WHEN the user opens the notification THEN the notification shows no private content before sign-in, and after sign-in the user arrives at Status of Policy",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Settings of Ticket for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Settings of Ticket asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Settings of Ticket WHEN the user opens Settings of Ticket or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Settings of Ticket was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Settings of Ticket afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user changes the app language while Settings of Ticket is open WHEN the change is applied THEN all text on Settings of Ticket follows the new language, numbers and dates follow its formats, and the user's place and input are kept",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Settings of Ticket offers WHEN the user reaches Settings of Ticket or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Settings of Ticket was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user asks to delete their account from Settings of Ticket WHEN the user confirms THEN the user is told what will be removed and when, the account is deleted, the session ends, and the user cannot sign in with it again",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Form of Policy for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user gave a value that breaks a rule on Form of Policy WHEN the user submits or leaves the input THEN the problem is named next to the input in plain words, the input is kept, and nothing is sent",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the server fails when Form of Policy asks for data or sends a change WHEN the failure is received THEN the user is told in plain words that something went wrong, nothing is lost, and a retry is offered",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Form of Policy WHEN the user opens Form of Policy or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user sends the same thing twice, by repeating it or by a slow connection WHEN the second request arrives THEN the thing is created once, and the user sees one clear result",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Form of Policy offers WHEN the user reaches Form of Policy or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Form of Policy was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Form of Policy was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Form of Policy afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user has typical data and a working network WHEN the user uses Checkout of Ticket for its main purpose THEN the main purpose is achieved and the result is confirmed in plain words",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user pays and the payment is declined WHEN the decline is received THEN the user is told the order was not paid for and why if known, no order is placed, and another payment method can be tried",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the result of what the user did is not known yet WHEN the user is on Checkout of Ticket THEN the user is told the result is pending and cannot repeat the action by mistake, and the final result appears here when known",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the device has no network while the user is on Checkout of Ticket WHEN the user opens Checkout of Ticket or acts on it THEN saved data is shown as possibly out of date, actions that need the network say so, and queued actions are sent when the network returns",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's role may not see or do what Checkout of Ticket offers WHEN the user reaches Checkout of Ticket or tries the action THEN the user sees the forbidden state with the reason and a way to somewhere allowed, and no restricted data is shown",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the data on Checkout of Ticket was changed elsewhere after it was loaded WHEN the user acts on the older data THEN the user is told it changed, sees the newer data, and nothing is overwritten without the user's choice",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN the user's session ended while Checkout of Ticket was open WHEN the user does something that needs the session THEN the user is asked to sign in again, comes back to Checkout of Ticket afterwards, and keeps any unsent input",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Ticket WHEN they do the main thing THEN the change is saved and the person reaches SCR-056",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Ticket and the request fails with payment declined WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    },
+    {
+     "criterion": "GIVEN a signed-in role 1.1 on Checkout of Ticket and the request fails with duplicate WHEN they do the main thing THEN they stay here, see the reason in plain words and can try again or leave",
+     "how": "the screen files in prefix.bundle.md and the reads that follow state what is needed",
+     "satisfiable": true
+    }
+   ],
+   "assumptions": [],
+   "blocking_questions": [],
+   "disagreement": false,
+   "flagged": false,
+   "outline": [
+    "Build Detail of Ticket (screens/SCR-011.md): 3 regions, 2 actions, every listed state",
+    "Build Status of Policy (screens/SCR-022.md): 6 regions, 2 actions, every listed state",
+    "Build Settings of Ticket (screens/SCR-033.md): 5 regions, 2 actions, every listed state",
+    "Build Form of Policy (screens/SCR-044.md): 5 regions, 2 actions, every listed state",
+    "Build Checkout of Ticket (screens/SCR-055.md): 5 regions, 7 actions, every listed state"
+   ],
+   "run_index": 0,
+   "runs": [],
+   "stricter_run": null,
+   "task_id": "T-0017",
+   "used_fallback": false
+  }
+ },
+ "canary_summary": {
+  "blocking_questions": 0,
+  "cards": 16,
+  "disagreements": 0,
+  "flagged": 0
+ },
+ "checked_by": [
+  "self_check",
+  "verify"
+ ],
+ "class_a_passes": 0,
+ "cost_micros": 0,
+ "critic_vendor": "same",
+ "degraded_nodes": [],
+ "differs_from_brief": [],
+ "enabled": true,
+ "findings": [],
+ "flagged_calls": [],
+ "notes": [],
+ "patches": [],
+ "patches_applied": 0,
+ "patches_proposed": 0,
+ "patches_skipped": [],
+ "rounds_used": 1,
+ "schema": "spec.verify.v1",
+ "verify": "ran"
+}

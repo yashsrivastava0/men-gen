@@ -1,0 +1,242 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "customer_f1": "option 1",
+   "customer_f10": "option 1",
+   "customer_f11": "Hyderabad",
+   "customer_f12": "false",
+   "customer_f2": "Akola",
+   "customer_f3": "true",
+   "customer_f4": "Henry Sekhon",
+   "customer_f5": "26",
+   "customer_f6": "₹23,240.00",
+   "customer_f7": "now-81d",
+   "customer_f8": "+91 96••• ••633",
+   "customer_f9": "arin.nori@example.com",
+   "status": "completed"
+  },
+  {
+   "customer_f1": "option 3",
+   "customer_f10": "option 4",
+   "customer_f11": "Hubli–Dharwad",
+   "customer_f12": "true",
+   "customer_f2": "Raurkela Industrial Township",
+   "customer_f3": "false",
+   "customer_f4": "Fiyaz Sharaf",
+   "customer_f5": "21",
+   "customer_f6": "₹14,055.00",
+   "customer_f7": "now-55d",
+   "customer_f8": "+91 91••• ••258",
+   "customer_f9": "anamika.khanna@example.com",
+   "status": "placed"
+  },
+  {
+   "customer_f1": "option 3",
+   "customer_f10": "option 2",
+   "customer_f11": "Shivpuri",
+   "customer_f12": "false",
+   "customer_f2": "Bhind",
+   "customer_f3": "false",
+   "customer_f4": "Henry Sekhon",
+   "customer_f5": "37",
+   "customer_f6": "₹16,735.00",
+   "customer_f7": "now-16d",
+   "customer_f8": "+91 94••• ••988",
+   "customer_f9": "manthan.sharaf@example.com",
+   "status": "in_progress"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "customer_f1": {
+   "type": "string"
+  },
+  "customer_f10": {
+   "type": "string"
+  },
+  "customer_f11": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "customer_f12": {
+   "type": "boolean"
+  },
+  "customer_f2": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "customer_f3": {
+   "type": "boolean"
+  },
+  "customer_f4": {
+   "type": "string"
+  },
+  "customer_f5": {
+   "type": "number"
+  },
+  "customer_f6": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "customer_f7": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "customer_f8": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "customer_f9": {
+   "format": "email",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress",
+    "completed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "customer_f1",
+  "customer_f2",
+  "id"
+ ],
+ "title": "Customer",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-007",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress",
+   "completed"
+  ],
+  "transitions": [
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "in_progress",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "completed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

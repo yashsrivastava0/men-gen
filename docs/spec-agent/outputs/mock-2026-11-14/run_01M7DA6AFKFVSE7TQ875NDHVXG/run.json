@@ -1,0 +1,115 @@
+{
+ "approved_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
+ "banners": [],
+ "checked_by": [
+  "self_check"
+ ],
+ "compass_id": "standard-produce-marketplace-nashik",
+ "compass_path": "/Users/yash/Desktop/untitled folder/men-gen/docs/compass/research-inputs/standard-produce-marketplace-nashik.json",
+ "consumer_profile": "weak-default",
+ "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
+ "created_at": "2026-11-14T15:18:08.627682+00:00",
+ "critic_vendor": null,
+ "done_steps": [
+  "intake",
+  "plan",
+  "product+design",
+  "join",
+  "freeze",
+  "g15",
+  "gloss",
+  "screens+hero+behav",
+  "copyl",
+  "assemble",
+  "g2summary"
+ ],
+ "estimate": {
+  "high_micros": 243040,
+  "low_micros": 138250,
+  "minutes_high": 17,
+  "minutes_low": 9,
+  "priced": true
+ },
+ "flags": [
+  {
+   "capability": "shared_element_transitions",
+   "expo_go": null,
+   "implied_by": [
+    "direction DIR-S003 (immersive ambition)"
+   ],
+   "kind": "capability_risk",
+   "label": "Shared-element transitions between screens",
+   "note": "Experimental, behind the feature flag enable_shared_element_transitions, and the page says it is not recommended for production. Native stack only (tab navigator not supported yet), no custom animation functions, not on web. Treat as Could-have with a plain-transition fallback.",
+   "production_recommended": false,
+   "tier": "B"
+  }
+ ],
+ "gates": {
+  "g15": null,
+  "g2": {
+   "at": "2026-11-14T15:18:10.612890+00:00",
+   "content_hash": "9338d9a4638fabadaaa238aed651a12e527eb4ccf4e9dfdc22f8da296233eb45",
+   "decision": "approved"
+  }
+ },
+ "id": "run_01M7DA6AFKFVSE7TQ875NDHVXG",
+ "input_hash": "25c5e8ef3330ce05593b09bee9fdd3853cbbf3766212a90152dc915abd6e01b6",
+ "offline": true,
+ "package_hash": "f5c5b622a16d7adee9b2a00d0bb08df06dd894e98c168608fbe939da887d68a5",
+ "partial_reason": null,
+ "preview": {
+  "calls_by_step": {
+   "behav": 1,
+   "design": 1,
+   "g2_summary": 1,
+   "gloss": 1,
+   "hero": 2,
+   "integrations": 1,
+   "journeys": 2,
+   "locales": 4,
+   "modules": 5,
+   "plan": 1,
+   "reasks": 2,
+   "screens": 9
+  },
+  "consent_required": false,
+  "consents": [],
+  "estimate": {
+   "high_micros": 243040,
+   "low_micros": 138250,
+   "minutes_high": 17,
+   "minutes_low": 9,
+   "priced": true
+  },
+  "inventory_count": 36,
+  "phases": [
+   {
+    "name": "Phase 1 (first release)",
+    "note": "What the first release needs: the screens Compass marked core, the parts the first release cannot work without, and the sign-in and settings screens the app stores require. 1 screen was pulled in (listed below).",
+    "screens": 36
+   },
+   {
+    "name": "Phase 2 (later)",
+    "note": "Nothing waits for a later release.",
+    "screens": 0
+   }
+  ],
+  "profile": {
+   "id": "standard",
+   "label": "Standard: a medium app",
+   "why": "The tier you chose sets the floor at standard. It was raised because it has several apps and it speaks several languages. Several parts, three design directions, every screen checked."
+  },
+  "refused": false,
+  "release_screens": 36,
+  "research": false,
+  "thin_input": false
+ },
+ "profile": "standard",
+ "program_id": "ses_01M72RE53CJJKA5HB19FR788ZJ",
+ "research_id": null,
+ "research_path": null,
+ "spend_micros": 0,
+ "status": "approved",
+ "step": "done",
+ "updated_at": "2026-11-14T15:18:10.613336+00:00"
+}

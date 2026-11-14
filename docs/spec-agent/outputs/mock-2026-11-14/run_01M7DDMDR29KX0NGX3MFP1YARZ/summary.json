@@ -1,0 +1,141 @@
+{
+ "banners": [],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "COPY-L": {
+   "calls": 2,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "DSGN": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "MOCK-HERO": {
+   "calls": 22,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-INTEG": {
+   "calls": 2,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "PROD-MODULE": {
+   "calls": 11,
+   "fallback": 11,
+   "first_try_pass": 0.0,
+   "repair_rate": 1.0,
+   "repaired": 11
+  },
+  "SCRN": {
+   "calls": 15,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "VERIFY-CANARY": {
+   "calls": 16,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  },
+  "VERIFY-FINAL": {
+   "calls": 1,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0
+  }
+ },
+ "calls": 75,
+ "compass_id": "synth:big",
+ "cost_micros": 0,
+ "cost_usd": "0.0000",
+ "created_at": "2026-11-14T16:18:16.450695+00:00",
+ "input": "synth-big-60-screens",
+ "mode": "mock",
+ "not_copied": [],
+ "offline": true,
+ "pack": {
+  "checked_by": [
+   "self_check",
+   "verify"
+  ],
+  "content_hash": "5556368c53bcbf59219d10cb98480d5c0efdd63c5e5d28549013564d88f97461",
+  "critic_vendor": "same",
+  "files": 204,
+  "tokens": 342261
+ },
+ "partial_reason": null,
+ "profile": "deep",
+ "program_id": "prog-big",
+ "run_id": "run_01M7DDMDR29KX0NGX3MFP1YARZ",
+ "run_spend_micros": 0,
+ "schema": "spec.export.summary.v1",
+ "status": "approved",
+ "synth": "big",
+ "tasks": {
+  "budget": 28000,
+  "count": 17,
+  "max_read_tokens": 27333,
+  "over_budget": 0
+ },
+ "updated_at": "2026-11-14T16:18:21.203623+00:00",
+ "validators": {
+  "by_severity": {
+   "blocker": 0,
+   "info": 1,
+   "warning": 0
+  },
+  "by_validator": {
+   "V-36": 1
+  },
+  "ok": true
+ }
+}

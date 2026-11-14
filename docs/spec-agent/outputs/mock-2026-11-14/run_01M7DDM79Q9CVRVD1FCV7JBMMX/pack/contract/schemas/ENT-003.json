@@ -1,0 +1,83 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "credits": "40",
+   "name": "Abha Loyal",
+   "price": "₹400.00",
+   "unlimited": "false"
+  },
+  {
+   "credits": "6",
+   "name": "Sara Bera",
+   "price": "₹10,360.00",
+   "unlimited": "false"
+  },
+  {
+   "credits": "33",
+   "name": "Upkaar Dey",
+   "price": "₹15,420.00",
+   "unlimited": "true"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "credits": {
+   "type": "number"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "price": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "unlimited": {
+   "type": "boolean"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "id",
+  "name",
+  "price",
+  "unlimited"
+ ],
+ "title": "Class Pack",
+ "type": "object",
+ "x-access": {
+  "ROL-002": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-003"
+}

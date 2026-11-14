@@ -1,0 +1,1144 @@
+{
+ "banners": [],
+ "builder_needs": {
+  "needs": [
+   {
+    "expected_files": [
+     "global/roles-and-access.md",
+     "apps/*/app.md"
+    ],
+    "files": [
+     "apps/APP-001/app.md",
+     "apps/APP-002/app.md",
+     "apps/APP-003/app.md",
+     "apps/APP-004/app.md",
+     "global/roles-and-access.md"
+    ],
+    "flagged": 1,
+    "id": "BN-01",
+    "status": "present",
+    "title": "What it is, who uses it, apps, roles",
+    "validators": [
+     "V-08",
+     "V-29"
+    ],
+    "why": "4 apps, 9 roles"
+   },
+   {
+    "expected_files": [
+     "global/scope-ledger.json"
+    ],
+    "files": [
+     "global/scope-ledger.json"
+    ],
+    "flagged": 0,
+    "id": "BN-02",
+    "status": "present",
+    "title": "What first: in, later, out",
+    "validators": [
+     "V-16",
+     "V-19",
+     "V-28"
+    ],
+    "why": "8 features in the scope ledger"
+   },
+   {
+    "expected_files": [
+     "global/navigation.md",
+     "global/routes.json",
+     "modules/*/module.md"
+    ],
+    "files": [
+     "global/navigation.md",
+     "global/routes.json",
+     "modules/MOD-001/module.md",
+     "modules/MOD-002/module.md",
+     "modules/MOD-003/module.md",
+     "modules/MOD-004/module.md",
+     "modules/MOD-005/module.md"
+    ],
+    "flagged": 8,
+    "id": "BN-03",
+    "status": "present",
+    "title": "Screens and movement",
+    "validators": [
+     "V-04",
+     "V-05",
+     "V-07"
+    ],
+    "why": "36 screens, 0 without a route"
+   },
+   {
+    "expected_files": [
+     "data-model/*.md"
+    ],
+    "files": [
+     "data-model/MOD-001-1.md",
+     "data-model/MOD-002-1.md",
+     "data-model/MOD-003-1.md",
+     "data-model/MOD-004-1.md",
+     "data-model/MOD-005-1.md"
+    ],
+    "flagged": 5,
+    "id": "BN-04",
+    "status": "present",
+    "title": "Data: entities, fields, statuses, who sees what",
+    "validators": [
+     "V-06",
+     "V-09",
+     "V-11"
+    ],
+    "why": "10 entities"
+   },
+   {
+    "expected_files": [
+     "global/rules.md",
+     "global/behaviors.md"
+    ],
+    "files": [
+     "global/behaviors.md",
+     "global/rules.md"
+    ],
+    "flagged": 1,
+    "id": "BN-05",
+    "status": "present",
+    "title": "Rules, formulas, validations; unknown numbers flagged",
+    "validators": [
+     "V-08",
+     "V-36",
+     "V-45"
+    ],
+    "why": "15 rules, 1 flagged confirm"
+   },
+   {
+    "expected_files": [
+     "contract/*"
+    ],
+    "files": [
+     "contract/auth-matrix.json",
+     "contract/components.yaml",
+     "contract/events.json",
+     "contract/openapi.yaml",
+     "contract/resources/ent-001-1.yaml",
+     "contract/resources/ent-001-2.yaml",
+     "contract/resources/ent-002-1.yaml",
+     "contract/resources/ent-002-2.yaml",
+     "contract/resources/ent-003-1.yaml",
+     "contract/resources/ent-003-2.yaml",
+     "contract/resources/ent-003-3.yaml",
+     "contract/resources/ent-004.yaml",
+     "contract/resources/ent-005.yaml",
+     "contract/resources/ent-006-1.yaml",
+     "contract/resources/ent-006-2.yaml",
+     "contract/resources/ent-007-1.yaml",
+     "contract/resources/ent-007-2.yaml",
+     "contract/resources/ent-008-1.yaml",
+     "contract/resources/ent-008-2.yaml",
+     "contract/resources/ent-008-3.yaml",
+     "contract/resources/ent-009.yaml",
+     "contract/resources/ent-010-1.yaml",
+     "contract/resources/ent-010-2.yaml",
+     "contract/resources/webhooks.yaml",
+     "contract/schemas/ENT-001.json",
+     "contract/schemas/ENT-001.patch.json",
+     "contract/schemas/ENT-002.json",
+     "contract/schemas/ENT-002.patch.json",
+     "contract/schemas/ENT-003.json",
+     "contract/schemas/ENT-003.patch.json",
+     "contract/schemas/ENT-004.json",
+     "contract/schemas/ENT-004.patch.json",
+     "contract/schemas/ENT-005.json",
+     "contract/schemas/ENT-005.patch.json",
+     "contract/schemas/ENT-006.json",
+     "contract/schemas/ENT-007.json",
+     "contract/schemas/ENT-008.json",
+     "contract/schemas/ENT-008.patch.json",
+     "contract/schemas/ENT-009.json",
+     "contract/schemas/ENT-009.patch.json",
+     "contract/schemas/ENT-010.json",
+     "contract/schemas/ENT-010.patch.json"
+    ],
+    "flagged": 14,
+    "id": "BN-06",
+    "status": "present",
+    "title": "Contract: operations, errors, pagination, auth",
+    "validators": [
+     "V-10",
+     "V-15",
+     "V-30"
+    ],
+    "why": "59 operations, 0 without an error model"
+   },
+   {
+    "expected_files": [
+     "contract/fixtures/*"
+    ],
+    "files": [],
+    "flagged": 0,
+    "id": "BN-07",
+    "status": "present",
+    "title": "Realistic data: names, prices, formats, edge cases",
+    "validators": [
+     "V-15",
+     "V-41"
+    ],
+    "why": "100 hero records filled"
+   },
+   {
+    "expected_files": [
+     "global/design-direction.md",
+     "global/tokens.dtcg.json"
+    ],
+    "files": [
+     "global/design-direction.md",
+     "global/tokens.dtcg.json"
+    ],
+    "flagged": 0,
+    "id": "BN-08",
+    "status": "present",
+    "title": "Look: tokens, tone, accessibility, dark mode",
+    "validators": [
+     "V-12",
+     "V-24"
+    ],
+    "why": "3 directions with tokens"
+   },
+   {
+    "expected_files": [
+     "screens/*.md"
+    ],
+    "files": [
+     "screens/SCR-001.md",
+     "screens/SCR-002.md",
+     "screens/SCR-003.md",
+     "screens/SCR-004.md",
+     "screens/SCR-005.could.md",
+     "screens/SCR-005.md",
+     "screens/SCR-006.could.md",
+     "screens/SCR-006.md",
+     "screens/SCR-007.could.md",
+     "screens/SCR-007.md",
+     "screens/SCR-008.could.md",
+     "screens/SCR-008.md",
+     "screens/SCR-010.could.md",
+     "screens/SCR-010.md",
+     "screens/SCR-011.could.md",
+     "screens/SCR-011.md",
+     "screens/SCR-012.could.md",
+     "screens/SCR-012.md",
+     "screens/SCR-013.could.md",
+     "screens/SCR-013.md",
+     "screens/SCR-014.could.md",
+     "screens/SCR-014.md",
+     "screens/SCR-015.could.md",
+     "screens/SCR-015.md",
+     "screens/SCR-016.could.md",
+     "screens/SCR-016.md",
+     "screens/SCR-017.could.md",
+     "screens/SCR-017.md",
+     "screens/SCR-018.could.md",
+     "screens/SCR-018.md",
+     "screens/SCR-019.could.md",
+     "screens/SCR-019.md",
+     "screens/SCR-020.could.md",
+     "screens/SCR-020.md",
+     "screens/SCR-021.could.md",
+     "screens/SCR-021.md",
+     "screens/SCR-022.could.md",
+     "screens/SCR-022.md",
+     "screens/SCR-023.could.md",
+     "screens/SCR-023.md",
+     "screens/SCR-024.could.md",
+     "screens/SCR-024.md",
+     "screens/SCR-025.could.md",
+     "screens/SCR-025.md",
+     "screens/SCR-026.could.md",
+     "screens/SCR-026.md",
+     "screens/SCR-027.could.md",
+     "screens/SCR-027.md",
+     "screens/SCR-028.md",
+     "screens/SCR-S001.could.md",
+     "screens/SCR-S001.md",
+     "screens/SCR-S002.could.md",
+     "screens/SCR-S002.md",
+     "screens/SCR-S003.could.md",
+     "screens/SCR-S003.md",
+     "screens/SCR-S004.md",
+     "screens/SCR-S005.md",
+     "screens/SCR-S006.md",
+     "screens/SCR-S007.md",
+     "screens/SCR-S008.md",
+     "screens/SCR-S009.md"
+    ],
+    "flagged": 8,
+    "id": "BN-09",
+    "status": "present",
+    "title": "Per screen: regions, bindings, actions, states, copy, acceptance",
+    "validators": [
+     "V-06",
+     "V-07",
+     "V-13",
+     "V-14",
+     "V-22",
+     "V-27"
+    ],
+    "why": "36 screen cards, 0 without regions or states"
+   },
+   {
+    "expected_files": [
+     "global/integrations.md"
+    ],
+    "files": [
+     "global/integrations.md"
+    ],
+    "flagged": 1,
+    "id": "BN-10",
+    "status": "assumed",
+    "title": "The outside world and what is mocked",
+    "validators": [
+     "V-16",
+     "V-36"
+    ],
+    "why": "1 integration with a mock plan"
+   },
+   {
+    "expected_files": [
+     "global/platform.md"
+    ],
+    "files": [],
+    "flagged": 0,
+    "id": "BN-11",
+    "status": "default",
+    "title": "What is allowed: SDK, packages, kit",
+    "validators": [
+     "V-23"
+    ],
+    "why": "the standard stack applies (library)"
+   },
+   {
+    "expected_files": [
+     "build/build-plan.json"
+    ],
+    "files": [
+     "build/build-plan.json"
+    ],
+    "flagged": 0,
+    "id": "BN-12",
+    "status": "present",
+    "title": "Build order, ownership, interface freeze",
+    "validators": [
+     "V-26",
+     "V-28"
+    ],
+    "why": "23 task cards in the build plan"
+   },
+   {
+    "expected_files": [
+     "screens/*.md"
+    ],
+    "files": [
+     "screens/SCR-001.md",
+     "screens/SCR-002.md",
+     "screens/SCR-003.md",
+     "screens/SCR-004.md",
+     "screens/SCR-005.could.md",
+     "screens/SCR-005.md",
+     "screens/SCR-006.could.md",
+     "screens/SCR-006.md",
+     "screens/SCR-007.could.md",
+     "screens/SCR-007.md",
+     "screens/SCR-008.could.md",
+     "screens/SCR-008.md",
+     "screens/SCR-010.could.md",
+     "screens/SCR-010.md",
+     "screens/SCR-011.could.md",
+     "screens/SCR-011.md",
+     "screens/SCR-012.could.md",
+     "screens/SCR-012.md",
+     "screens/SCR-013.could.md",
+     "screens/SCR-013.md",
+     "screens/SCR-014.could.md",
+     "screens/SCR-014.md",
+     "screens/SCR-015.could.md",
+     "screens/SCR-015.md",
+     "screens/SCR-016.could.md",
+     "screens/SCR-016.md",
+     "screens/SCR-017.could.md",
+     "screens/SCR-017.md",
+     "screens/SCR-018.could.md",
+     "screens/SCR-018.md",
+     "screens/SCR-019.could.md",
+     "screens/SCR-019.md",
+     "screens/SCR-020.could.md",
+     "screens/SCR-020.md",
+     "screens/SCR-021.could.md",
+     "screens/SCR-021.md",
+     "screens/SCR-022.could.md",
+     "screens/SCR-022.md",
+     "screens/SCR-023.could.md",
+     "screens/SCR-023.md",
+     "screens/SCR-024.could.md",
+     "screens/SCR-024.md",
+     "screens/SCR-025.could.md",
+     "screens/SCR-025.md",
+     "screens/SCR-026.could.md",
+     "screens/SCR-026.md",
+     "screens/SCR-027.could.md",
+     "screens/SCR-027.md",
+     "screens/SCR-028.md",
+     "screens/SCR-S001.could.md",
+     "screens/SCR-S001.md",
+     "screens/SCR-S002.could.md",
+     "screens/SCR-S002.md",
+     "screens/SCR-S003.could.md",
+     "screens/SCR-S003.md",
+     "screens/SCR-S004.md",
+     "screens/SCR-S005.md",
+     "screens/SCR-S006.md",
+     "screens/SCR-S007.md",
+     "screens/SCR-S008.md",
+     "screens/SCR-S009.md"
+    ],
+    "flagged": 0,
+    "id": "BN-13",
+    "status": "present",
+    "title": "What done means; Locked, Default, Open",
+    "validators": [
+     "V-17"
+    ],
+    "why": "every screen has acceptance scenarios and marked tiers"
+   },
+   {
+    "expected_files": [
+     "INDEX.md"
+    ],
+    "files": [
+     "INDEX.md"
+    ],
+    "flagged": 34,
+    "id": "BN-14",
+    "status": "present",
+    "title": "Unknown, assumed, degraded; how to ask",
+    "validators": [
+     "V-17",
+     "V-45"
+    ],
+    "why": "34 assumed or degraded nodes are marked"
+   },
+   {
+    "expected_files": [
+     "global/platform.md"
+    ],
+    "files": [],
+    "flagged": 0,
+    "id": "BN-15",
+    "status": "present",
+    "title": "Platform and store rules",
+    "validators": [
+     "V-33"
+    ],
+    "why": "1 node cite a store or policy rule"
+   },
+   {
+    "expected_files": [
+     "global/behaviors.md"
+    ],
+    "files": [
+     "global/behaviors.md"
+    ],
+    "flagged": 9,
+    "id": "BN-16",
+    "status": "present",
+    "title": "Global behaviour",
+    "validators": [
+     "V-35"
+    ],
+    "why": "all 11 required categories are present"
+   },
+   {
+    "expected_files": [
+     "global/scope-ledger.json",
+     "apps/*/app.md"
+    ],
+    "files": [
+     "apps/APP-001/app.md",
+     "apps/APP-002/app.md",
+     "apps/APP-003/app.md",
+     "apps/APP-004/app.md",
+     "global/scope-ledger.json"
+    ],
+    "flagged": 0,
+    "id": "BN-17",
+    "status": "present",
+    "title": "Phases and scope cap",
+    "validators": [
+     "V-28"
+    ],
+    "why": "scope and phases are recorded"
+   }
+  ],
+  "summary": {
+   "assumed": 1,
+   "default": 1,
+   "missing": 0,
+   "present": 15
+  }
+ },
+ "confirm_list": [
+  {
+   "category": "other",
+   "id": "RUL-S015",
+   "kind": "rule",
+   "rank": 1,
+   "source": "graph",
+   "text": "payments pending result: A pending result is waited for a limited time, then shown as unknown with a way to check again or contact support; the limit is on the confirm list."
+  },
+  {
+   "category": "other",
+   "id": "SCR-011",
+   "kind": "screen",
+   "rank": 2,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-012",
+   "kind": "screen",
+   "rank": 3,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-013",
+   "kind": "screen",
+   "rank": 4,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-014",
+   "kind": "screen",
+   "rank": 5,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-015",
+   "kind": "screen",
+   "rank": 6,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-016",
+   "kind": "screen",
+   "rank": 7,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-017",
+   "kind": "screen",
+   "rank": 8,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  },
+  {
+   "category": "other",
+   "id": "SCR-018",
+   "kind": "screen",
+   "rank": 9,
+   "source": "graph",
+   "text": "RUL-S015 payments pending result"
+  }
+ ],
+ "counts": {
+  "by_severity": {
+   "blocker": 0,
+   "info": 3,
+   "warning": 8
+  },
+  "by_validator": {
+   "V-04": 8,
+   "V-36": 1,
+   "V-45": 2
+  }
+ },
+ "coverage": {
+  "entities": {
+   "ENT-001": {
+    "shown_on": [
+     "SCR-004"
+    ],
+    "via_operations": []
+   },
+   "ENT-002": {
+    "shown_on": [
+     "SCR-002",
+     "SCR-003"
+    ],
+    "via_operations": []
+   },
+   "ENT-003": {
+    "shown_on": [
+     "SCR-005",
+     "SCR-006",
+     "SCR-007",
+     "SCR-008",
+     "SCR-010"
+    ],
+    "via_operations": [
+     "SCR-008"
+    ]
+   },
+   "ENT-004": {
+    "shown_on": [
+     "SCR-S001"
+    ],
+    "via_operations": [
+     "SCR-S001"
+    ]
+   },
+   "ENT-005": {
+    "shown_on": [
+     "SCR-S002"
+    ],
+    "via_operations": [
+     "SCR-S002"
+    ]
+   },
+   "ENT-006": {
+    "shown_on": [
+     "SCR-011",
+     "SCR-012",
+     "SCR-013",
+     "SCR-014",
+     "SCR-015",
+     "SCR-016",
+     "SCR-017",
+     "SCR-018",
+     "SCR-027"
+    ],
+    "via_operations": [
+     "SCR-012"
+    ]
+   },
+   "ENT-007": {
+    "shown_on": [
+     "SCR-014",
+     "SCR-015",
+     "SCR-017"
+    ],
+    "via_operations": [
+     "SCR-014"
+    ]
+   },
+   "ENT-008": {
+    "shown_on": [
+     "SCR-019",
+     "SCR-020",
+     "SCR-021",
+     "SCR-022",
+     "SCR-023"
+    ],
+    "via_operations": [
+     "SCR-021",
+     "SCR-022"
+    ]
+   },
+   "ENT-009": {
+    "shown_on": [
+     "SCR-022",
+     "SCR-S003"
+    ],
+    "via_operations": [
+     "SCR-S003"
+    ]
+   },
+   "ENT-010": {
+    "shown_on": [
+     "SCR-025",
+     "SCR-026"
+    ],
+    "via_operations": [
+     "SCR-026"
+    ]
+   }
+  },
+  "features": {
+   "FTR-001": {
+    "screens": [
+     "SCR-003",
+     "SCR-005",
+     "SCR-006",
+     "SCR-S001",
+     "SCR-S002"
+    ],
+    "stories": [
+     "US-S001",
+     "US-S3008"
+    ]
+   },
+   "FTR-002": {
+    "screens": [
+     "SCR-003",
+     "SCR-011",
+     "SCR-012",
+     "SCR-013"
+    ],
+    "stories": [
+     "US-S002",
+     "US-S3008"
+    ]
+   },
+   "FTR-003": {
+    "screens": [
+     "SCR-011",
+     "SCR-014",
+     "SCR-015"
+    ],
+    "stories": [
+     "US-S003"
+    ]
+   },
+   "FTR-004": {
+    "screens": [
+     "SCR-007",
+     "SCR-008",
+     "SCR-S001",
+     "SCR-S002"
+    ],
+    "stories": [
+     "US-S004"
+    ]
+   },
+   "FTR-005": {
+    "screens": [
+     "SCR-016",
+     "SCR-017"
+    ],
+    "stories": [
+     "US-S005"
+    ]
+   },
+   "FTR-007": {
+    "screens": [
+     "SCR-010",
+     "SCR-018",
+     "SCR-019",
+     "SCR-022",
+     "SCR-023",
+     "SCR-024",
+     "SCR-025",
+     "SCR-026",
+     "SCR-027",
+     "SCR-S003"
+    ],
+    "stories": [
+     "US-S006"
+    ]
+   },
+   "FTR-009": {
+    "screens": [
+     "SCR-010",
+     "SCR-018",
+     "SCR-019",
+     "SCR-020",
+     "SCR-021",
+     "SCR-023",
+     "SCR-024",
+     "SCR-025",
+     "SCR-026",
+     "SCR-027",
+     "SCR-S003"
+    ],
+    "stories": [
+     "US-S007"
+    ]
+   }
+  },
+  "flows": {
+   "FLW-001": [
+    "SCR-005",
+    "SCR-006"
+   ],
+   "FLW-002": [
+    "SCR-005",
+    "SCR-006",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015"
+   ],
+   "FLW-003": [
+    "SCR-005",
+    "SCR-006",
+    "SCR-011",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015"
+   ],
+   "FLW-004": [
+    "SCR-007",
+    "SCR-008",
+    "SCR-016",
+    "SCR-017"
+   ],
+   "FLW-005": [
+    "SCR-007",
+    "SCR-008",
+    "SCR-016",
+    "SCR-017"
+   ],
+   "FLW-006": [
+    "SCR-019",
+    "SCR-020",
+    "SCR-021"
+   ],
+   "FLW-007": [
+    "SCR-010",
+    "SCR-018",
+    "SCR-022",
+    "SCR-023",
+    "SCR-024",
+    "SCR-025",
+    "SCR-026",
+    "SCR-027"
+   ]
+  },
+  "gaps": [],
+  "roles": {
+   "ROL-001": [
+    "SCR-001",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-011",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-002": [
+    "SCR-001",
+    "SCR-004",
+    "SCR-007",
+    "SCR-008",
+    "SCR-016",
+    "SCR-017",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S001",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-003": [
+    "SCR-001",
+    "SCR-004",
+    "SCR-019",
+    "SCR-020",
+    "SCR-021",
+    "SCR-028",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-004": [
+    "SCR-001",
+    "SCR-004",
+    "SCR-007",
+    "SCR-008",
+    "SCR-016",
+    "SCR-017",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S002",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-005": [
+    "SCR-001",
+    "SCR-004",
+    "SCR-010",
+    "SCR-018",
+    "SCR-022",
+    "SCR-023",
+    "SCR-024",
+    "SCR-025",
+    "SCR-026",
+    "SCR-027",
+    "SCR-028",
+    "SCR-S003",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-006": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-003",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-011",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-007": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-003",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-011",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-008": [
+    "SCR-001",
+    "SCR-004",
+    "SCR-007",
+    "SCR-008",
+    "SCR-016",
+    "SCR-017",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S002",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ],
+   "ROL-009": [
+    "SCR-001",
+    "SCR-002",
+    "SCR-004",
+    "SCR-005",
+    "SCR-006",
+    "SCR-011",
+    "SCR-012",
+    "SCR-013",
+    "SCR-014",
+    "SCR-015",
+    "SCR-020",
+    "SCR-028",
+    "SCR-S004",
+    "SCR-S005",
+    "SCR-S006",
+    "SCR-S007",
+    "SCR-S008",
+    "SCR-S009"
+   ]
+  }
+ },
+ "errors": [
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-003",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-017",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-021",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-028",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S001",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S002",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S003",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "SCREEN_UNREACHABLE"
+   ],
+   "code": "V-04",
+   "fix": "declare an exit",
+   "repair": "B",
+   "severity": "warning",
+   "where": "SCR-S007",
+   "why": "dead end: no exit and not a terminal screen type"
+  },
+  {
+   "catalogue": [
+    "RESEARCH_DRIFT"
+   ],
+   "code": "V-36",
+   "fix": "libraries fill, marked assumed",
+   "repair": "C",
+   "severity": "info",
+   "where": "research",
+   "why": "no research view: every research-derived claim must be absent or assumed"
+  },
+  {
+   "catalogue": [
+    "GROUNDING_NAME_UNKNOWN",
+    "GROUNDING_NUMBER_UNSUPPORTED",
+    "RULE_VALUES_CONFLICT"
+   ],
+   "code": "V-45",
+   "fix": "listed as unchecked for G2",
+   "repair": "C",
+   "severity": "info",
+   "where": "RUL-S001",
+   "why": "number cannot be grounded: no quote text available"
+  },
+  {
+   "catalogue": [
+    "GROUNDING_NAME_UNKNOWN",
+    "GROUNDING_NUMBER_UNSUPPORTED",
+    "RULE_VALUES_CONFLICT"
+   ],
+   "code": "V-45",
+   "fix": "listed as unchecked for G2",
+   "repair": "C",
+   "severity": "info",
+   "where": "RUL-S009",
+   "why": "number cannot be grounded: no quote text available"
+  }
+ ],
+ "flags": [
+  {
+   "capability": "shared_element_transitions",
+   "expo_go": null,
+   "implied_by": [
+    "direction DIR-S003 (immersive ambition)"
+   ],
+   "kind": "capability_risk",
+   "label": "Shared-element transitions between screens",
+   "note": "Experimental, behind the feature flag enable_shared_element_transitions, and the page says it is not recommended for production. Native stack only (tab navigator not supported yet), no custom animation functions, not on web. Treat as Could-have with a plain-transition fallback.",
+   "production_recommended": false,
+   "tier": "B"
+  }
+ ],
+ "ok": true,
+ "pack_error": null,
+ "partial": false,
+ "rcode": {
+  "changes": 0,
+  "counts": {
+   "downgrade_locked_to_default": 0,
+   "drop_unknown_optional": 0,
+   "exact_synonym": 0,
+   "instantiate_library_default": 0,
+   "mint_missing_id": 0,
+   "sort_bytes": 0
+  },
+  "rows": []
+ },
+ "reasks": [],
+ "schema": "spec.self-check.v1"
+}

@@ -1,0 +1,118 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "amount": "₹14,670.00",
+   "method": "card",
+   "status": "paid"
+  },
+  {
+   "amount": "₹5,540.00",
+   "method": "card",
+   "status": "failed"
+  },
+  {
+   "amount": "₹21,945.00",
+   "method": "card",
+   "status": "paid"
+  }
+ ],
+ "properties": {
+  "amount": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "class_pack_id": {
+   "type": "string",
+   "x-ref": "ENT-003"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "method": {
+   "enum": [
+    "UPI",
+    "card"
+   ],
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "pending",
+    "paid",
+    "failed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  }
+ },
+ "required": [
+  "amount",
+  "class_pack_id",
+  "id",
+  "method",
+  "status"
+ ],
+ "title": "Payment",
+ "type": "object",
+ "x-access": {
+  "ROL-002": [
+   "create",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-004",
+ "x-lifecycle": {
+  "initial": "pending",
+  "states": [
+   "pending",
+   "paid",
+   "failed"
+  ],
+  "transitions": [
+   {
+    "from": "paid",
+    "on": "OP-S024",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "failed"
+   },
+   {
+    "from": "pending",
+    "on": "OP-S023",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "paid"
+   }
+  ]
+ }
+}

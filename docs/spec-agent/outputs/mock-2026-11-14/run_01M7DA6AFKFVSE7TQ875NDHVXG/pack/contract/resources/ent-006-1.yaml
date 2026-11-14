@@ -1,0 +1,345 @@
+/orders:
+  get:
+    operationId: OP-S025
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -created_at
+        - -delivery_day
+        - -delivery_fee
+        - -produce_total
+        - -status
+        - created_at
+        - delivery_day
+        - delivery_fee
+        - produce_total
+        - status
+        type: string
+    - in: query
+      name: filter[buyer_account]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[delivery_day]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[delivery_fee]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[produce_total]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[status]
+      required: false
+      schema:
+        enum:
+        - placed
+        - payment_pending
+        - paid
+        - cancelled
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                buyer_account:
+                  type: string
+                  x-ref: ENT-002
+                delivery_day:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                delivery_fee:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                id:
+                  type: string
+                items:
+                  items:
+                    type: string
+                  type: array
+                produce_total:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                status:
+                  enum:
+                  - placed
+                  - payment_pending
+                  - paid
+                  - cancelled
+                  type: string
+              required:
+              - buyer_account
+              - delivery_day
+              - delivery_fee
+              - items
+              - produce_total
+              - status
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_order
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-006
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+    - ROL-007
+    - ROL-008
+    - ROL-009
+  post:
+    operationId: OP-S027
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              buyer_account:
+                type: string
+                x-ref: ENT-002
+              delivery_day:
+                description: RFC 3339, UTC
+                format: date-time
+                type: string
+              delivery_fee:
+                additionalProperties: false
+                properties:
+                  amount:
+                    description: minor units, never a float
+                    type: integer
+                  currency:
+                    pattern: ^[A-Z]{3}$
+                    type: string
+                required:
+                - amount
+                - currency
+                type: object
+              items:
+                items:
+                  type: string
+                type: array
+              produce_total:
+                additionalProperties: false
+                properties:
+                  amount:
+                    description: minor units, never a float
+                    type: integer
+                  currency:
+                    pattern: ^[A-Z]{3}$
+                    type: string
+                required:
+                - amount
+                - currency
+                type: object
+              status:
+                enum:
+                - placed
+                - payment_pending
+                - paid
+                - cancelled
+                type: string
+            required:
+            - buyer_account
+            - delivery_day
+            - delivery_fee
+            - items
+            - produce_total
+            - status
+            type: object
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                buyer_account:
+                  type: string
+                  x-ref: ENT-002
+                delivery_day:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                delivery_fee:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                id:
+                  type: string
+                items:
+                  items:
+                    type: string
+                  type: array
+                produce_total:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                status:
+                  enum:
+                  - placed
+                  - payment_pending
+                  - paid
+                  - cancelled
+                  type: string
+              required:
+              - buyer_account
+              - delivery_day
+              - delivery_fee
+              - items
+              - produce_total
+              - status
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: create_order
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-006
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-006
+    - ROL-007
+    - ROL-009

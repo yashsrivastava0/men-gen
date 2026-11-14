@@ -1,0 +1,231 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+info:
+  summary: Contract v0 derived from the Spec graph; the backend engine builds on it.
+  title: prog-big contract
+  version: 0.1.0
+  x-conventions:
+    auth: 'default deny: x-roles lists who may call; see auth-matrix.json'
+    concurrency: ETag out and If-Match in on editable entities (version field)
+    enums: lifecycle states are the enum of an entity status
+    errors: 'one shape (spec.error.v1): code, message, request_id, retryable, details'
+    filter_sort: filter[field]=value and sort=field or -field on list operations
+    fixtures: contract/fixtures/<ENT>.json (hook; absent until fixtures are written)
+    idempotency: Idempotency-Key header on operations marked x-idempotent
+    ids: opaque strings, never reused
+    pagination: 'cursor: cursor and limit in, next_cursor out'
+    phase: x-phase later marks operations that exist only for later features
+    timestamps: RFC 3339, UTC
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+openapi: 3.1.0
+paths:
+  /addresses/{id}:
+    $ref: resources/ent-018.yaml#/~1addresses~1%7Bid%7D
+  /bookings/{id}:
+    $ref: resources/ent-002.yaml#/~1bookings~1%7Bid%7D
+  /categories/{id}:
+    $ref: resources/ent-017.yaml#/~1categories~1%7Bid%7D
+  /claims/{id}:
+    $ref: resources/ent-021.yaml#/~1claims~1%7Bid%7D
+  /coupons/{id}:
+    $ref: resources/ent-019.yaml#/~1coupons~1%7Bid%7D
+  /customers/{id}:
+    $ref: resources/ent-007.yaml#/~1customers~1%7Bid%7D
+  /deliveries/{id}:
+    $ref: resources/ent-006.yaml#/~1deliveries~1%7Bid%7D
+  /documents/{id}:
+    $ref: resources/ent-014.yaml#/~1documents~1%7Bid%7D
+  /drivers/{id}:
+    $ref: resources/ent-008.yaml#/~1drivers~1%7Bid%7D
+  /ent-001:
+    $ref: resources/ent-001-1.yaml#/~1ent-001
+  /ent-001/checkout/1:
+    $ref: resources/ent-001-1.yaml#/~1ent-001~1checkout~11
+  /ent-001/checkout/2:
+    $ref: resources/ent-001-1.yaml#/~1ent-001~1checkout~12
+  /ent-001/checkout/3:
+    $ref: resources/ent-001-1.yaml#/~1ent-001~1checkout~13
+  /ent-001/checkout/4:
+    $ref: resources/ent-001-1.yaml#/~1ent-001~1checkout~14
+  /ent-001/checkout/5:
+    $ref: resources/ent-001-1.yaml#/~1ent-001~1checkout~15
+  /ent-001/get:
+    $ref: resources/ent-001-1.yaml#/~1ent-001~1get
+  /ent-001/save:
+    $ref: resources/ent-001-2.yaml#/~1ent-001~1save
+  /ent-002:
+    $ref: resources/ent-002.yaml#/~1ent-002
+  /ent-002/get:
+    $ref: resources/ent-002.yaml#/~1ent-002~1get
+  /ent-002/save:
+    $ref: resources/ent-002.yaml#/~1ent-002~1save
+  /ent-003:
+    $ref: resources/ent-003.yaml#/~1ent-003
+  /ent-003/get:
+    $ref: resources/ent-003.yaml#/~1ent-003~1get
+  /ent-003/save:
+    $ref: resources/ent-003.yaml#/~1ent-003~1save
+  /ent-004:
+    $ref: resources/ent-004.yaml#/~1ent-004
+  /ent-004/get:
+    $ref: resources/ent-004.yaml#/~1ent-004~1get
+  /ent-004/save:
+    $ref: resources/ent-004.yaml#/~1ent-004~1save
+  /ent-005:
+    $ref: resources/ent-005.yaml#/~1ent-005
+  /ent-005/get:
+    $ref: resources/ent-005.yaml#/~1ent-005~1get
+  /ent-005/save:
+    $ref: resources/ent-005.yaml#/~1ent-005~1save
+  /ent-006:
+    $ref: resources/ent-006.yaml#/~1ent-006
+  /ent-006/get:
+    $ref: resources/ent-006.yaml#/~1ent-006~1get
+  /ent-006/save:
+    $ref: resources/ent-006.yaml#/~1ent-006~1save
+  /ent-007:
+    $ref: resources/ent-007.yaml#/~1ent-007
+  /ent-007/get:
+    $ref: resources/ent-007.yaml#/~1ent-007~1get
+  /ent-007/save:
+    $ref: resources/ent-007.yaml#/~1ent-007~1save
+  /ent-008:
+    $ref: resources/ent-008.yaml#/~1ent-008
+  /ent-008/get:
+    $ref: resources/ent-008.yaml#/~1ent-008~1get
+  /ent-008/save:
+    $ref: resources/ent-008.yaml#/~1ent-008~1save
+  /ent-009:
+    $ref: resources/ent-009.yaml#/~1ent-009
+  /ent-009/get:
+    $ref: resources/ent-009.yaml#/~1ent-009~1get
+  /ent-009/save:
+    $ref: resources/ent-009.yaml#/~1ent-009~1save
+  /ent-010:
+    $ref: resources/ent-010.yaml#/~1ent-010
+  /ent-010/get:
+    $ref: resources/ent-010.yaml#/~1ent-010~1get
+  /ent-010/save:
+    $ref: resources/ent-010.yaml#/~1ent-010~1save
+  /ent-011:
+    $ref: resources/ent-011.yaml#/~1ent-011
+  /ent-011/get:
+    $ref: resources/ent-011.yaml#/~1ent-011~1get
+  /ent-011/save:
+    $ref: resources/ent-011.yaml#/~1ent-011~1save
+  /ent-012:
+    $ref: resources/ent-012.yaml#/~1ent-012
+  /ent-012/get:
+    $ref: resources/ent-012.yaml#/~1ent-012~1get
+  /ent-012/save:
+    $ref: resources/ent-012.yaml#/~1ent-012~1save
+  /ent-013:
+    $ref: resources/ent-013.yaml#/~1ent-013
+  /ent-013/get:
+    $ref: resources/ent-013.yaml#/~1ent-013~1get
+  /ent-013/save:
+    $ref: resources/ent-013.yaml#/~1ent-013~1save
+  /ent-014:
+    $ref: resources/ent-014.yaml#/~1ent-014
+  /ent-014/get:
+    $ref: resources/ent-014.yaml#/~1ent-014~1get
+  /ent-014/save:
+    $ref: resources/ent-014.yaml#/~1ent-014~1save
+  /ent-015:
+    $ref: resources/ent-015.yaml#/~1ent-015
+  /ent-015/get:
+    $ref: resources/ent-015.yaml#/~1ent-015~1get
+  /ent-015/save:
+    $ref: resources/ent-015.yaml#/~1ent-015~1save
+  /ent-016:
+    $ref: resources/ent-016.yaml#/~1ent-016
+  /ent-016/get:
+    $ref: resources/ent-016.yaml#/~1ent-016~1get
+  /ent-016/save:
+    $ref: resources/ent-016.yaml#/~1ent-016~1save
+  /ent-017:
+    $ref: resources/ent-017.yaml#/~1ent-017
+  /ent-017/get:
+    $ref: resources/ent-017.yaml#/~1ent-017~1get
+  /ent-017/save:
+    $ref: resources/ent-017.yaml#/~1ent-017~1save
+  /ent-018:
+    $ref: resources/ent-018.yaml#/~1ent-018
+  /ent-018/get:
+    $ref: resources/ent-018.yaml#/~1ent-018~1get
+  /ent-018/save:
+    $ref: resources/ent-018.yaml#/~1ent-018~1save
+  /ent-019:
+    $ref: resources/ent-019.yaml#/~1ent-019
+  /ent-019/get:
+    $ref: resources/ent-019.yaml#/~1ent-019~1get
+  /ent-019/save:
+    $ref: resources/ent-019.yaml#/~1ent-019~1save
+  /ent-020:
+    $ref: resources/ent-020.yaml#/~1ent-020
+  /ent-020/get:
+    $ref: resources/ent-020.yaml#/~1ent-020~1get
+  /ent-020/save:
+    $ref: resources/ent-020.yaml#/~1ent-020~1save
+  /ent-021:
+    $ref: resources/ent-021.yaml#/~1ent-021
+  /ent-021/get:
+    $ref: resources/ent-021.yaml#/~1ent-021~1get
+  /ent-021/save:
+    $ref: resources/ent-021.yaml#/~1ent-021~1save
+  /ent-022:
+    $ref: resources/ent-022.yaml#/~1ent-022
+  /ent-022/get:
+    $ref: resources/ent-022.yaml#/~1ent-022~1get
+  /ent-022/save:
+    $ref: resources/ent-022.yaml#/~1ent-022~1save
+  /invoices/{id}:
+    $ref: resources/ent-004.yaml#/~1invoices~1%7Bid%7D
+  /listings/{id}:
+    $ref: resources/ent-003.yaml#/~1listings~1%7Bid%7D
+  /messages/{id}:
+    $ref: resources/ent-013.yaml#/~1messages~1%7Bid%7D
+  /orders/{id}:
+    $ref: resources/ent-001-2.yaml#/~1orders~1%7Bid%7D
+  /payments/{id}:
+    $ref: resources/ent-005.yaml#/~1payments~1%7Bid%7D
+  /policies/{id}:
+    $ref: resources/ent-022.yaml#/~1policies~1%7Bid%7D
+  /products/{id}:
+    $ref: resources/ent-016.yaml#/~1products~1%7Bid%7D
+  /reports/{id}:
+    $ref: resources/ent-015.yaml#/~1reports~1%7Bid%7D
+  /reviews/{id}:
+    $ref: resources/ent-012.yaml#/~1reviews~1%7Bid%7D
+  /shifts/{id}:
+    $ref: resources/ent-020.yaml#/~1shifts~1%7Bid%7D
+  /tickets/{id}:
+    $ref: resources/ent-011.yaml#/~1tickets~1%7Bid%7D
+  /trips/{id}:
+    $ref: resources/ent-010.yaml#/~1trips~1%7Bid%7D
+  /vehicles/{id}:
+    $ref: resources/ent-009.yaml#/~1vehicles~1%7Bid%7D
+security:
+- bearerAuth: []
+servers:
+- url: /
+tags:
+- description: App 1
+  name: APP-001
+  x-surface: phone
+webhooks:
+  INT-001-callback:
+    $ref: resources/webhooks.yaml#/INT-001-callback
+  INT-002-callback:
+    $ref: resources/webhooks.yaml#/INT-002-callback
+  INT-003-callback:
+    $ref: resources/webhooks.yaml#/INT-003-callback
+  INT-004-callback:
+    $ref: resources/webhooks.yaml#/INT-004-callback
+  INT-005-callback:
+    $ref: resources/webhooks.yaml#/INT-005-callback
+  INT-006-callback:
+    $ref: resources/webhooks.yaml#/INT-006-callback

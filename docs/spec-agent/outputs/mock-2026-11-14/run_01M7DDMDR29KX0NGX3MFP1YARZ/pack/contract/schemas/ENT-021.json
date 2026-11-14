@@ -1,0 +1,224 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "claim_f1": "₹12,910.00",
+   "claim_f10": "₹21,210.00",
+   "claim_f11": "now-14d",
+   "claim_f12": "+91 98••• ••126",
+   "claim_f2": "now-30d",
+   "claim_f3": "+91 97••• ••660",
+   "claim_f4": "nandini.gala@example.com",
+   "claim_f5": "option 4",
+   "claim_f6": "Buxar",
+   "claim_f7": "true",
+   "claim_f8": "Claim f8 of claim 1 in the confirmed state",
+   "claim_f9": "4",
+   "status": "confirmed"
+  },
+  {
+   "claim_f1": "₹10,995.00",
+   "claim_f10": "₹20,595.00",
+   "claim_f11": "now-53d",
+   "claim_f12": "+91 91••• ••191",
+   "claim_f2": "now-87d",
+   "claim_f3": "+91 95••• ••710",
+   "claim_f4": "avi.date@example.com",
+   "claim_f5": "option 1",
+   "claim_f6": "Akola",
+   "claim_f7": "false",
+   "claim_f8": "Claim f8 of claim 2 in the draft state",
+   "claim_f9": "28",
+   "status": "draft"
+  },
+  {
+   "claim_f1": "₹9,490.00",
+   "claim_f10": "₹18,100.00",
+   "claim_f11": "now-80d",
+   "claim_f12": "+91 99••• ••301",
+   "claim_f2": "now-71d",
+   "claim_f3": "+91 96••• ••325",
+   "claim_f4": "yashasvi.dhar@example.com",
+   "claim_f5": "option 3",
+   "claim_f6": "Kolkata",
+   "claim_f7": "true",
+   "claim_f8": "Claim f8 of claim 3 in the placed state",
+   "claim_f9": "25",
+   "status": "placed"
+  }
+ ],
+ "properties": {
+  "claim_f1": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "claim_f10": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "claim_f11": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "claim_f12": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "claim_f2": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "claim_f3": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "claim_f4": {
+   "format": "email",
+   "type": "string"
+  },
+  "claim_f5": {
+   "type": "string"
+  },
+  "claim_f6": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "claim_f7": {
+   "type": "boolean"
+  },
+  "claim_f8": {
+   "type": "string"
+  },
+  "claim_f9": {
+   "type": "number"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "claim_f1",
+  "claim_f2",
+  "id"
+ ],
+ "title": "Claim",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-021",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

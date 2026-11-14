@@ -1,0 +1,427 @@
+/expenses:
+  get:
+    operationId: OP-S046
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -amount
+        - -category
+        - -created_at
+        - -note
+        - -occurred_at
+        - -status
+        - amount
+        - category
+        - created_at
+        - note
+        - occurred_at
+        - status
+        type: string
+    - in: query
+      name: filter[amount]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[category]
+      required: false
+      schema:
+        enum:
+        - fuel
+        - toll
+        - other
+        type: string
+    - in: query
+      name: filter[note]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[occurred_at]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[status]
+      required: false
+      schema:
+        enum:
+        - submitted
+        - reviewed
+        - settled
+        type: string
+    - in: query
+      name: filter[trip_id]
+      required: false
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                category:
+                  enum:
+                  - fuel
+                  - toll
+                  - other
+                  type: string
+                id:
+                  type: string
+                note:
+                  type: string
+                occurred_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                receipt:
+                  description: file reference id; bytes go through the media route
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewed
+                  - settled
+                  type: string
+                trip_id:
+                  type: string
+                  x-ref: ENT-006
+              required:
+              - amount
+              - category
+              - occurred_at
+              - status
+              - trip_id
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_expense
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-011
+    x-phase: now
+    x-roles:
+    - ROL-003
+  post:
+    operationId: OP-S048
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              amount:
+                additionalProperties: false
+                properties:
+                  amount:
+                    description: minor units, never a float
+                    type: integer
+                  currency:
+                    pattern: ^[A-Z]{3}$
+                    type: string
+                required:
+                - amount
+                - currency
+                type: object
+              category:
+                enum:
+                - fuel
+                - toll
+                - other
+                type: string
+              note:
+                type: string
+              occurred_at:
+                description: RFC 3339, UTC
+                format: date-time
+                type: string
+              receipt:
+                description: file reference id; bytes go through the media route
+                type: string
+              status:
+                enum:
+                - submitted
+                - reviewed
+                - settled
+                type: string
+              trip_id:
+                type: string
+                x-ref: ENT-006
+            required:
+            - amount
+            - category
+            - occurred_at
+            - status
+            - trip_id
+            type: object
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                category:
+                  enum:
+                  - fuel
+                  - toll
+                  - other
+                  type: string
+                id:
+                  type: string
+                note:
+                  type: string
+                occurred_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                receipt:
+                  description: file reference id; bytes go through the media route
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewed
+                  - settled
+                  type: string
+                trip_id:
+                  type: string
+                  x-ref: ENT-006
+              required:
+              - amount
+              - category
+              - occurred_at
+              - status
+              - trip_id
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: create_expense
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-011
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-003
+/expenses/{id}:
+  get:
+    operationId: OP-S047
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                amount:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                category:
+                  enum:
+                  - fuel
+                  - toll
+                  - other
+                  type: string
+                id:
+                  type: string
+                note:
+                  type: string
+                occurred_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                receipt:
+                  description: file reference id; bytes go through the media route
+                  type: string
+                status:
+                  enum:
+                  - submitted
+                  - reviewed
+                  - settled
+                  type: string
+                trip_id:
+                  type: string
+                  x-ref: ENT-006
+              required:
+              - amount
+              - category
+              - occurred_at
+              - status
+              - trip_id
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_expense
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    - APP-005
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-011
+    x-phase: now
+    x-roles:
+    - ROL-003

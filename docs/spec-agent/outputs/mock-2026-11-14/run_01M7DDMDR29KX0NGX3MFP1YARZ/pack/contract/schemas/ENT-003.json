@@ -1,0 +1,254 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "listing_f1": "₹7,455.00",
+   "listing_f10": "₹11,080.00",
+   "listing_f11": "now-68d",
+   "listing_f12": "+91 94••• ••889",
+   "listing_f2": "now-37d",
+   "listing_f3": "+91 97••• ••640",
+   "listing_f4": "dakshesh.sawhney@example.com",
+   "listing_f5": "option 1",
+   "listing_f6": "Jalandhar",
+   "listing_f7": "true",
+   "listing_f8": "Listing f8 of listing 1 in the draft state",
+   "listing_f9": "27",
+   "status": "draft"
+  },
+  {
+   "listing_f1": "₹18,575.00",
+   "listing_f10": "₹900.00",
+   "listing_f11": "now-2d",
+   "listing_f12": "+91 93••• ••301",
+   "listing_f2": "now-43d",
+   "listing_f3": "+91 98••• ••854",
+   "listing_f4": "gaurang.baria@example.com",
+   "listing_f5": "option 4",
+   "listing_f6": "Jamalpur",
+   "listing_f7": "true",
+   "listing_f8": "Listing f8 of listing 2 in the confirmed state",
+   "listing_f9": "12",
+   "status": "confirmed"
+  },
+  {
+   "listing_f1": "₹5,760.00",
+   "listing_f10": "₹3,345.00",
+   "listing_f11": "now-88d",
+   "listing_f12": "+91 96••• ••936",
+   "listing_f2": "now-40d",
+   "listing_f3": "+91 98••• ••756",
+   "listing_f4": "arunima.chad@example.com",
+   "listing_f5": "option 3",
+   "listing_f6": "Bhavnagar",
+   "listing_f7": "false",
+   "listing_f8": "Listing f8 of listing 3 in the placed state",
+   "listing_f9": "16",
+   "status": "placed"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "listing_f1": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "listing_f10": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "listing_f11": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "listing_f12": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "listing_f2": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "listing_f3": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "listing_f4": {
+   "format": "email",
+   "type": "string"
+  },
+  "listing_f5": {
+   "type": "string"
+  },
+  "listing_f6": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "listing_f7": {
+   "type": "boolean"
+  },
+  "listing_f8": {
+   "type": "string"
+  },
+  "listing_f9": {
+   "type": "number"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress",
+    "completed",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "listing_f1",
+  "listing_f2"
+ ],
+ "title": "Listing",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-003",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress",
+   "completed",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "completed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "in_progress",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "completed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

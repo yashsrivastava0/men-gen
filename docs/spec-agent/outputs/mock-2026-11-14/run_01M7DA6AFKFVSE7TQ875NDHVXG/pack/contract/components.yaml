@@ -1,0 +1,145 @@
+parameters:
+  Cursor:
+    description: opaque; take it from next_cursor of the previous page
+    in: query
+    name: cursor
+    required: false
+    schema:
+      type: string
+  IdempotencyKey:
+    description: a client-made key; repeating the call with it returns the first result
+    in: header
+    name: Idempotency-Key
+    required: true
+    schema:
+      maxLength: 128
+      minLength: 8
+      type: string
+  IfMatch:
+    description: the ETag from the last read (or the entity version)
+    in: header
+    name: If-Match
+    required: true
+    schema:
+      type: string
+  Limit:
+    in: query
+    name: limit
+    required: false
+    schema:
+      default: 25
+      maximum: 100
+      minimum: 1
+      type: integer
+responses:
+  Default:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: Any other failure
+  Forbidden:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: Not allowed for this role
+  NotFound:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: Not found
+  RateLimited:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: Too many requests
+  Unauthenticated:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: Not signed in
+  Unprocessable:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: The request cannot be applied
+  VersionChanged:
+    content:
+      application/json:
+        schema:
+          $ref: '#/schemas/Error'
+    description: Version changed since it was read
+schemas:
+  Error:
+    additionalProperties: false
+    properties:
+      code:
+        enum:
+        - conflict
+        - forbidden
+        - idempotency_conflict
+        - internal
+        - not_found
+        - rate_limited
+        - unauthenticated
+        - validation_failed
+        - version_conflict
+        type: string
+      details:
+        items:
+          properties:
+            field:
+              type: string
+            issue:
+              type: string
+          required:
+          - field
+          - issue
+          type: object
+        type: array
+      fix:
+        type: string
+      message:
+        description: plain words, safe to show
+        type: string
+      request_id:
+        type: string
+      retryable:
+        type: boolean
+      where:
+        type: string
+      why:
+        type: string
+    required:
+    - code
+    - message
+    - request_id
+    type: object
+    x-error-shape: spec.error.v1
+  Event:
+    properties:
+      data:
+        type: object
+      id:
+        description: unique per event; consumers dedupe on it
+        type: string
+      occurred_at:
+        format: date-time
+        type: string
+      type:
+        type: string
+    required:
+    - id
+    - type
+    - occurred_at
+    - data
+    type: object
+securitySchemes:
+  bearerAuth:
+    scheme: bearer
+    type: http

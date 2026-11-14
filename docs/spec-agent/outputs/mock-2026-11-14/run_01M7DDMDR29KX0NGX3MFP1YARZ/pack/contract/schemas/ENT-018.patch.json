@@ -1,0 +1,91 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "address_f1": {
+   "type": "boolean"
+  },
+  "address_f10": {
+   "type": "boolean"
+  },
+  "address_f11": {
+   "type": "string"
+  },
+  "address_f12": {
+   "type": "number"
+  },
+  "address_f2": {
+   "type": "string"
+  },
+  "address_f3": {
+   "type": "number"
+  },
+  "address_f4": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "address_f5": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "address_f6": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "address_f7": {
+   "format": "email",
+   "type": "string"
+  },
+  "address_f8": {
+   "type": "string"
+  },
+  "address_f9": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  }
+ },
+ "title": "Address changes",
+ "type": "object",
+ "x-entity": "ENT-018"
+}

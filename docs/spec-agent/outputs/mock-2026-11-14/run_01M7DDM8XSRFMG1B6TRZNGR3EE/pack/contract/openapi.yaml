@@ -1,0 +1,167 @@
+components:
+  securitySchemes:
+    bearerAuth:
+      scheme: bearer
+      type: http
+info:
+  summary: Contract v0 derived from the Spec graph; the backend engine builds on it.
+  title: ses_01M72T5XJ3TAQG997X48V9C95Q contract
+  version: 0.1.0
+  x-conventions:
+    auth: 'default deny: x-roles lists who may call; see auth-matrix.json'
+    concurrency: ETag out and If-Match in on editable entities (version field)
+    enums: lifecycle states are the enum of an entity status
+    errors: 'one shape (spec.error.v1): code, message, request_id, retryable, details'
+    filter_sort: filter[field]=value and sort=field or -field on list operations
+    fixtures: contract/fixtures/<ENT>.json (hook; absent until fixtures are written)
+    idempotency: Idempotency-Key header on operations marked x-idempotent
+    ids: opaque strings, never reused
+    pagination: 'cursor: cursor and limit in, next_cursor out'
+    phase: x-phase later marks operations that exist only for later features
+    timestamps: RFC 3339, UTC
+jsonSchemaDialect: https://json-schema.org/draft/2020-12/schema
+openapi: 3.1.0
+paths:
+  /advances:
+    $ref: resources/ent-012-1.yaml#/~1advances
+  /advances/{id}:
+    $ref: resources/ent-012-1.yaml#/~1advances~1%7Bid%7D
+  /advances/{id}/approved:
+    $ref: resources/ent-012-2.yaml#/~1advances~1%7Bid%7D~1approved
+  /advances/{id}/rejected:
+    $ref: resources/ent-012-2.yaml#/~1advances~1%7Bid%7D~1rejected
+  /advances/{id}/settled:
+    $ref: resources/ent-012-2.yaml#/~1advances~1%7Bid%7D~1settled
+  /audit_entries:
+    $ref: resources/ent-021.yaml#/~1audit_entries
+  /audit_entries/{id}:
+    $ref: resources/ent-021.yaml#/~1audit_entries~1%7Bid%7D
+  /bookings:
+    $ref: resources/ent-004-1.yaml#/~1bookings
+  /bookings/{id}:
+    $ref: resources/ent-004-2.yaml#/~1bookings~1%7Bid%7D
+  /bookings/{id}/cancelled:
+    $ref: resources/ent-004-2.yaml#/~1bookings~1%7Bid%7D~1cancelled
+  /bookings/{id}/confirmed:
+    $ref: resources/ent-004-3.yaml#/~1bookings~1%7Bid%7D~1confirmed
+  /bookings/{id}/delivered:
+    $ref: resources/ent-004-3.yaml#/~1bookings~1%7Bid%7D~1delivered
+  /bookings/{id}/in-transit:
+    $ref: resources/ent-004-3.yaml#/~1bookings~1%7Bid%7D~1in-transit
+  /branches:
+    $ref: resources/ent-019.yaml#/~1branches
+  /branches/{id}:
+    $ref: resources/ent-019.yaml#/~1branches~1%7Bid%7D
+  /claims:
+    $ref: resources/ent-005-1.yaml#/~1claims
+  /claims/{id}:
+    $ref: resources/ent-005-2.yaml#/~1claims~1%7Bid%7D
+  /claims/{id}/rejected:
+    $ref: resources/ent-005-2.yaml#/~1claims~1%7Bid%7D~1rejected
+  /claims/{id}/resolved:
+    $ref: resources/ent-005-3.yaml#/~1claims~1%7Bid%7D~1resolved
+  /claims/{id}/reviewing:
+    $ref: resources/ent-005-3.yaml#/~1claims~1%7Bid%7D~1reviewing
+  /compliance_records:
+    $ref: resources/ent-018.yaml#/~1compliance_records
+  /compliance_records/{id}:
+    $ref: resources/ent-018.yaml#/~1compliance_records~1%7Bid%7D
+  /customer-users/{id}/removed:
+    $ref: resources/ent-002-1.yaml#/~1customer-users~1%7Bid%7D~1removed
+  /customer_companies:
+    $ref: resources/ent-001.yaml#/~1customer_companies
+  /customer_companies/{id}:
+    $ref: resources/ent-001.yaml#/~1customer_companies~1%7Bid%7D
+  /customer_users:
+    $ref: resources/ent-002-1.yaml#/~1customer_users
+  /customer_users/{id}:
+    $ref: resources/ent-002-2.yaml#/~1customer_users~1%7Bid%7D
+  /drivers:
+    $ref: resources/ent-010.yaml#/~1drivers
+  /drivers/{id}:
+    $ref: resources/ent-010.yaml#/~1drivers~1%7Bid%7D
+  /expenses:
+    $ref: resources/ent-011-1.yaml#/~1expenses
+  /expenses/{id}:
+    $ref: resources/ent-011-1.yaml#/~1expenses~1%7Bid%7D
+  /expenses/{id}/reviewed:
+    $ref: resources/ent-011-2.yaml#/~1expenses~1%7Bid%7D~1reviewed
+  /expenses/{id}/settled:
+    $ref: resources/ent-011-2.yaml#/~1expenses~1%7Bid%7D~1settled
+  /integrations:
+    $ref: resources/ent-022.yaml#/~1integrations
+  /integrations/{id}:
+    $ref: resources/ent-022.yaml#/~1integrations~1%7Bid%7D
+  /invoices:
+    $ref: resources/ent-015.yaml#/~1invoices
+  /invoices/{id}:
+    $ref: resources/ent-015.yaml#/~1invoices~1%7Bid%7D
+  /maintenance_jobs:
+    $ref: resources/ent-013.yaml#/~1maintenance_jobs
+  /maintenance_jobs/{id}:
+    $ref: resources/ent-013.yaml#/~1maintenance_jobs~1%7Bid%7D
+  /payments:
+    $ref: resources/ent-016.yaml#/~1payments
+  /payments/{id}:
+    $ref: resources/ent-016.yaml#/~1payments~1%7Bid%7D
+  /quote-requests/{id}/closed:
+    $ref: resources/ent-003-1.yaml#/~1quote-requests~1%7Bid%7D~1closed
+  /quote-requests/{id}/responded:
+    $ref: resources/ent-003-1.yaml#/~1quote-requests~1%7Bid%7D~1responded
+  /quote-requests/{id}/reviewing:
+    $ref: resources/ent-003-1.yaml#/~1quote-requests~1%7Bid%7D~1reviewing
+  /quote_requests:
+    $ref: resources/ent-003-2.yaml#/~1quote_requests
+  /quote_requests/{id}:
+    $ref: resources/ent-003-3.yaml#/~1quote_requests~1%7Bid%7D
+  /rate_cards:
+    $ref: resources/ent-017.yaml#/~1rate_cards
+  /rate_cards/{id}:
+    $ref: resources/ent-017.yaml#/~1rate_cards~1%7Bid%7D
+  /staff_users:
+    $ref: resources/ent-020.yaml#/~1staff_users
+  /staff_users/{id}:
+    $ref: resources/ent-020.yaml#/~1staff_users~1%7Bid%7D
+  /trip_documents:
+    $ref: resources/ent-008.yaml#/~1trip_documents
+  /trip_documents/{id}:
+    $ref: resources/ent-008.yaml#/~1trip_documents~1%7Bid%7D
+  /trip_updates:
+    $ref: resources/ent-007.yaml#/~1trip_updates
+  /trip_updates/{id}:
+    $ref: resources/ent-007.yaml#/~1trip_updates~1%7Bid%7D
+  /trips:
+    $ref: resources/ent-006.yaml#/~1trips
+  /trips/{id}:
+    $ref: resources/ent-006.yaml#/~1trips~1%7Bid%7D
+  /trucks:
+    $ref: resources/ent-009.yaml#/~1trucks
+  /trucks/{id}:
+    $ref: resources/ent-009.yaml#/~1trucks~1%7Bid%7D
+  /vehicle_documents:
+    $ref: resources/ent-014.yaml#/~1vehicle_documents
+  /vehicle_documents/{id}:
+    $ref: resources/ent-014.yaml#/~1vehicle_documents~1%7Bid%7D
+security:
+- bearerAuth: []
+servers:
+- url: /
+tags:
+- description: Driver mobile app
+  name: APP-001
+  x-surface: phone
+- description: Dispatcher app or portal
+  name: APP-002
+  x-surface: web
+- description: Manager portal
+  name: APP-003
+  x-surface: web
+- description: Finance and compliance portal
+  name: APP-004
+  x-surface: web
+- description: Customer portal
+  name: APP-005
+  x-surface: web
+webhooks:
+  INT-S001-callback:
+    $ref: resources/webhooks.yaml#/INT-S001-callback

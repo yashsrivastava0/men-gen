@@ -1,0 +1,110 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "details": "Details of compliance record 1",
+   "name": "Thomas Kant"
+  },
+  {
+   "details": "Details of compliance record 2",
+   "name": "Wazir Kaur"
+  },
+  {
+   "details": "Details of compliance record 3",
+   "name": "Samarth Sarkar"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "details": {
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "name"
+ ],
+ "title": "Compliance Record",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "view"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ],
+  "ROL-004": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ],
+  "ROL-006": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-007": [
+   "view"
+  ],
+  "ROL-008": [
+   "view"
+  ],
+  "ROL-010": [
+   "view"
+  ],
+  "ROL-012": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-013": [
+   "view"
+  ],
+  "ROL-014": [
+   "view"
+  ],
+  "ROL-015": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-016": [
+   "view"
+  ],
+  "ROL-017": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-018"
+}

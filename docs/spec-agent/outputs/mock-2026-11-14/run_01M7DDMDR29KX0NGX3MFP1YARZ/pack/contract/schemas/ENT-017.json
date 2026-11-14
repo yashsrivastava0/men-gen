@@ -1,0 +1,252 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "category_f1": "Tinsukia",
+   "category_f10": "Kolkata",
+   "category_f11": "false",
+   "category_f12": "Category f12 of category 1 in the draft state",
+   "category_f2": "true",
+   "category_f3": "Category f3 of category 1 in the draft state",
+   "category_f4": "39",
+   "category_f5": "₹13,255.00",
+   "category_f6": "now-5d",
+   "category_f7": "+91 99••• ••584",
+   "category_f8": "ayush.ramakrishnan@example.com",
+   "category_f9": "option 1",
+   "status": "draft"
+  },
+  {
+   "category_f1": "Malegaon",
+   "category_f10": "Dharmavaram",
+   "category_f11": "false",
+   "category_f12": "Category f12 of category 2 in the completed state",
+   "category_f2": "false",
+   "category_f3": "Category f3 of category 2 in the completed state",
+   "category_f4": "28",
+   "category_f5": "₹10,960.00",
+   "category_f6": "now-67d",
+   "category_f7": "+91 96••• ••142",
+   "category_f8": "udyati.dayal@example.com",
+   "category_f9": "option 3",
+   "status": "completed"
+  },
+  {
+   "category_f1": "Kolkata",
+   "category_f10": "Parbhani",
+   "category_f11": "true",
+   "category_f12": "Category f12 of category 3 in the placed state",
+   "category_f2": "true",
+   "category_f3": "Category f3 of category 3 in the placed state",
+   "category_f4": "35",
+   "category_f5": "₹21,190.00",
+   "category_f6": "now-75d",
+   "category_f7": "+91 93••• ••836",
+   "category_f8": "max.bakshi@example.com",
+   "category_f9": "option 1",
+   "status": "placed"
+  }
+ ],
+ "properties": {
+  "category_f1": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "category_f10": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "category_f11": {
+   "type": "boolean"
+  },
+  "category_f12": {
+   "type": "string"
+  },
+  "category_f2": {
+   "type": "boolean"
+  },
+  "category_f3": {
+   "type": "string"
+  },
+  "category_f4": {
+   "type": "number"
+  },
+  "category_f5": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "category_f6": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "category_f7": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "category_f8": {
+   "format": "email",
+   "type": "string"
+  },
+  "category_f9": {
+   "type": "string"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed",
+    "in_progress",
+    "completed",
+    "cancelled"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "category_f1",
+  "category_f2",
+  "id"
+ ],
+ "title": "Category",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-017",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed",
+   "in_progress",
+   "completed",
+   "cancelled"
+  ],
+  "transitions": [
+   {
+    "from": "completed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "confirmed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "in_progress"
+   },
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "in_progress",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "completed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

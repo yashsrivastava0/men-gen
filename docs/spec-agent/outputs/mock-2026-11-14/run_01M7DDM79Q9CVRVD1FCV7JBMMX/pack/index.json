@@ -1,0 +1,117 @@
+{
+ "schema": "spec.index.v1",
+ "screens": {
+  "SCR-001": {
+   "file": "screens/SCR-001.md",
+   "sha256": "38168744ada50252c7a0a823dfaa26bfeb73cfd273a21c83bddb503467779673",
+   "tokens": 1367
+  },
+  "SCR-002": {
+   "file": "screens/SCR-002.md",
+   "sha256": "4cf5aba3b58e38ae32bbcba232e0a9be6c3ad434a7b3ac8d3b60d05947fa0854",
+   "tokens": 1321
+  },
+  "SCR-003": {
+   "file": "screens/SCR-003.md",
+   "sha256": "0879b7e270f089e1cc388c939240fe178a188ff6441108c2d2459c4426a149a0",
+   "tokens": 1473
+  },
+  "SCR-004": {
+   "file": "screens/SCR-004.md",
+   "sha256": "fe9c88851dbc22ffd4f456d1d96ee97757ab65f89246199be650afd63057ec53",
+   "tokens": 1521
+  },
+  "SCR-005": {
+   "file": "screens/SCR-005.md",
+   "sha256": "682d0e395877bfece44e7dfed2c105ef3f69aa92a1ee348b1f522977a5c7a29a",
+   "tokens": 1216
+  },
+  "SCR-006": {
+   "file": "screens/SCR-006.md",
+   "sha256": "33f28e332d492aca78e13498e9b33a63a20956395ce36b58dac5e9622ecfaa41",
+   "tokens": 1022
+  },
+  "SCR-007": {
+   "file": "screens/SCR-007.md",
+   "sha256": "15370cf170ce5b3b32afebec7a53e8cafaf5a1b0c23e1b5b690af9427bfd1d91",
+   "tokens": 1127
+  },
+  "SCR-008": {
+   "file": "screens/SCR-008.md",
+   "sha256": "543c0d6e8b9ae63ac88693bd3e25ff7eae3282bb2ba72c48fdae4a50cc32c537",
+   "tokens": 1787
+  },
+  "SCR-009": {
+   "file": "screens/SCR-009.md",
+   "sha256": "908935ddd39771bd0a2c915c1769d2767c2a0a59fcc17d3757daed7271ca86f1",
+   "tokens": 990
+  },
+  "SCR-010": {
+   "file": "screens/SCR-010.md",
+   "sha256": "ce205d263ffa932d7d2ab334d02e69d8b7882db5e17851d5e15c1483f9f1cb83",
+   "tokens": 1537
+  },
+  "SCR-011": {
+   "file": "screens/SCR-011.md",
+   "sha256": "fea61452fe5446b4c96a0b6fae398d465671089a71e7986c31ae5793aa1ad81d",
+   "tokens": 1810
+  },
+  "SCR-012": {
+   "file": "screens/SCR-012.md",
+   "sha256": "23ed42197cd6b3836ae9972a5e7956c4d2ffd0aba2b7f933b23ed717091f85b0",
+   "tokens": 1332
+  },
+  "SCR-013": {
+   "file": "screens/SCR-013.md",
+   "sha256": "e48b60f8c561b62d61776df943d57d940b368dcac2802d59e093bd33ffe33da2",
+   "tokens": 876
+  },
+  "SCR-S001": {
+   "file": "screens/SCR-S001.md",
+   "sha256": "94e3033927b1402f0fce49615ba7dc52ccf34d98fa515e824c67c61302601eb6",
+   "tokens": 1030
+  },
+  "SCR-S002": {
+   "file": "screens/SCR-S002.md",
+   "sha256": "8e7cd394824e9933d788e0a9d9dc5965f759273601e3c0f82731e1f5fc3f4387",
+   "tokens": 1108
+  },
+  "SCR-S003": {
+   "file": "screens/SCR-S003.md",
+   "sha256": "0941a6e707379214d8d88315876fdc2409cce9100c813d467cdb34055ccab2e7",
+   "tokens": 1006
+  },
+  "SCR-S004": {
+   "file": "screens/SCR-S004.md",
+   "sha256": "8ed068d4aec96cfde7564cb0967474e4e6a256ad254941dbb5ec1aa172586cf5",
+   "tokens": 960
+  },
+  "SCR-S005": {
+   "file": "screens/SCR-S005.md",
+   "sha256": "5766f5bb964da5b2772239449560df6d7d5b7de45d90ad1665bb72fe8f22dc8d",
+   "tokens": 1326
+  }
+ },
+ "tasks": {
+  "T-0001": {
+   "read_tokens": 5506,
+   "wave": "W0"
+  },
+  "T-0002": {
+   "read_tokens": 14618,
+   "wave": "W3"
+  },
+  "T-0003": {
+   "read_tokens": 11186,
+   "wave": "W3"
+  },
+  "T-0004": {
+   "read_tokens": 14176,
+   "wave": "W3"
+  },
+  "T-0005": {
+   "read_tokens": 16748,
+   "wave": "W3"
+  }
+ }
+}

@@ -1,0 +1,54 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "availability_period": {
+   "type": "string"
+  },
+  "price": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "produce_name": {
+   "type": "string"
+  },
+  "quantity_available": {
+   "type": "number"
+  },
+  "seller_farmer": {
+   "type": "string",
+   "x-ref": "ENT-004"
+  },
+  "seller_fpo": {
+   "type": "string",
+   "x-ref": "ENT-005"
+  },
+  "status": {
+   "enum": [
+    "pending_review",
+    "available",
+    "unavailable",
+    "sold_out"
+   ],
+   "type": "string"
+  }
+ },
+ "title": "Produce listing changes",
+ "type": "object",
+ "x-entity": "ENT-003"
+}

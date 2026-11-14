@@ -1,0 +1,136 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "member_id": "Wridesh Lall",
+   "status": "waitlisted",
+   "waitlist_position": "19"
+  },
+  {
+   "member_id": "Vanya Kunda",
+   "status": "no_show",
+   "waitlist_position": "14"
+  },
+  {
+   "member_id": "Thomas Kant",
+   "status": "cancelled",
+   "waitlist_position": "24"
+  }
+ ],
+ "properties": {
+  "class_id": {
+   "type": "string",
+   "x-ref": "ENT-001"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "member_id": {
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "booked",
+    "waitlisted",
+    "cancelled",
+    "attended",
+    "no_show"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  },
+  "waitlist_position": {
+   "type": "number"
+  }
+ },
+ "required": [
+  "class_id",
+  "id",
+  "member_id",
+  "status"
+ ],
+ "title": "Booking",
+ "type": "object",
+ "x-access": {
+  "ROL-002": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ],
+  "ROL-004": [
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-002",
+ "x-lifecycle": {
+  "initial": "booked",
+  "states": [
+   "booked",
+   "waitlisted",
+   "cancelled",
+   "attended",
+   "no_show"
+  ],
+  "transitions": [
+   {
+    "from": "attended",
+    "on": "OP-S021",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "no_show"
+   },
+   {
+    "from": "booked",
+    "on": "OP-S018",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "waitlisted"
+   },
+   {
+    "from": "waitlisted",
+    "on": "OP-S019",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "attended"
+   },
+   {
+    "from": "waitlisted",
+    "on": "OP-S020",
+    "roles": [
+     "ROL-002"
+    ],
+    "to": "cancelled"
+   }
+  ]
+ }
+}

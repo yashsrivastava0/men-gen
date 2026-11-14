@@ -1,0 +1,417 @@
+/deliveries/{id}:
+  delete:
+    operationId: OP-S035
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '204':
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: delete_delivery
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-008
+    x-phase: now
+    x-roles:
+    - ROL-005
+  get:
+    operationId: OP-S032
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                delivery_fee:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                dropoff_location:
+                  additionalProperties: false
+                  properties:
+                    lat:
+                      maximum: 90
+                      minimum: -90
+                      type: number
+                    lng:
+                      maximum: 180
+                      minimum: -180
+                      type: number
+                  required:
+                  - lat
+                  - lng
+                  type: object
+                id:
+                  type: string
+                order_id:
+                  type: string
+                  x-ref: ENT-006
+                pickup_location:
+                  additionalProperties: false
+                  properties:
+                    lat:
+                      maximum: 90
+                      minimum: -90
+                      type: number
+                    lng:
+                      maximum: 180
+                      minimum: -180
+                      type: number
+                  required:
+                  - lat
+                  - lng
+                  type: object
+                status:
+                  enum:
+                  - unassigned
+                  - assigned
+                  - picked_up
+                  - delivered
+                  - unable_to_deliver
+                  type: string
+                transport_partner_id:
+                  type: string
+                  x-ref: ENT-009
+              required:
+              - delivery_fee
+              - dropoff_location
+              - order_id
+              - pickup_location
+              - status
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_delivery
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-008
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+    - ROL-006
+    - ROL-007
+    - ROL-008
+    - ROL-009
+  patch:
+    operationId: OP-S034
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    - $ref: ../components.yaml#/parameters/IfMatch
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              delivery_fee:
+                additionalProperties: false
+                properties:
+                  amount:
+                    description: minor units, never a float
+                    type: integer
+                  currency:
+                    pattern: ^[A-Z]{3}$
+                    type: string
+                required:
+                - amount
+                - currency
+                type: object
+              dropoff_location:
+                additionalProperties: false
+                properties:
+                  lat:
+                    maximum: 90
+                    minimum: -90
+                    type: number
+                  lng:
+                    maximum: 180
+                    minimum: -180
+                    type: number
+                required:
+                - lat
+                - lng
+                type: object
+              order_id:
+                type: string
+                x-ref: ENT-006
+              pickup_location:
+                additionalProperties: false
+                properties:
+                  lat:
+                    maximum: 90
+                    minimum: -90
+                    type: number
+                  lng:
+                    maximum: 180
+                    minimum: -180
+                    type: number
+                required:
+                - lat
+                - lng
+                type: object
+              status:
+                enum:
+                - unassigned
+                - assigned
+                - picked_up
+                - delivered
+                - unable_to_deliver
+                type: string
+              transport_partner_id:
+                type: string
+                x-ref: ENT-009
+            required:
+            - delivery_fee
+            - dropoff_location
+            - order_id
+            - pickup_location
+            - status
+            type: object
+      required: true
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                delivery_fee:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                dropoff_location:
+                  additionalProperties: false
+                  properties:
+                    lat:
+                      maximum: 90
+                      minimum: -90
+                      type: number
+                    lng:
+                      maximum: 180
+                      minimum: -180
+                      type: number
+                  required:
+                  - lat
+                  - lng
+                  type: object
+                id:
+                  type: string
+                order_id:
+                  type: string
+                  x-ref: ENT-006
+                pickup_location:
+                  additionalProperties: false
+                  properties:
+                    lat:
+                      maximum: 90
+                      minimum: -90
+                      type: number
+                    lng:
+                      maximum: 180
+                      minimum: -180
+                      type: number
+                  required:
+                  - lat
+                  - lng
+                  type: object
+                status:
+                  enum:
+                  - unassigned
+                  - assigned
+                  - picked_up
+                  - delivered
+                  - unable_to_deliver
+                  type: string
+                transport_partner_id:
+                  type: string
+                  x-ref: ENT-009
+              required:
+              - delivery_fee
+              - dropoff_location
+              - order_id
+              - pickup_location
+              - status
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        $ref: ../components.yaml#/responses/NotFound
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '412':
+        $ref: ../components.yaml#/responses/VersionChanged
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: update_delivery
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-concurrency: etag
+    x-derived: false
+    x-entity: ENT-008
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-003
+    - ROL-005

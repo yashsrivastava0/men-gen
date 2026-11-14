@@ -1,0 +1,299 @@
+{
+ "checked_by": [
+  "self_check"
+ ],
+ "consumer": "weak-default",
+ "content_hash": "b8bc64920e6bba691330e36c05ad0b527bc16fbf97a39bcaecd6f98205537dbe",
+ "critic_vendor": null,
+ "files": {
+  "AGENTS.md": {
+   "sha256": "1eff46952ddacf475601f365adcfc5bd6fca7b0a35d3e669ada260f5915c0f37",
+   "tokens": 300
+  },
+  "INDEX.md": {
+   "sha256": "985d012682279978e31919749cfee5a51afd64d703a7e1925d0a5b97606f2f4b",
+   "tokens": 323
+  },
+  "apps/APP-001/app.md": {
+   "sha256": "6b57ea87e9318ea3e200b065b9c6fe74343ba440c2cc92e770707b368cef7afa",
+   "tokens": 38
+  },
+  "contract/auth-matrix.json": {
+   "sha256": "50082cfda4a00d3f85dcb59314b0a65ed925c93f41be5a9094f2eea816ac9484",
+   "tokens": 532
+  },
+  "contract/components.yaml": {
+   "sha256": "5dd6be8277c269b789d9b68d788d38352a03c21cc6bee5e31a927180c214976e",
+   "tokens": 1015
+  },
+  "contract/events.json": {
+   "sha256": "8c274a87e7c92d8b59bfdd27bbb84daa68a9769880e719c242764381ce6a8e8b",
+   "tokens": 624
+  },
+  "contract/openapi.yaml": {
+   "sha256": "54db19d193bc0bd47cd4e503ae17e08fcf568abcd4198c69b32b62aa1d0e53d8",
+   "tokens": 937
+  },
+  "contract/resources/ent-001-1.yaml": {
+   "sha256": "5b97344865d120581509af1c89fe669e9fb59550dc622b16334f2d355ed8ad54",
+   "tokens": 2173
+  },
+  "contract/resources/ent-001-2.yaml": {
+   "sha256": "5fa3eb01d20d2fd6861221a28d7ef07141658a188e85d0829eee6f77582344f6",
+   "tokens": 3959
+  },
+  "contract/resources/ent-002-1.yaml": {
+   "sha256": "46becb08d65fad1c95267b5bf9971642ecb9f5240c658280d303477d802b5991",
+   "tokens": 1935
+  },
+  "contract/resources/ent-002-2.yaml": {
+   "sha256": "fbbe2b02da603699fefad6ce72d3a88ba9a44bb1026f190f7546a76ea863b720",
+   "tokens": 3810
+  },
+  "contract/resources/ent-002-3.yaml": {
+   "sha256": "51192c402cdd727059ac102682c89efcfdef6e6b94e448baab986dc975e795cb",
+   "tokens": 1531
+  },
+  "contract/resources/ent-003.yaml": {
+   "sha256": "2f11bcb2f03eb7b0253326a991ef3ffbb2a918e67e08a5a2568c723985555680",
+   "tokens": 1638
+  },
+  "contract/resources/ent-004-1.yaml": {
+   "sha256": "7d53f9ebbdad3fbd61cd09c1243384152e524d658f4c9b055c9a46b139a69181",
+   "tokens": 3810
+  },
+  "contract/resources/ent-004-2.yaml": {
+   "sha256": "d01f609384a6aeaf0268088369eb0131a06931b6db17fab1692e0deaa07176c7",
+   "tokens": 741
+  },
+  "contract/resources/ent-005.yaml": {
+   "sha256": "4a257fc022083022b7c8cbb9edde3710770824d8ab45b3dd8f24be42b9c3ae25",
+   "tokens": 2199
+  },
+  "contract/resources/webhooks.yaml": {
+   "sha256": "e37d9c7498be5785163fe90aaf685a004775212e6a82e7a3861c5b4f8203e966",
+   "tokens": 146
+  },
+  "contract/schemas/ENT-001.json": {
+   "sha256": "47023c98c0bc77b00a60560e6a7da6d8082a9a1fdc3b7535ac05f985e844c5f8",
+   "tokens": 721
+  },
+  "contract/schemas/ENT-001.patch.json": {
+   "sha256": "3b8081aa86f817f9fd27ea363e953900356bba7bce1c96dad1f4f63c9843cf41",
+   "tokens": 202
+  },
+  "contract/schemas/ENT-002.json": {
+   "sha256": "2336fe4ac3348da7a46da317c59f7f0e2ede33d2d99c9491e51a469ae606af5d",
+   "tokens": 690
+  },
+  "contract/schemas/ENT-002.patch.json": {
+   "sha256": "c378f7690c0ed25acc753554e358fff3664de5f03e4d1476a5ce612ea437e486",
+   "tokens": 167
+  },
+  "contract/schemas/ENT-003.json": {
+   "sha256": "72e535a8510a628f5bc17681d0002cc176aff7a7f3a182d728bf5ff72106c310",
+   "tokens": 452
+  },
+  "contract/schemas/ENT-004.json": {
+   "sha256": "2692eff2dd15e6500cb7fe8a1247bbf2a8158fe48f5c412497e73af29c69035c",
+   "tokens": 593
+  },
+  "contract/schemas/ENT-005.json": {
+   "sha256": "59ebb052e905356d08f14678a369879947662275d8ced33cadd7eb4608eb4ea6",
+   "tokens": 430
+  },
+  "data-model/MOD-002-1.md": {
+   "sha256": "90b3b4e55d48883b39c58edd04c962373392bea7fbde8b6ba20c68bc02ab4149",
+   "tokens": 226
+  },
+  "data-model/MOD-003-1.md": {
+   "sha256": "d8bcd6ef90edecb28fdb254e2ab1c630248b2eab22de215099c3ab9cc897555b",
+   "tokens": 151
+  },
+  "data-model/MOD-004-1.md": {
+   "sha256": "79dc505521866af0f19623cbc676aac625546c82bb89162224b988626629a03d",
+   "tokens": 134
+  },
+  "global/assets.json": {
+   "sha256": "3660c46a8adcda07f08b631cf098e108261f8edb9b8e91bc2aa164367ebf5121",
+   "tokens": 1338
+  },
+  "global/behaviors.md": {
+   "sha256": "7cba79f92f85482d8a3db1c33e2c47f06c479fc85b31509c529d20501fced4eb",
+   "tokens": 656
+  },
+  "global/blocks.md": {
+   "sha256": "01ba4719c80b6fe911b091a7c05124b64eeece964e09c058ef8f9805daca546b",
+   "tokens": 1
+  },
+  "global/copy/en.json": {
+   "sha256": "fe7d4981888d25fe34c336f7c4ec544ecc5aaab7a63bab6aedae298292b7b001",
+   "tokens": 1442
+  },
+  "global/copy/kn.json": {
+   "sha256": "5abd31b3789ea5a0583b8cdb24ea4c26ec93430e94f6369f02d1bdd0a1cb84ec",
+   "tokens": 2191
+  },
+  "global/design-direction.md": {
+   "sha256": "d40192b4daf704c021e8302158b576c599e72af22d15e82aa327e585fe77da15",
+   "tokens": 43
+  },
+  "global/glossary.md": {
+   "sha256": "5d8378c24186ae24d9e7c7eb270298f1892fa13366cfe48b5c70eaf5d9c3f4e3",
+   "tokens": 373
+  },
+  "global/integrations.md": {
+   "sha256": "f68735b3b0f4d37fbdc140d7c9b774e5bfe42512d6a3dc961c89daf0b864f321",
+   "tokens": 169
+  },
+  "global/navigation.md": {
+   "sha256": "ac18baf488633ab7f77788367503df9cf82f979152f124f93e8e01d071d0155f",
+   "tokens": 274
+  },
+  "global/needs.json": {
+   "sha256": "92a6c7774dd0ef0e68869addb329089b32654bcaea08858ee5276ffdd06949b5",
+   "tokens": 1525
+  },
+  "global/roles-and-access.md": {
+   "sha256": "9b4fd158d44440a9ea6bc6491fc0f8997e55e3ee21885f717c63950714db0895",
+   "tokens": 97
+  },
+  "global/routes.json": {
+   "sha256": "755f89f36cee29b3680099d73f454def608a7bf961d672108ee7e56430cf164f",
+   "tokens": 513
+  },
+  "global/rules.md": {
+   "sha256": "c0093d3da37f2245194a5beed512c7bed18f7379abb776a0fe014e3e868e7359",
+   "tokens": 423
+  },
+  "global/scope-ledger.json": {
+   "sha256": "0bbc7fe6f34f968101ee54f25087f6ff41eae29a4578cca9711094d53be17701",
+   "tokens": 166
+  },
+  "global/tokens.dtcg.json": {
+   "sha256": "c11bd59dc8b2e1b5df62bae2c8747efad8ad1682a53d09d542df31c56283f222",
+   "tokens": 17839
+  },
+  "modules/MOD-001/module.md": {
+   "sha256": "1538f1a2aa94176eea99679be4e03115f950d08841f3f8fbe010022ceb62ed70",
+   "tokens": 118
+  },
+  "modules/MOD-002/module.md": {
+   "sha256": "1309df4dd530a162b77cf3c227d4beee3e50c238a362cca3459ad6fd0b156d99",
+   "tokens": 88
+  },
+  "modules/MOD-003/module.md": {
+   "sha256": "0c33472fd4e89821d5f2820c307917261ec701d37ffc15cb96bb18d811da5ed0",
+   "tokens": 64
+  },
+  "modules/MOD-004/module.md": {
+   "sha256": "79d99965194c017847b3d06a760fdf775857420c3d9b18ac991cc373cd422599",
+   "tokens": 71
+  },
+  "prefix.bundle.md": {
+   "sha256": "9a07ac46046103d9f9bfad2503b3958539579ff4fb992decac3f1afa2c22c82a",
+   "tokens": 1506
+  },
+  "screens/SCR-001.md": {
+   "sha256": "38168744ada50252c7a0a823dfaa26bfeb73cfd273a21c83bddb503467779673",
+   "tokens": 1367
+  },
+  "screens/SCR-002.md": {
+   "sha256": "4cf5aba3b58e38ae32bbcba232e0a9be6c3ad434a7b3ac8d3b60d05947fa0854",
+   "tokens": 1321
+  },
+  "screens/SCR-003.could.md": {
+   "sha256": "55f3c4b8acd1e49f62f89070ed76026196c8b84fad62e46379da49ea58b110eb",
+   "tokens": 108
+  },
+  "screens/SCR-003.md": {
+   "sha256": "0879b7e270f089e1cc388c939240fe178a188ff6441108c2d2459c4426a149a0",
+   "tokens": 1473
+  },
+  "screens/SCR-004.could.md": {
+   "sha256": "b48071bad4a67f0ea533e1bb9d45d07d7a2939f430a8b696a25168a3cd53fd6f",
+   "tokens": 108
+  },
+  "screens/SCR-004.md": {
+   "sha256": "fe9c88851dbc22ffd4f456d1d96ee97757ab65f89246199be650afd63057ec53",
+   "tokens": 1521
+  },
+  "screens/SCR-005.could.md": {
+   "sha256": "a5e416ea7b502500bc4a927dcf5f7bb5b629996c7c629f2809aeaff83e2a3a87",
+   "tokens": 101
+  },
+  "screens/SCR-005.md": {
+   "sha256": "682d0e395877bfece44e7dfed2c105ef3f69aa92a1ee348b1f522977a5c7a29a",
+   "tokens": 1216
+  },
+  "screens/SCR-006.md": {
+   "sha256": "33f28e332d492aca78e13498e9b33a63a20956395ce36b58dac5e9622ecfaa41",
+   "tokens": 1022
+  },
+  "screens/SCR-007.md": {
+   "sha256": "15370cf170ce5b3b32afebec7a53e8cafaf5a1b0c23e1b5b690af9427bfd1d91",
+   "tokens": 1127
+  },
+  "screens/SCR-008.md": {
+   "sha256": "543c0d6e8b9ae63ac88693bd3e25ff7eae3282bb2ba72c48fdae4a50cc32c537",
+   "tokens": 1787
+  },
+  "screens/SCR-009.md": {
+   "sha256": "908935ddd39771bd0a2c915c1769d2767c2a0a59fcc17d3757daed7271ca86f1",
+   "tokens": 990
+  },
+  "screens/SCR-010.md": {
+   "sha256": "ce205d263ffa932d7d2ab334d02e69d8b7882db5e17851d5e15c1483f9f1cb83",
+   "tokens": 1537
+  },
+  "screens/SCR-011.md": {
+   "sha256": "fea61452fe5446b4c96a0b6fae398d465671089a71e7986c31ae5793aa1ad81d",
+   "tokens": 1810
+  },
+  "screens/SCR-012.could.md": {
+   "sha256": "e31084ba93512d44f27dad8079d531e9043f89c721a3f2f1be10cbc99b46445a",
+   "tokens": 302
+  },
+  "screens/SCR-012.md": {
+   "sha256": "23ed42197cd6b3836ae9972a5e7956c4d2ffd0aba2b7f933b23ed717091f85b0",
+   "tokens": 1332
+  },
+  "screens/SCR-013.md": {
+   "sha256": "e48b60f8c561b62d61776df943d57d940b368dcac2802d59e093bd33ffe33da2",
+   "tokens": 876
+  },
+  "screens/SCR-S001.md": {
+   "sha256": "94e3033927b1402f0fce49615ba7dc52ccf34d98fa515e824c67c61302601eb6",
+   "tokens": 1030
+  },
+  "screens/SCR-S002.md": {
+   "sha256": "8e7cd394824e9933d788e0a9d9dc5965f759273601e3c0f82731e1f5fc3f4387",
+   "tokens": 1108
+  },
+  "screens/SCR-S003.md": {
+   "sha256": "0941a6e707379214d8d88315876fdc2409cce9100c813d467cdb34055ccab2e7",
+   "tokens": 1006
+  },
+  "screens/SCR-S004.md": {
+   "sha256": "8ed068d4aec96cfde7564cb0967474e4e6a256ad254941dbb5ec1aa172586cf5",
+   "tokens": 960
+  },
+  "screens/SCR-S005.md": {
+   "sha256": "5766f5bb964da5b2772239449560df6d7d5b7de45d90ad1665bb72fe8f22dc8d",
+   "tokens": 1326
+  }
+ },
+ "pack_form": "tree",
+ "pack_version": 1,
+ "package_hash": "388094fbaad98779da1c1d9a554d3f559f0809bec6b5b31b4b627e5ac5849c8c",
+ "produced_with": {
+  "library_version": "70622ee32f67d5ec3d7e8784398c4135c6b9fe7e2701fc139da9489c80765a7f.678a3e09063a689e98304c72a20eaadbbad5eddde86a03590559455bd3da2468",
+  "route_fingerprint": "e504ad7731ed38029d7c3439"
+ },
+ "profile": "compact",
+ "schema": "spec.manifest.v1",
+ "stack_kit": "unpinned",
+ "task_read_budget": 28000,
+ "tokenizer_chars_per_token": 3.0,
+ "whole_pack_tokens": 22500
+}

@@ -1,0 +1,134 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "ends_at": "now+18d",
+   "instructor_name": "Dakshesh Sawhney",
+   "starts_at": "now-56d",
+   "status": "cancelled",
+   "title": "Class 1"
+  },
+  {
+   "ends_at": "now+13d",
+   "instructor_name": "Nilima Rao",
+   "starts_at": "now-32d",
+   "status": "completed",
+   "title": "Class 2"
+  },
+  {
+   "ends_at": "now+23d",
+   "instructor_name": "Arin Nori",
+   "starts_at": "now-37d",
+   "status": "scheduled",
+   "title": "Class 3"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "ends_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "instructor_name": {
+   "type": "string"
+  },
+  "starts_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "scheduled",
+    "cancelled",
+    "completed"
+   ],
+   "type": "string"
+  },
+  "title": {
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "ends_at",
+  "id",
+  "instructor_name",
+  "starts_at",
+  "status",
+  "title"
+ ],
+ "title": "Class",
+ "type": "object",
+ "x-access": {
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ],
+  "ROL-004": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-005": [
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-001",
+ "x-lifecycle": {
+  "initial": "scheduled",
+  "states": [
+   "scheduled",
+   "cancelled",
+   "completed"
+  ],
+  "transitions": [
+   {
+    "from": "scheduled",
+    "on": "OP-S026",
+    "roles": [
+     "ROL-003",
+     "ROL-004"
+    ],
+    "to": "cancelled"
+   },
+   {
+    "from": "scheduled",
+    "on": "OP-S025",
+    "roles": [
+     "ROL-003",
+     "ROL-004"
+    ],
+    "to": "completed"
+   }
+  ]
+ }
+}

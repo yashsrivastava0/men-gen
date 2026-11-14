@@ -1,0 +1,16 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "fpo_name": {
+   "type": "string"
+  },
+  "listing_eligible": {
+   "type": "boolean"
+  }
+ },
+ "title": "FPO changes",
+ "type": "object",
+ "x-entity": "ENT-005"
+}

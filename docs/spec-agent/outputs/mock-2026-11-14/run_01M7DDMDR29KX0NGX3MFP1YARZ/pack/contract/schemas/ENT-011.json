@@ -1,0 +1,222 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "status": "confirmed",
+   "ticket_f1": "22",
+   "ticket_f10": "25",
+   "ticket_f11": "₹15,520.00",
+   "ticket_f12": "now-86d",
+   "ticket_f2": "₹4,235.00",
+   "ticket_f3": "now-55d",
+   "ticket_f4": "+91 98••• ••483",
+   "ticket_f5": "arin.nori@example.com",
+   "ticket_f6": "option 1",
+   "ticket_f7": "Gorakhpur",
+   "ticket_f8": "false",
+   "ticket_f9": "Ticket f9 of ticket 1 in the confirmed state"
+  },
+  {
+   "status": "draft",
+   "ticket_f1": "40",
+   "ticket_f10": "39",
+   "ticket_f11": "₹2,935.00",
+   "ticket_f12": "now-31d",
+   "ticket_f2": "₹8,000.00",
+   "ticket_f3": "now-51d",
+   "ticket_f4": "+91 92••• ••861",
+   "ticket_f5": "yashasvi.raghavan@example.com",
+   "ticket_f6": "option 4",
+   "ticket_f7": "Giridih",
+   "ticket_f8": "true",
+   "ticket_f9": "Ticket f9 of ticket 2 in the draft state"
+  },
+  {
+   "status": "placed",
+   "ticket_f1": "12",
+   "ticket_f10": "28",
+   "ticket_f11": "₹17,320.00",
+   "ticket_f12": "now-49d",
+   "ticket_f2": "₹16,000.00",
+   "ticket_f3": "now-70d",
+   "ticket_f4": "+91 99••• ••380",
+   "ticket_f5": "dakshesh.sawhney@example.com",
+   "ticket_f6": "option 3",
+   "ticket_f7": "Durgapur",
+   "ticket_f8": "false",
+   "ticket_f9": "Ticket f9 of ticket 3 in the placed state"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "ticket_f1": {
+   "type": "number"
+  },
+  "ticket_f10": {
+   "type": "number"
+  },
+  "ticket_f11": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "ticket_f12": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "ticket_f2": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "ticket_f3": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "ticket_f4": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "ticket_f5": {
+   "format": "email",
+   "type": "string"
+  },
+  "ticket_f6": {
+   "type": "string"
+  },
+  "ticket_f7": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "ticket_f8": {
+   "type": "boolean"
+  },
+  "ticket_f9": {
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "ticket_f1",
+  "ticket_f2"
+ ],
+ "title": "Ticket",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-011",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

@@ -1,0 +1,319 @@
+/produce_listings:
+  get:
+    operationId: OP-S010
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -availability_period
+        - -created_at
+        - -price
+        - -produce_name
+        - -quantity_available
+        - -status
+        - availability_period
+        - created_at
+        - price
+        - produce_name
+        - quantity_available
+        - status
+        type: string
+    - in: query
+      name: filter[availability_period]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[price]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[produce_name]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[quantity_available]
+      required: false
+      schema:
+        type: number
+    - in: query
+      name: filter[seller_farmer]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[seller_fpo]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[status]
+      required: false
+      schema:
+        enum:
+        - pending_review
+        - available
+        - unavailable
+        - sold_out
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                availability_period:
+                  type: string
+                id:
+                  type: string
+                price:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                produce_name:
+                  type: string
+                quantity_available:
+                  type: number
+                seller_farmer:
+                  type: string
+                  x-ref: ENT-004
+                seller_fpo:
+                  type: string
+                  x-ref: ENT-005
+                status:
+                  enum:
+                  - pending_review
+                  - available
+                  - unavailable
+                  - sold_out
+                  type: string
+              required:
+              - availability_period
+              - price
+              - produce_name
+              - quantity_available
+              - status
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_produce_listing
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-003
+    x-phase: now
+    x-roles:
+    - ROL-001
+    - ROL-002
+    - ROL-004
+    - ROL-005
+    - ROL-006
+    - ROL-007
+    - ROL-008
+    - ROL-009
+  post:
+    operationId: OP-S012
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              availability_period:
+                type: string
+              price:
+                additionalProperties: false
+                properties:
+                  amount:
+                    description: minor units, never a float
+                    type: integer
+                  currency:
+                    pattern: ^[A-Z]{3}$
+                    type: string
+                required:
+                - amount
+                - currency
+                type: object
+              produce_name:
+                type: string
+              quantity_available:
+                type: number
+              seller_farmer:
+                type: string
+                x-ref: ENT-004
+              seller_fpo:
+                type: string
+                x-ref: ENT-005
+              status:
+                enum:
+                - pending_review
+                - available
+                - unavailable
+                - sold_out
+                type: string
+            required:
+            - availability_period
+            - price
+            - produce_name
+            - quantity_available
+            - status
+            type: object
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                availability_period:
+                  type: string
+                id:
+                  type: string
+                price:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                produce_name:
+                  type: string
+                quantity_available:
+                  type: number
+                seller_farmer:
+                  type: string
+                  x-ref: ENT-004
+                seller_fpo:
+                  type: string
+                  x-ref: ENT-005
+                status:
+                  enum:
+                  - pending_review
+                  - available
+                  - unavailable
+                  - sold_out
+                  type: string
+              required:
+              - availability_period
+              - price
+              - produce_name
+              - quantity_available
+              - status
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: create_produce_listing
+    tags:
+    - APP-001
+    - APP-002
+    - APP-003
+    - APP-004
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-003
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-002
+    - ROL-004
+    - ROL-008

@@ -1,0 +1,119 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "review_notes": "Review notes of seller review 1 in the pending state",
+   "reviewed_at": "now-65d",
+   "seller_type": "farmer",
+   "status": "pending"
+  },
+  {
+   "review_notes": "Review notes of seller review 2 in the rejected state",
+   "reviewed_at": "now-59d",
+   "seller_type": "FPO",
+   "status": "rejected"
+  },
+  {
+   "review_notes": "Review notes of seller review 3 in the approved state",
+   "reviewed_at": "now-82d",
+   "seller_type": "farmer",
+   "status": "approved"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "review_notes": {
+   "type": "string"
+  },
+  "reviewed_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "seller_ref": {
+   "type": "string",
+   "x-ref": "ENT-004"
+  },
+  "seller_type": {
+   "enum": [
+    "farmer",
+    "FPO"
+   ],
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "pending",
+    "approved",
+    "rejected"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "seller_ref",
+  "seller_type",
+  "status"
+ ],
+ "title": "Seller review",
+ "type": "object",
+ "x-access": {
+  "ROL-005": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ]
+ },
+ "x-class": "primary",
+ "x-entity": "ENT-010",
+ "x-lifecycle": {
+  "initial": "pending",
+  "states": [
+   "pending",
+   "approved",
+   "rejected"
+  ],
+  "transitions": [
+   {
+    "from": "approved",
+    "on": "OP-S7047",
+    "roles": [
+     "ROL-005"
+    ],
+    "to": "rejected"
+   },
+   {
+    "from": "pending",
+    "on": "OP-S7046",
+    "roles": [
+     "ROL-005"
+    ],
+    "to": "approved"
+   }
+  ]
+ }
+}

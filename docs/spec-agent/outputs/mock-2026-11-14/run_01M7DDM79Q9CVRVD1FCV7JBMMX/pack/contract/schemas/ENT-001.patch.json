@@ -1,0 +1,34 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "minProperties": 1,
+ "properties": {
+  "ends_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "instructor_name": {
+   "type": "string"
+  },
+  "starts_at": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "scheduled",
+    "cancelled",
+    "completed"
+   ],
+   "type": "string"
+  },
+  "title": {
+   "type": "string"
+  }
+ },
+ "title": "Class changes",
+ "type": "object",
+ "x-entity": "ENT-001"
+}

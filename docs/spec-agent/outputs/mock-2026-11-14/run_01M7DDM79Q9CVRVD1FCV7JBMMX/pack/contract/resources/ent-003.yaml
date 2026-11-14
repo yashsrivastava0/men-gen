@@ -1,0 +1,194 @@
+/class_packs:
+  get:
+    operationId: OP-S011
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -created_at
+        - -credits
+        - -name
+        - -price
+        - created_at
+        - credits
+        - name
+        - price
+        type: string
+    - in: query
+      name: filter[credits]
+      required: false
+      schema:
+        type: number
+    - in: query
+      name: filter[name]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[price]
+      required: false
+      schema:
+        type: object
+    - in: query
+      name: filter[unlimited]
+      required: false
+      schema:
+        type: boolean
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                credits:
+                  type: number
+                id:
+                  type: string
+                name:
+                  type: string
+                price:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                unlimited:
+                  type: boolean
+              required:
+              - name
+              - price
+              - unlimited
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_class_pack
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-003
+    x-phase: now
+    x-roles:
+    - ROL-002
+/class_packs/{id}:
+  get:
+    operationId: OP-S012
+    parameters:
+    - in: path
+      name: id
+      required: true
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                credits:
+                  type: number
+                id:
+                  type: string
+                name:
+                  type: string
+                price:
+                  additionalProperties: false
+                  properties:
+                    amount:
+                      description: minor units, never a float
+                      type: integer
+                    currency:
+                      pattern: ^[A-Z]{3}$
+                      type: string
+                  required:
+                  - amount
+                  - currency
+                  type: object
+                unlimited:
+                  type: boolean
+              required:
+              - name
+              - price
+              - unlimited
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: get_class_pack
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-003
+    x-phase: now
+    x-roles:
+    - ROL-002

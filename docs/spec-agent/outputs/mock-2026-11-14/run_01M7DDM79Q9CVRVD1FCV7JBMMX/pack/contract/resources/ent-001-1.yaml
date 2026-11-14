@@ -1,0 +1,257 @@
+/classes:
+  get:
+    operationId: OP-S001
+    parameters:
+    - $ref: ../components.yaml#/parameters/Cursor
+    - $ref: ../components.yaml#/parameters/Limit
+    - description: one field; a leading minus sorts descending
+      in: query
+      name: sort
+      required: false
+      schema:
+        enum:
+        - -created_at
+        - -ends_at
+        - -instructor_name
+        - -starts_at
+        - -status
+        - -title
+        - created_at
+        - ends_at
+        - instructor_name
+        - starts_at
+        - status
+        - title
+        type: string
+    - in: query
+      name: filter[ends_at]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[instructor_name]
+      required: false
+      schema:
+        type: string
+    - in: query
+      name: filter[starts_at]
+      required: false
+      schema:
+        format: date-time
+        type: string
+    - in: query
+      name: filter[status]
+      required: false
+      schema:
+        enum:
+        - scheduled
+        - cancelled
+        - completed
+        type: string
+    - in: query
+      name: filter[title]
+      required: false
+      schema:
+        type: string
+    responses:
+      '200':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                ends_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                id:
+                  type: string
+                instructor_name:
+                  type: string
+                starts_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                status:
+                  enum:
+                  - scheduled
+                  - cancelled
+                  - completed
+                  type: string
+                title:
+                  type: string
+              required:
+              - ends_at
+              - instructor_name
+              - starts_at
+              - status
+              - title
+              type: object
+        description: Success
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '404':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not found: not_found'
+        x-error-codes:
+        - not_found
+        x-recovery:
+          not_found: go_back
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: list_class
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-001
+    x-phase: now
+    x-roles:
+    - ROL-002
+    - ROL-003
+    - ROL-004
+    - ROL-005
+  post:
+    operationId: OP-S003
+    parameters:
+    - $ref: ../components.yaml#/parameters/IdempotencyKey
+    requestBody:
+      content:
+        application/json:
+          schema:
+            additionalProperties: false
+            properties:
+              ends_at:
+                description: RFC 3339, UTC
+                format: date-time
+                type: string
+              instructor_name:
+                type: string
+              starts_at:
+                description: RFC 3339, UTC
+                format: date-time
+                type: string
+              status:
+                enum:
+                - scheduled
+                - cancelled
+                - completed
+                type: string
+              title:
+                type: string
+            required:
+            - ends_at
+            - instructor_name
+            - starts_at
+            - status
+            - title
+            type: object
+      required: true
+    responses:
+      '201':
+        content:
+          application/json:
+            schema:
+              additionalProperties: false
+              properties:
+                ends_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                id:
+                  type: string
+                instructor_name:
+                  type: string
+                starts_at:
+                  description: RFC 3339, UTC
+                  format: date-time
+                  type: string
+                status:
+                  enum:
+                  - scheduled
+                  - cancelled
+                  - completed
+                  type: string
+                title:
+                  type: string
+              required:
+              - ends_at
+              - instructor_name
+              - starts_at
+              - status
+              - title
+              type: object
+        description: Success
+        headers:
+          ETag:
+            schema:
+              type: string
+      '401':
+        $ref: ../components.yaml#/responses/Unauthenticated
+      '403':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Not allowed for this role: forbidden'
+        x-error-codes:
+        - forbidden
+        x-recovery:
+          forbidden: stay
+      '409':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'Conflict: conflict'
+        x-error-codes:
+        - conflict
+        x-recovery:
+          conflict: retry
+      '422':
+        content:
+          application/json:
+            schema:
+              $ref: ../components.yaml#/schemas/Error
+        description: 'The request cannot be applied: validation_failed'
+        x-error-codes:
+        - validation_failed
+        x-recovery:
+          validation_failed: stay
+      '429':
+        $ref: ../components.yaml#/responses/RateLimited
+      default:
+        $ref: ../components.yaml#/responses/Default
+    security:
+    - bearerAuth: []
+    summary: create_class
+    tags:
+    - APP-001
+    x-client-errors:
+    - network
+    x-derived: false
+    x-entity: ENT-001
+    x-idempotent: true
+    x-phase: now
+    x-roles:
+    - ROL-003
+    - ROL-004

@@ -1,0 +1,222 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "driver_f1": "Ambarnath",
+   "driver_f10": "Parbhani",
+   "driver_f11": "true",
+   "driver_f12": "Ladli Nagi",
+   "driver_f2": "false",
+   "driver_f3": "Radha Mukherjee",
+   "driver_f4": "19",
+   "driver_f5": "₹19,550.00",
+   "driver_f6": "now-72d",
+   "driver_f7": "+91 97••• ••647",
+   "driver_f8": "sai.morar@example.com",
+   "driver_f9": "option 1",
+   "status": "placed"
+  },
+  {
+   "driver_f1": "Buxar",
+   "driver_f10": "Jehanabad",
+   "driver_f11": "true",
+   "driver_f12": "Kashvi Minhas",
+   "driver_f2": "true",
+   "driver_f3": "Krishna Sridhar",
+   "driver_f4": "1",
+   "driver_f5": "₹14,275.00",
+   "driver_f6": "now-74d",
+   "driver_f7": "+91 93••• ••682",
+   "driver_f8": "tristan.shukla@example.com",
+   "driver_f9": "option 1",
+   "status": "draft"
+  },
+  {
+   "driver_f1": "Bhilwara",
+   "driver_f10": "Bhilwara",
+   "driver_f11": "true",
+   "driver_f12": "Harrison Choudhry",
+   "driver_f2": "true",
+   "driver_f3": "Priya Sur",
+   "driver_f4": "11",
+   "driver_f5": "₹10,230.00",
+   "driver_f6": "now-60d",
+   "driver_f7": "+91 99••• ••371",
+   "driver_f8": "quincy.mahajan@example.com",
+   "driver_f9": "option 2",
+   "status": "confirmed"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "driver_f1": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "driver_f10": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "driver_f11": {
+   "type": "boolean"
+  },
+  "driver_f12": {
+   "type": "string"
+  },
+  "driver_f2": {
+   "type": "boolean"
+  },
+  "driver_f3": {
+   "type": "string"
+  },
+  "driver_f4": {
+   "type": "number"
+  },
+  "driver_f5": {
+   "additionalProperties": false,
+   "properties": {
+    "amount": {
+     "description": "minor units, never a float",
+     "type": "integer"
+    },
+    "currency": {
+     "pattern": "^[A-Z]{3}$",
+     "type": "string"
+    }
+   },
+   "required": [
+    "amount",
+    "currency"
+   ],
+   "type": "object"
+  },
+  "driver_f6": {
+   "description": "RFC 3339, UTC",
+   "format": "date-time",
+   "type": "string"
+  },
+  "driver_f7": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "driver_f8": {
+   "format": "email",
+   "type": "string"
+  },
+  "driver_f9": {
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "status": {
+   "enum": [
+    "draft",
+    "placed",
+    "confirmed"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "driver_f1",
+  "driver_f2",
+  "id"
+ ],
+ "title": "Driver",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "manage"
+  ],
+  "ROL-002": [
+   "view"
+  ],
+  "ROL-003": [
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-008",
+ "x-lifecycle": {
+  "initial": "draft",
+  "states": [
+   "draft",
+   "placed",
+   "confirmed"
+  ],
+  "transitions": [
+   {
+    "from": "draft",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "placed"
+   },
+   {
+    "from": "placed",
+    "on": "",
+    "roles": [
+     "ROL-001"
+    ],
+    "to": "confirmed"
+   }
+  ]
+ },
+ "x-volumes": {
+  "max": 500,
+  "typical": 20
+ }
+}

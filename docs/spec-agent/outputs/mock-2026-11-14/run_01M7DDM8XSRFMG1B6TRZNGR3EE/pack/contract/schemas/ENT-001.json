@@ -1,0 +1,93 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "business_address": "Raurkela Industrial Township",
+   "company_name": "Imaran Wali",
+   "gst_number": "Gst number of customer company 1"
+  },
+  {
+   "business_address": "Mysore",
+   "company_name": "Qushi Shukla",
+   "gst_number": "Gst number of customer company 2"
+  },
+  {
+   "business_address": "Kolkata",
+   "company_name": "Xiti Amble",
+   "gst_number": "Gst number of customer company 3"
+  }
+ ],
+ "properties": {
+  "business_address": {
+   "additionalProperties": false,
+   "properties": {
+    "lat": {
+     "maximum": 90,
+     "minimum": -90,
+     "type": "number"
+    },
+    "lng": {
+     "maximum": 180,
+     "minimum": -180,
+     "type": "number"
+    }
+   },
+   "required": [
+    "lat",
+    "lng"
+   ],
+   "type": "object"
+  },
+  "company_name": {
+   "type": "string"
+  },
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "gst_number": {
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "business_address",
+  "company_name",
+  "gst_number",
+  "id"
+ ],
+ "title": "Customer Company",
+ "type": "object",
+ "x-access": {
+  "ROL-007": [
+   "create",
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "delete",
+   "edit",
+   "manage",
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-001"
+}

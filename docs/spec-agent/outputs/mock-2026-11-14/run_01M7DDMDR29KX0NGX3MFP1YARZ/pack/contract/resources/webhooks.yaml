@@ -1,0 +1,96 @@
+INT-001-callback:
+  post:
+    description: Signed by the provider; the receiver dedupes on the event id.
+    operationId: callback_INT-001
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components.yaml#/schemas/Event
+      required: true
+    responses:
+      '200':
+        description: Accepted
+    summary: 'Provider need 1: provider callback'
+    x-integration: INT-001
+    x-phase: now
+INT-002-callback:
+  post:
+    description: Signed by the provider; the receiver dedupes on the event id.
+    operationId: callback_INT-002
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components.yaml#/schemas/Event
+      required: true
+    responses:
+      '200':
+        description: Accepted
+    summary: 'Provider need 2: provider callback'
+    x-integration: INT-002
+    x-phase: now
+INT-003-callback:
+  post:
+    description: Signed by the provider; the receiver dedupes on the event id.
+    operationId: callback_INT-003
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components.yaml#/schemas/Event
+      required: true
+    responses:
+      '200':
+        description: Accepted
+    summary: 'Provider need 3: provider callback'
+    x-integration: INT-003
+    x-phase: now
+INT-004-callback:
+  post:
+    description: Signed by the provider; the receiver dedupes on the event id.
+    operationId: callback_INT-004
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components.yaml#/schemas/Event
+      required: true
+    responses:
+      '200':
+        description: Accepted
+    summary: 'Provider need 4: provider callback'
+    x-integration: INT-004
+    x-phase: now
+INT-005-callback:
+  post:
+    description: Signed by the provider; the receiver dedupes on the event id.
+    operationId: callback_INT-005
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components.yaml#/schemas/Event
+      required: true
+    responses:
+      '200':
+        description: Accepted
+    summary: 'Provider need 5: provider callback'
+    x-integration: INT-005
+    x-phase: now
+INT-006-callback:
+  post:
+    description: Signed by the provider; the receiver dedupes on the event id.
+    operationId: callback_INT-006
+    requestBody:
+      content:
+        application/json:
+          schema:
+            $ref: ../components.yaml#/schemas/Event
+      required: true
+    responses:
+      '200':
+        description: Accepted
+    summary: 'Provider need 6: provider callback'
+    x-integration: INT-006
+    x-phase: now

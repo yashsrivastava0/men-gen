@@ -1,0 +1,141 @@
+{
+ "$schema": "https://json-schema.org/draft/2020-12/schema",
+ "additionalProperties": false,
+ "examples": [
+  {
+   "email": "isaac.sundaram@example.com",
+   "name": "Yashasvi Raghavan",
+   "phone": "+91 98••• ••523",
+   "preferred_language": "hi",
+   "role": "Staff"
+  },
+  {
+   "email": "ridhi.brar@example.com",
+   "name": "Baghyawati Srivastava",
+   "phone": "+91 96••• ••540",
+   "preferred_language": "mr",
+   "role": "Buyer"
+  },
+  {
+   "email": "lopa.sandal@example.com",
+   "name": "Radha Mukherjee",
+   "phone": "+91 92••• ••527",
+   "preferred_language": "hi",
+   "role": "Local transport partner"
+  }
+ ],
+ "properties": {
+  "created_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "email": {
+   "format": "email",
+   "type": "string"
+  },
+  "id": {
+   "description": "stable opaque id",
+   "readOnly": true,
+   "type": "string"
+  },
+  "name": {
+   "type": "string"
+  },
+  "phone": {
+   "description": "E.164",
+   "pattern": "^\\+[1-9][0-9]{6,14}$",
+   "type": "string"
+  },
+  "preferred_language": {
+   "enum": [
+    "mr",
+    "hi",
+    "en"
+   ],
+   "type": "string"
+  },
+  "role": {
+   "enum": [
+    "Buyer",
+    "Farmer",
+    "Local transport partner",
+    "Farmer groups (FPOs)",
+    "Manager side",
+    "Purchase manager",
+    "Owner",
+    "FPO coordinator",
+    "Staff"
+   ],
+   "type": "string"
+  },
+  "updated_at": {
+   "format": "date-time",
+   "readOnly": true,
+   "type": "string"
+  },
+  "version": {
+   "description": "optimistic concurrency",
+   "minimum": 1,
+   "readOnly": true,
+   "type": "integer"
+  }
+ },
+ "required": [
+  "id",
+  "name",
+  "preferred_language",
+  "role"
+ ],
+ "title": "User",
+ "type": "object",
+ "x-access": {
+  "ROL-001": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-002": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-003": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-004": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-005": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-006": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-007": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-008": [
+   "create",
+   "edit",
+   "view"
+  ],
+  "ROL-009": [
+   "create",
+   "edit",
+   "view"
+  ]
+ },
+ "x-class": "secondary",
+ "x-entity": "ENT-001"
+}

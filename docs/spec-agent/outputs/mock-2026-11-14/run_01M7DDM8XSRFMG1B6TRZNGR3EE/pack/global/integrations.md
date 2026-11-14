@@ -1,0 +1,2 @@
+INT-S001 payments: The user leaves the app for the provider's own step and returns with a result; the app never handles card or account secrets itself.; interrupted: If the app is closed or killed during the provider's step, the next open asks the provider for the status of the last attempt and shows the result; nothing is charged twice.; pending timeout: A pending result is waited for a limited time, then shown as unknown with a way to check again or contact support; the limit is on the confirm list.
+INT-S002 messaging: ; interrupted: ; pending timeout:
