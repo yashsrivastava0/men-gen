@@ -223,10 +223,6 @@ def test_sensitive_data_gets_consent_age_gate_and_deletion():
 
 
 @case("spc-sc-07")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-SC-1: hospital and dakar (a school app for children's records) state no `sensitive_data` field, the reader never infers one from the Brief, so no consent, age gate or disclosure flow is derived; no export flow or audit-trail rule exists for any export",
-)
 @pytest.mark.parametrize("key", ["hospital", "dakar"])
 def test_sensitive_data_is_recognised_for_hospital_and_a_school_of_children(key):
     d = derived(key)
@@ -298,30 +294,35 @@ def test_twenty_integrations_each_get_an_entry_and_mock_first_in_the_plan():
 # ------------------------------------------------------------------------------------------- SC-12, SC-13
 
 
+def _copy_locales(files):
+    """The locales that have copy in a pack, whether it is one file per locale (a small pack) or a folder of shards."""
+    out = set()
+    for f in files:
+        if f.startswith("global/copy/"):
+            out.add(f[len("global/copy/") :].split("/")[0].removesuffix(".json"))
+    return out
+
+
+def _copy_of(files, locale):
+    out = {}
+    for f, text in files.items():
+        if f == f"global/copy/{locale}.json" or f.startswith(f"global/copy/{locale}/"):
+            out.update(json.loads(text))
+    return out
+
+
 @case("spc-sc-12")
 def test_three_locales_get_one_copy_file_each_and_cards_carry_keys(tmp_path_factory):
     big = synth_pack("big")
-    assert sorted(f for f in big.files if f.startswith("global/copy/")) == [
-        "global/copy/en.json",
-        "global/copy/hi.json",
-        "global/copy/kn.json",
-    ]
+    assert _copy_locales(big.files) == {"en", "hi", "kn"}  # every locale, small pack or sharded
     f = cached_flow(tmp_path_factory, "in-standard", lambda: raw("standard"))
-    assert [p for p in f.pack_files if p.startswith("global/copy/")] == [
-        "global/copy/en.json",
-        "global/copy/hi.json",
-        "global/copy/mr.json",
-    ]
+    assert _copy_locales(f.pack_files) == {"en", "hi", "mr"}
     card = f.pack_files[next(p for p in f.pack_files if p.startswith("screens/SCR-00"))]
-    en = json.loads(f.pack_files["global/copy/en.json"])
-    assert any(k in card for k in en)  # a card names its copy keys, not the text
+    en = _copy_of(f.pack_files, "en")
+    assert en and any(k in card for k in en)  # a card names its copy keys, not the text
 
 
 @case("spc-sc-12")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-SC-7: copy is one file per locale (global/copy/<locale>.json), not sharded by module and locale; a 500-string locale is one file",
-)
 def test_copy_is_sharded_by_module_and_locale():
     files = [f for f in synth_pack("big").files if f.startswith("global/copy/")]
     assert len(files) > 3

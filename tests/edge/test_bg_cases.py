@@ -494,11 +494,6 @@ def test_bg_11_a_card_over_the_read_budget_splits_inside_one_module_and_is_never
 
 
 @case("spc-bg-11")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-BG-5: a heavy card does not move its detail to screens/<id>.detail.md: an over-cap card fails the build "
-    "with PackBreach (same gap as GAP-FN-4)",
-)
 def test_bg_11_a_heavy_card_moves_its_detail_to_a_detail_file():
     g = make_graph("big")
     g.screens["SCR-001"].purpose = "word " * 9000

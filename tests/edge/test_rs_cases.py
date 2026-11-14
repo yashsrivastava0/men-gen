@@ -314,10 +314,6 @@ def test_a_thin_compliance_register_still_gives_a_policy_backed_deletion_flow():
 
 
 @case("spc-rs-10")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-SC-1: the hospital export states health-record rules (must_use) but no `sensitive_data` field, and the reader never infers it, so no health fact, consent or disclosure screen is derived (pune, which states it, gets 'Consent and age')",
-)
 def test_a_thin_register_still_gives_consent_and_disclosure_flows_from_signals():
     d = derive(real("hospital"))
     assert "sensitive_data" in d.facts

@@ -207,11 +207,14 @@ def test_fn_26_an_over_cap_slice_is_reported_never_hidden_and_budgets_follow_the
     from mde_spec_core.pack import PackBreach, assemble
 
     g = make_graph("small")
-    g.screens["SCR-001"].purpose = "word " * 9000
+    # so large that moving its bulky text to a detail file cannot make it fit either (a card that merely runs long is
+    # repaired by the detail-file move, test_fn_26_bulky_detail_moves_...): only this case is a loud failure
+    g.screens["SCR-001"].purpose = "word " * 90000
     with pytest.raises(PackBreach) as e:
         assemble(g)
     err = e.value.error
-    assert err["code"] in {"CARD_OVER_HARD_CAP", "SLICE_OVER_CAP"} and err["severity"] == "blocker"
+    assert err["code"] in {"CARD_OVER_HARD_CAP", "SLICE_OVER_CAP", "DETAIL_OVER_BUDGET"}
+    assert err["severity"] == "blocker"
     assert (
         err["where"] == "SCR-001" and err["why"] and err["fix"]
     )  # reported with where, why and how to fix
@@ -225,11 +228,6 @@ def test_fn_26_an_over_cap_slice_is_reported_never_hidden_and_budgets_follow_the
 
 
 @case("spc-fn-26")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-FN-4: an over-cap card fails the build (PackBreach); the repair of doc 18 FN-26 (bulky detail moves to "
-    "screens/<id>.detail.md, then one re-ask shortens the card) does not exist in the packager",
-)
 def test_fn_26_bulky_detail_moves_to_a_detail_file_instead_of_failing_the_build():
     from mde_spec_core.pack import assemble
 
@@ -316,12 +314,6 @@ def test_fn_30_a_small_pack_fits_one_file_for_the_weak_consumer_and_the_tree_is_
 
 
 @case("spc-fn-30")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-FN-5: pack_form and whole_pack_tokens come from the configuration only; a strong consumer "
-    "(larger window) never gets the one-file form of a pack that is too big for the weak window, and "
-    "one_file_min_consumer_window is read by no code",
-)
 def test_fn_30_a_strong_consumer_gets_the_one_file_form_of_a_pack_the_weak_one_cannot_hold():
     g = make_graph("small")
     weak = pack_of(g)

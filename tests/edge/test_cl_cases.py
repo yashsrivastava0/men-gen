@@ -122,10 +122,6 @@ def test_a_missing_attribute_is_a_gap_per_attribute_not_per_shape():
 
 
 @case("spc-cl-04")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-CL-1: the pack never says the tokens are the starting theme a consumer may override or extend: no file of a full pack contains the words theme, starting, override or extend (doc 17 section 2.6)",
-)
 def test_the_pack_says_tokens_are_the_starting_theme(tmp_path_factory):
     f = cached_flow(tmp_path_factory, "in-standard", lambda: raw("standard"))
     prose = " ".join(

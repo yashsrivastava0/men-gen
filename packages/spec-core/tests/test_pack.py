@@ -99,7 +99,8 @@ def test_pilots_cover_types_per_app_and_become_w2_tasks():
 def test_a_slice_over_the_cap_fails_the_build_loudly():
     g = make_graph("small")
     s = g.screens["SCR-001"]
-    s.purpose = "word " * 9000
+    s.purpose = "word " * 90000  # beyond what moving the bulky text to a detail file can fit
     with pytest.raises(PackBreach) as e:
         assemble(g)
-    assert e.value.error["code"] in {"CARD_OVER_HARD_CAP", "SLICE_OVER_CAP"}
+    assert e.value.error["code"] in {"CARD_OVER_HARD_CAP", "SLICE_OVER_CAP", "DETAIL_OVER_BUDGET"}
+    assert e.value.error["after_detail_move"] is True
