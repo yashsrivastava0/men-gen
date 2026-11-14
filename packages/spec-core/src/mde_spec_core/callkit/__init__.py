@@ -20,7 +20,7 @@ from .fusion import (
     unfuse_needed,
 )
 from .ladder import FixKind, RCodeChange, RCodeLog, WeakRouteBanner, weak_route_banner
-from .parse import ParseResult, TopLevelShape, tolerant_parse
+from .parse import ParseResult, TopLevelShape, json_candidates, tolerant_parse
 from .prompt import (
     CLOSING_LINE,
     assemble_prompt,
@@ -87,6 +87,7 @@ __all__ = [
     "handling_for",
     "is_irreducible",
     "items_per_call",
+    "json_candidates",
     "plan_fusion",
     "plan_reasks",
     "result_cache_key",

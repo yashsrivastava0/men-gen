@@ -121,6 +121,36 @@ def _parse(text: object, shape: TopLevelShape, max_candidates: int) -> ParseResu
     )
 
 
+def json_candidates(text: str, *, limit: int = 8) -> list[str]:
+    """The JSON objects found in model text, as text, in order of appearance (FN-01), for a caller that checks each
+    one against its own schema and takes the first that fits (the gateway's lenient reader, `json_candidates` in its
+    config, is wired to this by the Spec agent).
+
+    Reasoning blocks and code fences are stripped first; an object nested inside an earlier one is not offered again.
+    Text cut off inside its object offers nothing (the caller's normal repair path handles it; finished items of a
+    truncated array are `tolerant_parse`'s salvage, which needs the call's shape). Never raises."""
+    if not isinstance(text, str) or not text.strip():
+        return []
+    try:
+        cleaned, _ = strip_noise(text)
+        decoder = json.JSONDecoder(parse_constant=_reject_constant)
+        found: list[str] = []
+        pos = cleaned.find("{")
+        tries = 0
+        while pos != -1 and len(found) < limit and tries < MAX_CANDIDATES:
+            tries += 1
+            try:
+                _value, end = decoder.raw_decode(cleaned, pos)
+            except (ValueError, RecursionError):
+                pos = cleaned.find("{", pos + 1)
+                continue
+            found.append(cleaned[pos:end])
+            pos = cleaned.find("{", end)
+        return found
+    except Exception:  # defensive, like tolerant_parse: junk must never raise
+        return []
+
+
 def _decodes(decoder: json.JSONDecoder, text: str, pos: int) -> bool:
     try:
         decoder.raw_decode(text, pos)

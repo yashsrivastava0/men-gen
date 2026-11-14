@@ -103,12 +103,6 @@ def test_md_03_a_truncated_batch_is_redone_in_smaller_batches_with_the_same_node
 
 
 @case("spc-md-03")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MD-1: through the real gateway a cut-off answer (incomplete, max_output_tokens) surfaces as "
-    "StructuredOutputError whose message has no 'truncat'; CallRunner only raises Truncated on that word, so the "
-    "batch is never split: the nodes are re-asked and take the fallback instead",
-)
 def test_md_03_the_finish_reason_of_the_real_gateway_drives_the_split(tmp_path):
     ref = Rig(tmp_path, "thorough", tag="ref")
     ref.go("plan", "product")
@@ -186,11 +180,6 @@ def test_md_05_a_429_storm_ends_the_run_partial_with_reason_rate_limit(tmp_path)
 
 
 @case("spc-md-05")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MD-3: Limiter.rate_limited() is never called by the run path, so a 429 never halves the concurrency "
-    "(doc 15 10.3: back off, adapt concurrency)",
-)
 def test_md_05_a_429_halves_the_run_concurrency(tmp_path):
     rig = Rig(tmp_path, "standard")
     for _ in range(3):

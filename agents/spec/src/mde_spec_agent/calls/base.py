@@ -31,6 +31,7 @@ from mde_core.errors import (
 )
 from mde_core.ids import new_id
 from mde_spec_agent.config import RUN_SCOPE_KIND
+from mde_spec_agent.run.concurrency import RATE_LIMIT_STATUS, Limiter, watching
 from mde_spec_agent.spend import SpendGuard, SpendRefused, StopRequested
 from mde_spec_core.callkit import ReaskLedger
 from mde_spec_core.canon import canonical_json
@@ -42,7 +43,6 @@ O = TypeVar("O", bound=BaseModel)  # noqa: E741
 PROPAGATE: tuple[type[BaseException], ...] = (
     BudgetExceeded,
     CassetteMissing,
-    CircuitOpen,
     CircuitOpen,  # a rate-limit or credit storm opens the breaker: the run ends partial and resumable, not degraded
     LiveCallForbidden,
     CallCancelled,
@@ -69,6 +69,19 @@ def stop_on_provider_refusal(exc: BaseException) -> None:
 
 class Truncated(RuntimeError):
     """The model's output hit its limit: the caller redoes the unfinished items in smaller batches."""
+
+
+def is_truncation(exc: BaseException) -> bool:
+    """Did this error come from an answer that was cut off at the output limit?
+
+    The gateway says so with a typed flag (`details["truncated"]` on its `StructuredOutputError`, set after its own
+    escalated retry also ran out), which crosses the HTTP flavour too. A provider adapter or a test double that can only
+    raise a plain error may say "truncated" in its message; that older signal is still honoured, but it is the second
+    check, not the first."""
+    details = getattr(exc, "details", None)
+    if isinstance(details, dict) and details.get("truncated") is True:
+        return True
+    return "truncat" in str(exc).lower()
 
 
 class CallInput(BaseModel):
@@ -126,8 +139,10 @@ class CallRunner:
         on_call: Callable[[str, str, RunResult[Any]], None] | None = None,
         extra_scopes: tuple[str, ...] = (),
         counter: TokenCounter | None = None,
+        limiter: Limiter | None = None,
     ) -> None:
         self._gateway = gateway
+        self._limiter = limiter
         self._guard = guard
         self._run_id = run_id
         self._tenant = tenant_id
@@ -156,20 +171,35 @@ class CallRunner:
 
     async def _once(self, cs: SpecCallSpec[I, O], inp: I) -> Any:
         ctx = self.context(cs)
+        limiter = self._limiter
+        epoch = limiter.epoch if limiter is not None else 0
 
         async def go() -> Any:
-            return await asyncio.wait_for(
-                self._gateway.run(cs.spec, inp, ctx), timeout=cs.timeout_s + 5.0
-            )
+            with watching(
+                limiter
+            ):  # every 429 the gateway sees for this call lowers the width (once per event)
+                return await asyncio.wait_for(
+                    self._gateway.run(cs.spec, inp, ctx), timeout=cs.timeout_s + 5.0
+                )
 
-        return await self._guard.call(
-            go,
-            cost_of=lambda r: int(getattr(getattr(r, "usage", None), "cost_micros", 0) or 0),
-            input_tokens=self.estimate_input_tokens(inp),
-            max_output_tokens=int(cs.spec.max_output_tokens),
-            label=cs.id,
-            run_id=self._run_id,
-        )
+        try:
+            result = await self._guard.call(
+                go,
+                cost_of=lambda r: int(getattr(getattr(r, "usage", None), "cost_micros", 0) or 0),
+                input_tokens=self.estimate_input_tokens(inp),
+                max_output_tokens=int(cs.spec.max_output_tokens),
+                label=cs.id,
+                run_id=self._run_id,
+            )
+        except BaseException as exc:
+            if limiter is not None and getattr(exc, "status", None) == RATE_LIMIT_STATUS:
+                # a 429 that survived the retries: the in-process gateway already told the watch, a remote one
+                # could not; the epoch makes the second report a no-op
+                limiter.note_rate_limit(since=epoch)
+            raise
+        if limiter is not None:
+            await limiter.call_ok()
+        return result
 
     async def run(
         self, cs: SpecCallSpec[I, O], inp: I, *, node_ids: Sequence[str] = (), step: str = ""
@@ -194,7 +224,7 @@ class CallRunner:
             raise
         except (GatewayError, TimeoutError) as exc:
             stop_on_provider_refusal(exc)
-            if "truncat" in str(exc).lower():
+            if is_truncation(exc):
                 raise Truncated(str(exc)) from exc
             errors = [f"{type(exc).__name__}: {str(exc)[:160]}"]
         out = getattr(result, "output", None) if result is not None else None

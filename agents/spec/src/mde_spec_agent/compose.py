@@ -21,10 +21,11 @@ from mde_spec_agent.calls.base import CallRunner, RunResult
 from mde_spec_agent.calls.registry import all_calls
 from mde_spec_agent.config import SpecSettings, guard_cap_usd, spec_budget_config
 from mde_spec_agent.run.checkpoint import Versions
-from mde_spec_agent.run.concurrency import Limiter, compute_k
+from mde_spec_agent.run.concurrency import Limiter, compute_k, observe_provider_error
 from mde_spec_agent.run.context import RunContext
 from mde_spec_agent.run.store import RunStore
 from mde_spec_agent.spend import Prices, SpendGuard, SpendRecord
+from mde_spec_core.callkit import json_candidates
 from mde_spec_core.config import SpecConfig, default_config
 from mde_spec_core.graph import SpecGraph
 from mde_spec_core.profiles import ConsumerProfile, ProfileSet, load_profiles
@@ -48,6 +49,8 @@ def gateway_config(*, offline: bool) -> GatewayConfig:
         rpm=rpm,
         timeout_s={"fast": 240.0, "standard": 300.0, "deep": 420.0},
         max_untrusted_chars=UNTRUSTED_CHARS,
+        json_candidates=json_candidates,  # a valid object in prose or a fence is read, not paid for twice (FN-01)
+        on_provider_error=observe_provider_error,  # every 429, absorbed by a retry or not, narrows the run (doc 15 10.3)
     )
 
 
@@ -167,8 +170,9 @@ def build_context(
         core, settings, clock, offline=offline, ledger_path=period_ledger_path(record)
     )
     guard = SpendGuard(record, prices_of(writer) if not offline else Prices("0", "0"))
-    runner = CallRunner(gw, guard, run_id=run_id, on_call=on_call)
     k = compute_k(writer, avg_input_tokens=20_000, call_seconds=50, cfg=cfg)
+    limiter = Limiter(k, cfg, clock=clock)
+    runner = CallRunner(gw, guard, run_id=run_id, on_call=on_call, limiter=limiter)
     ctx = RunContext(
         run_id=run_id,
         program_id=program_id,
@@ -180,7 +184,7 @@ def build_context(
         consumer=consumer,
         versions=versions_for(core, library_version(), "run"),
         guard=guard,
-        limiter=Limiter(k, cfg),
+        limiter=limiter,
         runner=runner,
         offline=offline,
     )

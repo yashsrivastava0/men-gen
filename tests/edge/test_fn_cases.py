@@ -54,11 +54,6 @@ def test_fn_01_prose_reasoning_and_fences_are_stripped_and_the_first_fitting_obj
 
 
 @case("spc-fn-01")
-@pytest.mark.xfail(
-    strict=True,
-    reason="GAP-FN-1: tolerant_parse is not wired into the run path: the gateway parses with a strict json.loads, so a "
-    "valid object wrapped in prose or a fence costs a repair call instead of being stripped for free",
-)
 def test_fn_01_a_wrapped_valid_answer_needs_no_repair_call_on_the_run_path(tmp_path):
     from edge_support.eb_run import mock_answer
 
