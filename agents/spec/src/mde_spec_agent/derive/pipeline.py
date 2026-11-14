@@ -3,16 +3,18 @@
 from __future__ import annotations
 
 from collections.abc import Collection
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from mde_compass_intake import ResearchView, SpecInput
 from mde_spec_core.config import SpecConfig, default_config
 
 from .facts import facts_from_input
+from .honesty import GateNotes, apply_and_note
 from .inventory import Inventory, build_inventory
 from .profile import ProfileDecision, decide_profile
 from .release import ReleasePlan, plan_release
 from .seed import SeedResult, seed
+from .signin import signin_by_role
 
 
 @dataclass
@@ -22,6 +24,9 @@ class Derived:
     inventory: Inventory
     plan: ReleasePlan
     seeded: SeedResult
+    notes: GateNotes = field(
+        default_factory=GateNotes
+    )  # what the gates tell the owner about the input
 
     @property
     def graph(self):
@@ -50,4 +55,13 @@ def derive_graph(
         consented=consented,
         moves=moves,
     )
-    return Derived(facts, decision, inventory, plan, seed(spec_input, research_view, plan))
+    seeded = seed(spec_input, research_view, plan)
+    notes = apply_and_note(
+        spec_input,
+        research_view,
+        facts,
+        seeded.graph,
+        inventory.registry,
+        signin_by_role(spec_input),
+    )
+    return Derived(facts, decision, inventory, plan, seeded, notes)

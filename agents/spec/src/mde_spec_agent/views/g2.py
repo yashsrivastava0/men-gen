@@ -8,6 +8,7 @@ assumed node, the repairs the checks made and the risks that remain.
 
 from __future__ import annotations
 
+from datetime import date
 from typing import Any
 
 from mde_spec_agent.derive.text import humanize
@@ -19,6 +20,7 @@ from mde_spec_core.policy import default_policy_sheet
 from ._data import words
 from .common import app_map, entities_plain
 from .names import join_words, name_of, node_name, plain
+from .notes import merge_notes
 from .packview import check_dict
 from .phases import release_ids, screen_title
 from .screen import mock_profiles, screen_view
@@ -431,6 +433,7 @@ def _risks(
     verify: dict[str, Any],
     research: Any,
     critic_vendor: Any,
+    note_risks: list[dict[str, str]] | None = None,
 ) -> list[dict[str, str]]:
     r = words()["risks"]
     out: list[dict[str, str]] = []
@@ -475,7 +478,14 @@ def _risks(
     for b in banners:
         bd = _dict(b)
         if bd.get("message"):
-            out.append({"text": r["banner"].format(message=bd["message"]), "severity": "warning"})
+            out.append(
+                {
+                    "text": r["banner"].format(message=plain(str(bd["message"]), graph)),
+                    "severity": "warning",
+                }
+            )
+    for nr in note_risks or []:
+        out.append({"text": plain(nr["text"], graph), "severity": nr["severity"]})
     plan = getattr(derived, "plan", None)
     if plan is not None and plan.needs_consent:
         out.append({"text": r["consent"], "severity": "info"})
@@ -577,6 +587,7 @@ def g2(
     summary: Any = None,
     research: Any = None,
     mock: dict[str, dict[str, Any]] | None = None,
+    today: date | None = None,
 ) -> dict[str, Any]:
     """The documented G2 shape. ``check`` is a ``CheckReport`` or the dict of ``evidence/self-check.json``;
     ``summary`` is the stored model paragraph (a string or ``{text}``), a template paragraph is written from code when absent."""
@@ -586,10 +597,12 @@ def g2(
     banners = list(banners if banners is not None else cd.get("banners", []))
     rows = list(rcode_rows if rcode_rows is not None else cd.get("rcode", {}).get("rows", []))
     mocks = mock if mock is not None else mock_profiles(graph)
+    banners, flags, note_risks = merge_notes(banners, flags, derived, today=today)
     release, deferred = release_ids(graph, derived)
     live = _live_screens(graph)
     maps = [screen_view(graph, sid, "typical", mock=mocks) for sid in live]
     diffs = _differences(graph, derived, verify)
+    diffs += [plain(x, graph) for x in getattr(getattr(derived, "notes", None), "differences", ())]
     assumptions, n_assumed = _assumptions(graph)
     confirm = _confirm(graph, research)
     tiers = _capability_tiers(graph)
@@ -656,11 +669,15 @@ def g2(
             verify,
             research,
             critic,
+            note_risks,
         ),
         "checked_by": checked_by,
         "critic_vendor": critic,
         "banners": [
-            {"code": _dict(b).get("code", ""), "message": _dict(b).get("message", "")}
+            {
+                "code": _dict(b).get("code", ""),
+                "message": plain(str(_dict(b).get("message", "")), graph),
+            }
             for b in banners
         ],
         "verify": _verify_block(verify),

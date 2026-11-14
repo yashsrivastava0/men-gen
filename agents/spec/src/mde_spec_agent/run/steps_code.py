@@ -14,8 +14,10 @@ from typing import Any
 from mde_compass_intake import intake as read_intake
 from mde_compass_intake import read_research
 from mde_spec_agent.derive.choices import everything_in_one_release, moves_in_force
+from mde_spec_agent.derive.honesty import policy_sheet_stale_note
 from mde_spec_agent.derive.pipeline import derive_graph
 from mde_spec_agent.derive.seed import research_adapter
+from mde_spec_agent.views.notes import note_banner, note_flag
 from mde_spec_core import glossary as glossary_mod
 from mde_spec_core import hero as hero_mod
 from mde_spec_core.assets import data_bound_asset_needs
@@ -73,6 +75,7 @@ async def intake(ctx: RunContext) -> None:
     ctx.graph = dec.graph
     ctx.facts = set(dec.facts)
     ctx.rcode.extend(dec.seeded.rcode_log)
+    _carry_notes(ctx, dec.notes.notes)
     ctx.emit(
         "plan.ready",
         step="intake",
@@ -81,6 +84,19 @@ async def intake(ctx: RunContext) -> None:
         consent_required=dec.plan.consent_required,
         thin_input=bool(getattr(ctx.spec_input, "thin_input", False)),
     )
+
+
+def _carry_notes(ctx: RunContext, notes: Any) -> None:
+    """The input-honesty notes (weak inputs, unverified approval, stale research, mismatches) travel with the run: banners
+    in the run record, flags in ``evidence/self-check.json``. A resumed run does not repeat one."""
+    have_flags = {f.get("code") for f in ctx.flags if isinstance(f, dict)}
+    have_banners = {b.get("code") for b in ctx.banners if isinstance(b, dict)}
+    for n in notes:
+        if n.code not in have_flags:
+            ctx.flags.append(note_flag(n))
+        if n.banner and n.code not in have_banners:
+            ctx.banners.append(note_banner(n))
+            ctx.emit("banner", step="intake", code=n.code, message=n.text)
 
 
 def _vocab_ctx(ctx: RunContext, **kw: Any):
@@ -181,6 +197,10 @@ async def assemble_and_check(ctx: RunContext) -> None:
     except PackBreach as exc:  # a breach the packager could not re-shard: Spec bug or an un-splittable screen: fail loudly
         ctx.emit("validators.done", step="assemble", gate=3, blockers=1, error=exc.error)
         raise
+    # the store-rule sheet's age is judged by the injected clock's day and kept in the evidence, never in a hashed file
+    stale = policy_sheet_stale_note(ctx.store.clock.now().date())
+    if stale is not None:
+        _carry_notes(ctx, [stale])
     reasked = ctx.runner.ledger.reasked_nodes if ctx.runner else set()
     report = spec_check(
         ctx.graph,

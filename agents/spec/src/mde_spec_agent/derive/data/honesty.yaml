@@ -1,0 +1,106 @@
+# What the owner is told about the quality of the INPUT and about what the derivation had to decide for them (doc 15 12.1,
+# doc 15 12.2, doc 17 11.3, doc 19 6). Wording and word lists live here, never in logic (hard rule 8): nothing here is
+# specific to one company or app type. Texts may carry ids (ROL-001, FCT-036); the views turn every id into its name before
+# the owner reads a word (views/names.py plain()). Placeholders are filled by derive/honesty.py.
+version: 1
+
+# --- weak inputs and an approval that cannot be verified (SPC-IN-04, SPC-IN-05) --------------------------------------------
+weak_inputs:
+  banner: "Weak inputs: {reasons}. Every value that does not rest on your own words stays a default, and more things are left for you to confirm."
+  fix: "Read the confirm list closely, and ask Compass to run its checks again if this Brief matters."
+  degraded: "part of Compass's own work fell back to a plain default ({parts})"
+  degraded_unnamed: "part of Compass's own work fell back to a plain default"
+  probe_words:   # the Compass probes that can fail
+    design: "the design step"
+    research: "the research step"
+    verify: "the check of the Brief"
+    blueprint: "the structure step"
+unverified:
+  reason: "the approval of the Brief cannot be verified"
+  unverified_no_baseline: "the export carries no record of what was approved"
+  unverified_hash_mismatch: "the Brief changed after it was approved"
+  flag: "The approval of the Brief cannot be verified: {why}. The spec went on with it and marks everything that rests on it."
+  fix: "Approve the Brief again in Compass to get a verifiable approval."
+
+# --- research written for another Brief (SPC-RS-06) ---------------------------------------------------------------------------
+research_stale:
+  other_brief: "The research was made for another version of the Brief, so its findings may not fit what you approved. The spec used it anyway; read every finding that came from research with care."
+  no_hash: "The research does not say which Brief it was made for, so it cannot be matched to the Brief you approved. The spec used it anyway; read every finding that came from research with care."
+  fix: "Run the research again for the approved Brief."
+
+# --- payments implied by the Brief but missing or only 'later' in Compass's list (SPC-IN-09) --------------------------------------
+payment_mismatch:
+  not_listed: "Payments mismatch: the Brief has people paying inside the app, but payments is not listed among the outside services Compass recorded. The spec added the payment step and builds it with a stand-in first."
+  real_later: "Payments mismatch: the Brief has people paying inside the app, but Compass lists the real payment service for later. The first release gets a stand-in payment step, so nobody can really pay yet."
+  difference: "Added: a payment step, because the Brief has people paying in the app and no payment service was listed; it works with a stand-in first."
+  difference_real_later: "Changed: payments are needed in the first release because the Brief has people paying in the app, although Compass lists the real service for later; it works with a stand-in first."
+  fix: "Say whether people should really pay in the first release, and which payment service you want."
+  names: [payments, payment]       # the need keys of the payment integration
+  name_words: [pay, payment, payments]
+
+# --- the store-rule sheet is old (SPC-OP-07) ----------------------------------------------------------------------------------------
+policy_sheet:
+  stale_after_days: 90   # OI-28 (the re-check cadence) is open: 90 days until the owner sets one
+  text: "The store-rule sheet was last checked on {checked_on}, more than {days} days ago. The stores change their rules, so the store rules listed here may be out of date."
+  fix: "Have the store-rule sheet checked against the stores' own pages again."
+
+# --- sign-in that differs by kind of user (SPC-IN-10) ------------------------------------------------------------------------------
+signin:
+  topics: [authentication, sign_in, signin, login, log_in]    # Compass domain-fact topics about signing in
+  statement_words: [sign in, signs in, sign-in, log in, logs in, login, log-in]
+  method_words:   # sign-in method -> its name in a sentence
+    phone_code_login: "a phone code"
+    email_password_login: "email and password"
+    social_login: "another company's account"
+  rule_subject: "Sign-in by kind of user"
+  rule_statement: "{groups}."
+  group: "{who} {verb} with {method}"
+  conflict_tail: " The Brief gives both ways of signing in{setting}, so the spec supports both, each for its own users. Please confirm."
+  setting_missing: " (Compass's own sign-in setting lists only {listed})"
+  same_role: "{who} {verb} with {first} in one place and {second} in another"
+  difference: "Changed: people sign in in more than one way, {groups}; the sign-in setting in the Brief named only {listed}."
+  flag: "Sign-in conflict: the Brief says {groups}, but its sign-in setting names only {listed}. The spec supports both, each for its own users."
+  flag_same_role: "Sign-in conflict: the Brief gives the same users two different ways of signing in ({groups}). The spec supports both and asks you to confirm."
+  difference_same_role: "Changed: the same users are given more than one way to sign in ({groups})."
+  fix: "Say which kinds of user sign in which way."
+  unknown_who: "some users"
+
+# --- a provider nobody could choose (SPC-RS-05) ------------------------------------------------------------------------------------
+provider:
+  subject: "Provider for {need}"
+  no_dossier: "Choose a provider: research found no provider for this market, so the spec wrote a provider-neutral flow and a stand-in until you do."
+  unverified: "Choose a provider: research named providers but could not verify them, so the spec wrote a provider-neutral flow and a stand-in until you do."
+
+# --- Compass's own structure issues, shown at G1.5 (SPC-IN-17) ---------------------------------------------------------------
+structure_issues:
+  heading: "Compass's structure had {n} {problem_word} that the spec handled"
+  screen_entity_access_conflict: "Access conflict: some roles can open {screens} but are not allowed to see the information it shows; the spec took those roles off the screen or narrowed what it shows."
+  screen_unreachable: "Unreachable screen: {screens} is in no journey and is not an entry, so nobody could reach it; the spec linked or dropped it."
+  screen_near_duplicate: "Near-duplicate screens: {screens} look like the same screen; the spec kept both and listed them for you to decide."
+  must_feature_without_flow: "A must-have without a journey: {screens} has no journey written for it; the spec wrote one."
+  module_too_big: "A part with very many screens: {screens}; consider splitting it."
+  rule_unmet: "A rule Compass wrote is not met yet: {detail}"
+  field_type_hint: "A field may be a different kind of information than Compass says: {detail}"
+  generic: "Compass noted a problem ({code}): {detail}"
+  # how a count is said
+  one: "problem"
+  many: "problems"
+  max_listed: 4
+
+# --- a requested capability the fixed stack cannot give as asked (SPC-UX-06, SPC-FE-05) ---------------------------------------------
+# capability id of the platform capability sheet -> the words in a feature that ask for it (whole words, case-insensitive).
+# Only requested features are read; the TIER always comes from the sheet, never from this file.
+capability_words:
+  nfc: [nfc, near field, near-field]
+  bluetooth: [bluetooth, ble, beacon, beacons]
+  wallet_payments: [apple pay, google pay, digital wallet]
+  in_app_purchases: [in-app purchase, in-app purchases, in app purchase, in app purchases]
+  biometrics: [face id, fingerprint, biometric, biometrics, touch id, face unlock]
+  passkeys: [passkey, passkeys]
+  live_activities: [live activity, live activities, dynamic island, lock screen]
+  home_screen_widgets: [home screen widget, home screen widgets, home-screen widget, widget, widgets]
+  background_location: [background location, geofence, geofencing, location while the app is closed]
+  maps: [map, maps]
+  camera: [camera, barcode, qr code, take a photo, take photos, take a picture]
+  push_remote: [push notification, push notifications, push alert, push alerts]
+  real_time_game_engine: [3d game, game engine, multiplayer game, real-time 3d, augmented reality, virtual reality]

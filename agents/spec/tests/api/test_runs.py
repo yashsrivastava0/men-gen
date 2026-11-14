@@ -116,7 +116,11 @@ def test_g15_pauses_deep_apps_and_records_the_consent(
         f"/api/runs/{rid}/g15",
         json={"decision": "change", "moves": [{"item": "FEAT-001", "to": "phase_2"}]},
     )
-    assert refused.status_code == 400 and refused.json()["error"]["message"] and refused.json()["error"]["fix"]
+    assert (
+        refused.status_code == 400
+        and refused.json()["error"]["message"]
+        and refused.json()["error"]["fix"]
+    )
     assert client.get(f"/api/runs/{rid}").json()["status"] == "paused_g15"
     moves: list[
         dict[str, str]

@@ -171,3 +171,24 @@ class SeedData(_M):
 @cache
 def seed_data() -> SeedData:
     return SeedData.model_validate(_raw("seed"))
+
+
+# ---------------------------------------------------------------- honesty (input quality, gate notes, requested capabilities)
+
+
+class HonestyData(_M):
+    version: int
+    weak_inputs: dict[str, Any]
+    unverified: dict[str, str]
+    research_stale: dict[str, str]
+    payment_mismatch: dict[str, Any]
+    signin: dict[str, Any]
+    provider: dict[str, str]
+    policy_sheet: dict[str, Any]
+    structure_issues: dict[str, Any]
+    capability_words: dict[str, list[str]]
+
+
+@cache
+def honesty_data() -> HonestyData:
+    return HonestyData.model_validate(_raw("honesty"))

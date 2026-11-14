@@ -14,6 +14,7 @@ from mde_compass_intake import ResearchView, SpecInput
 from mde_spec_core import vocab
 
 from ._data import facts_data
+from .signin import signin_facts
 
 
 @cache
@@ -81,10 +82,14 @@ def facts_from_input(
     for fact, words in data.auth_methods.items():
         if methods & {_norm(w) for w in words}:
             facts.add(fact)
+    # the Brief's own sentences can name more ways than its single setting (farmers by phone code, the manager by email)
+    per_role = signin_facts(spec_input)
+    facts |= per_role
     model = {_norm(v) for v in spec_input.account_model.values}
     has_auth_screen = any(s.pattern == "auth" for s in spec_input.structure.screens)
     if (
         methods
+        or per_role
         or has_auth_screen
         or (model and model != {"none"})
         or any(r.apps or r.goal for r in spec_input.clean_roles())
