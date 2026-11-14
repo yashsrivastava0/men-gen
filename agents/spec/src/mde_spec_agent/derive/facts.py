@@ -38,8 +38,41 @@ def _wanted_features(spec_input: SpecInput):
     ]
 
 
-def facts_from_input(spec_input: SpecInput, research_view: ResearchView | None = None) -> set[str]:
-    """The predicate facts that hold. Every name is a name in ``vocab/predicates.yaml`` (checked by the tests)."""
+def _brief_text(spec_input: SpecInput) -> str:
+    """The Brief's own words, for the inference of facts nobody stated: the idea, the audience, every in-scope feature, the
+    roles, the entities and their field names, the screens and the stated rules and domain facts."""
+    parts = [spec_input.idea.summary, *spec_input.audience]
+    parts += [f"{f.name} {f.intent}" for f in spec_input.in_scope_features()]
+    parts += [f"{r.name} {r.goal}" for r in spec_input.clean_roles()]
+    for e in spec_input.structure.entities:
+        parts.append(f"{e.name} " + " ".join(x.key.replace("_", " ") for x in e.fields))
+    parts += [s.name for s in spec_input.structure.screens]
+    parts += [f.statement for f in spec_input.rules_and_numbers]
+    parts += [f.statement for f in spec_input.domain_facts]
+    return " ".join(p for p in parts if p)
+
+
+def infer_sensitive(spec_input: SpecInput) -> dict[str, list[str]]:
+    """Kinds of sensitive data (``facts.yaml`` ``sensitive_kinds``) the Brief's words imply and Compass did not state, with
+    the words that matched. Empty when every implied kind is stated: nothing is inferred over what the person said."""
+    data = facts_data()
+    stated = {_norm(t) for t in spec_input.sensitive_data}
+    text = _brief_text(spec_input)
+    out: dict[str, list[str]] = {}
+    for kind, row in sorted(data.sensitive_kinds.items()):
+        if stated & {_norm(w) for w in row.stated}:
+            continue
+        found = sorted({m.group(0).lower() for m in _pattern(tuple(row.words)).finditer(text)})
+        if found:
+            out[kind] = found
+    return out
+
+
+def facts_from_input(
+    spec_input: SpecInput, research_view: ResearchView | None = None, *, infer: bool = True
+) -> set[str]:
+    """The predicate facts that hold. Every name is a name in ``vocab/predicates.yaml`` (checked by the tests).
+    ``infer=False`` leaves out what is only inferred from the Brief's words (what the seed marks as assumed)."""
     data = facts_data()
     facts: set[str] = {"always"}
 
@@ -93,6 +126,8 @@ def facts_from_input(spec_input: SpecInput, research_view: ResearchView | None =
             _norm(t) for t in data.identity_sensitive
         }:
             facts.add("minors_or_health_or_identity")
+    if infer and infer_sensitive(spec_input):
+        facts |= {"sensitive_data", "minors_or_health_or_identity"}  # assumed, never stated
     if len(spec_input.locales.codes) > 1:
         facts.add("multi_language")
     if spec_input.locales.rtl:
