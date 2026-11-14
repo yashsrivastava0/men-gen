@@ -20,10 +20,10 @@ It was built from the owner's "prompt 12 v4". That prompt is kept outside the re
 
 **Read before acting:**
 
-1. **Not merged.** `feat/spec-agent` is not in `main`. Both `main` and `origin/main` are at `4f16ded`, and `main` has no `agents/spec`, `packages/spec-core` or `packages/compass-intake`. No DECISIONS entry records a merge, and D-174 says nothing merges into `main` without the owner's yes. **Branch from `feat/spec-agent`, not from `main`.**
+1. **Merged into `main` (2026-11-14).** The owner asked in plain words for everything to be pushed to `main`, so `feat/spec-agent` was fast-forwarded into `main` (it had no commits that `main` lacked) and pushed with a plain `git push`, no force. `main` now holds `agents/spec`, `agents/verify`, `packages/spec-core`, `packages/compass-intake`, `apps/spec-bench`, `evals/spec` and `tests/edge`. Safe-point tag: `pre/spec-agent-20261114-0258`. **Branch new work from `main`** (for example `feat/spec-proof`).
 2. **Nine live reports, not eight.** Commit `ebc558b` added the ninth, the second Thorough run, which ended `partial`. Booked spend is USD 1.68 against the USD 5.00 cap (section 4.3).
 3. **The planned live allocations do not fit the money left.** Section 5 lists lines that add to USD 4.00. The cap has USD 3.32 left and the tripwire USD 2.82. Re-cost the plan and record the new allocation before the first live spend.
-4. **Two counts in the build brief do not match the repo.** `tests/edge` collects 277 test items, and its source has 66 `xfail` markers (grep count). The brief and commit `c6c946b` say 70. The full-suite figure of 11,512 passed is not in the repo and was not re-run for this page.
+4. **Two counts in the build brief do not match the repo.** `tests/edge` collects 277 test items, and its source has 66 `xfail` markers (grep count). The brief and commit `c6c946b` say 70. The last full offline run on the final tree before the last three test rewrites was 7,392 passed, 3 failed (since fixed), 76 xfailed; `tests/edge` alone is now 209 passed, 68 xfailed.
 
 ## 2. Read first, in this order
 
@@ -256,7 +256,7 @@ Notes for this machine: `just ci-fast` was red on 2026-11-11 (pyright errors in 
 
 ## 9. Process for the next session
 
-- **Branch from `feat/spec-agent`** (not `main`, see section 1). Name the new branch for its work, for example `feat/spec-proof`. Commit in small steps. Use the footer lines `Task:`, `Phase:` and `Refs:`, and the `Co-Authored-By` trailer that names the model that wrote the commit.
+- **Branch from `main`** (see section 1). Name the new branch for its work, for example `feat/spec-proof`. Commit in small steps. Use the footer lines `Task:`, `Phase:` and `Refs:`, and the `Co-Authored-By` trailer that names the model that wrote the commit.
 - **Delegate lane fixes** to fresh subagents. Give each one the failure shape from `first_errors` and the test that reproduces it. The agent roster in `.claude/agents/` has no agent for `agents/spec`. `spec-engineer` and `builder-engineer` cover the older `spec-loader` and `spec-builder` packages, not this build.
 - **Run live batches yourself** (or through `live-runner`), one at a time, with the caps in section 7 set in the launch shell.
 - **Record every decision** in `docs/implementation/DECISIONS.md`, from D-191. Include the new money allocation (section 5b).
@@ -267,7 +267,7 @@ Notes for this machine: `just ci-fast` was red on 2026-11-11 (pyright errors in 
 - `docs/implementation/CURRENT_STATE.md`, section 2: "eight" runs, "USD 1.26", next decision "D-189", and item 2 (uncommitted files and a failing edge test). The tree was clean on 2026-11-14, and the edge status is unknown.
 - `docs/spec-agent/README.md`, "Live results": eight runs (now nine); "Quick and Standard show no banner" (four of six Quick runs show `weak_route`); "Quick reports validators.ok true" (five of six do); "the eight reports add up to USD 1.08" (nine add to USD 1.38).
 - `docs/spec-agent/BUILD-PLAN.md`: "eight single live runs" in the status line; PS-12b says "one Thorough run" (there are two, one partial).
-- The build brief's claim that the branch was "merged to main on 2026-11-14" is wrong for this repo (section 1).
+- The branch was NOT in `main` when the build brief said it was; it was merged afterwards, at the owner's request (section 1).
 
 ## Appendix B: where things are
 

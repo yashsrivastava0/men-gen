@@ -1,4 +1,4 @@
-- [Live mode is one switch (STRICT owner policy)](feedback-live-mode-is-one-switch.md) — only `LLM_MODE=live`; never add a second key, permission flag or blocking hook
+- [Live mode is one switch (STRICT owner policy)](feedback-live-mode-is-one-switch.md) — only `LLM_MODE=live`; never add a [live-mode rule phrase], permission flag or blocking hook
 - [Compass: speed over cost](feedback-compass-speed-over-cost.md) — fast responses first; only limit is USD 3.00 total live spend
 - [Compass: necessary questions only](feedback-compass-necessary-questions.md) — Brief detail from inference + approval, not more questions
 - [Compass v2 plan](project-compass-v2-plan.md) — owner requirements (tiers, submit-once, closing question) and approved plan location

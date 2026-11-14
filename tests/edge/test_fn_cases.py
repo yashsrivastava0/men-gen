@@ -176,16 +176,20 @@ def test_fn_04_a_reask_that_fixes_one_item_and_breaks_another_is_not_accepted(tm
     rig = Rig(tmp_path, "standard")
     gw = wrap_gateway(rig.ctx)
 
-    def first_wrong(out):
+    from mde_spec_agent.lanes.product.prod_module.schema import FieldRec
+
+    def too_many_new_fields(out, entity):
         out = out.model_copy(deep=True)
-        out.stories[0].feature_ids = ["FTR-999"]
+        out.fields += [FieldRec(entity=entity, key=f"extra_{i}", type="text") for i in range(7)]
         return out
 
+    # An error NO code repair can mend (since D-189 unknown ids, provenance and the like are repaired, not re-asked):
+    # seven new fields on one entity. The re-ask "fixes" it on the first entity and breaks it on the last one.
+    def first_wrong(out):
+        return too_many_new_fields(out, out.entities[0].id)
+
     def second_worse(out):
-        out = out.model_copy(deep=True)
-        out.stories[0].feature_ids = []  # the first error fixed ...
-        out.entities[0].prov = []  # ... another one introduced
-        return out
+        return too_many_new_fields(out, out.entities[-1].id)
 
     target: dict[str, str] = {}
 
@@ -203,9 +207,9 @@ def test_fn_04_a_reask_that_fixes_one_item_and_breaks_another_is_not_accepted(tm
         len(bad) == 1 and bad[0].flagged and bad[0].reasked
     )  # not accepted: flagged, never a third ask
     assert all(v == 1 for v in rig.ctx.runner.ledger.used.values())
-    assert all(
-        e.provenance for e in rig.ctx.graph.entities.values()
-    )  # the worse answer never landed
+    assert not any(
+        f.key.startswith("extra_") for e in rig.ctx.graph.entities.values() for f in e.fields
+    )  # neither answer landed
 
 
 # --------------------------------------------------------------------------------------------------- FN-05
@@ -249,7 +253,9 @@ def test_fn_06_on_a_real_run_the_banner_reaches_the_report_and_the_run_still_end
 
     def bad_card(out):
         out = out.model_copy(deep=True)
-        out.regions[0].key = "open_button"  # a widget word: fails the freedom check
+        out.regions[
+            0
+        ].screen = "SCR-999"  # a record for a screen not in the call: no code can mend it (D-189)
         return out
 
     gw.rewrite = lambda spec, inp, n: bad_card if (spec == "spec.scrn" and not inp.reask) else None

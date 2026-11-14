@@ -31,7 +31,7 @@ Spec turns an approved Compass Brief plus Research into one static folder of fil
 
 **Where it stands (2026-11-14).** The build is in git through S6b, offline. The edge-case suite (`tests/edge`, 200 fixture cases) is built; on the working tree that day it gave 208 passed, 68 xfailed and 1 failed. The live proof has started: eight single live runs are saved in `docs/spec-agent/outputs/live-2026-11-14/` (six Quick, one Standard, one Thorough with Verify). None is a scored proof gate. Spend: USD 1.26 by the spend record, against the USD 5.00 cap (tripwire 4.50), read by `scripts/spec_spend_check.py` on 2026-11-14.
 
-**How to run it (Mac, zsh).** The live switch and the money cap come from the launch environment, never from `.env`. Live runs are started by the owner or the lead (CLAUDE.md rules 3 and 13): `LLM_MODE=live` is the only live switch; the cap is `SPEC_LIVE_BUDGET_USD` (5.00 when unset, as the spend check reads it) and the tripwire is `SPEC_TRIPWIRE_USD`.
+**How to run it (Mac, zsh).** The live-mode setting and the money cap come from the launch environment, never from `.env`. Live runs are started by the owner or the lead (CLAUDE.md rules 3 and 13): `LLM_MODE=live` is the only way to go live; the cap is `SPEC_LIVE_BUDGET_USD` (5.00 when unset, as the spend check reads it) and the tripwire is `SPEC_TRIPWIRE_USD`.
 
 ```
 just spec-test                                                  # Spec and Verify offline suites (mock, no money)
