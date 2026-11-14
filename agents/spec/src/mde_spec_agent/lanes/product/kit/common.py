@@ -357,3 +357,36 @@ def safe_prov(
         prov_nodes(strings, quote_of), labels, claims_field=claims_field, tier=tier
     )
     return prov, claims, [*rows, *({**r, "node_id": node_id} for r in rrows)]
+
+
+# ------------------------------------------------------------------------------------------------ text scrub
+_CLAUSE = re.compile(r"(?<=[.;,:!?])\s+")
+
+
+def scrub(text: str, source: str, nums: Collection[str]) -> tuple[str, list[str]]:
+    """The text without the clauses that carry a layout or widget word the source does not have, or a number no source
+    states. A warning-grade lint is never a reason to re-ask: the offending clause is cut (and reported), the rest stays.
+    Returns the text ("" when nothing is left) and the clauses removed."""
+    if not text.strip() or not (new_form_words(text, source) or invented_numbers(text, nums)):
+        return text, []
+    kept: list[str] = []
+    removed: list[str] = []
+    for part in _CLAUSE.split(text.strip()):
+        bad = new_form_words(part, source) or invented_numbers(part, nums)
+        (removed if bad else kept).append(part)
+    out = " ".join(kept).strip().rstrip(",;:").strip()
+    if out and out[-1] not in ".!?":
+        out += "."
+    return out, removed
+
+
+def scrub_row(
+    node_id: str, field: str, before: str, after: str, removed: Sequence[str]
+) -> dict[str, str]:
+    return {
+        "kind": "drop_unknown_optional",
+        "node_id": node_id,
+        "what": f"{field}: a clause with a layout word or a number no source states was cut ({'; '.join(removed)[:120]})",
+        "before": before[:160],
+        "after": after[:160],
+    }

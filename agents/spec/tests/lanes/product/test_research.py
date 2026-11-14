@@ -188,8 +188,14 @@ def test_provider_names_come_only_from_the_dossier_list_and_the_brief(env):
     pay = next(r for r in out.integrations if r.need_key == "payments")
     assert pay.provider_ids == ["DOS-001"]  # a dossier id; the mock never invents a name
     assert validate(inp, out) == []
+    from mde_spec_agent.lanes.product.prod_integ.repair import repair
+
     pay.provider_ids = ["Elsewhere Pay"]
-    assert any("not in the closed list" in m for m in validate(inp, out))
+    fixed, rows = repair(
+        inp, out
+    )  # a name outside the closed list is removed by code, logged: never a guess
+    assert next(r for r in fixed.integrations if r.need_key == "payments").provider_ids == []
+    assert any("closed list" in r["what"] for r in rows)
     prompt = PromptRenderer(max_untrusted_chars=120_000).render(integ_spec.SPEC.spec, inp)
     assert "DOS-001|PayCo|payments" in prompt.user
 

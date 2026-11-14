@@ -17,6 +17,7 @@ from mde_spec_agent.lanes.product.kit.gate import Minter
 from mde_spec_agent.run.patch import Patch
 from mde_spec_core.graph import Flow, Stage
 
+from .repair import repair
 from .schema import JourneysIn, JourneysOut
 
 
@@ -24,13 +25,15 @@ def build_journeys_patch(
     env: Env, inp: JourneysIn, out: JourneysOut, minter: Minter, flagged: bool
 ) -> Patch:
     allowed = ProvAllowed.of(inp)
+    out, rcode = repair(
+        inp, out
+    )  # R-code: what code can mend (alternates first, missing stages, ...), logged
     ih = input_hash_of(inp)
     stages_of: dict[str, list[Any]] = defaultdict(list)
     for s in out.stages:
         stages_of[s.flow].append(s)
     ids = {f.id: (minter.mint("FLW") if f.id.startswith("NEW-") else f.id) for f in out.flows}
     nodes: dict[str, Any] = {}
-    rcode: list[dict[str, str]] = []
     for rec in out.flows:
         fid = ids[rec.id]
         prov, _, rows = safe_prov(

@@ -69,22 +69,13 @@ def test_the_validator_messages_reach_the_reask_word_for_word(env):
         if spec == "spec.prod_module" and inp.module_id == "MOD-002":
             seen.append(list(inp.reask))
             if n == 1:
-
-                def f(out):
-                    out = out.model_copy(deep=True)
-                    out.entities[
-                        0
-                    ].klass = "log"  # fine for the schema; a log entity has no update, but gate 1 says nothing
-                    out.fields[0].ref_entity = "ENT-999"
-                    return out
-
-                return f
+                return bad_story_feature  # a feature that does not exist: no code can mend that
         return None
 
     gw.rewrite = rewrite
     assert env.run(ctx).status == "awaiting_g2"
     assert seen[0] == [] and seen[1], seen  # the second attempt carries the messages
-    assert any("ENT-999" in m for m in seen[1])
+    assert any("FTR-999" in m for m in seen[1])
 
 
 def test_the_plan_is_invalid_twice_raises_plan_invalid_and_checkpoints_nothing(env):
@@ -537,3 +528,107 @@ def test_unattached_added_stories_are_repaired_without_a_reask_and_v40_stays_who
         assert st.policy_id or any(
             f in g.features and g.features[f].status == "in" for f in st.feature_ids
         )
+
+
+# ---- first live Thorough run: what fell back there is mended by code now ---------------------------------------------------
+
+
+def _damage_journeys(out):
+    out = out.model_copy(deep=True)
+    for f in out.flows:
+        if not f.id.startswith("NEW-"):
+            f.unhappy = []  # the draft flow's own alternates dropped
+    if len(out.flows) > 1:
+        victim = out.flows[-1].id
+        out.stages = [s for s in out.stages if s.flow != victim]  # "write its stages"
+    return out
+
+
+def test_journeys_that_drop_the_alternates_or_the_stages_are_mended_not_reasked(env):
+    ctx = env.ctx("thorough")
+    gw = env.gateway(ctx)
+    gw.rewrite = lambda spec, inp, n: _damage_journeys if spec == "spec.prod_journeys" else None
+    out = env.run(ctx)
+    assert out.status == "awaiting_g2", out
+    results = env.calls_of(ctx, "spec.prod_journeys")
+    assert results and not any(r.reasked or r.used_fallback for r in results)
+    assert ctx.flags == []
+    g = ctx.graph
+    assert all(f.stages for f in g.flows.values())
+    from .conftest import baseline
+
+    for fid, f in baseline("thorough").graph.flows.items():
+        assert (
+            g.flows[fid].unhappy_paths[: len(f.unhappy_paths)] == f.unhappy_paths
+        )  # the flow's own alternates, first
+    assert any(
+        "alternates were dropped" in c.what or "no stages" in c.what for c in ctx.rcode.changes
+    )
+
+
+def _damage_module(out):
+    from mde_spec_agent.lanes.product.prod_module.schema import RuleRec
+
+    out = out.model_copy(deep=True)
+    ent = next(
+        (e.entity for e in out.states if sum(1 for x in out.states if x.entity == e.entity) >= 2),
+        None,
+    )
+    if ent is not None:  # every status has a way out: no terminal status
+        names = [s.state for s in out.states if s.entity == ent]
+        roles = next((t.roles for t in out.transitions if t.entity == ent), ["ROL-001"])
+        out.transitions = [t for t in out.transitions if t.entity != ent] + [
+            type(out.transitions[0])(entity=ent, from_state=a, to_state=b, roles=list(roles))
+            for a, b in zip(names, [*names[1:], names[0]], strict=True)
+        ]
+    out.rules.append(
+        RuleRec(
+            id="NEW-limit",
+            subject="Limit",
+            statement="The limit applies",
+            value="7357",
+            unit="items",
+            prov=["user:FTR-001"],
+        )
+    )
+    if out.acceptance:
+        out.acceptance[0] = out.acceptance[0].model_copy(
+            update={"then": "the person sees two quotes side by side and chooses one"}
+        )
+    return out
+
+
+def test_module_answers_with_no_terminal_status_an_invented_value_or_a_layout_clause_are_mended(
+    env,
+):
+    ctx = env.ctx("thorough")
+    gw = env.gateway(ctx)
+    gw.rewrite = lambda spec, inp, n: (
+        _damage_module if spec == "spec.prod_module" and inp.baseline.stories else None
+    )
+    out = env.run(ctx)
+    assert out.status == "awaiting_g2", out
+    assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_module"))
+    assert ctx.flags == []
+    from mde_spec_core.validators.base import blockers, run_all
+    from mde_spec_core.validators.context import make_context
+
+    g = ctx.graph
+    assert (
+        list(
+            blockers(
+                run_all(
+                    make_context(g.model_copy(deep=True)),
+                    gate=3,
+                    only={"V-09", "V-10", "V-40", "V-45"},
+                )
+            )
+        )
+        == []
+    )
+    assert all(
+        r.value is None for r in g.rules.values() if r.subject == "Limit"
+    )  # the value no fact states is gone
+    assert all("side by side" not in a.then for st in g.stories.values() for a in st.acceptance)
+    kinds = " ".join(c.what for c in ctx.rcode.changes)
+    assert "lifecycle" in kinds and "a value no fact states" in kinds and "layout word" in kinds

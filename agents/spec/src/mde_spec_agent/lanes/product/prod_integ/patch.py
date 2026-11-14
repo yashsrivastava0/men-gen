@@ -9,6 +9,7 @@ from mde_spec_agent.lanes.product.kit.env import Env, input_hash_of
 from mde_spec_agent.lanes.product.kit.gate import Minter
 from mde_spec_agent.run.patch import Patch
 
+from .repair import repair
 from .schema import IntegIn, IntegOut
 
 
@@ -16,6 +17,9 @@ def build_integ_patch(
     env: Env, inp: IntegIn, out: IntegOut, minter: Minter, flagged: bool
 ) -> Patch:
     allowed = ProvAllowed.of(inp)
+    out, rcode = repair(
+        inp, out
+    )  # R-code: a missing rule or text, a provider outside the list, ... (logged)
     ih = input_hash_of(inp)
     events: dict[str, list[str]] = {}
     for e in out.events:
@@ -23,7 +27,6 @@ def build_integ_patch(
         if e.name not in events[e.integration]:
             events[e.integration].append(e.name)
     nodes: dict[str, Any] = {}
-    rcode: list[dict[str, str]] = []
     for r in out.integrations:
         base = env.graph.integrations.get(r.id)
         if base is None:

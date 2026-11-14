@@ -13,10 +13,14 @@ from mde_spec_agent.lanes.product.kit.common import (
     source_numbers,
 )
 
+from .repair import repair
 from .schema import IntegIn, IntegOut
 
 
 def validate(inp: IntegIn, out: IntegOut) -> list[str]:
+    out, _ = repair(
+        inp, out
+    )  # what code mends mechanically is not an error (the patch makes the same repair)
     e = Errors()
     source = "\n".join([*inp.slice, *inp.facts, *inp.research, inp.baseline.model_dump_json()])
     nums = source_numbers(source)

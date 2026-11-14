@@ -206,18 +206,15 @@ def acceptance_for(st: StoryRec, role_name: str) -> AcceptRec:
     return AcceptRec(story=st.id, given=given, when=clip(st.want, 160), then=clip(st.so_that, 200))
 
 
-def complete(inp: ModuleIn) -> ModuleOut:
-    """The draft, completed in code: acceptance for every story and a story for every screen of this call that no story
-    cites yet. Everything it adds is assumed (voice `usually`); a node never invents a feature."""
-    out = inp.baseline.model_copy(deep=True)
+def cover_stories(inp: ModuleIn, out: ModuleOut) -> list[tuple[StoryRec, AcceptRec]]:
+    """An assumed story (voice usually) for every screen of this call that no story of `out` cites yet. It never invents a
+    feature: it takes the screen's own, the roles' served ones, or nothing (then no story is made)."""
     role_name = _pairs(inp.role_names)
-    has_acc = {a.story for a in out.acceptance}
-    for st in out.stories:
-        if st.id not in has_acc:
-            out.acceptance.append(acceptance_for(st, role_name.get(st.role, st.role)))
     cited = {sid for st in out.stories for sid in st.screen_ids}
     in_features = set(inp.in_feature_ids)
     by_screen = {s.id: s for s in inp.screens}
+    taken = {s.id for s in out.stories}
+    made: list[tuple[StoryRec, AcceptRec]] = []
     n = 0
     for sid in inp.cover_screen_ids:
         if sid in cited or sid not in by_screen:
@@ -227,8 +224,11 @@ def complete(inp: ModuleIn) -> ModuleOut:
         if not feats or not s.role_ids:
             continue
         n += 1
+        sid_key = f"NEW-cover_{n}_{sid.lower().replace('-', '_')}"
+        if sid_key in taken:
+            continue
         st = StoryRec(
-            id=f"NEW-cover_{n}_{sid.lower().replace('-', '_')}",
+            id=sid_key,
             role=s.role_ids[0],
             want=f"use {s.name.lower()}",
             so_that=f"the person can do what {s.name.lower()} is for",
@@ -237,9 +237,23 @@ def complete(inp: ModuleIn) -> ModuleOut:
             voice="usually",
             prov=[f"assumed:no story cites {sid}"],
         )
-        out.stories.append(st)
-        out.acceptance.append(acceptance_for(st, role_name.get(st.role, st.role)))
+        made.append((st, acceptance_for(st, role_name.get(st.role, st.role))))
         cited.add(sid)
+    return made
+
+
+def complete(inp: ModuleIn) -> ModuleOut:
+    """The draft, completed in code: acceptance for every story and a story for every screen of this call that no story
+    cites yet. Everything it adds is assumed (voice `usually`); a node never invents a feature."""
+    out = inp.baseline.model_copy(deep=True)
+    role_name = _pairs(inp.role_names)
+    has_acc = {a.story for a in out.acceptance}
+    for st in out.stories:
+        if st.id not in has_acc:
+            out.acceptance.append(acceptance_for(st, role_name.get(st.role, st.role)))
+    for st, acc in cover_stories(inp, out):
+        out.stories.append(st)
+        out.acceptance.append(acc)
     return out
 
 

@@ -66,74 +66,125 @@ MODULE_CASES = [
     (lambda o: setattr(first_story(o), "feature_ids", []), "cite an in feature or a policy id"),
     (lambda o: setattr(first_story(o), "screen_ids", ["SCR-999"]), "screen SCR-999 does not exist"),
     (lambda o: setattr(first_story(o), "role", "ROL-999"), "is not a role of this app"),
-    (
-        lambda o: setattr(first_story(o), "want", "tap the big blue button on the right"),
-        "form word",
-    ),
     (lambda o: setattr(first_story(o), "id", "US-S999"), "use an id of the draft or NEW-"),
-    (lambda o: o.acceptance.clear(), "write at least one acceptance"),
-    (lambda o: setattr(o.acceptance[0], "then", " "), "given, when and then must all be written"),
-    (lambda o: o.stories.pop(0), "no story serves it"),
-    (lambda o: setattr(o.fields[0], "key", "Bad Key"), "lower snake case"),
-    (lambda o: o.fields.append(o.fields[0].model_copy()), "listed twice"),
-    (lambda o: setattr(o.fields[0], "ref_entity", "ENT-999"), "does not exist"),
-    (
-        lambda o: setattr(o.fields[0], "constraint", "at most 500 characters"),
-        "never invent a number",
-    ),
-    (
-        lambda o: setattr(o.fields[0], "type", "enum") or setattr(o.fields[0], "enum_values", []),
-        "needs its values",
-    ),
-    (
-        lambda o: o.rules.append(
-            RuleRec(
-                id="NEW-r",
-                subject="Fee",
-                statement="A fee applies",
-                value="12",
-                unit="percent",
-                prov=["assumed:x"],
-            )
-        ),
-        "needs a user or Compass quote",
-    ),
-    (
-        lambda o: o.rules.append(
-            RuleRec(
-                id="NEW-r",
-                subject="Fee",
-                statement="A fee applies",
-                value="12",
-                unit="percent",
-                prov=["user:FTR-001"],
-            )
-        ),
-        "never invent a number",
-    ),
-    (
-        lambda o: o.rules.append(
-            RuleRec(id="NEW-r", subject="Fee", statement="A fee of 77 applies", prov=["assumed:x"])
-        ),
-        "never invent a number",
-    ),
-    (
-        lambda o: o.rules.append(
-            RuleRec(id="NEW-r", subject="Fee", statement="a fee", value="4", prov=["user:FTR-001"])
-        ),
-        "needs its unit",
-    ),
 ]
 
 
 @pytest.mark.parametrize(("mutate", "message"), MODULE_CASES)
 def test_the_module_validator_says_no(env, mutate, message):
     inp, out = module_case(env)
-    # the story-based cases need a story of this module that is voice must and user-evidenced
     out = out.model_copy(deep=True)
     mutate(out)
     errors = module_validate(inp, out)
     assert any(message in m for m in errors), (message, errors)
+
+
+def new_rule(**kw):
+    base = {"id": "NEW-r", "subject": "Fee", "statement": "A fee applies", "prov": ["assumed:x"]}
+    return RuleRec(**{**base, **kw})
+
+
+# What a model gets wrong that code mends mechanically (R-code): nothing here is a validator error, and the repaired answer says so.
+REPAIR_CASES = [
+    (
+        "a layout word in a story",
+        lambda o: setattr(
+            first_story(o), "want", "see the class, tap the big blue button on the right"
+        ),
+        lambda o: "button" not in first_story(o).want and first_story(o).want,
+    ),
+    (
+        "no acceptance at all",
+        lambda o: o.acceptance.clear(),
+        lambda o: len(o.acceptance) >= len(o.stories),
+    ),
+    (
+        "a blank acceptance part",
+        lambda o: setattr(o.acceptance[0], "then", " "),
+        lambda o: all(a.then.strip() for a in o.acceptance),
+    ),
+    (
+        "a layout word in acceptance",
+        lambda o: setattr(
+            o.acceptance[0], "when", "the person taps the button on the right side by side with it"
+        ),
+        lambda o: (
+            all("button" not in a.when for a in o.acceptance) and o.acceptance[0].when.strip()
+        ),
+    ),
+    (
+        "a draft story left out",
+        lambda o: o.stories.pop(0),
+        lambda o: len(o.stories) >= 1 and o.acceptance,
+    ),
+    (
+        "a key that is not snake case",
+        lambda o: setattr(o.fields[0], "key", "Bad Key"),
+        lambda o: o.fields[0].key == "bad_key",
+    ),
+    (
+        "a field listed twice",
+        lambda o: o.fields.append(o.fields[0].model_copy()),
+        lambda o: (
+            [(f.entity, f.key) for f in o.fields].count((o.fields[0].entity, o.fields[0].key)) == 1
+        ),
+    ),
+    (
+        "a ref to an entity that does not exist",
+        lambda o: (
+            setattr(o.fields[0], "ref_entity", "ENT-999"),
+            setattr(o.fields[0], "type", "ref"),
+        ),
+        lambda o: o.fields[0].ref_entity == "" and o.fields[0].type != "ref",
+    ),
+    (
+        "an invented number in a constraint",
+        lambda o: setattr(o.fields[0], "constraint", "at most 500 characters"),
+        lambda o: "500" not in o.fields[0].constraint,
+    ),
+    (
+        "an enum with no values",
+        lambda o: (setattr(o.fields[0], "type", "enum"), setattr(o.fields[0], "enum_values", [])),
+        lambda o: o.fields[0].type != "enum" or o.fields[0].enum_values,
+    ),
+    (
+        "a value with no quote behind it",
+        lambda o: o.rules.append(new_rule(value="12", unit="percent")),
+        lambda o: next(r for r in o.rules if r.id == "NEW-r").value == "",
+    ),
+    (
+        "a value no fact states, even with a user source",
+        lambda o: o.rules.append(new_rule(value="12", unit="percent", prov=["user:FTR-001"])),
+        lambda o: next(r for r in o.rules if r.id == "NEW-r").value == "",
+    ),
+    (
+        "a number in a rule's text",
+        lambda o: o.rules.append(new_rule(statement="A fee of 77 applies")),
+        lambda o: all(
+            r.id != "NEW-r" for r in o.rules
+        ),  # nothing is left of the statement: the rule is dropped
+    ),
+    (
+        "a value with no unit",
+        lambda o: o.rules.append(new_rule(statement="a fee", value="4", prov=["user:FTR-001"])),
+        lambda o: next(r for r in o.rules if r.id == "NEW-r").value == "",
+    ),
+]
+
+
+@pytest.mark.parametrize(
+    ("name", "mutate", "check"), REPAIR_CASES, ids=[c[0] for c in REPAIR_CASES]
+)
+def test_what_code_can_mend_is_mended_not_reasked(env, name, mutate, check):
+    from mde_spec_agent.lanes.product.prod_module.repair import repair
+
+    inp, out = module_case(env)
+    out = out.model_copy(deep=True)
+    mutate(out)
+    fixed, rows = repair(inp, out)
+    assert check(fixed), name
+    assert rows, name  # logged, never silent
+    assert module_validate(inp, out) == [], (name, module_validate(inp, out))
 
 
 OP = OperationRec(
@@ -167,7 +218,6 @@ def test_custom_operation_rules(env):
         (with_op(entity="ENT-999"), "does not exist"),
         (with_op(), "declare its errors"),
         (with_op(id="OP-S001"), "written as NEW-<key>"),
-        (with_op(name="Tap the red button"), "form word"),
     ]
     for o, msg in bad:
         assert any(msg in m for m in module_validate(inp, o)), (msg, module_validate(inp, o))
@@ -181,97 +231,264 @@ def test_custom_operation_rules(env):
     assert AcceptRec(story="s", given="g", when="w", then="t")
 
 
-def test_lifecycle_rules(env):
+def test_lifecycles_are_mended_by_code(env):
+    """A lifecycle V-09 would refuse (unreachable status, no status with no way out, no initial, a transition with no role)
+    is mended: roles from the draft, one initial status, else the draft's own lifecycle; the status values follow."""
+    from mde_spec_agent.lanes.product.prod_module.repair import repair
+
     inp, out = module_case(env)
     ent = next(
         s.entity for s in out.states if sum(1 for x in out.states if x.entity == s.entity) >= 3
     )
+    draft = [s.state for s in out.states if s.entity == ent]
+
+    def states(o):
+        return [s.state for s in o.states if s.entity == ent]
+
     a = out.model_copy(deep=True)
-    a.transitions = [t for t in a.transitions if t.entity != ent][:0] or [
+    a.transitions = [
         t for t in a.transitions if t.entity != ent
-    ]
-    assert any("unreachable" in m for m in module_validate(inp, a))
+    ]  # every status after the first is unreachable
+    fixed, rows = repair(inp, a)
+    assert states(fixed) == draft and any(r["node_id"] == ent for r in rows)
+    assert [
+        t for t in fixed.transitions if t.entity == ent
+    ]  # the draft's transitions came back with it
     b = out.model_copy(deep=True)
     for s in b.states:
         if s.entity == ent:
             s.initial = False
-    assert any("exactly one status must be initial" in m for m in module_validate(inp, b))
+    fixed, _ = repair(inp, b)
+    assert [s.state for s in fixed.states if s.entity == ent and s.initial] == [draft[0]]
     c = out.model_copy(deep=True)
-    next(t for t in c.transitions if t.entity == ent).roles = []
-    assert any("names no role" in m for m in module_validate(inp, c))
+    for t in c.transitions:
+        if t.entity == ent:
+            t.roles = []
+    fixed, _ = repair(inp, c)
+    assert all(t.roles for t in fixed.transitions if t.entity == ent)
+    d = out.model_copy(deep=True)  # a cycle with no way out: no terminal status
+    d.transitions = [t for t in d.transitions if t.entity != ent] + [
+        t.model_copy(update={"entity": ent, "from_state": draft[-1], "to_state": draft[0]})
+        for t in out.transitions
+        if t.entity == ent
+    ][:1]
+    d.transitions += [t.model_copy() for t in out.transitions if t.entity == ent]
+    d.transitions += [
+        type(out.transitions[0])(
+            entity=ent, from_state=draft[-1], to_state=draft[0], roles=["ROL-001"]
+        )
+    ]
+    fixed, _ = repair(inp, d)
+    for x in (a, b, c, d):
+        assert module_validate(inp, x) == []
+    status = [f for f in fixed.fields if f.entity == ent and f.key == "status" and f.type == "enum"]
+    assert all(set(f.enum_values) == set(states(fixed)) for f in status)
 
 
-def test_integration_rules(env):
+def test_integrations_are_mended_by_code_not_reasked(env):
+    from mde_spec_agent.lanes.product.kit import vocab
+    from mde_spec_agent.lanes.product.prod_integ.repair import repair
+
     ctx = env.ctx("standard")
     ensure_derived(ctx)
     e = env_of(ctx)
     inp = integ_input_factory(ctx, e)(sorted(e.graph.integrations))
     out = integ_mock(inp)
     assert integ_validate(inp, out) == []
+    lib = vocab.hints()["integration_defaults"]
     cases = [
         (
+            "no interrupted-flow rule",
             lambda o: setattr(o.integrations[0], "interruption", ""),
-            "needs an interrupted-flow rule",
+            lambda o: o.integrations[0].interruption == lib["interruption"],
         ),
-        (lambda o: setattr(o.integrations[0], "pending_timeout", ""), "needs a pending timeout"),
         (
+            "no pending timeout",
+            lambda o: setattr(o.integrations[0], "pending_timeout", ""),
+            lambda o: o.integrations[0].pending_timeout == lib["pending_timeout"],
+        ),
+        (
+            "an invented number",
             lambda o: setattr(
                 o.integrations[0], "pending_timeout", "Wait 45 seconds, then ask again"
             ),
-            "never invent a number",
+            lambda o: (
+                "45" not in o.integrations[0].pending_timeout
+                and o.integrations[0].pending_timeout.strip()
+            ),
         ),
         (
+            "a provider outside the list",
             lambda o: setattr(o.integrations[0], "provider_ids", ["Acme Pay"]),
-            "not in the closed list",
+            lambda o: "Acme Pay" not in o.integrations[0].provider_ids,
         ),
-        (lambda o: setattr(o.integrations[0], "id", "INT-999"), "not a need of the plan"),
         (
-            lambda o: setattr(o.integrations[0], "flow", "A blue button opens the provider"),
-            "form word",
+            "a record that is no need",
+            lambda o: setattr(o.integrations[0], "id", "INT-999"),
+            lambda o: (
+                all(r.id != "INT-999" for r in o.integrations)
+                and len(o.integrations) == len(inp.integration_ids)
+            ),
         ),
-        (lambda o: o.integrations.clear(), "no record"),
+        (
+            "a layout word",
+            lambda o: setattr(
+                o.integrations[0],
+                "flow",
+                "A blue button opens the provider. The person pays there.",
+            ),
+            lambda o: "button" not in o.integrations[0].flow,
+        ),
+        (
+            "no record at all",
+            lambda o: o.integrations.clear(),
+            lambda o: len(o.integrations) == len(inp.integration_ids),
+        ),
+        (
+            "no events",
+            lambda o: o.events.clear(),
+            lambda o: (
+                {x.integration for x in o.events}
+                >= {r.id for r in o.integrations if r.provider_side_flow}
+            ),
+        ),
     ]
-    for mutate, msg in cases:
+    for name, mutate, check in cases:
         o = out.model_copy(deep=True)
         mutate(o)
-        assert any(msg in m for m in integ_validate(inp, o)), (msg, integ_validate(inp, o))
+        fixed, rows = repair(inp, o)
+        assert check(fixed), name
+        assert rows, name
+        assert integ_validate(inp, o) == [], (name, integ_validate(inp, o))
 
 
-def test_journey_rules(env):
-    ctx = env.ctx("standard")
+def journeys_case(env, key="standard"):
+    ctx = env.ctx(key)
     ensure_derived(ctx)
     e = env_of(ctx)
-    _, ids = journey_batches(ctx, e)[0]
+    batches = journey_batches(ctx, e)
+    _, ids = next(
+        b
+        for b in batches
+        if any(i in {f.id for f in e.graph.flows.values() if f.unhappy_paths} for i in b[1])
+    )
     inp = journeys_input_factory(ctx, e)(ids)
-    out = journeys_mock(inp)
+    return inp, journeys_mock(inp)
+
+
+def test_journey_rules_code_cannot_mend(env):
+    inp, out = journeys_case(env)
     assert journeys_validate(inp, out) == []
-    cases = [
-        (lambda o: setattr(o.stages[0], "screen_ids", ["SCR-999"]), "does not exist"),
-        (
-            lambda o: setattr(o.stages[0], "action_keys", ["no_such_action"]),
-            "is not an action of its screens",
-        ),
-        (lambda o: setattr(o.stages[0], "emotion_ref", "FCT-9999"), "is not a fact of this call"),
-        (lambda o: setattr(o.flows[0], "moments", [99]), "is not a stage number"),
-        (lambda o: setattr(o.flows[0], "unhappy", []), "keep the flow's own alternates"),
-        (lambda o: setattr(o.flows[0], "role_ids", ["ROL-999"]), "does not exist"),
-        (lambda o: setattr(o.stages[0], "goal", "wait 12 minutes"), "never invent a number"),
-        (
-            lambda o: setattr(o.stages[0], "pain", "a hover tooltip on the left hides it"),
-            "form word",
-        ),
-        (lambda o: o.stages.pop(0), "numbered 1, 2, 3"),
-        (lambda o: o.flows.pop(), "no record"),
-    ]
-    for mutate, msg in cases:
-        o = out.model_copy(deep=True)
-        mutate(o)
-        assert any(msg in m for m in journeys_validate(inp, o)), (msg, journeys_validate(inp, o))
     with pytest.raises(ValueError):
         type(out.stages[0])(flow="f", n=1, goal="g", emotion="ecstatic")  # the closed emotion set
 
 
-def test_deep_variants_are_wanted_and_checked(env):
+def test_journeys_are_mended_by_code_not_reasked(env):
+    """First live Thorough run: 4 of 5 journey calls fell back because the draft flow's own alternates were not kept first,
+    and flows came back with no stages. Everything below is mended mechanically and logged."""
+    from mde_spec_agent.lanes.product.prod_journeys.repair import repair
+
+    inp, out = journeys_case(env)
+    flow = next(
+        f
+        for f in out.flows
+        if inp.baseline.flows and f.id in {b.id for b in inp.baseline.flows if b.unhappy}
+    )
+    own = next(b.unhappy for b in inp.baseline.flows if b.id == flow.id)
+
+    def stages_of(o, fid):
+        return sorted((s for s in o.stages if s.flow == fid), key=lambda s: s.n)
+
+    cases = {
+        "alternates dropped": (
+            lambda o: setattr(next(f for f in o.flows if f.id == flow.id), "unhappy", []),
+            lambda o: next(f for f in o.flows if f.id == flow.id).unhappy[: len(own)] == own,
+        ),
+        "alternates reordered behind an addition": (
+            lambda o: setattr(
+                next(f for f in o.flows if f.id == flow.id),
+                "unhappy",
+                ["If the person gives up, nothing is lost.", *own],
+            ),
+            lambda o: (
+                next(f for f in o.flows if f.id == flow.id).unhappy
+                == [*own, "If the person gives up, nothing is lost."]
+            ),
+        ),
+        "a flow with no stages": (
+            lambda o: setattr(o, "stages", [s for s in o.stages if s.flow != flow.id]),
+            lambda o: len(stages_of(o, flow.id)) >= 1,
+        ),
+        "a flow left out": (
+            lambda o: setattr(o, "flows", [f for f in o.flows if f.id != flow.id]),
+            lambda o: any(f.id == flow.id for f in o.flows) and stages_of(o, flow.id),
+        ),
+        "stages with gaps": (
+            lambda o: setattr(stages_of(o, flow.id)[0], "n", 7),
+            lambda o: (
+                [s.n for s in stages_of(o, flow.id)]
+                == list(range(1, len(stages_of(o, flow.id)) + 1))
+            ),
+        ),
+        "an unknown screen": (
+            lambda o: setattr(stages_of(o, flow.id)[0], "screen_ids", ["SCR-999"]),
+            lambda o: stages_of(o, flow.id)[0].screen_ids,
+        ),
+        "an action its screens do not have": (
+            lambda o: setattr(stages_of(o, flow.id)[0], "action_keys", ["no_such_action"]),
+            lambda o: "no_such_action" not in stages_of(o, flow.id)[0].action_keys,
+        ),
+        "an unknown fact for a feeling": (
+            lambda o: setattr(stages_of(o, flow.id)[0], "emotion_ref", "FCT-9999"),
+            lambda o: stages_of(o, flow.id)[0].emotion_ref == "",
+        ),
+        "a moment that is no stage": (
+            lambda o: setattr(next(f for f in o.flows if f.id == flow.id), "moments", [99]),
+            lambda o: 99 not in next(f for f in o.flows if f.id == flow.id).moments,
+        ),
+        "an unknown role": (
+            lambda o: setattr(next(f for f in o.flows if f.id == flow.id), "role_ids", ["ROL-999"]),
+            lambda o: (
+                next(f for f in o.flows if f.id == flow.id).role_ids
+                and "ROL-999" not in next(f for f in o.flows if f.id == flow.id).role_ids
+            ),
+        ),
+        "an invented number in a goal": (
+            lambda o: setattr(stages_of(o, flow.id)[0], "goal", "wait 12 minutes"),
+            lambda o: (
+                "12" not in stages_of(o, flow.id)[0].goal and stages_of(o, flow.id)[0].goal.strip()
+            ),
+        ),
+        "a layout word in pain": (
+            lambda o: setattr(
+                stages_of(o, flow.id)[0], "pain", "a hover tooltip on the left hides it"
+            ),
+            lambda o: "tooltip" not in stages_of(o, flow.id)[0].pain,
+        ),
+        "a layout word in an unhappy path": (
+            lambda o: setattr(
+                next(f for f in o.flows if f.id == flow.id),
+                "unhappy",
+                [*own, "A red banner shows. The person can retry."],
+            ),
+            lambda o: (
+                all("banner" not in u for u in next(f for f in o.flows if f.id == flow.id).unhappy)
+                and "The person can retry." in next(f for f in o.flows if f.id == flow.id).unhappy
+            ),
+        ),
+    }
+    for name, (mutate, check) in cases.items():
+        o = out.model_copy(deep=True)
+        mutate(o)
+        fixed, rows = repair(inp, o)
+        assert check(fixed), name
+        assert rows, name  # logged, never silent
+        assert journeys_validate(inp, o) == [], (name, journeys_validate(inp, o))
+
+
+def test_deep_variants_are_wanted_and_made_by_code_when_missing(env):
+    from mde_spec_agent.lanes.product.prod_journeys.repair import repair
+
     ctx = env.ctx("thorough")
     ensure_derived(ctx)
     e = env_of(ctx)
@@ -287,7 +504,10 @@ def test_deep_variants_are_wanted_and_checked(env):
     victim = next(f for f in o.flows if f.id.startswith("NEW-"))
     o.flows.remove(victim)
     o.stages = [s for s in o.stages if s.flow != victim.id]
-    assert any("variant" in m for m in journeys_validate(inp, o))
+    fixed, rows = repair(inp, o)
+    assert any(f.variant == victim.variant and f.of == victim.of for f in fixed.flows)
+    assert any("variant was asked for" in r["what"] for r in rows)
+    assert journeys_validate(inp, o) == []
 
 
 def test_compact_apps_only_carry_emotion_on_the_primary_journey(env):
