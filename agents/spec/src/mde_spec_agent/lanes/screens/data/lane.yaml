@@ -8,6 +8,12 @@ could_per_screen_default: 2          # never above config.profiles.could_cap_per
 slots_norms_max: 4                   # research candidates shown to one card
 slots_delight_max: 2                 # delight-library candidates shown to one card
 slots_moments_max: 3
+# Words that tell which listed value a model's own word means (used when a shape variant or an enum attribute is outside its list).
+variant_hints:
+  set: [gallery, album, multiple, many, photos, images, carousel_of, collection]
+  single: [one, cover, single]
+  stages: [steps, progress, timeline, status]
+  events: [history, log, activity]
 region_label_copy: true              # mint a label key for a region only when the model gives its text
 
 # Research item kinds that may become a USUALLY line (peer practice), never competitor or provider facts.

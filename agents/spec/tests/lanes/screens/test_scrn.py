@@ -173,7 +173,7 @@ def test_an_action_that_needs_an_operation_product_never_wrote_is_unspecified(fr
     ]
 
 
-def test_an_invented_operation_is_refused_unless_marked_unspecified(finished):
+def test_an_invented_operation_becomes_an_unspecified_action_never_a_reask(finished):
     run = finished("quick")
     g = run.baseline
     sid = release_targets(g)[0]
@@ -188,19 +188,12 @@ def test_an_invented_operation_is_refused_unless_marked_unspecified(finished):
     bad = out.model_copy(
         update={"actions": [a0.model_copy(update={"effect": ["call OP-999"]}), *out.actions[1:]]}
     )
-    errs = assemble(g, inp, bad, CFG, lane_rules()).errors
-    assert any("OP-999 is not an operation" in e for e in errs)
-    ok = out.model_copy(
-        update={
-            "actions": [
-                a0.model_copy(update={"effect": ["call OP-999"], "unspecified": True}),
-                *out.actions[1:],
-            ]
-        }
-    )
-    built = assemble(g, inp, ok, CFG, lane_rules())
-    assert not [e for e in built.errors if "OP-999" in e]
+    built = assemble(g, inp, bad, CFG, lane_rules())
+    assert built.errors == []
+    action = next(a for a in built.screens[sid].actions if a.key == a0.key)
+    assert action.unspecified and action.effect == []
     assert any(f["kind"] == "needs_decision" for f in built.flags)
+    assert any("OP-999" in r["what"] for r in built.notes.rows)
 
 
 def test_one_reask_per_node_then_the_card_is_written_and_not_flagged(fresh, monkeypatch):
@@ -209,9 +202,9 @@ def test_one_reask_per_node_then_the_card_is_written_and_not_flagged(fresh, monk
 
     def handle(inp):
         out = real(inp)
-        if not inp.reask:  # the first answer breaks the freedom rule: a key that names a widget
+        if not inp.reask:  # the first answer carries a record for a screen that is not in the call
             r = out.regions[0]
-            out.regions[0] = r.model_copy(update={"key": "open_button"})
+            out.regions.append(r.model_copy(update={"screen": "SCR-999"}))
         return out
 
     monkeypatch.setattr(scrn_mock, "handle", handle)
@@ -234,7 +227,7 @@ def test_after_the_one_reask_the_fallback_is_used_and_flagged(fresh, monkeypatch
     def handle(inp):
         out = real(inp)
         r = out.regions[0]
-        out.regions[0] = r.model_copy(update={"key": "open_button"})  # always wrong
+        out.regions.append(r.model_copy(update={"screen": "SCR-999"}))  # always wrong
         return out
 
     monkeypatch.setattr(scrn_mock, "handle", handle)
@@ -478,6 +471,7 @@ def test_the_prompt_shows_the_guard_grammar_and_the_boolean_rule():
 
     system = (HERE / "system.jinja").read_text()
     assert "exactly one card record for EVERY slot" in system
+    assert "shape_kind only one of the listed values" in system
     assert "plain words in precondition" in system and "bool take exactly true or false" in system
 
 
@@ -589,3 +583,164 @@ def test_code_repairs_reach_the_runs_rcode_log(fresh, monkeypatch):
         res.reasked for _, res in run.ctx.runner.calls
     )  # repaired by code, never re-asked
     assert any("no card was given" in r["what"] for r in run.ctx.rcode.rows())
+
+
+def _region_out(sid, **kw):
+    from mde_spec_agent.lanes.screens.scrn.schema import RegionOut
+
+    base = dict(
+        screen=sid, key="delivery_proof", what="the proof of delivery", shape="media", shape_kind=None,
+        attrs=[], bind=[], importance="supporting", freshness=None, cardinality=None, typical=None,
+        maximum=None, live="none",
+    )  # fmt: skip
+    base.update(kw)
+    return RegionOut(**base)
+
+
+def test_a_variant_outside_the_closed_list_is_mapped_by_code(finished):
+    run = finished("quick")
+    for given, want in (
+        ("photo", "single"),
+        ("photo gallery", "set"),
+        ("Album", "set"),
+        ("zzz", "single"),
+    ):
+        sid, _g, built = _asm(
+            run,
+            lambda out, s, given=given: out.model_copy(
+                update={"regions": [*out.regions, _region_out(s, shape_kind=given)]}
+            ),
+        )
+        assert built.errors == [], built.errors
+        reg = next(r for r in built.screens[sid].regions if r.key == "delivery_proof")
+        assert reg.shape_kind == want
+        assert any(r["kind"] == "exact_synonym" and given in r["before"] for r in built.notes.rows)
+    # a shape with no variants drops the variant
+    sid, _g, built = _asm(
+        run,
+        lambda out, s: out.model_copy(
+            update={
+                "regions": [
+                    *out.regions,
+                    _region_out(s, key="facts", shape="key_values", shape_kind="x"),
+                ]
+            }
+        ),
+    )
+    assert (
+        built.errors == []
+        and next(r for r in built.screens[sid].regions if r.key == "facts").shape_kind is None
+    )
+
+
+def test_the_other_vocabulary_slips_are_repaired_by_code(finished):
+    from mde_spec_agent.lanes.screens.scrn.schema import ActionOut, CouldOut, InputOut
+
+    run = finished("quick")
+
+    def mutate(out, sid):
+        regions = [
+            _region_out(
+                sid,
+                key="proof_button",
+                shape="zigzag",
+                attrs=["anything=goes"],
+                bind=["ENT-001.no_such", "OP-999"],
+                cardinality="medium",
+            ),
+            _region_out(
+                sid,
+                key="proof_modal",
+                shape="collection",
+                cardinality=None,
+                attrs=["selection=lots", "bogus=1", "editable=maybe"],
+            ),
+            _region_out(sid, key="proof_modal", shape="text", attrs=["length=enormous"]),
+        ]
+        a = out.actions[0]
+        actions = [
+            a.model_copy(
+                update={
+                    "key": "Pay Now!",
+                    "intent": "pay_now",
+                    "effect": ["go SCR-999", "teleport", "stay"],
+                }
+            ),
+            ActionOut(
+                screen=sid,
+                key="x_cta",
+                importance="secondary",
+                intent="view",
+                what="look",
+                precondition=None,
+                effect=["go SCR-999"],
+                guard=[],
+                errors=[],
+                flags=[],
+                unspecified=False,
+            ),
+        ]
+        inputs = [
+            InputOut(
+                screen=sid,
+                key="note_chip",
+                type="paragraph",
+                required=False,
+                constraint=None,
+                default=None,
+                source="",
+            )
+        ]
+        card = out.cards[0].model_copy(
+            update={
+                "purpose": "",
+                "analytics": ["Payment Started!", "x_toast"],
+                "mock_states": ["ENT-9:nope"],
+                "mock_profiles": ["wild"],
+                "params": ["bad"],
+            }
+        )
+        could = [
+            CouldOut(screen=sid, kind="trust", when="x happens", effect="people feel sure", basis="", basis_kind="journey_moment",
+                     assumed=False, motion=None, reduced_motion_alt=None, tier="A"),
+            CouldOut(screen=sid, kind="trust", when="y happens", effect="people feel sure", basis="journey FLW-99 step 1",
+                     basis_kind="journey_moment", assumed=False, motion=None, reduced_motion_alt=None, tier="A"),
+            CouldOut(screen=sid, kind="trust", when="z happens", effect="people feel sure", basis="DLT-QUIET-SUCCESS",
+                     basis_kind="library_pattern", assumed=False, motion="confirm_success", reduced_motion_alt=None, tier="A"),
+        ]  # fmt: skip
+        texts = [c for c in out.texts if c.target == "title"] + [
+            out.texts[0].model_copy(update={"target": "action", "ref": "Pay Now!", "text": "Pay"}),
+            out.texts[0].model_copy(update={"target": "input", "ref": "note_chip", "text": "Note"}),
+        ]
+        return out.model_copy(update={"regions": regions, "actions": actions, "inputs": inputs, "cards": [card],
+                                      "could": could, "texts": texts, "usually": [], "acceptance": []})  # fmt: skip
+
+    sid, g, built = _asm(run, mutate)
+    assert built.errors == [], built.errors
+    s = built.screens[sid]
+    keys = sorted(r.key for r in s.regions)
+    assert keys == ["proof", "proof_2", "proof_3"]  # widget words stripped, duplicates made unique
+    proof = next(r for r in s.regions if r.key == "proof")
+    assert proof.shape == "other:zigzag" and proof.bind == [] and proof.cardinality is None
+    assert proof.attrs == ["anything=goes"]  # an other:<name> shape takes any attributes
+    assert next(r for r in s.regions if r.key == "proof_2").cardinality == "many"
+    assert next(r for r in s.regions if r.key == "proof_2").attrs == []  # bad attributes dropped
+    assert next(r for r in s.regions if r.key == "proof_3").attrs == []
+    a1, a2 = sorted(s.actions, key=lambda x: x.key)
+    assert (a1.key, a2.key) == ("pay", "x") and a1.intent == "pay"
+    assert [x.verb for x in a1.effect] == ["stay"] and [x.verb for x in a2.effect] == ["stay"]
+    assert s.inputs[0].key == "note" and s.inputs[0].type == "text"
+    assert s.purpose == g.screens[sid].purpose and s.analytics == ["payment_started"]
+    assert (
+        s.hero_refs == []
+        and s.mock_profiles == []
+        and s.route.params == g.screens[sid].route.params
+    )
+    assert [c.when for c in s.could] == ["z happens"] and s.could[0].motion is None
+    assert built.copy[namespaced_copy_key(sid, "pay")] == "Pay"  # the copy followed the renamed key
+    assert built.copy[namespaced_copy_key(sid, "note")] == "Note"
+    assert {r["kind"] for r in built.notes.rows} <= {
+        "drop_unknown_optional",
+        "exact_synonym",
+        "instantiate_library_default",
+    }

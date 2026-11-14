@@ -13,7 +13,7 @@ from collections.abc import Iterable
 from dataclasses import dataclass, field
 from typing import Any
 
-from mde_spec_agent.derive.text import first_sentences, humanize
+from mde_spec_agent.derive.text import first_sentences, humanize, slug
 from mde_spec_agent.lanes.screens.common import LaneRules, needs_decision_flag
 from mde_spec_agent.lanes.screens.scrn.schema import (
     AcceptOut,
@@ -132,6 +132,17 @@ def parse_param(text: str, where: str, errors: list[str]) -> RouteParam | None:
     return None
 
 
+def _token_match(word: str, options: list[str]) -> str | None:
+    """A listed value that is one whole snake-case token group of the word ('pay_now' -> 'pay'); the longest wins."""
+    w = word.strip().lower()
+    hits = [
+        o
+        for o in options
+        if w == o or w.startswith(o + "_") or w.endswith("_" + o) or f"_{o}_" in w
+    ]
+    return max(hits, key=len) if hits else None
+
+
 def _canon(vocab_name: str, word: str) -> str:
     return libraries.canonical(vocab_name, word) or word
 
@@ -139,11 +150,61 @@ def _canon(vocab_name: str, word: str) -> str:
 # ---------------------------------------------------------------- the pieces
 
 
+def closest(word: str, options: list[str], hints: dict[str, list[str]] | None = None) -> str | None:
+    """The listed value a word clearly means: a hint word of the data file, else a listed value that contains it or is
+    contained in it (case-insensitive). None when nothing is close."""
+    w = word.strip().lower()
+    if not w:
+        return None
+    if w in options:
+        return w
+    for opt in options:
+        if any(h in w for h in (hints or {}).get(opt, [])):
+            return opt
+    for opt in sorted(options, key=len, reverse=True):
+        if len(opt) >= 3 and (opt in w or (len(w) >= 3 and w in opt)):
+            return opt
+    return None
+
+
+def repair_variant(
+    shape: str, kind: str | None, where: str, notes: Fixes, hints: dict[str, list[str]]
+) -> str | None:
+    """R-code: a variant outside the shape's closed list is mapped to the closest listed one (a hint word of the data
+    file, then a name match, else the first listed, which is the shape's default); a shape with no variants drops it."""
+    if not kind:
+        return None
+    sh = vocab.shape(shape)
+    if sh is None:
+        return kind
+    if sh.variant_attr is None:
+        notes.add(DROP, where, f"shape {shape} has no variants; dropped {kind!r}", kind, "")
+        return None
+    va = sh.attribute(sh.variant_attr)
+    if va is None or va.type != "enum" or kind in va.values:
+        return kind
+    fixed = closest(kind, va.values, hints) or va.values[0]
+    notes.add(
+        SYNONYM,
+        where,
+        f"variant {kind!r} of {shape} is not one of {va.values}; written as {fixed}",
+        kind,
+        fixed,
+    )
+    return fixed
+
+
 _TRUE = {"true", "yes"}
 _FALSE = {"false", "no"}
 
 
-def repair_attrs(shape: str, attrs: list[str], where: str, notes: Fixes) -> list[str]:
+def repair_attrs(
+    shape: str,
+    attrs: list[str],
+    where: str,
+    notes: Fixes,
+    hints: dict[str, list[str]] | None = None,
+) -> list[str]:
     """R-code on the attributes of a shape (drop_unknown_optional): a boolean attribute takes a clear yes/no/true/false word
     (any case) and is written true or false; a value that is not clearly boolean, or a whole-number attribute that is not
     a number, is dropped and logged. Everything else is left to the vocabulary check (which re-asks)."""
@@ -180,9 +241,46 @@ def repair_attrs(shape: str, attrs: list[str], where: str, notes: Fixes) -> list
             and not value.strip().lstrip("-").isdigit()
         ):
             notes.add(DROP, where, f"dropped attribute {name}={value!r}: not a whole number", raw)
+        elif sep and spec is not None and spec.type == "enum" and value not in spec.values:
+            fixed = closest(value, spec.values, hints)
+            if fixed:
+                notes.add(
+                    SYNONYM,
+                    where,
+                    f"attribute {name}={value!r} written as {fixed}",
+                    raw,
+                    f"{name}={fixed}",
+                )
+                out.append(f"{name}={fixed}")
+            else:
+                notes.add(
+                    DROP,
+                    where,
+                    f"dropped attribute {name}={value!r}: not one of {spec.values}",
+                    raw,
+                )
+        elif sep and spec is not None and spec.type == "ref" and not value.strip():
+            notes.add(DROP, where, f"dropped attribute {name}: it needs a reference", raw)
+        elif not sep or spec is None:
+            notes.add(
+                DROP,
+                where,
+                f"dropped attribute {raw!r}: the shape {shape} has no such attribute",
+                raw,
+            )
         else:
             out.append(raw)
     return out
+
+
+def normalise_key(key: str, widget_suffixes: tuple[str, ...]) -> str:
+    """R-code on a key: lower snake case, and a trailing widget or trigger word is removed (a key names a meaning)."""
+    k = slug(key, fallback="item")
+    for suf in widget_suffixes:
+        if k.endswith(suf) and len(k) > len(suf):
+            k = k[: -len(suf)]
+            break
+    return k.strip("_") or "item"
 
 
 def split_guards(
@@ -211,13 +309,6 @@ def split_guards(
     return guards, plain
 
 
-def _check_key(key: str, where: str, errors: list[str]) -> None:
-    if not is_valid_key(key):
-        errors.append(f"{where}: key {key!r} must be lower snake case")
-    elif key_names_a_widget(key):
-        errors.append(f"{where}: key {key!r} ends in a widget or trigger word; name the meaning")
-
-
 def _clean(
     text: str | None, where: str, screen_type: str, notes: Fixes, fallback: str | None
 ) -> str | None:
@@ -238,19 +329,63 @@ def _clean(
     return fallback
 
 
-def _region(r: RegionOut, base: Screen, errors: list[str], notes: Fixes) -> Region:
+def _region(
+    r: RegionOut,
+    base: Screen,
+    graph: SpecGraph,
+    errors: list[str],
+    notes: Fixes,
+    hints: dict[str, list[str]],
+) -> Region:
     where = f"{base.id}.{r.key}"
-    _check_key(r.key, where, errors)
     shape = r.shape if r.shape.startswith("other:") else _canon("shape", r.shape)
-    attrs = repair_attrs(shape, r.attrs, where, notes)
-    for p in vocab.check_region_shape(shape, r.shape_kind, attrs):
-        errors.append(f"{where}: {p}")
-    if shape == "collection" and not (r.cardinality or r.maximum):
-        errors.append(
-            f"{where}: a collection needs a cardinality bucket (one, few, many, very_many)"
+    if vocab.shape_status(shape) == "unknown":
+        # R-code: a shape the vocabulary lacks is written other:<name> and goes to the gap list (doc 17 2.2)
+        other = vocab.shapes_file().other_prefix + slug(shape, fallback="shape")
+        notes.add(
+            DROP,
+            where,
+            f"shape {shape!r} is not in the vocabulary; written as {other}",
+            shape,
+            other,
         )
-    if r.cardinality and r.cardinality not in vocab.shapes_file().cardinality_buckets:
-        errors.append(f"{where}: cardinality {r.cardinality!r} is not a bucket")
+        shape = other
+    kind = repair_variant(shape, r.shape_kind, where, notes, hints)
+    attrs = repair_attrs(shape, r.attrs, where, notes, hints)
+    for p in vocab.check_region_shape(shape, kind, attrs):
+        errors.append(f"{where}: {p}")
+    cardinality = r.cardinality
+    if cardinality and cardinality not in vocab.shapes_file().cardinality_buckets:
+        fixed = closest(cardinality, list(vocab.shapes_file().cardinality_buckets), hints)
+        notes.add(
+            SYNONYM if fixed else DROP, where,
+            f"cardinality {cardinality!r} is not a bucket" + (f"; written as {fixed}" if fixed else "; dropped"),
+            cardinality, fixed or "",
+        )  # fmt: skip
+        cardinality = fixed
+    if shape == "collection" and not (cardinality or r.maximum):
+        cardinality = next(
+            (x.cardinality for x in base.regions if x.key == r.key and x.cardinality), "many"
+        )
+        notes.add(
+            DEFAULT,
+            where,
+            f"a collection needs a size bucket; {cardinality} is used",
+            "",
+            cardinality,
+        )
+    binds: list[str] = []
+    for b in r.bind:
+        if b.startswith("OP-"):
+            ok = b in graph.operations
+        else:
+            eid, _, fld = b.partition(".")
+            e = graph.entities.get(eid)
+            ok = bool(e and any(f.key == fld for f in e.fields))
+        if ok:
+            binds.append(b)
+        else:  # an invented field or operation is not a binding
+            notes.add(DROP, where, f"binding {b} names no real field or operation; dropped", b, "")
     what = _clean(
         r.what,
         where,
@@ -262,12 +397,12 @@ def _region(r: RegionOut, base: Screen, errors: list[str], notes: Fixes) -> Regi
         key=r.key,
         what=" ".join((what or "").split()),
         shape=shape,
-        shape_kind=r.shape_kind or None,
+        shape_kind=kind or None,
         attrs=sorted(attrs),
-        bind=list(r.bind),
+        bind=binds,
         importance=r.importance,
         freshness=r.freshness or None,
-        cardinality=r.cardinality or None,
+        cardinality=cardinality or None,
         typical=r.typical,
         maximum=r.maximum,
         live=r.live,
@@ -283,10 +418,16 @@ def _action(
     notes: Fixes,
 ) -> Action:
     where = f"{base.id}.{a.key}"
-    _check_key(a.key, where, errors)
     intent = _canon("intent", a.intent)
     if not vocab.is_known_intent(intent):
-        errors.append(f"{where}: intent {a.intent!r} is not in the closed vocabulary of intents")
+        fixed = _token_match(intent, list(vocab.intents()))
+        if fixed:
+            notes.add(SYNONYM, where, f"intent {a.intent!r} written as {fixed}", a.intent, fixed)
+            intent = fixed
+        else:
+            errors.append(
+                f"{where}: intent {a.intent!r} is not in the closed vocabulary of intents"
+            )
     what = _clean(
         a.what,
         where,
@@ -296,18 +437,35 @@ def _action(
     )
     pre = _clean(a.precondition, f"{where} precondition", base.screen_type, notes, "")
     steps: list[Step] = []
-    for t in a.effect:
-        s = parse_step(t, where, errors)
+    for text in a.effect:
+        tmp: list[str] = []
+        s = parse_step(text, where, tmp)
         if s:
             steps.append(s)
+        else:
+            notes.add(DROP, where, f"effect step {text!r} is not a typed step; dropped", text, "")
     if len(steps) > 3:
-        errors.append(f"{where}: effect has more than three steps")
+        notes.add(
+            DROP,
+            where,
+            f"effect had {len(steps)} steps; the first three kept",
+            str(len(steps)),
+            "3",
+        )
+        steps = steps[:3]
     integ = (
         {i.need_key for i in graph.integrations.values()}
         | {i.id for i in graph.integrations.values()}
         | {i.name for i in graph.integrations.values()}
     )
-    if a.unspecified:
+    unknown_op = [s for s in steps if s.verb == "call" and s.target not in graph.operations]
+    if unknown_op and not a.unspecified:
+        # FN-36: never invent an operation. The action is kept, marked unspecified, and listed at G2 as needs_decision.
+        notes.add(
+            DEFAULT, where, f"{unknown_op[0].target} is not an operation; the action is marked unspecified",
+            unknown_op[0].target or "", "unspecified",
+        )  # fmt: skip
+    if a.unspecified or unknown_op:
         flags.append(
             needs_decision_flag(
                 where,
@@ -316,19 +474,34 @@ def _action(
         )
         steps = []
     else:
+        kept: list[Step] = []
         for s in steps:
-            if s.verb == "call" and s.target not in graph.operations:
-                errors.append(
-                    f"{where}: {s.target} is not an operation; use an operation of the slice or set unspecified"
-                )
-            elif s.verb == "go" and (
+            if s.verb == "go" and (
                 s.target not in graph.screens or graph.screens[s.target or ""].status != "in"
             ):
-                errors.append(f"{where}: go {s.target} is not a live screen")
+                notes.add(
+                    DROP,
+                    where,
+                    f"go {s.target} is not a live screen; the step is dropped",
+                    step_text(s),
+                    "",
+                )
             elif s.verb == "external_flow" and s.target not in integ:
-                errors.append(f"{where}: external flow {s.target} has no integration record")
+                notes.add(
+                    DROP,
+                    where,
+                    f"external flow {s.target} has no integration record; the step is dropped",
+                    step_text(s),
+                    "",
+                )
+            else:
+                kept.append(s)
+        steps = kept
         if not steps:
-            errors.append(f"{where}: an action needs an effect (or unspecified)")
+            steps = [Step(verb="stay")]
+            notes.add(
+                DEFAULT, where, "the action had no valid step; it stays on the screen", "", "stay"
+            )
     guards, plain = split_guards(a.guard, where, errors, notes)
     precondition = "; ".join([p for p in [" ".join((pre or "").split()), *plain] if p])
     return Action(
@@ -341,16 +514,23 @@ def _action(
         guard=guards,
         errors=list(dict.fromkeys(a.errors)),
         flags=sorted(set(a.flags)),
-        unspecified=a.unspecified,
+        unspecified=a.unspecified or bool(unknown_op),
     )
 
 
-def _input(i: InputOut, base: Screen, errors: list[str]) -> Input:
+def _input(i: InputOut, base: Screen, errors: list[str], notes: Fixes) -> Input:
     where = f"{base.id}.{i.key}"
-    _check_key(i.key, where, errors)
     itype = _canon("input_type", i.type)
     if not vocab.is_known_input_type(itype):
-        errors.append(f"{where}: input type {i.type!r} is not a semantic input type")
+        fixed = _token_match(itype, list(vocab.input_types())) or "text"
+        notes.add(
+            SYNONYM,
+            where,
+            f"input type {i.type!r} is not a semantic type; written as {fixed}",
+            i.type,
+            fixed,
+        )
+        itype = fixed
     return Input(
         key=i.key,
         type=itype,
@@ -384,8 +564,9 @@ def _could(
             words = ", ".join(sorted({h.word.lower() for h in hits}))
             notes.add(DROP, where, f"COULD entry dropped: form words ({words})", text, "")
             return None
-    if not c.basis.strip():
-        errors.append(f"{where}: a COULD entry needs a basis")
+    if not c.basis.strip():  # an idea with no basis is dropped (doc 17 1.4)
+        notes.add(DROP, where, "COULD entry dropped: no basis", c.effect, "")
+        return None
     assumed = c.assumed
     m = _FLOW_STEP.search(c.basis)
     if c.basis_kind == "journey_moment":
@@ -394,16 +575,29 @@ def _could(
             next((x for x in flow.stages if x.n == int(m.group(2))), None) if flow and m else None
         )
         if stage is None:
-            errors.append(
-                f"{where}: basis must name a journey moment as 'FLW-x step n' that exists in the slice"
+            notes.add(
+                DROP,
+                where,
+                f"COULD entry dropped: its basis {c.basis!r} is not a journey moment that exists",
+                c.basis,
+                "",
             )
-        elif stage.emotion_assumed:
+            return None
+        if stage.emotion_assumed:
             assumed = True  # an assumed basis makes the entry assumed
-    if c.motion:
-        if c.motion not in vocab.motion_intents():
-            errors.append(f"{where}: motion {c.motion!r} is not a motion intent")
-        elif vocab.is_essential_motion(c.motion) and not c.reduced_motion_alt:
-            errors.append(f"{where}: essential motion needs a non-motion alternative")
+    motion, alt = c.motion or None, c.reduced_motion_alt or None
+    if motion and motion not in vocab.motion_intents():
+        notes.add(DROP, where, f"motion {motion!r} is not a motion intent; dropped", motion, "")
+        motion, alt = None, None
+    elif motion and vocab.is_essential_motion(motion) and not alt:
+        notes.add(
+            DROP,
+            where,
+            f"essential motion {motion} has no non-motion alternative; the motion is dropped",
+            motion,
+            "",
+        )
+        motion = None
     return Could(
         id=could_id(base.id, k),
         kind=c.kind,
@@ -412,8 +606,8 @@ def _could(
         basis=" ".join(c.basis.split()),
         basis_kind=c.basis_kind,
         assumed=assumed,
-        motion=c.motion or None,
-        reduced_motion_alt=c.reduced_motion_alt or None,
+        motion=motion,
+        reduced_motion_alt=alt,
         tier=c.tier,
     )
 
@@ -575,34 +769,60 @@ def build_screen(
     if not given_regions and slot and slot.regions:
         built.notes.add(DEFAULT, sid, "no region was given; the baseline regions are used", "", sid)
         given_regions = list(slot.regions)
-    regions = [_region(r, base, errors, built.notes) for r in given_regions]
-    actions = [_action(a, base, graph, errors, built.flags, built.notes) for a in mine(out.actions)]
-    inputs = [_input(i, base, errors) for i in mine(out.inputs)]
+    given_actions, given_inputs = mine(out.actions), mine(out.inputs)
+    given_texts = mine(out.texts)
+    suffixes = tuple(cfg.checks.widget_key_suffixes)
+    keymap: dict[tuple[str, str], str] = {}
+
+    def renamed(records: list[Any], target: str) -> list[Any]:
+        """R-code: keys are lower snake case and name a meaning (never a widget word), and are unique on the card."""
+        seen: set[str] = set()
+        out_: list[Any] = []
+        for rec in records:
+            new = (
+                rec.key
+                if is_valid_key(rec.key) and not key_names_a_widget(rec.key)
+                else normalise_key(rec.key, suffixes)
+            )
+            first, n = new, 2
+            while new in seen:
+                new, n = f"{first}_{n}", n + 1
+            seen.add(new)
+            if new != rec.key:
+                built.notes.add(
+                    SYNONYM,
+                    f"{sid}.{rec.key}",
+                    f"{target} key {rec.key!r} written as {new}",
+                    rec.key,
+                    new,
+                )
+                keymap.setdefault((target, rec.key), new)
+                rec = rec.model_copy(update={"key": new})
+            out_.append(rec)
+        return out_
+
+    given_regions = renamed(given_regions, "region")
+    given_actions = renamed(given_actions, "action")
+    given_inputs = renamed(given_inputs, "input")
+    given_texts = [
+        c.model_copy(update={"ref": keymap.get((c.target, c.ref), c.ref)}) for c in given_texts
+    ]
+    regions = [
+        _region(r, base, graph, errors, built.notes, rules.variant_hints) for r in given_regions
+    ]
+    actions = [_action(a, base, graph, errors, built.flags, built.notes) for a in given_actions]
+    inputs = [_input(i, base, errors, built.notes) for i in given_inputs]
     if not regions:
         errors.append(
             f"{sid}: a card needs at least one region"
         )  # nothing in the baseline either: a real defect
-    for what, names in (
-        ("region", [r.key for r in regions]),
-        ("action", [a.key for a in actions]),
-        ("input", [i.key for i in inputs]),
-    ):
-        for k in sorted({k for k in names if names.count(k) > 1}):
-            errors.append(f"{sid}: duplicate {what} key {k}")
-    for r in regions:
-        for b in r.bind:
-            if b.startswith("OP-"):
-                ok = b in graph.operations
-            else:
-                eid, _, fld = b.partition(".")
-                e = graph.entities.get(eid)
-                ok = bool(e and any(f.key == fld for f in e.fields))
-            if not ok:
-                errors.append(f"{sid}.{r.key}: binding {b} names no real field or operation")
     # purpose, route, guards
     purpose = first_sentences(card.purpose, 2)
     if not purpose:
-        errors.append(f"{sid}: the purpose is empty")
+        purpose = base.purpose
+        built.notes.add(
+            DEFAULT, sid, "the purpose was empty; the baseline purpose is used", "", purpose
+        )
     purpose = (
         _clean(purpose, f"{sid}.purpose", base.screen_type, built.notes, base.purpose) or purpose
     )
@@ -612,7 +832,20 @@ def build_screen(
     route = base.route.model_copy(deep=True)
     route_plain: list[str] = []
     if card.params:
-        route.params = [p for t in card.params if (p := parse_param(t, sid, errors))]
+        route.params = []
+        for text in card.params:
+            tmp: list[str] = []
+            p = parse_param(text, sid, tmp)
+            if p:
+                route.params.append(p)
+            else:
+                built.notes.add(
+                    DROP,
+                    sid,
+                    f"route parameter {text!r} is not name:type:source; dropped",
+                    text,
+                    "",
+                )
         for p in route.params:
             if f":{p.name}" not in route.path:
                 route.path = route.path.rstrip("/") + f"/:{p.name}"
@@ -628,23 +861,39 @@ def build_screen(
     # analytics, mock references
     analytics = []
     for ev in card.analytics:
-        if _EVENT.match(ev) and not key_names_a_widget(ev):
-            analytics.append(ev)
+        fixed = slug(ev, fallback="")
+        if fixed and not key_names_a_widget(fixed):
+            if fixed != ev:
+                built.notes.add(
+                    SYNONYM, sid, f"analytics event {ev!r} written as {fixed}", ev, fixed
+                )
+            analytics.append(fixed)
         else:
-            errors.append(
-                f"{sid}: analytics event {ev!r} must be lower snake case, named for what happened"
+            built.notes.add(
+                DROP, sid, f"analytics event {ev!r} is not a plain event name; dropped", ev, ""
             )
-    slot = next((s for s in inp.slots if s.id == sid), None)
     options = set(slot.mock_state_options) if slot else set()
     profiles_ok = set(vocab.mock_profiles())
+    mock_states = []
     for ms in card.mock_states:
         if options and ms not in options:
-            errors.append(
-                f"{sid}: mock state {ms!r} is not an entity and lifecycle state of this screen"
+            built.notes.add(
+                DROP,
+                sid,
+                f"mock state {ms!r} is not an entity and lifecycle state of this screen; dropped",
+                ms,
+                "",
             )
+        else:
+            mock_states.append(ms)
+    mock_profiles = []
     for mp in card.mock_profiles:
         if mp not in profiles_ok:
-            errors.append(f"{sid}: mock profile {mp!r} is not one of {sorted(profiles_ok)}")
+            built.notes.add(
+                DROP, sid, f"mock profile {mp!r} is not a mock profile; dropped", mp, ""
+            )
+        else:
+            mock_profiles.append(mp)
     # states, acceptance
     states, lib_keys, lib_copy = _states(base, profile)
     extra_cap = rules.acceptance_extra_max.get(profile, 1)
@@ -671,22 +920,23 @@ def build_screen(
         cfg.profiles.could_cap_per_screen,
         slot.could_max if slot else cfg.profiles.could_cap_per_screen,
     )
-    if len(coulds) > cap:
+    could = [
+        c2
+        for k, c in enumerate(coulds)
+        if (c2 := _could(c, k + 1, base, graph, inp, errors, built.notes)) is not None
+    ]
+    if len(could) > cap:
         built.notes.add(
             DROP,
             sid,
-            f"{len(coulds)} COULD entries, the first {cap} kept",
-            str(len(coulds)),
+            f"{len(could)} COULD entries, the first {cap} kept",
+            str(len(could)),
             str(cap),
         )
-    could = [
-        c2
-        for k, c in enumerate(coulds[:cap])
-        if (c2 := _could(c, k + 1, base, graph, inp, errors, built.notes)) is not None
-    ]
+        could = could[:cap]
     # copy: keys minted by code, text from the model
     keys: dict[str, str] = {}
-    texts = {(c.target, c.ref): " ".join(c.text.split()) for c in mine(out.texts) if c.text.strip()}
+    texts = {(c.target, c.ref): " ".join(c.text.split()) for c in given_texts if c.text.strip()}
     need = [("title", "title", namespaced_copy_key(sid, "title"))]
     need += [("action", a.key, namespaced_copy_key(sid, a.key)) for a in actions]
     need += [("input", i.key, namespaced_copy_key(sid, i.key)) for i in inputs]
@@ -733,8 +983,8 @@ def build_screen(
     s.accessibility = " ".join(accessibility.split())
     s.usually = usually
     s.could = could
-    s.mock_profiles = sorted(set(card.mock_profiles))
-    s.hero_refs = sorted(set(card.mock_states))
+    s.mock_profiles = sorted(set(mock_profiles))
+    s.hero_refs = sorted(set(mock_states))
     s.confirm = list(dict.fromkeys(card.confirm))
     s.copy_keys = sorted(set(lib_keys) | set(keys))
     if not any(p.kind == "model" and p.ref == PROMPT_REF for p in s.provenance):

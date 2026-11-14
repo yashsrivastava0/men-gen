@@ -45,6 +45,7 @@ class LaneRules(_M):
     slots_delight_max: int
     slots_moments_max: int
     region_label_copy: bool
+    variant_hints: dict[str, list[str]]
     usually_item_kinds: list[str]
     usually_applies_kinds: list[str]
     delight_by_screen_type: dict[str, list[str]]
