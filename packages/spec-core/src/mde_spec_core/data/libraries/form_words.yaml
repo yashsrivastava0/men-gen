@@ -5,11 +5,14 @@
 # Widget key suffixes for identifiers live in spec-config.yaml (checks.widget_key_suffixes), not here.
 version: 1
 deny:
-  position: [top, bottom, left, right, above, below, beside, sticky, fixed, floating, sidebar]
+  # Tuned on live model output (2026-11-14): single words such as right, left, top, bottom, above, below, fixed, green, orange
+  # are ordinary prose in app text ("the right to cancel", "green chillies"), so ambiguous words are matched only as the
+  # layout phrases they form. Unambiguous words stay single (sticky, floating, sidebar).
+  position: [sticky, floating, sidebar, "above the fold", "at the top", "at the bottom", "top of the screen", "bottom of the screen", "top of the page", "bottom of the page", "on the left", "on the right", "left side", "right side", "top left", "top right", "bottom left", "bottom right", "side by side", "fixed header", "fixed footer"]
   widget: [button, buttons, "tab bar", drawer, carousel, modal, "bottom sheet", toast, snackbar, banner, chip, chips, badge, skeleton, spinner, accordion, dropdown, toggle, slider, popup, popover, tooltip, hamburger, checkbox, "radio button"]
   unit: [px, pt, dp, rem, columns, pixels]
   motion: [fade, fades, fading, slide, slides, sliding, bounce, bounces, bouncing, "animat*"]
-  colour: [red, orange, yellow, green, blue, purple, pink, brown, black, white, grey, gray, teal, cyan, magenta, indigo, violet, gold, silver, navy, beige, maroon]
+  colour: ["red text", "blue text", "green text", "red background", "blue background", "green background", "grey background", "white background", "black background", "colour palette", "colour scheme", gradient]
 hex_pattern: "#[0-9a-fA-F]{3,8}\\b"
 # Content uses that are allowed (doc 15 2.2): the phrase is removed before scanning.
 allow:
