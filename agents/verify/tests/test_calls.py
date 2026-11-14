@@ -219,7 +219,21 @@ def test_canary_output_is_checked_for_every_criterion_and_the_fallback_is_the_co
         assumptions=[],
         acceptance_coverage=out.acceptance_coverage[:1],
     )
-    assert any("missing the criterion" in e for e in canary_validate(inp, missing))
+    # a criterion the reader did not judge is not a re-ask: the port records it as "not judged" (never as satisfiable)
+    assert canary_validate(inp, missing) == []
+    from mde_verify_agent.port import _coverage
+
+    cover = _coverage(["C1", "C2"], list(missing.acceptance_coverage))
+    assert [c.criterion for c in cover] == ["C1", "C2"] and cover[1].satisfiable is False
+    assert cover[1].how == "not judged by the reader"
+    # a model that cuts or rewords a long criterion is mapped back to the listed one by code
+    from mde_verify_agent.digest import confirm_item_id, match_criterion
+
+    long = "GIVEN a signed-in rider WHEN they tap pay THEN the booking is confirmed"
+    assert match_criterion("given a signed in rider when they tap pay", [long, "C2"]) == long
+    assert match_criterion("something else entirely", [long, "C2"]) is None
+    assert confirm_item_id("RI-086 automated invoice processing", ["RI-086"]) == "RI-086"
+    assert confirm_item_id("RI-999 other", ["RI-086"]) is None
     fb = canary_fallback(inp)
     assert (
         fb.outline == [] and fb.blocking_questions == out.blocking_questions

@@ -71,6 +71,22 @@ def _model_defects(findings: Iterable[Any]) -> list[Defect]:
     return out
 
 
+def _coverage(wanted: list[str], judged: list[Any]) -> list[AcceptanceCover]:
+    """Each listed criterion once, in list order: the reader's judgement where it gave one (its wording mapped back to
+    the list by code), else 'not judged' (never silently satisfiable)."""
+    by: dict[str, Any] = {}
+    for c in judged:
+        m = digest.match_criterion(c.criterion, wanted)
+        if m is not None:
+            by.setdefault(m, c)
+    return [
+        AcceptanceCover(criterion=w, satisfiable=by[w].satisfiable, how=by[w].how)
+        if w in by
+        else AcceptanceCover(criterion=w, satisfiable=False, how="not judged by the reader")
+        for w in wanted
+    ]
+
+
 class VerifyAgent:
     """Implements `VerifyPort`. One instance per run; it keeps the round ledger (Spec may pass its own in the inputs,
     for example one restored from a checkpoint) and the running cost of its calls."""
@@ -184,10 +200,7 @@ class VerifyAgent:
             outline=list(res.outline),
             blocking_questions=list(res.blocking_questions),
             assumptions=list(res.assumptions),
-            acceptance_coverage=[
-                AcceptanceCover(criterion=c.criterion, satisfiable=c.satisfiable, how=c.how)
-                for c in res.acceptance_coverage
-            ],
+            acceptance_coverage=_coverage(cin.criteria, res.acceptance_coverage),
             run_index=run_index,
             used_fallback=out.used_fallback,
             flagged=out.flagged or out.used_fallback,
@@ -234,7 +247,12 @@ class VerifyAgent:
             out = await self._ask(FINAL_SPEC, fin, node_key="final_critic", step="verify.final")
             res: FinalOut = out.output
             model = _model_defects(res.findings)
+            confirm_ids = [str(c["id"]) for c in confirm]
             for m in res.confirm_moves:
+                item = digest.confirm_item_id(m.item, confirm_ids)
+                if item is None:
+                    continue
+                m = m.model_copy(update={"item": item})
                 model.append(
                     Defect(
                         id=f"M-confirm:{m.item}:{m.to_rank}",

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from mde_verify_agent.calls.canary.schema import CanaryIn, CanaryOut
+from mde_verify_agent.digest import match_criterion
 
 MAX_QUESTIONS = 12
 MAX_OUTLINE = 40
@@ -16,15 +17,17 @@ def validate(inp: CanaryIn, out: CanaryOut) -> list[str]:
         )
     if len(out.outline) > MAX_OUTLINE:
         errors.append(f"outline longer than {MAX_OUTLINE} steps")
-    wanted = set(inp.criteria)
-    got = [c.criterion for c in out.acceptance_coverage]
-    for c in got:
-        if c not in wanted:
+    wanted = list(inp.criteria)
+    got: list[str] = []
+    for c in out.acceptance_coverage:
+        m = match_criterion(c.criterion, wanted)
+        if m is None:
             errors.append(
-                f"acceptance_coverage names a criterion that is not in the list: {c[:80]!r}"
+                f"acceptance_coverage names a criterion that is not in the list: {c.criterion[:80]!r}"
             )
-    for c in sorted(wanted - set(got)):
-        errors.append(f"acceptance_coverage is missing the criterion {c[:80]!r}")
+        else:
+            got.append(m)
+    # A criterion the reader did not judge is NOT a reason to re-ask: the port records it as not judged.
     if len(got) != len(set(got)):
         errors.append("acceptance_coverage repeats a criterion")
     for c in out.acceptance_coverage:

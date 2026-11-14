@@ -38,6 +38,44 @@ def chunk_lines(lines: Iterable[str], limit: int = CHUNK_CHARS) -> list[str]:
     return out
 
 
+def _norm(text: str) -> str:
+    return " ".join(re.sub(r"[^a-z0-9 ]+", " ", (text or "").lower()).split())
+
+
+def match_criterion(text: str, wanted: Sequence[str]) -> str | None:
+    """The listed criterion a model's wording stands for (exact, then same words, then a clear prefix or near match).
+    Real models paraphrase or cut a long GIVEN WHEN THEN line; code maps it back instead of re-asking."""
+    if text in wanted:
+        return text
+    n = _norm(text)
+    by_norm = {_norm(w): w for w in wanted}
+    if n in by_norm:
+        return by_norm[n]
+    cands = [w for k, w in by_norm.items() if n and (k.startswith(n) or n.startswith(k))]
+    if len(cands) == 1:
+        return cands[0]
+    import difflib
+
+    close = difflib.get_close_matches(n, list(by_norm), n=2, cutoff=0.85)
+    if len(close) == 1 or (
+        len(close) == 2
+        and difflib.SequenceMatcher(None, n, close[0]).ratio()
+        - difflib.SequenceMatcher(None, n, close[1]).ratio()
+        > 0.05
+    ):
+        return by_norm[close[0]]
+    return None
+
+
+def confirm_item_id(item: str, ids: Iterable[str]) -> str | None:
+    """A confirm-list item named by its id, or by its id followed by its text (what real models write)."""
+    known = set(ids)
+    if item in known:
+        return item
+    head = item.strip().split(None, 1)[0] if item.strip() else ""
+    return head if head in known else None
+
+
 def lines_of(chunks: Iterable[str]) -> list[str]:
     return [ln for c in chunks for ln in c.split("\n") if ln.strip()]
 
