@@ -4,6 +4,8 @@ Spec turns an approved Compass Brief plus Research into one static folder of fil
 
 Money: hard cap USD 5.00, tripwire 4.50, set in the launch environment. Nothing is Proven until its gate passes.
 
+Fresh session on another machine: start with [HANDOFF](HANDOFF.md) (state, corrections, pending list, how to run, lessons).
+
 ## Live results so far
 
 Eight live runs are saved in [outputs/live-2026-11-14](outputs/live-2026-11-14/). The table shows one run per size. Each row is a single run. A single run decides nothing, and none of these is a scored proof gate (BUILD-PLAN, "Proof gates"). Figures are copied from the report files.
