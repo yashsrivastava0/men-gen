@@ -1,0 +1,180 @@
+{
+ "banners": [
+  {
+   "code": "weak_route",
+   "message": "this route needed many repairs for step screens (8 of 18 nodes); consider a stronger route for it"
+  }
+ ],
+ "by_kind": {
+  "BEHAV": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1613,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 6606,
+   "tokens_out": 1903
+  },
+  "COPY-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 6175,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 11114,
+   "tokens_out": 10125
+  },
+  "DSGN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 1147,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4678,
+   "tokens_out": 1357
+  },
+  "G2-SUMMARY": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2366,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 2838,
+   "tokens_out": 4164
+  },
+  "GLOSS-L": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2535,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 4487,
+   "tokens_out": 4171
+  },
+  "MOCK-HERO": {
+   "calls": 2,
+   "clean": 2,
+   "cost_micros": 3568,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 10148,
+   "tokens_out": 5103
+  },
+  "PROD-INTEG": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 4066,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 32126,
+   "tokens_out": 1705
+  },
+  "PROD-JOURNEYS": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 5447,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 29540,
+   "tokens_out": 4986
+  },
+  "PROD-MODULE": {
+   "calls": 4,
+   "clean": 3,
+   "cost_micros": 24167,
+   "fallback": 0,
+   "first_errors": [
+    "story NEW-switch_language: cite an in feature or a policy id of the sheet",
+    "story NEW-sign_in_phone: cite an in feature or a policy id of the sheet"
+   ],
+   "first_try_pass": 0.75,
+   "repair_rate": 0.25,
+   "repaired": 1,
+   "tokens_in": 109733,
+   "tokens_out": 26379
+  },
+  "SCRN": {
+   "calls": 3,
+   "clean": 1,
+   "cost_micros": 30054,
+   "fallback": 1,
+   "first_errors": [
+    "SCR-004.progress_booking: attribute 'exits' of 'sequence' must be true or false",
+    "SCR-004.progress_class: attribute 'exits' of 'sequence' must be true or false",
+    "SCR-008.pay: guard 'method_chosen' must be signed_in, role_has_access, 'field_equals ENT-x.field value' or 'field_in ENT-x.field a|b'",
+    "SCR-008.pay: guard 'amount_due_present' must be signed_in, role_has_access, 'field_equals ENT-x.field value' or 'field_in ENT-x.field a|b'"
+   ],
+   "first_try_pass": 0.333,
+   "reasons": [
+    "SCR-004.progress_booking: attribute 'exits' of 'sequence' must be true or false; SCR-004.progress_class: attribute 'exits' of 'sequence' must be true or false"
+   ],
+   "repair_rate": 0.667,
+   "repaired": 2,
+   "tokens_in": 105257,
+   "tokens_out": 39048
+  },
+  "SPEC-PLAN": {
+   "calls": 1,
+   "clean": 1,
+   "cost_micros": 2250,
+   "fallback": 0,
+   "first_try_pass": 1.0,
+   "repair_rate": 0.0,
+   "repaired": 0,
+   "tokens_in": 9732,
+   "tokens_out": 2552
+  }
+ },
+ "calls_total": 17,
+ "cost_usd": 0.0834,
+ "events": 80,
+ "offline": false,
+ "pack": {
+  "checked_by": [
+   "self_check"
+  ],
+  "content_hash": "9a7162ad8858aff78f9613933ec1a84a4821de806a532147a5dc151cd060be9a",
+  "critic_vendor": null,
+  "files": 67,
+  "tokens": 82689
+ },
+ "partial_reason": null,
+ "profile": "compact",
+ "rcode_counts": {
+  "downgrade_locked_to_default": 0,
+  "drop_unknown_optional": 2,
+  "exact_synonym": 0,
+  "instantiate_library_default": 0,
+  "mint_missing_id": 0,
+  "sort_bytes": 0
+ },
+ "run_id": "run_01M7CP8B4CX1W9CP22ZBWKTGB6",
+ "status": "approved",
+ "tasks": {
+  "budget": 28000,
+  "count": 5,
+  "max_read_tokens": 18461,
+  "over_budget": 0
+ },
+ "validators": {
+  "by_severity": null,
+  "by_validator": null,
+  "ok": true
+ }
+}
