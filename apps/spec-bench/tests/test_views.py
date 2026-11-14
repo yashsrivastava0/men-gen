@@ -313,6 +313,8 @@ out({ text: alert && flat(alert), nav: v.nav, stillOn: !byFk(v.box, "start").dis
     )
     assert "USD 4.80" in r["text"] and "Choose a smaller input or run it offline." in r["text"]
     assert r["nav"] == [] and r["stillOn"] is True
+
+
 # ------------------------------------------------------------------------------------------------ 2 preview
 def test_preview_shows_the_cost_range_and_refuses_in_words_when_it_does_not_fit() -> None:
     r = node(
@@ -479,6 +481,34 @@ out({ text, tiles, tables, resumeOn, stopOn, final, streams: v.log.filter((c) =>
     assert r["streams"] == ["/api/runs/run_01/events?after=0", "/api/runs/run_01/events?after=9"]
     assert r["last"] == 12 and r["resumed"] == 1
     assert "Approved" in r["final"] and "#/handoff/run_01/sim" in r["links"]
+
+
+def test_run_screen_opened_late_shows_every_event_even_when_the_snapshot_already_counts_them() -> (
+    None
+):
+    """Found in a real browser: the page took the snapshot's last_seq as 'already folded' and then dropped every replayed
+    event as a duplicate, so a run opened after it had finished showed no steps, calls or checks at all."""
+    r = node(
+        """
+const frames = [
+  ev(1, "run.started"), ev(2, "step.started", {}, { step: "plan" }),
+  ev(3, "call.finished", { kind: "SPEC-PLAN", tokens: { in: 700, out: 300 }, cost_micros: 0 }),
+  ev(4, "step.finished", {}, { step: "plan" }), ev(5, "gate.opened", { gate: "g2" }),
+].map(frame);
+const routes = {
+  "GET /api/runs/run_01": { status: "awaiting_g2", step: "done", spend_micros: 0, last_seq: 5, gates: { g15: "closed", g2: "open" }, offline: true },
+  "GET /api/runs/run_01/events": { __stream: frames },
+};
+const v = await mountView("run", { name: "run", id: "run_01" }, routes);
+await until(() => v.handle.state.received === 5);
+await settle();
+v.handle.unmount(); // the stream has no terminal event here, so stop the feed or it would reconnect for ever
+out({ received: v.handle.state.received, steps: v.handle.state.steps.map((s) => [s.name, s.status]), calls: v.handle.state.calls.count, last: v.handle.state.lastSeq, text: flat(v.box) });
+"""
+    )
+    assert r["received"] == 5 and r["calls"] == 1 and r["last"] == 5
+    assert r["steps"] == [["plan", "done"]]
+    assert "Model calls1" in r["text"] and "Waiting for the first step" not in r["text"]
 
 
 def test_run_screen_opens_the_gates_and_stops_the_run() -> None:
@@ -746,7 +776,7 @@ HANDOFF = """
 const TASKS = { waves: [{ wave: "W0", tasks: [{ id: "t1", title: "Foundation", tokens: 9000 }, { id: "t2", title: "Tokens", tokens: 4000 }] }, { wave: "W1", tasks: [{ id: "t3", title: "Home screen", tokens: 12000 }, { id: "t4", title: "Class screen", tokens: 11000 }, { id: "t5", title: "Account", tokens: 10000 }] }] };
 const hoRoutes = (extra) => Object.assign({
   "GET /api/profiles": PROFILES, "GET /api/runs/run_01/views/g2": G2(), "GET /api/runs/run_01/pack/tasks": TASKS,
-  "GET /api/runs": { runs: [{ id: "run_01", status: "approved", spend_micros: 1200000, created_at: "2026-11-14T09:00:00+00:00", pack_hash: "abcdef1234567890" }, { id: "run_02", status: "partial", spend_micros: 300000, created_at: "2026-11-14T10:00:00+00:00" }] },
+  "GET /api/runs": { runs: [{ id: "run_01", status: "approved", spend_micros: 1200000, created_at: "2026-11-14T09:00:00+00:00", pack_hash: "abcdef1234567890" }, { id: "run_02", status: "partial", spend_micros: 300000, created_at: "2026-11-14T10:00:00+00:00", pack_hash: "99887766aabbccdd" }] },
 }, extra || {});
 const env0 = (extra) => Object.assign({ runId: "run_01", consumer: "haiku", mock: "typical", extra: null, profiles: [] }, extra || {});
 """
@@ -1094,6 +1124,36 @@ out({ treeText, pre, taskRows, tokens: flat(tokens.box), checkText: flat(checks.
     )
     assert len(r["hist"]) == 2 and r["hist"][0][0] == "run_02"  # newest first
     assert r["histLinks"] == ["#/handoff/run_01/diff/run_02"]
+
+
+def test_compare_starts_from_a_run_that_has_a_pack_and_never_asks_for_a_diff_with_one_that_has_none() -> (
+    None
+):
+    """Found in a real browser: the newest run in the list had no pack, so the Compare tab asked the app for a diff
+    that could only fail (a failed request in the browser's console)."""
+    r = node(
+        HANDOFF
+        + """
+const routes = hoRoutes({
+  "GET /api/runs": { runs: [
+    { id: "run_01", status: "approved", created_at: "2026-11-14T09:00:00+00:00", pack_hash: "abcdef1234567890" },
+    { id: "run_03", status: "paused_g15", created_at: "2026-11-14T11:00:00+00:00" },
+    { id: "run_02", status: "approved", created_at: "2026-11-14T10:00:00+00:00", pack_hash: "99887766aabbccdd" },
+  ] },
+  "GET /api/runs/run_01/diff/run_02": { files: [{ path: "screens/home.md", status: "changed" }] },
+});
+const d = await mountView("handoff_pack", { env: env0(), tab: "diff" }, routes);
+await until(() => /files? differ/.test(flat(d.box)));
+const labels = all(byFk(d.box, "diff-other"), (n) => n.tag === "option").map(flat);
+const asked = d.log.filter((c) => c.url.includes("/diff/")).map((c) => c.url);
+await byFk(d.box, "diff-other").change("run_03");
+await settle();
+out({ labels, asked, after: flat(d.box), askedAfter: d.log.filter((c) => c.url.includes("/diff/")).map((c) => c.url) });
+"""
+    )
+    assert r["asked"] == ["/api/runs/run_01/diff/run_02"]
+    assert any("run_03" in x and "no pack yet" in x for x in r["labels"])
+    assert "has no pack yet" in r["after"] and r["askedAfter"] == r["asked"]
 
 
 # ------------------------------------------------------------------------------------------------ money page and history

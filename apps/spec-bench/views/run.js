@@ -40,7 +40,12 @@ export function mount(root, ctx, route) {
 
   async function loadSnapshot() {
     snap = (await ctx.api.get(ctx.api.runPath(id))) || {};
+    // The steps, calls and checks are folded from the events, and the feed replays them from the number this page
+    // has folded so far. The snapshot's own last_seq must not move that number, or a page opened on a run that already
+    // has events would count every one of them as seen and show an empty run (found in a real browser).
+    const folded = state.lastSeq;
     state = applySnapshot(snap, state);
+    state.lastSeq = folded;
   }
   /** An event was missing: take the snapshot again and read the log from the start (the folds are cheap). */
   async function resync() {

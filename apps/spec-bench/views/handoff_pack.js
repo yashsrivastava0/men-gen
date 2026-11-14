@@ -149,12 +149,19 @@ export function mountTab(root, ctx, env, tabId) {
     try {
       const runs = (await loadRuns()).filter((r) => r.id !== env.runId);
       if (gone) return;
-      let other = env.extra && runs.some((r) => r.id === env.extra) ? env.extra : runs.length ? runs[0].id : "";
+      // a run with no pack yet has nothing to compare: start from one that has a pack (found in a real browser: the first
+      // run in the list had none, and the page showed a failed request in the browser's console)
+      let other = env.extra && runs.some((r) => r.id === env.extra) ? env.extra : (runs.find((r) => r.hash) || runs[0] || { id: "" }).id;
       const out = h("div", null);
-      const pick = h("select", { class: "text-input", "data-fk": "diff-other", onchange: (e) => { other = e.target.value; show(); } }, runs.map((r) => h("option", { value: r.id, selected: r.id === other }, r.id + (r.hash ? " (" + r.hash.slice(0, 8) + ")" : ""))));
+      const pick = h("select", { class: "text-input", "data-fk": "diff-other", onchange: (e) => { other = e.target.value; show(); } }, runs.map((r) => h("option", { value: r.id, selected: r.id === other }, r.id + (r.hash ? " (" + r.hash.slice(0, 8) + ")" : " (no pack yet)"))));
       async function show() {
         if (!other) {
           setKids(out, banner("There is no other run to compare with yet.", "info"));
+          return;
+        }
+        const chosen = runs.find((r) => r.id === other);
+        if (chosen && !chosen.hash) {
+          setKids(out, banner("That run has no pack yet, so there is nothing to compare. A run has a pack once it reaches the spec review (G2).", "info"));
           return;
         }
         setKids(out, loading());
