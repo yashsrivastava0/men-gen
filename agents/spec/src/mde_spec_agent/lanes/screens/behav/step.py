@@ -25,6 +25,7 @@ from mde_spec_agent.lanes.screens.common import (
     degraded_flag,
     facts_text,
     glossary_block,
+    log_rcode,
 )
 from mde_spec_agent.run.context import RunContext
 from mde_spec_agent.run.patch import Patch, node_patch
@@ -160,18 +161,22 @@ async def behav_step(ctx: RunContext) -> None:
         )
         nodes: list[Behavior] = []
         flags: list[dict[str, Any]] = []
+        rcode: list[dict[str, str]] = []
         for names, res in results:
-            repaired, _log = repair_basis(make_input(names), res.output)
+            repaired, log = repair_basis(make_input(names), res.output)
+            rcode += log
             ns = behaviour_nodes(snap, repaired, flagged=res.flagged, cats=by_name)
             nodes += ns
             if res.flagged:
                 flags += [degraded_flag("behav", n.id, res.reason or "fallback") for n in ns]
         patch = node_patch("behaviors", nodes, replace=True)
         patch["flags"] = flags
+        patch["rcode"] = rcode
         return patch
 
     patch = await ctx.batch("behav", "behav-000", versions, produce)
     ctx.apply(patch)
     ctx.flags.extend(patch.get("flags", []))
+    log_rcode(ctx, patch.get("rcode", []))
     rcode.instantiate_behaviors(ctx.graph, facts_set, ctx.rcode)  # a library category still missing
     ctx.emit("notice", what="behav.done", step="behav", categories=len(cats))

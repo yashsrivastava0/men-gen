@@ -224,4 +224,4 @@ def test_repair_keeps_a_behaviour_only_if_something_still_grounds_it():
     assert [b.category for b in fixed.behaviors] == ["state", "offline"]
     assert fixed.behaviors[0].basis == [] and fixed.behaviors[0].assumed
     assert fixed.behaviors[1].basis == ["ENT-006"] and not fixed.behaviors[1].assumed
-    assert any("removed" in x for x in log)
+    assert any("removed" in x["what"] for x in log)

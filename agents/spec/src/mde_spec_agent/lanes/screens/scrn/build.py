@@ -51,13 +51,34 @@ _EVENT = re.compile(r"^[a-z][a-z0-9_]*$")
 PROMPT_REF = "spec.scrn"
 
 
+class Fixes(
+    list
+):  # list[str]: the plain log lines; `rows` are the same facts for the run's R-code log
+    """Mechanical repairs made by code (R-code, doc 18 3.2). Each is logged word for word and counted at G2; none is silent."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.rows: list[dict[str, str]] = []
+
+    def add(self, kind: str, node: str, what: str, before: str = "", after: str = "") -> None:
+        self.append(f"{node}: {what}")
+        self.rows.append(
+            {"kind": kind, "node": node, "what": what, "before": str(before), "after": str(after)}
+        )
+
+
+DROP = "drop_unknown_optional"
+SYNONYM = "exact_synonym"
+DEFAULT = "instantiate_library_default"
+
+
 @dataclass
 class Built:
     screens: dict[str, Screen] = field(default_factory=dict)
     copy: dict[str, str] = field(default_factory=dict)  # source-language text by key
     errors: list[str] = field(default_factory=list)
     flags: list[dict[str, Any]] = field(default_factory=list)
-    notes: list[str] = field(default_factory=list)
+    notes: Fixes = field(default_factory=Fixes)
 
 
 # ---------------------------------------------------------------- parsing the typed strings
@@ -122,7 +143,7 @@ _TRUE = {"true", "yes"}
 _FALSE = {"false", "no"}
 
 
-def repair_attrs(shape: str, attrs: list[str], where: str, notes: list[str]) -> list[str]:
+def repair_attrs(shape: str, attrs: list[str], where: str, notes: Fixes) -> list[str]:
     """R-code on the attributes of a shape (drop_unknown_optional): a boolean attribute takes a clear yes/no/true/false word
     (any case) and is written true or false; a value that is not clearly boolean, or a whole-number attribute that is not
     a number, is dropped and logged. Everything else is left to the vocabulary check (which re-asks)."""
@@ -140,24 +161,32 @@ def repair_attrs(shape: str, attrs: list[str], where: str, notes: list[str]) -> 
             if v in _TRUE | _FALSE:
                 fixed = "true" if v in _TRUE else "false"
                 if fixed != value:
-                    notes.append(f"{where}: attribute {name}={value!r} written as {fixed}")
+                    notes.add(
+                        SYNONYM,
+                        where,
+                        f"attribute {name}={value!r} written as {fixed}",
+                        raw,
+                        f"{name}={fixed}",
+                    )
                 out.append(f"{name}={fixed}")
             else:
-                notes.append(f"{where}: dropped attribute {name}={value!r}: not true or false")
+                notes.add(
+                    DROP, where, f"dropped attribute {name}={value!r}: not true or false", raw
+                )
         elif (
             sep
             and spec is not None
             and spec.type == "integer"
             and not value.strip().lstrip("-").isdigit()
         ):
-            notes.append(f"{where}: dropped attribute {name}={value!r}: not a whole number")
+            notes.add(DROP, where, f"dropped attribute {name}={value!r}: not a whole number", raw)
         else:
             out.append(raw)
     return out
 
 
 def split_guards(
-    texts: list[str], where: str, errors: list[str], notes: list[str]
+    texts: list[str], where: str, errors: list[str], notes: Fixes
 ) -> tuple[list[Guard], list[str]]:
     """R-code on guards: a guard outside the closed grammar is dropped and its meaning is kept as plain words (the caller
     writes it into a free-text field). Returns the structured guards and the plain-language notes."""
@@ -172,8 +201,12 @@ def split_guards(
         words = " ".join(t.replace("_", " ").replace(".", " ").split())
         if words:
             plain.append(words)
-            notes.append(
-                f"{where}: guard {t!r} is outside the grammar; kept as the plain words {words!r}"
+            notes.add(
+                DROP,
+                where,
+                f"guard {t!r} is outside the grammar; kept as the plain words {words!r}",
+                t,
+                words,
             )
     return guards, plain
 
@@ -185,16 +218,27 @@ def _check_key(key: str, where: str, errors: list[str]) -> None:
         errors.append(f"{where}: key {key!r} ends in a widget or trigger word; name the meaning")
 
 
-def _lint(text: str | None, where: str, screen_type: str, errors: list[str]) -> None:
+def _clean(
+    text: str | None, where: str, screen_type: str, notes: Fixes, fallback: str | None
+) -> str | None:
+    """A form word in free text is a WARNING-grade lint (V-25): never a re-ask. The text is replaced by `fallback` (the
+    baseline text, or empty); with no fallback the text is kept and the warning stays visible at G2. Logged as R-code."""
     if not text:
-        return
+        return text
     hits = form_word_findings(text, screen_type)
-    if hits:
-        words = ", ".join(sorted({h.word.lower() for h in hits}))
-        errors.append(f"{where}: form words ({words}); say what it communicates, not how it looks")
+    if not hits:
+        return text
+    words = ", ".join(sorted({h.word.lower() for h in hits}))
+    if fallback is None:
+        notes.add(
+            DROP, where, f"form words ({words}) kept: nothing to replace them with", text, text
+        )
+        return text
+    notes.add(DROP, where, f"form words ({words}); replaced by the baseline text", text, fallback)
+    return fallback
 
 
-def _region(r: RegionOut, base: Screen, errors: list[str], notes: list[str]) -> Region:
+def _region(r: RegionOut, base: Screen, errors: list[str], notes: Fixes) -> Region:
     where = f"{base.id}.{r.key}"
     _check_key(r.key, where, errors)
     shape = r.shape if r.shape.startswith("other:") else _canon("shape", r.shape)
@@ -207,10 +251,16 @@ def _region(r: RegionOut, base: Screen, errors: list[str], notes: list[str]) -> 
         )
     if r.cardinality and r.cardinality not in vocab.shapes_file().cardinality_buckets:
         errors.append(f"{where}: cardinality {r.cardinality!r} is not a bucket")
-    _lint(r.what, where, base.screen_type, errors)
+    what = _clean(
+        r.what,
+        where,
+        base.screen_type,
+        notes,
+        next((x.what for x in base.regions if x.key == r.key), None),
+    )
     return Region(
         key=r.key,
-        what=" ".join(r.what.split()),
+        what=" ".join((what or "").split()),
         shape=shape,
         shape_kind=r.shape_kind or None,
         attrs=sorted(attrs),
@@ -230,15 +280,21 @@ def _action(
     graph: SpecGraph,
     errors: list[str],
     flags: list[dict[str, Any]],
-    notes: list[str],
+    notes: Fixes,
 ) -> Action:
     where = f"{base.id}.{a.key}"
     _check_key(a.key, where, errors)
     intent = _canon("intent", a.intent)
     if not vocab.is_known_intent(intent):
         errors.append(f"{where}: intent {a.intent!r} is not in the closed vocabulary of intents")
-    _lint(a.what, where, base.screen_type, errors)
-    _lint(a.precondition, f"{where} precondition", base.screen_type, errors)
+    what = _clean(
+        a.what,
+        where,
+        base.screen_type,
+        notes,
+        next((x.what for x in base.actions if x.key == a.key), None),
+    )
+    pre = _clean(a.precondition, f"{where} precondition", base.screen_type, notes, "")
     steps: list[Step] = []
     for t in a.effect:
         s = parse_step(t, where, errors)
@@ -274,12 +330,12 @@ def _action(
         if not steps:
             errors.append(f"{where}: an action needs an effect (or unspecified)")
     guards, plain = split_guards(a.guard, where, errors, notes)
-    precondition = "; ".join([p for p in [" ".join((a.precondition or "").split()), *plain] if p])
+    precondition = "; ".join([p for p in [" ".join((pre or "").split()), *plain] if p])
     return Action(
         key=a.key,
         importance=a.importance,
         intent=intent,
-        what=" ".join(a.what.split()),
+        what=" ".join((what or "").split()),
         precondition=precondition,
         effect=steps,
         guard=guards,
@@ -319,10 +375,15 @@ def _could(
     graph: SpecGraph,
     inp: ScrnIn,
     errors: list[str],
-) -> Could:
+    notes: Fixes,
+) -> Could | None:
     where = f"{base.id}.could{k}"
-    _lint(c.when, where, base.screen_type, errors)
-    _lint(c.effect, where, base.screen_type, errors)
+    for text in (c.when, c.effect, c.reduced_motion_alt or ""):
+        hits = form_word_findings(text, base.screen_type) if text else []
+        if hits:  # a warning-grade lint is never a re-ask: the idea is dropped (it is Open and ignorable anyway)
+            words = ", ".join(sorted({h.word.lower() for h in hits}))
+            notes.add(DROP, where, f"COULD entry dropped: form words ({words})", text, "")
+            return None
     if not c.basis.strip():
         errors.append(f"{where}: a COULD entry needs a basis")
     assumed = c.assumed
@@ -343,7 +404,6 @@ def _could(
             errors.append(f"{where}: motion {c.motion!r} is not a motion intent")
         elif vocab.is_essential_motion(c.motion) and not c.reduced_motion_alt:
             errors.append(f"{where}: essential motion needs a non-motion alternative")
-        _lint(c.reduced_motion_alt, where, base.screen_type, errors)
     return Could(
         id=could_id(base.id, k),
         kind=c.kind,
@@ -362,7 +422,13 @@ def _usually(
     u: UsuallyOut, base: Screen, graph: SpecGraph, inp: ScrnIn, built: Built, errors: list[str]
 ) -> Usually | None:
     where = f"{base.id}.usually"
-    _lint(u.note, where, base.screen_type, errors)
+    hits = form_word_findings(u.note, base.screen_type)
+    if hits:
+        words = ", ".join(sorted({h.word.lower() for h in hits}))
+        built.notes.add(
+            DROP, where, f"peer-practice line dropped: form words ({words})", u.note, ""
+        )
+        return None
     slot = next((s for s in inp.slots if s.id == base.id), None)
     norms = {n.id: n for n in (slot.norms if slot else [])}
     evidence = u.evidence
@@ -372,8 +438,12 @@ def _usually(
         if n is None:
             # R-code (drop an unknown optional field): a research item that was not offered is not a citation. The note
             # stays only as an unverified peer note; it is never given evidence it does not have (doc 18 3.2).
-            built.notes.append(
-                f"{where}: dropped the unknown research item {item!r}; the line is unverified"
+            built.notes.add(
+                DROP,
+                where,
+                f"dropped the unknown research item {item!r}; the line is unverified",
+                item,
+                "",
             )
             item, evidence = None, "unverified"
         else:
@@ -412,17 +482,29 @@ def _acceptance(
     cfg: SpecConfig,
     errors: list[str],
     cap: int,
+    notes: Fixes,
 ) -> list[Acceptance]:
     lib = libraries.state_library_for(base.screen_type, profile)
     out = [a.to_acceptance(base.name) for a in lib.acceptance]
     have = {(a.given, a.when, a.then) for a in out}
     if len(extras) > cap:
-        errors.append(f"{base.id}: {len(extras)} extra acceptance scenarios (at most {cap})")
+        notes.add(
+            DROP,
+            base.id,
+            f"{len(extras)} extra acceptance scenarios, the first {cap} kept",
+            str(len(extras)),
+            str(cap),
+        )
     for x in extras[:cap]:
-        for part in (x.given, x.when, x.then):
-            if not part.strip():
-                errors.append(f"{base.id}: an acceptance scenario needs GIVEN, WHEN and THEN")
         t = (x.given.strip(), x.when.strip(), x.then.strip())
+        if not all(t):
+            notes.add(
+                DROP,
+                base.id,
+                "an acceptance scenario without GIVEN, WHEN and THEN was dropped",
+                " | ".join(t),
+                "",
+            )
         if t not in have and all(t):
             out.append(Acceptance(given=t[0], when=t[1], then=t[2]))
             have.add(t)
@@ -459,23 +541,47 @@ def build_screen(
 ) -> Screen:
     sid = base.id
     mine = lambda xs: [x for x in xs if x.screen == sid]  # noqa: E731
+    slot = next((s for s in inp.slots if s.id == sid), None)
     cards = mine(out.cards)
-    if len(cards) != 1:
-        errors.append(f"{sid}: exactly one card is needed, got {len(cards)}")
-        card = CardOut(
-            screen=sid, purpose=base.purpose, params=[], guards=[], role_conditions=None,
-            reached_from=[], leads_to=[], accessibility=None, analytics=[], mock_profiles=[],
-            mock_states=[], confirm=[],
-        )  # fmt: skip
-    else:
+    if cards:
         card = cards[0]
+        if len(cards) > 1:
+            built.notes.add(
+                DROP, sid, f"{len(cards)} cards given; the first is used", str(len(cards)), "1"
+            )
+    else:  # the model gave no card for a screen of the call: code builds it from the baseline, it does not re-ask
+        built.notes.add(DEFAULT, sid, "no card was given; the baseline card is used", "", sid)
+        card = (
+            slot.card
+            if slot
+            else CardOut(
+                screen=sid,
+                purpose=base.purpose,
+                params=[],
+                guards=[],
+                role_conditions=None,
+                reached_from=[],
+                leads_to=[],
+                accessibility=None,
+                analytics=[],
+                mock_profiles=[],
+                mock_states=[],
+                confirm=[],
+            )  # fmt: skip
+        )
     profile = inp.profile
     # regions, actions, inputs
-    regions = [_region(r, base, errors, built.notes) for r in mine(out.regions)]
+    given_regions = mine(out.regions)
+    if not given_regions and slot and slot.regions:
+        built.notes.add(DEFAULT, sid, "no region was given; the baseline regions are used", "", sid)
+        given_regions = list(slot.regions)
+    regions = [_region(r, base, errors, built.notes) for r in given_regions]
     actions = [_action(a, base, graph, errors, built.flags, built.notes) for a in mine(out.actions)]
     inputs = [_input(i, base, errors) for i in mine(out.inputs)]
     if not regions:
-        errors.append(f"{sid}: a card needs at least one region")
+        errors.append(
+            f"{sid}: a card needs at least one region"
+        )  # nothing in the baseline either: a real defect
     for what, names in (
         ("region", [r.key for r in regions]),
         ("action", [a.key for a in actions]),
@@ -497,8 +603,12 @@ def build_screen(
     purpose = first_sentences(card.purpose, 2)
     if not purpose:
         errors.append(f"{sid}: the purpose is empty")
-    _lint(purpose, f"{sid}.purpose", base.screen_type, errors)
-    _lint(card.accessibility, f"{sid}.accessibility", base.screen_type, errors)
+    purpose = (
+        _clean(purpose, f"{sid}.purpose", base.screen_type, built.notes, base.purpose) or purpose
+    )
+    accessibility = (
+        _clean(card.accessibility, f"{sid}.accessibility", base.screen_type, built.notes, "") or ""
+    )
     route = base.route.model_copy(deep=True)
     route_plain: list[str] = []
     if card.params:
@@ -538,7 +648,9 @@ def build_screen(
     # states, acceptance
     states, lib_keys, lib_copy = _states(base, profile)
     extra_cap = rules.acceptance_extra_max.get(profile, 1)
-    acceptance = _acceptance(base, mine(out.acceptance), profile, cfg, errors, extra_cap)
+    acceptance = _acceptance(
+        base, mine(out.acceptance), profile, cfg, errors, extra_cap, built.notes
+    )
     # usually, could
     usually = [
         u
@@ -546,15 +658,32 @@ def build_screen(
         if (u := _usually(x, base, graph, inp, built, errors))
     ]
     if len(usually) > rules.usually_max:
-        errors.append(f"{sid}: {len(usually)} usually lines (at most {rules.usually_max})")
+        built.notes.add(
+            DROP,
+            sid,
+            f"{len(usually)} usually lines, the first {rules.usually_max} kept",
+            str(len(usually)),
+            str(rules.usually_max),
+        )
+        usually = usually[: rules.usually_max]
     coulds = mine(out.could)
     cap = min(
         cfg.profiles.could_cap_per_screen,
         slot.could_max if slot else cfg.profiles.could_cap_per_screen,
     )
     if len(coulds) > cap:
-        errors.append(f"{sid}: {len(coulds)} COULD entries (at most {cap})")
-    could = [_could(c, k + 1, base, graph, inp, errors) for k, c in enumerate(coulds[:cap])]
+        built.notes.add(
+            DROP,
+            sid,
+            f"{len(coulds)} COULD entries, the first {cap} kept",
+            str(len(coulds)),
+            str(cap),
+        )
+    could = [
+        c2
+        for k, c in enumerate(coulds[:cap])
+        if (c2 := _could(c, k + 1, base, graph, inp, errors, built.notes)) is not None
+    ]
     # copy: keys minted by code, text from the model
     keys: dict[str, str] = {}
     texts = {(c.target, c.ref): " ".join(c.text.split()) for c in mine(out.texts) if c.text.strip()}
@@ -563,9 +692,22 @@ def build_screen(
     need += [("input", i.key, namespaced_copy_key(sid, i.key)) for i in inputs]
     for target, ref, key in need:
         text = texts.get((target, ref))
-        if not text:
-            errors.append(f"{sid}: no copy text for the {target} {ref!r}")
-            text = humanize(ref) if target != "title" else base.name
+        if not text:  # code fills the label from the baseline, it does not re-ask
+            text = next(
+                (
+                    c.text
+                    for c in (slot.texts if slot else [])
+                    if (c.target, c.ref) == (target, ref) and c.text.strip()
+                ),
+                humanize(ref) if target != "title" else base.name,
+            )
+            built.notes.add(
+                DEFAULT,
+                f"{sid}.{ref}",
+                f"no copy text for the {target} {ref!r}; the baseline label is used",
+                "",
+                text,
+            )
         keys[key] = text
     if rules.region_label_copy:
         for r in regions:
@@ -588,7 +730,7 @@ def build_screen(
     s.states = states
     s.acceptance = acceptance
     s.analytics = sorted(set(analytics))
-    s.accessibility = " ".join((card.accessibility or "").split())
+    s.accessibility = " ".join(accessibility.split())
     s.usually = usually
     s.could = could
     s.mock_profiles = sorted(set(card.mock_profiles))

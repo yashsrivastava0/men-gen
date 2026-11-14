@@ -15,16 +15,9 @@ from mde_spec_core.graph import SpecGraph
 
 
 def validate_shape(inp: ScrnIn, out: ScrnOut) -> list[str]:
-    errors: list[str] = []
-    ids = [s.id for s in inp.slots]
-    got = [c.screen for c in out.cards]
-    for sid in ids:
-        if got.count(sid) != 1:
-            errors.append(f"{sid}: exactly one card is needed, got {got.count(sid)}")
-    for sid in ids:
-        if not any(r.screen == sid for r in out.regions):
-            errors.append(f"{sid}: a card needs at least one region")
-    return errors
+    """Nothing is demanded of the shape here: a screen with no card or no regions gets its baseline card from code (R-code),
+    and a record that names a foreign screen is reported by `assemble`."""
+    return []
 
 
 def graph_validators(

@@ -199,6 +199,17 @@ def needs_decision_flag(node: str, why: str, *, owner: str = "product") -> dict[
     return {"kind": "needs_decision", "step": "screens", "node": node, "owner": owner, "why": why}
 
 
+def log_rcode(ctx: RunContext, rows: Iterable[dict[str, str]]) -> int:
+    """Put the mechanical repairs a batch made (patch key `rcode`) into the run's R-code log, so G2 counts them."""
+    from mde_spec_core.callkit.ladder import FixKind
+
+    n = 0
+    for r in rows:
+        ctx.rcode.record(FixKind(r["kind"]), r["node"], r["what"], r["before"], r["after"])
+        n += 1
+    return n
+
+
 def chunked(items: Sequence[Any], size: int) -> list[list[Any]]:
     size = max(1, size)
     return [list(items[i : i + size]) for i in range(0, len(items), size)]

@@ -22,22 +22,42 @@ def names_of(inp: BehavIn) -> list[str]:
     return [n for n in [*ents, *[i.name.lower() for i in inp.integrations]] if len(n) > 2]
 
 
-def repair_basis(inp: BehavIn, out: BehavOut) -> tuple[BehavOut, list[str]]:
+def _row(category: str, what: str, before: str) -> dict[str, str]:
+    return {
+        "kind": "drop_unknown_optional",
+        "node": category,
+        "what": what,
+        "before": before,
+        "after": "",
+    }
+
+
+def repair_basis(inp: BehavIn, out: BehavOut) -> tuple[BehavOut, list[dict[str, str]]]:
     """R-code for BEHAV: drop a basis id that is not an id of this call. The behaviour stays only if another basis id
     remains or its text names an integration or an entity of the call; otherwise it goes (the baseline text for that
     category stays, flagged assumed). A behaviour with no basis at all is simply `assumed`. Returns the repaired output and
-    a plain log."""
+    R-code log rows (kind, node, what, before, after)."""
     known, names = known_ids(inp), names_of(inp)
     kept: list = []
-    log: list[str] = []
+    log: list[dict[str, str]] = []
     for b in out.behaviors:
         good = [r for r in b.basis if r in known]
         dropped = [r for r in b.basis if r not in known]
         if dropped:
-            log.append(f"{b.category}: dropped the unknown basis id(s) {', '.join(dropped)}")
+            log.append(
+                _row(
+                    b.category,
+                    f"dropped the unknown basis id(s) {', '.join(dropped)}",
+                    " ".join(dropped),
+                )
+            )
             if not good and not any(n in b.text.lower() for n in names):
                 log.append(
-                    f"{b.category}: nothing grounds it any more, so the behaviour is removed"
+                    _row(
+                        b.category,
+                        "nothing grounds it any more, so the behaviour is removed",
+                        b.text[:80],
+                    )
                 )
                 continue
         kept.append(b.model_copy(update={"basis": good, "assumed": b.assumed or not good}))

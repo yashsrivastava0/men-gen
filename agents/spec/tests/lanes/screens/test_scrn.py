@@ -477,4 +477,115 @@ def test_the_prompt_shows_the_guard_grammar_and_the_boolean_rule():
     from mde_spec_agent.lanes.screens.scrn.spec import HERE
 
     system = (HERE / "system.jinja").read_text()
+    assert "exactly one card record for EVERY slot" in system
     assert "plain words in precondition" in system and "bool take exactly true or false" in system
+
+
+def _asm(run, mutate):
+    g = run.baseline
+    sid = next(i for i in release_targets(g) if g.screens[i].actions)
+    slot = build_slot(
+        g.screens[sid], g, CFG, lane_rules(), copy=g.locale_copy["en"], incoming=incoming_edges(g)
+    )
+    inp = ScrnIn(
+        language="en", profile=g.meta.profile, vocab=[], facts="", glossary="", slots=[slot]
+    )
+    return sid, g, assemble(g, inp, mutate(fallback(inp), sid), CFG, lane_rules())
+
+
+def test_a_screen_without_a_card_gets_the_baseline_card_not_a_reask(finished):
+    run = finished("quick")
+    sid, g, built = _asm(run, lambda out, s: out.model_copy(update={"cards": [], "regions": []}))
+    assert built.errors == []
+    s = built.screens[sid]
+    assert s.purpose == g.screens[sid].purpose and [r.key for r in s.regions] == sorted(
+        r.key for r in g.screens[sid].regions
+    )
+    assert any(r["kind"] == "instantiate_library_default" for r in built.notes.rows)
+
+
+def test_warning_grade_form_words_are_repaired_by_code_never_reasked(finished):
+    from mde_spec_agent.lanes.screens.scrn.schema import CouldOut, UsuallyOut
+
+    run = finished("quick")
+
+    def mutate(out, sid):
+        card = out.cards[0].model_copy(
+            update={
+                "purpose": "Shows the items side by side so the person can compare.",
+                "accessibility": "A floating label above the field is announced.",
+            }
+        )
+        could = [
+            CouldOut(screen=sid, kind="delight", when="the person finishes", effect="a small bounce celebrates it",
+                     basis="DLT-QUIET-SUCCESS", basis_kind="library_pattern", assumed=False, motion=None,
+                     reduced_motion_alt=None, tier="A"),
+            CouldOut(screen=sid, kind="clarity", when="the person opens the screen", effect="the person knows where they stand",
+                     basis="DLT-INSTANT-CONTENT", basis_kind="library_pattern", assumed=False, motion=None,
+                     reduced_motion_alt=None, tier="A"),
+        ]  # fmt: skip
+        usually = [
+            UsuallyOut(
+                screen=sid, note="Peers show it in a sticky panel.", evidence="library", item=None
+            )
+        ]
+        reg = out.regions[0].model_copy(update={"what": "the list on the left side"})
+        act = out.actions[0].model_copy(
+            update={"what": "tap the big button", "precondition": "the sticky bar is shown"}
+        )
+        return out.model_copy(
+            update={"cards": [card], "could": could, "usually": usually,
+                    "regions": [reg, *out.regions[1:]], "actions": [act, *out.actions[1:]]}
+        )  # fmt: skip
+
+    sid, g, built = _asm(run, mutate)
+    assert built.errors == [], built.errors
+    s = built.screens[sid]
+    assert s.purpose == g.screens[sid].purpose  # back to the baseline purpose
+    assert s.accessibility == "" and s.usually == []
+    assert [c.when for c in s.could] == [
+        "the person opens the screen"
+    ]  # only the entry with the form word went
+    base_region = next(r for r in g.screens[sid].regions if r.key == next(x for x in s.regions).key)
+    assert base_region.what in {r.what for r in s.regions}
+    act = next(a for a in s.actions)
+    assert act.precondition == ""
+    kinds = {r["kind"] for r in built.notes.rows}
+    assert kinds == {"drop_unknown_optional"} and len(built.notes.rows) >= 6
+
+
+def test_overflow_and_missing_copy_are_trimmed_and_filled_by_code(finished):
+    from mde_spec_agent.lanes.screens.scrn.schema import AcceptOut
+
+    run = finished("quick")
+
+    def mutate(out, sid):
+        extra = [AcceptOut(screen=sid, given=f"g{i}", when=f"w{i}", then=f"t{i}") for i in range(9)]
+        return out.model_copy(update={"acceptance": extra, "texts": []})
+
+    sid, g, built = _asm(run, mutate)
+    assert built.errors == [], built.errors
+    s = built.screens[sid]
+    mn = CFG.profiles.acceptance_scenarios_min[g.meta.profile]
+    assert len(s.acceptance) == mn + lane_rules().acceptance_extra_max[g.meta.profile]
+    assert all(built.copy[k] for k in s.copy_keys if k.startswith(namespaced_copy_key(sid, "")))
+
+
+def test_code_repairs_reach_the_runs_rcode_log(fresh, monkeypatch):
+    run = fresh("quick")
+    real = scrn_mock.handle
+
+    def handle(inp):
+        out = real(inp)
+        out.cards.pop()  # the model forgot a card
+        return out
+
+    monkeypatch.setattr(scrn_mock, "handle", handle)
+    _scrn_step(run)
+    counts = run.ctx.rcode.counts()
+    assert counts["instantiate_library_default"] >= 1
+    assert not [s for s in run.graph.screens.values() if s.degraded]
+    assert not any(
+        res.reasked for _, res in run.ctx.runner.calls
+    )  # repaired by code, never re-asked
+    assert any("no card was given" in r["what"] for r in run.ctx.rcode.rows())

@@ -10,7 +10,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from mde_spec_agent.lanes.screens.common import call_versions, lane_rules
+from mde_spec_agent.lanes.screens.common import call_versions, lane_rules, log_rcode
 from mde_spec_agent.lanes.screens.g2_summary.schema import G2In, NumIn
 from mde_spec_agent.lanes.screens.g2_summary.spec import (
     CALL_ID,
@@ -77,18 +77,30 @@ async def g2summary_step(ctx: RunContext) -> None:
             }
         res = await ctx.runner.run(SPEC, inp, node_ids=["g2-summary"], step="g2summary")
         omitted = res.used_fallback or not res.output.paragraph.strip()
+        trimmed = None if omitted else trim_paragraph(res.output.paragraph, inp.max_words)
+        rcode = []
+        if trimmed is not None and trimmed != " ".join(res.output.paragraph.split()):
+            rcode.append(
+                {
+                    "kind": "drop_unknown_optional",
+                    "node": "g2-summary",
+                    "what": f"the paragraph was longer than {inp.max_words} words and was cut at a sentence",
+                    "before": res.output.paragraph[:80],
+                    "after": trimmed[:80],
+                }
+            )
         return {
             "g2_summary": {
-                "paragraph": None
-                if omitted
-                else trim_paragraph(res.output.paragraph, inp.max_words),
+                "paragraph": trimmed,
                 "paragraph_source": "omitted" if omitted else "model",
                 "reason": res.reason if omitted else "",
-            }
+            },
+            "rcode": rcode,
         }
 
     patch = await ctx.batch("g2summary", "summary", versions, produce)
     para = patch["g2_summary"]
+    log_rcode(ctx, patch.get("rcode", []))
     summary = {
         "language": g.meta.source_language,
         **template_summary(g, tables),

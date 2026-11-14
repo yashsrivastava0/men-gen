@@ -20,6 +20,7 @@ WHAT YOU WRITE, PER SCREEN (records in flat arrays; every record names its scree
 WHAT CODE DOES (do not write these): the standard states of the screen type (loading, empty, error, offline, forbidden, stale, partial and the library's domain states), the acceptance minimum, copy keys, ids of COULD entries, the order of everything.
 
 HONESTY
+- Return exactly one card record for EVERY slot of this call (also when its baseline needs no change), with its regions. Check the screen ids against the slots before you answer.
 - Use only ids and fields that appear in the slot. Do not invent entities, fields, operations, screens or research items.
 - Leave unknown fields null or assumed. Never fill an optional field the data does not support.
 - The baseline card in each slot was written by code from the frozen structure: improve it and keep what is right. You may correct regions, actions and inputs, add what is missing, and remove what the structure does not support.

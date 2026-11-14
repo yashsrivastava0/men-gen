@@ -21,6 +21,7 @@ from mde_spec_agent.lanes.screens.common import (
     facts_text,
     glossary_block,
     lane_rules,
+    log_rcode,
 )
 from mde_spec_agent.lanes.screens.scrn.build import assemble, screens_patch
 from mde_spec_agent.lanes.screens.scrn.schema import ScrnIn, SlotIn
@@ -137,10 +138,12 @@ async def screens_step(ctx: RunContext) -> None:
             )
             patches: list[Patch] = []
             flags: list[dict[str, Any]] = []
+            rcode: list[dict[str, str]] = []
             for items, res in results:
                 inp = make_input(items)
                 built = assemble(snap, inp, res.output, cfg, rules, ids=[s.id for s in items])
                 flags += built.flags
+                rcode += built.notes.rows
                 if res.flagged:
                     for sid, s in sorted(built.screens.items()):
                         s.degraded = True
@@ -148,6 +151,7 @@ async def screens_step(ctx: RunContext) -> None:
                 patches.append(screens_patch(built, lang))
             merged = merge_patches(patches)
             merged["flags"] = flags
+            merged["rcode"] = rcode
             return merged
 
         return produce
@@ -161,6 +165,7 @@ async def screens_step(ctx: RunContext) -> None:
     for p in patches:
         ctx.apply(p)
         ctx.flags.extend(p.get("flags", []))
+        log_rcode(ctx, p.get("rcode", []))
     degraded = sum(1 for i in ids if ctx.graph.screens[i].degraded)
     ctx.emit(
         "notice",
