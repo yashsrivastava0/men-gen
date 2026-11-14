@@ -198,3 +198,106 @@ def test_gate_1_runs_on_a_copy_of_the_graph_and_its_findings_become_validator_er
     before = ctx.graph.canonical_text()
     assert ctx.graph.canonical_text() == before  # the real graph was never touched
     assert "SCR-999" not in before
+
+
+# ---- what a real model does that the mock never did (found by the first live run) --------------------------------------
+
+
+def invent_entities(out):
+    from mde_spec_agent.lanes.product.prod_module.schema import EntityRec, FieldRec
+
+    out = out.model_copy(deep=True)
+    out.entities += [
+        EntityRec(
+            id="NEW-account", name="Account", klass="primary", prov=["assumed:sign-in needs it"]
+        ),
+        EntityRec(id="NEW-code", name="Code", klass="secondary", prov=["assumed:one-time codes"]),
+        EntityRec(
+            id="NEW-audit_event", name="Audit event", klass="log", prov=["assumed:a log of changes"]
+        ),
+    ]
+    out.fields += [
+        FieldRec(entity="NEW-account", key="email", type="email"),
+        FieldRec(entity="NEW-code", key="value", type="code"),
+        FieldRec(entity="NEW-audit_event", key="what", type="text"),
+        FieldRec(
+            entity=out.entities[0].id, key="owner_account", type="ref", ref_entity="NEW-account"
+        ),
+    ]
+    return out
+
+
+def test_an_invented_entity_that_is_not_join_or_log_is_dropped_by_code_not_failed(env):
+    ctx = env.ctx("standard")
+    gw = env.gateway(ctx)
+    gw.rewrite = lambda spec, inp, n: (
+        invent_entities if (spec == "spec.prod_module" and inp.module_id == "MOD-002") else None
+    )
+    assert env.run(ctx).status == "awaiting_g2"
+    results = env.calls_of(ctx, "spec.prod_module")
+    assert not any(
+        r.reasked or r.used_fallback for r in results
+    )  # no re-ask, no fallback: the batch was not failed
+    assert ctx.flags == [] and not any(n.degraded for n in ctx.graph.all_nodes())
+    names = {e.name for e in ctx.graph.entities.values()}
+    assert "Account" not in names and "Code" not in names  # dropped
+    assert "Audit event" in names  # a log entity is allowed and kept
+    assert all(f.key != "owner_account" for e in ctx.graph.entities.values() for f in e.fields)
+    rows = [c for c in ctx.rcode.changes if "invented entity" in c.what]
+    assert sorted(c.node_id for c in rows) == ["NEW-account", "NEW-code"]  # logged, never silent
+    assert all(c.kind.value == "drop_unknown_optional" for c in rows)
+
+
+def cite_research(out):
+    out = out.model_copy(deep=True)
+    for st in out.stories:
+        st.prov = [*st.prov, "research:RI-001"]  # a story has no claims_used: V-36 would fail it
+    out.entities[0].prov = [*out.entities[0].prov, "research:RI-001"]
+    out.rules.append(
+        __import__("mde_spec_agent.lanes.product.prod_module.schema", fromlist=["RuleRec"]).RuleRec(
+            id="NEW-research_rule",
+            subject="Sellers confirm",
+            statement="A seller confirms each order",
+            prov=["research:RI-001"],
+        )
+    )
+    return out
+
+
+def test_research_provenance_is_repaired_mechanically_so_v36_does_not_fail_the_batch(env):
+    from mde_spec_core.validators.base import blockers, run_all
+    from mde_spec_core.validators.context import make_context
+
+    from .test_research import research_file
+
+    ctx = env.ctx("standard", research=research_file())
+    gw = env.gateway(ctx)
+    gw.rewrite = lambda spec, inp, n: (
+        cite_research if (spec == "spec.prod_module" and "RI-001" in inp.research_ids) else None
+    )
+    assert env.run(ctx).status == "awaiting_g2"
+    assert not any(r.reasked or r.used_fallback for r in env.calls_of(ctx, "spec.prod_module"))
+    g = ctx.graph
+    assert [f.code for f in blockers(run_all(make_context(g.model_copy(deep=True)), gate=1))] == []
+    stories = [s for s in g.stories.values() if any("RI-001" in p.ref for p in s.provenance)]
+    assert stories and all(
+        p.kind != "research" for s in stories for p in s.provenance
+    )  # downgraded to assumed
+    rule = next(r for r in g.rules.values() if r.subject == "Sellers confirm")
+    assert rule.claims_used == [
+        "RI-001"
+    ]  # a rule can record its claim: kept, official evidence, Default
+    assert any(c.what.startswith("research citation RI-001") for c in ctx.rcode.changes)
+
+
+def test_a_single_source_claim_on_a_default_node_is_downgraded_not_left_to_fail():
+    from mde_spec_agent.lanes.product.kit.common import prov_nodes, research_safe
+
+    labels = {"RI-1": "official", "RI-2": "single_source", "RI-3": "unverified"}
+    prov = prov_nodes(["research:RI-1", "research:RI-2", "research:RI-3", "user:FTR-001"])
+    kept, claims, rows = research_safe(prov, labels, claims_field=True, tier="default")
+    assert claims == ["RI-1"] and len(rows) == 2 and [p.kind for p in kept].count("research") == 1
+    kept, claims, _ = research_safe(prov, labels, claims_field=True, tier="open")
+    assert claims == ["RI-1", "RI-2"]  # an Open node may rest on a single source
+    kept, claims, _ = research_safe(prov, labels, claims_field=False)
+    assert claims == [] and all(p.kind != "research" for p in kept)

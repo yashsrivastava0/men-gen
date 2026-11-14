@@ -11,6 +11,7 @@ from mde_spec_agent.lanes.product.kit.common import (
     ProvAllowed,
     merge_prov,
     prov_nodes,
+    research_safe,
     tier_and_assumed,
 )
 from mde_spec_agent.lanes.product.kit.env import Env, input_hash_of
@@ -29,6 +30,7 @@ from mde_spec_core.graph import (
 )
 from mde_spec_core.ids import parse_id
 
+from .repair import repair
 from .schema import ModuleIn, ModuleOut, StoryRec
 
 NEW = "NEW-"
@@ -44,6 +46,18 @@ def build_module_patch(
     g = env.graph
     allowed = ProvAllowed.of(inp)
     ih = input_hash_of(inp)
+    out, rcode = repair(out)  # R-code: an invented non-join, non-log entity is dropped (logged)
+
+    def safe(
+        strings: Any, node_id: str, *, claims_field: bool, tier: str = "default"
+    ) -> tuple[list[Any], list[str], list[dict[str, str]]]:
+        """Provenance the V-36 check accepts: research is recorded in claims_used or downgraded to assumed (logged)."""
+        prov, claims, rows = research_safe(
+            prov_nodes(strings, env.quote_of), allowed.labels, claims_field=claims_field, tier=tier
+        )
+        rcode.extend({**r, "node_id": node_id} for r in rows)
+        return prov, claims, rows
+
     ids: dict[str, str] = {}  # NEW-key (entity, rule, operation, story) -> minted id
     for e in out.entities:
         ids[e.id] = minter.mint("ENT") if is_new(e.id) else e.id
@@ -75,7 +89,7 @@ def build_module_patch(
     for rec in out.entities:
         eid = ids[rec.id]
         base = g.entities.get(eid)
-        prov = prov_nodes(rec.prov, env.quote_of)
+        prov = safe(rec.prov, eid, claims_field=False, tier=base.tier if base else "default")[0]
         if base is None:
             tier, assumed = tier_and_assumed(prov, allowed.labels)
             node = Entity(
@@ -145,8 +159,9 @@ def build_module_patch(
     for rr in out.rules:
         nid = ids[rr.id]
         base = g.rules.get(nid)
-        prov = prov_nodes(rr.prov, env.quote_of)
-        claims = sorted({p.ref for p in prov if p.kind == "research"})
+        prov, claims, _ = safe(
+            rr.prov, nid, claims_field=True, tier=base.tier if base else "default"
+        )
         if base is None:
             tier, assumed = tier_and_assumed(prov, allowed.labels)
             rule = Rule(
@@ -176,7 +191,7 @@ def build_module_patch(
     # ---- custom operations -------------------------------------------------------------------------------------
     for orec in out.operations:
         nid = ids[orec.id]
-        prov = prov_nodes(orec.prov, env.quote_of)
+        prov = safe(orec.prov, nid, claims_field=False)[0]
         tier, assumed = tier_and_assumed(prov, allowed.labels)
         path = "/" + orec.path.strip().strip("/")
         op = Operation(
@@ -218,7 +233,7 @@ def build_module_patch(
     for srec in out.stories:
         nid = ids[srec.id]
         base = g.stories.get(nid)
-        prov = prov_nodes(srec.prov, env.quote_of)
+        prov = safe(srec.prov, nid, claims_field=False, tier=base.tier if base else "default")[0]
         story = _story(base, nid, srec, prov, allowed.labels)
         story.acceptance = acc_of.get(srec.id, [])
         story.input_hash = ih
@@ -226,7 +241,13 @@ def build_module_patch(
         tables["stories"][nid] = story.model_dump(mode="json")
 
     # a story's screens also cite the story (V-40 reads either side); screens are not rewritten here
-    return {"tables": {t: dict(sorted(n.items())) for t, n in tables.items()}, "replace": True}
+    patch: Patch = {
+        "tables": {t: dict(sorted(n.items())) for t, n in tables.items()},
+        "replace": True,
+    }
+    if rcode:
+        patch["rcode"] = sorted(rcode, key=lambda r: (r["node_id"], r["before"]))
+    return patch
 
 
 def _story(base: Story | None, nid: str, srec: StoryRec, prov: list[Any], labels: Any) -> Story:

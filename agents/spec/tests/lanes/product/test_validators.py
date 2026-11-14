@@ -14,7 +14,6 @@ from mde_spec_agent.lanes.product.prod_journeys.validate import validate as jour
 from mde_spec_agent.lanes.product.prod_module.mock import handle as module_mock
 from mde_spec_agent.lanes.product.prod_module.schema import (
     AcceptRec,
-    EntityRec,
     FieldRec,
     OperationRec,
     OpErrorRec,
@@ -92,12 +91,6 @@ MODULE_CASES = [
     (
         lambda o: setattr(o.fields[0], "type", "enum") or setattr(o.fields[0], "enum_values", []),
         "needs its values",
-    ),
-    (
-        lambda o: o.entities.append(
-            EntityRec(id="NEW-pet", name="Pet", klass="primary", prov=["assumed:x"])
-        ),
-        "must be a join or log entity",
     ),
     (lambda o: setattr(o.entities[0], "prov", []), "provenance is empty"),
     (

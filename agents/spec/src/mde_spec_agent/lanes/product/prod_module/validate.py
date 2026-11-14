@@ -18,6 +18,7 @@ from mde_spec_agent.lanes.product.kit.common import (
 )
 from mde_spec_core.ids import is_valid_key
 
+from .repair import repair
 from .schema import ModuleIn, ModuleOut
 
 MAX_NEW_FIELDS_PER_ENTITY = 6
@@ -29,6 +30,9 @@ def _evidenced(prov: list[str]) -> bool:
 
 
 def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
+    out, _ = repair(
+        out
+    )  # what code repairs mechanically is not an error (the patch makes the same repair)
     e = Errors()
     allowed = ProvAllowed.of(inp)
     source = "\n".join([*inp.slice, *inp.facts, *inp.research])
@@ -48,10 +52,6 @@ def validate(inp: ModuleIn, out: ModuleOut) -> list[str]:
         if rec.id not in own_entities and not rec.id.startswith("NEW-"):
             e.add(
                 f"entity {rec.id}: not an entity of this module; use an id of the draft or NEW-<name>"
-            )
-        if rec.id.startswith("NEW-") and rec.klass not in ("join", "log"):
-            e.add(
-                f"entity {rec.id}: a new entity must be a join or log entity (it has no screen); say primary or secondary only for the draft's entities"
             )
         if not rec.name.strip():
             e.add(f"entity {rec.id}: name is empty")

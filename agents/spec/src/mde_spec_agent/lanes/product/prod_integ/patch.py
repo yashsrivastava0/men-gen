@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from mde_spec_agent.lanes.product.kit.common import ProvAllowed, merge_prov, prov_nodes
+from mde_spec_agent.lanes.product.kit.common import ProvAllowed, merge_prov, safe_prov
 from mde_spec_agent.lanes.product.kit.env import Env, input_hash_of
 from mde_spec_agent.lanes.product.kit.gate import Minter
 from mde_spec_agent.run.patch import Patch
@@ -23,6 +23,7 @@ def build_integ_patch(
         if e.name not in events[e.integration]:
             events[e.integration].append(e.name)
     nodes: dict[str, Any] = {}
+    rcode: list[dict[str, str]] = []
     for r in out.integrations:
         base = env.graph.integrations.get(r.id)
         if base is None:
@@ -37,10 +38,21 @@ def build_integ_patch(
         node.mock_behaviour = r.mock_behaviour
         node.events = events.get(r.id, [])
         node.provider_ids = sorted(set(r.provider_ids))
-        node.claims_used = sorted({*r.claims, *base.claims_used})
-        node.provenance = merge_prov(node.provenance, prov_nodes(r.prov, env.quote_of))
+        prov, claims, rows = safe_prov(
+            [*r.prov, *[f"research:{c}" for c in r.claims]],
+            env.quote_of,
+            allowed.labels,
+            r.id,
+            claims_field=True,
+            tier=base.tier,
+        )
+        rcode.extend(rows)
+        node.claims_used = sorted({*claims, *base.claims_used})
+        node.provenance = merge_prov(node.provenance, prov)
         node.input_hash = ih
         node.degraded = node.degraded or flagged
-        _ = allowed
         nodes[r.id] = node.model_dump(mode="json")
-    return {"tables": {"integrations": dict(sorted(nodes.items()))}, "replace": True}
+    patch: Patch = {"tables": {"integrations": dict(sorted(nodes.items()))}, "replace": True}
+    if rcode:
+        patch["rcode"] = rcode
+    return patch

@@ -9,7 +9,7 @@ from typing import Any
 from mde_spec_agent.lanes.product.kit.common import (
     ProvAllowed,
     merge_prov,
-    prov_nodes,
+    safe_prov,
     tier_and_assumed,
 )
 from mde_spec_agent.lanes.product.kit.env import Env, input_hash_of
@@ -30,9 +30,11 @@ def build_journeys_patch(
         stages_of[s.flow].append(s)
     ids = {f.id: (minter.mint("FLW") if f.id.startswith("NEW-") else f.id) for f in out.flows}
     nodes: dict[str, Any] = {}
+    rcode: list[dict[str, str]] = []
     for rec in out.flows:
         fid = ids[rec.id]
-        prov = prov_nodes(rec.prov, env.quote_of)
+        prov, _, rows = safe_prov(rec.prov, env.quote_of, allowed.labels, fid, claims_field=False)
+        rcode.extend(rows)
         stages = [
             Stage(
                 n=s.n,
@@ -71,4 +73,7 @@ def build_journeys_patch(
         flow.input_hash = ih
         flow.degraded = flow.degraded or flagged
         nodes[fid] = flow.model_dump(mode="json")
-    return {"tables": {"flows": dict(sorted(nodes.items()))}, "replace": True}
+    patch: Patch = {"tables": {"flows": dict(sorted(nodes.items()))}, "replace": True}
+    if rcode:
+        patch["rcode"] = rcode
+    return patch

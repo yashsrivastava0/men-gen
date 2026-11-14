@@ -241,3 +241,64 @@ def source_numbers(*texts: str) -> set[str]:
 
 def blob_of(obj: BaseModel) -> str:
     return canonical_json(obj.model_dump(mode="json"))
+
+
+# ------------------------------------------------------------------------------------------------ V-36 repair
+RESEARCH_OK = ("official", "corroborated")
+
+
+def research_safe(
+    prov: Sequence[Prov],
+    labels: Mapping[str, str],
+    *,
+    claims_field: bool,
+    tier: str = "default",
+) -> tuple[list[Prov], list[str], list[dict[str, str]]]:
+    """Research provenance that the checks (V-36) can accept, made mechanically.
+
+    A node type with a `claims_used` list keeps `research:<item>` and records the item there, unless the item is not
+    official or corroborated and the node is a Default (a single source is Open): then the citation is downgraded. A node
+    type without `claims_used` cannot record the item, so the citation becomes `assumed:` with the item named in its
+    reason. Returns the provenance, the claims, and R-code rows (what was changed, never silent)."""
+    out: list[Prov] = []
+    claims: list[str] = []
+    rows: list[dict[str, str]] = []
+    for p in prov:
+        if p.kind != "research":
+            out.append(p)
+            continue
+        label = labels.get(p.ref, "unverified")
+        keep = (
+            claims_field and label != "unverified" and (tier != "default" or label in RESEARCH_OK)
+        )
+        if keep:
+            out.append(p)
+            claims.append(p.ref)
+            continue
+        out.append(Prov(kind="assumed", ref=f"informed by research item {p.ref} ({label})"[:160]))
+        rows.append(
+            {
+                "kind": "drop_unknown_optional",
+                "node_id": "",
+                "what": f"research citation {p.ref} cannot be recorded on this node (V-36): kept as assumed",
+                "before": f"research:{p.ref}",
+                "after": "assumed",
+            }
+        )
+    return out, sorted(set(claims)), rows
+
+
+def safe_prov(
+    strings: Sequence[str],
+    quote_of: Callable[[str], str | None] | Mapping[str, str | None] | None,
+    labels: Mapping[str, str],
+    node_id: str,
+    *,
+    claims_field: bool,
+    tier: str = "default",
+) -> tuple[list[Prov], list[str], list[dict[str, str]]]:
+    """`prov_nodes` plus `research_safe`: provenance a node can carry without failing V-36, and the R-code rows."""
+    prov, claims, rows = research_safe(
+        prov_nodes(strings, quote_of), labels, claims_field=claims_field, tier=tier
+    )
+    return prov, claims, [{**r, "node_id": node_id} for r in rows]

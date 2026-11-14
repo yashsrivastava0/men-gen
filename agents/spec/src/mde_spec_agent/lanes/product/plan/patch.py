@@ -11,7 +11,7 @@ from typing import Any
 from mde_spec_agent.lanes.product.kit.common import (
     ProvAllowed,
     merge_prov,
-    prov_nodes,
+    safe_prov,
     tier_and_assumed,
 )
 from mde_spec_agent.lanes.product.kit.env import Env, input_hash_of
@@ -38,7 +38,16 @@ def apply_plan(
         "splits": {},
         "proposal": [],
         "consents": [],
+        "rcode": [],
     }
+
+    def sp(strings: Any, node_id: str) -> list[Any]:
+        """Provenance the V-36 check accepts (research becomes assumed on nodes that cannot record a claim; logged)."""
+        prov, _, rows = safe_prov(
+            strings, env.quote_of, allowed.labels, node_id, claims_field=False
+        )
+        facts["rcode"].extend(rows)
+        return prov
 
     for m in sorted(out.merges, key=lambda x: (x.keep, x.drop)):
         if m.keep in work.screens and m.drop in work.screens:
@@ -46,7 +55,7 @@ def apply_plan(
             facts["aliases"][m.drop] = m.keep
             facts["merges"].append({"keep": m.keep, "drop": m.drop, "reason": m.reason})
             work.screens[m.keep].provenance = merge_prov(
-                work.screens[m.keep].provenance, prov_nodes(m.prov, env.quote_of)
+                work.screens[m.keep].provenance, sp(m.prov, m.keep)
             )
     by_screen: dict[str, list[Any]] = defaultdict(list)
     for s in out.splits:
@@ -63,7 +72,7 @@ def apply_plan(
         node.purpose = node.purpose or mr.purpose
         node.shared = mr.shared
         node.depends_on = sorted(set(mr.depends_on))
-        node.provenance = merge_prov(node.provenance, prov_nodes(mr.prov, env.quote_of))
+        node.provenance = merge_prov(node.provenance, sp(mr.prov, mr.id))
         node.input_hash = ih
     for rr in out.roles:
         role = work.roles.get(rr.id)
@@ -72,7 +81,7 @@ def apply_plan(
         role.goal = role.goal or rr.goal
         if role.home_screen is None and rr.home_screen in work.screens:
             role.home_screen = rr.home_screen
-        role.provenance = merge_prov(role.provenance, prov_nodes(rr.prov, env.quote_of))
+        role.provenance = merge_prov(role.provenance, sp(rr.prov, rr.id))
     for orec in out.owners:
         ent = work.entities.get(orec.entity)
         if ent is None or orec.module not in work.modules or ent.owner_module == orec.module:
@@ -84,7 +93,7 @@ def apply_plan(
             {*work.modules[orec.module].entity_ids, ent.id}
         )
         ent.owner_module = orec.module
-        ent.provenance = merge_prov(ent.provenance, prov_nodes(orec.prov, env.quote_of))
+        ent.provenance = merge_prov(ent.provenance, sp(orec.prov, orec.entity))
         ent.input_hash = ih
     for arec in out.access:
         ent = work.entities.get(arec.entity)
@@ -97,7 +106,7 @@ def apply_plan(
 
     by_role = {p.role_id: p for p in work.personas.values()}
     for prec in out.personas:
-        prov = prov_nodes(prec.prov, env.quote_of)
+        prov = sp(prec.prov, prec.role)
         base = by_role.get(prec.role)
         if base is None:
             tier, assumed = tier_and_assumed(prov, allowed.labels)
@@ -162,7 +171,10 @@ def build_plan_patch(env: Env, inp: PlanIn, out: PlanOut, minter: Minter, flagge
         gone = sorted(set(old) - set(new))
         if gone:
             remove[t] = gone
+    rcode = facts.pop("rcode")
     patch: Patch = {"tables": tables, "replace": True, "plan": facts}
+    if rcode:
+        patch["rcode"] = rcode
     if remove:
         patch["remove"] = remove
     # copy added by a split (new screens' titles and actions)
