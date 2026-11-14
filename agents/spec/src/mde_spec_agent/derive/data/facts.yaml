@@ -35,6 +35,24 @@ integrations:
   analytics: [analytics]
 # Compass `sensitive_data` tokens -> minors_or_health_or_identity
 identity_sensitive: [health, medical, minors, children, child, personal_ids, identity, id_documents, biometric, aadhaar, passport]
+# Sensitive data the Brief implies when Compass stated none of that kind (BUG-SC-1). `stated` are the Compass
+# `sensitive_data` tokens of the kind; `words` are whole words of the Brief (idea, audience, features, roles, entities and
+# their fields, rules and facts) that say the app holds it. What is inferred is ASSUMED: the screens and behaviours that
+# follow carry an `assumed` provenance and a rule lists it for the owner to confirm. `label` fills the confirm sentence.
+sensitive_kinds:
+  health:
+    label: health records
+    stated: [health, medical]
+    words: [health, medical, clinical, patient, patients, hospital, hospitals, clinic, clinics, diagnosis, prescription, prescriptions, doctor, doctors, nurse, nurses, medication]
+  minors:
+    label: data about children
+    stated: [minors, children, child]
+    words: [child, children, minor, minors, pupil, pupils, student, students, school, schools, kids]
+  identity:
+    label: identity documents
+    stated: [personal_ids, identity, id_documents, biometric, aadhaar, passport, kyc]
+    words: [kyc, passport, identity document, identity documents, id document, id documents, national id, id proof, identity proof]
+sensitive_assumption: "The Brief mentions {words}, so the app is assumed to hold {label}. It gets a consent and age step, account deletion, a data export, an audit trail of who reads or changes those records, and store privacy disclosures. Confirm this is right."
 # Research profile signals -> facts (a hint from Research's own reading of the Brief; never the only source)
 research_signals:
   payments: [payments]

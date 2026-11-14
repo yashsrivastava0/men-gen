@@ -32,6 +32,12 @@ def _raw(name: str) -> dict[str, Any]:
 # ---------------------------------------------------------------- facts
 
 
+class SensitiveKind(_M):
+    label: str
+    stated: list[str]
+    words: list[str]
+
+
 class FactsData(_M):
     version: int
     auth_methods: dict[str, list[str]]
@@ -40,6 +46,8 @@ class FactsData(_M):
     keywords: dict[str, list[str]]
     integrations: dict[str, list[str]]
     identity_sensitive: list[str]
+    sensitive_kinds: dict[str, SensitiveKind]
+    sensitive_assumption: str
     research_signals: dict[str, list[str]]
     field_types: dict[str, list[str]]
 

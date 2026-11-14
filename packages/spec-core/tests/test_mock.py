@@ -203,6 +203,9 @@ def test_extreme_has_long_text_emoji_rtl_zero_one_many_and_large_numbers():
         ent["list_cases"]["many"]["count"] == 10000 and ent["list_cases"]["many"]["virtual"] is True
     )
     assert len(ent["rows"]) == 12  # the many case is a recipe, never written out
+    assert ent["rows_written"] == 12 and ent["count"] == 10000  # the declared volume of the list
+    recipes = {r["entity"] for r in build_recipes(g, random.Random(3))}
+    assert {eid for eid, e in p["entities"].items() if e["count"] >= 10000} <= recipes
     big = [
         v
         for r in rows
@@ -367,6 +370,57 @@ def test_people_and_places_follow_the_apps_script():
         assert texts
         assert script_share(texts, script) >= CFG.checks.locale_script_share_min, lang
         assert p["needs_native_review"] == (lang in ("kn", "ar"))
+
+
+def _multi_language_graph(source="en", languages=("en", "mr", "hi")):
+    g = _graph("small")
+    g.meta.source_language = source
+    g.meta.languages = list(languages)
+    g.entities["ENT-001"].fields.append(FieldDef(key="pickup_address", type="text"))
+    g.hero = mint_hero_skeleton(g, random.Random(1))
+    for rec in g.hero.values():  # what a filler writes: English names
+        rec.content["customer_name"] = "A. Customer"
+        rec.content["pickup_address"] = "Some Road"
+    return g
+
+
+def test_an_app_with_several_languages_has_people_and_places_in_each_script():
+    from mde_spec_core.hero import localise_hero
+    from mde_spec_core.mock import mix_pools
+
+    g = _multi_language_graph()
+    assert [p.language for p in mix_pools(g)] == ["en", "mr", "hi"]
+    assert localise_hero(g) > 0
+    recs = sorted((r for r in g.hero.values() if r.entity == "ENT-001"), key=lambda r: r.id)
+    names = [r.content["customer_name"] for r in recs]
+    assert script_share(names[0::3], "Latin") == 1.0  # the source language keeps its records
+    assert script_share(names[1::3], "Devanagari") >= CFG.checks.locale_script_share_min
+    assert script_share(names[2::3], "Devanagari") >= CFG.checks.locale_script_share_min
+    before = [r.content["customer_name"] for r in recs]
+    assert localise_hero(g) == 0  # the same graph gives the same names: nothing more to write
+    assert [r.content["customer_name"] for r in recs] == before
+
+
+def test_the_profiles_of_a_multi_language_app_are_flagged_for_native_review():
+    g = _multi_language_graph()
+    out = build_mock_profiles(g, "standard", random.Random(4))
+    assert all(
+        p["needs_native_review"] and p["record_languages"] == ["en", "mr", "hi"]
+        for p in out.values()
+    )
+    one = build_mock_profiles(
+        _multi_language_graph("hi", ("hi", "en")), "standard", random.Random(4)
+    )
+    assert all(
+        not p["needs_native_review"] and p["record_languages"] == ["hi"] for p in one.values()
+    )
+
+
+def test_a_language_with_no_pool_of_its_own_is_not_given_english_names():
+    from mde_spec_core.mock import mix_pools
+
+    g = _multi_language_graph("en", ("en", "ta"))
+    assert [p.language for p in mix_pools(g)] == ["en"]
 
 
 def test_money_uses_the_locale_format():

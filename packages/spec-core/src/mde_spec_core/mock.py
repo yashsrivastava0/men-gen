@@ -218,6 +218,9 @@ class Pool:
     rtl: bool
     number_locale: str
     currency: str
+    grouping: str | None = (
+        None  # integer pattern that overrides the CLDR one (``#,##,##0`` for the lakh grouping)
+    )
 
     def pick_people(self, n: int, rnd: random.Random) -> list[str]:
         return _draw(self.people, n, rnd)
@@ -298,7 +301,38 @@ def pool_for_language(language: str) -> Pool:
         rtl=rtl,
         number_locale=row["number_locale"],
         currency=row["currency"],
+        grouping=row.get("grouping"),
     )
+
+
+def has_pool(language: str) -> bool:
+    """True when ``locales.yaml`` lists the language itself (an unlisted language would silently take the default pool)."""
+    base = language.replace("_", "-").split("-")[0].lower()
+    return base in locale_table()["languages"]
+
+
+def mix_pools(graph: SpecGraph) -> list[Pool]:
+    """The pools the mock records of an app draw from, the source language's first (BUG-MK-1, doc 17 4.6).
+
+    An app that offers several languages has people and places written in each of them, as its users write them: a record
+    takes the pool of the language at its position in the list (source first, then the others in order). A language with no
+    pool of its own, one whose pool falls back, or one that is never a second pool (``secondary: false`` in locales.yaml:
+    English is the language code writes with, so a Hindi app is not given English names) is left out; a one-language
+    app has exactly one pool."""
+    seen: dict[str, Pool] = {}
+    for i, lang in enumerate([graph.meta.source_language, *graph.meta.languages]):
+        if i and not (has_pool(lang) and _lang_row(lang).get("secondary", True)):
+            continue
+        pool = _pool_or_none(lang)
+        if pool is not None and pool.language not in seen:
+            seen[pool.language] = pool
+    return list(seen.values()) or [pool_for_language(graph.meta.source_language)]
+
+
+def record_pool(graph: SpecGraph, index: int) -> Pool:
+    """The pool of the record at ``index`` among its entity's records (cycling the languages of the app)."""
+    pools = mix_pools(graph)
+    return pools[index % len(pools)]
 
 
 def _locale(name: str) -> Locale:
@@ -308,16 +342,35 @@ def _locale(name: str) -> Locale:
         return Locale.parse("en_IN")
 
 
+def _integer_pattern(loc: Locale, pool: Pool) -> str:
+    """The integer part of the number pattern a pool uses: the pool's own grouping when it names one, else the locale's
+    CLDR decimal pattern (so ``en_IN`` and ``mr_IN`` give 12,34,567)."""
+    if pool.grouping:
+        return pool.grouping
+    return str(loc.decimal_formats[None].pattern).split(";")[0].split(".")[0]
+
+
 def format_money(amount: int | float | Decimal, pool: Pool) -> str:
-    """Currency in the locale's own format (Indian digit grouping for en_IN, hi_IN, mr_IN; FN-14)."""
-    return format_currency(Decimal(str(amount)), pool.currency, locale=_locale(pool.number_locale))
+    """Currency in the locale's own format. The digit grouping is the one ``format_number`` uses for the same pool, so a
+    locale whose CLDR currency pattern is Western while its number pattern is Indian (``mr_IN``) never mixes the two
+    (BUG-MK-3); the currency symbol, its place and the decimals stay the locale's own."""
+    loc = _locale(pool.number_locale)
+    pattern = str(loc.currency_formats["standard"].pattern)
+    positive, sep, negative = pattern.partition(";")
+    want = _integer_pattern(loc, pool)
+
+    def regroup(part: str) -> str:
+        m = re.search(r"[#0,]+", part)
+        return part if m is None else part[: m.start()] + want + part[m.end() :]
+
+    pattern = regroup(positive) + (sep + regroup(negative) if sep else "")
+    return format_currency(Decimal(str(amount)), pool.currency, format=pattern, locale=loc)
 
 
 def format_number(value: int | float | Decimal, pool: Pool, *, decimals: int = 0) -> str:
     """A number in the locale's own grouping (the CLDR pattern, so en_IN gives 12,34,567)."""
     loc = _locale(pool.number_locale)
-    pattern = str(loc.decimal_formats[None].pattern).split(";")[0]
-    pattern = pattern.split(".")[0] + ("." + "0" * decimals if decimals else "")
+    pattern = _integer_pattern(loc, pool) + ("." + "0" * decimals if decimals else "")
     return format_decimal(Decimal(str(value)), format=pattern, locale=loc)
 
 
@@ -634,12 +687,13 @@ class _Ctx:
     rnd: random.Random
     tables: dict[str, Any]
     n: int = 0
+    row_pool: Pool | None = None  # the pool of the language of the row being built (locale mix)
 
     def person(self) -> str:
-        return self.rnd.choice(self.pool.people)
+        return self.rnd.choice((self.row_pool or self.pool).people)
 
     def place(self) -> str:
-        return self.rnd.choice(self.pool.places)
+        return self.rnd.choice((self.row_pool or self.pool).places)
 
 
 def _fallback_value(ctx: _Ctx, e: Entity, f: FieldDef, idx: int) -> str | None:
@@ -722,6 +776,7 @@ def _row(
     lo, hi = (float(x) for x in t["quantity_scale"])
     fields: dict[str, str] = {}
     skey = status_key(e)
+    ctx.row_pool = record_pool(ctx.graph, idx)  # people and places of this row follow its language
     for f in e.fields:
         if f.key == "id" or f.type in ("id", "secret", "ref") or f.key in rec.relations:
             continue
@@ -943,13 +998,20 @@ def _profile_extreme(
                     elif f.type == "date" and f.key in row["fields"] and cls == "large_number":
                         row["fields"][f.key] = rel_time(-36500 if i % 2 else 36500)
                 rows.append(row)
+        many = int(
+            ext["many_count"]
+        )  # a stress size: it may exceed the entity's stated maximum on purpose
+        # `count` is the DECLARED size of the entity's list (BUG-MK-2): the explicit edge rows plus the virtual ones a recipe
+        # generates at run time, never written out. Only an entity with a recipe (primary, or a stated typical count) has them.
+        has_recipe = e.klass == "primary" or bool(e.typical_count)
         out[e.id] = {
-            "count": len(rows),
+            "count": max(len(rows), many) if has_recipe else len(rows),
+            "rows_written": len(rows),
             "rows": rows,
             "list_cases": {
                 "zero": 0,
                 "one": 1,
-                "many": {"recipe": f"RCP-{e.id}", "count": int(ext["many_count"]), "virtual": True},
+                "many": {"recipe": f"RCP-{e.id}", "count": many, "virtual": True},
             },
         }
     _apply_shared(ctx.graph, {"entities": out})
@@ -1123,10 +1185,13 @@ def build_mock_profiles(
             out[name] = _profile_offline(graph, typical)
         else:  # pragma: no cover - guarded by profile_names
             raise ValueError(name)
+    pools = mix_pools(graph)
     for p in out.values():
         p["time"] = {"anchor": "now", "format": "now[+-]<n><d|h|m>"}
         p["language"] = pool.language
-        p["needs_native_review"] = pool.needs_native_review
+        # a record in another language of the app is made by code from a name pool, never read by a native speaker
+        p["needs_native_review"] = pool.needs_native_review or len(pools) > 1
+        p["record_languages"] = [x.language for x in pools]
         p["synthetic"] = True
     return out
 
