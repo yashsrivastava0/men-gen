@@ -55,6 +55,16 @@ def _capped(rows: list[str], kind: str) -> list[str]:
     ]
 
 
+def _clip(text: str, n: int = 160) -> str:
+    one = " ".join((text or "").split())
+    return one if len(one) <= n else one[: n - 1] + "…"
+
+
+def _prov(node: Any) -> str:
+    kinds = sorted({p.kind for p in getattr(node, "provenance", [])})
+    return "+".join(kinds) or "-"
+
+
 def structure_digest(graph: SpecGraph) -> list[str]:
     """The frozen structure in plain lines: apps, roles, modules, entities and their statuses, screens with their
     exits and flows. Only live (`in`) nodes; `later` and `out` are named once so the critic knows they are deferred."""
@@ -94,7 +104,8 @@ def structure_digest(graph: SpecGraph) -> list[str]:
     )
     out += _capped(
         [
-            f"FEATURE {f.id} {f.name} status={f.status} priority={f.user_priority} apps={','.join(sorted(f.app_ids))}"
+            f"FEATURE {f.id} {f.name} status={f.status} priority={f.user_priority} tier={f.tier} "
+            f"evidenced={f.user_evidenced} prov={_prov(f)} apps={','.join(sorted(f.app_ids))}"
             for f in sorted(graph.features.values(), key=lambda x: x.id)
         ],
         "features",
@@ -110,7 +121,9 @@ def structure_digest(graph: SpecGraph) -> list[str]:
         screens.append(
             f"SCREEN {sid} {s.name} app={s.app_id} module={s.module_id or '-'} type={s.screen_type} status={s.status} "
             f"roles={','.join(sorted(s.role_ids))} shows={','.join(sorted(b))} ops={','.join(ops)} "
-            f"exits={','.join(sorted(set(s.leads_to) | set(goes)))}"
+            f"exits={','.join(sorted(set(s.leads_to) | set(goes)))} tier={s.tier} prov={_prov(s)} "
+            f"stories={','.join(sorted(s.stories))} claims={','.join(sorted(s.claims_used))} "
+            f"purpose={_clip(s.purpose)}"
         )
     out += _capped(screens, "screens")
     out += _capped(
@@ -120,6 +133,16 @@ def structure_digest(graph: SpecGraph) -> list[str]:
             for f in sorted(graph.flows.values(), key=lambda x: x.id)
         ],
         "flows",
+    )
+    out += _capped(
+        [
+            f"STORY {t.id} role={t.role_id} voice={t.voice} tier={t.tier} assumed={t.assumed} "
+            f"features={','.join(sorted(t.feature_ids))} policy={t.policy_id or '-'} "
+            f"screens={','.join(sorted(t.screen_ids))} accept={len(t.acceptance)} "
+            f"want={_clip(t.want)} so_that={_clip(t.so_that)}"
+            for t in sorted(graph.stories.values(), key=lambda x: x.id)
+        ],
+        "stories",
     )
     out += _capped(
         [

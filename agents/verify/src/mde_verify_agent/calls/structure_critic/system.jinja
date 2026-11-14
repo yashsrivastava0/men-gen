@@ -6,7 +6,9 @@ Report only what the code checks listed under "already found by code" do NOT cov
 - a screen that cannot be reached or leaves the person stuck, when the code list does not already say so;
 - a role that sees or does something the Brief forbids, or an entity used in a way its owner or statuses do not allow;
 - two apps that disagree about the same thing (a status name, a rule, a number);
-- a Locked fact of the Brief that the structure dropped or changed.
+- a Locked fact of the Brief that the structure dropped or changed;
+- a node that claims more certainty than its evidence (tier locked or voice must with prov=default or assumed=True), a story that does not say what its screens do, or a screen whose purpose contradicts its name, type or the feature it serves;
+- a screen that cites research claims (claims=...) for something the claims cannot support.
 
 Rules:
 1. Every finding names one node id that appears in the structure lines, one sentence for what should change and one for why, a severity (blocker only when the app would be wrong or unbuildable), and a class: B when the node can be re-written from the Brief, C when a person has to decide.

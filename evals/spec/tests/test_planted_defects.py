@@ -90,9 +90,9 @@ def test_the_mock_critic_catches_what_its_mock_rules_catch(small_report) -> None
         rows["changed_locked_number"]["critic"]["caught"]
         and rows["changed_locked_number"]["verify"]["caught"]
     )
-    # a story is not part of what Verify's digest shows: no critic could see it, and the report says so per kind
-    assert rows["story_contradicts_a_rule"]["critic_input_differs"] is False
-    assert not rows["story_contradicts_a_rule"]["critic"]["caught"]
+    # Verify's digest now shows stories, purposes, claims and tiers, so a critic CAN see a story that contradicts a
+    # rule (the mock critic has no rule for it, so it is not caught by the mock; the report says so per kind)
+    assert rows["story_contradicts_a_rule"]["critic_input_differs"] is True
     assert rows["changed_locked_number"]["critic_input_differs"] is True
 
 
