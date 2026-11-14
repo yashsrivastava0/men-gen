@@ -42,6 +42,7 @@ from mde_spec_core.hero import (
     apply_fill,
     derive_shared_values,
     fill_plan,
+    localise_hero,
     mint_hero_skeleton,
 )
 
@@ -238,6 +239,9 @@ async def hero_step(ctx: RunContext) -> None:
     for p in patches:
         ctx.apply(p)
         ctx.flags.extend(p.get("flags", []))
+    localised = localise_hero(
+        ctx.graph
+    )  # names in each language the app offers (a pure function of the graph)
     derived = derive_shared_values(ctx.graph)
     ctx.emit(
         "notice",
@@ -246,4 +250,5 @@ async def hero_step(ctx: RunContext) -> None:
         records=len(ctx.graph.hero),
         filled=sum(1 for h in ctx.graph.hero.values() if h.filled),
         derived=len(derived),
+        localised=localised,
     )

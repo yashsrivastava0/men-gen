@@ -211,6 +211,22 @@ def test_indian_digit_grouping_for_money_and_numbers():
     assert format_number(1234567, en) == "12,34,567"
 
 
+@pytest.mark.parametrize("language", ["en", "hi", "mr", "kn"])
+def test_money_and_numbers_group_the_same_way_for_every_indian_language(language):
+    pool = pool_for_language(language)
+    assert format_money(1234567, pool) == "₹12,34,567.00"
+    assert format_money(-1234567, pool) == "-₹12,34,567.00"
+    assert format_number(1234567, pool) == "12,34,567"
+
+
+def test_money_keeps_the_locale_pattern_outside_the_digits():
+    ar, fr = pool_for_language("ar"), pool_for_language("fr")
+    assert format_money(1234567, ar).startswith(
+        "\u200f1,234,567.00"
+    )  # the locale's own place of the symbol
+    assert "12,34,567" not in format_number(1234567, fr) and "," not in format_number(1234567, fr)
+
+
 # ------------------------------------------------------------------ masking (FN-11)
 
 

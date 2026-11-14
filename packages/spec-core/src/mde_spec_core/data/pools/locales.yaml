@@ -2,14 +2,18 @@
 # `faker` pools are generated with a seeded Faker locale (person names and places only: never its ssn, bank or phone
 # providers). `file` pools are curated YAML files in this folder. `script` is the writing system the check
 # `script_share` expects; `currency` and `number_locale` feed the Babel formatters (FN-14).
+# `grouping` (optional) is the integer pattern of numbers and money when the CLDR one differs from the way the market
+# writes them: Indian apps group by lakh whatever the language (``#,##,##0``), Kannada's CLDR pattern does not.
+# `secondary: false` keeps a language out of the mock records of an app whose source language is another one (an app that
+# offers Hindi and English has Hindi names; an English app that also offers Marathi and Hindi has all three).
 # A language not listed here takes `default`.
 version: 1
 default: en
 languages:
-  en: {source: faker, locale: en_IN, script: Latin, number_locale: en_IN, currency: INR}
+  en: {source: faker, locale: en_IN, script: Latin, number_locale: en_IN, currency: INR, secondary: false}
   hi: {source: faker, locale: hi_IN, script: Devanagari, number_locale: hi_IN, currency: INR}
   mr: {source: faker, locale: mr_IN, script: Devanagari, number_locale: mr_IN, currency: INR}
-  kn: {source: file, file: kn_IN.yaml, script: Kannada, number_locale: kn_IN, currency: INR}
+  kn: {source: file, file: kn_IN.yaml, script: Kannada, number_locale: kn_IN, currency: INR, grouping: "#,##,##0"}
   ar: {source: file, file: ar.yaml, script: Arabic, number_locale: ar, currency: AED}
   fr: {source: file, file: fr_SN.yaml, script: Latin, number_locale: fr_SN, currency: XOF}
   sw: {source: file, file: sw.yaml, script: Latin, number_locale: sw_KE, currency: KES}

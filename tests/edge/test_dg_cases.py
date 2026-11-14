@@ -112,10 +112,6 @@ def test_a_could_that_needs_tier_b_is_flagged_with_its_tier_and_stays_optional(t
 
 
 @case("spc-dg-04")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-DG-2: trim_could drops a tier C COULD silently instead of keeping it flagged with its tier as an optional entry",
-)
 def test_a_tier_c_could_is_flagged_not_dropped():
     g = _small()
     sid = next(iter(g.screens))

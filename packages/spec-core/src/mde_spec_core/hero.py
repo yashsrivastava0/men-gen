@@ -26,7 +26,9 @@ from .config import DATA_DIR, SpecConfig, default_config
 from .graph import Entity, FieldDef, HeroRecord, SpecGraph
 from .mock import (
     _is_future_key,
+    _text_kind,
     find_unsafe,
+    mix_pools,
     mock_tables,
     rel_time,
     status_key,
@@ -183,6 +185,45 @@ def shared_value_plan(graph: SpecGraph) -> list[SharedValue]:
                 if not any(sv.entity == e.id and sv.field == cf.key for sv in out):
                     out.append(SharedValue(e.id, cf.key, parent.id, pf.key, rf.key, grp["kind"]))
     return sorted(out, key=lambda s: (s.entity, s.field))
+
+
+def localise_hero(graph: SpecGraph) -> int:
+    """Write the people and places of the hero records in the languages the app offers (BUG-MK-1, doc 17 4.6).
+
+    An app with several languages shows names and places in each script: the records of one entity take the pools of
+    ``mock.mix_pools`` in turn (source language first), so a Nashik marketplace in English, Marathi and Hindi has Marathi and
+    Hindi names beside English ones. Only fields that hold a person or a place are rewritten (the key words are data, ``text_key_hints``
+    in mock_tables.yaml); a record the model or code left without that field is untouched. Seeded by record and field, so the
+    same graph gives the same names; call it BEFORE ``derive_shared_values`` so a copied name follows its parent. Returns the
+    number of values written. A one-language app changes nothing."""
+    pools = mix_pools(graph)
+    if len(pools) < 2:
+        return 0
+    by_entity: dict[str, list[HeroRecord]] = {}
+    for rid in sorted(graph.hero):
+        by_entity.setdefault(graph.hero[rid].entity, []).append(graph.hero[rid])
+    written = 0
+    for eid, recs in sorted(by_entity.items()):
+        ent = graph.entities.get(eid)
+        if ent is None:
+            continue
+        kinds: dict[str, str] = {}
+        for f in ent.fields:
+            if f.type == "location":
+                kinds[f.key] = "place"
+            elif f.type == "text" and (kind := _text_kind(f.key)):
+                kinds[f.key] = kind
+        for i, rec in enumerate(recs):
+            pool = pools[i % len(pools)]
+            for key, kind in sorted(kinds.items()):
+                if key not in rec.content:
+                    continue
+                rnd = random.Random(f"{rec.id}:{key}:locale")  # noqa: S311 - seeded, not security
+                pick = rnd.choice(pool.people if kind == "person" else pool.places)
+                if rec.content[key] != pick:
+                    rec.content[key] = pick
+                    written += 1
+    return written
 
 
 def derive_shared_values(graph: SpecGraph) -> list[dict[str, str]]:

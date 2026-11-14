@@ -71,23 +71,41 @@ def _criticality(c: dict[str, Any], graph: SpecGraph) -> tuple[int, int]:
 
 
 def trim_could(patches: list[Patch], graph: SpecGraph, cap_by_profile: dict[str, int]) -> int:
-    """Keep each app within its COULD cap, signature moments first (V-42's own advice: trim by criticality); a tier C entry
-    (not supportable) is dropped. Works on the patch dicts so the checkpointed patches stay as written."""
+    """Keep each app within its COULD cap, signature moments first (V-42's own advice: trim by criticality). A tier C entry
+    (the fixed stack cannot build it) is NOT dropped silently: it stays an optional entry with its tier, goes first when
+    the cap bites, and each one that survives is listed as a ``capability_risk`` flag for G2 (BUG-DG-2). Works on the patch
+    dicts so the checkpointed patches stay as written."""
     cap = cap_by_profile[graph.meta.profile]
-    per_app: dict[str, list[tuple[tuple[int, int], str, int]]] = defaultdict(list)
+    per_app: dict[str, list[tuple[tuple[bool, int, int], str, int]]] = defaultdict(list)
     for p in patches:
         for sid, node in sorted(p["tables"].get("screens", {}).items()):
-            node["could"] = [c for c in node["could"] if c["tier"] != "C"]
             for i, c in enumerate(node["could"]):
-                per_app[node["app_id"]].append((_criticality(c, graph), sid, i))
+                per_app[node["app_id"]].append(
+                    ((c["tier"] == "C", *_criticality(c, graph)), sid, i)
+                )
     drop: set[tuple[str, int]] = set()
     for rows in per_app.values():
         rows.sort()
         drop |= {(sid, i) for _, sid, i in rows[cap:]}
     for p in patches:
-        for sid, node in p["tables"].get("screens", {}).items():
+        for sid, node in sorted(p["tables"].get("screens", {}).items()):
             node["could"] = [c for i, c in enumerate(node["could"]) if (sid, i) not in drop]
+            for c in node["could"]:
+                if c["tier"] == "C":
+                    p.setdefault("flags", []).append(_tier_c_flag(sid, c))
     return len(drop)
+
+
+def _tier_c_flag(screen_id: str, could: dict[str, Any]) -> dict[str, Any]:
+    return {
+        "kind": "capability_risk",
+        "capability": f"could:{could['id']}",
+        "label": "an optional idea that needs a capability the fixed stack cannot build",
+        "tier": "C",
+        "production_recommended": False,
+        "implied_by": [f"COULD {screen_id}.{could['id']}"],
+        "note": "kept as an optional entry with its tier; it is outside the approved hash and is built only if the stack allows it",
+    }
 
 
 async def screens_step(ctx: RunContext) -> None:

@@ -744,3 +744,40 @@ def test_the_other_vocabulary_slips_are_repaired_by_code(finished):
         "exact_synonym",
         "instantiate_library_default",
     }
+
+
+def _could_dict(i: int, tier: str) -> dict:
+    return {
+        "id": f"CLD-{i}",
+        "kind": "delight",
+        "when": f"w{i}",
+        "effect": f"e{i}",
+        "basis": f"b{i}",
+        "basis_kind": "library_pattern",
+        "assumed": True,
+        "tier": tier,
+    }
+
+
+def test_trim_could_keeps_a_tier_c_entry_flagged_and_drops_it_first_when_the_cap_bites():
+    from mde_spec_agent.lanes.screens.scrn.step import trim_could
+    from mde_spec_core.synth import make_graph
+
+    g = make_graph("small")
+    sid = next(iter(g.screens))
+    app = g.screens[sid].app_id
+
+    def patch(entries):
+        return {"tables": {"screens": {sid: {"app_id": app, "could": entries}}}}
+
+    roomy = patch([_could_dict(0, "C"), _could_dict(1, "A")])
+    assert trim_could([roomy], g, {"compact": 5, "standard": 12, "deep": 30}) == 0
+    assert {c["tier"] for c in roomy["tables"]["screens"][sid]["could"]} == {"A", "C"}
+    flag = roomy["flags"][0]
+    assert flag["kind"] == "capability_risk" and flag["tier"] == "C"
+    assert flag["implied_by"] == [f"COULD {sid}.CLD-0"]
+
+    tight = patch([_could_dict(0, "C"), _could_dict(1, "A"), _could_dict(2, "B")])
+    assert trim_could([tight], g, {"compact": 2, "standard": 2, "deep": 2}) == 1
+    assert [c["tier"] for c in tight["tables"]["screens"][sid]["could"]] == ["A", "B"]
+    assert "flags" not in tight  # the one dropped was the tier C entry: nothing left to flag

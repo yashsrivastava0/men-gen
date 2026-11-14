@@ -7,7 +7,6 @@ import random
 import re
 from functools import cache
 
-import pytest
 from edge_support.ea_support import cached_flow, fixture_json, mutate, raw, validate
 from edge_support.registry import case
 
@@ -84,19 +83,11 @@ def test_rupees_and_indian_names_are_used_for_the_nashik_app(tmp_path_factory):
 
 
 @case("spc-mk-02")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MK-3: format_money for Marathi (mr_IN) gives Western grouping, ₹1,234,567.00, while format_number for the same pool gives 12,34,567: the Nashik example's own currency is wrongly grouped",
-)
 def test_marathi_money_uses_indian_digit_grouping():
     assert format_money(1234567, pool_for_language("mr")) == "₹12,34,567.00"
 
 
 @case("spc-mk-02")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MK-1: the mock profiles are written only in the source language (en, `needs_native_review: false` in every profile) and the Marathi and Hindi name pools are Faker-backed with `needs_native_review: False`: no Marathi-script records and no native-review flag on the mock data of a mr/hi app",
-)
 def test_marathi_names_and_native_review_flag_for_the_mock_data(tmp_path_factory):
     f = standard(tmp_path_factory)
     profiles = _profiles(f)
@@ -171,10 +162,6 @@ def test_the_extreme_profile_draws_only_from_allow_listed_categories(tmp_path_fa
 
 
 @case("spc-mk-05")
-@pytest.mark.xfail(
-    strict=True,
-    reason="BUG-MK-2: no profile carries list volumes beyond 60 records (busy 60, extreme 12): the 10,000-item list of the doc's extreme data case is not produced or declared anywhere",
-)
 def test_the_extreme_profile_declares_a_very_large_list_volume(tmp_path_factory):
     f = standard(tmp_path_factory)
     counts = [e["count"] for p in _profiles(f).values() for e in p.get("entities", {}).values()]
