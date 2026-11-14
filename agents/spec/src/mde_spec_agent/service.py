@@ -30,6 +30,7 @@ from typing import Any
 from mde_compass_intake import intake as read_intake
 from mde_compass_intake import read_research
 from mde_core.clock import Clock, SystemClock
+from mde_core.errors import CircuitOpen
 from mde_core.logging import get_logger
 from mde_core.settings import Settings, load_settings
 from mde_llm_gateway.factory import route_problems
@@ -43,7 +44,7 @@ from mde_spec_agent.bench.inputs import (
     discover_research,
     synth_name,
 )
-from mde_spec_agent.calls.base import CallRunner, RunResult, SpecCallSpec
+from mde_spec_agent.calls.base import CallRunner, NoCredit, RunResult, SpecCallSpec
 from mde_spec_agent.compose import (
     build_context,
     build_gateway,
@@ -931,7 +932,15 @@ class SpecService:
             wanted = [p for p in dict.fromkeys(str(p) for p in paths if p) if p in pack.files]
             async with ctx.limiter:
                 ctx.guard.start_wave()
-                return await port.canary(card, {p: pack.files[p] for p in wanted}, run_index=0)
+                try:
+                    return await port.canary(card, {p: pack.files[p] for p in wanted}, run_index=0)
+                except CircuitOpen as exc:
+                    # Verify is a check, never a reason to lose the pack: a canary the provider would not run is
+                    # recorded as NOT RUN (flagged, falls back to the code reading); no credit still stops the run.
+                    if isinstance(exc, NoCredit):
+                        raise
+                    ctx.emit("notice", step="verify", what="canary.not_run", task=task_id)
+                    return CanaryResult(task_id=task_id, used_fallback=True, flagged=True)
 
         canaries = list(await asyncio.gather(*(one(t) for t in ids)))
         merged = [merge_canaries([c]) for c in canaries]

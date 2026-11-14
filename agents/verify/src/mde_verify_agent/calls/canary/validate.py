@@ -11,12 +11,7 @@ MAX_OUTLINE = 40
 
 def validate(inp: CanaryIn, out: CanaryOut) -> list[str]:
     errors: list[str] = []
-    if len(out.blocking_questions) > MAX_QUESTIONS:
-        errors.append(
-            f"more than {MAX_QUESTIONS} blocking questions; keep the ones that truly block"
-        )
-    if len(out.outline) > MAX_OUTLINE:
-        errors.append(f"outline longer than {MAX_OUTLINE} steps")
+    # Too many questions or outline steps is not a re-ask: the port keeps the first ones (see `cap_lists`).
     wanted = list(inp.criteria)
     got: list[str] = []
     for c in out.acceptance_coverage:

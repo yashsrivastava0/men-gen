@@ -33,6 +33,7 @@ from mde_spec_core.verify_port import (
 )
 from mde_verify_agent import checks, digest
 from mde_verify_agent.calls.canary.schema import CanaryIn, CanaryOut
+from mde_verify_agent.calls.canary.validate import MAX_OUTLINE, MAX_QUESTIONS
 from mde_verify_agent.calls.canary.spec import SPEC as CANARY_SPEC
 from mde_verify_agent.calls.final_critic.schema import FinalIn, FinalOut
 from mde_verify_agent.calls.final_critic.spec import SPEC as FINAL_SPEC
@@ -197,8 +198,8 @@ class VerifyAgent:
         res: CanaryOut = out.output
         return CanaryResult(
             task_id=task_id,
-            outline=list(res.outline),
-            blocking_questions=list(res.blocking_questions),
+            outline=list(res.outline)[:MAX_OUTLINE],
+            blocking_questions=list(res.blocking_questions)[:MAX_QUESTIONS],
             assumptions=list(res.assumptions),
             acceptance_coverage=_coverage(cin.criteria, res.acceptance_coverage),
             run_index=run_index,
